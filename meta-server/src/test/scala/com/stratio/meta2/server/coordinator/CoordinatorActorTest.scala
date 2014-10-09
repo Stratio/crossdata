@@ -21,11 +21,11 @@ import javax.transaction.TransactionManager
 
 import akka.actor.{ActorSystem, actorRef2Scala}
 import akka.pattern.ask
-import akka.serialization.JavaSerializer._
 import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan.{ExecutionType, QueryWorkflow, ResultType}
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.api.PropertyType
@@ -97,8 +97,10 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
         optionalProperties,
         supportedOperations
     )
+
     MetadataManager.MANAGER.createConnector( connectorMetadata )
-    MetadataManager.MANAGER.addConnectorRef(new ConnectorName(connectorName.name),connectorActor)
+    MetadataManager.MANAGER.addConnectorRef(new ConnectorName(connectorName.name),
+      StringUtils.getAkkaActorRefUri(connectorActor))
     //MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName),Status.ONLINE)
   }
 
