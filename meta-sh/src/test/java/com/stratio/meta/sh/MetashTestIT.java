@@ -22,7 +22,7 @@ import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.Test;
 
-public class MetashTest {
+public class MetashTestIT {
 
     @Test
     public void testSendManifest() throws Exception {

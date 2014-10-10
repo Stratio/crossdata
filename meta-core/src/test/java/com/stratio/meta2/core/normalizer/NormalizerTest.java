@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.normalizer;
+package com.stratio.meta2.core.normalizer;
 
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -231,7 +231,7 @@ public class NormalizerTest extends MetadataManagerTests {
                         "Result:   " + result.toString() + System.lineSeparator() +
                         "Expected: " + expectedText);
     }
-
+/*
     @Test(dependsOnGroups = "putData")
     public void testNormalizeWhereOrderGroup() throws Exception {
 
@@ -347,5 +347,5 @@ public class NormalizerTest extends MetadataManagerTests {
         testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
 
     }
-
+*/
 }

@@ -27,19 +27,19 @@ public class QualifiedNameTest {
     @Test
     public void testCatalogQualifiedName() {
         String name = QualifiedNames.getCatalogQualifiedName("test");
-        Assert.assertEquals(name, "catalog.test");
+        Assert.assertEquals(name, "test");
     }
 
     @Test
     public void testTableQualifiedName() {
         String name = QualifiedNames.getTableQualifiedName("test", "taBle");
-        Assert.assertEquals(name, "catalog.test.table");
+        Assert.assertEquals(name, "test.table");
     }
 
     @Test
     public void testColumnQualifiedName() {
         String name = QualifiedNames.getColumnQualifiedName("test", "taBle", "column");
-        Assert.assertEquals(name, "catalog.test.table.column");
+        Assert.assertEquals(name, "test.table.column");
     }
 
     @Test
