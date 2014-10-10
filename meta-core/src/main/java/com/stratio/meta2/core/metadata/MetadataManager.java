@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.core.metadata;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

@@ -18,7 +18,6 @@
 
 package com.stratio.meta.common.executionplan;
 
-import java.io.Serializable;
 
 import com.stratio.meta.communication.CreateCatalog;
 import com.stratio.meta.communication.CreateIndex;

@@ -59,17 +59,17 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
       case plannedQuery: PlannedQuery => {
       val workflow = plannedQuery.getExecutionWorkflow()
-      log.info(">>>>>> TRACE: Workflow from "+workflow.getActorRef)
+      log.info("\n\n\n\n>>>>>> TRACE: Workflow from "+workflow.getActorRef)
 
       workflow match {
         case workflow: MetadataWorkflow => {
-          log.debug("CoordinatorActor: MetadataWorkflow received")
-          log.info(">>>>>> TRACE: MetadataWorkflow from "+workflow.getActorRef)
+          log.info("\n\n\n\n>>>>>> TRACE: MetadataWorkflow from "+workflow.getActorRef)
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           val queryId = plannedQuery.getQueryId
           executionInfo.setWorkflow(workflow)
-          if(workflow.getActorRef != null){
+          if(workflow.getActorRef() != null && workflow.getActorRef().length()>0){
+            val actorRef=context.actorSelection(workflow.getActorRef())
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
@@ -92,7 +92,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setWorkflow(workflow)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
-          workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getStorageOperation(queryId)
+          val actorRef=context.actorSelection(workflow.getActorRef())
+          actorRef ! workflow.getStorageOperation(queryId)
         }
 
         case workflow: ManagementWorkflow => {
@@ -111,7 +112,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setWorkflow(workflow)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if(ResultType.RESULTS.equals(workflow.getResultType)){
-            //ExecutionManager.MANAGER.createEntry(queryId, executionInfo) //TODO: FIX THIS
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo) //TODO: FIX THIS
             context.actorSelection(workflow.getActorRef()) ! workflow.getWorkflow
           }else if(ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)){
             //TODO Trigger next step execution.
