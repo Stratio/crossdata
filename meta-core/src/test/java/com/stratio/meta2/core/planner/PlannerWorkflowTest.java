@@ -68,13 +68,13 @@ import com.stratio.meta2.common.statements.structures.selectors.IntegerSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grammar.ParsingTest;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.metadata.MetadataManagerTests;
+import com.stratio.meta2.core.metadata.MetadataManagerTestHelper;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.query.SelectValidatedQuery;
 import com.stratio.meta2.core.statements.SelectStatement;
 
-public class PlannerWorkflowTest extends MetadataManagerTests {
+public class PlannerWorkflowTest extends MetadataManagerTestHelper {
 
     private static final Logger LOG = Logger.getLogger(PlannerWorkflowTest.class);
 

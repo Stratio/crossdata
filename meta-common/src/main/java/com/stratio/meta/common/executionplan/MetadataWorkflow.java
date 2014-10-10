@@ -115,21 +115,31 @@ public class MetadataWorkflow extends ExecutionWorkflow {
 
     public MetadataOperation createMetadataOperationMessage(String queryId) {
         MetadataOperation result = null;
-        if (ExecutionType.CREATE_CATALOG.equals(this.executionType)) {
+
+        switch (this.executionType) {
+        case CREATE_CATALOG:
             result = new CreateCatalog(queryId, this.clusterName, this.catalogMetadata);
-        } else if (ExecutionType.DROP_CATALOG.equals(this.executionType)) {
+            break;
+        case DROP_CATALOG:
             result = new DropCatalog(queryId, this.clusterName, this.catalogName);
-        } else if (ExecutionType.CREATE_TABLE.equals(this.executionType)) {
+            break;
+        case CREATE_TABLE:
             result = new CreateTable(queryId, this.clusterName, this.tableMetadata);
-        } else if (ExecutionType.CREATE_TABLE_AND_CATALOG.equals(this.executionType)) {
+            break;
+        case CREATE_TABLE_AND_CATALOG:
             result = new CreateTableAndCatalog(queryId, this.clusterName, this.catalogMetadata, this.tableMetadata);
-        } else if (ExecutionType.DROP_TABLE.equals(this.executionType)) {
+            break;
+        case DROP_TABLE:
             result = new DropTable(queryId, this.clusterName, this.tableName);
-        } else if (ExecutionType.CREATE_INDEX.equals(this.executionType)) {
+            break;
+        case CREATE_INDEX:
             result = new CreateIndex(queryId, this.clusterName, this.indexMetadata);
-        } else if (ExecutionType.DROP_INDEX.equals(this.executionType)) {
+            break;
+        case DROP_INDEX:
             result = new DropIndex(queryId, this.clusterName, this.indexMetadata);
+            break;
         }
+
         return result;
     }
 

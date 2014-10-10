@@ -19,27 +19,53 @@
 package com.stratio.meta2.common.metadata;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta2.common.api.ManifestHelper;
 import com.stratio.meta2.common.api.PropertyType;
+import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.Status;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class ConnectorMetadata implements IMetadata {
 
     private final ConnectorName name;
     private final String version;
     private final Set<DataStoreName> dataStoreRefs;
+
+    private Set<ClusterName> clusterRefs;
+
+    private Map<ClusterName, Map<Selector,Selector>> clusterProperties;
+
     private final Set<PropertyType> requiredProperties;
+
+
+
     private final Set<PropertyType> optionalProperties;
     private final Set<Operations> supportedOperations;
     private Status status;
     private Serializable actorRef;
-
+    public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
+            Set<ClusterName> clusterRefs, Map<ClusterName,Map<Selector,Selector>> clusterProperties,
+            Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
+            Set<Operations> supportedOperations) {
+        this.name = name;
+        this.version = version;
+        this.dataStoreRefs = dataStoreRefs;
+        this.clusterRefs = clusterRefs;
+        this.clusterProperties = clusterProperties;
+        this.requiredProperties = requiredProperties;
+        this.optionalProperties = optionalProperties;
+        this.supportedOperations = supportedOperations;
+        this.status = Status.OFFLINE;
+    }
+    // TODO: remove and fix Tests
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations) {
@@ -51,13 +77,13 @@ public class ConnectorMetadata implements IMetadata {
         this.supportedOperations = supportedOperations;
         this.status = Status.OFFLINE;
     }
-
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
             List<String> supportedOperations) {
         this.name = name;
         this.version = version;
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
+        this.clusterRefs= new HashSet<>();
         this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
         this.optionalProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties);
         this.supportedOperations = ManifestHelper.convertManifestOperationsToMetadataOperations(supportedOperations);
@@ -86,6 +112,22 @@ public class ConnectorMetadata implements IMetadata {
 
     public Set<Operations> getSupportedOperations() {
         return supportedOperations;
+    }
+
+    public Set<ClusterName> getClusterRefs() {
+        return clusterRefs;
+    }
+
+    public void setClusterRefs(Set<ClusterName> clusterRefs) {
+        this.clusterRefs = clusterRefs;
+    }
+
+    public Map<ClusterName, Map<Selector, Selector>> getClusterProperties() {
+        return clusterProperties;
+    }
+
+    public void setClusterProperties(Map<ClusterName, Map<Selector, Selector>> clusterProperties) {
+        this.clusterProperties = clusterProperties;
     }
 
     public Status getStatus() {

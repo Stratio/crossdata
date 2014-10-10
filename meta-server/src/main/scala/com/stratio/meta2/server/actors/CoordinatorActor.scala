@@ -18,28 +18,12 @@ object CoordinatorActor {
 class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends Actor with ActorLogging {
   log.info("Lifting coordinator actor")
 
-  /**
-   * Queries in progress.
-   */
-  //TODO Move this to infinispan
-  //val inProgress: scala.collection.mutable.Map[String, ExecutionWorkflow] = scala.collection.mutable.Map()
-  //val inProgressSender: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map()
-
-  /**
-   * Queries that trigger a persist operation once the result is returned.
-   */
-  //TODO Move this to infinispan
-  //val persistOnSuccess: scala.collection.mutable.Map[String, MetadataWorkflow] = scala.collection.mutable.Map()
-
-  //TODO Move this to infinispan
-  //val pendingQueries: scala.collection.mutable.Map[FirstLevelName, String] = scala.collection.mutable.Map()
-
   def receive = {
 
     case plannedQuery: PlannedQuery => {
-      val workflow = plannedQuery.getExecutionWorkflow()
+      val plannedWorkflow = plannedQuery.getExecutionWorkflow()
 
-      workflow match {
+      plannedWorkflow match {
         case workflow: MetadataWorkflow => {
           log.info(">>>>>> TRACE: MetadataWorkflow ")
           val executionInfo = new ExecutionInfo
@@ -51,10 +35,14 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
             workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.createMetadataOperationMessage(queryId)
-          } else {
+          } else if(workflow.getExecutionType==ExecutionType.CREATE_CATALOG || workflow
+            .getExecutionType==ExecutionType.CREATE_TABLE_AND_CATALOG){
+            coordinator.persistCreateCatalog(workflow.getCatalogMetadata())
             executionInfo.setQueryStatus(QueryStatus.PLANNED)
-            ExecutionManager.MANAGER.createEntry(workflow.getCatalogMetadata.getName.toString, queryId)
+            ExecutionManager.MANAGER.createEntry(workflow.getCatalogMetadata.getName().toString(), queryId)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
+          } else {
+            log.error("ExecutionType not supported "+ workflow.getExecutionType.toString)
           }
         }
 
@@ -117,8 +105,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       log.info("disconnected from connector ")
 
     case _ => {
-      //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
-      sender ! new ExecutionException("Non recogniced workflow")
+      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
+      log.error("Not recognized object")
+      //sender ! new ExecutionException("Non recognized workflow")
     }
 
   }

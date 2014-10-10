@@ -41,13 +41,14 @@ import com.stratio.meta2.common.data.Name;
 import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
+import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.metadata.ColumnMetadata;
 
 public enum MetadataManager {
     MANAGER;
@@ -167,7 +168,7 @@ public enum MetadataManager {
         shouldBeInit();
         try {
             writeLock.lock();
-            if(unique){
+            if (unique) {
                 shouldBeUnique(catalogMetadata.getName());
             }
             beginTransaction();
@@ -232,6 +233,44 @@ public enum MetadataManager {
         shouldExist(name);
         CatalogMetadata catalogMetadata = this.getCatalog(name.getCatalogName());
         return catalogMetadata.getTables().get(name);
+    }
+
+    public void createCluster(ClusterMetadata clusterMetadata, boolean unique, boolean attachToDatastore) {
+        shouldBeInit();
+        try {
+            writeLock.lock();
+            shouldExist(clusterMetadata.getDataStoreRef());
+            if (unique) {
+                shouldBeUnique(clusterMetadata.getName());
+            }
+            for (ConnectorAttachedMetadata connectorRef : clusterMetadata.getConnectorAttachedRefs()
+                    .values()) {
+                shouldExist(connectorRef.getConnectorRef());
+            }
+            ClusterName clusterName = clusterMetadata.getName();
+            DataStoreName dataStoreName = clusterMetadata.getDataStoreRef();
+
+            beginTransaction();
+
+            metadata.put(clusterName, clusterMetadata);
+            // recover DataStore info
+            IMetadata iMetadata = metadata.get(dataStoreName);
+            DataStoreMetadata dataStoreMetadata = (DataStoreMetadata) iMetadata;
+            Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs = dataStoreMetadata.getClusterAttachedRefs();
+            clusterAttachedRefs.put(clusterName, new ClusterAttachedMetadata(clusterName,
+                    dataStoreName, clusterMetadata.getOptions()));
+            // attach Cluster to DataStore
+            dataStoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
+            metadata.put(dataStoreName, dataStoreMetadata);
+
+            commitTransaction();
+        } catch (MetadataManagerException mex) {
+            throw mex;
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     public void createCluster(ClusterMetadata clusterMetadata, boolean unique) {
@@ -299,7 +338,7 @@ public enum MetadataManager {
 
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
         shouldBeInit();
-        for(DataStoreName dataStore: connectorMetadata.getDataStoreRefs()){
+        for (DataStoreName dataStore : connectorMetadata.getDataStoreRefs()) {
             shouldExist(dataStore);
         }
         try {
@@ -309,6 +348,41 @@ public enum MetadataManager {
             }
             beginTransaction();
             metadata.put(connectorMetadata.getName(), connectorMetadata);
+            commitTransaction();
+        } catch (MetadataManagerException mex) {
+            throw mex;
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public void createConnector(ConnectorMetadata connectorMetadata, boolean unique, boolean attachToCluster) {
+        shouldBeInit();
+        for (DataStoreName dataStore : connectorMetadata.getDataStoreRefs()) {
+            shouldExist(dataStore);
+            // Check clusters
+            for (ClusterName c : connectorMetadata.getClusterRefs()) {
+                shouldExist(c);
+            }
+        }
+        try {
+            writeLock.lock();
+            if (unique) {
+                shouldBeUnique(connectorMetadata.getName());
+            }
+            beginTransaction();
+            metadata.put(connectorMetadata.getName(), connectorMetadata);
+            for (ClusterName c : connectorMetadata.getClusterRefs()) {
+                IMetadata iMetadata = metadata.get(c);
+                ClusterMetadata clusterMetadata = (ClusterMetadata) iMetadata;
+                Map<ConnectorName, ConnectorAttachedMetadata> connectorList = clusterMetadata
+                        .getConnectorAttachedRefs();
+                connectorList.put(connectorMetadata.getName(), new ConnectorAttachedMetadata(connectorMetadata.getName
+                        (), c, connectorMetadata.getClusterProperties().get(c)));
+                clusterMetadata.setConnectorAttachedRefs(connectorList);
+            }
             commitTransaction();
         } catch (MetadataManagerException mex) {
             throw mex;
@@ -335,7 +409,7 @@ public enum MetadataManager {
         createConnector(connectorMetadata, false);
     }
 
-    public void setConnectorStatus(ConnectorName name, Status status){
+    public void setConnectorStatus(ConnectorName name, Status status) {
         ConnectorMetadata connectorMetadata = getConnector(name);
         connectorMetadata.setStatus(status);
         createConnector(connectorMetadata, false);
@@ -358,7 +432,7 @@ public enum MetadataManager {
         Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
 
         List<ConnectorMetadata> connectors;
-        for (TableName table: tables) {
+        for (TableName table : tables) {
 
             ClusterName clusterName = getTable(table).getClusterRef();
 
@@ -366,7 +440,7 @@ public enum MetadataManager {
                     .getConnectorAttachedRefs().keySet();
 
             connectors = new ArrayList<>();
-            for (ConnectorName connectorName: connectorNames) {
+            for (ConnectorName connectorName : connectorNames) {
                 ConnectorMetadata connectorMetadata = getConnector(connectorName);
                 if (connectorMetadata.getStatus() == connectorStatus) {
                     connectors.add(connectorMetadata);
@@ -385,7 +459,7 @@ public enum MetadataManager {
         return tableMetadata.getColumns().get(name);
     }
 
-    public void setQueryStatus(CatalogName catalogName, QueryStatus queryStatus, String queryId){
+    public void setQueryStatus(CatalogName catalogName, QueryStatus queryStatus, String queryId) {
         CatalogMetadata catalogMetadata = getCatalog(catalogName);
         catalogMetadata.setQueryStatus(queryStatus);
         catalogMetadata.setQueryId(queryId);

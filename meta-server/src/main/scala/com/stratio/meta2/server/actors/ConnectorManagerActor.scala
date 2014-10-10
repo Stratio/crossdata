@@ -123,7 +123,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       //TODO Process ReceiveTimeout
     }
     case _=>
-      println("connector actor receives event")
+      logger.error("not recognized event")
     //      sender ! "OK"
     //memberActorRef.tell(objetoConWorkflow, context.sender)
   }

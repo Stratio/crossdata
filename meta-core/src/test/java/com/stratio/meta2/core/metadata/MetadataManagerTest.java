@@ -12,47 +12,62 @@
  * the License.
  */
 
-package com.stratio.meta2.core.coordinator;
+package com.stratio.meta2.core.metadata;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
+import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
-import com.stratio.meta.common.executionplan.ExecutionType;
-import com.stratio.meta.common.executionplan.ManagementWorkflow;
-import com.stratio.meta.common.executionplan.ResultType;
+import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta2.common.api.PropertyType;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
+import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
-import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.metadata.MetadataManagerTestHelper;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+import com.stratio.meta2.core.query.BaseQuery;
+import com.stratio.meta2.core.query.MetadataParsedQuery;
+import com.stratio.meta2.core.query.MetadataPlannedQuery;
+import com.stratio.meta2.core.query.MetadataValidatedQuery;
+import com.stratio.meta2.core.statements.AttachConnectorStatement;
 
-public class CoordinatorTest extends MetadataManagerTestHelper {
+public class MetadataManagerTest extends MetadataManagerTestHelper {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(MetadataManagerTest.class);
 
     @Test
     public void testAttachCluster() throws Exception {
 
-        // Create and add a test datastore metadata to the metadatamanager
-        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "production");
+        DataStoreName dataStoreName = createTestDatastore();
+        ClusterName clusterName = createTestCluster("clusterTest",dataStoreName);
+        DataStoreMetadata dataStoreTest = MetadataManager.MANAGER.getDataStore(dataStoreName);
 
-        ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.ATTACH_CLUSTER,
-                ResultType.RESULTS);
-        Coordinator coordinator = new Coordinator();
-        coordinator.executeManagementOperation(workflow.createManagementOperationMessage(""));
-        // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
-        datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
-                datastoreTest.getClusterAttachedRefs();
+                dataStoreTest.getClusterAttachedRefs();
         boolean found = false;
         for (ClusterName clusterNameTest : clusterAttachedRefsTest.keySet()) {
             ClusterAttachedMetadata clusterAttachedMetadata =
                     clusterAttachedRefsTest.get(clusterNameTest);
-            if (clusterAttachedMetadata.getClusterRef().equals(new ClusterName("clusterTest"))) {
-                assertEquals(clusterAttachedMetadata.getDataStoreRef(), new DataStoreName("datastoreTest"),
+            if (clusterAttachedMetadata.getClusterRef().equals(clusterName)) {
+                assertEquals(clusterAttachedMetadata.getDataStoreRef(), dataStoreName,
                         "Wrong attachment for clusterTest");
                 found = true;
                 break;
@@ -61,81 +76,33 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         assertTrue(found, "Attachment not found");
     }
 
-    /*@Test
+    @Test
     public void testAttachConnector() throws Exception {
 
-        // Create and add a test datastore metadata to the metadatamanager
-        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "preproduction");
 
-        // Create and add a test cluster metadata to the metadatamanager
-        ClusterName clusterName = new ClusterName("clusterTest");
-        DataStoreName dataStoreRef = new DataStoreName("dataStoreTest");
-        Map<Selector, Selector> options = new HashMap<>();
-        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-        ClusterMetadata clusterTest =
-                new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterTest, false);
+        // Create and add a test dataStore and cluster to the MetadataManager
+        DataStoreName dataStoreRef = createTestDatastore();
+        ClusterName clusterName = createTestCluster("clusterTest", dataStoreRef);
+        Set<ClusterName> clusterList= new HashSet<ClusterName>();
+        clusterList.add(clusterName);
 
-        // Create and add a test connector metadata to the metadatamanager
-        ConnectorName connectorName = new ConnectorName("connectorTest");
-        String connectorVersion = "0.1.0";
-        Set<DataStoreName> dataStoreRefs = new HashSet<>();
-        com.stratio.meta2.common.api.generated.connectorOld.RequiredPropertiesType connectorRequiredProperties =
-                null;
-        com.stratio.meta2.common.api.generated.connectorOld.OptionalPropertiesType connectorOptionalProperties =
-                null;
-        SupportedOperationsType supportedOperations = null;
-        ConnectorMetadata connectorTest =
-                new ConnectorMetadata(connectorName, connectorVersion, dataStoreRefs,
-                        connectorRequiredProperties, connectorOptionalProperties, supportedOperations);
-        MetadataManager.MANAGER.createConnector(connectorTest, false);
+        // Create and add a test connector metadata to the MetadataManager
+        ConnectorName connectorName = createTestConnector("testConnector", dataStoreRef, clusterList,
+                "coordinatorActorRef");
 
-        // Add information about the connector attachment to the metadatamanager
-        BaseQuery baseQuery =
-                new BaseQuery(UUID.randomUUID().toString(),
-                        "ATTACH CONNECTOR cassandra_connector TO cassandra_prod WITH OPTIONS {}",
-                        new CatalogName("test"));
 
-        ConnectorName connectorRef = new ConnectorName("connectorTest");
-        ClusterName clusterRef = new ClusterName("clusterTest");
-        Map<Selector, Selector> properties = new HashMap<>();
-        ConnectorAttachedMetadata connectorAttachedMetadata =
-                new ConnectorAttachedMetadata(connectorRef, clusterRef, properties);
+        // Check persistence of connector
+        ConnectorMetadata connectorMetadata= MetadataManager.MANAGER.getConnector(connectorName);
 
-        AttachConnectorStatement attachConnectorStatement =
-                new AttachConnectorStatement(new ConnectorName("connectorTest"), new ClusterName("clusterTest"), "{}");
-
-        MetadataParsedQuery metadataParsedQuery =
-                new MetadataParsedQuery(baseQuery, attachConnectorStatement);
-
-        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
-
-        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
-
-        Coordinator coordinator = new Coordinator();
-        coordinator.coordinate(plannedQuery);
+        assertEquals(connectorName, connectorMetadata.getName());
 
         // Check that changes persisted in the MetadataManager ("clusterTest" cluster)
-        clusterTest = MetadataManager.MANAGER.getCluster(new ClusterName("clusterTest"));
+        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
 
-        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefsTest =
-                clusterTest.getConnectorAttachedRefs();
+        assertEquals(clusterMetadata.getConnectorAttachedRefs().get(connectorName).getConnectorRef(),connectorName);
 
-        boolean found = false;
-
-        for (ConnectorName connectorNameTest : connectorAttachedRefsTest.keySet()) {
-            ConnectorAttachedMetadata connectorAttachedMetadataTest =
-                    connectorAttachedRefsTest.get(connectorNameTest);
-            if (connectorAttachedMetadataTest.getClusterRef().equals(new ClusterName("clusterTest"))) {
-                assertEquals(connectorAttachedMetadata.getClusterRef(), new ClusterName("clusterTest"),
-                        "Wrong attachment for connectorTest");
-                found = true;
-                break;
-            }
-        }
-        assertTrue(found, "Attachment not found");
     }
-
+/*
     // CREATE CATALOG
     @Test
     public void testCreateCatalogCheckName() throws Exception {

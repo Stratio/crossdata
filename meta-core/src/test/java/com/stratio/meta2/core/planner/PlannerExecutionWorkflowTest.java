@@ -126,8 +126,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.SELECT_WINDOW);
 
-        connectorName = createTestConnector("TestConnector1", dataStoreName, operationsC1, "actorRef1");
-        clusterName = createTestCluster("TestCluster1", dataStoreName, connectorName);
+        clusterName = createTestCluster("TestCluster1", dataStoreName);
+        connectorName = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), "actorRef1");
         CatalogName catalogName = createTestCatalog("demo");
         createTestTables();
     }
