@@ -36,7 +36,7 @@ public class ManifestTest {
         Manifest manifest = null;
         try {
             manifest = ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_DATASTORE,
-                    "meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml");
+                    getClass().getResourceAsStream("/meta/connector/DataStoreDefinition.xml"));
         } catch (ManifestException e) {
             fail("Manifest validation failed", e);
         }
@@ -89,7 +89,7 @@ public class ManifestTest {
         Manifest manifest = null;
         try {
             manifest = ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_CONNECTOR,
-                    "meta-common/src/main/resources/com/stratio/meta/connector/ConnectorDefinition.xml");
+                    getClass().getResourceAsStream("/meta/connector/ConnectorDefinition.xml"));
         } catch (ManifestException e) {
             fail("Manifest validation failed", e);
         }
