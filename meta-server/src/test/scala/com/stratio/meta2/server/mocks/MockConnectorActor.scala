@@ -24,9 +24,8 @@
 package com.stratio.connectors
 
 import akka.actor.{Actor, ActorLogging, Props}
-import akka.cluster.Cluster
-import akka.cluster.ClusterEvent._
-import com.stratio.meta.common.result.{ErrorResult, ErrorType, MetadataResult}
+import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta.common.result._
 import com.stratio.meta.communication._
 ;
 
@@ -42,47 +41,30 @@ object MockConnectorActor {
 
 
 class MockConnectorActor() extends Actor with ActorLogging {
+  var lastqueryid="wrongqueryid"
 
 
   // subscribe to cluster changes, re-subscribe when restart
 
   override def preStart(): Unit = {
     //#subscribe
-    Cluster(context.system).subscribe(self, classOf[MemberEvent])
+    //Cluster(context.system).subscribe(self, classOf[MemberEvent])
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
 
   override def receive = {
-
-    /*
-    case s: String=>
-       println("mock receiving string="+s)
-    case _: com.stratio.meta.communication.Start =>
-       println("start")
-     case connectRequest: com.stratio.meta.communication.Connect =>
-       println("connect")
-     case _: com.stratio.meta.communication.Shutdown =>
-       println("shutdown")
-     case MemberUp(member) =>
-       println("memberup")
-     case state: CurrentClusterState =>
-       println("currentclusterstate")
-     case UnreachableMember(member) =>
-       println("UnreachableMember")
-     case MemberRemoved(member, previousStatus) =>
-       println("MemverRemoved")
-     case _: MemberEvent =>
-       println("MemberEvent")
-       */
-
-    case ex:Execute=>{
-      println("execute")
-      val result=MetadataResult.createSuccessMetadataResult()
-      result.setQueryId(ex.queryId)
+    case (queryid:String,"updatemylastqueryId")=>{
+      lastqueryid=queryid
+    }
+    case lw:LogicalWorkflow=>{
+      println(">>>>>>>>>>>>>>>>>>>>>>> lw ")
+      val result=QueryResult.createSuccessQueryResult()
+      result.setQueryId(lastqueryid)
       sender ! result
     }
 
     case metadataOp: MetadataOperation => {
+      println(">>>>>>>>>>>>>>>>>>>>>>> metadataOp")
       val result=MetadataResult.createSuccessMetadataResult()
       val opclass=metadataOp.getClass().toString().split('.')
       opclass( opclass.length -1 ) match{
@@ -114,14 +96,20 @@ class MockConnectorActor() extends Actor with ActorLogging {
     }
 
     case msg: getConnectorName => {
+      println(">>>>>>>>>>>>>>>>>>>>>>> connectorName")
       println("getconnectorname")
        sender ! replyConnectorName("myConnector")
      }
 
-    case _=> {
-      println("non recogniced message")
+    case msg:Object=> {
+      val myclass=msg.getClass()
+      println(">>>>>>>>>>>>>>>>>>>>>>>other")
+      println("non recogniced message from "+sender )
       val err=new ErrorResult(ErrorType.EXECUTION,null)
       sender ! err
+    }
+    case _=>{
+      println(">>>>>>>>>>>>>>>>>>>>>>>other _")
     }
 
   }

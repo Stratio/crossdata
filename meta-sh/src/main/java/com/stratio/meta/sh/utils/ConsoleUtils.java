@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.ParseException;
@@ -293,7 +294,7 @@ public class ConsoleUtils {
         }
     }
 
-    public static Manifest parseFromXmlToManifest(int manifestType, String path) throws
+    public static Manifest parseFromXmlToManifest(int manifestType, InputStream path) throws
             ManifestException {
         if (manifestType == Manifest.TYPE_DATASTORE) {
             return parseFromXmlToDataStoreManifest(path);
@@ -302,7 +303,7 @@ public class ConsoleUtils {
         }
     }
 
-    private static DataStoreType parseFromXmlToDataStoreManifest(String path)
+    private static DataStoreType parseFromXmlToDataStoreManifest(InputStream path)
             throws ManifestException {
         try {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -314,14 +315,14 @@ public class ConsoleUtils {
             unmarshaller.setSchema(schema);
 
             JAXBElement<DataStoreType> unmarshalledDataStore = (JAXBElement<DataStoreType>) unmarshaller
-                    .unmarshal(new FileInputStream(path));
+                    .unmarshal(path);
             return unmarshalledDataStore.getValue();
-        } catch (JAXBException | SAXException | FileNotFoundException e) {
+        } catch (JAXBException | SAXException e ) {
             throw new ManifestException(e);
         }
     }
 
-    private static Manifest parseFromXmlToConnectorManifest(String path) throws ManifestException {
+    private static Manifest parseFromXmlToConnectorManifest(InputStream path) throws ManifestException {
         try {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             Schema schema = sf.newSchema(new File(CONNECTOR_SCHEMA_PATH));
@@ -332,9 +333,9 @@ public class ConsoleUtils {
             unmarshaller.setSchema(schema);
 
             JAXBElement<ConnectorType> unmarshalledDataStore = (JAXBElement<ConnectorType>) unmarshaller
-                    .unmarshal(new FileInputStream(path));
+                    .unmarshal(path);
             return unmarshalledDataStore.getValue();
-        } catch (JAXBException | SAXException | FileNotFoundException e) {
+        } catch (JAXBException | SAXException e) {
             throw new ManifestException(e);
         }
     }

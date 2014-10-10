@@ -93,4 +93,7 @@ public class PropertiesType implements Serializable {
         return this.property;
     }
 
+    public void setProperty(List<PropertyType> property) {
+        this.property = property;
+    }
 }

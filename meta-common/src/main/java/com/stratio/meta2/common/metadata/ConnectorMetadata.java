@@ -57,15 +57,15 @@ public class ConnectorMetadata implements IMetadata {
         this.name = name;
         this.version = version;
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
-        if(requiredProperties != null) {
+        if(requiredProperties != null){
             this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
-        }else{
-            this.requiredProperties=null;
+        } else {
+            this.requiredProperties = null;
         }
         if(optionalProperties != null){
             this.optionalProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties);
-        }else{
-            this.optionalProperties=null;
+        } else {
+            this.optionalProperties = null;
         }
         this.supportedOperations = ManifestHelper.convertManifestOperationsToMetadataOperations(supportedOperations);
         this.status = Status.OFFLINE;

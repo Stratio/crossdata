@@ -29,6 +29,7 @@ import com.stratio.meta.common.executionplan.ExecutionType;
 import com.stratio.meta.common.executionplan.ManagementWorkflow;
 import com.stratio.meta.common.executionplan.ResultType;
 import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
@@ -45,6 +46,9 @@ public class CoordinatorTest extends MetadataManagerTests {
 
         ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.ATTACH_CLUSTER,
                 ResultType.RESULTS);
+        workflow.setClusterName(new ClusterName("clusterTest"));
+        workflow.setConnectorName(new ConnectorName("myConnector"));
+        workflow.setDatastoreName(new DataStoreName("dataStoreTest"));
         Coordinator coordinator = new Coordinator();
         coordinator.executeManagementOperation(workflow.createManagementOperationMessage(""));
         // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)

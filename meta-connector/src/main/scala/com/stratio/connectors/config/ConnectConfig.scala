@@ -23,11 +23,9 @@ import java.io.File
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
 
-
 object ConnectConfig {
   val CONNECTOR_BASIC_CONFIG = "connector-reference.conf"
   val PARENT_CONFIG_NAME = "meta-connector"
-
 
   val CONNECTOR_CLUSTER_NAME_KEY = "config.cluster.name"
   val CONNECTOR_ACTOR_NAME_KEY = "config.cluster.actor"

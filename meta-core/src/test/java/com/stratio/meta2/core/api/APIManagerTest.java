@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.api;
+package com.stratio.meta2.core.api;
 
 import static org.testng.Assert.assertTrue;
 
@@ -29,21 +29,36 @@ import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.api.PropertiesType;
+import com.stratio.meta2.common.api.PropertyType;
 import com.stratio.meta2.common.api.datastore.DataStoreType;
-import com.stratio.meta2.core.api.APIManager;
+import com.stratio.meta2.core.metadata.MetadataManagerTests;
 
-public class APIManagerTest {
+public class APIManagerTest extends MetadataManagerTests{
 
     @Test
     public void testProcessRequest() throws Exception {
         APIManager apiMangager = new APIManager();
         List params = new ArrayList<DataStoreType>();
-        params.add(new DataStoreType());
+        DataStoreType dataStoreType = new DataStoreType();
+        dataStoreType.setName("CassandraDataStore");
+        dataStoreType.setVersion("1.0");
+
+        PropertiesType propertiesType = new PropertiesType();
+        PropertyType prop = new PropertyType();
+        prop.setPropertyName("DefaultLimit");
+        prop.setDescription("Description");
+        List<PropertyType> list=new ArrayList<>();
+        list.add(prop);
+        propertiesType.setProperty(list);
+        dataStoreType.setRequiredProperties(propertiesType);
+
+        params.add(dataStoreType);
         Command cmd = new Command(APICommand.ADD_MANIFEST(), params);
         Result result = apiMangager.processRequest(cmd);
         assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
         CommandResult cmdR = (CommandResult) result;
         String resultStr = (String) cmdR.getResult();
-        assertTrue(resultStr.equals("OK"), "testProcessRequest should return a 'OK'");
+        assertTrue(resultStr.equals("Manifest added."));
     }
 }

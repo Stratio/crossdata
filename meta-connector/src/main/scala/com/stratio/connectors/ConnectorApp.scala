@@ -26,8 +26,6 @@ import com.stratio.meta.communication.Shutdown
 import com.typesafe.config.ConfigFactory
 import org.apache.log4j.{BasicConfigurator, Logger}
 
-//import com.stratio.connector.cassandra.CassandraConnector
-
 object ConnectorApp extends ConnectorApp {
   def main(args: Array[String]): Unit = {
     BasicConfigurator.configure()
@@ -36,16 +34,18 @@ object ConnectorApp extends ConnectorApp {
     var connectortype: Option[String] = options.get(Symbol("connectortype"))
     var port: Option[String] = options.get(Symbol("port"))
     if (port == None) port = Some("2551")
-    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
+    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory
+      .parseString("akka.cluster.roles = [connector]")).withFallback(ConfigFactory.load())
     if (connectortype == None) connectortype = Some("cassandra")
-    val c = getConnector(connectortype.get.asInstanceOf[String])
-    startup(c, Seq(port.get.asInstanceOf[String]), config)
+    val c = getConnector(connectortype.get)
+    startup(c, Seq(port.get), config)
   }
 }
 
 class ConnectorApp extends ConnectConfig {
 
   type OptionMap = Map[Symbol, String]
+  println(">>>>>>>> TRACE: config = " + config.getValue("akka.remote.netty.tcp.port"))
   lazy val system = ActorSystem(clusterName, config)
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
   val usage = """Usage:
@@ -104,7 +104,8 @@ class ConnectorApp extends ConnectConfig {
 
   def startup(connector: IConnector, ports: Seq[String], config: com.typesafe.config.Config): ActorRef = {
     ports foreach { port =>
-      val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
+      val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory
+        .parseString("akka.cluster.roles = [connector]")).withFallback(ConfigFactory.load())
       actorClusterNode = system.actorOf(ConnectorActor.props(connector.getConnectorName(), connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor")
       actorClusterNode ! "I'm in!!!"
     }

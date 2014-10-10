@@ -53,21 +53,25 @@ public class ManifestHelper implements Serializable {
         sb.append("Version: ").append(dataStoreType.getVersion()).append(System.lineSeparator());
 
         // REQUIRED PROPERTIES
-        sb.append("Required properties: ").append(System.lineSeparator());
-        for(PropertyType propertyType: dataStoreType.getRequiredProperties().getProperty()){
-            sb.append("\t").append("Property: ").append(System.lineSeparator());
-            sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
-            sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
-                    .lineSeparator());
+        if(dataStoreType.getRequiredProperties() != null){
+            sb.append("Required properties: ").append(System.lineSeparator());
+            for(PropertyType propertyType: dataStoreType.getRequiredProperties().getProperty()){
+                sb.append("\t").append("Property: ").append(System.lineSeparator());
+                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
+                        .lineSeparator());
+            }
         }
 
         // OPTIONAL PROPERTIES
-        sb.append("Optional properties: ").append(System.lineSeparator());
-        for (PropertyType propertyType : dataStoreType.getOptionalProperties().getProperty()) {
-            sb.append("\t").append("Property: ").append(System.lineSeparator());
-            sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
-            sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
-                    .lineSeparator());
+        if(dataStoreType.getOptionalProperties() != null){
+            sb.append("Optional properties: ").append(System.lineSeparator());
+            for (PropertyType propertyType : dataStoreType.getOptionalProperties().getProperty()) {
+                sb.append("\t").append("Property: ").append(System.lineSeparator());
+                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
+                        .lineSeparator());
+            }
         }
 
         // BEHAVIORS
@@ -97,21 +101,25 @@ public class ManifestHelper implements Serializable {
         sb.append("Version: ").append(connectorType.getVersion()).append(System.lineSeparator());
 
         // REQUIRED PROPERTIES
-        sb.append("Required properties: ").append(System.lineSeparator());
-        for(PropertyType propertyType: connectorType.getRequiredProperties().getProperty()){
-            sb.append("\t").append("Property: ").append(System.lineSeparator());
-            sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
-            sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
-                    .lineSeparator());
+        if(connectorType.getRequiredProperties() != null){
+            sb.append("Required properties: ").append(System.lineSeparator());
+            for(PropertyType propertyType: connectorType.getRequiredProperties().getProperty()){
+                sb.append("\t").append("Property: ").append(System.lineSeparator());
+                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
+                        .lineSeparator());
+            }
         }
 
         // OPTIONAL PROPERTIES
-        sb.append("Optional properties: ").append(System.lineSeparator());
-        for (PropertyType propertyType : connectorType.getOptionalProperties().getProperty()) {
-            sb.append("\t").append("Property: ").append(System.lineSeparator());
-            sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
-            sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
-                    .lineSeparator());
+        if(connectorType.getOptionalProperties() != null){
+            sb.append("Optional properties: ").append(System.lineSeparator());
+            for (PropertyType propertyType : connectorType.getOptionalProperties().getProperty()) {
+                sb.append("\t").append("Property: ").append(System.lineSeparator());
+                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
+                        .lineSeparator());
+            }
         }
 
         // SUPPORTED OPERATIONS
@@ -148,5 +156,13 @@ public class ManifestHelper implements Serializable {
             operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
         }
         return operations;
+    }
+
+    public static Set<String> convertManifestBehaviorsToMetadataBehaviors(List<String> behaviors) {
+        Set<String> metadataBehaviors = new HashSet<>();
+        for(String behavior: behaviors){
+            metadataBehaviors.add(behavior);
+        }
+        return metadataBehaviors;
     }
 }

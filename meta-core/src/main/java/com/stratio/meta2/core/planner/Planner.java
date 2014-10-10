@@ -524,7 +524,6 @@ public class Planner {
      *                             Operations.
      */
     public void updateCandidates(TableName tableName, LogicalStep ls,
-
             Map<TableName, List<ConnectorMetadata>> candidatesConnectors) {
         /*Operations operations = ls.getOperation();
 
@@ -629,9 +628,6 @@ public class Planner {
         managementStatements.add(AttachClusterStatement.class.toString());
         managementStatements.add(AttachConnectorStatement.class.toString());
 
-        System.out.println(">>>>>>> TRACE: metadataStatement.getClass().toString() = " + metadataStatement.getClass()
-                .toString());
-
         if(metadataStatements.contains(metadataStatement.getClass().toString())){
             executionWorkflow = buildMetadataWorkflow(query);
         } else if(managementStatements.contains(metadataStatement.getClass().toString())) {
@@ -677,15 +673,25 @@ public class Planner {
             if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
                     createTableStatement.getClusterName())) {
                 executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
+
+                // Recover ActorRef from ConnectorMetadata
+                List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,
+                        createTableStatement.getClusterName());
+                actorRefUri = connectors.iterator().next().getActorRef();
+
+                // Create MetadataWorkFlow
                 metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
+
+                // Add CatalogMetadata to the WorkFlow
+
                 metadataWorkflow.setCatalogName(
                         createTableStatement.getTableName().getCatalogName());
                 metadataWorkflow
                         .setCatalogMetadata(MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName()
                                 .getCatalogName()));
+            } else {
+                metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
             }
-
-            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
             // Create & add TableMetadata to the MetadataWorkflow
             TableName name = createTableStatement.getTableName();
@@ -752,7 +758,7 @@ public class Planner {
         return managementWorkflow;
     }
 
-    protected boolean existsCatalogInCluster(CatalogName catalogName, ClusterName clusterName) {
+    private boolean existsCatalogInCluster(CatalogName catalogName, ClusterName clusterName) {
         CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalogName);
         Map<TableName, TableMetadata> tables = catalogMetadata.getTables();
         if (tables.isEmpty()) {
@@ -780,7 +786,7 @@ public class Planner {
         }
 
         TableMetadata tableMetadata=getTableMetadata(tableName);
-        ClusterMetadata clusterMetadata=getClusterMetadata( tableMetadata.getClusterRef());
+        ClusterMetadata clusterMetadata=getClusterMetadata(tableMetadata.getClusterRef());
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
                 .getConnectorAttachedRefs();
 

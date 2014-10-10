@@ -19,17 +19,17 @@
 import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
 
-import akka.actor.ActorSystem
 import akka.pattern.ask
 import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan.{ExecutionType, QueryWorkflow, ResultType}
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta.common.result.QueryResult
 import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.api.PropertyType
-import com.stratio.meta2.common.data.{CatalogName, ConnectorName, FirstLevelName}
+import com.stratio.meta2.common.data.{Status, CatalogName, ConnectorName, FirstLevelName}
 import com.stratio.meta2.common.metadata.{ConnectorMetadata, IMetadata}
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.ExecutionManager
@@ -50,23 +50,26 @@ import scala.concurrent.duration.DurationInt
 class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig {
   this: Suite =>
 
+  def incQueryId():String={ queryIdIncrement+=1;return queryId+queryIdIncrement}
+
 
   override lazy val logger = Logger.getLogger(classOf[CoordinatorActorTest])
-  lazy val system1 = ActorSystem(clusterName, config)
+  //lazy val system1 = ActorSystem(clusterName, config)
 
-  //val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(null), "ConnectorManagerActor")
-  val connectorManagerActor = system1.actorOf(MockConnectorManagerActor.props(), "ConnectorManagerActor")
-  val coordinatorActor = system1.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator),
+  val connectorManagerActor = system.actorOf(MockConnectorManagerActor.props(), "ConnectorManagerActor")
+  val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
     "CoordinatorActor")
-  val connectorActor = system1.actorOf(MockConnectorActor.props(), "ConnectorActor")
+  val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
 
-  val queryId = "query_id-2384234-1341234-23434"
+  var queryId = "query_id-2384234-1341234-23434"
+  var queryIdIncrement=0
   val catalogName = "testCatalog"
   val selectStatement:SelectStatement=null
-  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(queryId, "", new CatalogName(catalogName)),
+  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "",
+    new CatalogName(catalogName)),
     selectStatement)
   val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery);
-  val selectPlannedQuery = new SelectPlannedQuery(selectValidatedQuery, new QueryWorkflow(queryId,
+  val selectPlannedQuery = new SelectPlannedQuery(selectValidatedQuery, new QueryWorkflow(incQueryId(),
     StringUtils.getAkkaActorRefUri(connectorActor),
     ExecutionType.SELECT, ResultType.RESULTS, new LogicalWorkflow(null)));
 
@@ -80,12 +83,14 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
     val lockExecution:Lock  = grid.lock("myExecutionData")
     val tmExecution:TransactionManager = grid.transactionManager("myExecutionData")
     ExecutionManager.MANAGER.init(executionMap, lockExecution, tmExecution)
+    ExecutionManager.MANAGER.clear()
 
     val metadataMap = grid.map("myMetadata").asInstanceOf[java.util.Map[FirstLevelName,IMetadata]]
     val lock:Lock  = grid.lock("myMetadata")
     val tm = grid.transactionManager("myMetadata")
     MetadataManager.MANAGER.init(metadataMap,lock,tm.asInstanceOf[javax.transaction.TransactionManager])
     MetadataManager.MANAGER.clear()
+    println ("connectorActor="+connectorActor)
     val future=connectorActor ? getConnectorName()
     val connectorName= Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
     val dataStoreRefs = new java.util.ArrayList[String]().asInstanceOf[java.util.List[String]]
@@ -102,24 +107,23 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
     )
 
     MetadataManager.MANAGER.createConnector( connectorMetadata )
-    //MetadataManager.MANAGER.addConnectorRef(new ConnectorName(connectorName.name),
-      //StringUtils.getAkkaActorRefUri(connectorActor))
-    //MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName),Status.ONLINE)
+    MetadataManager.MANAGER.addConnectorRef(new ConnectorName(connectorName.name),
+      StringUtils.getAkkaActorRefUri(connectorActor))
+    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name),Status.ONLINE)
   }
 
   test("Should return a KO message") {
     initialize()
     within(1000 millis) {
-      val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
-        "CoordinatorActor")
       coordinatorActor ! "anything; this doesn't make any sense"
       val exception=expectMsgType[ExecutionException]
     }
   }
   test("Select query") {
     initialize()
+    connectorActor ! (queryId+(1),"updatemylastqueryId")
     coordinatorActor ! selectPlannedQuery
-    expectMsg("Ok") // bounded to 1 second
+    expectMsgType[QueryResult]
     /*
     val pq= new SelectPlannedQuery(null,null)
     expectMsg("Ok") // bounded to 1 second
