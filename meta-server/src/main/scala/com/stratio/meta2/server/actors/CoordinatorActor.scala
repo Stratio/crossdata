@@ -68,11 +68,12 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           val queryId = plannedQuery.getQueryId
           executionInfo.setWorkflow(workflow)
-          if(workflow.getActorRef != null){
+          if(workflow.getActorRef() != null && workflow.getActorRef().length()>0){
+            val actorRef=context.actorSelection(workflow.getActorRef())
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
-            workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.createMetadataOperationMessage(queryId)
+            actorRef ! workflow.createMetadataOperationMessage(queryId)
             sender ! ACK(queryId, QueryStatus.EXECUTED)
           } else {
             executionInfo.setQueryStatus(QueryStatus.PLANNED)
@@ -88,7 +89,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setWorkflow(workflow)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
-          workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.getStorageOperation(queryId)
+          val actorRef=context.actorSelection(workflow.getActorRef())
+          actorRef ! workflow.getStorageOperation(queryId)
         }
 
         case workflow: ManagementWorkflow => {
