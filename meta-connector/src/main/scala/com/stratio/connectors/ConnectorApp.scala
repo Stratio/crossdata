@@ -34,8 +34,8 @@ object ConnectorApp extends ConnectorApp {
     var connectortype: Option[String] = options.get(Symbol("connectortype"))
     var port: Option[String] = options.get(Symbol("port"))
     if (port == None) port = Some("2551")
-    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory
-      .parseString("akka.cluster.roles = [connector]")).withFallback(ConfigFactory.load())
+    //val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory
+    //  .parseString("akka.cluster.roles = [connector]")).withFallback(ConfigFactory.load())
     if (connectortype == None) connectortype = Some("cassandra")
     val c = getConnector(connectortype.get)
     startup(c, Seq(port.get), config)
@@ -46,6 +46,7 @@ class ConnectorApp extends ConnectConfig {
 
   type OptionMap = Map[Symbol, String]
   println(">>>>>>>> TRACE: config = " + config.getValue("akka.remote.netty.tcp.port"))
+  println(">>>>>>>> TRACE: roles = " + config.getValue("akka.cluster.roles"))
   lazy val system = ActorSystem(clusterName, config)
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
   val usage = """Usage:
@@ -104,8 +105,8 @@ class ConnectorApp extends ConnectConfig {
 
   def startup(connector: IConnector, ports: Seq[String], config: com.typesafe.config.Config): ActorRef = {
     ports foreach { port =>
-      val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory
-        .parseString("akka.cluster.roles = [connector]")).withFallback(ConfigFactory.load())
+//      val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory
+//        .parseString("akka.cluster.roles = [connector]")).withFallback(ConfigFactory.load())
       actorClusterNode = system.actorOf(ConnectorActor.props(connector.getConnectorName(), connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor")
       actorClusterNode ! "I'm in!!!"
     }

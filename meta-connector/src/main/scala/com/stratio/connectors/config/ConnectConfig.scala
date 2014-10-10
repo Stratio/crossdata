@@ -74,6 +74,8 @@ trait ConnectConfig {
       }
     }
 
+    //defaultConfig = defaultConfig.withFallback(
+    //  ConfigFactory.parseString("akka.cluster.roles = [connector]"))
     ConfigFactory.load(defaultConfig)
   }
 

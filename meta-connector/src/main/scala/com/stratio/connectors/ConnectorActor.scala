@@ -202,6 +202,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
 
     case msg: getConnectorName => {
+      log.info(sender + " asked for my name")
       sender ! replyConnectorName(connectorName)
     }
 

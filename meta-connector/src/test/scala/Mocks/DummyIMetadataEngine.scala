@@ -23,9 +23,6 @@ import com.stratio.meta.common.result.QueryResult
 import com.stratio.meta2.common.data.{CatalogName, ClusterName, TableName}
 import com.stratio.meta2.common.metadata.{CatalogMetadata, IndexMetadata, TableMetadata}
 
-/**
- * Created by carlos on 6/10/14.
- */
 class DummyIMetadataEngine extends IMetadataEngine{
   override def createCatalog(targetCluster: ClusterName, catalogMetadata: CatalogMetadata): Unit = null
 

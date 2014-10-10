@@ -22,9 +22,6 @@ import com.stratio.meta.common.connector._
 import com.stratio.meta.common.security.ICredentials
 import com.stratio.meta2.common.data.ClusterName
 
-/**
- * Created by carlos on 6/10/14.
- */
 class DummyIConnector extends IConnector{
   override def getConnectorName: String = "myDummyConnector"
   override def getDatastoreName: Array[String] = null
