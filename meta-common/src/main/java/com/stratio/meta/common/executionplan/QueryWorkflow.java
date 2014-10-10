@@ -42,7 +42,7 @@ public class QueryWorkflow extends ExecutionWorkflow {
      * @param type          Type of results.
      * @param workflow      The logical workflow.
      */
-    public QueryWorkflow(String queryId, Serializable actorRef, ExecutionType executionType,
+    public QueryWorkflow(String queryId, String actorRef, ExecutionType executionType,
             ResultType type, LogicalWorkflow workflow) {
         super(queryId, actorRef, executionType, type);
         this.workflow = workflow;
@@ -52,4 +52,13 @@ public class QueryWorkflow extends ExecutionWorkflow {
         return workflow;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(super.toString());
+        sb.append(System.lineSeparator()).append(workflow);
+        if(getNextExecutionWorkflow() != null){
+            sb.append(System.lineSeparator()).append("TRIGGERS ").append(getNextExecutionWorkflow().toString());
+        }
+        return sb.toString();
+    }
 }

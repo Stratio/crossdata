@@ -49,7 +49,7 @@ public class StorageWorkflow extends ExecutionWorkflow{
      * @param executionType Type of execution.
      * @param type          Type of results.
      */
-    public StorageWorkflow(String queryId, Serializable actorRef, ExecutionType executionType,
+    public StorageWorkflow(String queryId, String actorRef, ExecutionType executionType,
             ResultType type) {
         super(queryId, actorRef, executionType, type);
     }
@@ -82,5 +82,21 @@ public class StorageWorkflow extends ExecutionWorkflow{
             result = new InsertBatch(queryId, this.clusterName, this.tableMetadata, this.rows);
         }
         return result;
+    }
+
+    public ClusterName getClusterName() {
+        return clusterName;
+    }
+
+    public TableMetadata getTableMetadata() {
+        return tableMetadata;
+    }
+
+    public Row getRow() {
+        return row;
+    }
+
+    public Collection<Row> getRows() {
+        return rows;
     }
 }

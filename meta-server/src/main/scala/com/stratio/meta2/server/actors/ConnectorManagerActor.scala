@@ -21,6 +21,7 @@ package com.stratio.meta2.server.actors
 import akka.actor._
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
+import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication._
 import com.stratio.meta2.common.data.ConnectorName
 import com.stratio.meta2.core.connector.ConnectorManager
@@ -72,7 +73,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
      */
     case msg: replyConnectorName => {
       val connectorRef = sender;
-      MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name), connectorRef)
+      MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name), StringUtils.getAkkaActorRefUri(connectorRef))
     }
 
       /*
