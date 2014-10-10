@@ -46,12 +46,12 @@ import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
-import com.stratio.meta2.common.metadata.ColumnMetadata;
 
 public enum MetadataManager {
     MANAGER;
@@ -358,28 +358,26 @@ public enum MetadataManager {
      */
     public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
             List<TableName> tables) {
-
         Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
-
         List<ConnectorMetadata> connectors;
         for (TableName table: tables) {
-
-            ClusterName clusterName = getTable(table).getClusterRef();
-
-            Set<ConnectorName> connectorNames = getCluster(clusterName)
-                    .getConnectorAttachedRefs().keySet();
-
-            connectors = new ArrayList<>();
-            for (ConnectorName connectorName: connectorNames) {
-                ConnectorMetadata connectorMetadata = getConnector(connectorName);
-                if (connectorMetadata.getStatus() == connectorStatus) {
-                    connectors.add(connectorMetadata);
-                }
-            }
-
+            connectors = getAttachedConnectors(connectorStatus, getTable(table).getClusterRef());
             result.put(table, connectors);
         }
         return result;
+    }
+
+    public List<ConnectorMetadata> getAttachedConnectors(Status status, ClusterName clusterName) {
+        List<ConnectorMetadata> connectors = new ArrayList<>();
+        Set<ConnectorName> connectorNames = getCluster(clusterName)
+                .getConnectorAttachedRefs().keySet();
+        for (ConnectorName connectorName: connectorNames) {
+            ConnectorMetadata connectorMetadata = getConnector(connectorName);
+            if (connectorMetadata.getStatus() == status) {
+                connectors.add(connectorMetadata);
+            }
+        }
+        return connectors;
     }
 
     public ColumnMetadata getColumn(ColumnName name) {
