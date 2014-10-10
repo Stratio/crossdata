@@ -50,6 +50,8 @@ import scala.concurrent.duration.DurationInt
 class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig {
   this: Suite =>
 
+  def incQueryId():String={ queryIdIncrement+=1;return queryId+queryIdIncrement}
+
 
   override lazy val logger = Logger.getLogger(classOf[CoordinatorActorTest])
   lazy val system1 = ActorSystem(clusterName, config)
@@ -60,13 +62,15 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
     "CoordinatorActor")
   val connectorActor = system1.actorOf(MockConnectorActor.props(), "ConnectorActor")
 
-  val queryId = "query_id-2384234-1341234-23434"
+  var queryId = "query_id-2384234-1341234-23434"
+  var queryIdIncrement=0
   val catalogName = "testCatalog"
   val selectStatement:SelectStatement=null
-  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(queryId, "", new CatalogName(catalogName)),
+  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "",
+    new CatalogName(catalogName)),
     selectStatement)
   val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery);
-  val selectPlannedQuery = new SelectPlannedQuery(selectValidatedQuery, new QueryWorkflow(queryId,
+  val selectPlannedQuery = new SelectPlannedQuery(selectValidatedQuery, new QueryWorkflow(incQueryId(),
     StringUtils.getAkkaActorRefUri(connectorActor),
     ExecutionType.SELECT, ResultType.RESULTS, new LogicalWorkflow(null)));
 
