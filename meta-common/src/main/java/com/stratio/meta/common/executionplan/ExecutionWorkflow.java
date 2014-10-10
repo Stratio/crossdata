@@ -127,4 +127,11 @@ public class ExecutionWorkflow implements Serializable {
     public void setActorRef(String actorRef) {
         this.actorRef = actorRef;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Execution Workflow from ");
+        sb.append(executionType).append(" returns ").append(resultType);
+        return sb.toString();
+    }
 }

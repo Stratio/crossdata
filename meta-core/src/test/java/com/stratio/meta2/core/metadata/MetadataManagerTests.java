@@ -95,7 +95,7 @@ public class MetadataManagerTests {
         //DataStoreName name, String version, List<PropertyType> requiredProperties, List<PropertyType> othersProperties
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(
                 dataStoreName, version,
-                requiredProperties, otherProperties);
+                requiredProperties, otherProperties, null);
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
         return dataStoreMetadata;
     }

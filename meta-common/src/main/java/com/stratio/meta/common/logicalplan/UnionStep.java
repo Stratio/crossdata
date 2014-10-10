@@ -46,6 +46,10 @@ public class UnionStep extends LogicalStep {
         this.previousSteps.addAll(Arrays.asList(previous));
     }
 
+    public void removePreviousStep(LogicalStep previous){
+        this.previousSteps.remove(previous);
+    }
+
     @Override
     public List<LogicalStep> getPreviousSteps() {
         return previousSteps;

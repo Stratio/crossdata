@@ -73,16 +73,19 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
-            actorRef ! workflow.createMetadataOperationMessage(queryId)
-            sender ! ACK(queryId, QueryStatus.EXECUTED)
-          } else {
+            workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.createMetadataOperationMessage(queryId)
+          } else if(workflow.getExecutionType==ExecutionType.CREATE_CATALOG || workflow
+            .getExecutionType==ExecutionType.CREATE_TABLE_AND_CATALOG) {
+            coordinator.persistCreateCatalog(workflow.getCatalogMetadata)
             executionInfo.setQueryStatus(QueryStatus.PLANNED)
             ExecutionManager.MANAGER.createEntry(workflow.getCatalogMetadata.getName.toString, queryId)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
+            sender ! ACK(queryId, QueryStatus.EXECUTED)
           }
         }
 
         case workflow: StorageWorkflow => {
+          log.debug("CoordinatorActor: StorageWorkflow received")
           val queryId = plannedQuery.getQueryId
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
@@ -94,12 +97,15 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         }
 
         case workflow: ManagementWorkflow => {
+          log.debug("CoordinatorActor: ManagementWorkflow received")
+          val requestSender = sender
           log.info(">>>>>> TRACE: ManagementWorkflow ")
           val queryId = plannedQuery.getQueryId
           sender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage(queryId))
         }
 
         case workflow: QueryWorkflow => {
+          log.debug("CoordinatorActor: QueryWorkflow received")
           val queryId = plannedQuery.getQueryId
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
@@ -114,7 +120,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           }
         }
         case _ =>{
-          println("non recognized workflow")
+          log.error("non recognized workflow")
         }
       }
     }

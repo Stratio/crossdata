@@ -453,7 +453,7 @@ public class Metash {
         println("Result: " + ConsoleUtils.stringResult(metaResult));
         println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
 
-        return manifest.toString();
+        return "OK";
     }
 
     /**

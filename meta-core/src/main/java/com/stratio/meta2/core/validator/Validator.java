@@ -361,38 +361,26 @@ public class Validator {
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
             name = alterCatalogStatement.getCatalogName();
-        }
-
-        if (stmt instanceof CreateCatalogStatement) {
+        } else if (stmt instanceof CreateCatalogStatement) {
             CreateCatalogStatement createCatalogStatement = (CreateCatalogStatement) stmt;
             hasIfExists = createCatalogStatement.isIfNotExists();
             name = createCatalogStatement.getCatalogName();
-        }
-
-        if (stmt instanceof DropCatalogStatement) {
+        } else if (stmt instanceof DropCatalogStatement) {
             DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) stmt;
             hasIfExists = dropCatalogStatement.isIfExists();
             name = dropCatalogStatement.getCatalogName();
-        }
-
-        if (stmt instanceof CreateTableStatement) {
+        } else if (stmt instanceof CreateTableStatement) {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
             name = createTableStatement.getEffectiveCatalog();
             hasIfExists = createTableStatement.isIfNotExists();
-        }
-
-        if (stmt instanceof DescribeStatement) {
+        } else if (stmt instanceof DescribeStatement) {
             DescribeStatement describeStatement = (DescribeStatement) stmt;
             name = describeStatement.getEffectiveCatalog();
-        }
-
-        if (stmt instanceof DropTableStatement) {
+        } else if (stmt instanceof DropTableStatement) {
             DropTableStatement dropTableStatement = (DropTableStatement) stmt;
             name = dropTableStatement.getCatalogName();
             hasIfExists = dropTableStatement.isIfExists();
-        }
-
-        if (stmt instanceof InsertIntoStatement) {
+        } else if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
             name = insertIntoStatement.getCatalogName();
             hasIfExists = insertIntoStatement.isIfNotExists();

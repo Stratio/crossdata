@@ -16,23 +16,37 @@
  * under the License.
  */
 
-package com.stratio.meta2.core.planner;
+package com.stratio.meta.common.logicalplan;
 
-import java.util.List;
-
-import com.stratio.meta.common.exceptions.PlanningException;
-import com.stratio.meta.common.executionplan.ExecutionPath;
-import com.stratio.meta.common.logicalplan.LogicalStep;
-import com.stratio.meta2.common.metadata.ConnectorMetadata;
+import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.data.ResultSet;
 
 /**
- * Planner wrapper to test protected methods
+ * Logical step to represent the movement of partial results between different connectors.
  */
-public class PlannerWrapper extends Planner{
+public class PartialResults extends TransformationStep{
+
+    private ResultSet results = null;
+
+    /**
+     * Class constructor.
+     *
+     * @param operation The operation to be applied.
+     */
+    public PartialResults(Operations operation) {
+        super(operation);
+    }
+
+    public void setResults(ResultSet results) {
+        this.results = results;
+    }
+
+    public ResultSet getResults() {
+        return results;
+    }
 
     @Override
-    public ExecutionPath defineExecutionPath(LogicalStep initial,
-            List<ConnectorMetadata> availableConnectors) throws PlanningException{
-        return super.defineExecutionPath(initial, availableConnectors);
+    public String toString() {
+        return "PARTIAL RESULTS";
     }
 }

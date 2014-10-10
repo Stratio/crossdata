@@ -33,23 +33,38 @@ public class DataStoreMetadata implements IMetadata {
     private final String version;
     private final Set<PropertyType> requiredProperties;
     private final Set<PropertyType> othersProperties;
+    private final Set<String> behaviors;
     private Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
 
     public DataStoreMetadata(DataStoreName name, String version, Set<PropertyType> requiredProperties,
-            Set<PropertyType> othersProperties) {
+            Set<PropertyType> othersProperties, Set<String> behaviors) {
         this.name = name;
         this.version = version;
         this.requiredProperties = requiredProperties;
         this.othersProperties = othersProperties;
+        this.behaviors = behaviors;
         this.clusterAttachedRefs = new HashMap<>();
     }
 
     public DataStoreMetadata(DataStoreName name, String version, List<PropertyType> requiredProperties,
-            List<PropertyType> othersProperties) {
+            List<PropertyType> othersProperties, List<String> behaviors) {
         this.name = name;
         this.version = version;
-        this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
-        this.othersProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(othersProperties);
+        if(requiredProperties != null){
+            this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
+        } else {
+            this.requiredProperties = null;
+        }
+        if(othersProperties != null){
+            this.othersProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(othersProperties);
+        } else {
+            this.othersProperties = null;
+        }
+        if(behaviors != null){
+            this.behaviors = ManifestHelper.convertManifestBehaviorsToMetadataBehaviors(behaviors);
+        } else {
+            this.behaviors = null;
+        }
         this.clusterAttachedRefs = new HashMap<>();
     }
 
@@ -73,6 +88,10 @@ public class DataStoreMetadata implements IMetadata {
         return clusterAttachedRefs;
     }
 
+    public Set<String> getBehaviors() {
+        return behaviors;
+    }
+
     public void setClusterAttachedRefs(
             Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs) {
         this.clusterAttachedRefs = clusterAttachedRefs;
@@ -84,6 +103,7 @@ public class DataStoreMetadata implements IMetadata {
                 ", version='" + version + '\'' +
                 ", requiredProperties=" + requiredProperties +
                 ", othersProperties=" + othersProperties +
+                ", behaviors=" + behaviors +
                 ", clusterAttachedRefs=" + clusterAttachedRefs +
                 '}';
     }

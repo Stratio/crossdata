@@ -134,7 +134,7 @@ public class BasicValidatorTest {
 
     private static DataStoreMetadata createDataStoreMetadata() {
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(new DataStoreName("Cassandra"), "1.0",
-                new HashSet<PropertyType>(), new HashSet<PropertyType>());
+                new HashSet<PropertyType>(), new HashSet<PropertyType>(), null);
         return dataStoreMetadata;
     }
 
