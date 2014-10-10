@@ -24,9 +24,8 @@
 package com.stratio.connectors
 
 import akka.actor.{Actor, ActorLogging, Props}
-import com.stratio.meta.common.executionplan.QueryWorkflow
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
-import com.stratio.meta.common.result.{ErrorResult, ErrorType, MetadataResult}
+import com.stratio.meta.common.result._
 import com.stratio.meta.communication._
 ;
 
@@ -42,6 +41,7 @@ object MockConnectorActor {
 
 
 class MockConnectorActor() extends Actor with ActorLogging {
+  var lastqueryid="wrongqueryid"
 
 
   // subscribe to cluster changes, re-subscribe when restart
@@ -53,21 +53,13 @@ class MockConnectorActor() extends Actor with ActorLogging {
   }
 
   override def receive = {
-
+    case (queryid:String,"updatemylastqueryId")=>{
+      lastqueryid=queryid
+    }
     case lw:LogicalWorkflow=>{
       println(">>>>>>>>>>>>>>>>>>>>>>> lw ")
-      sender ! "ok"
-    }
-    case qw:QueryWorkflow=>{
-      println(">>>>>>>>>>>>>>>>>>>>>>> qw")
-      sender ! "ok"
-    }
-
-    case ex:Execute=>{
-      println(">>>>>>>>>>>>>>>>>>>>>>> ex")
-      println("execute")
-      val result=MetadataResult.createSuccessMetadataResult()
-      result.setQueryId(ex.queryId)
+      val result=QueryResult.createSuccessQueryResult()
+      result.setQueryId(lastqueryid)
       sender ! result
     }
 

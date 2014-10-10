@@ -157,7 +157,7 @@ public class StringUtils {
     }
 
     public static String getAkkaActorRefUri(Object object){
-            return object.toString().replace("Actor[","").replace("]","");
+            return object.toString().replace("Actor[","").replace("]","").split("#")[0];
     }
 
 }

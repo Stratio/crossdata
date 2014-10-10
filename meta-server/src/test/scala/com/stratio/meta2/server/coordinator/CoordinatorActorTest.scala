@@ -24,6 +24,7 @@ import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan.{ExecutionType, QueryWorkflow, ResultType}
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta.common.result.QueryResult
 import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
@@ -89,6 +90,7 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
     val tm = grid.transactionManager("myMetadata")
     MetadataManager.MANAGER.init(metadataMap,lock,tm.asInstanceOf[javax.transaction.TransactionManager])
     MetadataManager.MANAGER.clear()
+    println ("connectorActor="+connectorActor)
     val future=connectorActor ? getConnectorName()
     val connectorName= Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
     val dataStoreRefs = new java.util.ArrayList[String]().asInstanceOf[java.util.List[String]]
@@ -119,8 +121,9 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
   }
   test("Select query") {
     initialize()
+    connectorActor ! (queryId+(1),"updatemylastqueryId")
     coordinatorActor ! selectPlannedQuery
-    expectMsg("Ok") // bounded to 1 second
+    expectMsgType[QueryResult]
     /*
     val pq= new SelectPlannedQuery(null,null)
     expectMsg("Ok") // bounded to 1 second
