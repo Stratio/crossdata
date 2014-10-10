@@ -18,6 +18,7 @@
 
 package com.stratio.meta.common.executionplan;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.stratio.meta.common.logicalplan.LogicalStep;
@@ -30,7 +31,7 @@ public class ExecutionPath {
 
     private final LogicalStep initial;
 
-    private final LogicalStep last;
+    private LogicalStep last;
 
     private final List<ConnectorMetadata> availableConnectors;
 
@@ -50,5 +51,25 @@ public class ExecutionPath {
 
     public List<ConnectorMetadata> getAvailableConnectors() {
         return availableConnectors;
+    }
+
+    public void setLast(LogicalStep last) {
+        this.last = last;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Execution path with connectors [");
+        for(ConnectorMetadata m : availableConnectors){
+            sb.append(m.getName()).append(", ");
+        }
+        sb.append("]");
+        LogicalStep pointer = initial;
+        do{
+            sb.append(last).append(System.lineSeparator());
+            pointer = pointer.getNextStep();
+        }while(pointer != last);
+
+        return sb.toString();
     }
 }
