@@ -83,6 +83,13 @@ public enum ExecutionManager {
             throw new NullPointerException("Any parameter can't be NULL");
         }
     }
+    public synchronized void clear()
+            throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException,
+            RollbackException {
+        beginTransaction();
+        executionData.clear();
+        commitTransaction();
+    }
 
     public void createEntry(String key, Serializable value) {
         createEntry(key, value, false);

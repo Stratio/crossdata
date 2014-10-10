@@ -112,8 +112,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setWorkflow(workflow)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if(ResultType.RESULTS.equals(workflow.getResultType)){
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo) //TODO: FIX THIS
-            context.actorSelection(workflow.getActorRef()) ! workflow.getWorkflow
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
+            val connectorSelection=context.actorSelection(StringUtils.getAkkaActorRefUri(workflow.getActorRef()))
+            connectorSelection ! workflow.getWorkflow()
           }else if(ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)){
             //TODO Trigger next step execution.
             throw new UnsupportedOperationException("Trigger execution not supported")
@@ -129,12 +130,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       val queryId = result.getQueryId
       println("receiving result from "+sender+"; queryId="+queryId)
       val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
-      val clientActor = executionInfo.asInstanceOf[ExecutionInfo].getSender
+      val clientActor = context.actorSelection(StringUtils.getAkkaActorRefUri(executionInfo
+        .asInstanceOf[ExecutionInfo].getSender))
       if(executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess){
         coordinator.persist(executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.asInstanceOf[MetadataWorkflow ])
         ExecutionManager.MANAGER.deleteEntry(queryId)
       }
-      clientActor.asInstanceOf[ActorRef] ! result
+      clientActor ! result
     }
 
     case ctc: ConnectToConnector =>
