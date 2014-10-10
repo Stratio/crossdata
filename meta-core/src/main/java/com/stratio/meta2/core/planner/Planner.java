@@ -228,17 +228,26 @@ public class Planner {
         List<ConnectorMetadata> toRemove = new ArrayList<>();
         List<ConnectorMetadata> mergeConnectors = new ArrayList<>();
 
-        Map<PartialResults, ExecutionWorkflow> triggers = new HashMap<>();
+        Map<PartialResults, ExecutionWorkflow> triggerResults = new HashMap<>();
+        Map<UnionStep, ExecutionWorkflow> triggerWorkflow = new HashMap<>();
         List<ExecutionWorkflow> workflows = new ArrayList<>();
         UnionStep nextUnion = null;
         QueryWorkflow first = null;
 
+        List<ExecutionPath> toMerge = new ArrayList<>(2);
+
+        boolean [] intermediateResults = new boolean[2];
         boolean exit = false;
         while(!exit){
             //Check whether the list of connectors found in the Execution paths being merged can execute the join
             //operation
 
+            intermediateResults[0] = false;
+            intermediateResults[1] = false;
+            mergeConnectors.clear();
+            toMerge.clear();
             for(int index = 0; index < paths.length; index++) {
+                toRemove.clear();
                 for (ConnectorMetadata connector : paths[index].getAvailableConnectors()) {
                     if (!connector.supports(mergeStep.getOperation())) {
                         toRemove.add(connector);
@@ -250,23 +259,57 @@ public class Planner {
                     PartialResults partialResults = new PartialResults(Operations.PARTIAL_RESULTS);
                     partialResults.setNextStep(mergeStep);
                     mergeStep.addPreviousSteps(partialResults);
-                    mergeStep.removePreviousStep(paths[0].getLast());
+                    mergeStep.removePreviousStep(paths[index].getLast());
+                    paths[index].getLast().setNextStep(null);
                     //Create a trigger execution workflow with the partial results step.
                     ExecutionWorkflow w = toExecutionWorkflow(
-                            queryId, Arrays.asList(paths[0]),
-                            paths[0].getLast(), paths[0].getAvailableConnectors(),
+                            queryId, Arrays.asList(paths[index]),
+                            paths[index].getLast(), paths[index].getAvailableConnectors(),
                             ResultType.TRIGGER_EXECUTION);
                     w.setTriggerStep(partialResults);
 
-                    triggers.put(partialResults, null);
+                    triggerResults.put(partialResults, w);
+
                     workflows.add(w);
+                    intermediateResults[index] = true;
+                    LOG.info("Trigger workflow at index " + index + " workflow: " + w);
+                    if(first == null){
+                        first = QueryWorkflow.class.cast(w);
+                    }
                 } else {
-                    paths[0].getAvailableConnectors().removeAll(toRemove);
+                    paths[index].getAvailableConnectors().removeAll(toRemove);
+                    //Add to the list of mergeConnectors.
+                    mergeConnectors.addAll(paths[index].getAvailableConnectors());
+                    toMerge.add(paths[index]);
                 }
 
-                mergeConnectors.addAll(paths[0].getAvailableConnectors());
             }
             unionSteps.remove(mergeStep);
+            LOG.info("Merge step: " + mergeStep
+                    + " intermediate: " + Arrays.toString(intermediateResults)
+                    + " mergeConnectors: " + mergeConnectors);
+
+            ExecutionPath next = defineExecutionPath(mergeStep, mergeConnectors);
+            LOG.info("Next execution path: " + next);
+
+            if(Select.class.isInstance(next.getLast())){
+                exit = true;
+
+                ExecutionWorkflow mergeWorkflow = extendExecutionWorkflow(
+                        queryId, toMerge, next, ResultType.RESULTS);
+                triggerWorkflow.put(mergeStep, mergeWorkflow);
+                LOG.info("Next path finishes in Select: " + mergeWorkflow);
+                if(first == null){
+                    first = QueryWorkflow.class.cast(mergeWorkflow);
+                }
+            }else{
+                Set<ExecutionPath> existingPaths = unionSteps.get(next.getLast());
+                if(executionPaths == null){
+                    existingPaths = new HashSet<>();
+                }
+                executionPaths.add(next);
+                unionSteps.put(UnionStep.class.cast(next.getLast()), existingPaths);
+            }
 
             if(unionSteps.isEmpty()){
                 exit = true;
@@ -277,30 +320,30 @@ public class Planner {
             }
         }
 
-        //Build the list of ExecutionWorkflows
-        //String queryId, Serializable actorRef, ExecutionType executionType, ResultType type
-        return buildExecutionTree(first, workflows, triggers);
+        LOG.info("==================================================================");
+        LOG.info("==================================================================");
+        return buildExecutionTree(first, triggerResults, triggerWorkflow);
     }
 
     /**
      * Build the tree of linked execution workflows.
      * @param first The first workflow of the list.
-     * @param workflows The list of execution workflows involved.
-     * @param triggers The map of triggering steps.
+     * @param triggerResults The map of triggering steps.
+     * @param triggerWorkflows The map of workflows associated with merge steps.
      * @return A {@link com.stratio.meta.common.executionplan.ExecutionWorkflow}.
      */
     public ExecutionWorkflow buildExecutionTree(
             QueryWorkflow first,
-            List<ExecutionWorkflow> workflows,
-            Map<PartialResults,
-            ExecutionWorkflow> triggers){
+            Map<PartialResults, ExecutionWorkflow> triggerResults,
+            Map<UnionStep, ExecutionWorkflow> triggerWorkflows){
 
         LogicalStep triggerStep = first.getTriggerStep();
         ExecutionWorkflow workflow = first;
 
-        while(!triggers.isEmpty()){
-            workflow.setNextExecutionWorkflow(triggers.get(triggerStep));
-            triggers.remove(triggerStep);
+        while(!triggerResults.isEmpty()){
+            LOG.info("Link workflow: " + workflow + " using " + triggerStep + " linked with " + triggerStep.getNextStep());
+            workflow.setNextExecutionWorkflow(triggerWorkflows.get(triggerStep.getNextStep()));
+            triggerResults.remove(triggerStep);
             workflow = workflow.getNextExecutionWorkflow();
             triggerStep = workflow.getTriggerStep();
         }
@@ -332,6 +375,27 @@ public class Planner {
         //Select an actor
         //TODO Improve actor selection based on cost analysis.
         String selectedActorUri = StringUtils.getAkkaActorRefUri(connectors.get(0).getActorRef());
+        return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
+    }
+
+    protected QueryWorkflow extendExecutionWorkflow(
+            String queryId,
+            List<ExecutionPath> executionPaths,
+            ExecutionPath mergePath,
+            ResultType type){
+
+        //Define the list of initial steps.
+        List<LogicalStep> initialSteps = new ArrayList<>(executionPaths.size());
+        for(ExecutionPath path : executionPaths){
+            initialSteps.add(path.getInitial());
+            path.getLast().setNextStep(mergePath.getInitial());
+        }
+
+        LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
+
+        //Select an actor
+        //TODO Improve actor selection based on cost analysis.
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(mergePath.getAvailableConnectors().get(0).getActorRef());
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 

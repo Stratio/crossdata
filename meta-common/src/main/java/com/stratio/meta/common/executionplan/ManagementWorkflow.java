@@ -18,7 +18,6 @@
 
 package com.stratio.meta.common.executionplan;
 
-import java.io.Serializable;
 import java.util.Map;
 
 import com.stratio.meta.communication.AttachCluster;

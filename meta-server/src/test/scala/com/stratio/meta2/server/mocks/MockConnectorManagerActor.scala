@@ -24,8 +24,6 @@
 package com.stratio.meta2.server.mocks
 
 import akka.actor.{Actor, ActorLogging, Props}
-import akka.cluster.Cluster
-import akka.cluster.ClusterEvent._
 
 
 object State extends Enumeration {
@@ -45,7 +43,7 @@ class MockConnectorManagerActor() extends Actor with ActorLogging {
 
   override def preStart(): Unit = {
     //#subscribe
-    Cluster(context.system).subscribe(self, classOf[MemberEvent])
+    //Cluster(context.system).subscribe(self, classOf[MemberEvent])
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
 

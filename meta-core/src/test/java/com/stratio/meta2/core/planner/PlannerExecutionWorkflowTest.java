@@ -395,6 +395,61 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
     }
 
     @Test
+    public void mergeExecutionPathsPartialJoin(){
+
+        ColumnName [] columns1 = getColumnNames(table1);
+        ColumnName [] columns2 = getColumnNames(table2);
+
+        Project project1 = getProject("table1", columns1);
+        Project project2 = getProject("table2", columns2);
+
+        ColumnType [] types = {ColumnType.INT, ColumnType.TEXT};
+        Select select = getSelect(columns1, types);
+
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ, new IntegerSelector(42));
+
+        Relation r = new Relation(new ColumnSelector(columns1[0]), Operator.EQ,
+                new ColumnSelector(columns2[0]));
+
+        Join join = getJoin("joinId", r);
+
+        //Link the elements
+        project1.setNextStep(filter);
+        filter.setNextStep(join);
+        project2.setNextStep(join);
+        join.setNextStep(select);
+
+        List<ConnectorMetadata> availableConnectors1 = new ArrayList<>();
+        availableConnectors1.add(connector1);
+
+        List<ConnectorMetadata> availableConnectors2 = new ArrayList<>();
+        availableConnectors2.add(connector2);
+
+        ExecutionPath path1 = new ExecutionPath(project1, filter, availableConnectors1);
+        ExecutionPath path2 = new ExecutionPath(project2, project2, availableConnectors2);
+
+        HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
+        Set<ExecutionPath> paths = new HashSet<>();
+        paths.add(path1);
+        paths.add(path2);
+        unions.put(join, paths);
+
+        ExecutionWorkflow executionWorkflow = null;
+        try {
+            executionWorkflow = plannerWrapper.mergeExecutionPaths(
+                    "qid", new ArrayList<>(paths),
+                    unions);
+        } catch (PlanningException e) {
+            fail("Not expecting Planning Exception", e);
+        }
+
+        assertNotNull(executionWorkflow, "Null execution workflow received");
+        assertExecutionWorkflow(executionWorkflow, 1,
+                new String [] {connector1.getActorRef().toString()});
+
+    }
+
+    @Test
     public void storageWorkflowTest() {
         DataStoreName dataStoreName = createTestDatastore();
         Set<Operations> operations = new HashSet<>();

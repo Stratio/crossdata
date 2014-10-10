@@ -111,7 +111,9 @@ public class CreateIndexStatement extends IndexStatement {
      */
     public void setName(ColumnName columnName) {
         tableName=columnName.getTableName();
-        catalog=columnName.getTableName().getCatalogName();
+        if (tableName!=null) {
+            catalog = columnName.getTableName().getCatalogName();
+        }
         this.name = new IndexName(columnName.getTableName(), columnName.getName());
     }
 
