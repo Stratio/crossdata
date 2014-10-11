@@ -88,6 +88,7 @@
         <module>meta-dist</module>
         <module>meta-connector</module>
         <module>meta-rest</module>
+        <module>meta-connector-maven-plugin</module>
     </modules>
     <properties>
         <scala.version>2.10.4</scala.version>
