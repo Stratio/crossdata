@@ -32,6 +32,7 @@ import com.stratio.meta.driver.config.{BasicDriverConfig, DriverConfig, DriverSe
 import com.stratio.meta.driver.result.SyncResultHandler
 import com.stratio.meta.driver.utils.RetryPolitics
 import com.stratio.meta2.common.api.Manifest
+import com.stratio.meta2.common.result.{ErrorResult, Result}
 import org.apache.log4j.Logger
 
 import scala.concurrent.duration._
@@ -206,6 +207,15 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(manifest)
     val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.ADD_MANIFEST, params))
+    result.asInstanceOf[CommandResult]
+  }
+
+  /**
+   * Reset metadata in server
+   * @return A CommandResult with a string
+   */
+  def resetMetadata(): CommandResult = {
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.RESET_METADATA, null))
     result.asInstanceOf[CommandResult]
   }
 

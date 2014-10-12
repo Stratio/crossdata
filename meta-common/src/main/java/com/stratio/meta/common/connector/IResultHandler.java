@@ -20,8 +20,6 @@ package com.stratio.meta.common.connector;
 
 import com.stratio.meta.common.exceptions.ExecutionException;
 import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.common.result.Result;
 
 /**
  * Callback interface for connector query results.

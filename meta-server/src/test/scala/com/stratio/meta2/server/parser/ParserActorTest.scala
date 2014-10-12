@@ -19,8 +19,8 @@
 package com.stratio.meta2.server.parser
 
 import akka.actor.{ActorSystem, actorRef2Scala}
-import com.stratio.meta.common.result.ErrorResult
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
+import com.stratio.meta2.common.result.ErrorResult
 import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.server.actors.{ParserActor, PlannerActor, ValidatorActor}

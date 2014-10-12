@@ -18,7 +18,7 @@
 
 package com.stratio.meta.common.actor;
 
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.Result;
 
 /**
  * Interface for actors listening for streaming results.

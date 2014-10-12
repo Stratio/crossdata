@@ -21,6 +21,7 @@ package com.stratio.meta.driver.result
 import com.stratio.meta.common.data.CassandraResultSet
 import com.stratio.meta.common.exceptions.{ExecutionException, ParsingException, UnsupportedException, ValidationException}
 import com.stratio.meta.common.result._
+import com.stratio.meta2.common.result.{ErrorResult, ErrorType, Result}
 
 /**
  * Synchronous result handler.

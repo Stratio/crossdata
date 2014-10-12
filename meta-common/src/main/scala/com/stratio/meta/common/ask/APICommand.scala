@@ -27,4 +27,5 @@ object APICommand extends Enumeration {
   val LIST_TABLES = Value("LIST_TABLES")
   val LIST_COLUMNS = Value("LIST_COLUMNS")
   val ADD_MANIFEST = Value("ADD_MANIFEST")
+  val RESET_METADATA = Value("RESET_METADATA")
 }

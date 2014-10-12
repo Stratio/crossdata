@@ -22,14 +22,21 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+
 import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
 import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.ErrorResult;
+import com.stratio.meta2.common.result.ErrorResult;
+import com.stratio.meta2.common.result.ErrorType;
 import com.stratio.meta.common.result.MetadataResult;
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.Result;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.PropertiesType;
 import com.stratio.meta2.common.api.connector.ConnectorType;
@@ -42,6 +49,7 @@ import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.core.execution.ExecutionManager;
 import com.stratio.meta2.core.metadata.MetadataManager;
 
 public class APIManager {
@@ -92,12 +100,29 @@ public class APIManager {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
             persistManifest((Manifest) cmd.params().get(0));
             result = CommandResult.createCommandResult("Manifest added.");
+        } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
+            LOG.info("Processing " + APICommand.RESET_METADATA().toString());
+            result = resetMetadata();
         } else {
             result =
                     Result.createExecutionErrorResult("Command " + cmd.commandType() + " not supported");
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
         return result;
+    }
+
+    private Result resetMetadata() {
+        Result result = CommandResult.createCommandResult("Metadata reset.");
+        try {
+            MetadataManager.MANAGER.clear();
+            ExecutionManager.MANAGER.clear();
+        } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException
+                e) {
+            result = CommandResult.createErrorResult(ErrorType.EXECUTION, e.getMessage());
+            e.printStackTrace();
+        } finally {
+            return result;
+        }
     }
 
     private void persistManifest(Manifest manifest) {

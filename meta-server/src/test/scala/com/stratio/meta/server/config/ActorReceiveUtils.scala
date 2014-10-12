@@ -21,9 +21,9 @@ package com.stratio.meta.server.config
 import akka.actor.{ActorRef, ActorSystem}
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.stratio.meta.common.ask.Query
-import com.stratio.meta.common.result.{ErrorResult, Result}
 import com.stratio.meta.communication.ACK
 import com.stratio.meta.server.utilities.TestKitUsageSpec
+import com.stratio.meta2.common.result.{ErrorResult, Result}
 import com.typesafe.config.ConfigFactory
 import org.testng.Assert._
 

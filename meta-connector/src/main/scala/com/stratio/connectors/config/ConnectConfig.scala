@@ -74,8 +74,11 @@ trait ConnectConfig {
       }
     }
 
-    //defaultConfig = defaultConfig.withFallback(
-    //  ConfigFactory.parseString("akka.cluster.roles = [connector]"))
+    /*
+    val modifiedConfig = ConfigFactory.parseString("akka.cluster.roles = [CassandraConnector]")
+    val finalConfig = modifiedConfig.withFallback(defaultConfig)
+    ConfigFactory.load(finalConfig)
+    */
     ConfigFactory.load(defaultConfig)
   }
 

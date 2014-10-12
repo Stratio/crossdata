@@ -36,7 +36,7 @@ import com.stratio.meta.common.exceptions.ConnectionException;
 import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
 import com.stratio.meta.sh.help.HelpContent;
 import com.stratio.meta.sh.help.HelpManager;
@@ -374,6 +374,8 @@ public class Metash {
                             .startsWith("add datastore")) {
                         sendManifest(toExecute);
                         println("");
+                    } else if(toExecute.toLowerCase().startsWith("reset metadata")){
+                        resetMetadata();
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);
                         println("");
@@ -408,6 +410,10 @@ public class Metash {
         String currentCatalog = metaDriver.getCurrentCatalog();
         setPrompt(currentCatalog);
         return currentCatalog;
+    }
+
+    public void resetMetadata(){
+        metaDriver.resetMetadata();
     }
 
     public String sendManifest(String sentence) {

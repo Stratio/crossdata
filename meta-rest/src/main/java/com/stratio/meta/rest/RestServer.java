@@ -39,7 +39,7 @@ import com.stratio.meta.common.exceptions.ParsingException;
 import com.stratio.meta.common.exceptions.UnsupportedException;
 import com.stratio.meta.common.exceptions.ValidationException;
 import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.Result;
 import com.stratio.meta.rest.models.JsonQueryResult;
 import com.stratio.meta.rest.utils.DriverHelper;
 import com.stratio.meta.rest.utils.RestResultHandler;

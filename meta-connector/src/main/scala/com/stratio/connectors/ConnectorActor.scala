@@ -23,8 +23,10 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import akka.util.Timeout
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.common.result.{CommandResult, MetadataResult, Result}
+import com.stratio.meta.common.result.{CommandResult, MetadataResult}
 import com.stratio.meta.communication._
+import com.stratio.meta2.common
+import com.stratio.meta2.common.result.Result
 
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
@@ -151,7 +153,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         sender ! result
       } catch {
         case ex: Exception => {
-          val result=com.stratio.meta.common.result.Result.createExecutionErrorResult(ex.getStackTraceString)
+          val result=Result.createExecutionErrorResult(ex.getStackTraceString)
           sender ! result
         }
         case err: Error =>
@@ -187,7 +189,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       } catch {
         case ex: Exception => {
           log.debug(ex.getStackTraceString)
-          val result=com.stratio.meta.common.result.Result.createExecutionErrorResult(ex.getStackTraceString)
+          val result=common.result.Result.createExecutionErrorResult(ex.getStackTraceString)
           sender ! result
         }
         case err: Error =>

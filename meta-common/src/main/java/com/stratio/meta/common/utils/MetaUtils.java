@@ -44,7 +44,8 @@ public class MetaUtils {
             "HELP",
             "QUIT",
             "DESCRIBE",
-            "ATTACH");
+            "ATTACH",
+            "RESET");
 
     public static final Set<String> NON_INITIALS = Sets.newHashSet(
             "KEYSPACE",
@@ -123,7 +124,8 @@ public class MetaUtils {
             "MATCH",
             "DATASTORE",
             "CONNECTOR",
-            "CLUSTER");
+            "CLUSTER",
+            "METADATA");
 
     /**
      * Private class constructor as all methods are static.

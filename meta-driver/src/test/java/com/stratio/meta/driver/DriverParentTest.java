@@ -22,8 +22,8 @@ import org.apache.log4j.Logger;
 import org.testng.annotations.AfterSuite;
 import org.testng.annotations.BeforeClass;
 
-import com.stratio.meta.common.result.ErrorResult;
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.ErrorResult;
+import com.stratio.meta2.common.result.Result;
 import com.stratio.meta.server.MetaServer;
 
 public class DriverParentTest {

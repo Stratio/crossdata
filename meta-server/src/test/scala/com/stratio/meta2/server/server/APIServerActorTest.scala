@@ -22,9 +22,10 @@ import akka.actor.{ActorSystem, Props}
 import akka.pattern.ask
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.stratio.meta.common.ask.{APICommand, Command}
-import com.stratio.meta.common.result.{MetadataResult, Result}
+import com.stratio.meta.common.result.MetadataResult
 import com.stratio.meta.server.config.BeforeAndAfterCassandra
 import com.stratio.meta.server.utilities.{TestKitUsageSpec, createEngine}
+import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.server.actors.ServerActor
 import com.typesafe.config.ConfigFactory

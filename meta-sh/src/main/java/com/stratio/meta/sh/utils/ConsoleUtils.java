@@ -22,7 +22,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,9 +56,9 @@ import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
-import com.stratio.meta.common.result.ErrorResult;
+import com.stratio.meta2.common.result.ErrorResult;
 import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.Result;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.connector.ConnectorFactory;
 import com.stratio.meta2.common.api.connector.ConnectorType;
@@ -93,9 +92,9 @@ public class ConsoleUtils {
     }
 
     /**
-     * Convert Result {@link com.stratio.meta.common.result.Result} structure to String.
+     * Convert Result {@link com.stratio.meta2.common.result.Result} structure to String.
      *
-     * @param result {@link com.stratio.meta.common.result.Result} from execution.
+     * @param result {@link com.stratio.meta2.common.result.Result} from execution.
      * @return String representing the result.
      */
     public static String stringResult(Result result) {

@@ -18,6 +18,8 @@
 
 package com.stratio.meta.common.result;
 
+import com.stratio.meta2.common.result.Result;
+
 /**
  * Result of the connection with a remote META server.
  */

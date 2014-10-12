@@ -19,8 +19,7 @@
 package com.stratio.meta.server.config
 
 import java.net.URL
-
-import com.stratio.meta.common.result.{ErrorResult, Result}
+import com.stratio.meta2.common.result.{ErrorResult, Result}
 import org.apache.log4j.Logger
 import org.scalatest.{BeforeAndAfterAll, Suite}
 import org.testng.Assert._

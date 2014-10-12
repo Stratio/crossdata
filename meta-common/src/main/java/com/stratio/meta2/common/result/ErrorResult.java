@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.common.result;
+package com.stratio.meta2.common.result;
 
 /**
  * Error result of a given type.

@@ -27,6 +27,7 @@ import akka.actor.{Actor, ActorLogging, Props}
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.result._
 import com.stratio.meta.communication._
+import com.stratio.meta2.common.result.{ErrorResult, ErrorType}
 ;
 
 

@@ -18,6 +18,8 @@
 
 package com.stratio.meta.common.result;
 
+import com.stratio.meta2.common.result.Result;
+
 public class DisconnectResult extends Result {
 
     /**

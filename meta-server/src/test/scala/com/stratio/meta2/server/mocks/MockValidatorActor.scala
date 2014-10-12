@@ -19,8 +19,9 @@
 package com.stratio.meta2.server.mocks
 
 import akka.actor.{Actor, Props}
-import com.stratio.meta.common.result.{QueryStatus, Result}
+import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.communication.ACK
+import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.query.ParsedQuery
 
 object MockValidatorActor {

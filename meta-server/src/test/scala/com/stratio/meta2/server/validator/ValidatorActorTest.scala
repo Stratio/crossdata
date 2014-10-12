@@ -19,8 +19,8 @@
 package com.stratio.meta2.server.validator
 
 import akka.actor.ActorSystem
-import com.stratio.meta.common.result.ErrorResult
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
+import com.stratio.meta2.common.result.ErrorResult
 import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.server.actors.{ValidatorActor, PlannerActor, CoordinatorActor, ConnectorManagerActor}
 import org.apache.log4j.Logger
