@@ -57,7 +57,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
-    val myReference = c.startup(m, port)
+    val myReference = c.startup(m)
     myReference ! "Hello World"
     assert("Hello World" == "Hello World")
     c.shutdown()
@@ -75,7 +75,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
     //val myReference = c.startup(m, port, config)
-    val myReference = c.startup(m, port)
+    val myReference = c.startup(m)
     var steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
     val step= new TransformationStep(null)
     steps.add(step)
@@ -109,7 +109,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
     //val myReference = c.startup(m, port, config)
-    val myReference = c.startup(m, port)
+    val myReference = c.startup(m)
 
     val message=CreateTable("queryId",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"), null, null,null,null,null,null) )
     val future=ask(myReference , message)
@@ -129,7 +129,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
     //val myReference = c.startup(m, port, config)
-    val myReference = c.startup(m, port)
+    val myReference = c.startup(m)
 
     val message=Insert("query",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"), null, null,null,null,null,null),new Row())
     //val future=myReference ? message
