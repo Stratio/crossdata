@@ -64,12 +64,11 @@ public class ExecutionPath {
             sb.append(m.getName()).append(", ");
         }
         sb.append("]");
+        sb.append(initial).append(System.lineSeparator());
         LogicalStep pointer = initial;
-        do{
-            sb.append(last).append(System.lineSeparator());
+        while(pointer != last && pointer != null){
             pointer = pointer.getNextStep();
-        }while(pointer != last);
-
+        }
         return sb.toString();
     }
 }
