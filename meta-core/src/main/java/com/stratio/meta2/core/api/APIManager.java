@@ -119,10 +119,9 @@ public class APIManager {
         } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException
                 e) {
             result = CommandResult.createErrorResult(ErrorType.EXECUTION, e.getMessage());
-            e.printStackTrace();
-        } finally {
-            return result;
+            LOG.error(e.getMessage());
         }
+        return result;
     }
 
     private void persistManifest(Manifest manifest) {
@@ -153,14 +152,14 @@ public class APIManager {
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(
                 name,
                 version,
-                (requiredProperties==null)?null:requiredProperties.getProperty(),
-                (optionalProperties==null)?null:optionalProperties.getProperty(),
-                (behaviorsType==null)?null:behaviorsType.getBehavior());
+                (requiredProperties == null) ? null : requiredProperties.getProperty(),
+                (optionalProperties == null) ? null : optionalProperties.getProperty(),
+                (behaviorsType == null) ? null : behaviorsType.getBehavior());
 
         // Persist
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
 
-        LOG.debug("DataStore added: "+MetadataManager.MANAGER.getDataStore(name).toString());
+        LOG.debug("DataStore added: " + MetadataManager.MANAGER.getDataStore(name).toString());
 
     }
 
@@ -189,8 +188,8 @@ public class APIManager {
                 name,
                 version,
                 dataStoreRefs.getDataStoreName(),
-                (requiredProperties==null)?null:requiredProperties.getProperty(),
-                (optionalProperties==null)?null:optionalProperties.getProperty(),
+                (requiredProperties == null) ? null : requiredProperties.getProperty(),
+                (optionalProperties == null) ? null : optionalProperties.getProperty(),
                 supportedOperations.getOperation());
 
         // Persist
