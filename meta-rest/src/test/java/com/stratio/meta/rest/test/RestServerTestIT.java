@@ -47,7 +47,7 @@ import com.stratio.meta.rest.utils.DriverHelper;
 import com.stratio.meta.rest.utils.RestServerTestUtils;
 import com.stratio.meta2.common.metadata.ColumnType;
 
-public class RestServerTest {
+public class RestServerTestIT {
 
     DriverHelper driver = DriverHelper.getInstance();
     ArrayList<ColumnMetadata> expectedColumnMetadata;

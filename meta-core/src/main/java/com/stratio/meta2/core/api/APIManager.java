@@ -35,6 +35,7 @@ import com.stratio.meta2.common.api.PropertiesType;
 import com.stratio.meta2.common.api.connector.ConnectorType;
 import com.stratio.meta2.common.api.connector.DataStoreRefsType;
 import com.stratio.meta2.common.api.connector.SupportedOperationsType;
+import com.stratio.meta2.common.api.datastore.BehaviorsType;
 import com.stratio.meta2.common.api.datastore.DataStoreType;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
@@ -120,9 +121,16 @@ public class APIManager {
         // OPTIONAL PROPERTIES
         PropertiesType optionalProperties = dataStoreType.getOptionalProperties();
 
+        // BEHAVIORS
+        BehaviorsType behaviorsType = dataStoreType.getBehaviors();
+
         // Create Metadata
-        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(name, version, requiredProperties.getProperty(),
-                optionalProperties.getProperty());
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(
+                name,
+                version,
+                (requiredProperties==null)?null:requiredProperties.getProperty(),
+                (optionalProperties==null)?null:optionalProperties.getProperty(),
+                (behaviorsType==null)?null:behaviorsType.getBehavior());
 
         // Persist
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
@@ -152,12 +160,16 @@ public class APIManager {
         SupportedOperationsType supportedOperations = connectorType.getSupportedOperations();
 
         // Create Metadata
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs.getDataStoreName(),
-                requiredProperties.getProperty(),
-                optionalProperties.getProperty(), supportedOperations.getOperation());
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(
+                name,
+                version,
+                dataStoreRefs.getDataStoreName(),
+                (requiredProperties==null)?null:requiredProperties.getProperty(),
+                (optionalProperties==null)?null:optionalProperties.getProperty(),
+                supportedOperations.getOperation());
 
         // Persist
-        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
     }
 
 }

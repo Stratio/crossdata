@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -83,9 +83,10 @@ public class MetadataManagerTestHelper {
 
         Set<PropertyType> requiredPropertiesForDataStore = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
+        Set<String> behaviors = new HashSet<>();
 
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
-                requiredPropertiesForDataStore, othersProperties);
+                requiredPropertiesForDataStore, othersProperties, behaviors);
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
         return dataStoreMetadata;
     }
@@ -123,7 +124,7 @@ public class MetadataManagerTestHelper {
      * Create a test connector.
      *
      * @param name          The connector name.
-     * @param dataStoreName The datastore associated with this connector.
+     * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.meta2.common.data.ConnectorName}.
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName,
@@ -142,7 +143,7 @@ public class MetadataManagerTestHelper {
      * Create a test connector.
      *
      * @param name          The connector name.
-     * @param dataStoreName The datastore associated with this connector.
+     * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.meta2.common.data.ConnectorName}.
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
@@ -163,10 +164,10 @@ public class MetadataManagerTestHelper {
      * Create a test connector.
      *
      * @param name          The connector name.
-     * @param dataStoreName The datastore associated with this connector.
+     * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.meta2.common.data.ConnectorName}.
      */
-    public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
+    public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
             Set<Operations> options,
             String actorRef) {
         final String version = "0.1.0";
@@ -176,20 +177,39 @@ public class MetadataManagerTestHelper {
                 new HashSet<PropertyType>(), new HashSet<PropertyType>(), options);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
-        return connectorName;
+        return connectorMetadata;
+
     }
 
     /**
      * Create a test cluster.
      *
      * @param name          The name of the cluster.
-     * @param dataStoreName The backend datastore.
+     * @param dataStoreName The backend dataStore.
      */
     public ClusterName createTestCluster(String name, DataStoreName dataStoreName) {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
+        ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
+                connectorAttachedRefs);
+        MetadataManager.MANAGER.createCluster(clusterMetadata, true, true);
+        return clusterName;
+    }
+
+    /**
+     * Create a test cluster.
+     *
+     * @param name          The name of the cluster.
+     * @param dataStoreName The backend dataStore.
+     */
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName connectorName) {
+        // Create & add Cluster
+        ClusterName clusterName = new ClusterName(name);
+        Map<Selector, Selector> options = new HashMap<>();
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
+        connectorAttachedRefs.put(connectorName, new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);
         MetadataManager.MANAGER.createCluster(clusterMetadata, true, true);
@@ -217,8 +237,7 @@ public class MetadataManagerTestHelper {
 
         //Create columns
         Map<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
-        int columnIndex = 0;
-        for (columnIndex = 0; columnIndex < columnNames.length; columnIndex++) {
+        for(int columnIndex = 0; columnIndex < columnNames.length; columnIndex++){
             ColumnName columnName = new ColumnName(table, columnNames[columnIndex]);
             ColumnType columnType = columnTypes[columnIndex];
             ColumnMetadata columnMetadata = new ColumnMetadata(columnName, null, columnType);

@@ -1,21 +1,25 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information regarding copyright ownership. The STRATIO
- * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta2.core.planner;
 
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,10 +34,12 @@ import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.exceptions.PlanningException;
+import com.stratio.meta.common.executionplan.ExecutionPath;
 import com.stratio.meta.common.executionplan.ExecutionType;
 import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 import com.stratio.meta.common.executionplan.ManagementWorkflow;
 import com.stratio.meta.common.executionplan.MetadataWorkflow;
+import com.stratio.meta.common.executionplan.QueryWorkflow;
 import com.stratio.meta.common.executionplan.ResultType;
 import com.stratio.meta.common.executionplan.StorageWorkflow;
 import com.stratio.meta.common.logicalplan.Filter;
@@ -41,11 +47,14 @@ import com.stratio.meta.common.logicalplan.Join;
 import com.stratio.meta.common.logicalplan.Limit;
 import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
+import com.stratio.meta.common.logicalplan.PartialResults;
 import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.logicalplan.Select;
+import com.stratio.meta.common.logicalplan.TransformationStep;
 import com.stratio.meta.common.logicalplan.UnionStep;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
+import com.stratio.meta.common.utils.StringUtils;
 import com.stratio.meta.core.structures.InnerJoin;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
@@ -72,6 +81,7 @@ import com.stratio.meta2.core.query.StoragePlannedQuery;
 import com.stratio.meta2.core.query.StorageValidatedQuery;
 import com.stratio.meta2.core.query.ValidatedQuery;
 import com.stratio.meta2.core.statements.AttachClusterStatement;
+import com.stratio.meta2.core.statements.AttachConnectorStatement;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.statements.CreateTableStatement;
 import com.stratio.meta2.core.statements.InsertIntoStatement;
@@ -103,17 +113,29 @@ public class Planner {
     public SelectPlannedQuery planQuery(SelectValidatedQuery query) throws PlanningException {
         LogicalWorkflow workflow = buildWorkflow(query);
         //Plan the workflow execution into different connectors.
-        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(workflow);
+        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query.getQueryId(), workflow);
         //Return the planned query.
         SelectPlannedQuery pq = new SelectPlannedQuery(query, executionWorkflow);
         return pq;
     }
 
+    /**
+     * Define an execution plan for metadata queries.
+     * @param query A {@link com.stratio.meta2.core.query.MetadataValidatedQuery}.
+     * @return A {@link com.stratio.meta2.core.query.MetadataPlannedQuery}.
+     * @throws PlanningException If the query cannot be planned.
+     */
     public MetadataPlannedQuery planQuery(MetadataValidatedQuery query) throws PlanningException {
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
         return new MetadataPlannedQuery(query, executionWorkflow);
     }
 
+    /**
+     * Define an execution plan for storage queries.
+     * @param query A {@link com.stratio.meta2.core.query.StorageValidatedQuery}.
+     * @return A {@link com.stratio.meta2.core.query.StoragePlannedQuery}.
+     * @throws PlanningException If the query cannot be planned.
+     */
     public StoragePlannedQuery planQuery(StorageValidatedQuery query) throws PlanningException {
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
         return new StoragePlannedQuery(query, executionWorkflow);
@@ -133,22 +155,231 @@ public class Planner {
         return result;
     }
 
-    protected ExecutionWorkflow buildExecutionWorkflow(LogicalWorkflow workflow) throws PlanningException {
+    /**
+     * Build a execution workflow for a query analyzing the existing logical workflow.
+     * @param queryId The query identifier.
+     * @param workflow The {@link com.stratio.meta.common.logicalplan.LogicalWorkflow} associated with the query.
+     * @return A {@link com.stratio.meta.common.executionplan.ExecutionWorkflow}.
+     * @throws PlanningException If the workflow cannot be defined.
+     */
+    protected ExecutionWorkflow buildExecutionWorkflow(String queryId, LogicalWorkflow workflow) throws
+            PlanningException {
 
+        //Get the list of tables accessed in this query
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
 
-        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = findCapableConnectors(tables,
-                workflow.getInitialSteps());
+        //Obtain the map of connector that is able to access those tables.
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
+                .getAttachedConnectors(Status.ONLINE, tables);
 
-        ConnectorMetadata chosenConnector = findMoreSuitableConnector(candidatesConnectors);
+        List<ExecutionPath> executionPaths = new ArrayList<>();
+        Map<UnionStep, Set<ExecutionPath>> unionSteps = new HashMap<>();
+        //Iterate through the initial steps and build valid execution paths
+        for(LogicalStep step: workflow.getInitialSteps()){
+            String targetTable = ((Project) step).getTableName().getQualifiedName();
+            ExecutionPath ep = defineExecutionPath(step, candidatesConnectors.get(targetTable));
+            if(UnionStep.class.isInstance(ep.getLast())){
+                Set<ExecutionPath> paths = unionSteps.get(ep.getLast());
+                if(paths == null){
+                    paths = new HashSet<>();
+                }
+                paths.add(ep);
+            }
+            executionPaths.add(ep);
+        }
 
-        // TODO: Create this object properly
-        ExecutionWorkflow executionWorkflow = new ExecutionWorkflow(null, null, null, null);
-
+        //Merge execution paths
+        ExecutionWorkflow executionWorkflow = mergeExecutionPaths(queryId, executionPaths, unionSteps);
         return executionWorkflow;
     }
 
-    protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps){
+    /**
+     * Merge a set of execution paths solving union dependencies along.
+     * @param queryId The query identifier.
+     * @param executionPaths The list of execution paths.
+     * @param unionSteps A map of union steps waiting to be merged.
+     * @return A {@link com.stratio.meta.common.executionplan.ExecutionWorkflow}.
+     * @throws PlanningException If the execution paths cannot be merged.
+     */
+    protected ExecutionWorkflow mergeExecutionPaths(String queryId,
+            List<ExecutionPath> executionPaths,
+            Map<UnionStep, Set<ExecutionPath>> unionSteps) throws PlanningException{
+
+        if(unionSteps.size() == 0){
+            return toExecutionWorkflow(
+                    queryId, executionPaths, executionPaths.get(0).getLast(),
+                    executionPaths.get(0).getAvailableConnectors(),
+                    ResultType.RESULTS);
+        }
+
+        //Find first UnionStep
+        UnionStep mergeStep = null;
+        ExecutionPath [] paths = null;
+        for(Map.Entry<UnionStep, Set<ExecutionPath>> entry : unionSteps.entrySet()){
+            paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
+            if(paths.length == 2
+                    && TransformationStep.class.isInstance(paths[0].getLast())
+                    && TransformationStep.class.isInstance(paths[1].getLast())){
+                mergeStep = entry.getKey();
+                LOG.info("First Union found: " + mergeStep);
+            }
+        }
+
+        List<ConnectorMetadata> toRemove = new ArrayList<>();
+        List<ConnectorMetadata> mergeConnectors = new ArrayList<>();
+
+        Map<PartialResults, ExecutionWorkflow> triggers = new HashMap<>();
+        List<ExecutionWorkflow> workflows = new ArrayList<>();
+        UnionStep nextUnion = null;
+        QueryWorkflow first = null;
+
+        boolean exit = false;
+        while(!exit){
+            //Check whether the list of connectors found in the Execution paths being merged can execute the join
+            //operation
+
+            for(int index = 0; index < paths.length; index++) {
+                for (ConnectorMetadata connector : paths[index].getAvailableConnectors()) {
+                    if (!connector.supports(mergeStep.getOperation())) {
+                        toRemove.add(connector);
+                    }
+                }
+
+                if (paths[index].getAvailableConnectors().size() == toRemove.size()) {
+                    //Add intermediate result node
+                    PartialResults partialResults = new PartialResults(Operations.PARTIAL_RESULTS);
+                    partialResults.setNextStep(mergeStep);
+                    mergeStep.addPreviousSteps(partialResults);
+                    mergeStep.removePreviousStep(paths[0].getLast());
+                    //Create a trigger execution workflow with the partial results step.
+                    ExecutionWorkflow w = toExecutionWorkflow(
+                            queryId, Arrays.asList(paths[0]),
+                            paths[0].getLast(), paths[0].getAvailableConnectors(),
+                            ResultType.TRIGGER_EXECUTION);
+                    w.setTriggerStep(partialResults);
+
+                    triggers.put(partialResults, null);
+                    workflows.add(w);
+                } else {
+                    paths[0].getAvailableConnectors().removeAll(toRemove);
+                }
+
+                mergeConnectors.addAll(paths[0].getAvailableConnectors());
+            }
+            unionSteps.remove(mergeStep);
+
+            if(unionSteps.isEmpty()){
+                exit = true;
+            }else{
+                mergeStep = nextUnion;
+                paths = unionSteps.get(mergeStep).toArray(new ExecutionPath[unionSteps.get(mergeStep).size()]);
+                LOG.info("Load next merge step: " + mergeStep);
+            }
+        }
+
+        //Build the list of ExecutionWorkflows
+        //String queryId, Serializable actorRef, ExecutionType executionType, ResultType type
+        return buildExecutionTree(first, workflows, triggers);
+    }
+
+    /**
+     * Build the tree of linked execution workflows.
+     * @param first The first workflow of the list.
+     * @param workflows The list of execution workflows involved.
+     * @param triggers The map of triggering steps.
+     * @return A {@link com.stratio.meta.common.executionplan.ExecutionWorkflow}.
+     */
+    public ExecutionWorkflow buildExecutionTree(
+            QueryWorkflow first,
+            List<ExecutionWorkflow> workflows,
+            Map<PartialResults,
+            ExecutionWorkflow> triggers){
+
+        LogicalStep triggerStep = first.getTriggerStep();
+        ExecutionWorkflow workflow = first;
+
+        while(!triggers.isEmpty()){
+            workflow.setNextExecutionWorkflow(triggers.get(triggerStep));
+            triggers.remove(triggerStep);
+            workflow = workflow.getNextExecutionWorkflow();
+            triggerStep = workflow.getTriggerStep();
+        }
+
+        return first;
+    }
+
+    /**
+     * Define an query workflow.
+     * @param queryId The query identifier.
+     * @param executionPaths The list of execution paths that will be transformed into initial steps of a
+     * {@link com.stratio.meta.common.logicalplan.LogicalWorkflow}.
+     * @param last The last element of the workflow.
+     * @param connectors The List of available connectors.
+     * @return A {@link com.stratio.meta.common.executionplan.QueryWorkflow}.
+     */
+    protected QueryWorkflow toExecutionWorkflow(
+            String queryId, List<ExecutionPath> executionPaths,
+            LogicalStep last, List<ConnectorMetadata> connectors,
+            ResultType type){
+
+        //Define the list of initial steps.
+        List<LogicalStep> initialSteps = new ArrayList<>(executionPaths.size());
+        for(ExecutionPath path : executionPaths){
+            initialSteps.add(path.getInitial());
+        }
+        LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
+
+        //Select an actor
+        //TODO Improve actor selection based on cost analysis.
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectors.get(0).getActorRef());
+        return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
+    }
+
+    /**
+     * Define the a execution path that starts with a initial step. This process refines the list of available
+     * connectors in order to obtain the list that supports all operations in an execution paths.
+     * @param initial The initial step.
+     * @param availableConnectors The list of available connectors.
+     * @return An {@link com.stratio.meta.common.executionplan.ExecutionPath}.
+     * @throws PlanningException If the execution path cannot be determined.
+     */
+    protected ExecutionPath defineExecutionPath(LogicalStep initial, List<ConnectorMetadata> availableConnectors)
+        throws PlanningException {
+
+        LogicalStep last = null;
+        LogicalStep current = initial;
+        List<ConnectorMetadata> toRemove = new ArrayList<>();
+        boolean exit = false;
+
+        while(!exit){
+            //Evaluate the connectors
+            for(ConnectorMetadata connector : availableConnectors){
+                if(!connector.supports(current.getOperation())){
+                    toRemove.add(connector);
+                }
+            }
+            //Remove invalid connectors
+            if(toRemove.size() == availableConnectors.size()){
+                throw new PlanningException("Cannot determine execution path as no connector supports " + current.toString());
+            }else{
+                availableConnectors.removeAll(toRemove);
+
+                if(current.getNextStep() == null
+                        || UnionStep.class.isInstance(current.getNextStep())){
+                    exit = true;
+                    last = current;
+                }else{
+                    current = current.getNextStep();
+                }
+            }
+            toRemove.clear();
+
+
+        }
+        return new ExecutionPath(initial, last, availableConnectors);
+    }
+
+    protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps) {
         List<TableName> tables = new ArrayList<>(initialSteps.size());
         for (LogicalStep ls : initialSteps) {
             tables.add(Project.class.cast(ls).getTableName());
@@ -228,9 +459,11 @@ public class Planner {
      * @param candidatesConnectors Map with the Connectors (see {@link com.stratio.meta2.common.metadata.ConnectorMetadata}) that already met the previous
      *                             Operations.
      */
-    protected void updateCandidates(TableName tableName, LogicalStep ls,
+    public void updateCandidates(TableName tableName, LogicalStep ls,
             Map<TableName, List<ConnectorMetadata>> candidatesConnectors) {
-        Operations operations = ls.getOperation();
+        /*Operations operations = ls.getOperation();
+
+
         List<ConnectorMetadata> connectorList = candidatesConnectors.get(tableName);
         List<ConnectorMetadata> rejectedConnectors = new ArrayList<>();
         for (ConnectorMetadata connectorMetadata : connectorList) {
@@ -244,7 +477,7 @@ public class Planner {
         } else {
             candidatesConnectors.put(tableName, connectorList);
         }
-
+*/
     }
 
     /**
@@ -329,13 +562,11 @@ public class Planner {
 
         Set<String> managementStatements = new HashSet<>();
         managementStatements.add(AttachClusterStatement.class.toString());
+        managementStatements.add(AttachConnectorStatement.class.toString());
 
-        System.out.println(">>>>>>> TRACE: metadataStatement.getClass().toString() = " + metadataStatement.getClass()
-                .toString());
-
-        if(metadataStatements.contains(metadataStatement.getClass())){
+        if(metadataStatements.contains(metadataStatement.getClass().toString())){
             executionWorkflow = buildMetadataWorkflow(query);
-        } else if(managementStatements.contains(metadataStatement.getClass())) {
+        } else if(managementStatements.contains(metadataStatement.getClass().toString())) {
             executionWorkflow = buildManagementWorkflow(query);
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
@@ -353,11 +584,11 @@ public class Planner {
 
             // Create parameters for metadata workflow
             CreateCatalogStatement createCatalogStatement = (CreateCatalogStatement) metadataStatement;
-            Serializable actorRef = null;
+            String actorRefUri = null;
             ExecutionType executionType = ExecutionType.CREATE_CATALOG;
             ResultType type = ResultType.RESULTS;
 
-            metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
             // Create & add CatalogMetadata to the MetadataWorkflow
             CatalogName name = createCatalogStatement.getCatalogName();
@@ -371,22 +602,32 @@ public class Planner {
 
             // Create parameters for metadata workflow
             CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
-            Serializable actorRef = null;
+            String actorRefUri = null;
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
             ResultType type = ResultType.RESULTS;
 
             if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
                     createTableStatement.getClusterName())) {
                 executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
-                metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+
+                // Recover ActorRef from ConnectorMetadata
+                List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,
+                        createTableStatement.getClusterName());
+                actorRefUri = connectors.iterator().next().getActorRef();
+
+                // Create MetadataWorkFlow
+                metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
+
+                // Add CatalogMetadata to the WorkFlow
+
                 metadataWorkflow.setCatalogName(
                         createTableStatement.getTableName().getCatalogName());
                 metadataWorkflow
                         .setCatalogMetadata(MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName()
                                 .getCatalogName()));
+            } else {
+                metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
             }
-
-            metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
 
             // Create & add TableMetadata to the MetadataWorkflow
             TableName name = createTableStatement.getTableName();
@@ -420,7 +661,7 @@ public class Planner {
 
             // Create parameters for metadata workflow
             AttachClusterStatement attachClusterStatement = (AttachClusterStatement) metadataStatement;
-            Serializable actorRef = null;
+            String actorRef = null;
             ExecutionType executionType = ExecutionType.ATTACH_CLUSTER;
             ResultType type = ResultType.RESULTS;
 
@@ -431,6 +672,21 @@ public class Planner {
             managementWorkflow.setDatastoreName(attachClusterStatement.getDatastoreName());
             managementWorkflow.setOptions(attachClusterStatement.getOptions());
 
+        } else if(metadataStatement instanceof AttachConnectorStatement){
+
+            // Create parameters for metadata workflow
+            AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) metadataStatement;
+            String actorRef = null;
+            ExecutionType executionType = ExecutionType.ATTACH_CONNECTOR;
+            ResultType type = ResultType.RESULTS;
+
+            managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
+
+            // Add required information
+            managementWorkflow.setConnectorName(attachConnectorStatement.getConnectorName());
+            managementWorkflow.setClusterName(attachConnectorStatement.getClusterName());
+            managementWorkflow.setOptions(attachConnectorStatement.getOptions());
+
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
@@ -438,7 +694,7 @@ public class Planner {
         return managementWorkflow;
     }
 
-    protected boolean existsCatalogInCluster(CatalogName catalogName, ClusterName clusterName) {
+    private boolean existsCatalogInCluster(CatalogName catalogName, ClusterName clusterName) {
         CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalogName);
         Map<TableName, TableMetadata> tables = catalogMetadata.getTables();
         if (tables.isEmpty()) {
@@ -455,9 +711,9 @@ public class Planner {
     protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) throws PlanningException {
 
         String queryId = query.getQueryId();
-        Serializable actorRef = null;
-        TableName tableName=null;
-        Collection<Row> rows=new ArrayList<>();
+        String actorRef = null;
+        TableName tableName;
+        Collection<Row> rows;
         if (query.getStatement() instanceof InsertIntoStatement){
             tableName = ((InsertIntoStatement) (query.getStatement())).getTableName();
             rows=getInsertRows(((InsertIntoStatement) (query.getStatement())));
@@ -466,7 +722,7 @@ public class Planner {
         }
 
         TableMetadata tableMetadata=getTableMetadata(tableName);
-        ClusterMetadata clusterMetadata=getClusterMetadata( tableMetadata.getClusterRef());
+        ClusterMetadata clusterMetadata=getClusterMetadata(tableMetadata.getClusterRef());
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
                 .getConnectorAttachedRefs();
 
@@ -476,7 +732,7 @@ public class Planner {
             ConnectorName connectorName = (ConnectorName) it.next();
             ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
             if (connectorMetadata.getSupportedOperations().contains(Operations.INSERT)) {
-                actorRef = connectorMetadata.getActorRef();
+                actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
                 found = true;
             }
         }
@@ -487,6 +743,7 @@ public class Planner {
         StorageWorkflow storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT,
                 ResultType.RESULTS);
         storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+        storageWorkflow.setTableMetadata(tableMetadata);
         storageWorkflow.setRows(rows);
 
         return storageWorkflow;

@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -32,7 +32,7 @@ public class ExecutionWorkflow implements Serializable {
     /**
      * Actor reference of the query sender
      */
-    private Serializable sender;
+    private String sender;
 
     /**
      * Whether the server should save  information or not once the execution succeed
@@ -42,7 +42,7 @@ public class ExecutionWorkflow implements Serializable {
     /**
      * The target actor reference associated with the connector.
      */
-    private Serializable actorRef;
+    private String actorRef;
 
     /**
      * The type of operation to be executed.
@@ -73,7 +73,7 @@ public class ExecutionWorkflow implements Serializable {
      * @param executionType Type of execution.
      * @param type     Type of results.
      */
-    public ExecutionWorkflow(String queryId, Serializable actorRef, ExecutionType executionType,
+    public ExecutionWorkflow(String queryId, String actorRef, ExecutionType executionType,
             ResultType type) {
         this.actorRef = actorRef;
         this.executionType = executionType;
@@ -84,7 +84,7 @@ public class ExecutionWorkflow implements Serializable {
         return executionType;
     }
 
-    public Serializable getActorRef() {
+    public String getActorRef() {
         return actorRef;
     }
 
@@ -96,7 +96,7 @@ public class ExecutionWorkflow implements Serializable {
         return triggerStep;
     }
 
-    public Serializable getSender() {
+    public String getSender() {
         return sender;
     }
 
@@ -104,7 +104,7 @@ public class ExecutionWorkflow implements Serializable {
         return persistOnSuccess;
     }
 
-    public void setSender(Serializable sender) {
+    public void setSender(String sender) {
         this.sender = sender;
     }
 
@@ -124,7 +124,14 @@ public class ExecutionWorkflow implements Serializable {
         this.nextExecutionWorkflow = nextExecutionWorkflow;
     }
 
-    public void setActorRef(Serializable actorRef) {
+    public void setActorRef(String actorRef) {
         this.actorRef = actorRef;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Execution Workflow from ");
+        sb.append(executionType).append(" returns ").append(resultType);
+        return sb.toString();
     }
 }

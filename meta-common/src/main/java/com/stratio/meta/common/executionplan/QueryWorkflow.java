@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,7 +18,6 @@
 
 package com.stratio.meta.common.executionplan;
 
-import java.io.Serializable;
 
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.communication.StorageOperation;
@@ -42,7 +41,7 @@ public class QueryWorkflow extends ExecutionWorkflow {
      * @param type          Type of results.
      * @param workflow      The logical workflow.
      */
-    public QueryWorkflow(String queryId, Serializable actorRef, ExecutionType executionType,
+    public QueryWorkflow(String queryId, String actorRef, ExecutionType executionType,
             ResultType type, LogicalWorkflow workflow) {
         super(queryId, actorRef, executionType, type);
         this.workflow = workflow;
@@ -52,4 +51,13 @@ public class QueryWorkflow extends ExecutionWorkflow {
         return workflow;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(super.toString());
+        sb.append(System.lineSeparator()).append(workflow);
+        if(getNextExecutionWorkflow() != null){
+            sb.append(System.lineSeparator()).append("TRIGGERS ").append(getNextExecutionWorkflow().toString());
+        }
+        return sb.toString();
+    }
 }

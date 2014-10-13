@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -153,6 +153,7 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
 
     public void assertExecutionWorkflow(ExecutionWorkflow executionWorkflow, int numberSteps, String [] targetActors){
         assertNotNull(executionWorkflow, "Null execution workflow received");
+        LOG.info(executionWorkflow);
         int steps = 1;
         ExecutionWorkflow current = executionWorkflow;
         assertNotNull(current.getActorRef(), "Null target actor");
@@ -164,7 +165,7 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
             steps++;
         }
         assertEquals(steps, numberSteps, "Invalid number of linked execution workflows.");
-
+        assertEquals(current.getResultType(), ResultType.RESULTS, "Invalid result type for last execution workflow");
     }
 
 }

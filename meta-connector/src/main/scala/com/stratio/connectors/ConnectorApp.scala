@@ -1,3 +1,21 @@
+/*
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package com.stratio.connectors
 
 import akka.actor.{ActorRef, ActorSystem}
@@ -8,8 +26,6 @@ import com.stratio.meta.communication.Shutdown
 import com.typesafe.config.ConfigFactory
 import org.apache.log4j.{BasicConfigurator, Logger}
 
-//import com.stratio.connector.cassandra.CassandraConnector
-
 object ConnectorApp extends ConnectorApp {
   def main(args: Array[String]): Unit = {
     BasicConfigurator.configure()
@@ -18,16 +34,18 @@ object ConnectorApp extends ConnectorApp {
     var connectortype: Option[String] = options.get(Symbol("connectortype"))
     var port: Option[String] = options.get(Symbol("port"))
     if (port == None) port = Some("2551")
-    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
+    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory
+      .parseString("akka.cluster.roles = [connector]")).withFallback(ConfigFactory.load())
     if (connectortype == None) connectortype = Some("cassandra")
-    val c = getConnector(connectortype.get.asInstanceOf[String])
-    startup(c, Seq(port.get.asInstanceOf[String]), config)
+    val c = getConnector(connectortype.get)
+    startup(c, Seq(port.get), config)
   }
 }
 
 class ConnectorApp extends ConnectConfig {
 
   type OptionMap = Map[Symbol, String]
+  println(">>>>>>>> TRACE: config = " + config.getValue("akka.remote.netty.tcp.port"))
   lazy val system = ActorSystem(clusterName, config)
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
   val usage = """Usage:
@@ -86,7 +104,8 @@ class ConnectorApp extends ConnectConfig {
 
   def startup(connector: IConnector, ports: Seq[String], config: com.typesafe.config.Config): ActorRef = {
     ports foreach { port =>
-      val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
+      val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory
+        .parseString("akka.cluster.roles = [connector]")).withFallback(ConfigFactory.load())
       actorClusterNode = system.actorOf(ConnectorActor.props(connector.getConnectorName(), connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor")
       actorClusterNode ! "I'm in!!!"
     }

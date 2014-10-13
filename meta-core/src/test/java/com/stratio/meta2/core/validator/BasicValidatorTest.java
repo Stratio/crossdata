@@ -20,11 +20,11 @@ package com.stratio.meta2.core.validator;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
@@ -35,7 +35,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.meta2.common.api.PropertyType;
-import com.stratio.meta2.common.api.connector.SupportedOperationsType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -53,6 +52,7 @@ import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.IndexMetadata;
+import com.stratio.meta2.common.metadata.IndexType;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grammar.ParsingTest;
@@ -103,17 +103,17 @@ public class BasicValidatorTest {
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "email"), parameters,
                         ColumnType.TEXT));
 
-
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
-        List<ColumnMetadata> columnsIndex=new ArrayList<>();
-        ColumnMetadata columnMetadataIndex=new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "gender"),
+        Map<ColumnName, ColumnMetadata> columnsIndex = new HashMap<>();
+        ColumnMetadata columnMetadataIndex = new ColumnMetadata(
+                new ColumnName(new TableName("demo", "users"), "gender"),
                 parameters, ColumnType.TEXT);
-        columnsIndex.add(columnMetadataIndex);
+        columnsIndex.put(new ColumnName(new TableName("demo", "users"), "gender"), columnMetadataIndex);
 
-        /*IndexMetadata indexMetadata=new IndexMetadata(new IndexName("demo","users","gender_idx"),columnsIndex,
+        IndexMetadata indexMetadata = new IndexMetadata(new IndexName("demo", "users", "gender_idx"), columnsIndex,
                 IndexType.DEFAULT, options);
 
-        indexes.put(new IndexName("demo","users","gender_idx"), indexMetadata );*/
+        indexes.put(new IndexName("demo", "users", "gender_idx"), indexMetadata);
 
         tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);
 
@@ -121,18 +121,20 @@ public class BasicValidatorTest {
     }
 
     private static ConnectorMetadata createConnectorMetadata() {
-        Set<DataStoreName> dataStoreRefs = new HashSet<>();
-        dataStoreRefs.add(new DataStoreName("Cassandra"));
-        SupportedOperationsType supportedOperations = new SupportedOperationsType();
-        /*ConnectorMetadata connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
+        DataStoreName dataStoreName = new DataStoreName("Cassandra");
+        List<String> dataStoreRefs = Arrays.asList(dataStoreName.getName());
+
+        ArrayList<String> supportedOperations = new ArrayList();
+
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
                 dataStoreRefs, null, null, supportedOperations);
-        return connectorMetadata;*/
-        return null;
+        return connectorMetadata;
+
     }
 
     private static DataStoreMetadata createDataStoreMetadata() {
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(new DataStoreName("Cassandra"), "1.0",
-                new HashSet<PropertyType>(), new HashSet<PropertyType>());
+                new HashSet<PropertyType>(), new HashSet<PropertyType>(), null);
         return dataStoreMetadata;
     }
 

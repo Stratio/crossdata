@@ -156,4 +156,8 @@ public class StringUtils {
         return sb.toString();
     }
 
+    public static String getAkkaActorRefUri(Object object){
+            return object.toString().replace("Actor[","").replace("]","").split("#")[0];
+    }
+
 }

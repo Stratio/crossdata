@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *  http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -18,7 +18,6 @@
 
 package com.stratio.meta.common.executionplan;
 
-import java.io.Serializable;
 
 import com.stratio.meta.communication.CreateCatalog;
 import com.stratio.meta.communication.CreateIndex;
@@ -60,7 +59,7 @@ public class MetadataWorkflow extends ExecutionWorkflow {
      * @param executionType Type of execution.
      * @param type          Type of results.
      */
-    public MetadataWorkflow(String queryId, Serializable actorRef, ExecutionType executionType,
+    public MetadataWorkflow(String queryId, String actorRef, ExecutionType executionType,
             ResultType type) {
         super(queryId, actorRef, executionType, type);
     }

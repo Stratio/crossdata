@@ -338,17 +338,17 @@ public class PlannerWorkflowTest extends MetadataManagerTestHelper {
     }
 
     @Test
-    public void connectorChoice(){
+    public void connectorChoice() {
         // Build Logical WORKFLOW
 
-            // Create initial steps (Projects)
+        // Create initial steps (Projects)
         List<LogicalStep> initialSteps = new LinkedList<>();
         Operations operation = Operations.PROJECT;
         TableName tableName = new TableName("demo", "myTable");
         ClusterName clusterName = new ClusterName("clusterTest");
         Project project = new Project(operation, tableName, clusterName);
 
-            // Next step (Select)
+        // Next step (Select)
         operation = Operations.SELECT_OPERATOR;
         Map<ColumnName, String> columnMap = new LinkedHashMap<>();
         columnMap.put(new ColumnName(tableName, "id"), "id");
@@ -358,7 +358,7 @@ public class PlannerWorkflowTest extends MetadataManagerTestHelper {
         typeMap.put("user", ColumnType.VARCHAR);
         Select select = new Select(operation, columnMap, typeMap);
 
-            // Next step (Filter)
+        // Next step (Filter)
         project.setNextStep(select);
         operation = Operations.FILTER_PK_EQ;
         Selector selector = new ColumnSelector(new ColumnName(tableName, "id"));
@@ -369,18 +369,17 @@ public class PlannerWorkflowTest extends MetadataManagerTestHelper {
         project.setNextStep(filter);
         initialSteps.add(project);
 
-            // Add initial steps
+        // Add initial steps
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         // Fill in data for METADATAMANAGER
-            // Create & add DATASTORE
-            final String DATASTORE_NAME = "dataStoreTest";
-            DataStoreName dataStoreName = new DataStoreName(DATASTORE_NAME);
-            final String version = "0.1.0";
-            insertDataStore(DATASTORE_NAME, "production");
+        // Create & add DATASTORE
+        final String DATASTORE_NAME = "dataStoreTest";
+        DataStoreName dataStoreName = new DataStoreName(DATASTORE_NAME);
+        final String version = "0.1.0";
+        insertDataStore(DATASTORE_NAME, "production");
 
-
-            // Create & add CONNECTOR
+        // Create & add CONNECTOR
         ConnectorName connectorName = new ConnectorName("ConnectorTest");
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         /*RequiredPropertiesType requiredPropertiesForConnector = new RequiredPropertiesType();
@@ -396,32 +395,33 @@ public class PlannerWorkflowTest extends MetadataManagerTestHelper {
         connectorMetadata.setActorRef(null);
         MetadataManager.MANAGER.createConnector(connectorMetadata);*/
 
-            // Create & add CLUSTER
+        // Create & add CLUSTER
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         Map<Selector, Selector> properties = new HashMap<>();
         ConnectorAttachedMetadata connectorAttachedMetadata = new ConnectorAttachedMetadata(connectorName, clusterName,
                 properties);
         connectorAttachedRefs.put(connectorName, connectorAttachedMetadata);
-        ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options, connectorAttachedRefs);
+        ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
+                connectorAttachedRefs);
         MetadataManager.MANAGER.createCluster(clusterMetadata);
 
-            // Create & add CATALOG
+        // Create & add CATALOG
         CatalogName catalogName = new CatalogName("demo");
         Map<TableName, TableMetadata> catalogTables = new HashMap<>();
         CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);
         MetadataManager.MANAGER.createCatalog(catalogMetadata);
 
-            // Create & add TABLE
+        // Create & add TABLE
         Map<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         ColumnName columnName = new ColumnName(tableName, "id");
-        Integer[] parameters = {25};
+        Integer[] parameters = { 25 };
         ColumnType columnType = ColumnType.INT;
         ColumnMetadata columnMetadata = new ColumnMetadata(columnName, parameters, columnType);
         columns.put(columnName, columnMetadata);
 
         columnName = new ColumnName(tableName, "user");
-        String[] params = {"stratio"};
+        String[] params = { "stratio" };
         columnType = ColumnType.VARCHAR;
         columnMetadata = new ColumnMetadata(columnName, params, columnType);
         columns.put(columnName, columnMetadata);
@@ -452,11 +452,11 @@ public class PlannerWorkflowTest extends MetadataManagerTestHelper {
             fail(e.getMessage());
         }
 
-        try {
-            planner.buildExecutionWorkflow(workflow);
-        } catch (PlanningException e) {
-            LOG.error("connectorChoice test failed", e);
-        }
+        //        try {
+        //            planner.buildExecutionWorkflow(workflow);
+        //        } catch (PlanningException e) {
+        //            LOG.error("connectorChoice test failed", e);
+        //        }
     }
 
 }

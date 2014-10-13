@@ -1,20 +1,23 @@
 /*
- * Licensed to STRATIO (C) under one or more contributor license agreements. See the NOTICE file
- * distributed with this work for additional information regarding copyright ownership. The STRATIO
- * (C) licenses this file to you under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software distributed under the License
- * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
- * or implied. See the License for the specific language governing permissions and limitations under
- * the License.
+ * Licensed to STRATIO (C) under one or more contributor license agreements.
+ * See the NOTICE file distributed with this work for additional information
+ * regarding copyright ownership.  The STRATIO (C) licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 
 package com.stratio.meta2.core.metadata;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -158,6 +161,14 @@ public enum MetadataManager {
         } else {
             throw new NullPointerException("Any parameter can't be NULL");
         }
+    }
+
+    public synchronized void clear()
+            throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException,
+            RollbackException {
+        beginTransaction();
+        metadata.clear();
+        commitTransaction();
     }
 
     public void createCatalog(CatalogMetadata catalogMetadata) {
@@ -403,7 +414,7 @@ public enum MetadataManager {
         return (ConnectorMetadata) metadata.get(name);
     }
 
-    public void addConnectorRef(ConnectorName name, Serializable actorRef) {
+    public void addConnectorRef(ConnectorName name, String actorRef) {
         ConnectorMetadata connectorMetadata = getConnector(name);
         connectorMetadata.setActorRef(actorRef);
         createConnector(connectorMetadata, false);
@@ -415,7 +426,7 @@ public enum MetadataManager {
         createConnector(connectorMetadata, false);
     }
 
-    public Serializable getConnectorRef(ConnectorName name) {
+    public String getConnectorRef(ConnectorName name) {
         return getConnector(name).getActorRef();
     }
 
@@ -428,9 +439,7 @@ public enum MetadataManager {
      */
     public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
             List<TableName> tables) {
-
         Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
-
         List<ConnectorMetadata> connectors;
         for (TableName table : tables) {
 
@@ -450,6 +459,19 @@ public enum MetadataManager {
             result.put(table, connectors);
         }
         return result;
+    }
+
+    public List<ConnectorMetadata> getAttachedConnectors(Status status, ClusterName clusterName) {
+        List<ConnectorMetadata> connectors = new ArrayList<>();
+        Set<ConnectorName> connectorNames = getCluster(clusterName)
+                .getConnectorAttachedRefs().keySet();
+        for (ConnectorName connectorName : connectorNames) {
+            ConnectorMetadata connectorMetadata = getConnector(connectorName);
+            if (connectorMetadata.getStatus() == status) {
+                connectors.add(connectorMetadata);
+            }
+        }
+        return connectors;
     }
 
     public ColumnMetadata getColumn(ColumnName name) {

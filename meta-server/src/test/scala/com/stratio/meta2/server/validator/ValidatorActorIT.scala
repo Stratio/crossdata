@@ -41,10 +41,10 @@ import org.scalatest.{FunSuiteLike, Suite}
 
 import scala.concurrent.duration.DurationInt
 
-class ValidatorActorIntegrationTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig with MockFactory{
+class ValidatorActorIT extends ActorReceiveUtils with FunSuiteLike with ServerConfig with MockFactory{
   this: Suite =>
 
-  override lazy val logger = Logger.getLogger(classOf[ValidatorActorIntegrationTest])
+  override lazy val logger = Logger.getLogger(classOf[ValidatorActorIT])
   lazy val system1 = ActorSystem(clusterName, config)
   val engine: Engine = createEngine.create()
   //val connectorManagerRef = system1.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")

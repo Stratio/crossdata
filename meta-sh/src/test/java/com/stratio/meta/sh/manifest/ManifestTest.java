@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -36,7 +36,7 @@ public class ManifestTest {
         Manifest manifest = null;
         try {
             manifest = ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_DATASTORE,
-                    "meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml");
+                    getClass().getResourceAsStream("/meta/connector/DataStoreDefinition.xml"));
         } catch (ManifestException e) {
             fail("Manifest validation failed", e);
         }
@@ -65,10 +65,10 @@ public class ManifestTest {
         sb.append("Optional properties: ").append(System.lineSeparator());
         sb.append("\t").append("Property: ").append(System.lineSeparator());
         sb.append("\t").append("\t").append("PropertyName: ").append("Limit").append(System.lineSeparator());
-        sb.append("\t").append("\t").append("Description: ").append("1000").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: ").append("Default limit").append(System.lineSeparator());
         sb.append("\t").append("Property: ").append(System.lineSeparator());
         sb.append("\t").append("\t").append("PropertyName: ").append("Level").append(System.lineSeparator());
-        sb.append("\t").append("\t").append("Description: ").append("WARN").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: ").append("Warning level").append(System.lineSeparator());
 
         // BEHAVIORS
         sb.append("Behaviors: ").append(System.lineSeparator());
@@ -89,7 +89,7 @@ public class ManifestTest {
         Manifest manifest = null;
         try {
             manifest = ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_CONNECTOR,
-                    "meta-common/src/main/resources/com/stratio/meta/connector/ConnectorDefinition.xml");
+                    getClass().getResourceAsStream("/meta/connector/ConnectorDefinition.xml"));
         } catch (ManifestException e) {
             fail("Manifest validation failed", e);
         }
@@ -127,7 +127,7 @@ public class ManifestTest {
         sb.append("\t").append("Property: ").append(System.lineSeparator());
         sb.append("\t").append("\t").append("PropertyName: ").append("Limit").append(
                 System.lineSeparator());
-        sb.append("\t").append("\t").append("Description: ").append("1000").append(
+        sb.append("\t").append("\t").append("Description: ").append("Default limit").append(
                 System.lineSeparator());
 
         // SUPPORTED OPERATIONS

@@ -6,7 +6,7 @@
   ~ "License"); you may not use this file except in compliance
   ~ with the License.  You may obtain a copy of the License at
   ~
-  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~   http://www.apache.org/licenses/LICENSE-2.0
   ~
   ~ Unless required by applicable law or agreed to in writing,
   ~ software distributed under the License is distributed on an
@@ -23,8 +23,20 @@
     </DataStores>
     <Version>0.1.0</Version>
     <RequiredProperties>
+        <Property>
+            <PropertyName>Host</PropertyName>
+            <Description>Cassandra Host</Description>
+        </Property>
+        <Property>
+            <PropertyName>Port</PropertyName>
+            <Description>Cassandra Port</Description>
+        </Property>
     </RequiredProperties>
     <OptionalProperties>
+        <Property>
+            <PropertyName>Limit</PropertyName>
+            <Description>Default limit</Description>
+        </Property>
     </OptionalProperties>
     <SupportedOperations>
         <operation>CREATE_CATALOG</operation>

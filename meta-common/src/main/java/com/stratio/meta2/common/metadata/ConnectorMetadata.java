@@ -18,8 +18,6 @@
 
 package com.stratio.meta2.common.metadata;
 
-import java.io.Serializable;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,18 +39,17 @@ public class ConnectorMetadata implements IMetadata {
 
     private Set<ClusterName> clusterRefs;
 
-    private Map<ClusterName, Map<Selector,Selector>> clusterProperties;
+    private Map<ClusterName, Map<Selector, Selector>> clusterProperties;
+
+    private Status status;
+    private String actorRef;
 
     private final Set<PropertyType> requiredProperties;
-
-
-
     private final Set<PropertyType> optionalProperties;
     private final Set<Operations> supportedOperations;
-    private Status status;
-    private Serializable actorRef;
+
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
-            Set<ClusterName> clusterRefs, Map<ClusterName,Map<Selector,Selector>> clusterProperties,
+            Set<ClusterName> clusterRefs, Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations) {
         this.name = name;
@@ -65,7 +62,9 @@ public class ConnectorMetadata implements IMetadata {
         this.supportedOperations = supportedOperations;
         this.status = Status.OFFLINE;
     }
-    // TODO: remove and fix Tests
+
+    //TODO remove this constructor and fix test
+    @Deprecated
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations) {
@@ -77,15 +76,23 @@ public class ConnectorMetadata implements IMetadata {
         this.supportedOperations = supportedOperations;
         this.status = Status.OFFLINE;
     }
+
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
             List<String> supportedOperations) {
         this.name = name;
         this.version = version;
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
-        this.clusterRefs= new HashSet<>();
-        this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
-        this.optionalProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties);
+        if (requiredProperties != null) {
+            this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
+        } else {
+            this.requiredProperties = null;
+        }
+        if (optionalProperties != null) {
+            this.optionalProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties);
+        } else {
+            this.optionalProperties = null;
+        }
         this.supportedOperations = ManifestHelper.convertManifestOperationsToMetadataOperations(supportedOperations);
         this.status = Status.OFFLINE;
     }
@@ -138,12 +145,23 @@ public class ConnectorMetadata implements IMetadata {
         this.status = status;
     }
 
-    public Serializable getActorRef() {
+    public String getActorRef() {
         return actorRef;
     }
 
-    public void setActorRef(Serializable actorRef) {
+    public void setActorRef(String actorRef) {
         this.status = Status.ONLINE;
         this.actorRef = actorRef;
     }
+
+    /**
+     * Determine if the connector supports a specific operation.
+     *
+     * @param operation The required operation.
+     * @return Whether it is supported.
+     */
+    public boolean supports(Operations operation) {
+        return supportedOperations.contains(operation);
+    }
+
 }

@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.meta.core.normalizer;
+package com.stratio.meta2.core.normalizer;
 
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -231,7 +231,7 @@ public class NormalizerTest extends MetadataManagerTestHelper {
                         "Result:   " + result.toString() + System.lineSeparator() +
                         "Expected: " + expectedText);
     }
-
+/*
     @Test(dependsOnGroups = "putData")
     public void testNormalizeWhereOrderGroup() throws Exception {
 
@@ -347,5 +347,5 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
 
     }
-
+*/
 }

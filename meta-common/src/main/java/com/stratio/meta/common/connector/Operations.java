@@ -264,7 +264,13 @@ public enum Operations {
      * The engine supports {@link com.stratio.meta.common.logicalplan.Filter} operations using
      * a function as part of a relation using with a distinct operator.
      */
-    FILTER_FUNCTION_DISTINCT("FILTER_FUNCTION_DISTINCT");
+    FILTER_FUNCTION_DISTINCT("FILTER_FUNCTION_DISTINCT"),
+
+    /**
+     * The engine supports {@link com.stratio.meta.common.logicalplan.PartialResults} operations
+     * to read a list of partial results.
+     */
+    PARTIAL_RESULTS("PARTIAL_RESULTS");
 
     private String operationsStr;
 

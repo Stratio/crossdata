@@ -19,7 +19,7 @@
 package com.stratio.meta.common.connector;
 
 /**
- * Created by dhiguero on 10/07/14.
+ * Connector configuration.
  */
 public interface IConfiguration {
 

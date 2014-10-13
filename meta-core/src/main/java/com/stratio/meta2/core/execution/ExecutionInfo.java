@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -25,7 +25,7 @@ import com.stratio.meta.common.result.QueryStatus;
 
 public class ExecutionInfo implements Serializable {
 
-    private Serializable sender = null;
+    private String sender = null;
 
     private ExecutionWorkflow workflow = null;
 
@@ -36,11 +36,11 @@ public class ExecutionInfo implements Serializable {
     public ExecutionInfo() {
     }
 
-    public Serializable getSender() {
+    public String getSender() {
         return sender;
     }
 
-    public void setSender(Serializable sender) {
+    public void setSender(String sender) {
         this.sender = sender;
     }
 
