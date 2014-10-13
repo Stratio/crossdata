@@ -209,7 +209,8 @@ public class MetadataManagerTestHelper {
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-        connectorAttachedRefs.put(connectorName, new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
+        connectorAttachedRefs.put(connectorName,
+                new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);
         MetadataManager.MANAGER.createCluster(clusterMetadata, true, true);
@@ -237,7 +238,7 @@ public class MetadataManagerTestHelper {
 
         //Create columns
         Map<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
-        for(int columnIndex = 0; columnIndex < columnNames.length; columnIndex++){
+        for (int columnIndex = 0; columnIndex < columnNames.length; columnIndex++) {
             ColumnName columnName = new ColumnName(table, columnNames[columnIndex]);
             ColumnType columnType = columnTypes[columnIndex];
             ColumnMetadata columnMetadata = new ColumnMetadata(columnName, null, columnType);
