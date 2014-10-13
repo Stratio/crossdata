@@ -22,21 +22,21 @@ import javax.transaction.TransactionManager
 import akka.pattern.ask
 import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.exceptions.ExecutionException
-import com.stratio.meta.common.executionplan.{ExecutionType, QueryWorkflow, ResultType}
+import com.stratio.meta.common.executionplan.{ExecutionType, MetadataWorkflow, QueryWorkflow, ResultType}
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
-import com.stratio.meta.common.result.QueryResult
+import com.stratio.meta.common.result.{QueryResult, MetadataResult}
 import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.api.PropertyType
-import com.stratio.meta2.common.data.{Status, CatalogName, ConnectorName, FirstLevelName}
+import com.stratio.meta2.common.data.{CatalogName, ConnectorName, FirstLevelName, Status}
 import com.stratio.meta2.common.metadata.{ConnectorMetadata, IMetadata}
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta2.core.grid.Grid
 import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.SelectStatement
+import com.stratio.meta2.core.statements.{MetadataStatement, SelectStatement}
 import com.stratio.meta2.server.actors.CoordinatorActor
 import com.stratio.meta2.server.mocks.MockConnectorManagerActor
 import org.apache.log4j.Logger
@@ -64,14 +64,21 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
   var queryId = "query_id-2384234-1341234-23434"
   var queryIdIncrement=0
   val catalogName = "testCatalog"
+
   val selectStatement:SelectStatement=null
-  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "",
-    new CatalogName(catalogName)),
-    selectStatement)
+  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),selectStatement)
   val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery);
-  val selectPlannedQuery = new SelectPlannedQuery(selectValidatedQuery, new QueryWorkflow(incQueryId(),
+  val selectPlannedQuery = new SelectPlannedQuery(selectValidatedQuery, new QueryWorkflow(queryId+queryIdIncrement,
     StringUtils.getAkkaActorRefUri(connectorActor),
     ExecutionType.SELECT, ResultType.RESULTS, new LogicalWorkflow(null)));
+
+  val metadataStatement0:MetadataStatement=null
+  val metadataParsedQuery0 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),
+    metadataStatement0)
+  val metadataValidatedQuery0:MetadataValidatedQuery=new MetadataValidatedQuery(metadataParsedQuery0)
+  val metadataPlannedQuery0 = new MetadataPlannedQuery(metadataValidatedQuery0,
+    new MetadataWorkflow(queryId+queryIdIncrement,StringUtils.getAkkaActorRefUri(connectorActor),ExecutionType.CREATE_CATALOG,
+      ResultType.RESULTS))
 
   def initialize()={
     var grid=Grid.initializer.withContactPoint("127.0.0.1").withPort(7800)
@@ -119,11 +126,19 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
       val exception=expectMsgType[ExecutionException]
     }
   }
+
   test("Select query") {
     initialize()
     connectorActor ! (queryId+(1),"updatemylastqueryId")
     coordinatorActor ! selectPlannedQuery
     expectMsgType[QueryResult]
+  }
+
+  test("Metadata query") {
+    initialize()
+    connectorActor ! (queryId+(2),"updatemylastqueryId")
+    coordinatorActor ! metadataPlannedQuery0
+    expectMsgType[MetadataResult]
     /*
     val pq= new SelectPlannedQuery(null,null)
     expectMsg("Ok") // bounded to 1 second

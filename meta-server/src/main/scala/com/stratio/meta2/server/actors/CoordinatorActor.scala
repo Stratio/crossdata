@@ -70,11 +70,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           val queryId = plannedQuery.getQueryId
           executionInfo.setWorkflow(workflow)
           if(workflow.getActorRef() != null && workflow.getActorRef().length()>0){
-            val actorRef=context.actorSelection(workflow.getActorRef())
+            val connectorSelection=context.actorSelection(StringUtils.getAkkaActorRefUri(workflow.getActorRef()))
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
-            workflow.getActorRef.asInstanceOf[ActorRef] ! workflow.createMetadataOperationMessage(queryId)
+            connectorSelection ! workflow.createMetadataOperationMessage(queryId)
           } else if(workflow.getExecutionType==ExecutionType.CREATE_CATALOG || workflow
             .getExecutionType==ExecutionType.CREATE_TABLE_AND_CATALOG) {
             coordinator.persistCreateCatalog(workflow.getCatalogMetadata)
