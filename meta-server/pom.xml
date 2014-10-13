@@ -214,6 +214,13 @@
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-core</artifactId>
             <version>${project.parent.version}</version>
+            <classifier>tests</classifier>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.meta</groupId>
+            <artifactId>meta-core</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.meta</groupId>

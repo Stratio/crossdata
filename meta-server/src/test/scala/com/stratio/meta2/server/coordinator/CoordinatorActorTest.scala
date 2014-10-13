@@ -24,17 +24,17 @@ import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan.{ExecutionType, MetadataWorkflow, QueryWorkflow, ResultType}
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
-import com.stratio.meta.common.result.{QueryResult, MetadataResult}
+import com.stratio.meta.common.result.{MetadataResult, QueryResult}
 import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.api.PropertyType
-import com.stratio.meta2.common.data.{CatalogName, ConnectorName, FirstLevelName, Status}
-import com.stratio.meta2.common.metadata.{ConnectorMetadata, IMetadata}
+import com.stratio.meta2.common.data._
+import com.stratio.meta2.common.metadata._
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta2.core.grid.Grid
-import com.stratio.meta2.core.metadata.MetadataManager
+import com.stratio.meta2.core.metadata.{MetadataManager, MetadataManagerTests}
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.core.statements.{MetadataStatement, SelectStatement}
 import com.stratio.meta2.server.actors.CoordinatorActor
@@ -46,10 +46,11 @@ import org.scalatest.{FunSuiteLike, Suite}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-//class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory  with ServerConfig{
+
 class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig {
   this: Suite =>
 
+  val metadataManager=new MetadataManagerTests()
   def incQueryId():String={ queryIdIncrement+=1;return queryId+queryIdIncrement}
 
 
@@ -117,6 +118,9 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
     MetadataManager.MANAGER.addConnectorRef(new ConnectorName(connectorName.name),
       StringUtils.getAkkaActorRefUri(connectorActor))
     MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name),Status.ONLINE)
+
+    var mycluster=metadataManager.createTestCatalog("MyTestCatalog")
+    metadataManager.createTestTable(new ClusterName("mycluster"),"myCatalog","myTable",Array("name","age"),null,null,null)
   }
 
   test("Should return a KO message") {
