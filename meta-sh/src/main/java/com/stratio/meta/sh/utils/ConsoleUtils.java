@@ -22,6 +22,7 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -299,6 +300,15 @@ public class ConsoleUtils {
             return parseFromXmlToDataStoreManifest(path);
         } else {
             return parseFromXmlToConnectorManifest(path);
+        }
+    }
+
+    public static Manifest parseFromXmlToManifest(int manifestType, String path) throws
+            ManifestException, FileNotFoundException {
+        if (manifestType == Manifest.TYPE_DATASTORE) {
+            return parseFromXmlToDataStoreManifest(new FileInputStream(path));
+        } else {
+            return parseFromXmlToConnectorManifest(new FileInputStream(path));
         }
     }
 

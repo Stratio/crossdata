@@ -18,6 +18,7 @@
 
 package com.stratio.meta.common.connector;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import com.stratio.meta2.common.data.ClusterName;
@@ -25,8 +26,9 @@ import com.stratio.meta2.common.data.ClusterName;
 /**
  * Configuration used by a connector to establish a connection to a specific cluster.
  */
-public class ConnectorClusterConfig {
+public class ConnectorClusterConfig implements Serializable {
 
+    private static final long serialVersionUID = 8865765972661082002L;
     /**
      * Name of the target cluster.
      */

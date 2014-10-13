@@ -709,6 +709,7 @@ public class Planner {
                     clusterName, partitionKey, clusterKey);
             metadataWorkflow.setTableName(name);
             metadataWorkflow.setTableMetadata(tableMetadata);
+            metadataWorkflow.setClusterName(clusterName);
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
@@ -725,11 +726,11 @@ public class Planner {
 
             // Create parameters for metadata workflow
             AttachClusterStatement attachClusterStatement = (AttachClusterStatement) metadataStatement;
-            String actorRef = null;
+            String actorRefUri = null;
             ExecutionType executionType = ExecutionType.ATTACH_CLUSTER;
             ResultType type = ResultType.RESULTS;
 
-            managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
+            managementWorkflow = new ManagementWorkflow(queryId, actorRefUri, executionType, type);
 
             // Add required information
             managementWorkflow.setClusterName(attachClusterStatement.getClusterName());
@@ -750,6 +751,10 @@ public class Planner {
             managementWorkflow.setConnectorName(attachConnectorStatement.getConnectorName());
             managementWorkflow.setClusterName(attachConnectorStatement.getClusterName());
             managementWorkflow.setOptions(attachConnectorStatement.getOptions());
+
+            ConnectorMetadata connector = MetadataManager.MANAGER
+                    .getConnector(attachConnectorStatement.getConnectorName());
+            managementWorkflow.setActorRef(connector.getActorRef());
 
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());

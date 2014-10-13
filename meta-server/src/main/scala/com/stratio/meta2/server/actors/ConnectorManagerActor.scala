@@ -75,6 +75,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
      */
     case msg: replyConnectorName => {
       val connectorRef = sender;
+      println(">>>>>>>>> TRACE: ConnectorName received from " + sender)
       MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name), StringUtils.getAkkaActorRefUri(connectorRef))
     }
 
