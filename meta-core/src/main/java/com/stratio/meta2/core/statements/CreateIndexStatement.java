@@ -257,7 +257,7 @@ public class CreateIndexStatement extends IndexStatement {
         sb.append(" (").append(StringUtils.stringList(targetColumns, ", ")).append(")");
         if (usingClass != null) {
             sb.append(" USING ");
-            sb.append(usingClass);
+            sb.append("'").append(usingClass).append("'");
         }
         if (!options.isEmpty()) {
             sb.append(" WITH ");

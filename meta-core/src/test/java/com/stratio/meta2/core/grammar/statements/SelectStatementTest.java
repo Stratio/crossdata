@@ -159,7 +159,7 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void basicSelectQuotedLiteralColumn() {
         String inputText = "SELECT \"literal\" FROM table1;";
-        String expectedText = "SELECT \"literal\" FROM <unknown_name>.table1;";
+        String expectedText = "SELECT 'literal' FROM <unknown_name>.table1;";
         testRegularStatement(inputText, expectedText, "basicSelectBooleanColumn");
     }
 
@@ -230,7 +230,10 @@ public class SelectStatementTest extends ParsingTest {
             String inputText =
                     "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + w
                             + " WHERE newks.newtb.ident1 LIKE \"whatever\";";
-            testRegularStatement(inputText, "selectStatementWindows");
+            String expectedText =
+                    "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + w
+                            + " WHERE newks.newtb.ident1 LIKE 'whatever';";
+            testRegularStatement(inputText,expectedText, "selectStatementWindows");
         }
 
         // TODO: add "S","M","H","D","s","m","h" and "d"
@@ -240,7 +243,10 @@ public class SelectStatementTest extends ParsingTest {
                 String inputText =
                         "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + i + " " + t
                                 + " WHERE newks.newtb.ident1 LIKE \"whatever\";";
-                testRegularStatement(inputText, "selectStatementWindows");
+                String expectedText =
+                        "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + i + " " + t
+                                + " WHERE newks.newtb.ident1 LIKE 'whatever';";
+                testRegularStatement(inputText, expectedText,"selectStatementWindows");
             }
 
         }
@@ -254,7 +260,9 @@ public class SelectStatementTest extends ParsingTest {
     public void selectStatementJoins() {
         String inputText =
                 "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = c.t2.aa WHERE c.t1.a = \"y\";";
-        testRegularStatement(inputText, "selectStatementJoins");
+        String expectedText =
+                "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = c.t2.aa WHERE c.t1.a = 'y';";
+        testRegularStatement(inputText, expectedText,"selectStatementJoins");
     }
 
     @Test
