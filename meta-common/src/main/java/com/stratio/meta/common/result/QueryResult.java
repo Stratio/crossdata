@@ -19,6 +19,7 @@
 package com.stratio.meta.common.result;
 
 import com.stratio.meta.common.data.ResultSet;
+import com.stratio.meta2.common.result.Result;
 
 /**
  * Result of the execution of a query in META.

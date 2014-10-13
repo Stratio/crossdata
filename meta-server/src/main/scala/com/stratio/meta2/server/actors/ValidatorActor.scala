@@ -20,10 +20,10 @@ package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.meta.common.exceptions.ValidationException
+import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.query.{ValidatedQuery, ParsedQuery}
 import com.stratio.meta2.core.validator.Validator
 import org.apache.log4j.Logger
-import com.stratio.meta.common.result.Result
 
 object ValidatorActor {
   def props(planner: ActorRef, validator: Validator): Props = Props(new ValidatorActor(planner, validator))

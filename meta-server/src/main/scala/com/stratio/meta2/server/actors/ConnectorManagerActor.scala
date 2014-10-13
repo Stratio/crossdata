@@ -60,7 +60,9 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
         val rol = it.next()
         rol match {
           case "connector" =>
-            val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "meta-connector")
+            println(">>>>>>> TRACE: Address = " + mu.member.address)
+            println(">>>>>>> TRACE: String = " + mu.member.toString())
+            val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
             val id = java.util.UUID.randomUUID.toString()
             connectorActorRef ! getConnectorName()
             //connectorActorRef ! Start()

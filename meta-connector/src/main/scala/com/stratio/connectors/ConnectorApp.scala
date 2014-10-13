@@ -23,62 +23,19 @@ import akka.routing.RoundRobinRouter
 import com.stratio.connectors.config.ConnectConfig
 import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.communication.Shutdown
-import com.typesafe.config.ConfigFactory
-import org.apache.log4j.{BasicConfigurator, Logger}
+import org.apache.log4j.Logger
 
-object ConnectorApp extends ConnectorApp {
-  def main(args: Array[String]): Unit = {
-    BasicConfigurator.configure()
-    //if (args.length == 0) println(usage)
-    val options = nextOption(Map(), args.toList)
-    var connectortype: Option[String] = options.get(Symbol("connectortype"))
-    var port: Option[String] = options.get(Symbol("port"))
-    if (port == None) port = Some("2551")
-    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory
-      .parseString("akka.cluster.roles = [connector]")).withFallback(ConfigFactory.load())
-    if (connectortype == None) connectortype = Some("cassandra")
-    val c = getConnector(connectortype.get)
-    startup(c, Seq(port.get), config)
-  }
+object ConnectorApp extends App {
+  args.length==2
 }
 
 class ConnectorApp extends ConnectConfig {
 
   type OptionMap = Map[Symbol, String]
-  println(">>>>>>>> TRACE: config = " + config.getValue("akka.remote.netty.tcp.port"))
   lazy val system = ActorSystem(clusterName, config)
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
-  val usage = """Usage:
-      connectorApp [--port <port number>] [--connector-type <connector type name>]
-              """
+
   var actorClusterNode: ActorRef = null
-  private var connector = null
-
-  def getConnector(connectortype: String): IConnector = {
-    connectortype match {
-      //case "cassandra" => new CassandraConnector
-      case _ => null //new CassandraConnector
-    }
-  }
-
-  def nextOption(map: OptionMap, list: List[String]): OptionMap = {
-    def isSwitch(s: String) = (s(0) == '-')
-    list match {
-      case Nil => map
-      case "--port" :: value :: tail =>
-        nextOption(map ++ Map('port -> value), tail)
-      case "--connector-type" :: value :: tail =>
-        nextOption(map ++ Map('connectortype -> value), tail)
-      case option :: tail =>
-        println("Unknown option " + option)
-        println(usage)
-        exit(1)
-    }
-  }
-
-  def startup(connector: IConnector, port: String, config: com.typesafe.config.Config): ActorRef = {
-    startup(connector, Array(port), config)
-  }
 
   def shutdown() = {
   }
@@ -91,24 +48,6 @@ class ConnectorApp extends ConnectConfig {
   def startup(connector: IConnector): ActorRef = {
     actorClusterNode = system.actorOf(ConnectorActor.props(connector.getConnectorName, connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor")
     actorClusterNode ! "I'm in!!!"
-    actorClusterNode
-  }
-
-  def startup(connector: IConnector, port: String): ActorRef = {
-    startup(connector, Array(port), config)
-  }
-
-  def startup(connector: IConnector, ports: Array[String], config: com.typesafe.config.Config): ActorRef = {
-    startup(connector, ports.toList, config)
-  }
-
-  def startup(connector: IConnector, ports: Seq[String], config: com.typesafe.config.Config): ActorRef = {
-    ports foreach { port =>
-      val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory
-        .parseString("akka.cluster.roles = [connector]")).withFallback(ConfigFactory.load())
-      actorClusterNode = system.actorOf(ConnectorActor.props(connector.getConnectorName(), connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor")
-      actorClusterNode ! "I'm in!!!"
-    }
     actorClusterNode
   }
 

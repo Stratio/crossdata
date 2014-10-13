@@ -59,7 +59,7 @@ public class ParsingTest {
             fail(sb.toString(), e);
         }
 
-        assertTrue(inputText.equalsIgnoreCase(st.toString() + ";"),
+        assertTrue(inputText.replaceAll("\"","").equalsIgnoreCase(st.toString() + ";"),
                 "Cannot parse " + methodName
                         + ": " + System.lineSeparator() + " expecting" + System.lineSeparator() + "'" + inputText
                         + "' " + System.lineSeparator() + "from" + System.lineSeparator() + "'" + st.toString() + ";'");

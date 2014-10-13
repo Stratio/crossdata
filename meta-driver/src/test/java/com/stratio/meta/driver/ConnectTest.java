@@ -32,7 +32,7 @@ import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.Result;
 import com.stratio.meta2.common.api.datastore.DataStoreType;
 
 public class ConnectTest extends DriverParentTest {

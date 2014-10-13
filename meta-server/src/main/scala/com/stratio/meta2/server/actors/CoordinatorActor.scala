@@ -25,6 +25,7 @@ import com.stratio.meta.common.result._
 import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{ACK, ConnectToConnector, DisconnectFromConnector}
 import com.stratio.meta2.common.data.{ConnectorName, Status}
+import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.meta2.core.metadata.MetadataManager

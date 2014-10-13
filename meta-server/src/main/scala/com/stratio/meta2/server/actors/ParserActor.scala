@@ -22,10 +22,11 @@ import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.meta.common.ask.Query
 import com.stratio.meta.communication.ACK
 import com.stratio.meta2.common.data.CatalogName
+import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.query.BaseQuery
 import org.apache.log4j.Logger
-import com.stratio.meta.common.result.{QueryStatus, Result}
+import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.common.exceptions.ParsingException
 
 object ParserActor {

@@ -22,7 +22,7 @@ import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.Result;
 
 /**
  * IResultHandler wrapper for test purposes.

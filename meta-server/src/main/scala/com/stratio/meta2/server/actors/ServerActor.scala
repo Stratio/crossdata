@@ -26,6 +26,7 @@ import akka.routing.RoundRobinRouter
 import com.stratio.meta.common.ask.{Command, Connect, Query}
 import com.stratio.meta.common.result._
 import com.stratio.meta.communication.Disconnect
+import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.server.config.ServerConfig
 import org.apache.log4j.Logger

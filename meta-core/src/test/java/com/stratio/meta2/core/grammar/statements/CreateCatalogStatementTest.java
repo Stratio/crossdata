@@ -40,7 +40,7 @@ public class CreateCatalogStatementTest extends ParsingTest {
     @Test
     public void createCatalogWithOptions() {
         String inputText = "CREATE CATALOG catalog1 WITH {\"comment\": \"This is a comment\"};";
-        String expectedText = "CREATE CATALOG catalog1 WITH {comment=This is a comment};";
+        String expectedText = "CREATE CATALOG catalog1 WITH {'comment'='This is a comment'};";
         testRegularStatement(inputText, expectedText, "createCatalogWithOptions");
     }
 

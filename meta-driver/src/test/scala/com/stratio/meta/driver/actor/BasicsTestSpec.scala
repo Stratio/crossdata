@@ -21,8 +21,8 @@ package com.stratio.meta.driver.actor
 import akka.actor.{ActorSystem, Props}
 import akka.contrib.pattern.ClusterClient.Send
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
-import com.stratio.meta.common.result.ErrorResult
 import com.stratio.meta.driver.utils.RetryPolitics
+import com.stratio.meta2.common.result.ErrorResult
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike}
 import org.testng.Assert._

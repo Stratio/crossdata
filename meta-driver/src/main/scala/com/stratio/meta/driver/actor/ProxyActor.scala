@@ -22,9 +22,9 @@ import akka.actor.{Actor, ActorRef, Props}
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
 import com.stratio.meta.common.ask.{Command, Connect, Query}
-import com.stratio.meta.common.result.{ErrorResult, Result}
 import com.stratio.meta.communication.{ACK, Disconnect}
 import com.stratio.meta.driver.BasicDriver
+import com.stratio.meta2.common.result.{ErrorResult, Result}
 import org.apache.log4j.Logger
 
 import scala.concurrent.duration._

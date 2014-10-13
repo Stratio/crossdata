@@ -28,7 +28,7 @@ import org.testng.annotations.Test;
 import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
 import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.Result;
 import com.stratio.meta2.common.api.PropertiesType;
 import com.stratio.meta2.common.api.PropertyType;
 import com.stratio.meta2.common.api.datastore.DataStoreType;

@@ -38,20 +38,22 @@ public class AlterClusterStatementTest extends ParsingTest {
         String inputText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {"
                 + "\"hosts\": [\"127.0.0.1\", \"127.0.0.2\"], "
                 + "\"port\": 1234};";
-        testRegularStatement(inputText, "alterClusterBasic");
+
+        String expectedText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {'hosts': ['127.0.0.1', '127.0.0.2'], 'port': 1234};";
+        testRegularStatement(inputText, expectedText, "alterClusterBasic");
     }
 
     @Test
     public void alterClusterSimple() {
         String inputText = "ALTER CLUSTER production_madrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
-        String expectedText = "ALTER CLUSTER production_madrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
+        String expectedText = "ALTER CLUSTER production_madrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': 'random'};";
         testRegularStatement(inputText, expectedText, "alterClusterSimple");
     }
 
     @Test
     public void alterClusterIfExists() {
         String inputText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
-        String expectedText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
+        String expectedText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'exhaustive': false};";
         testRegularStatement(inputText, expectedText, "alterClusterIfExists");
     }
 

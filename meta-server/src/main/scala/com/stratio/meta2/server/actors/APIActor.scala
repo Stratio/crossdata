@@ -20,7 +20,7 @@ package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, Props}
 import com.stratio.meta.common.ask.Command
-import com.stratio.meta.common.result.Result
+import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.api.APIManager
 import org.apache.log4j.Logger
 

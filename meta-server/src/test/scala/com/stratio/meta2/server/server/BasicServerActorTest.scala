@@ -23,6 +23,7 @@ import com.stratio.meta.common.ask.{Connect, Query}
 import com.stratio.meta.common.result._
 import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
 import com.stratio.meta.server.utilities._
+import com.stratio.meta2.common.result.{ErrorResult, Result}
 import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.server.actors.ServerActor
 import org.scalatest.FunSuiteLike

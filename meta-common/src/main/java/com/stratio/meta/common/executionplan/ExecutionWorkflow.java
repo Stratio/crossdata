@@ -130,8 +130,11 @@ public class ExecutionWorkflow implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("Execution Workflow from ");
+        StringBuilder sb = new StringBuilder("Execution Workflow on " + actorRef + " from ");
         sb.append(executionType).append(" returns ").append(resultType);
+        if(ResultType.TRIGGER_EXECUTION.equals(resultType)){
+            sb.append(System.lineSeparator()).append(" trigger step ").append(triggerStep);
+        }
         return sb.toString();
     }
 }

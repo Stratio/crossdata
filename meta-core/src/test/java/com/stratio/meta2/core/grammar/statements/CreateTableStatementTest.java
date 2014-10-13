@@ -75,7 +75,7 @@ public class CreateTableStatementTest extends ParsingTest {
                         + "WITH {'propiedad1':'prop1', 'propiedad2':2, 'propiedad3':3.0};";
         String expectedText =
                 "CREATE TABLE demo.myTable ON CLUSTER cluster.siliconValley(demo.myTable.something=text, demo.myTable.something2=int, demo.myTable.something3=boolean, PRIMARY KEY((demo.myTable.something, demo.myTable.something2), demo.myTable.something3)) "
-                        + "WITH {propiedad1=prop1, propiedad2=2, propiedad3=3.0};";
+                        + "WITH {'propiedad1'='prop1', 'propiedad2'=2, 'propiedad3'=3.0};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableBasic7");
     }
 
@@ -85,8 +85,10 @@ public class CreateTableStatementTest extends ParsingTest {
                 "CREATE TABLE streaming.temporal ON CLUSTER siliconValley (name varchar, age int, rating double, member boolean, PRIMARY KEY (name)) "
                         + "WITH {'ephemeral': true};";
         String expectedText =
-                "CREATE TABLE streaming.temporal ON CLUSTER cluster.siliconValley(streaming.temporal.name=varchar, streaming.temporal.age=int, streaming.temporal.rating=double, streaming.temporal.member=boolean, PRIMARY KEY((streaming.temporal.name))) "
-                        + "WITH {ephemeral=true};";
+                "CREATE TABLE streaming.temporal ON CLUSTER cluster.siliconValley(streaming.temporal.name=VARCHAR, " +
+                        "streaming.temporal.age=INT, streaming.temporal.rating=double, " +
+                        "streaming.temporal.member=boolean, PRIMARY KEY((streaming.temporal.name))) "
+                        + "WITH {'ephemeral'=true};";
         testRegularStatementSession("demo", inputText, expectedText, "createEphemeralTable");
     }
 
@@ -101,8 +103,8 @@ public class CreateTableStatementTest extends ParsingTest {
         String expectedText =
                 "CREATE TABLE key_space1.users ON CLUSTER cluster.siliconValley(key_space1.users.name=varchar, key_space1.users.password=varchar, key_space1.users.color=varchar, key_space1.users.gender=varchar,"
                         + " key_space1.users.food=varchar, key_space1.users.animal=varchar, key_space1.users.age=int, key_space1.users.code=int, PRIMARY KEY((key_space1.users.name, key_space1.users.gender), key_space1.users.color, key_space1.users.animal)) "
-                        + "WITH {compression={sstable_compression: DeflateCompressor, chunk_length_kb: 64}, "
-                        + "compaction={class: SizeTieredCompactionStrategy, min_threshold: 6}, read_repair_chance=1.0};";
+                        + "WITH {'compression'='{sstable_compression: DeflateCompressor, chunk_length_kb: 64}', "
+                        + "'compaction'='{class: SizeTieredCompactionStrategy, min_threshold: 6}', 'read_repair_chance'=1.0};";
 
         testRegularStatementSession("key_space1", inputText, expectedText, "createTableWithManyProperties");
     }
@@ -114,7 +116,7 @@ public class CreateTableStatementTest extends ParsingTest {
                         + "(block_id, subblock_id)) WITH {'COMPACT STORAGE': true};";
         String expectedText =
                 "CREATE TABLE key_space1.sblocks ON CLUSTER cluster.siliconValley(key_space1.sblocks.block_id=varchar, key_space1.sblocks.subblock_id=varchar, key_space1.sblocks.data=text, PRIMARY KEY"
-                        + "((key_space1.sblocks.block_id), key_space1.sblocks.subblock_id)) WITH {COMPACT STORAGE=true};";
+                        + "((key_space1.sblocks.block_id), key_space1.sblocks.subblock_id)) WITH {'COMPACT STORAGE'=true};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableCompactStorage");
     }
 
@@ -125,7 +127,7 @@ public class CreateTableStatementTest extends ParsingTest {
                         + " PRIMARY KEY (event_type, insertion_time)) WITH {'insertion_time': 'CLUSTERING ORDER BY, DESC'};";
         String expectedText =
                 "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley(key_space1.timeseries.event_type=text, key_space1.timeseries.insertion_time=text, key_space1.timeseries.event=text,"
-                        + " PRIMARY KEY((key_space1.timeseries.event_type), key_space1.timeseries.insertion_time)) WITH {insertion_time=CLUSTERING ORDER BY, DESC};";
+                        + " PRIMARY KEY((key_space1.timeseries.event_type), key_space1.timeseries.insertion_time)) WITH {'insertion_time'='CLUSTERING ORDER BY, DESC'};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableClustering");
     }
 
@@ -139,9 +141,9 @@ public class CreateTableStatementTest extends ParsingTest {
 
         String expectedText =
                 "CREATE TABLE key_space1.test ON CLUSTER cluster.siliconValley(key_space1.test.name=varchar, key_space1.test.color=varchar, key_space1.test.gender=varchar, key_space1.test.food=varchar, "
-                        + "key_space1.test.animal=varchar, PRIMARY KEY((key_space1.test.name))) WITH {compression={sstable_compression: DeflateCompressor, "
-                        + "chunk_length_kb: 64}, compaction={class: SizeTieredCompactionStrategy, min_threshold: 6}, "
-                        + "read_repair_chance=1.0};";
+                        + "key_space1.test.animal=varchar, PRIMARY KEY((key_space1.test.name))) WITH {'compression'='{sstable_compression: DeflateCompressor, "
+                        + "chunk_length_kb: 64}', 'compaction'='{class: SizeTieredCompactionStrategy, min_threshold: 6}', "
+                        + "'read_repair_chance'=1.0};";
 
         testRegularStatementSession("key_space1", inputText, expectedText, "createTableWithProperties");
     }
@@ -182,7 +184,7 @@ public class CreateTableStatementTest extends ParsingTest {
                         + " PRIMARY KEY (event_type, insertion_time)) WITH {'CLUSTERING ORDER BY': 'insertion_time DESC', 'ephemeral': true};";
         String expectedText =
                 "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley(key_space1.timeseries.event_type=text, key_space1.timeseries.insertion_time=text, key_space1.timeseries.event=text,"
-                        + " PRIMARY KEY((key_space1.timeseries.event_type), key_space1.timeseries.insertion_time)) WITH {CLUSTERING ORDER BY=insertion_time DESC, ephemeral=true};";
+                        + " PRIMARY KEY((key_space1.timeseries.event_type), key_space1.timeseries.insertion_time)) WITH {'CLUSTERING ORDER BY'='insertion_time DESC', 'ephemeral'=true};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableWithGetMetaProperty");
     }
 
@@ -191,13 +193,11 @@ public class CreateTableStatementTest extends ParsingTest {
         String inputText =
                 "CREATE TABLE key_space1.wallet ON CLUSTER siliconValley (day text, key varchar, latitude double, longitude double, name text, "
                         + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key)) WITH {'COMPACT STORAGE': true, "
-                        +
-                        "'read_repair_chance': 1.0};";
+                        +"'read_repair_chance': 1.0};";
         String expectedText =
                 "CREATE TABLE key_space1.wallet ON CLUSTER cluster.siliconValley(key_space1.wallet.day=text, key_space1.wallet.key=varchar, key_space1.wallet.latitude=double, key_space1.wallet.longitude=double, key_space1.wallet.name=text, "
-                        + "key_space1.wallet.address=text, key_space1.wallet.tags=map<text, boolean>, key_space1.wallet.lucene=text, PRIMARY KEY((key_space1.wallet.day), key_space1.wallet.key)) WITH {COMPACT STORAGE=true, "
-                        +
-                        "read_repair_chance=1.0};";
+                        + "key_space1.wallet.address=text, key_space1.wallet.tags=map<text, boolean>, key_space1.wallet.lucene=text, PRIMARY KEY((key_space1.wallet.day), key_space1.wallet.key)) WITH {'COMPACT STORAGE'=true, "
+                        +"'read_repair_chance'=1.0};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableWithOptions");
     }
 

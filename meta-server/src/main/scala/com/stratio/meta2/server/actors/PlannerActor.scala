@@ -19,8 +19,9 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.stratio.meta.common.result.{QueryStatus, Result}
+import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.communication.ACK
+import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.planner.Planner
 import com.stratio.meta2.core.query.{StorageValidatedQuery, SelectValidatedQuery, MetadataValidatedQuery}
 import org.apache.log4j.Logger

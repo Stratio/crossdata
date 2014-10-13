@@ -21,7 +21,7 @@ package com.stratio.meta.driver.utils
 import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
-import com.stratio.meta.common.result.Result
+import com.stratio.meta2.common.result.Result
 
 import scala.concurrent.Await
 

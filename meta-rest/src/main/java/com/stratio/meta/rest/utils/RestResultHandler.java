@@ -24,7 +24,7 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.common.result.QueryStatus;
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.Result;
 
 public class RestResultHandler implements IResultHandler {
 

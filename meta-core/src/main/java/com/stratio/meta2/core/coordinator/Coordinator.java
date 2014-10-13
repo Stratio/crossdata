@@ -25,8 +25,8 @@ import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.executionplan.MetadataWorkflow;
 import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta.common.result.ErrorType;
-import com.stratio.meta.common.result.Result;
+import com.stratio.meta2.common.result.ErrorType;
+import com.stratio.meta2.common.result.Result;
 import com.stratio.meta.communication.AttachCluster;
 import com.stratio.meta.communication.AttachConnector;
 import com.stratio.meta.communication.DetachCluster;
