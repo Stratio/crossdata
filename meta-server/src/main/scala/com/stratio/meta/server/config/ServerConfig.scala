@@ -41,16 +41,6 @@ trait ServerConfig extends SparkConfig with StreamingConfig with GridConfig {
   lazy val logger: Logger = ???
   lazy val engineConfig: EngineConfig = {
     val result = new EngineConfig()
-    //result.setCassandraHosts(cassandraHosts)
-    //result.setCassandraPort(cassandraPort)
-    result.setSparkMaster(sparkMaster)
-    result.setClasspathJars(sparkClasspath)
-    result.setKafkaServer(kafkaServer)
-    result.setKafkaPort(kafkaPort)
-    result.setZookeeperServer(zookeeperServer)
-    result.setZookeeperPort(zookeeperPort)
-    result.setStreamingDuration(streamingDuration)
-    result.setStreamingGroupId(streamingGroupId)
     result.setGridListenAddress(gridListenAddress)
     result.setGridContactHosts(gridContactHosts)
     result.setGridPort(gridPort)
