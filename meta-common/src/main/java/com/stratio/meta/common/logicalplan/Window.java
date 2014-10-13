@@ -16,12 +16,16 @@
  * under the License.
  */
 
-package com.stratio.meta.common.statements.structures.window;
+package com.stratio.meta.common.logicalplan;
+
+import com.stratio.meta.common.connector.Operations;
+import com.stratio.meta.common.statements.structures.window.TimeUnit;
+import com.stratio.meta.common.statements.structures.window.WindowType;
 
 /**
- * Window
+ * Window operator
  */
-public class Window {
+public class Window extends TransformationStep{
 
     /**
      * Type of window.
@@ -46,10 +50,26 @@ public class Window {
     /**
      * Class constructor.
      *
+     * @param operation The operation to be applied.
      * @param type The {@link com.stratio.meta.common.statements.structures.window.WindowType}.
      */
-    public Window(WindowType type) {
+    public Window(Operations operation, WindowType type) {
+        super(operation);
         this.type = type;
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param operation The operation to be applied.
+     * @param window A {@link com.stratio.meta.common.statements.structures.window.Window}.
+     */
+    public Window(Operations operation, com.stratio.meta.common.statements.structures.window.Window window){
+        super(operation);
+        this.type = window.getType();
+        this.numRows = window.getNumRows();
+        this.numTimeUnits = window.getNumTimeUnits();
+        this.timeUnit = window.getTimeUnit();
     }
 
     /**
