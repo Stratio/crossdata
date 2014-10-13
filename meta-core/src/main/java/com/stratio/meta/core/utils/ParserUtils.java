@@ -174,7 +174,7 @@ public class ParserUtils {
         }
 
         // Get best suggestion words for the incorrect token
-        Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2);
+        //Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2); //it is not being used
 
         //TODO: Update "Did you mean" mechanism
     /*StringBuilder sb = new StringBuilder("Did you mean: ");
