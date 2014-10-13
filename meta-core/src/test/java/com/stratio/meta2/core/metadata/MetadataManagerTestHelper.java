@@ -194,7 +194,7 @@ public class MetadataManagerTestHelper {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterMetadata, true, true);
+        MetadataManager.MANAGER.createCluster(clusterMetadata, false, true);
         return clusterName;
     }
 
@@ -213,7 +213,7 @@ public class MetadataManagerTestHelper {
                 new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterMetadata, true, true);
+        MetadataManager.MANAGER.createCluster(clusterMetadata, false, true);
         return clusterName;
     }
 
@@ -223,7 +223,7 @@ public class MetadataManagerTestHelper {
         Map<TableName, TableMetadata> catalogTables = new HashMap<>();
         Map<Selector, Selector> options = new HashMap<>();
         CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);
-        MetadataManager.MANAGER.createCatalog(catalogMetadata);
+        MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
         return catalogName;
     }
 
