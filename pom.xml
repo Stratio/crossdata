@@ -77,6 +77,11 @@
             <name>Óscar Puertas</name>
             <email>opuertas at stratio dot com</email>
         </developer>
+        <developer>
+            <id>jjlopez</id>
+            <name>Juanjo Lopez</name>
+            <email>jjlopez at stratio dot com</email>
+        </developer>
     </developers>
 
     <modules>
@@ -93,10 +98,8 @@
     <properties>
         <scala.version>2.10.4</scala.version>
         <akka.version>2.2.4</akka.version>
-        <cassandra.driver>2.0.0</cassandra.driver>
-        <deep.version>0.3.2</deep.version>
         <infinispan.version>6.0.2.Final</infinispan.version>
-        <scala.dep.version>2.10</scala.dep.version>
+        <scala.dep.version>2.10.4</scala.dep.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
         <scala.version>2.10.4</scala.version>
         <slf4j.version>1.7.5</slf4j.version>
@@ -118,6 +121,7 @@
                         <format>xml</format>
                     </formats>
                     <aggregate>true</aggregate>
+                    <check/>
                 </configuration>
             </plugin>
 
