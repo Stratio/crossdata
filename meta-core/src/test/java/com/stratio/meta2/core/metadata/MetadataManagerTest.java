@@ -17,34 +17,20 @@ package com.stratio.meta2.core.metadata;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
-import com.stratio.meta.common.connector.Operations;
-import com.stratio.meta2.common.api.PropertyType;
-import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.ClusterAttachedMetadata;
 import com.stratio.meta2.common.metadata.ClusterMetadata;
-import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
-import com.stratio.meta2.common.statements.structures.selectors.Selector;
-import com.stratio.meta2.core.query.BaseQuery;
-import com.stratio.meta2.core.query.MetadataParsedQuery;
-import com.stratio.meta2.core.query.MetadataPlannedQuery;
-import com.stratio.meta2.core.query.MetadataValidatedQuery;
-import com.stratio.meta2.core.statements.AttachConnectorStatement;
 
 public class MetadataManagerTest extends MetadataManagerTestHelper {
 

@@ -34,7 +34,7 @@ import com.stratio.meta2.common.metadata._
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta2.core.grid.Grid
-import com.stratio.meta2.core.metadata.{MetadataManager, MetadataManagerTests}
+import com.stratio.meta2.core.metadata.{MetadataManager}
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.core.statements.{InsertIntoStatement, MetadataStatement, SelectStatement}
 import com.stratio.meta2.server.actors.CoordinatorActor
@@ -50,7 +50,7 @@ import scala.concurrent.duration.DurationInt
 class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig {
   this: Suite =>
 
-  val metadataManager=new MetadataManagerTests()
+//  val metadataManager new MetadataManagerTestHelper()
   def incQueryId():String={ queryIdIncrement+=1;return queryId+queryIdIncrement}
 
 
