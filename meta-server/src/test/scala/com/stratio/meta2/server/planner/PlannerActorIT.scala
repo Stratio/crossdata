@@ -67,14 +67,14 @@ class PlannerActorIT extends ActorReceiveUtils with FunSuiteLike with ServerConf
   val metadataParsedQuery = new MetadataParsedQuery(
     new BaseQuery(
       queryId,
-      "select * from myQuery;",
+      "create catalog syntax",
       new CatalogName("myCatalog")
     ), metadataStatement
   )
   val metadataParsedQuery2 = new MetadataParsedQuery(
     new BaseQuery(
       queryId,
-      "select * from myQuery;",
+      "create table syntax",
       new CatalogName("myCatalog")
     ), metadataStatement2
   )
@@ -83,7 +83,7 @@ class PlannerActorIT extends ActorReceiveUtils with FunSuiteLike with ServerConf
   val svq=new SelectValidatedQuery(selectParsedQuery)
 
   test("Metadata Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
-    within(5000 millis) {
+    within(500000 millis) {
       plannerActor ! mdvq
       expectMsg(ACK("query_id-2384234-1341234-23434",QueryStatus.PLANNED)) // bounded to 1 second
       //val ack:ACK=expectMsg(ACK).asInstanceOf[ACK]// bounded to 1 second
@@ -96,7 +96,7 @@ class PlannerActorIT extends ActorReceiveUtils with FunSuiteLike with ServerConf
   }
 
   /*
-  test("Select Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
+  test("Select Planner->Coordinator->ConnectorManager->Ok: sends a query and should receive Ok") {
     within(5000 millis) {
       plannerActor ! svq
       expectMsg(ACK) // bounded to 1 second

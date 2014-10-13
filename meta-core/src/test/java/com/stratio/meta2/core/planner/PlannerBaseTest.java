@@ -40,7 +40,7 @@ import com.stratio.meta.common.logicalplan.Select;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.grammar.ParsingTest;
-import com.stratio.meta2.core.metadata.MetadataManagerTests;
+import com.stratio.meta2.core.metadata.MetadataManagerTestHelper;
 import com.stratio.meta2.core.query.ParsedQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
 import com.stratio.meta2.core.statements.SelectStatement;
@@ -48,7 +48,7 @@ import com.stratio.meta2.core.statements.SelectStatement;
 /**
  * Base class for planner tests.
  */
-public class PlannerBaseTest extends MetadataManagerTests{
+public class PlannerBaseTest extends MetadataManagerTestHelper {
 
     /**
      * Class logger.

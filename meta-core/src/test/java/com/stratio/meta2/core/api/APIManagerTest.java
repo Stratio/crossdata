@@ -32,9 +32,9 @@ import com.stratio.meta2.common.result.Result;
 import com.stratio.meta2.common.api.PropertiesType;
 import com.stratio.meta2.common.api.PropertyType;
 import com.stratio.meta2.common.api.datastore.DataStoreType;
-import com.stratio.meta2.core.metadata.MetadataManagerTests;
+import com.stratio.meta2.core.metadata.MetadataManagerTestHelper;
 
-public class APIManagerTest extends MetadataManagerTests{
+public class APIManagerTest extends MetadataManagerTestHelper {
 
     @Test
     public void testProcessRequest() throws Exception {

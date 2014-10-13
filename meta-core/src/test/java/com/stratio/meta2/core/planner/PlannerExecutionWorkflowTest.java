@@ -160,8 +160,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.SELECT_WINDOW);
 
-        connector1 = createTestConnector("TestConnector1", dataStoreName, operationsC1, "actorRef1");
-        connector2 = createTestConnector("TestConnector2", dataStoreName, operationsC2, "actorRef2");
+        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(),operationsC1, "actorRef1");
+        connector2 = createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(),operationsC2, "actorRef2");
 
         clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName());
         CatalogName catalogName = createTestCatalog("demo");
@@ -460,7 +460,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         DataStoreName dataStoreName = createTestDatastore();
         Set<Operations> operations = new HashSet<>();
         operations.add(Operations.INSERT);
-        ConnectorMetadata connectorMetadata = createTestConnector("cassandraConnector", dataStoreName, operations, "1");
+        ConnectorMetadata connectorMetadata = createTestConnector("cassandraConnector", dataStoreName,new HashSet<ClusterName>(), operations,
+                "1");
         createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
 
         String[] columnNames = { "name", "gender", "age", "bool", "phrase", "email" };

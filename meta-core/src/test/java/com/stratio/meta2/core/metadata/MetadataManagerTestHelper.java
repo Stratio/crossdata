@@ -21,8 +21,9 @@ package com.stratio.meta2.core.metadata;
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,7 +61,7 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.grid.Grid;
 import com.stratio.meta2.core.grid.GridInitializer;
 
-public class MetadataManagerTests {
+public class MetadataManagerTestHelper {
 
     Map<FirstLevelName, Serializable> metadataMap = new HashMap<>();
     private String path = "";
@@ -80,28 +81,18 @@ public class MetadataManagerTests {
         DataStoreName dataStoreName = new DataStoreName(dataStore);
         String version = "0.1.0";
 
-        List<PropertyType> requiredProperties = new ArrayList<>();
-        PropertyType p1 = new PropertyType();
-        p1.setPropertyName("property1");
-        p1.setDescription("descriptionProperty1");
-        requiredProperties.add(p1);
+        Set<PropertyType> requiredPropertiesForDataStore = new HashSet<>();
+        Set<PropertyType> othersProperties = new HashSet<>();
+        Set<String> behaviors = new HashSet<>();
 
-        List<PropertyType> otherProperties = new ArrayList<>();
-        PropertyType p2 = new PropertyType();
-        p2.setPropertyName("otherProperty1");
-        p2.setDescription("descriptionOtherProperty1");
-        otherProperties.add(p2);
-
-        //DataStoreName name, String version, List<PropertyType> requiredProperties, List<PropertyType> othersProperties
-        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(
-                dataStoreName, version,
-                requiredProperties, otherProperties, null);
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
+                requiredPropertiesForDataStore, othersProperties, behaviors);
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
         return dataStoreMetadata;
     }
 
     @BeforeClass
-    public void setUp(){
+    public void setUp() {
         initializeGrid();
         Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("meta-test");
         Lock lock = Grid.getInstance().lock("meta-test");
@@ -117,7 +108,7 @@ public class MetadataManagerTests {
     }
 
     /**
-     * Create a test datastore named "dataStoreTest".
+     * Create a test dataStore named "dataStoreTest".
      *
      * @return A {@link com.stratio.meta2.common.data.DataStoreName}.
      */
@@ -133,69 +124,100 @@ public class MetadataManagerTests {
      * Create a test connector.
      *
      * @param name          The connector name.
-     * @param dataStoreName The datastore associated with this connector.
+     * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.meta2.common.data.ConnectorName}.
      */
-    public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Set<Operations> operations,
+    public ConnectorName createTestConnector(String name, DataStoreName dataStoreName,
             String actorRef) {
         final String version = "0.1.0";
         ConnectorName connectorName = new ConnectorName(name);
+        Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, new ArrayList<String>(),
+                new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
+        connectorMetadata.setActorRef(actorRef);
+        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        return connectorName;
+    }
 
-        List<PropertyType> requiredProperties = new ArrayList<>();
-        PropertyType p1 = new PropertyType();
-        p1.setPropertyName("property1");
-        p1.setDescription("descriptionProperty1");
-        requiredProperties.add(p1);
+    /**
+     * Create a test connector.
+     *
+     * @param name          The connector name.
+     * @param dataStoreName The dataStore associated with this connector.
+     * @return A {@link com.stratio.meta2.common.data.ConnectorName}.
+     */
+    public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
+            String actorRef) {
+        final String version = "0.1.0";
+        ConnectorName connectorName = new ConnectorName(name);
+        Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
+        Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
+                clusterList, clusterProperties,
+                new HashSet<PropertyType>(), new HashSet<PropertyType>(), new HashSet<Operations>());
+        connectorMetadata.setActorRef(actorRef);
+        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        return connectorName;
+    }
 
-        List<PropertyType> otherProperties = new ArrayList<>();
-        PropertyType p2 = new PropertyType();
-        p2.setPropertyName("otherProperty1");
-        p2.setDescription("descriptionOtherProperty1");
-        otherProperties.add(p2);
-
-        List<String> supportedOperations = new ArrayList<>();
-        for(Operations op : operations){
-            supportedOperations.add(op.toString());
-        }
-
-        List<String> dataStoreRefs = Arrays.asList(dataStoreName.getName());
-
-        //
-        //ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
-        //List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
-        //        List<String> supportedOperations)
-        //
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(
-                connectorName, version, dataStoreRefs,
-                requiredProperties, otherProperties, supportedOperations);
-
+    /**
+     * Create a test connector.
+     *
+     * @param name          The connector name.
+     * @param dataStoreName The dataStore associated with this connector.
+     * @return A {@link com.stratio.meta2.common.data.ConnectorName}.
+     */
+    public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
+            Set<Operations> options,
+            String actorRef) {
+        final String version = "0.1.0";
+        ConnectorName connectorName = new ConnectorName(name);
+        Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
+                new HashSet<PropertyType>(), new HashSet<PropertyType>(), options);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorMetadata;
+
     }
 
     /**
      * Create a test cluster.
      *
-     * @param name The name of the cluster.
-     * @param dataStoreName The backend datastore.
-     * @param connectorName The name of the connector.
+     * @param name          The name of the cluster.
+     * @param dataStoreName The backend dataStore.
      */
-    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName connectorName){
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName) {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-        Map<Selector, Selector> properties = new HashMap<>();
-        ConnectorAttachedMetadata connectorAttachedMetadata = new ConnectorAttachedMetadata(connectorName, clusterName,
-                properties);
-        connectorAttachedRefs.put(connectorName, connectorAttachedMetadata);
-        ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options, connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterMetadata);
+        ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
+                connectorAttachedRefs);
+        MetadataManager.MANAGER.createCluster(clusterMetadata, true, true);
         return clusterName;
     }
 
-    public CatalogName createTestCatalog(String name){
+    /**
+     * Create a test cluster.
+     *
+     * @param name          The name of the cluster.
+     * @param dataStoreName The backend dataStore.
+     */
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName connectorName) {
+        // Create & add Cluster
+        ClusterName clusterName = new ClusterName(name);
+        Map<Selector, Selector> options = new HashMap<>();
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
+        connectorAttachedRefs.put(connectorName,
+                new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
+        ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
+                connectorAttachedRefs);
+        MetadataManager.MANAGER.createCluster(clusterMetadata, true, true);
+        return clusterName;
+    }
+
+    public CatalogName createTestCatalog(String name) {
         // Create & add Catalog
         CatalogName catalogName = new CatalogName(name);
         Map<TableName, TableMetadata> catalogTables = new HashMap<>();
@@ -208,15 +230,15 @@ public class MetadataManagerTests {
     public TableMetadata defineTable(
             ClusterName clusterName,
             String catalogName,
-            String tableName, String [] columnNames,
-            ColumnType [] columnTypes, String [] partitionKeys, String [] clusteringKeys){
+            String tableName, String[] columnNames,
+            ColumnType[] columnTypes, String[] partitionKeys, String[] clusteringKeys) {
 
         TableName table = new TableName(catalogName, tableName);
         Map<Selector, Selector> options = new HashMap<>();
 
         //Create columns
         Map<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
-        for(int columnIndex = 0; columnIndex < columnNames.length; columnIndex++){
+        for (int columnIndex = 0; columnIndex < columnNames.length; columnIndex++) {
             ColumnName columnName = new ColumnName(table, columnNames[columnIndex]);
             ColumnType columnType = columnTypes[columnIndex];
             ColumnMetadata columnMetadata = new ColumnMetadata(columnName, null, columnType);
@@ -226,12 +248,12 @@ public class MetadataManagerTests {
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
 
         List<ColumnName> partitionKey = new ArrayList<>();
-        for(String pk : partitionKeys){
+        for (String pk : partitionKeys) {
             partitionKey.add(new ColumnName(table, pk));
         }
 
         List<ColumnName> clusterKey = new ArrayList<>();
-        for(String ck : clusteringKeys){
+        for (String ck : clusteringKeys) {
             partitionKey.add(new ColumnName(table, ck));
         }
 
@@ -243,8 +265,8 @@ public class MetadataManagerTests {
     public TableMetadata createTestTable(
             ClusterName clusterName,
             String catalogName,
-            String tableName, String [] columnNames,
-            ColumnType [] columnTypes, String [] partitionKeys, String [] clusteringKeys){
+            String tableName, String[] columnNames,
+            ColumnType[] columnTypes, String[] partitionKeys, String[] clusteringKeys) {
         TableMetadata tableMetadata = defineTable(clusterName, catalogName, tableName, columnNames, columnTypes,
                 partitionKeys, clusteringKeys);
         MetadataManager.MANAGER.createTable(tableMetadata);
