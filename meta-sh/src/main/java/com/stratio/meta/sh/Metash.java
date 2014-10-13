@@ -438,8 +438,8 @@ public class Metash {
         Manifest manifest;
         try {
             manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest,
-                    getClass().getResourceAsStream(tokens[2].replace(";", "").replace("\"", "").replace("'", "")));
-        } catch (ManifestException e) {
+                    tokens[2].replace(";", "").replace("\"", "").replace("'", ""));
+        } catch (ManifestException | FileNotFoundException e) {
             LOG.error("Manifest couldn't be parsed", e);
             return null;
         }
