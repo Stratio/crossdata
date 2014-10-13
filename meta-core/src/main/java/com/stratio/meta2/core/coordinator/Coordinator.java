@@ -138,9 +138,6 @@ public class Coordinator {
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs =
                 datastoreMetadata.getClusterAttachedRefs();
 
-        ClusterAttachedMetadata value =
-                new ClusterAttachedMetadata(clusterName, datastoreName, options);
-
         clusterAttachedRefs.remove(clusterName);
         datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
 
@@ -203,8 +200,6 @@ public class Coordinator {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
                 clusterMetadata.getConnectorAttachedRefs();
 
-        ConnectorAttachedMetadata value =
-                new ConnectorAttachedMetadata(connectorName, clusterName, options);
         connectorAttachedRefs.remove(connectorName);
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
 
