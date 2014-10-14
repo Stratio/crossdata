@@ -21,6 +21,7 @@ package com.stratio.meta2.core.planner;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -37,6 +38,9 @@ import com.stratio.meta.common.logicalplan.LogicalStep;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.logicalplan.Select;
+import com.stratio.meta.common.logicalplan.Window;
+import com.stratio.meta.common.statements.structures.window.TimeUnit;
+import com.stratio.meta.common.statements.structures.window.WindowType;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.grammar.ParsingTest;
@@ -149,6 +153,41 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
 
     public void assertSelect(LogicalWorkflow workflow) {
         assertTrue(Select.class.isInstance(workflow.getLastStep()), "Select step not found.");
+    }
+
+    public void assertWindow(LogicalWorkflow workflow, WindowType type, int numRows,
+            int numTimeUnits, TimeUnit timeUnit){
+
+        Iterator<LogicalStep> it = workflow.getInitialSteps().iterator();
+        LogicalStep step = null;
+        boolean found = false;
+        //For each initial logical step try to find the join.
+        while (it.hasNext() && !found) {
+            step = it.next();
+            while(step != null && !found) {
+                LOG.info("step: " + step + " isInstance: " + com.stratio.meta.common.logicalplan.Window.class.isInstance(step));
+                if (com.stratio.meta.common.logicalplan.Window.class.isInstance(step)) {
+                    found = true;
+                }else {
+                    step = step.getNextStep();
+                }
+            }
+        }
+        if(found) {
+            com.stratio.meta.common.logicalplan.Window window = com.stratio.meta.common.logicalplan.Window.class
+                    .cast(step);
+
+            assertEquals(window.getType(), type, "Invalid window type");
+            if (WindowType.TEMPORAL.equals(type)) {
+                assertEquals(window.getNumTimeUnits(), numTimeUnits, "Invalid number of time units");
+                assertEquals(window.getTimeUnit(), timeUnit, "Invalid time unit");
+            } else {
+                assertEquals(window.getNumRows(), numRows, "Invalid number of rows");
+            }
+        }else{
+            fail("Window operator not found");
+        }
+
     }
 
     public void assertExecutionWorkflow(ExecutionWorkflow executionWorkflow, int numberSteps, String [] targetActors){

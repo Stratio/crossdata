@@ -28,38 +28,52 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector
 import com.stratio.meta.common.data.Row
 import java.util
 
-case class ACK(queryId: String, status: QueryStatus)
+@SerialVersionUID(-4155622367894752659L)
+case class ACK(queryId: String, status: QueryStatus) extends Serializable
 
-case class Connect(credentials: ICredentials, connectorClusterConfig: ConnectorClusterConfig)
+@SerialVersionUID(-4225642367894752659L)
+case class Connect(credentials: ICredentials, connectorClusterConfig: ConnectorClusterConfig) extends Serializable
 
-case class Reply(msg: String)
+@SerialVersionUID(-2255642367894752659L)
+case class Reply(msg: String) extends Serializable
 
-case class Disconnect(userId: String)
+@SerialVersionUID(-4155642367894752622L)
+case class Disconnect(userId: String) extends Serializable
 
 //CONNECTOR messages
-case class ConnectToConnector(msg: String)
+@SerialVersionUID(-4155642367894222659L)
+case class ConnectToConnector(msg: String) extends Serializable
 
-case class DisconnectFromConnector(msg: String)
+@SerialVersionUID(-3355642367894752659L)
+case class DisconnectFromConnector(msg: String) extends Serializable
 
-case class Request(msg: String)
+@SerialVersionUID(-4133642367894752659L)
+case class Request(msg: String) extends Serializable
 
-case class Response(msg: String)
+@SerialVersionUID(-4155642367894752633L)
+case class Response(msg: String) extends Serializable
 
-case class MetadataStruct(clusterName: String, connectorName: String, metadata: String)
+@SerialVersionUID(-5555642367894752659L)
+case class MetadataStruct(clusterName: String, connectorName: String, metadata: String) extends Serializable
 
-case class StorageQueryStruct(clusterName: String, connectorName: String, storageQuery: String)
+@SerialVersionUID(-4155552367894752659L)
+case class StorageQueryStruct(clusterName: String, connectorName: String, storageQuery: String) extends Serializable
 
-case class WorkflowStruct(clusterName: String, connectorName: String, workFlow: LogicalWorkflow)
+@SerialVersionUID(-4155642367855752659L)
+case class WorkflowStruct(clusterName: String, connectorName: String, workFlow: LogicalWorkflow) extends Serializable
 
-case class replyConnectorName(name: String)
+@SerialVersionUID(-4155642367894755559L)
+case class replyConnectorName(name: String) extends Serializable
 
-case class getConnectorName()
+@SerialVersionUID(-6655642367894752659L)
+case class getConnectorName() extends Serializable
 
 /**
  * Parent class for all operations to be executed on CONNECTOR Actors.
  * @param queryId The query identifier.
  */
-class Operation(val queryId: String)
+@SerialVersionUID(-4155642367894752659L)
+class Operation(val queryId: String) extends Serializable
 
 // ============================================================================
 //                                IStorageEngine

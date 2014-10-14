@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.core.coordinator;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,7 +49,7 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.metadata.MetadataManager;
 
-public class Coordinator {
+public class Coordinator implements Serializable {
 
     /**
      * Class logger.
@@ -64,6 +65,7 @@ public class Coordinator {
         case CREATE_INDEX:
             persistCreateIndex(metadataWorkflow.getIndexMetadata());
             break;
+        case CREATE_TABLE_AND_CATALOG:
         case CREATE_TABLE:
             persistCreateTable(metadataWorkflow.getTableMetadata());
             break;
@@ -77,7 +79,7 @@ public class Coordinator {
             persistDropTable(metadataWorkflow.getTableName());
             break;
         default:
-            LOG.info("not known statement detected");
+            LOG.info("unknown statement detected");
             break;
         }
     }
@@ -137,9 +139,6 @@ public class Coordinator {
 
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs =
                 datastoreMetadata.getClusterAttachedRefs();
-
-        ClusterAttachedMetadata value =
-                new ClusterAttachedMetadata(clusterName, datastoreName, options);
 
         clusterAttachedRefs.remove(clusterName);
         datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
@@ -203,8 +202,6 @@ public class Coordinator {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
                 clusterMetadata.getConnectorAttachedRefs();
 
-        ConnectorAttachedMetadata value =
-                new ConnectorAttachedMetadata(connectorName, clusterName, options);
         connectorAttachedRefs.remove(connectorName);
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
 

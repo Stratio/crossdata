@@ -81,7 +81,8 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
     case connectRequest: com.stratio.meta.communication.Connect => {
       log.debug("->" + "Receiving MetadataRequest")
-      //connector.connect(connectRequest.credentials,connectRequest.connectorClusterConfig)
+      log.info(">>>>>> TRACE: " + self + " received connect command")
+      connector.connect(connectRequest.credentials, connectRequest.connectorClusterConfig)
       this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
       sender ! "ok"
     }
@@ -112,41 +113,48 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     }
 
     case metadataOp: MetadataOperation => {
-      var qId:String=null
+      var qId:String=metadataOp.queryId
       try {
         val opclass=metadataOp.getClass().toString().split('.')
         val eng = connector.getMetadataEngine()
 
         opclass( opclass.length -1 ) match{
-        case "CreateTable" =>{
-          println("creating table fromfrom  "+self.path)
-          qId=metadataOp.asInstanceOf[CreateTable].queryId
-          eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
-            metadataOp.asInstanceOf[CreateTable].tableMetadata)
-        }
-        case "CreateCatalog"=>{
-          qId=metadataOp.asInstanceOf[CreateCatalog].queryId
-          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+          case "CreateTable" =>{
+            println("creating table fromfrom  "+self.path)
+            qId=metadataOp.asInstanceOf[CreateTable].queryId
+            eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
+              metadataOp.asInstanceOf[CreateTable].tableMetadata)
+          }
+          case "CreateCatalog"=>{
+            qId=metadataOp.asInstanceOf[CreateCatalog].queryId
+            eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+              metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+          }
+          case "CreateIndex"=>{
+            qId=metadataOp.asInstanceOf[CreateIndex].queryId
+            eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
+              metadataOp.asInstanceOf[CreateIndex].indexMetadata)
+          }
+          case "DropCatalog"=>{
+            qId=metadataOp.asInstanceOf[DropIndex].queryId
+            eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
             metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-        }
-        case "CreateIndex"=>{
-          qId=metadataOp.asInstanceOf[CreateIndex].queryId
-          eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
-            metadataOp.asInstanceOf[CreateIndex].indexMetadata)
-        }
-        case "DropCatalog"=>{
-          qId=metadataOp.asInstanceOf[DropIndex].queryId
-          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-          metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-        }
-        case "DropIndex"=>{
-          qId=metadataOp.asInstanceOf[DropIndex].queryId
-          eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster,metadataOp.asInstanceOf[DropIndex].indexMetadata)
-        }
-        case "DropTable"=>{
-          qId=metadataOp.asInstanceOf[DropTable].queryId
-          eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster,metadataOp.asInstanceOf[DropTable].tableName)
-        }
+          }
+          case "DropIndex"=>{
+            qId=metadataOp.asInstanceOf[DropIndex].queryId
+            eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster,metadataOp.asInstanceOf[DropIndex].indexMetadata)
+          }
+          case "DropTable"=>{
+            qId=metadataOp.asInstanceOf[DropTable].queryId
+            eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster,metadataOp.asInstanceOf[DropTable].tableName)
+          }
+          case "CreateTableAndCatalog"=>{
+            qId=metadataOp.asInstanceOf[CreateTableAndCatalog].queryId
+            eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
+              metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
+            eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
+              metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
+          }
         }
         val result = MetadataResult.createSuccessMetadataResult()
         result.setQueryId(qId)
@@ -200,8 +208,6 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       result.setQueryId(qId)
       sender ! result
     }
-
-
 
     case msg: getConnectorName => {
       log.info(sender + " asked for my name")

@@ -1,4 +1,4 @@
-/*
+package com.stratio.meta.connector.plugin.installer;/*
  * Licensed to STRATIO (C) under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership.  The STRATIO (C) licenses this file
@@ -17,6 +17,7 @@
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -44,9 +45,9 @@ import org.apache.maven.project.MavenProject;
 @Execute(
         phase = LifecyclePhase.INSTALL
 )
-public class ConnectorInstallerMojo extends AbstractMojo {
+public class InstallerGoalMojo extends AbstractMojo {
 
-    @Parameter(name = "${project}")
+    @Parameter(defaultValue = "${project}")
     private MavenProject project;
 
     @Component
@@ -61,11 +62,54 @@ public class ConnectorInstallerMojo extends AbstractMojo {
     @Parameter(defaultValue = "${project.remoteArtifactRepositories}")
     private List remoteRepositories;
 
+    @Parameter(
+            name = "outputDirectory",
+            defaultValue = "${project.build.directory}"
+    )
+    private String outputDirectory;
+
+    @Parameter(
+            name = "configDirectory",
+            defaultValue = "${project.basedir}/src/main/config"
+    )
+    private String configDirectory;
+
+    @Parameter(
+            name = "includeDirectory",
+            defaultValue = "${project.basedir}/src/main/include"
+    )
+    private String includeDirectory;
+
+    @Parameter(
+            name = "connectorName",
+            defaultValue = "${project.artifactId}-${project.version}"
+    )
+    private String connectorName;
+
+    @Parameter(
+            name = "userService",
+            defaultValue = "root"
+    )
+    private String userService;
+
+    @Parameter(
+            name = "mainClass",
+            required = true
+    )
+    private String mainClass;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         File mainJarRepo = this.resolveProjectArtifact();
-        List<File> dependenciesRepo=this.resolveTransitiveDependecies();
-
+        List<File> dependenciesJarRepo = this.resolveTransitiveDependecies();
+        InstallerGoalConfig config = new InstallerGoalConfig(this.outputDirectory, this.configDirectory,
+                this.includeDirectory, this.connectorName, this.userService, this.mainClass, mainJarRepo,
+                dependenciesJarRepo);
+        try {
+            InstallerGoalLauncher.launchInstallerGoal(config);
+        } catch (IOException e) {
+            throw  new MojoExecutionException("Problem with Launcher: " + e.getMessage(),e.getCause());
+        }
     }
 
     private File resolveProjectArtifact() throws MojoFailureException {
@@ -80,9 +124,9 @@ public class ConnectorInstallerMojo extends AbstractMojo {
         return projectArtifact.getFile();
     }
 
-    private List<File> resolveTransitiveDependecies() throws MojoFailureException{
-        List<File> result=new ArrayList<>();
-        Set artifacts= project.getArtifacts();
+    private List<File> resolveTransitiveDependecies() throws MojoFailureException {
+        List<File> result = new ArrayList<>();
+        Set artifacts = project.getArtifacts();
         for (Object anArtifactObj : artifacts) {
             Artifact artifact = (Artifact) anArtifactObj;
             if (artifact.getFile() == null) {

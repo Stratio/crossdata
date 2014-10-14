@@ -52,6 +52,7 @@ import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.logicalplan.Select;
 import com.stratio.meta.common.logicalplan.TransformationStep;
 import com.stratio.meta.common.logicalplan.UnionStep;
+import com.stratio.meta.common.logicalplan.Window;
 import com.stratio.meta.common.statements.structures.relationships.Operator;
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta.common.utils.StringUtils;
@@ -492,6 +493,11 @@ public class Planner {
             processed = addFilter(processed, tableMetadataMap, query);
         }
 
+        SelectStatement ss = SelectStatement.class.cast(query.getStatement());
+        if(ss.getWindow() != null){
+            processed = addWindow(processed, ss);
+        }
+
         //Add join
         if (query.getJoin() != null) {
             processed = addJoin(processed, selectTable, query);
@@ -520,13 +526,14 @@ public class Planner {
         }
 
         //Add LIMIT clause
-        SelectStatement ss = SelectStatement.class.cast(query.getStatement());
         if (ss.isLimitInc()) {
             Limit l = new Limit(Operations.SELECT_LIMIT, ss.getLimit());
             last.setNextStep(l);
             l.setPrevious(last);
             last = l;
         }
+
+        //Add window
 
         //Add SELECT operator
         Select finalSelect = generateSelect(ss, tableMetadataMap);
@@ -632,6 +639,7 @@ public class Planner {
                     clusterName, partitionKey, clusterKey);
             metadataWorkflow.setTableName(name);
             metadataWorkflow.setTableMetadata(tableMetadata);
+            metadataWorkflow.setClusterName(clusterName);
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
@@ -648,11 +656,11 @@ public class Planner {
 
             // Create parameters for metadata workflow
             AttachClusterStatement attachClusterStatement = (AttachClusterStatement) metadataStatement;
-            String actorRef = null;
+            String actorRefUri = null;
             ExecutionType executionType = ExecutionType.ATTACH_CLUSTER;
             ResultType type = ResultType.RESULTS;
 
-            managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
+            managementWorkflow = new ManagementWorkflow(queryId, actorRefUri, executionType, type);
 
             // Add required information
             managementWorkflow.setClusterName(attachClusterStatement.getClusterName());
@@ -673,6 +681,10 @@ public class Planner {
             managementWorkflow.setConnectorName(attachConnectorStatement.getConnectorName());
             managementWorkflow.setClusterName(attachConnectorStatement.getClusterName());
             managementWorkflow.setOptions(attachConnectorStatement.getOptions());
+
+            ConnectorMetadata connector = MetadataManager.MANAGER
+                    .getConnector(attachConnectorStatement.getConnectorName());
+            managementWorkflow.setActorRef(connector.getActorRef());
 
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
@@ -816,6 +828,7 @@ public class Planner {
      * @param lastSteps        The map associating table names to Project steps.
      * @param tableMetadataMap A map with the table metadata indexed by table name.
      * @param query            The query to be planned.
+     * @return The resulting map of logical steps.
      */
     private Map<String, LogicalStep> addFilter(Map<String, LogicalStep> lastSteps,
             Map<String, TableMetadata> tableMetadataMap,
@@ -840,6 +853,22 @@ public class Planner {
             }
 
         }
+        return lastSteps;
+    }
+
+    /**
+     * Add a window operator for streaming queries.
+     *
+     * @param lastSteps The map associating table names to Project steps
+     * @param stmt The select statement.
+     * @return The resulting map of logical steps.
+     */
+    private Map<String, LogicalStep> addWindow(Map<String, LogicalStep> lastSteps, SelectStatement stmt){
+        Window w = new Window(Operations.SELECT_WINDOW, stmt.getWindow());
+        LogicalStep previous = lastSteps.get(stmt.getTableName().getQualifiedName());
+        previous.setNextStep(w);
+        w.setPrevious(previous);
+        lastSteps.put(stmt.getTableName().getQualifiedName(), w);
         return lastSteps;
     }
 

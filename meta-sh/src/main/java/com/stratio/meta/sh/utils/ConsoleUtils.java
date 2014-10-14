@@ -20,7 +20,6 @@ package com.stratio.meta.sh.utils;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -29,8 +28,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -60,15 +57,14 @@ import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
-import com.stratio.meta2.common.api.ManifestHelper;
-import com.stratio.meta2.common.result.ErrorResult;
 import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta2.common.result.Result;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.connector.ConnectorFactory;
 import com.stratio.meta2.common.api.connector.ConnectorType;
 import com.stratio.meta2.common.api.datastore.DataStoreFactory;
 import com.stratio.meta2.common.api.datastore.DataStoreType;
+import com.stratio.meta2.common.result.ErrorResult;
+import com.stratio.meta2.common.result.Result;
 
 import jline.console.ConsoleReader;
 import jline.console.history.History;
@@ -306,7 +302,6 @@ public class ConsoleUtils {
             return parseFromXmlToConnectorManifest(new FileInputStream(path));
         }
     }
-
 
     public static Manifest parseFromXmlToManifest(int manifestType, InputStream path) throws
             ManifestException {

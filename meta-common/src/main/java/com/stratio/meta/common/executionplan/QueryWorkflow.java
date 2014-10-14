@@ -20,7 +20,6 @@ package com.stratio.meta.common.executionplan;
 
 
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
-import com.stratio.meta.communication.StorageOperation;
 
 /**
  * Execution step for query operations.
@@ -41,6 +40,7 @@ public class QueryWorkflow extends ExecutionWorkflow {
      * @param type          Type of results.
      * @param workflow      The logical workflow.
      */
+    // TODO: Remove queryId because this queryId is already in the PlannedQuery that wraps this class
     public QueryWorkflow(String queryId, String actorRef, ExecutionType executionType,
             ResultType type, LogicalWorkflow workflow) {
         super(queryId, actorRef, executionType, type);

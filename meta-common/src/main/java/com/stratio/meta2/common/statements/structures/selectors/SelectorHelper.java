@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -16,8 +16,19 @@
  * under the License.
  */
 
-package com.stratio.meta.common.security;
+package com.stratio.meta2.common.statements.structures.selectors;
 
-public interface ICredentials {
+import java.util.HashMap;
+import java.util.Map;
+
+public class SelectorHelper {
+
+    public static Map<String, String> convertSelectorMapToStringMap(Map<Selector, Selector> selectorsMap){
+        Map<String, String> stringsMap = new HashMap<>();
+        for(Selector selector: selectorsMap.keySet()){
+            stringsMap.put(selector.toString(), selectorsMap.get(selector).toString());
+        }
+        return stringsMap;
+    }
 
 }
