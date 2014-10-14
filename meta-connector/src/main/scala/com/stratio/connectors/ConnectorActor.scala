@@ -56,7 +56,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
   override def handleHeartbeat(heartbeat: HeartbeatSig) = {
     //println("receiving heartbeat signal")
     runningJobs.foreach{
-      keyval=> keyval._2 ! IAmAlive(keyval._1)
+      keyval:(String,ActorRef)=> keyval._2 ! IAmAlive(keyval._1)
     }
   }
 

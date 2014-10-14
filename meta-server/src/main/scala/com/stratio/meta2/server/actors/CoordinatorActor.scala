@@ -81,7 +81,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         case workflow: ManagementWorkflow => {
           log.debug("CoordinatorActor: ManagementWorkflow received")
-          val requestSender = sender
+          //val requestSender = sender
           log.info(">>>>>> TRACE: ManagementWorkflow ")
           val queryId = plannedQuery.getQueryId
           sender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage(queryId))
