@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.common.statements.structures.selectors;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
@@ -26,7 +27,7 @@ import java.util.List;
  * example, given the following statement: SELECT a, b as z, function(c) FROM t this class contains
  * a list with a, b as z, function(c).
  */
-public class SelectExpression {
+public class SelectExpression implements Serializable {
 
     /**
      * List of selectors.

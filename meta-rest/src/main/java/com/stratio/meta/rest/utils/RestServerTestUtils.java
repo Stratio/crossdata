@@ -19,6 +19,7 @@
 package com.stratio.meta.rest.utils;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -46,16 +47,14 @@ public class RestServerTestUtils {
         if (age > 0) {
             r.addCell("age", new Cell(age));
         }
-        try {
+        if(bool!=null){
             if (bool.equals(true) || bool.equals(false)) {
                 r.addCell("bool", new Cell(bool));
             }
-        } catch (NullPointerException n) {
         }
         if (!phrase.isEmpty()) {
             r.addCell("phrase", new Cell(phrase));
         }
-
         return r;
 
     }
@@ -63,7 +62,7 @@ public class RestServerTestUtils {
     public static ResultSet toResultSet(ArrayList<Row> rows, Map<String, ColumnDefinition> map) {
         ResultSet rs = new ResultSet();
         rs.setRows(rows);
-        ArrayList<ColumnMetadata> columns = new ArrayList<ColumnMetadata>();
+        List<ColumnMetadata> columns = new ArrayList<ColumnMetadata>();
         for (Entry<String, ColumnDefinition> data : map.entrySet()) {
             String col_name = data.getValue().getDatatype().getName();
             String key = data.getKey();
@@ -99,7 +98,7 @@ public class RestServerTestUtils {
         return true;
     }
 
-    public static boolean assertEqualsRowsArrayList(ArrayList<Row> rowsList1, ArrayList<Row> rowsList2) {
+    public static boolean assertEqualsRowsArrayList(List<Row> rowsList1, ArrayList<Row> rowsList2) {
         boolean existsEqualRow = false;
         if (rowsList1.size() != rowsList2.size()) {
             return false;
@@ -123,14 +122,11 @@ public class RestServerTestUtils {
     public static boolean assertEqualsRows(Row r1, Row r2) {
 
         for (Entry<String, Cell> e : r1.getCells().entrySet()) {
-            System.out.println(e.getKey());
             Cell c = r2.getCell(e.getKey());
             if (c == null) {
-                System.out.println(e.getKey());
                 return false;
             } else {
                 if (!assertEqualsCells(c, e.getValue())) {
-                    System.out.println(e.getValue().getValue());
                     return false;
                 }
             }

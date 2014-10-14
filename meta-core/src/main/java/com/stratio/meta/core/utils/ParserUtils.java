@@ -92,11 +92,12 @@ public class ParserUtils {
 
     public static String getQueryWithSign(String query, AntlrError ae) {
         int marker = 0;
-        if (query.startsWith("[")) {
-            marker = query.indexOf("], ") + 3;
-            query = query.substring(marker);
+        String q=query;
+        if (q.startsWith("[")) {
+            marker = q.indexOf("], ") + 3;
+            q= q.substring(marker);
         }
-        StringBuilder sb = new StringBuilder(query);
+        StringBuilder sb = new StringBuilder(q);
         int pos = getCharPosition(ae) - marker;
         if (pos >= 0) {
             sb.insert(pos, "?");

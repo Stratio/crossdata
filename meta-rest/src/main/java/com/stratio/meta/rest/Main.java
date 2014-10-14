@@ -21,6 +21,7 @@ package com.stratio.meta.rest;
 import java.io.IOException;
 import java.net.URI;
 
+import org.apache.log4j.Logger;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -38,6 +39,7 @@ public class Main {
     // Driver that connects to the META servers.
 
     private static DriverHelper driver = DriverHelper.getInstance();
+    private static final Logger LOG = Logger.getLogger(com.stratio.meta.rest.Main.class);
 
     /**
      * Starts Grizzly HTTP server exposing JAX-RS resources defined in this application.
@@ -66,13 +68,15 @@ public class Main {
         final HttpServer server = startServer();
         try {
             driver.connect();
-            System.out.println(String.format("Jersey app started with WADL available at "
-                    + "%sapplication.wadl\nHit enter to stop it...", BASE_URI));
+            LOG.info(
+                    String.format(
+                            "Jersey app started with WADL available at %sapplication.wadl%nHit enter to stop it...",
+                            BASE_URI));
             System.in.read();
             server.stop();
             driver.close();
         } catch (ConnectionException e) {
-            System.out.println("Couldn't connect");
+            LOG.error("Couldn't connect");
             server.stop();
             driver.close();
         }

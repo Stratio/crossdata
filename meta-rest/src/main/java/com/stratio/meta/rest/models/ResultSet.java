@@ -18,34 +18,34 @@
 
 package com.stratio.meta.rest.models;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import com.stratio.meta.common.data.Row;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 
 public class ResultSet {
 
-    private ArrayList<Row> rows;
+    private List<Row> rows;
 
-    private ArrayList<ColumnMetadata> columnMetadata;
+    private List<ColumnMetadata> columnMetadata;
 
     private boolean empty;
 
     private int size;
 
-    public ArrayList<Row> getRows() {
+    public List<Row> getRows() {
         return rows;
     }
 
-    public void setRows(ArrayList<Row> rows) {
+    public void setRows(List<Row> rows) {
         this.rows = rows;
     }
 
-    public ArrayList<ColumnMetadata> getColumnMetadata() {
+    public List<ColumnMetadata> getColumnMetadata() {
         return columnMetadata;
     }
 
-    public void setColumnMetadata(ArrayList<ColumnMetadata> columnMetadata) {
+    public void setColumnMetadata(List<ColumnMetadata> columnMetadata) {
         this.columnMetadata = columnMetadata;
     }
 

@@ -75,7 +75,7 @@ public class RestServer {
     public String postQuery(@FormParam("catalog") String catalog, @FormParam("query") String query) {
         String queryId = "";
         try {
-            System.out.println("[MetaRestServer] query: " + query + " catalog " + catalog);
+            //System.out.println("[MetaRestServer] query: " + query + " catalog " + catalog);
             driver.executeAsyncQuery(query, catalog, callback);
         } catch (UnsupportedException | ParsingException | ValidationException | ExecutionException
                 | ConnectionException e) {

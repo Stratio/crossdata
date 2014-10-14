@@ -18,13 +18,14 @@
 
 package com.stratio.meta.core.structures;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
 import com.stratio.meta.common.statements.structures.relationships.Relation;
 import com.stratio.meta2.common.data.TableName;
 
-public class InnerJoin {
+public class InnerJoin implements Serializable {
 
     private TableName tableName;
 

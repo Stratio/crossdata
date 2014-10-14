@@ -18,10 +18,12 @@
 
 package com.stratio.meta.common.statements.structures.window;
 
+import java.io.Serializable;
+
 /**
  * Window
  */
-public class Window {
+public class Window implements Serializable {
 
     /**
      * Type of window.
