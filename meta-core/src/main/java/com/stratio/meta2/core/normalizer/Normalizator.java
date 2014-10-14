@@ -263,6 +263,13 @@ public class Normalizator {
         if (relation.getOperator().isInGroup(Operator.Group.ARITHMETIC)) {
             throw new BadFormatException("Compare operations are just valid");
         }
+        checkRelationFormatLeft(relation);
+        checkRelationFormatRight(relation);
+    }
+
+    private void checkRelationFormatLeft(Relation relation)
+            throws BadFormatException, AmbiguousNameException, NotExistNameException, NotValidColumnException,
+            YodaConditionException {
         switch (relation.getLeftTerm().getType()) {
         case FUNCTION:
             throw new BadFormatException("Functions not supported yet");
@@ -277,6 +284,10 @@ public class Normalizator {
         case INTEGER:
             throw new YodaConditionException();
         }
+    }
+
+    private void checkRelationFormatRight(Relation relation)
+            throws BadFormatException, AmbiguousNameException, NotExistNameException {
         switch (relation.getRightTerm().getType()) {
         case FUNCTION:
             throw new BadFormatException("Functions not supported yet");
@@ -293,7 +304,6 @@ public class Normalizator {
         case ASTERISK:
             throw new BadFormatException("Asterisk not supported in relations.");
         }
-
     }
 
     public void checkColumnType(Selector left, Selector right)
@@ -307,6 +317,11 @@ public class Normalizator {
         ColumnName leftColumnName = ((ColumnSelector) left).getName();
         ColumnMetadata leftColumnMetadata = MetadataManager.MANAGER.getColumn(leftColumnName);
 
+        checkColumnRight(right, leftColumnName, leftColumnMetadata);
+    }
+
+    private void checkColumnRight(Selector right, ColumnName leftColumnName, ColumnMetadata leftColumnMetadata)
+            throws NotMatchDataTypeException, BadFormatException {
         switch (right.getType()) {
         case COLUMN:
             ColumnName rightColumnName = ((ColumnSelector) right).getName();
