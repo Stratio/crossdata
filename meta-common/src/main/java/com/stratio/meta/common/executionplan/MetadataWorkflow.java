@@ -112,7 +112,7 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         return indexMetadata;
     }
 
-    public MetadataOperation createMetadataOperationMessage(String queryId) {
+    public MetadataOperation createMetadataOperationMessage() {
         MetadataOperation result = null;
 
         switch (this.executionType) {
@@ -137,6 +137,7 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         case DROP_INDEX:
             result = new DropIndex(queryId, this.clusterName, this.indexMetadata);
             break;
+        default: break;
         }
 
         return result;

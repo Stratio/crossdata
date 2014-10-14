@@ -105,8 +105,6 @@ public enum ExecutionManager {
             beginTransaction();
             executionData.put(key, value);
             commitTransaction();
-        //} catch (ExecutionManagerException mex) {
-            //throw mex;
         } catch (Exception ex) {
             throw new ExecutionManagerException(ex.getMessage(), ex.getCause());
         } finally {
@@ -120,8 +118,6 @@ public enum ExecutionManager {
             beginTransaction();
             executionData.remove(key);
             commitTransaction();
-        //} catch (ExecutionManagerException mex) {
-            //throw mex;
         } catch (Exception ex) {
             throw new ExecutionManagerException(ex.getMessage(), ex.getCause());
         } finally {

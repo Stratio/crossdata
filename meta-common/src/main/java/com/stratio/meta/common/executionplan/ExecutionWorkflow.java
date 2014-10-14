@@ -30,6 +30,11 @@ import com.stratio.meta.common.logicalplan.LogicalStep;
 public class ExecutionWorkflow implements Serializable {
 
     /**
+     * Query identification string
+     */
+    protected final String queryId;
+
+    /**
      * Actor reference of the query sender
      */
     private String sender;
@@ -68,13 +73,15 @@ public class ExecutionWorkflow implements Serializable {
 
     /**
      * Class constructor.
-     * @param queryId Query identifer.
-     * @param actorRef Target actor reference.
+     *
+     * @param queryId       Query identifer.
+     * @param actorRef      Target actor reference.
      * @param executionType Type of execution.
-     * @param type     Type of results.
+     * @param type          Type of results.
      */
     public ExecutionWorkflow(String queryId, String actorRef, ExecutionType executionType,
             ResultType type) {
+        this.queryId = queryId;
         this.actorRef = actorRef;
         this.executionType = executionType;
         this.resultType = type;
@@ -82,6 +89,10 @@ public class ExecutionWorkflow implements Serializable {
 
     public ExecutionType getExecutionType() {
         return executionType;
+    }
+
+    public String getQueryId() {
+        return queryId;
     }
 
     public String getActorRef() {
@@ -132,7 +143,7 @@ public class ExecutionWorkflow implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder("Execution Workflow on " + actorRef + " from ");
         sb.append(executionType).append(" returns ").append(resultType);
-        if(ResultType.TRIGGER_EXECUTION.equals(resultType)){
+        if (ResultType.TRIGGER_EXECUTION.equals(resultType)) {
             sb.append(System.lineSeparator()).append(" trigger step ").append(triggerStep);
         }
         return sb.toString();

@@ -79,8 +79,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setWorkflow(workflow)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
-          val actorRef = context.actorSelection(workflow.getActorRef())
-          actorRef.asInstanceOf[ActorSelection] ! workflow.getStorageOperation(queryId)
+          val actorRef=context.actorSelection(workflow.getActorRef())
+          actorRef ! workflow.getStorageOperation()
         }
 
         case workflow: ManagementWorkflow => {
@@ -89,7 +89,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           if(workflow.getExecutionType == ExecutionType.ATTACH_CONNECTOR){
 
             val credentials = null
-            val managementOperation = workflow.createManagementOperationMessage(queryId)
+            val managementOperation = workflow.createManagementOperationMessage()
             val attachConnectorOperation = managementOperation.asInstanceOf[AttachConnector]
             val connectorClusterConfig = new ConnectorClusterConfig(
               attachConnectorOperation.targetCluster, SelectorHelper.convertSelectorMapToStringMap
@@ -104,7 +104,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
           }
-          sender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage(queryId))
+          sender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage())
         }
 
         case workflow: QueryWorkflow => {
