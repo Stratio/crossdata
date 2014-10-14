@@ -125,7 +125,8 @@ public class MetaUtils {
             "DATASTORE",
             "CONNECTOR",
             "CLUSTER",
-            "METADATA");
+            "METADATA",
+            "CATALOG");
 
     /**
      * Private class constructor as all methods are static.

@@ -18,6 +18,7 @@
 
 package com.stratio.meta.common.logicalplan;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 

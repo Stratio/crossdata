@@ -18,13 +18,14 @@
 
 package com.stratio.meta2.core.structures;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
-public class OrderBy {
+public class OrderBy implements Serializable {
     private List<Selector> selectorList = new ArrayList<>();
     private OrderDirection direction = OrderDirection.ASC;
 

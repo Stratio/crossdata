@@ -40,9 +40,7 @@ public class ColumnMetadata implements IMetadata {
         return name;
     }
 
-    public Object[] getParameters() {
-        return parameters;
-    }
+    public Object[] getParameters() { return parameters.clone(); }
 
     public ColumnType getColumnType() {
         return columnType;
