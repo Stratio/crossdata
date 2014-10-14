@@ -330,7 +330,7 @@ T_KS_AND_TN: T_IDENT (POINT T_IDENT)?;
 
 T_CTLG_TBL_COL: T_IDENT (POINT T_IDENT (POINT T_IDENT)?)?;
 
-T_FLOAT: '-'? (('0'..'9')+ POINT ('0'..'9')* EXPONENT? | POINT ('0'..'9')+ EXPONENT? | ('0'..'9')+ EXPONENT);
+T_FLOAT: '-'? (('0'..'9')+ POINT ('0'..'9')+ EXPONENT? | POINT ('0'..'9')+ EXPONENT? | ('0'..'9')+ EXPONENT);
 
 T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
