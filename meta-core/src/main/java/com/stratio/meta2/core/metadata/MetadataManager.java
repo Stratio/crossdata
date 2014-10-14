@@ -185,8 +185,8 @@ public enum MetadataManager {
             beginTransaction();
             metadata.put(catalogMetadata.getName(), catalogMetadata);
             commitTransaction();
-        } catch (MetadataManagerException mex) {
-            throw mex;
+        //} catch (MetadataManagerException mex) {
+            //throw mex;
         } catch (Exception ex) {
             throw new MetadataManagerException(ex.getMessage(), ex.getCause());
         } finally {
@@ -275,8 +275,8 @@ public enum MetadataManager {
             metadata.put(dataStoreName, dataStoreMetadata);
 
             commitTransaction();
-        } catch (MetadataManagerException mex) {
-            throw mex;
+        //} catch (MetadataManagerException mex) {
+            //throw mex;
         } catch (Exception ex) {
             throw new MetadataManagerException(ex.getMessage(), ex.getCause());
         } finally {
@@ -299,8 +299,8 @@ public enum MetadataManager {
             beginTransaction();
             metadata.put(clusterMetadata.getName(), clusterMetadata);
             commitTransaction();
-        } catch (MetadataManagerException mex) {
-            throw mex;
+        //} catch (MetadataManagerException mex) {
+            //throw mex;
         } catch (Exception ex) {
             throw new MetadataManagerException(ex.getMessage(), ex.getCause());
         } finally {
@@ -328,8 +328,8 @@ public enum MetadataManager {
             beginTransaction();
             metadata.put(dataStoreMetadata.getName(), dataStoreMetadata);
             commitTransaction();
-        } catch (MetadataManagerException mex) {
-            throw mex;
+        //} catch (MetadataManagerException mex) {
+            //throw mex;
         } catch (Exception ex) {
             throw new MetadataManagerException(ex.getMessage(), ex.getCause());
         } finally {
@@ -360,8 +360,8 @@ public enum MetadataManager {
             beginTransaction();
             metadata.put(connectorMetadata.getName(), connectorMetadata);
             commitTransaction();
-        } catch (MetadataManagerException mex) {
-            throw mex;
+        //} catch (MetadataManagerException mex) {
+            //throw mex;
         } catch (Exception ex) {
             throw new MetadataManagerException(ex.getMessage(), ex.getCause());
         } finally {
@@ -395,8 +395,8 @@ public enum MetadataManager {
                 clusterMetadata.setConnectorAttachedRefs(connectorList);
             }
             commitTransaction();
-        } catch (MetadataManagerException mex) {
-            throw mex;
+        //} catch (MetadataManagerException mex) {
+            //throw mex;
         } catch (Exception ex) {
             throw new MetadataManagerException(ex.getMessage(), ex.getCause());
         } finally {
