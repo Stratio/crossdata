@@ -181,16 +181,14 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       //TODO:  ManagementWorkflow
 
     case storageOp: StorageOperation => {
-      var qId:String=null
+      val qId: String = storageOp.queryId
       try {
         val eng = connector.getStorageEngine()
         storageOp match {
           case Insert(queryId, clustername, table, row) => {
-            qId=queryId
             eng.insert(clustername, table, row)
           }
           case InsertBatch(queryId, clustername, table, rows) => {
-            qId=queryId
             eng.insert(clustername, table, rows)
           }
         }

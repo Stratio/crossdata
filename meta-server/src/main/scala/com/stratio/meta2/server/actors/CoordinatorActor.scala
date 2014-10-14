@@ -82,8 +82,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setWorkflow(workflow)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
-          val actorRef=context.actorSelection(workflow.getActorRef())
-          actorRef ! workflow.getStorageOperation(queryId)
+          val actorRef = context.actorSelection(workflow.getActorRef())
+          actorRef.asInstanceOf[ActorSelection] ! workflow.getStorageOperation(queryId)
         }
 
         case workflow: ManagementWorkflow => {
