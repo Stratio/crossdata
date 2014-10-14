@@ -20,6 +20,7 @@ package com.stratio.meta.common.executionplan;
 
 
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
+import com.stratio.meta.communication.Execute;
 
 /**
  * Execution step for query operations.
@@ -49,6 +50,10 @@ public class QueryWorkflow extends ExecutionWorkflow {
 
     public LogicalWorkflow getWorkflow() {
         return workflow;
+    }
+
+    public Execute getExecuteOperation(String queryId){
+        return new Execute(queryId, workflow);
     }
 
     @Override

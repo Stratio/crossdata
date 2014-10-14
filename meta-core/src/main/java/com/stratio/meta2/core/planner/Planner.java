@@ -70,6 +70,7 @@ import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.statements.structures.selectors.AsteriskSelector;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
@@ -925,8 +926,11 @@ public class Planner {
     protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap) {
         Map<ColumnName, String> aliasMap = new HashMap<>();
         Map<String, ColumnType> typeMap = new HashMap<>();
+        boolean addAll = false;
         for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
-            if (s.getAlias() != null) {
+            if(AsteriskSelector.class.isInstance(s)){
+                addAll = true;
+            }else if (s.getAlias() != null) {
                 aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()), s.getAlias());
 
                 typeMap.put(s.toString(),
@@ -937,6 +941,15 @@ public class Planner {
                 aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()), s.toString());
             }
         }
+
+        if(addAll){
+            TableMetadata metadata = tableMetadataMap.get(selectStatement.getTableName().getQualifiedName());
+            for(Map.Entry<ColumnName, ColumnMetadata> column : metadata.getColumns().entrySet()){
+                aliasMap.put(column.getKey(), column.getKey().getName());
+                typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
+            }
+        }
+        
         Select result = new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap);
         return result;
     }

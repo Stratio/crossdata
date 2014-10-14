@@ -60,6 +60,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+            log.info("ActorRef: " + actorRef.toString())
             actorRef.asInstanceOf[ActorSelection] ! workflow.createMetadataOperationMessage(queryId)
           } else if(workflow.getExecutionType==ExecutionType.CREATE_CATALOG || workflow
             .getExecutionType==ExecutionType.CREATE_TABLE_AND_CATALOG) {
@@ -108,7 +109,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         }
 
         case workflow: QueryWorkflow => {
-          log.debug("CoordinatorActor: QueryWorkflow received")
+          log.info("CoordinatorActor: QueryWorkflow received")
           val queryId = plannedQuery.getQueryId
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
@@ -116,8 +117,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if(ResultType.RESULTS.equals(workflow.getResultType)){
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
-            val connectorSelection=context.actorSelection(StringUtils.getAkkaActorRefUri(workflow.getActorRef()))
-            connectorSelection ! workflow.getWorkflow()
+            val actorRef = context.actorSelection(workflow.getActorRef())
+            log.info("ActorRef: " + actorRef.toString())
+            actorRef.asInstanceOf[ActorSelection] ! workflow.getExecuteOperation(queryId)
           }else if(ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)){
             //TODO Trigger next step execution.
             throw new UnsupportedOperationException("Trigger execution not supported")
@@ -131,7 +133,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
     case result: Result => {
       val queryId = result.getQueryId
-      log.info("Receiving result from "+sender+"; queryId="+queryId)
+      log.info("Receiving result from " + sender + " with queryId = " + queryId + " result: " + result)
       val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
       val clientActor = context.actorSelection(StringUtils.getAkkaActorRefUri(executionInfo
         .asInstanceOf[ExecutionInfo].getSender))

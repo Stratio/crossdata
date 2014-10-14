@@ -49,7 +49,6 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.xml.sax.SAXException;
 
-import com.stratio.meta.common.data.CassandraResultSet;
 import com.stratio.meta.common.data.Cell;
 import com.stratio.meta.common.data.ResultSet;
 import com.stratio.meta.common.data.Row;
@@ -128,7 +127,7 @@ public class ConsoleUtils {
             return System.lineSeparator() + "OK";
         }
 
-        CassandraResultSet resultSet = (CassandraResultSet) queryResult.getResultSet();
+        ResultSet resultSet = queryResult.getResultSet();
 
         Map<String, Integer> colWidths = calculateColWidths(resultSet);
 
@@ -175,8 +174,7 @@ public class ConsoleUtils {
         Map<String, Integer> colWidths = new HashMap<>();
 
         // Get column names or aliases width
-        CassandraResultSet cassandraResultSet = (CassandraResultSet) resultSet;
-        for (ColumnMetadata columnMetadata : cassandraResultSet.getColumnMetadata()) {
+        for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
             colWidths.put(columnMetadata.getColumnName(), columnMetadata.getColumnNameToShow().length());
         }
 

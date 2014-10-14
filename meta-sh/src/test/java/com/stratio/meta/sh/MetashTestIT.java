@@ -18,6 +18,7 @@
 
 package com.stratio.meta.sh;
 
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.Test;
@@ -27,8 +28,9 @@ public class MetashTestIT {
     @Test
     public void testSendManifest() throws Exception {
         Metash metash = new Metash(false);
+        //TODO Generate a temp file with the manifest
         String result = metash.sendManifest("ADD DATASTORE 'meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xml'");
-        assertTrue(result != null, "testSendManifest returns a empty String");
+        assertNotNull(result, "testSendManifest returns a empty String");
     }
 
 }
