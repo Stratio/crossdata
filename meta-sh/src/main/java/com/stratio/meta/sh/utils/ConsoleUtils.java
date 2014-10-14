@@ -57,14 +57,14 @@ import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
-import com.stratio.meta2.common.result.ErrorResult;
 import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta2.common.result.Result;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.connector.ConnectorFactory;
 import com.stratio.meta2.common.api.connector.ConnectorType;
 import com.stratio.meta2.common.api.datastore.DataStoreFactory;
 import com.stratio.meta2.common.api.datastore.DataStoreType;
+import com.stratio.meta2.common.result.ErrorResult;
+import com.stratio.meta2.common.result.Result;
 
 import jline.console.ConsoleReader;
 import jline.console.history.History;
@@ -82,8 +82,8 @@ public class ConsoleUtils {
      */
     private static final int DAYS_HISTORY_ENTRY_VALID = 30;
 
-    private static final String DATASTORE_SCHEMA_PATH = "meta-common/src/main/resources/com/stratio/meta/connector/DataStoreDefinition.xsd";
-    private static final String CONNECTOR_SCHEMA_PATH = "meta-common/src/main/resources/com/stratio/meta/connector/ConnectorDefinition.xsd";
+    private static final String DATASTORE_SCHEMA_PATH = "/com/stratio/meta/connector/DataStoreDefinition.xsd";
+    private static final String CONNECTOR_SCHEMA_PATH = "/com/stratio/meta/connector/ConnectorDefinition.xsd";
 
     /**
      * Private class constructor as all methods are static.
@@ -294,15 +294,6 @@ public class ConsoleUtils {
         }
     }
 
-    public static Manifest parseFromXmlToManifest(int manifestType, InputStream path) throws
-            ManifestException {
-        if (manifestType == Manifest.TYPE_DATASTORE) {
-            return parseFromXmlToDataStoreManifest(path);
-        } else {
-            return parseFromXmlToConnectorManifest(path);
-        }
-    }
-
     public static Manifest parseFromXmlToManifest(int manifestType, String path) throws
             ManifestException, FileNotFoundException {
         if (manifestType == Manifest.TYPE_DATASTORE) {
@@ -312,11 +303,21 @@ public class ConsoleUtils {
         }
     }
 
+    public static Manifest parseFromXmlToManifest(int manifestType, InputStream path) throws
+            ManifestException {
+        if (manifestType == Manifest.TYPE_DATASTORE) {
+            return parseFromXmlToDataStoreManifest(path);
+        } else {
+            return parseFromXmlToConnectorManifest(path);
+        }
+    }
+
     private static DataStoreType parseFromXmlToDataStoreManifest(InputStream path)
             throws ManifestException {
         try {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = sf.newSchema(new File(DATASTORE_SCHEMA_PATH));
+
+            Schema schema = sf.newSchema(ConsoleUtils.class.getResource(DATASTORE_SCHEMA_PATH));
 
             JAXBContext jaxbContext = JAXBContext.newInstance(DataStoreFactory.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -330,11 +331,10 @@ public class ConsoleUtils {
             throw new ManifestException(e);
         }
     }
-
     private static Manifest parseFromXmlToConnectorManifest(InputStream path) throws ManifestException {
         try {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = sf.newSchema(new File(CONNECTOR_SCHEMA_PATH));
+            Schema schema = sf.newSchema(ConsoleUtils.class.getResource(CONNECTOR_SCHEMA_PATH));
 
             JAXBContext jaxbContext = JAXBContext.newInstance(ConnectorFactory.class);
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -348,5 +348,4 @@ public class ConsoleUtils {
             throw new ManifestException(e);
         }
     }
-
 }

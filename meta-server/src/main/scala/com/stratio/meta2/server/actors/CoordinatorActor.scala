@@ -30,7 +30,6 @@ import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query.PlannedQuery
-import com.stratio.meta.common.security.ICredentials
 import com.stratio.meta.common.connector.ConnectorClusterConfig
 import com.stratio.meta.communication.ConnectToConnector
 import com.stratio.meta.communication.DisconnectFromConnector
@@ -46,46 +45,12 @@ object CoordinatorActor {
 class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends Actor with ActorLogging {
   log.info("Lifting coordinator actor")
 
-
-  /**
-   * Queries in progress.
-   */
-  //TODO Move this to infinispan
-  //val inProgress: scala.collection.mutable.Map[String, ExecutionWorkflow] = scala.collection.mutable.Map()
-  //val inProgressSender: scala.collection.mutable.Map[String, ActorRef] = scala.collection.mutable.Map()
-
-  /**
-   * Queries that trigger a persist operation once the result is returned.
-   */
-  //TODO Move this to infinispan
-  //val persistOnSuccess: scala.collection.mutable.Map[String, MetadataWorkflow] = scala.collection.mutable.Map()
-
-  //TODO Move this to infinispan
-  //val pendingQueries: scala.collection.mutable.Map[FirstLevelName, String] = scala.collection.mutable.Map()
-
-  /*def active(another: ActorRef): Actor.Receive = {
-    case Terminated(`another`) => context.stop(self)
-  }*/
-
   def receive = {
-
-    /*case ActorIdentity(1, Some(ref)) => {
-      val actorRef = context.watch(ref)
-      context.become(active(ref))
-      actorRef ! new CreateCatalog("queryId",
-                                   new ClusterName("cassandra_prod"),
-                                   new CatalogMetadata(new CatalogName("catalogTest"),
-                                                       null,
-                                                       null))
-    }*/
-
       case plannedQuery: PlannedQuery => {
       val workflow = plannedQuery.getExecutionWorkflow()
-      log.info("\n\n>>>>>> TRACE: Workflow from "+workflow.getActorRef)
-
+      log.debug("Workflow for "+workflow.getActorRef)
       workflow match {
         case workflow: MetadataWorkflow => {
-          log.info("\n\n>>>>>> TRACE: MetadataWorkflow from "+workflow.getActorRef)
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           val queryId = plannedQuery.getQueryId
@@ -95,9 +60,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-            val message = workflow.createMetadataOperationMessage(queryId)
-            actorRef.asInstanceOf[ActorSelection] ! message
-            //actorRef.asInstanceOf[ActorSelection] ! Identify(1)
+            actorRef.asInstanceOf[ActorSelection] ! workflow.createMetadataOperationMessage(queryId)
           } else if(workflow.getExecutionType==ExecutionType.CREATE_CATALOG || workflow
             .getExecutionType==ExecutionType.CREATE_TABLE_AND_CATALOG) {
             coordinator.persistCreateCatalog(workflow.getCatalogMetadata)
@@ -122,7 +85,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         case workflow: ManagementWorkflow => {
           log.debug("CoordinatorActor: ManagementWorkflow received")
-          log.info(">>>>>> TRACE: ManagementWorkflow ")
           val queryId = plannedQuery.getQueryId
           if(workflow.getExecutionType == ExecutionType.ATTACH_CONNECTOR){
 
@@ -190,7 +152,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
     case _ => {
       //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
-      sender ! new ExecutionException("Non recogniced workflow")
+      sender ! new ExecutionException("Non recognized workflow")
     }
 
   }

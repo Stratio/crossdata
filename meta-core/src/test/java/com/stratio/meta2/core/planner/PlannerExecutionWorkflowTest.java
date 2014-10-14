@@ -160,8 +160,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.SELECT_WINDOW);
 
-        connector1 = createTestConnector("TestConnector1", dataStoreName, operationsC1, "actorRef1");
-        connector2 = createTestConnector("TestConnector2", dataStoreName, operationsC2, "actorRef2");
+        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(),operationsC1, "actorRef1");
+        connector2 = createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(),operationsC2, "actorRef2");
 
         clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName());
         CatalogName catalogName = createTestCatalog("demo");
@@ -189,7 +189,31 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
      */
     @Test
     public void projectSelect() {
+        // Build Logical WORKFLOW
+        // Create initial steps (Projects)
+        List<LogicalStep> initialSteps = new LinkedList<>();
+        Project project = getProject("table1");
 
+        ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
+        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        Select select = getSelect(columns, types);
+
+
+        //Link the elements
+        project.setNextStep(select);
+        initialSteps.add(project);
+
+        // Add initial steps
+        LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
+
+        //TEST
+        ExecutionWorkflow executionWorkflow = null;
+        try {
+            executionWorkflow = planner.buildExecutionWorkflow("qid", workflow);
+        } catch (PlanningException e) {
+            LOG.error("connectorChoice test failed", e);
+        }
+        assertExecutionWorkflow(executionWorkflow, 1, new String[] { connector1.getActorRef().toString() });
     }
 
     @Test
@@ -215,31 +239,13 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         //TEST
 
-        // Get initial steps
-        List<TableName> tables = planner.getInitialSteps(workflow.getInitialSteps());
-
-        // Get connectors meeting the required capabilities
-        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = planner.findCapableConnectors(tables,
-                workflow.getInitialSteps());
-
-        assertEquals(candidatesConnectors.values().iterator().next().iterator().next().getName(), connector1.getName(),
-                "Candidate Connectors wrong");
-
-        // Get more suitable connector
-        try {
-            ConnectorMetadata chosenConnector = planner.findMoreSuitableConnector(candidatesConnectors);
-            assertEquals(chosenConnector.getName(), connector1.getName(), "Chosen connector wrong");
-        } catch (PlanningException e) {
-            fail(e.getMessage());
-        }
-
         ExecutionWorkflow executionWorkflow = null;
         try {
             executionWorkflow = planner.buildExecutionWorkflow("qid", workflow);
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
-        assertExecutionWorkflow(executionWorkflow, 1, new String[] { "actorRef1" });
+        assertExecutionWorkflow(executionWorkflow, 1, new String[] { connector1.getActorRef().toString() });
 
     }
 
@@ -444,8 +450,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         }
 
         assertNotNull(executionWorkflow, "Null execution workflow received");
-        assertExecutionWorkflow(executionWorkflow, 1,
-                new String [] {connector1.getActorRef().toString()});
+        assertExecutionWorkflow(executionWorkflow, 2,
+                new String [] {connector2.getActorRef().toString(), connector1.getActorRef().toString()});
 
     }
 
@@ -454,7 +460,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         DataStoreName dataStoreName = createTestDatastore();
         Set<Operations> operations = new HashSet<>();
         operations.add(Operations.INSERT);
-        ConnectorMetadata connectorMetadata = createTestConnector("cassandraConnector", dataStoreName, operations, "1");
+        ConnectorMetadata connectorMetadata = createTestConnector("cassandraConnector", dataStoreName,new HashSet<ClusterName>(), operations,
+                "1");
         createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
 
         String[] columnNames = { "name", "gender", "age", "bool", "phrase", "email" };

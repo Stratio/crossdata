@@ -53,7 +53,9 @@ public class StringSelector extends Selector {
 
     @Override
     public String toString() {
-        return value;
+        StringBuilder sb=new StringBuilder();
+        sb.append("'").append(value).append("'");
+        return sb.toString();
     }
 
     @Override

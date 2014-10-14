@@ -22,21 +22,21 @@ import javax.transaction.TransactionManager
 import akka.pattern.ask
 import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.exceptions.ExecutionException
-import com.stratio.meta.common.executionplan.{ExecutionType, QueryWorkflow, ResultType}
+import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
-import com.stratio.meta.common.result.QueryResult
+import com.stratio.meta.common.result.{CommandResult, MetadataResult, QueryResult}
 import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.api.PropertyType
-import com.stratio.meta2.common.data.{Status, CatalogName, ConnectorName, FirstLevelName}
-import com.stratio.meta2.common.metadata.{ConnectorMetadata, IMetadata}
+import com.stratio.meta2.common.data._
+import com.stratio.meta2.common.metadata._
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta2.core.grid.Grid
-import com.stratio.meta2.core.metadata.MetadataManager
+import com.stratio.meta2.core.metadata.{MetadataManager}
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.SelectStatement
+import com.stratio.meta2.core.statements.{InsertIntoStatement, MetadataStatement, SelectStatement}
 import com.stratio.meta2.server.actors.CoordinatorActor
 import com.stratio.meta2.server.mocks.MockConnectorManagerActor
 import org.apache.log4j.Logger
@@ -46,11 +46,14 @@ import org.scalatest.{FunSuiteLike, Suite}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-//class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory  with ServerConfig{
+
 class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig {
   this: Suite =>
 
-  def incQueryId():String={ queryIdIncrement+=1;return queryId+queryIdIncrement}
+  //  val metadataManager new MetadataManagerTestHelper()
+  def incQueryId(): String = {
+    queryIdIncrement += 1; return queryId + queryIdIncrement
+  }
 
 
   override lazy val logger = Logger.getLogger(classOf[CoordinatorActorTest])
@@ -62,68 +65,102 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
 
   var queryId = "query_id-2384234-1341234-23434"
-  var queryIdIncrement=0
+  var queryIdIncrement = 0
   val catalogName = "testCatalog"
-  val selectStatement:SelectStatement=null
-  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "",
-    new CatalogName(catalogName)),
-    selectStatement)
-  val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery);
-  val selectPlannedQuery = new SelectPlannedQuery(selectValidatedQuery, new QueryWorkflow(incQueryId(),
-    StringUtils.getAkkaActorRefUri(connectorActor),
-    ExecutionType.SELECT, ResultType.RESULTS, new LogicalWorkflow(null)));
 
-  def initialize()={
-    var grid=Grid.initializer.withContactPoint("127.0.0.1").withPort(7800)
-                .withListenAddress("127.0.0.1")
-                .withMinInitialMembers(1)
-                .withJoinTimeoutInMs(5000)
-                .withPersistencePath("/tmp/borrar").init()
-    val executionMap = grid.map("myExecutionData").asInstanceOf[java.util.Map[String,java.io.Serializable]]
-    val lockExecution:Lock  = grid.lock("myExecutionData")
-    val tmExecution:TransactionManager = grid.transactionManager("myExecutionData")
+  val selectStatement: SelectStatement = null
+  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)), selectStatement)
+  val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
+  val selectPlannedQuery = new SelectPlannedQuery(selectValidatedQuery, new QueryWorkflow(queryId + queryIdIncrement,
+    StringUtils.getAkkaActorRefUri(connectorActor),
+    ExecutionType.SELECT, ResultType.RESULTS, new LogicalWorkflow(null)))
+
+  val storageStatement: InsertIntoStatement = null
+  val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno,dos) into mytable;",
+    new CatalogName(catalogName)), storageStatement)
+  val storageValidatedQuery = new StorageValidatedQuery(storageParsedQuery)
+  val storagePlannedQuery = new StoragePlannedQuery(storageValidatedQuery, new StorageWorkflow(queryId + queryIdIncrement,
+    StringUtils.getAkkaActorRefUri(connectorActor), ExecutionType.INSERT, ResultType.RESULTS))
+
+  val metadataStatement0: MetadataStatement = null
+  val metadataParsedQuery0 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),
+    metadataStatement0)
+  val metadataValidatedQuery0: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery0)
+  val metadataPlannedQuery0 = new MetadataPlannedQuery(metadataValidatedQuery0,
+    new MetadataWorkflow(queryId + queryIdIncrement, StringUtils.getAkkaActorRefUri(connectorActor), ExecutionType.CREATE_CATALOG,
+      ResultType.RESULTS))
+
+  def initialize() = {
+    var grid = Grid.initializer.withContactPoint("127.0.0.1").withPort(7800)
+      .withListenAddress("127.0.0.1")
+      .withMinInitialMembers(1)
+      .withJoinTimeoutInMs(5000)
+      .withPersistencePath("/tmp/borrar").init()
+    val executionMap = grid.map("myExecutionData").asInstanceOf[java.util.Map[String, java.io.Serializable]]
+    val lockExecution: Lock = grid.lock("myExecutionData")
+    val tmExecution: TransactionManager = grid.transactionManager("myExecutionData")
     ExecutionManager.MANAGER.init(executionMap, lockExecution, tmExecution)
     ExecutionManager.MANAGER.clear()
 
-    val metadataMap = grid.map("myMetadata").asInstanceOf[java.util.Map[FirstLevelName,IMetadata]]
-    val lock:Lock  = grid.lock("myMetadata")
+    val metadataMap = grid.map("myMetadata").asInstanceOf[java.util.Map[FirstLevelName, IMetadata]]
+    val lock: Lock = grid.lock("myMetadata")
     val tm = grid.transactionManager("myMetadata")
-    MetadataManager.MANAGER.init(metadataMap,lock,tm.asInstanceOf[javax.transaction.TransactionManager])
+    MetadataManager.MANAGER.init(metadataMap, lock, tm.asInstanceOf[javax.transaction.TransactionManager])
     MetadataManager.MANAGER.clear()
-    println ("connectorActor="+connectorActor)
-    val future=connectorActor ? getConnectorName()
-    val connectorName= Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
+    println("connectorActor=" + connectorActor)
+    val future = connectorActor ? getConnectorName()
+    val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
     val dataStoreRefs = new java.util.ArrayList[String]().asInstanceOf[java.util.List[String]]
-    val requiredProperties= new java.util.ArrayList[PropertyType]().asInstanceOf[java.util.List[PropertyType]]
-    val optionalProperties= new java.util.ArrayList[PropertyType]().asInstanceOf[java.util.List[PropertyType]]
-    val supportedOperations= new java.util.ArrayList[String]()
+    val requiredProperties = new java.util.ArrayList[PropertyType]().asInstanceOf[java.util.List[PropertyType]]
+    val optionalProperties = new java.util.ArrayList[PropertyType]().asInstanceOf[java.util.List[PropertyType]]
+    val supportedOperations = new java.util.ArrayList[String]()
     val connectorMetadata = new ConnectorMetadata(
-        new ConnectorName(connectorName.name),
-        "version",
-        dataStoreRefs,
-        requiredProperties,
-        optionalProperties,
-        supportedOperations
+      new ConnectorName(connectorName.name),
+      "version",
+      dataStoreRefs,
+      requiredProperties,
+      optionalProperties,
+      supportedOperations
     )
 
-    MetadataManager.MANAGER.createConnector( connectorMetadata )
+    MetadataManager.MANAGER.createConnector(connectorMetadata)
     MetadataManager.MANAGER.addConnectorRef(new ConnectorName(connectorName.name),
       StringUtils.getAkkaActorRefUri(connectorActor))
-    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name),Status.ONLINE)
+    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
+
+    /*
+    var mycluster=metadataManager.createTestCatalog("MyTestCatalog")
+    metadataManager.createTestTable(new ClusterName("mycluster"),"myCatalog","myTable",Array("name","age"),null,null,null)
+    */
   }
 
   test("Should return a KO message") {
     initialize()
     within(1000 millis) {
       coordinatorActor ! "anything; this doesn't make any sense"
-      val exception=expectMsgType[ExecutionException]
+      val exception = expectMsgType[ExecutionException]
     }
   }
+
   test("Select query") {
     initialize()
-    connectorActor ! (queryId+(1),"updatemylastqueryId")
+    connectorActor !(queryId + (1), "updatemylastqueryId")
     coordinatorActor ! selectPlannedQuery
     expectMsgType[QueryResult]
+  }
+
+  test("Storage query") {
+    initialize()
+    connectorActor !(queryId + (2), "updatemylastqueryId")
+    coordinatorActor ! metadataPlannedQuery0
+    expectMsgType[CommandResult]
+  }
+
+  test("Metadata query") {
+    initialize()
+    connectorActor !(queryId + (3), "updatemylastqueryId")
+    coordinatorActor ! metadataPlannedQuery0
+    expectMsgType[MetadataResult]
     /*
     val pq= new SelectPlannedQuery(null,null)
     expectMsg("Ok") // bounded to 1 second

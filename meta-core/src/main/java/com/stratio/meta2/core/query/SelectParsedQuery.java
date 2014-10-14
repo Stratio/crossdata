@@ -24,7 +24,7 @@ import com.stratio.meta2.core.statements.SelectStatement;
 
 public class SelectParsedQuery extends BaseQuery implements ParsedQuery {
 
-    private MetaStatement statement;
+    private SelectStatement statement;
 
     public SelectParsedQuery(BaseQuery baseQuery,
             SelectStatement statement) {

@@ -33,10 +33,7 @@ import org.apache.log4j.Logger;
 import com.stratio.meta.common.ask.APICommand;
 import com.stratio.meta.common.ask.Command;
 import com.stratio.meta.common.result.CommandResult;
-import com.stratio.meta2.common.result.ErrorResult;
-import com.stratio.meta2.common.result.ErrorType;
 import com.stratio.meta.common.result.MetadataResult;
-import com.stratio.meta2.common.result.Result;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.PropertiesType;
 import com.stratio.meta2.common.api.connector.ConnectorType;
@@ -49,6 +46,9 @@ import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.result.ErrorResult;
+import com.stratio.meta2.common.result.ErrorType;
+import com.stratio.meta2.common.result.Result;
 import com.stratio.meta2.core.execution.ExecutionManager;
 import com.stratio.meta2.core.metadata.MetadataManager;
 
@@ -119,10 +119,9 @@ public class APIManager {
         } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException
                 e) {
             result = CommandResult.createErrorResult(ErrorType.EXECUTION, e.getMessage());
-            e.printStackTrace();
-        } finally {
-            return result;
+            LOG.error(e.getMessage());
         }
+        return result;
     }
 
     private void persistManifest(Manifest manifest) {
@@ -153,14 +152,14 @@ public class APIManager {
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(
                 name,
                 version,
-                (requiredProperties==null)?null:requiredProperties.getProperty(),
-                (optionalProperties==null)?null:optionalProperties.getProperty(),
-                (behaviorsType==null)?null:behaviorsType.getBehavior());
+                (requiredProperties == null) ? null : requiredProperties.getProperty(),
+                (optionalProperties == null) ? null : optionalProperties.getProperty(),
+                (behaviorsType == null) ? null : behaviorsType.getBehavior());
 
         // Persist
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
 
-        LOG.debug("DataStore added: "+MetadataManager.MANAGER.getDataStore(name).toString());
+        LOG.debug("DataStore added: " + MetadataManager.MANAGER.getDataStore(name).toString());
 
     }
 
@@ -189,8 +188,8 @@ public class APIManager {
                 name,
                 version,
                 dataStoreRefs.getDataStoreName(),
-                (requiredProperties==null)?null:requiredProperties.getProperty(),
-                (optionalProperties==null)?null:optionalProperties.getProperty(),
+                (requiredProperties == null) ? null : requiredProperties.getProperty(),
+                (optionalProperties == null) ? null : optionalProperties.getProperty(),
                 supportedOperations.getOperation());
 
         // Persist

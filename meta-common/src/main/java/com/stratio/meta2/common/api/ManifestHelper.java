@@ -18,7 +18,9 @@
 
 package com.stratio.meta2.common.api;
 
+import java.io.InputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -53,22 +55,24 @@ public class ManifestHelper implements Serializable {
         sb.append("Version: ").append(dataStoreType.getVersion()).append(System.lineSeparator());
 
         // REQUIRED PROPERTIES
-        if(dataStoreType.getRequiredProperties() != null){
+        if (dataStoreType.getRequiredProperties() != null) {
             sb.append("Required properties: ").append(System.lineSeparator());
-            for(PropertyType propertyType: dataStoreType.getRequiredProperties().getProperty()){
+            for (PropertyType propertyType : dataStoreType.getRequiredProperties().getProperty()) {
                 sb.append("\t").append("Property: ").append(System.lineSeparator());
-                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName())
+                        .append(System.lineSeparator());
                 sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
                         .lineSeparator());
             }
         }
 
         // OPTIONAL PROPERTIES
-        if(dataStoreType.getOptionalProperties() != null){
+        if (dataStoreType.getOptionalProperties() != null) {
             sb.append("Optional properties: ").append(System.lineSeparator());
             for (PropertyType propertyType : dataStoreType.getOptionalProperties().getProperty()) {
                 sb.append("\t").append("Property: ").append(System.lineSeparator());
-                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName())
+                        .append(System.lineSeparator());
                 sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
                         .lineSeparator());
             }
@@ -76,7 +80,7 @@ public class ManifestHelper implements Serializable {
 
         // BEHAVIORS
         sb.append("Behaviors: ").append(System.lineSeparator());
-        for(String behavior: dataStoreType.getBehaviors().getBehavior()){
+        for (String behavior : dataStoreType.getBehaviors().getBehavior()) {
             sb.append("\t").append("Behavior: ").append(behavior).append(System.lineSeparator());
         }
 
@@ -93,7 +97,7 @@ public class ManifestHelper implements Serializable {
 
         // DATA STORES NAME
         sb.append("DataStores: ").append(System.lineSeparator());
-        for(String dataStoreName: connectorType.getDataStores().getDataStoreName()){
+        for (String dataStoreName : connectorType.getDataStores().getDataStoreName()) {
             sb.append("\t").append("DataStoreName: ").append(dataStoreName).append(System.lineSeparator());
         }
 
@@ -101,22 +105,24 @@ public class ManifestHelper implements Serializable {
         sb.append("Version: ").append(connectorType.getVersion()).append(System.lineSeparator());
 
         // REQUIRED PROPERTIES
-        if(connectorType.getRequiredProperties() != null){
+        if (connectorType.getRequiredProperties() != null) {
             sb.append("Required properties: ").append(System.lineSeparator());
-            for(PropertyType propertyType: connectorType.getRequiredProperties().getProperty()){
+            for (PropertyType propertyType : connectorType.getRequiredProperties().getProperty()) {
                 sb.append("\t").append("Property: ").append(System.lineSeparator());
-                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName())
+                        .append(System.lineSeparator());
                 sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
                         .lineSeparator());
             }
         }
 
         // OPTIONAL PROPERTIES
-        if(connectorType.getOptionalProperties() != null){
+        if (connectorType.getOptionalProperties() != null) {
             sb.append("Optional properties: ").append(System.lineSeparator());
             for (PropertyType propertyType : connectorType.getOptionalProperties().getProperty()) {
                 sb.append("\t").append("Property: ").append(System.lineSeparator());
-                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("PropertyName: ").append(propertyType.getPropertyName())
+                        .append(System.lineSeparator());
                 sb.append("\t").append("\t").append("Description: ").append(propertyType.getDescription()).append(System
                         .lineSeparator());
             }
@@ -124,7 +130,7 @@ public class ManifestHelper implements Serializable {
 
         // SUPPORTED OPERATIONS
         sb.append("Supported operations: ").append(System.lineSeparator());
-        for (String operation: connectorType.getSupportedOperations().getOperation()) {
+        for (String operation : connectorType.getSupportedOperations().getOperation()) {
             sb.append("\t").append("Operation: ").append(operation).append(System.lineSeparator());
         }
 
@@ -135,7 +141,7 @@ public class ManifestHelper implements Serializable {
     public static Set<PropertyType> convertManifestPropertiesToMetadataProperties(
             List<PropertyType> requiredProperties) {
         Set<PropertyType> metadataProperties = new HashSet<>();
-        for(PropertyType propertyType: requiredProperties){
+        for (PropertyType propertyType : requiredProperties) {
             metadataProperties.add(propertyType);
         }
         return metadataProperties;
@@ -143,7 +149,7 @@ public class ManifestHelper implements Serializable {
 
     public static Set<DataStoreName> convertManifestDataStoreNamesToMetadataDataStoreNames(List<String> dataStoreRefs) {
         Set<DataStoreName> dataStoreNames = new HashSet<>();
-        for(String name: dataStoreRefs){
+        for (String name : dataStoreRefs) {
             dataStoreNames.add(new DataStoreName(name));
         }
         return dataStoreNames;
@@ -152,7 +158,7 @@ public class ManifestHelper implements Serializable {
     public static Set<Operations> convertManifestOperationsToMetadataOperations(
             List<String> supportedOperations) {
         Set<Operations> operations = new HashSet<>();
-        for(String supportedOperation: supportedOperations){
+        for (String supportedOperation : supportedOperations) {
             operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
         }
         return operations;
@@ -160,7 +166,7 @@ public class ManifestHelper implements Serializable {
 
     public static Set<String> convertManifestBehaviorsToMetadataBehaviors(List<String> behaviors) {
         Set<String> metadataBehaviors = new HashSet<>();
-        for(String behavior: behaviors){
+        for (String behavior : behaviors) {
             metadataBehaviors.add(behavior);
         }
         return metadataBehaviors;

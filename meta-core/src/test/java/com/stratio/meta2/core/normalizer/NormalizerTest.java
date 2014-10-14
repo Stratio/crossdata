@@ -55,7 +55,7 @@ import com.stratio.meta2.common.statements.structures.selectors.SelectExpression
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.StringSelector;
 import com.stratio.meta2.core.metadata.MetadataManager;
-import com.stratio.meta2.core.metadata.MetadataManagerTests;
+import com.stratio.meta2.core.metadata.MetadataManagerTestHelper;
 import com.stratio.meta2.core.normalizer.Normalizer;
 import com.stratio.meta2.core.query.BaseQuery;
 import com.stratio.meta2.core.query.SelectParsedQuery;
@@ -63,12 +63,12 @@ import com.stratio.meta2.core.query.SelectValidatedQuery;
 import com.stratio.meta2.core.statements.SelectStatement;
 import com.stratio.meta2.core.structures.OrderBy;
 
-public class NormalizerTest extends MetadataManagerTests {
+public class NormalizerTest extends MetadataManagerTestHelper {
 
     /**
      * Class logger.
      */
-    private static final Logger LOG = Logger.getLogger(MetadataManagerTests.class);
+    private static final Logger LOG = Logger.getLogger(MetadataManagerTestHelper.class);
 
     @Test(groups = "putData")
     public void putData() throws Exception {

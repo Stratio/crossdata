@@ -38,7 +38,7 @@ public class AttachClusterStatementTest extends ParsingTest {
         String inputText = "ATTACH CLUSTER dev ON DATASTORE db"
                 + " WITH OPTIONS {\"host\": \"127.0.0.1\", 'port': 1234};";
         String expectedText = "ATTACH CLUSTER cluster.dev ON DATASTORE datastore.db"
-                + " WITH OPTIONS {host=127.0.0.1, port=1234};";
+                + " WITH OPTIONS {'host'='127.0.0.1', 'port'=1234};";
         testRegularStatement(inputText, expectedText, "createClusterBasicDoubleQuote");
     }
 
@@ -47,7 +47,7 @@ public class AttachClusterStatementTest extends ParsingTest {
         String inputText = "ATTACH CLUSTER dev ON DATASTORE db"
                 + " WITH OPTIONS {\"host1\": \"127.0.0.1\"};";
         String expectedText = "ATTACH CLUSTER cluster.dev ON DATASTORE datastore.db"
-                + " WITH OPTIONS {host1=127.0.0.1};";
+                + " WITH OPTIONS {'host1'='127.0.0.1'};";
         testRegularStatement(inputText, expectedText, "createClusterBasicSingleQuote");
     }
 
@@ -56,7 +56,7 @@ public class AttachClusterStatementTest extends ParsingTest {
         String inputText = "ATTACH CLUSTER IF NOT EXISTS dev ON DATASTORE db"
                 + " WITH OPTIONS {\"host1\": \"127.0.0.1\"};";
         String expectedText = "ATTACH CLUSTER IF NOT EXISTS cluster.dev ON DATASTORE datastore.db"
-                + " WITH OPTIONS {host1=127.0.0.1};";
+                + " WITH OPTIONS {'host1'='127.0.0.1'};";
         testRegularStatement(inputText, expectedText, "createClusterBasicIfNotExists");
     }
 
@@ -64,7 +64,7 @@ public class AttachClusterStatementTest extends ParsingTest {
     public void attachClusterSimple() {
         String inputText = "ATTACH CLUSTER production_madrid ON DATASTORE cassandra WITH OPTIONS {'host':" +
                 " '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
-        String expectedText = "ATTACH CLUSTER cluster.production_madrid ON DATASTORE datastore.cassandra WITH OPTIONS {host=127.0.0.1, port=9160, mode=random};";
+        String expectedText = "ATTACH CLUSTER cluster.production_madrid ON DATASTORE datastore.cassandra WITH OPTIONS {'host'='127.0.0.1', 'port'=9160, 'mode'='random'};";
         testRegularStatement(inputText, expectedText, "attachClusterSimple");
     }
 
@@ -74,7 +74,7 @@ public class AttachClusterStatementTest extends ParsingTest {
                 "{'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
         String expectedText = "ATTACH CLUSTER IF NOT EXISTS cluster.productionMadrid ON DATASTORE datastore" +
                 ".cassandra WITH " +
-                "OPTIONS {host=127.0.0.1, port=9160, exhaustive=false};";
+                "OPTIONS {'host'='127.0.0.1', 'port'=9160, 'exhaustive'=false};";
         testRegularStatement(inputText, expectedText, "attachClusterIfNotExists");
     }
 

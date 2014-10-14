@@ -29,6 +29,8 @@ import org.testng.annotations.Test;
 import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
+import com.stratio.meta.common.statements.structures.window.TimeUnit;
+import com.stratio.meta.common.statements.structures.window.WindowType;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.TableMetadata;
@@ -162,5 +164,24 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         assertSelect(workflow);
     }
 
+    @Test
+    public void selectBasicWhereWindow() {
+        String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t1.c FROM demo.t1" +
+                " WITH WINDOW 5 SECONDS WHERE demo.t1.a = 3;";
+
+        String[] columns1 = { "a", "b", "c" };
+        ColumnType [] columnTypes1 = {ColumnType.INT, ColumnType.INT, ColumnType.INT};
+        String [] partitionKeys1 = {"a"};
+        String [] clusteringKeys1 = {};
+        TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columns1, columnTypes1,
+                partitionKeys1, clusteringKeys1);
+
+        String[] expectedColumns = { "demo.t1.a", "demo.t1.b", "demo.t1.c" };
+        LogicalWorkflow workflow = getWorkflow(inputText, "selectBasicWhere", t1);
+        Project project1 = assertColumnsInProject(workflow, "demo.t1", expectedColumns);
+        assertFilterInPath(project1, Operations.FILTER_PK_EQ);
+        assertWindow(workflow, WindowType.TEMPORAL, -1, 5, TimeUnit.SECONDS);
+        assertSelect(workflow);
+    }
 
 }

@@ -318,8 +318,8 @@ QUOTED_LITERAL
     @after{
         setText(sb.toString());
     }:
-      ('"' { sb.append('"'); })   (c=~('"') { sb.appendCodePoint(c);})*  ('"' { sb.append('"'); })
-    | ('\'' { sb.append('\''); }) (c=~('\'') { sb.appendCodePoint(c);})* ('\'' { sb.append('\''); })
+      ('"')   (c=~('"') { sb.appendCodePoint(c);})*  ('"')
+    | ('\'') (c=~('\'') { sb.appendCodePoint(c);})* ('\'')
 ;
 
 T_CONSTANT: '-'? (DIGIT)+;
