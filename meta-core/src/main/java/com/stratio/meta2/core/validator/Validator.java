@@ -357,6 +357,7 @@ public class Validator {
     private void validateCatalog(MetaStatement stmt, boolean exist)
             throws IgnoreQueryException, ExistNameException, NotExistNameException {
         Name name = null;
+        boolean validate=true;
         boolean hasIfExists = false;
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
@@ -384,9 +385,13 @@ public class Validator {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
             name = insertIntoStatement.getCatalogName();
             hasIfExists = insertIntoStatement.isIfNotExists();
+        } else{
+            //TODO: ¿should through exception?
+            //Correctness - Method call passes null for nonnull parameter
+            validate=false;
         }
 
-        validateName(exist, name, hasIfExists);
+        if(validate)validateName(exist, name, hasIfExists);
     }
 
     private void validateOptions(MetaStatement stmt) throws ValidationException {
