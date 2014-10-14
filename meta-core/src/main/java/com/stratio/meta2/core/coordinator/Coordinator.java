@@ -91,13 +91,13 @@ public class Coordinator implements Serializable {
             AttachCluster ac = AttachCluster.class.cast(workflow);
             result = persistAttachCluster(ac.targetCluster(), ac.datastoreName(), ac.options());
         }else if(DetachCluster.class.isInstance(workflow)){
-            DetachCluster dc = DetachCluster.class.cast(workflow);
+            //DetachCluster dc = DetachCluster.class.cast(workflow);
             result = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "Not supported");
         }else if(AttachConnector.class.isInstance(workflow)){
             AttachConnector ac = AttachConnector.class.cast(workflow);
             result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
         } else if(DetachConnector.class.isInstance(workflow)){
-            DetachConnector dc = DetachConnector.class.cast(workflow);
+            //DetachConnector dc = DetachConnector.class.cast(workflow);
             result = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "Not supported");
         }
 

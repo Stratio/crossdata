@@ -64,7 +64,7 @@ public class RestServerTestUtils {
         rs.setRows(rows);
         List<ColumnMetadata> columns = new ArrayList<ColumnMetadata>();
         for (Entry<String, ColumnDefinition> data : map.entrySet()) {
-            String col_name = data.getValue().getDatatype().getName();
+            //String col_name = data.getValue().getDatatype().getName();
             String key = data.getKey();
             ColumnMetadata aux = new ColumnMetadata("Deep", key, ColumnType.VARCHAR);
             columns.add(aux);
