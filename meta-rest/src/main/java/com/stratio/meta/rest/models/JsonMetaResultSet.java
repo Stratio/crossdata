@@ -64,37 +64,28 @@ public class JsonMetaResultSet implements Serializable {
     public String getRows() {
         StringBuffer rs=new StringBuffer();
         rs.append("[");
-        //String result = "[";
         for (JsonRow r : rows) {
-            //String rowResult = "{";
             StringBuffer rowrs=new StringBuffer();
             rowrs.append("{");
             for (Entry<String, Cell> c : r.getCells().entrySet()) {
                 String value = c.getValue().getValue().toString();
-                //rowResult += "'" + c.getKey() + "'" + ": '" + value + "', ";
                 rowrs.append("'");
                 rowrs.append(c.getKey());
                 rowrs.append("':");
                 rowrs.append(value);
                 rowrs.append("',");
             }
-            //rowResult = rowResult.substring(0, rowResult.length() - 2); // removes last comma
-            //rowResult += "}";
-            //result += rowResult + " , ";
 
             rowrs.setLength(rowrs.length() - 1);// removes last comma
             rowrs.append("}");
             rs.append(rowrs);
             rs.append(" , ");
         }
-        //result = result.substring(0, result.length() - 2); // removes last comma
-        //result += "]";
 
 
         rs.setLength(rs.length() - 1);// removes last comma
         rs.append("]");
 
-        //return result.trim();
         return rs.toString().trim();
     }
 

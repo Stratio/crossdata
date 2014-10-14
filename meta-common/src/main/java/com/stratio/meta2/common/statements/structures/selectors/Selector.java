@@ -82,6 +82,10 @@ public abstract class Selector implements Serializable {
         return sb.toString();
     }
 
+    public String getStringValue(){
+        return toString();
+    }
+
     @Override
     public abstract boolean equals(Object o);
 
