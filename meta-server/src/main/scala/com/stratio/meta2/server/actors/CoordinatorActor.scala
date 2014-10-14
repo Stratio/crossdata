@@ -60,7 +60,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-            actorRef.asInstanceOf[ActorSelection] ! workflow.createMetadataOperationMessage(queryId)
+            actorRef.asInstanceOf[ActorSelection] ! workflow.createMetadataOperationMessage()
           } else if(workflow.getExecutionType==ExecutionType.CREATE_CATALOG || workflow
             .getExecutionType==ExecutionType.CREATE_TABLE_AND_CATALOG) {
             coordinator.persistCreateCatalog(workflow.getCatalogMetadata)
