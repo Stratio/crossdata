@@ -226,7 +226,6 @@ public class CreateIndexStatement extends IndexStatement {
         } else {
             result = name.getName();
             if (IndexType.FULL_TEXT.equals(type)) {
-                //result = "stratio_lucene_" + name;
                 result = name.toString().replaceAll("\\[(\\w*)\\]", "[stratio_lucene_$1]");
             }
         }
@@ -261,7 +260,6 @@ public class CreateIndexStatement extends IndexStatement {
         }
         if (!options.isEmpty()) {
             sb.append(" WITH ");
-            //sb.append(StringUtils.getStringFromOptions(options));
             sb.append(options);
         }
 

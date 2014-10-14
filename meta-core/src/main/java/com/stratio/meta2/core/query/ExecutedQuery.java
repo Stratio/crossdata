@@ -20,12 +20,4 @@ package com.stratio.meta2.core.query;
 
 public interface ExecutedQuery extends InProgressQuery {
 
-  /*public ExecutedQuery(InProgressQuery inProgressQuery){
-    super(inProgressQuery);
-  }
-
-  ExecutedQuery(ExecutedQuery executedQuery){
-    this((InProgressQuery)executedQuery);
-  }*/
-
 }

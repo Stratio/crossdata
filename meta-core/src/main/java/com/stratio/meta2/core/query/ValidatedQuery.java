@@ -20,16 +20,4 @@ package com.stratio.meta2.core.query;
 
 public interface ValidatedQuery extends ParsedQuery {
 
-  /*public ValidatedQuery(BaseQuery baseQuery, MetaStatement statement) {
-    super(baseQuery, statement);
-  }
-
-  ValidatedQuery(ParsedQuery parsedQuery) {
-    super(parsedQuery);
-  }
-
-  public QueryStatus getStatus() {
-    return QueryStatus.VALIDATED;
-  }*/
-
 }

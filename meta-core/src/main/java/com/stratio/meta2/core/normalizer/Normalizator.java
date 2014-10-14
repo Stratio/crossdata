@@ -257,8 +257,6 @@ public class Normalizator {
         }
         switch (relation.getLeftTerm().getType()) {
         case FUNCTION:
-            //checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
-            //break;
             throw new BadFormatException("Functions not supported yet");
         case COLUMN:
             checkColumnSelector((ColumnSelector) relation.getLeftTerm());
@@ -273,8 +271,6 @@ public class Normalizator {
         }
         switch (relation.getRightTerm().getType()) {
         case FUNCTION:
-            //checkFunctionSelector(relation.getLeftTerm(), relation.getOperator());
-            //break;
             throw new BadFormatException("Functions not supported yet");
         case COLUMN:
         case STRING:

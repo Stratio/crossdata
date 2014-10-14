@@ -437,8 +437,6 @@ public class Metash {
         // Create Manifest object from XML file
         Manifest manifest;
         try {
-            /*manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest,
-                    getClass().getResourceAsStream(tokens[2].replace(";", "").replace("\"", "").replace("'", "")));*/
             manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest,
                     tokens[2].replace(";", "").replace("\"", "").replace("'", ""));
         } catch (ManifestException | FileNotFoundException e) {
