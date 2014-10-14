@@ -20,6 +20,8 @@ package com.stratio.meta.common.data;
 
 import java.io.Serializable;
 
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
+
 public class Cell implements Serializable {
 
     private static final long serialVersionUID = 7100387802412023310L;
@@ -43,4 +45,12 @@ public class Cell implements Serializable {
         return value;
     }
 
+    @Override
+    public String toString() {
+        String string = String.valueOf(value);
+        if(value instanceof Selector){
+            string = ((Selector) value).getStringValue();
+        }
+        return string;
+    }
 }
