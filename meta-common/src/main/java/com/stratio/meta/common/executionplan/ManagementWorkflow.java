@@ -84,7 +84,7 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         this.options = options;
     }
 
-    public ManagementOperation createManagementOperationMessage(String queryId) {
+    public ManagementOperation createManagementOperationMessage() {
         ManagementOperation result = null;
         if (ExecutionType.ATTACH_CLUSTER.equals(this.executionType)) {
             result = new AttachCluster(queryId, this.clusterName, this.datastoreName, this.options);
