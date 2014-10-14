@@ -18,6 +18,7 @@
 
 package com.stratio.meta2.core.statements;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ import com.stratio.meta2.core.validator.ValidationRequirements;
 /**
  * Class that models a {@code SELECT} statement from the META language.
  */
-public class SelectStatement extends MetaStatement {
+public class SelectStatement extends MetaStatement implements Serializable {
 
     /**
      * Maximum limit of rows to be retreived in a query.
