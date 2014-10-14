@@ -25,8 +25,8 @@ public class SelectorHelper {
 
     public static Map<String, String> convertSelectorMapToStringMap(Map<Selector, Selector> selectorsMap){
         Map<String, String> stringsMap = new HashMap<>();
-        for(Selector selector: selectorsMap.keySet()){
-            stringsMap.put(selector.toString(), selectorsMap.get(selector).toString());
+        for (Map.Entry<Selector, Selector> entry : selectorsMap.entrySet()) {
+            stringsMap.put(entry.getKey().toString(), entry.getValue().toString());
         }
         return stringsMap;
     }
