@@ -67,7 +67,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.PLANNED)
             ExecutionManager.MANAGER.createEntry(workflow.getCatalogMetadata.getName.toString, queryId, true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-            sender ! ACK(queryId, QueryStatus.EXECUTED)
+            val result = MetadataResult.createSuccessMetadataResult()
+            result.setQueryId(queryId)
+            sender ! result
           }
         }
 
