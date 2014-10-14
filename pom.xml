@@ -82,6 +82,12 @@
             <name>Juanjo Lopez</name>
             <email>jjlopez at stratio dot com</email>
         </developer>
+        <developer>
+            <id>idiaz</id>
+            <name>Ivan Diaz</name>
+            <email>idiaz at stratio dot com</email>
+        </developer>
+
     </developers>
 
     <modules>
@@ -92,7 +98,6 @@
         <module>meta-sh</module>
         <module>meta-dist</module>
         <module>meta-connector</module>
-        <module>meta-rest</module>
         <module>meta-connector-maven-plugin</module>
     </modules>
     <properties>
