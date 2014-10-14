@@ -21,6 +21,7 @@ package com.stratio.meta2.core.grid;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.jgroups.JChannel;
 
 /**
@@ -36,13 +37,14 @@ public class GridInitializer {
     private int minInitialMembers;
     private long timeout;
     private String path;
+    private static final Logger LOG = Logger.getLogger(GridInitializer.class);
 
     /**
      * Package constructor
      */
     GridInitializer() {
         //TODO
-        System.out.println(" ---> CREATING GRID INITIALIZER");
+        LOG.info(" ---> CREATING GRID INITIALIZER");
     }
 
     public GridInitializer withPort(int port) {

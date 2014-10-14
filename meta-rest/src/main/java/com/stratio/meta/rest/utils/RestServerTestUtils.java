@@ -122,14 +122,11 @@ public class RestServerTestUtils {
     public static boolean assertEqualsRows(Row r1, Row r2) {
 
         for (Entry<String, Cell> e : r1.getCells().entrySet()) {
-            System.out.println(e.getKey());
             Cell c = r2.getCell(e.getKey());
             if (c == null) {
-                System.out.println(e.getKey());
                 return false;
             } else {
                 if (!assertEqualsCells(c, e.getValue())) {
-                    System.out.println(e.getValue().getValue());
                     return false;
                 }
             }
