@@ -137,6 +137,7 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         case DROP_INDEX:
             result = new DropIndex(queryId, this.clusterName, this.indexMetadata);
             break;
+        default: break;
         }
 
         return result;

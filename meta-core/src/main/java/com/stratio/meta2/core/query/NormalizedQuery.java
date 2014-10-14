@@ -65,9 +65,4 @@ public abstract class NormalizedQuery extends SelectParsedQuery {
         throw new UnsupportedOperationException();
     }
 
-    //public List<OrderBy> getOrderByColumns();
-    //OrderBy-> List<Columns> order (ASC, DESC)
-
-    //public List<Selector> groupBy, getJoin, ....
-
 }

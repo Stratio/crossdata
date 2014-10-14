@@ -100,7 +100,6 @@ public class ChannelService implements Closeable {
         stack.addProtocol(new UNICAST2());
         stack.addProtocol(new STABLE());
         stack.addProtocol(new GMS());
-        //    stack.addProtocol(new UFC());
         stack.addProtocol(new MFC());
         stack.addProtocol(new FRAG2());
 

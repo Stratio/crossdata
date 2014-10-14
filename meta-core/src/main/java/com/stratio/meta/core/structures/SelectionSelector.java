@@ -23,9 +23,9 @@ import com.stratio.meta2.common.data.TableName;
 
 public class SelectionSelector {
 
-    SelectorMeta selector;
-    boolean aliasInc;
-    String alias;
+    private SelectorMeta selector;
+    private boolean aliasInc;
+    private String alias;
 
     public SelectionSelector(SelectorMeta selector, boolean aliasInc, String alias) {
         this.selector = selector;

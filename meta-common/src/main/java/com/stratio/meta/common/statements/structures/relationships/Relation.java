@@ -90,23 +90,4 @@ public class Relation implements Serializable{
         return sb.toString();
     }
 
-    /**
-     * Gets the string values list for the terms
-     *
-     * @return Terms string values
-     */
-  /*
-  public List<String> getTermsStringValues() {
-
-    List<String> termsValuesList = new ArrayList<>();
-
-    Iterator<Selector> terms = rightSelectors.iterator();
-    while (terms.hasNext()) {
-      Selector s = terms.next();
-      termsValuesList.add(s.toString());
-    }
-
-    return termsValuesList;
-  }
-  */
 }

@@ -6,7 +6,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
@@ -23,20 +23,10 @@ import java.util.Map;
 
 public class SelectorHelper {
 
-    public static Map<String, String> convertSelectorMapToStringMap(Map<Selector, Selector> selectorsMap){
+    public static Map<String, String> convertSelectorMapToStringMap(Map<Selector, Selector> selectorsMap) {
         Map<String, String> stringsMap = new HashMap<>();
         for(Map.Entry<Selector,Selector> entry: selectorsMap.entrySet()){
-            String keyString = entry.getKey().toString();
-            if(entry.getKey() instanceof StringSelector){
-                keyString = keyString.substring(1, keyString.length()-1);
-            }
-
-            Selector selectorValue = entry.getValue();
-            String valueString = selectorValue.toString();
-            if(selectorValue instanceof StringSelector){
-                valueString = valueString.substring(1, valueString.length()-1);
-            }
-            stringsMap.put(keyString, valueString);
+            stringsMap.put(entry.getKey().getStringValue(), entry.getValue().getStringValue());
         }
         return stringsMap;
     }

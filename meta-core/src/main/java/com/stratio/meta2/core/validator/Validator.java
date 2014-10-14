@@ -391,7 +391,7 @@ public class Validator {
             validate=false;
         }
 
-        if(validate)validateName(exist, name, hasIfExists);
+        if(validate){validateName(exist, name, hasIfExists);}
     }
 
     private void validateOptions(MetaStatement stmt) throws ValidationException {
