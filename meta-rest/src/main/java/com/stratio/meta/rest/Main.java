@@ -66,8 +66,9 @@ public class Main {
         final HttpServer server = startServer();
         try {
             driver.connect();
-            System.out.println(String.format("Jersey app started with WADL available at "
-                    + "%sapplication.wadl\nHit enter to stop it...", BASE_URI));
+            System.out.println(String.format(
+                    "Jersey app started with WADL available at %sapplication.wadl%nHit enter to stop it...",
+                    BASE_URI));
             System.in.read();
             server.stop();
             driver.close();
