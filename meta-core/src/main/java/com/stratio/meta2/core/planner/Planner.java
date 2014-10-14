@@ -596,18 +596,18 @@ public class Planner {
 
             // Create parameters for metadata workflow
             CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
-            String actorRefUri = null;
+
+            // Recover ActorRef from ConnectorMetadata
+            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,
+                    createTableStatement.getClusterName());
+            String actorRefUri = connectors.iterator().next().getActorRef();
+
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
             ResultType type = ResultType.RESULTS;
 
             if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
                     createTableStatement.getClusterName())) {
                 executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
-
-                // Recover ActorRef from ConnectorMetadata
-                List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,
-                        createTableStatement.getClusterName());
-                actorRefUri = connectors.iterator().next().getActorRef();
 
                 // Create MetadataWorkFlow
                 metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
