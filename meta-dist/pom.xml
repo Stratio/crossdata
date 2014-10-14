@@ -75,6 +75,11 @@
             <name>Daniel Higuero</name>
             <email>dhiguero at stratio dot com</email>
         </developer>
+        <developer>
+            <id>idiaz</id>
+            <name>Ivan Diaz</name>
+            <email>idiaz at stratio dot com</email>
+        </developer>
     </developers>
 
     <dependencies>

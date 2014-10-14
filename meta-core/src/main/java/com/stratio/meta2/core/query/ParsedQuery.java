@@ -24,28 +24,6 @@ import com.stratio.meta2.core.statements.MetaStatement;
 
 public interface ParsedQuery {
 
-  /*public ParsedQuery(BaseQuery baseQuery, MetaStatement statement){
-    super(baseQuery);
-    this.statement=statement;
-  }
-
-  public ParsedQuery(ParsedQuery parsedQuery){
-    this(parsedQuery, parsedQuery.getStatement());
-  }
-
-  public MetaStatement getStatement(){
-    return this.statement;
-  }
-
-  public QueryStatus getStatus() {
-    return QueryStatus.PARSED;
-  }
-
-  @Override
-  public String toString() {
-    return statement.toString();
-  }*/
-
     public String getQuery();
 
     public String getQueryId();

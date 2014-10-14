@@ -34,7 +34,7 @@ public class IntegerSelector extends Selector {
      * @param value The integer/long value.
      */
     public IntegerSelector(String value) {
-        this.value = Long.valueOf(value);
+        this.value = Long.parseLong(value);
     }
 
     public IntegerSelector(int value) {

@@ -77,25 +77,16 @@ public class APIManager {
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
             result = MetadataResult.createSuccessMetadataResult();
-            //MetadataResult.class.cast(result).setCatalogList(metadata.getCatalogsNames());
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_TABLES().toString());
-      /*
-      CatalogMetadata catalogMetadata = metadata.getCatalogMetadata((String) cmd.params().get(0));
-      if (catalogMetadata != null) {
-      */
             result = MetadataResult.createSuccessMetadataResult();
             Map<String, TableMetadata> tableList = new HashMap<>();
             //Add db tables.
             //TODO: Review...
-            //tableList.putAll(helper.toCatalogMetadata(catalogMetadata).getTables());
             //Add ephemeral tables.
-            //tableList.addAll(metadata.getEphemeralTables(cmd.params().get(0)));
             MetadataResult.class.cast(result).setTableList(new ArrayList(tableList.keySet()));
-            //} else {
             result =
                     Result.createExecutionErrorResult("CATALOG " + cmd.params().get(0) + " not found");
-            //}
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
             persistManifest((Manifest) cmd.params().get(0));

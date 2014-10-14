@@ -116,13 +116,16 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
     case metadataOp: MetadataOperation => {
       var qId:String=metadataOp.queryId
+
+      println(">>>>>>>>>> TRACE: Received queryId = " + qId)
+
       try {
         val opclass=metadataOp.getClass().toString().split('.')
         val eng = connector.getMetadataEngine()
 
         opclass( opclass.length -1 ) match{
           case "CreateTable" =>{
-            println("creating table fromfrom  "+self.path)
+            println("creating table from  "+self.path)
             qId=metadataOp.asInstanceOf[CreateTable].queryId
             eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
               metadataOp.asInstanceOf[CreateTable].tableMetadata)
@@ -158,9 +161,6 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
               metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
           }
         }
-        val result = MetadataResult.createSuccessMetadataResult()
-        result.setQueryId(qId)
-        sender ! result
       } catch {
         case ex: Exception => {
           val result=Result.createExecutionErrorResult(ex.getStackTraceString)
@@ -171,6 +171,9 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       }
       val result=MetadataResult.createSuccessMetadataResult()
       result.setQueryId(qId)
+
+      println(">>>>>>>>>> TRACE: Sending back queryId = " + qId)
+
       sender ! result
     }
 
@@ -180,16 +183,14 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       //TODO:  ManagementWorkflow
 
     case storageOp: StorageOperation => {
-      var qId:String=null
+      val qId: String = storageOp.queryId
       try {
         val eng = connector.getStorageEngine()
         storageOp match {
           case Insert(queryId, clustername, table, row) => {
-            qId=queryId
             eng.insert(clustername, table, row)
           }
           case InsertBatch(queryId, clustername, table, rows) => {
-            qId=queryId
             eng.insert(clustername, table, rows)
           }
         }

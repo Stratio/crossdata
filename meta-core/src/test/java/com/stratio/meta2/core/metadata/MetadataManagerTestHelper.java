@@ -173,7 +173,9 @@ public class MetadataManagerTestHelper {
         final String version = "0.1.0";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
+        Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
+                clusterList,clusterProperties,
                 new HashSet<PropertyType>(), new HashSet<PropertyType>(), options);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);

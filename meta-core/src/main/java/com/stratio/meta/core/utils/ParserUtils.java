@@ -92,11 +92,12 @@ public class ParserUtils {
 
     public static String getQueryWithSign(String query, AntlrError ae) {
         int marker = 0;
-        if (query.startsWith("[")) {
-            marker = query.indexOf("], ") + 3;
-            query = query.substring(marker);
+        String q=query;
+        if (q.startsWith("[")) {
+            marker = q.indexOf("], ") + 3;
+            q= q.substring(marker);
         }
-        StringBuilder sb = new StringBuilder(query);
+        StringBuilder sb = new StringBuilder(q);
         int pos = getCharPosition(ae) - marker;
         if (pos >= 0) {
             sb.insert(pos, "?");
@@ -130,7 +131,6 @@ public class ParserUtils {
 
     public static String getSuggestion(String query, AntlrError antlrError) {
         // We initialize the errorWord with the first word of the query
-        //String errorWord = query.trim().split(" ")[0].toUpperCase();
         // We initialize the token words with the initial tokens
         Set<String> statementTokens = MetaUtils.INITIALS;
         // We initialize the char position of the first word
@@ -152,13 +152,7 @@ public class ParserUtils {
                 return "";
             }
 
-            /*
             // Antlr didn't recognize a token enclosed between single quotes
-            if (errorWord.contains("'")) {
-                errorWord = errorMessage.substring(errorMessage.indexOf("'") + 1, errorMessage.lastIndexOf("'"));
-                errorWord = errorWord.toUpperCase();
-            }
-            */
 
             // Antlr was expecting a determined token
             int positionToken = errorMessage.indexOf("T_");
@@ -176,18 +170,8 @@ public class ParserUtils {
         }
 
         // Get best suggestion words for the incorrect token
-        //Set<String> bestMatches = getBestMatches(errorWord, statementTokens, 2); //it is not being used
 
         //TODO: Update "Did you mean" mechanism
-    /*StringBuilder sb = new StringBuilder("Did you mean: ");
-    sb.append(createSuggestion(bestMatches, antlrError, charPosition, suggestionFromToken, errorWord));
-
-    // No suggestion was found
-    if("Did you mean: ?".startsWith(sb.toString())){
-      return "";
-    }
-
-    return sb.substring(0, sb.length()).replace(", ?", "?");*/
         return "";
     }
 

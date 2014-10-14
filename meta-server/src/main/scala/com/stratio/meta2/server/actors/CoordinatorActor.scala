@@ -61,14 +61,16 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
             log.info("ActorRef: " + actorRef.toString())
-            actorRef.asInstanceOf[ActorSelection] ! workflow.createMetadataOperationMessage(queryId)
+            actorRef.asInstanceOf[ActorSelection] ! workflow.createMetadataOperationMessage()
           } else if(workflow.getExecutionType==ExecutionType.CREATE_CATALOG || workflow
             .getExecutionType==ExecutionType.CREATE_TABLE_AND_CATALOG) {
             coordinator.persistCreateCatalog(workflow.getCatalogMetadata)
             executionInfo.setQueryStatus(QueryStatus.PLANNED)
             ExecutionManager.MANAGER.createEntry(workflow.getCatalogMetadata.getName.toString, queryId, true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-            sender ! ACK(queryId, QueryStatus.EXECUTED)
+            val result = MetadataResult.createSuccessMetadataResult()
+            result.setQueryId(queryId)
+            sender ! result
           }
         }
 
@@ -81,7 +83,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
           val actorRef=context.actorSelection(workflow.getActorRef())
-          actorRef ! workflow.getStorageOperation(queryId)
+          actorRef ! workflow.getStorageOperation()
         }
 
         case workflow: ManagementWorkflow => {
@@ -90,7 +92,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           if(workflow.getExecutionType == ExecutionType.ATTACH_CONNECTOR){
 
             val credentials = null
-            val managementOperation = workflow.createManagementOperationMessage(queryId)
+            val managementOperation = workflow.createManagementOperationMessage()
             val attachConnectorOperation = managementOperation.asInstanceOf[AttachConnector]
             val connectorClusterConfig = new ConnectorClusterConfig(
               attachConnectorOperation.targetCluster, SelectorHelper.convertSelectorMapToStringMap
@@ -105,7 +107,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
           }
-          sender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage(queryId))
+          sender ! coordinator.executeManagementOperation(workflow.createManagementOperationMessage())
         }
 
         case workflow: QueryWorkflow => {
