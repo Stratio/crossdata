@@ -92,6 +92,7 @@ public enum MetadataManager {
         case INDEX:
             result = exists((IndexName) name);
             break;
+        default: break;
         }
         return result;
     }

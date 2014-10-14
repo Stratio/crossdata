@@ -424,6 +424,7 @@ public class Normalizator {
             case ASTERISK:
                 result.addAll(checkAsteriskSelector());
                 break;
+            default: break;
             }
         }
         return result;
