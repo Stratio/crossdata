@@ -305,8 +305,9 @@ public class Planner {
                 Set<ExecutionPath> existingPaths = unionSteps.get(next.getLast());
                 if (executionPaths == null) {
                     existingPaths = new HashSet<>();
+                }else {
+                    executionPaths.add(next);
                 }
-                executionPaths.add(next);
                 unionSteps.put(UnionStep.class.cast(next.getLast()), existingPaths);
             }
 

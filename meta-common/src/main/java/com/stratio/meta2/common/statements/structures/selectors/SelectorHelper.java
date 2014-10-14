@@ -25,19 +25,17 @@ public class SelectorHelper {
 
     public static Map<String, String> convertSelectorMapToStringMap(Map<Selector, Selector> selectorsMap){
         Map<String, String> stringsMap = new HashMap<>();
-        for(Selector selectorKey: selectorsMap.keySet()){
-
-            String keyString = selectorKey.toString();
-            if(selectorKey instanceof StringSelector){
+        for(Map.Entry<Selector,Selector> entry: selectorsMap.entrySet()){
+            String keyString = entry.getKey().toString();
+            if(entry.getKey() instanceof StringSelector){
                 keyString = keyString.substring(1, keyString.length()-1);
             }
 
-            Selector selectorValue = selectorsMap.get(selectorKey);
+            Selector selectorValue = entry.getValue();
             String valueString = selectorValue.toString();
             if(selectorValue instanceof StringSelector){
                 valueString = valueString.substring(1, valueString.length()-1);
             }
-
             stringsMap.put(keyString, valueString);
         }
         return stringsMap;

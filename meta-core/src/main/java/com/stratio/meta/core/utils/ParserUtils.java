@@ -130,7 +130,7 @@ public class ParserUtils {
 
     public static String getSuggestion(String query, AntlrError antlrError) {
         // We initialize the errorWord with the first word of the query
-        String errorWord = query.trim().split(" ")[0].toUpperCase();
+        //String errorWord = query.trim().split(" ")[0].toUpperCase();
         // We initialize the token words with the initial tokens
         Set<String> statementTokens = MetaUtils.INITIALS;
         // We initialize the char position of the first word
@@ -152,11 +152,13 @@ public class ParserUtils {
                 return "";
             }
 
+            /*
             // Antlr didn't recognize a token enclosed between single quotes
             if (errorWord.contains("'")) {
                 errorWord = errorMessage.substring(errorMessage.indexOf("'") + 1, errorMessage.lastIndexOf("'"));
                 errorWord = errorWord.toUpperCase();
             }
+            */
 
             // Antlr was expecting a determined token
             int positionToken = errorMessage.indexOf("T_");
