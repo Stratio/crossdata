@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.core.statements;
 
+import java.io.Serializable;
+
 import com.stratio.meta2.core.validator.ValidationRequirements;
 
 public interface IStatement {
