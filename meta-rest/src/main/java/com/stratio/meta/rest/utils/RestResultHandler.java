@@ -19,6 +19,7 @@
 package com.stratio.meta.rest.utils;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.IResultHandler;
@@ -31,7 +32,7 @@ public class RestResultHandler implements IResultHandler {
     private QueryStatus status;
     private String queryId;
     private Result errorResult;
-    private HashMap<String, Result> lastResults = new HashMap<String, Result>();
+    private Map<String, Result> lastResults = new HashMap<String, Result>();
 
     public RestResultHandler() {
         status = QueryStatus.NONE;

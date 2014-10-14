@@ -41,6 +41,7 @@ public class GridInitializer {
      * Package constructor
      */
     GridInitializer() {
+        //TODO
         System.out.println(" ---> CREATING GRID INITIALIZER");
     }
 
