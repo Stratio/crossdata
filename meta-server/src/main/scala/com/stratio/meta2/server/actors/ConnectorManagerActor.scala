@@ -73,7 +73,6 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
           }
         }
       }
-    }
 
     /**
      * CONNECTOR answers its name.
