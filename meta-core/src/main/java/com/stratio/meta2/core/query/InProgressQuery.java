@@ -20,32 +20,4 @@ package com.stratio.meta2.core.query;
 
 public interface InProgressQuery extends PlannedQuery {
 
-  /*public InProgressQuery(PlannedQuery plannedQuery) {
-    super(plannedQuery);
-  }
-
-  InProgressQuery(InProgressQuery inProgressQuery) {
-    this((PlannedQuery) inProgressQuery);
-  }
-
-  public QueryStatus getStatus() {
-    return QueryStatus.IN_PROGRESS;
-  }
-
-  public ConnectorName getConnectorName() {
-    return connectorName;
-  }
-
-  public void setConnectorName(ConnectorName connectorName) {
-    this.connectorName = connectorName;
-  }
-
-  public ClusterName getClusterName() {
-    return clusterName;
-  }
-
-  public void setClusterName(ClusterName clusterName) {
-    this.clusterName = clusterName;
-  }*/
-
 }

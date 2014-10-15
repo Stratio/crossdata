@@ -58,6 +58,10 @@ public class StringSelector extends Selector {
         return sb.toString();
     }
 
+    @Override public String getStringValue() {
+        return getValue();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

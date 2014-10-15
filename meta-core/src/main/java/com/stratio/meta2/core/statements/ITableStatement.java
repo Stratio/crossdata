@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.core.statements;
 
-//public abstract class TableStatement extends MetaStatement;
 
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.TableName;
@@ -31,7 +30,6 @@ public interface ITableStatement {
     /**
      * The target table.
      */
-    //protected TableName tableName;
 
     /**
      * Get the table to be described.

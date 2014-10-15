@@ -20,7 +20,6 @@ package com.stratio.meta2.core.planner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,6 +69,7 @@ import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.statements.structures.selectors.AsteriskSelector;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.common.statements.structures.selectors.SelectorType;
@@ -597,18 +597,18 @@ public class Planner {
 
             // Create parameters for metadata workflow
             CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
-            String actorRefUri = null;
+
+            // Recover ActorRef from ConnectorMetadata
+            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,
+                    createTableStatement.getClusterName());
+            String actorRefUri = connectors.iterator().next().getActorRef();
+
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
             ResultType type = ResultType.RESULTS;
 
             if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
                     createTableStatement.getClusterName())) {
                 executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
-
-                // Recover ActorRef from ConnectorMetadata
-                List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,
-                        createTableStatement.getClusterName());
-                actorRefUri = connectors.iterator().next().getActorRef();
 
                 // Create MetadataWorkFlow
                 metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
@@ -713,10 +713,10 @@ public class Planner {
         String queryId = query.getQueryId();
         String actorRef = null;
         TableName tableName;
-        Collection<Row> rows;
+        Row row;
         if (query.getStatement() instanceof InsertIntoStatement) {
             tableName = ((InsertIntoStatement) (query.getStatement())).getTableName();
-            rows = getInsertRows(((InsertIntoStatement) (query.getStatement())));
+            row = getInsertRow(((InsertIntoStatement) (query.getStatement())));
         } else {
             throw new PlanningException("Delete, Truncate and Update statements not supported yet");
         }
@@ -744,13 +744,13 @@ public class Planner {
                 ResultType.RESULTS);
         storageWorkflow.setClusterName(tableMetadata.getClusterRef());
         storageWorkflow.setTableMetadata(tableMetadata);
-        storageWorkflow.setRows(rows);
+        storageWorkflow.setRow(row);
 
         return storageWorkflow;
     }
 
-    private Collection<Row> getInsertRows(InsertIntoStatement statement) {
-        Collection<Row> rows = new ArrayList<>();
+    private Row getInsertRow(InsertIntoStatement statement) {
+        Row row = new Row();
 
         List<Selector> values = statement.getCellValues();
         List<ColumnName> ids = statement.getIds();
@@ -759,10 +759,9 @@ public class Planner {
             ColumnName columnName = ids.get(i);
             Selector value = values.get(i);
             Cell cell = new Cell(value);
-            Row row = new Row(columnName.getName(), cell);
-            rows.add(row);
+            row.addCell(columnName.getName(), cell);
         }
-        return rows;
+        return row;
     }
 
     private ClusterMetadata getClusterMetadata(ClusterName clusterRef) throws PlanningException {
@@ -925,8 +924,11 @@ public class Planner {
     protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap) {
         Map<ColumnName, String> aliasMap = new HashMap<>();
         Map<String, ColumnType> typeMap = new HashMap<>();
+        boolean addAll = false;
         for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
-            if (s.getAlias() != null) {
+            if(AsteriskSelector.class.isInstance(s)){
+                addAll = true;
+            }else if (s.getAlias() != null) {
                 aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()), s.getAlias());
 
                 typeMap.put(s.toString(),
@@ -937,6 +939,15 @@ public class Planner {
                 aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()), s.toString());
             }
         }
+
+        if(addAll){
+            TableMetadata metadata = tableMetadataMap.get(selectStatement.getTableName().getQualifiedName());
+            for(Map.Entry<ColumnName, ColumnMetadata> column : metadata.getColumns().entrySet()){
+                aliasMap.put(column.getKey(), column.getKey().getName());
+                typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
+            }
+        }
+        
         Select result = new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap);
         return result;
     }

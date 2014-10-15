@@ -18,6 +18,7 @@
 
 package com.stratio.meta.common.statements.structures.relationships;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import com.stratio.meta2.common.data.TableName;
@@ -26,7 +27,7 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
  */
-public class Relation {
+public class Relation implements Serializable{
 
     /**
      * Identifier in the left part of the relationship.
@@ -89,23 +90,4 @@ public class Relation {
         return sb.toString();
     }
 
-    /**
-     * Gets the string values list for the terms
-     *
-     * @return Terms string values
-     */
-  /*
-  public List<String> getTermsStringValues() {
-
-    List<String> termsValuesList = new ArrayList<>();
-
-    Iterator<Selector> terms = rightSelectors.iterator();
-    while (terms.hasNext()) {
-      Selector s = terms.next();
-      termsValuesList.add(s.toString());
-    }
-
-    return termsValuesList;
-  }
-  */
 }

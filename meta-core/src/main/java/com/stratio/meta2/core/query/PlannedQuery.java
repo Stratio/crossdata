@@ -22,18 +22,6 @@ import com.stratio.meta.common.executionplan.ExecutionWorkflow;
 
 public interface PlannedQuery extends ValidatedQuery {
 
-  /*public PlannedQuery(ValidatedQuery validatedQuery) {
-    super(validatedQuery);
-  }
-
-  PlannedQuery(PlannedQuery plannedQuery){
-    this((ValidatedQuery)plannedQuery);
-  }
-
-  public QueryStatus getStatus() {
-    return QueryStatus.PLANNED;
-  }*/
-
     public ExecutionWorkflow getExecutionWorkflow();
 
 }

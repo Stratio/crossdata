@@ -47,10 +47,11 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
       sender ! ack
     }
     case query: SelectValidatedQuery => {
-      val timer = initTimer()
       log.info("\n\nGetting SelectValidatedQuery; sending ack to "+sender+"\n\n")
+      val timer = initTimer()
       val planned = planner.planQuery(query)
       finishTimer(timer)
+      log.info("Sending " + planned.getClass + " to coordinator actor")
       coordinator forward planned
 
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)

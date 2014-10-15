@@ -146,7 +146,7 @@ public class Grid implements Closeable {
      */
     private enum Singleton {
         INSTANCE;
-        Grid grid;
+        private Grid grid;
     }
 
 }

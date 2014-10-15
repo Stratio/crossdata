@@ -50,7 +50,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         workflow.setConnectorName(new ConnectorName("myConnector"));
         workflow.setDatastoreName(new DataStoreName("dataStoreTest"));
         Coordinator coordinator = new Coordinator();
-        coordinator.executeManagementOperation(workflow.createManagementOperationMessage(""));
+        coordinator.executeManagementOperation(workflow.createManagementOperationMessage());
         // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
         datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
