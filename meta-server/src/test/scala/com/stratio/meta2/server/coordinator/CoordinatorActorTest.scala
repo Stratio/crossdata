@@ -33,13 +33,14 @@ import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.api.PropertyType
 import com.stratio.meta2.common.data._
 import com.stratio.meta2.common.metadata._
+import com.stratio.meta2.common.metadata.structures.TableType
 import com.stratio.meta2.common.statements.structures.selectors.Selector
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta2.core.grid.Grid
-import com.stratio.meta2.core.metadata.{MetadataManagerTestHelper, MetadataManager}
+import com.stratio.meta2.core.metadata.{MetadataManager, MetadataManagerTestHelper}
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.{InsertIntoStatement, MetadataStatement, SelectStatement}
+import com.stratio.meta2.core.statements.{CreateTableStatement, InsertIntoStatement, MetadataStatement, SelectStatement}
 import com.stratio.meta2.server.actors.CoordinatorActor
 import com.stratio.meta2.server.mocks.MockConnectorManagerActor
 import org.apache.log4j.Logger
@@ -100,11 +101,19 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
   val metadataPlannedQuery0 = new MetadataPlannedQuery(metadataValidatedQuery0,metadataWorkflow0)
 
 
-  val metadataStatement1: MetadataStatement = null
-  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),
+  val metadataStatement1: MetadataStatement =  new CreateTableStatement(TableType.DATABASE,
+      new TableName("myCatalog","myTable"),
+      new ClusterName("myCluster"),
+      new util.HashMap[ColumnName, ColumnType](),
+      new util.ArrayList[ColumnName](),
+      new util.ArrayList[ColumnName]()
+    )
+  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table myTable;",
+    new CatalogName(catalogName)),
     metadataStatement1)
   val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
-  val metadataWorkflow1=new MetadataWorkflow(queryId + queryIdIncrement,  null, ExecutionType.CREATE_TABLE,
+  val metadataWorkflow1=new MetadataWorkflow(queryId + queryIdIncrement,  StringUtils.getAkkaActorRefUri(connectorActor),
+    ExecutionType.CREATE_TABLE,
     ResultType.RESULTS)
   metadataWorkflow1.setCatalogMetadata(
     new CatalogMetadata(
@@ -191,11 +200,9 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
     coordinatorActor ! metadataPlannedQuery0
     expectMsgType[MetadataResult]
 
-    /*
     connectorActor !(queryId + (4), "updatemylastqueryId")
     coordinatorActor ! metadataPlannedQuery1
     expectMsgType[MetadataResult]
-    */
 
   }
 
