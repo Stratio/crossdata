@@ -24,7 +24,6 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.plugin.logging.Log;
-import org.stringtemplate.v4.ST;
 
 public class InstallerGoalLauncher {
 
@@ -70,7 +69,7 @@ public class InstallerGoalLauncher {
             throw new IOException("Can't change executable option.");
         }
 
-        log.info("Process complete: " + config.getOutputDirectory());
+        log.info("Process complete: " + targetDirectory);
     }
 
 }
