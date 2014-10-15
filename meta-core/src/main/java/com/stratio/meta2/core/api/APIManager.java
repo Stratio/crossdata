@@ -175,6 +175,12 @@ public class APIManager {
         SupportedOperationsType supportedOperations = connectorType.getSupportedOperations();
 
         // Create Metadata
+
+        // TODO: mafernandez (miguel). if this connector was already initialized, we should update the information
+        // instead of
+        // crushing the information. In order to do that, we must remove the final tag of the attributes in the
+        // ConnectorMetadata class and add the corresponding setters
+
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(
                 name,
                 version,
