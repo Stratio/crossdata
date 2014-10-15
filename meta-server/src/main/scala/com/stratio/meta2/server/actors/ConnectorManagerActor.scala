@@ -62,7 +62,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       while (it.hasNext()) {
         val rol = it.next()
         rol match {
-          case "connector" =>
+          case "connector" => {
             val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
             connectorActorRef ! getConnectorName()
             //connectorActorRef ! Start()
@@ -73,6 +73,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
           }
         }
       }
+    }
+
 
     /**
      * CONNECTOR answers its name.
