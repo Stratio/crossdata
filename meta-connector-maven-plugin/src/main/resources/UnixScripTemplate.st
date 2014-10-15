@@ -1,15 +1,14 @@
 #!/bin/bash
-@LICENSE_HEADER@
 
 ### BEGIN INIT INFO
-# Provides: @NAME@
+# Provides: <name>
 # Required-Start: $remote_fs
 # Required-Stop: $remote_fs
 # Should-Stop: $all
 # Default-Start: 2 3 4 5
 # Default-Stop: 0 1 6
 # Short-Description: Monitoring agent for Stratio SDS
-# Description: @DESC@
+# Description: <desc>
 # BigData platform, allowing SDS Manager to check local
 # resources.
 ### END INIT INFO
@@ -22,16 +21,17 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 INIT_HOME=`cd "${DIR}/.." >/dev/null; pwd`
 
 
-NAME=@NAME@
-DESC=@DESC@
-BASEDIR=${INIT_HOME} #donde esta el binario y el /lib donde esten los lib
-CONFDIR=${INIT_HOME}/conf # donde esta el fichero de configuracion.
+
+NAME=<name>
+DESC=<desc>
+BASEDIR=${INIT_HOME}
+CONFDIR=${INIT_HOME}/conf
 LOGFILE=${INIT_HOME}/logs
 pidDir=${INIT_HOME}
 lockDir=${INIT_HOME}
-lockFile=${lockDir}/@NAME@
-serviceUser=@USER@
-javaCommandLineKeyword=@MAIN_CLASS@ #todo: poner la clase de meta main del conector de cassandra
+lockFile=${lockDir}/<name>
+serviceUser=<user>
+javaCommandLineKeyword=<mainClass>
 # If JAVA_HOME has not been set, try to determine it.ner
 JVM_SEARCH_DIRS="/usr/java/default /usr/java/latest /opt/java"
 if [ -z "$JAVA_HOME" ]; then
@@ -61,7 +61,7 @@ CLASSPATH="$CONFDIR"
 for file in $BASEDIR/*; do
 CLASSPATH="$CLASSPATH:$file"
 done
-javaArgs="$javaArgs -classpath $CLASSPATH -Djava.net.preferIPv4Stack=true  $javaCommandLineKeyword"  #este es el comando de java que ejecuta el codigo
+javaArgs="$javaArgs -classpath $CLASSPATH -Djava.net.preferIPv4Stack=true  $javaCommandLineKeyword"
 javaCommandLine="${JAVA_HOME}/bin/java $javaArgs"
 if [ -f $lockFile ]; then
 echo "Error: Script already running" && exit 1
