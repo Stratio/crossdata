@@ -23,21 +23,24 @@ import javax.transaction.TransactionManager
 
 import akka.pattern.ask
 import com.stratio.connectors.MockConnectorActor
+import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
+import com.stratio.meta.common.result.{CommandResult, MetadataResult, QueryResult}
 import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.api.PropertyType
 import com.stratio.meta2.common.data._
 import com.stratio.meta2.common.metadata._
+import com.stratio.meta2.common.metadata.structures.TableType
 import com.stratio.meta2.common.statements.structures.selectors.Selector
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta2.core.grid.Grid
-import com.stratio.meta2.core.metadata.MetadataManager
+import com.stratio.meta2.core.metadata.{MetadataManager, MetadataManagerTestHelper}
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.{InsertIntoStatement, MetadataStatement, SelectStatement}
+import com.stratio.meta2.core.statements.{CreateTableStatement, InsertIntoStatement, MetadataStatement, SelectStatement}
 import com.stratio.meta2.server.actors.CoordinatorActor
 import com.stratio.meta2.server.mocks.MockConnectorManagerActor
 import org.apache.log4j.Logger
@@ -51,7 +54,7 @@ import scala.concurrent.duration.DurationInt
 class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig {
   this: Suite =>
 
-  //val metadataManager=new MetadataManagerTestHelper
+  val metadataManager=new MetadataManagerTestHelper()
   def incQueryId(): String = {
     queryIdIncrement += 1; return queryId + queryIdIncrement
   }
@@ -98,11 +101,19 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
   val metadataPlannedQuery0 = new MetadataPlannedQuery(metadataValidatedQuery0,metadataWorkflow0)
 
 
-  val metadataStatement1: MetadataStatement = null
-  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),
+  val metadataStatement1: MetadataStatement =  new CreateTableStatement(TableType.DATABASE,
+      new TableName("myCatalog","myTable"),
+      new ClusterName("myCluster"),
+      new util.HashMap[ColumnName, ColumnType](),
+      new util.ArrayList[ColumnName](),
+      new util.ArrayList[ColumnName]()
+    )
+  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table myTable;",
+    new CatalogName(catalogName)),
     metadataStatement1)
   val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
-  val metadataWorkflow1=new MetadataWorkflow(queryId + queryIdIncrement,  null, ExecutionType.CREATE_TABLE,
+  val metadataWorkflow1=new MetadataWorkflow(queryId + queryIdIncrement,  StringUtils.getAkkaActorRefUri(connectorActor),
+    ExecutionType.CREATE_TABLE,
     ResultType.RESULTS)
   metadataWorkflow1.setCatalogMetadata(
     new CatalogMetadata(
@@ -114,7 +125,7 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
 
   def initialize() = {
-    val grid = Grid.initializer.withContactPoint("127.0.0.1").withPort(7800)
+    var grid = Grid.initializer.withContactPoint("127.0.0.1").withPort(7800)
       .withListenAddress("127.0.0.1")
       .withMinInitialMembers(1)
       .withJoinTimeoutInMs(5000)
@@ -152,55 +163,47 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
     MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
   }
 
-
-//  def initializeTablesInfinispan(): TableMetadata = {
-//    val myDatastore = metadataManager.createTestDatastore()
-//    metadataManager.createTestCluster("myCluster", myDatastore)
-//    metadataManager.createTestCatalog("myCatalog")
-//    metadataManager.createTestTable(new ClusterName("myCluster"), "myCatalog", "myTable", Array("name", "age"),
-//      Array(ColumnType.VARCHAR, ColumnType.INT), Array("name"), Array("name"))
-
-//  }
+  def initializeTablesInfinispan(): TableMetadata = {
+    val myDatastore = metadataManager.createTestDatastore()
+    metadataManager.createTestCluster("myCluster", myDatastore)
+    metadataManager.createTestCatalog("myCatalog")
+    metadataManager.createTestTable(new ClusterName("myCluster"), "myCatalog", "myTable", Array("name", "age"),
+      Array(ColumnType.VARCHAR, ColumnType.INT), Array("name"), Array("name"))
+  }
 
   test("Should return a KO message") {
     initialize()
     within(1000 millis) {
       coordinatorActor ! "anything; this doesn't make any sense"
-     // val exception = expectMsgType[ExecutionException]
+      val exception = expectMsgType[ExecutionException]
     }
   }
 
-  /*test("Select query") {
+  test("Select query") {
     initialize()
     connectorActor !(queryId + (1), "updatemylastqueryId")
     coordinatorActor ! selectPlannedQuery
     expectMsgType[QueryResult]
-  }*/
+  }
 
-  /*test("Storage query") {
+  test("Storage query") {
     initialize()
     initializeTablesInfinispan()
     connectorActor !(queryId + (2), "updatemylastqueryId")
     coordinatorActor ! storagePlannedQuery
     expectMsgType[CommandResult]
-  }*/
+  }
 
- /* test("Metadata query") {
+  test("Metadata query") {
     initialize()
     connectorActor !(queryId + (3), "updatemylastqueryId")
     coordinatorActor ! metadataPlannedQuery0
     expectMsgType[MetadataResult]
 
-    /*
     connectorActor !(queryId + (4), "updatemylastqueryId")
     coordinatorActor ! metadataPlannedQuery1
     expectMsgType[MetadataResult]
-    */
-<<<<<<< HEAD
-  }*/
 
-
-
-
+  }
 
 }
