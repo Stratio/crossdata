@@ -99,7 +99,7 @@ public class InsertIntoStatementTest extends ParsingTest {
     @Test
     public void insertIntoWithDecimalNumber() {
         String inputText =
-                "INSERT INTO mykeyspace.tablename (ident1, ident2, ident3) VALUES ('term1', true, -55.);";
+                "INSERT INTO mykeyspace.tablename (ident1, ident2, ident3) VALUES ('term1', true, -55.0);";
         String expectedText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2, mykeyspace.tablename.ident3) VALUES ('term1', true, -55.0);";
         testRegularStatementSession("demo", inputText, expectedText, "insertIntoWithDecimalNumber");
     }

@@ -18,7 +18,7 @@
 
 package com.stratio.meta2.server.parser
 
-import akka.actor.{ActorSystem, actorRef2Scala}
+import akka.actor.actorRef2Scala
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.result.ErrorResult
 import com.stratio.meta2.core.engine.Engine
@@ -34,7 +34,7 @@ class ParserActorTest extends ActorReceiveUtils with FunSuiteLike with ServerCon
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[ParserActorTest])
-  lazy val system1 = ActorSystem(clusterName, config)
+  //lazy val system1 = ActorSystem(clusterName, config)
   val engine: Engine = createEngine.create()
 
   //val APIActorRef=context.actorOf(APIActor.props(engine.getAPIManager()),"APIActor")
@@ -43,7 +43,7 @@ class ParserActorTest extends ActorReceiveUtils with FunSuiteLike with ServerCon
   val plannerRef = system.actorOf(PlannerActor.props(null, null), "TestPlannerActor")
   val validatorRef = system.actorOf(ValidatorActor.props(null, engine.getValidator()), "TestValidatorActor")
   val parserActor = {
-    system1.actorOf(ParserActor.props(validatorRef, new Parser()), "TestParserActor")
+    system.actorOf(ParserActor.props(validatorRef, new Parser()), "TestParserActor")
   }
 
 

@@ -66,6 +66,11 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
             val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
             connectorActorRef ! getConnectorName()
             //connectorActorRef ! Start()
+          }
+          case _ =>{
+            log.debug("MemberUp: rol is not in this actor.")
+
+          }
         }
       }
     }

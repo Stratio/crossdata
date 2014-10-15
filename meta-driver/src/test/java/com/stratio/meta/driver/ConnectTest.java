@@ -39,7 +39,7 @@ public class ConnectTest extends DriverParentTest {
 
     private final static Logger logger = Logger.getLogger(ConnectTest.class);
 
-    @BeforeClass
+   /* @BeforeClass
     public void executeDropTestBefore() {
 
         try {
@@ -72,7 +72,7 @@ public class ConnectTest extends DriverParentTest {
         }
 
     }
-
+*/
     @Test(groups = "connect")
     public void connect() {
 
@@ -119,7 +119,7 @@ public class ConnectTest extends DriverParentTest {
         assertTrue(((String) r.getResult()).equalsIgnoreCase("OK"),
                 "sendManifest: " + System.lineSeparator() + " Cannot add manifest.");
     }
-
+/*
     @Test(groups = { "query", "create Ks" }, dependsOnGroups = { "connect" })
     public void ExecuteCreatewitherrorTest() {
         String msg = "create KEYSPAC ks_demo WITH replication = "
@@ -189,5 +189,5 @@ public class ConnectTest extends DriverParentTest {
             e.printStackTrace();
             fail("Exception not expected");
         }
-    }
+    }*/
 }
