@@ -59,13 +59,18 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       while (it.hasNext()) {
         val rol = it.next()
         rol match {
-          case "connector" =>
+          case "connector" => {
             println(">>>>>>> TRACE: Address = " + mu.member.address)
             println(">>>>>>> TRACE: String = " + mu.member.toString())
             val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
-            val id = java.util.UUID.randomUUID.toString()
+            //val id = java.util.UUID.randomUUID.toString()
             connectorActorRef ! getConnectorName()
             //connectorActorRef ! Start()
+          }
+          case _ =>{
+            log.debug("MemberUp: rol is not in this actor.")
+
+          }
         }
       }
     }

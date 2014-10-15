@@ -18,24 +18,25 @@
 
 package com.stratio.meta2.server.validator
 
-import akka.actor.ActorSystem
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.result.ErrorResult
 import com.stratio.meta2.core.engine.Engine
-import com.stratio.meta2.server.actors.{ValidatorActor, PlannerActor, CoordinatorActor, ConnectorManagerActor}
+import com.stratio.meta2.server.actors.{ConnectorManagerActor, CoordinatorActor, PlannerActor, ValidatorActor}
+import com.stratio.meta2.server.utilities.createEngine
 import org.apache.log4j.Logger
 import org.scalatest.{FunSuiteLike, Suite}
+
 import scala.concurrent.duration.DurationInt
-import com.stratio.meta2.server.utilities.createEngine
 
 class ValidatorActorTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[ValidatorActorTest])
-  lazy val system1 = ActorSystem(clusterName, config)
+ //lazy val system1 = ActorSystem(clusterName, config)
   val engine: Engine = createEngine.create()
-  val connectorManagerRef = system1.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
-  val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()), "TestCoordinatorActor")
+  val connectorManagerRef = system.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
+  val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()),
+    "TestCoordinatorActor")
   val plannerRef = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
   val validatorActor = system.actorOf(ValidatorActor.props(plannerRef, engine.getValidator()), "TestValidatorActor")
 

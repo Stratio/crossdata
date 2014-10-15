@@ -21,7 +21,7 @@ package com.stratio.meta2.server.server
 import akka.actor.Props
 import com.stratio.meta.common.ask.{Connect, Query}
 import com.stratio.meta.common.result._
-import com.stratio.meta.server.config.{ActorReceiveUtils, BeforeAndAfterCassandra}
+import com.stratio.meta.server.config.ActorReceiveUtils
 import com.stratio.meta.server.utilities._
 import com.stratio.meta2.common.result.{ErrorResult, Result}
 import com.stratio.meta2.core.engine.Engine
@@ -34,24 +34,24 @@ import scala.concurrent.duration._
 /**
  * Server Actor tests.
  */
-class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike with BeforeAndAfterCassandra {
-
+class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike //with BeforeAndAfterCassandra {
+{
   lazy val serverRef = system.actorOf(Props(classOf[ServerActor], engine), "test")
   val engine: Engine = createEngine.create()
 
-  override def beforeCassandraFinish() {
+  /*override def beforeCassandraFinish() {
     shutdown(system)
-  }
+  }*/
 
-  override def beforeAll(): Unit = {
+  /*override def beforeAll(): Unit = {
     super.beforeAll()
     dropKeyspaceIfExists("ks_demo")
-  }
+  }*/
 
-  override def afterAll() {
+ /* override def afterAll() {
     super.afterAll()
     engine.shutdown()
-  }
+  }*/
 
   def executeStatement(query: String, keyspace: String, shouldExecute: Boolean): Result = {
     val stmt = Query("basic-server", keyspace, query, "test_actor")
@@ -61,7 +61,7 @@ class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike with Befo
 
     if (shouldExecute) {
       assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
-        + "\n error: " + getErrorMessage(result))
+        + "\n error: " )//+ getErrorMessage(result))
     } else {
       assertTrue(result.hasError, "Statement should report an error")
     }
@@ -147,7 +147,7 @@ class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike with Befo
       val query = "select * from demo ;"
       val result = executeStatement(query, "ks_demo", true)
       val r = result.asInstanceOf[QueryResult]
-      assertFalse(result.hasError, "Error not expected: " + getErrorMessage(result))
+      assertFalse(result.hasError, "Error not expected: " )//+ getErrorMessage(result))
       assertEquals(r.getResultSet.size(), 1, "Cannot retrieve data")
       val row = r.getResultSet.iterator().next()
       assertEquals(row.getCells.get("field1").getValue, "text1", "Invalid row content")
