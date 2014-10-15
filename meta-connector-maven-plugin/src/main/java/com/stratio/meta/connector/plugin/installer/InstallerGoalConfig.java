@@ -32,9 +32,11 @@ public class InstallerGoalConfig {
     private final File mainJarRepo;
     private final List<File> dependenciesJarRepo;
     private final String unixScriptTemplate;
+    private final String jmxPort;
 
     public InstallerGoalConfig(String outputDirectory, String configDirectory, String includeDirectory,
-            String connectorName, String description, String userService, String mainClass, File mainJarRepo,
+            String connectorName, String description, String userService, String mainClass,
+            String jmxPort, File mainJarRepo,
             List<File> dependenciesJarRepo, String unixScriptTemplate) {
         this.outputDirectory = outputDirectory;
         this.configDirectory = configDirectory;
@@ -43,6 +45,7 @@ public class InstallerGoalConfig {
         this.description = description;
         this.userService = userService;
         this.mainClass = mainClass;
+        this.jmxPort = jmxPort;
         this.mainJarRepo = mainJarRepo;
         this.dependenciesJarRepo = dependenciesJarRepo;
         this.unixScriptTemplate = unixScriptTemplate;
@@ -70,6 +73,10 @@ public class InstallerGoalConfig {
 
     public String getMainClass() {
         return mainClass;
+    }
+
+    public String getJmxPort() {
+        return jmxPort;
     }
 
     public File getMainJarRepo() {

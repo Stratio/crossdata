@@ -24,7 +24,6 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.plugin.logging.Log;
-import org.stringtemplate.v4.ST;
 
 public class InstallerGoalLauncher {
 
@@ -63,6 +62,14 @@ public class InstallerGoalLauncher {
         outputString=outputString.replaceAll("<desc>", config.getDescription());
         outputString=outputString.replaceAll("<user>", config.getUserService());
         outputString=outputString.replaceAll("<mainClass>", config.getMainClass());
+        int index = config.getMainClass().lastIndexOf('.');
+        String className = config.getMainClass();
+        if(index != -1){
+            className = config.getMainClass().substring(index+1);
+        }
+        outputString=outputString.replaceAll("<mainClassName>", className);
+
+        outputString=outputString.replaceAll("<jmxPort>", config.getJmxPort());
 
         File binFile= new File(FilenameUtils.concat(binDirectory.toString(),config.getConnectorName()));
         FileUtils.writeStringToFile(binFile,outputString);
@@ -70,7 +77,7 @@ public class InstallerGoalLauncher {
             throw new IOException("Can't change executable option.");
         }
 
-        log.info("Process complete: " + config.getOutputDirectory());
+        log.info("Process complete: " + targetDirectory);
     }
 
 }

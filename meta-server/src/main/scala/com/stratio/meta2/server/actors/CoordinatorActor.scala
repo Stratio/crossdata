@@ -19,23 +19,19 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor._
+import com.stratio.meta.common.connector.ConnectorClusterConfig
 import com.stratio.meta.common.exceptions.ExecutionException
 import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
 import com.stratio.meta.common.utils.StringUtils
-import com.stratio.meta.communication._
+import com.stratio.meta.communication.{Connect, ConnectToConnector, DisconnectFromConnector, _}
 import com.stratio.meta2.common.data.{ConnectorName, Status}
 import com.stratio.meta2.common.result.Result
+import com.stratio.meta2.common.statements.structures.selectors.SelectorHelper
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query.PlannedQuery
-import com.stratio.meta.common.connector.ConnectorClusterConfig
-import com.stratio.meta.communication.ConnectToConnector
-import com.stratio.meta.communication.DisconnectFromConnector
-import com.stratio.meta.communication.ACK
-import com.stratio.meta.communication.Connect
-import com.stratio.meta2.common.statements.structures.selectors.SelectorHelper
 
 object CoordinatorActor {
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor
@@ -115,6 +111,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         case workflow: QueryWorkflow => {
           log.info("CoordinatorActor: QueryWorkflow received")
+          println("CoordinatorActor: QueryWorkflow received")
           val queryId = plannedQuery.getQueryId
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
