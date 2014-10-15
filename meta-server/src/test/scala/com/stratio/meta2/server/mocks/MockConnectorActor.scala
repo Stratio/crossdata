@@ -71,6 +71,14 @@ class MockConnectorActor() extends Actor with ActorLogging {
       sender ! result
     }
 
+    case storageOp: StorageOperation=> {
+      //TODO: CREATE CLASS STORAGERESULT
+      println(">>>>>>>>>>>>>>>>>>>>>>> metadataOp")
+      val result=CommandResult.createCommandResult("ok")
+      result.setQueryId(storageOp.queryId)
+      sender ! result
+    }
+
     case metadataOp: MetadataOperation => {
       println(">>>>>>>>>>>>>>>>>>>>>>> metadataOp")
       val result=MetadataResult.createSuccessMetadataResult()
