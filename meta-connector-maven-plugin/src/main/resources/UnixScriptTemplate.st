@@ -104,8 +104,7 @@ function checkProcessIsOurService {
 	local pid="$1"
 	local cmd="$(ps -p $pid --no-headers -o comm)"
 	if [ "$cmd" != "java" ]; then return 1; fi
-	#grep -q -F "$javaCommandLineKeyword" /proc/$pid/cmdline
-	${JAVA_HOME}/bin/jps | grep ${pid} | grep ${javaCommandLineKeyword}
+	ps -Af | grep ${pid} | grep java
 	if [ $? -ne 0 ]; then return 1; fi
 	return 0;
 }
