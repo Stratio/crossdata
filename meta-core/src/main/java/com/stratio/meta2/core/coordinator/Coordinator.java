@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.executionplan.MetadataWorkflow;
 import com.stratio.meta.common.result.CommandResult;
+import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.result.ErrorType;
 import com.stratio.meta2.common.result.Result;
 import com.stratio.meta.communication.AttachCluster;
@@ -177,6 +178,8 @@ public class Coordinator implements Serializable {
 
     public Result persistAttachConnector(ClusterName clusterName, ConnectorName connectorName,
             Map<Selector, Selector> options) {
+
+        // Update information in Cluster
         ClusterMetadata clusterMetadata =
                 MetadataManager.MANAGER.getCluster(clusterName);
 
@@ -185,10 +188,21 @@ public class Coordinator implements Serializable {
 
         ConnectorAttachedMetadata value =
                 new ConnectorAttachedMetadata(connectorName, clusterName, options);
+
         connectorAttachedRefs.put(connectorName, value);
+
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
 
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
+
+        // Update information in Connector
+        ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+
+        connectorMetadata.addClusterProperties(clusterName, options);
+
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
+
+
         return CommandResult.createCommandResult("CONNECTOR attached successfully");
     }
 

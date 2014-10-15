@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.common.metadata;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,9 +39,10 @@ public class ConnectorMetadata implements IMetadata {
     private final String version;
     private final Set<DataStoreName> dataStoreRefs;
 
-    private Set<ClusterName> clusterRefs;
+    //TODO; We can get this info also from clusterProperties.entrySet()
+    private Set<ClusterName> clusterRefs = new HashSet<>();
 
-    private Map<ClusterName, Map<Selector, Selector>> clusterProperties;
+    private Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
 
     private Status status;
     private String actorRef;
@@ -150,4 +153,7 @@ public class ConnectorMetadata implements IMetadata {
         return supportedOperations.contains(operation);
     }
 
+    public void addClusterProperties(ClusterName clusterName, Map<Selector, Selector> options) {
+        clusterProperties.put(clusterName, options);
+    }
 }

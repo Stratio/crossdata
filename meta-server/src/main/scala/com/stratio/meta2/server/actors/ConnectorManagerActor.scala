@@ -27,7 +27,10 @@ import com.stratio.meta2.common.data.ConnectorName
 import com.stratio.meta2.core.connector.ConnectorManager
 import com.stratio.meta2.core.metadata.MetadataManager
 import org.apache.log4j.Logger
-
+import com.stratio.meta2.core.execution.ExecutionManager
+import com.stratio.meta.common.connector.ConnectorClusterConfig
+import com.stratio.meta2.common.statements.structures.selectors.SelectorHelper
+import scala.collection.JavaConversions._
 
 object ConnectorManagerActor {
   def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
@@ -60,10 +63,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
         val rol = it.next()
         rol match {
           case "connector" =>
-            println(">>>>>>> TRACE: Address = " + mu.member.address)
-            println(">>>>>>> TRACE: String = " + mu.member.toString())
             val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
-            val id = java.util.UUID.randomUUID.toString()
             connectorActorRef ! getConnectorName()
             //connectorActorRef ! Start()
         }
@@ -74,9 +74,25 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
      * CONNECTOR answers its name.
      */
     case msg: replyConnectorName => {
-      val connectorRef = sender;
-      println(">>>>>>>>> TRACE: ConnectorName received from " + sender)
-      MetadataManager.MANAGER.addConnectorRef(new ConnectorName(msg.name), StringUtils.getAkkaActorRefUri(connectorRef))
+      log.info("Connector Name received from " + sender)
+      val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
+      val connectorName = new ConnectorName(msg.name)
+      ExecutionManager.MANAGER.createEntry(actorRefUri, connectorName, true)
+
+      MetadataManager.MANAGER.addConnectorRef(connectorName, actorRefUri)
+
+      val connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName)
+      val clusterProps = connectorMetadata.getClusterProperties
+
+      if((clusterProps != null) && (!clusterProps.isEmpty)){
+        for(clusterProp <- clusterProps.entrySet()){
+          val opts = MetadataManager.MANAGER.getCluster(clusterProp.getKey).getOptions;
+          val connectorClusterConfig = new ConnectorClusterConfig(clusterProp.getKey,
+            SelectorHelper.convertSelectorMapToStringMap(opts))
+          sender ! new Connect(null, connectorClusterConfig)
+        }
+      }
+
     }
 
       /*
@@ -130,7 +146,10 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     }
     case member: MemberRemoved => {
       logger.info("Member is Removed: " + member.member.address)
-      //TODO Process MemberRemoved
+      val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
+      val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
+      MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
+        com.stratio.meta2.common.data.Status.OFFLINE)
     }
     case _: MemberEvent => {
       logger.info("Receiving anything else")
@@ -145,9 +164,9 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       //TODO Process ReceiveTimeout
     }
     case _=>
-      logger.error("not recognized event")
+      logger.error("Unknown event")
     //      sender ! "OK"
-    //memberActorRef.tell(objetoConWorkflow, context.sender)
+    //memberActorRef.tell(objectConWorkflow, context.sender)
   }
 
 }
