@@ -16,6 +16,8 @@
  * under the License.
  */
 
+import java.io.Serializable
+import java.util
 import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
 
@@ -31,6 +33,7 @@ import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.api.PropertyType
 import com.stratio.meta2.common.data._
 import com.stratio.meta2.common.metadata._
+import com.stratio.meta2.common.statements.structures.selectors.Selector
 import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta2.core.grid.Grid
@@ -86,9 +89,31 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
   val metadataParsedQuery0 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),
     metadataStatement0)
   val metadataValidatedQuery0: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery0)
-  val metadataPlannedQuery0 = new MetadataPlannedQuery(metadataValidatedQuery0,
-    new MetadataWorkflow(queryId + queryIdIncrement, StringUtils.getAkkaActorRefUri(connectorActor), ExecutionType.CREATE_CATALOG,
-      ResultType.RESULTS))
+  val metadataWorkflow0=new MetadataWorkflow(queryId + queryIdIncrement,  null, ExecutionType.CREATE_CATALOG, ResultType.RESULTS)
+  metadataWorkflow0.setCatalogMetadata(
+    new CatalogMetadata(
+      new CatalogName("myCatalog"),
+      new util.HashMap[Selector, Selector](),
+      new util.HashMap[TableName,TableMetadata]()
+    )
+  )
+  val metadataPlannedQuery0 = new MetadataPlannedQuery(metadataValidatedQuery0,metadataWorkflow0)
+
+
+  val metadataStatement1: MetadataStatement = null
+  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),
+    metadataStatement1)
+  val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
+  val metadataWorkflow1=new MetadataWorkflow(queryId + queryIdIncrement,  null, ExecutionType.CREATE_TABLE,
+    ResultType.RESULTS)
+  metadataWorkflow1.setCatalogMetadata(
+    new CatalogMetadata(
+      new CatalogName("myCatalog"),
+      new util.HashMap[Selector, Selector](),
+      new util.HashMap[TableName,TableMetadata]()
+    )
+  )
+  val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
 
   def initialize() = {
     var grid = Grid.initializer.withContactPoint("127.0.0.1").withPort(7800)
@@ -96,24 +121,24 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
       .withMinInitialMembers(1)
       .withJoinTimeoutInMs(5000)
       .withPersistencePath("/tmp/borrar").init()
-    val executionMap = grid.map("myExecutionData").asInstanceOf[java.util.Map[String, java.io.Serializable]]
+    val executionMap = grid.map("myExecutionData").asInstanceOf[util.Map[String, Serializable]]
     val lockExecution: Lock = grid.lock("myExecutionData")
     val tmExecution: TransactionManager = grid.transactionManager("myExecutionData")
     ExecutionManager.MANAGER.init(executionMap, lockExecution, tmExecution)
     ExecutionManager.MANAGER.clear()
 
-    val metadataMap = grid.map("myMetadata").asInstanceOf[java.util.Map[FirstLevelName, IMetadata]]
+    val metadataMap = grid.map("myMetadata").asInstanceOf[util.Map[FirstLevelName, IMetadata]]
     val lock: Lock = grid.lock("myMetadata")
     val tm = grid.transactionManager("myMetadata")
-    MetadataManager.MANAGER.init(metadataMap, lock, tm.asInstanceOf[javax.transaction.TransactionManager])
+    MetadataManager.MANAGER.init(metadataMap, lock, tm.asInstanceOf[TransactionManager])
     MetadataManager.MANAGER.clear()
-    println("connectorActor=" + connectorActor)
+
     val future = connectorActor ? getConnectorName()
     val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
-    val dataStoreRefs = new java.util.ArrayList[String]().asInstanceOf[java.util.List[String]]
-    val requiredProperties = new java.util.ArrayList[PropertyType]().asInstanceOf[java.util.List[PropertyType]]
-    val optionalProperties = new java.util.ArrayList[PropertyType]().asInstanceOf[java.util.List[PropertyType]]
-    val supportedOperations = new java.util.ArrayList[String]()
+    val dataStoreRefs = new util.ArrayList[String]().asInstanceOf[util.List[String]]
+    val requiredProperties = new util.ArrayList[PropertyType]().asInstanceOf[util.List[PropertyType]]
+    val optionalProperties = new util.ArrayList[PropertyType]().asInstanceOf[util.List[PropertyType]]
+    val supportedOperations = new util.ArrayList[String]()
     val connectorMetadata = new ConnectorMetadata(
       new ConnectorName(connectorName.name),
       "version",
@@ -127,9 +152,14 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
     MetadataManager.MANAGER.addConnectorRef(new ConnectorName(connectorName.name),
       StringUtils.getAkkaActorRefUri(connectorActor))
     MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
+  }
 
-    var mycluster=metadataManager.createTestCatalog("MyTestCatalog")
-    metadataManager.createTestTable(new ClusterName("mycluster"),"myCatalog","myTable",Array("name","age"),null,null,null)
+  def initializeTablesInfinispan(): TableMetadata = {
+    val myDatastore = metadataManager.createTestDatastore()
+    metadataManager.createTestCluster("myCluster", myDatastore)
+    metadataManager.createTestCatalog("myCatalog")
+    metadataManager.createTestTable(new ClusterName("myCluster"), "myCatalog", "myTable", Array("name", "age"),
+      Array(ColumnType.VARCHAR, ColumnType.INT), Array("name"), Array("name"))
   }
 
   test("Should return a KO message") {
@@ -149,8 +179,9 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
 
   test("Storage query") {
     initialize()
+    initializeTablesInfinispan()
     connectorActor !(queryId + (2), "updatemylastqueryId")
-    coordinatorActor ! metadataPlannedQuery0
+    coordinatorActor ! storagePlannedQuery
     expectMsgType[CommandResult]
   }
 
@@ -159,14 +190,13 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
     connectorActor !(queryId + (3), "updatemylastqueryId")
     coordinatorActor ! metadataPlannedQuery0
     expectMsgType[MetadataResult]
-    /*
-    val pq= new SelectPlannedQuery(null,null)
-    expectMsg("Ok") // bounded to 1 second
 
-    //val m = mock[IConnector]
-    //(m.getConnectorName _).expects().returning("My New Connector")
-    //assert(m.getConnectorName().equals("My New Connector"))
+    /*
+    connectorActor !(queryId + (4), "updatemylastqueryId")
+    coordinatorActor ! metadataPlannedQuery1
+    expectMsgType[MetadataResult]
     */
+
   }
 
 }
