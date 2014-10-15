@@ -51,7 +51,7 @@ import org.apache.maven.project.MavenProject;
 )
 public class InstallerGoalMojo extends AbstractMojo {
 
-    private final String UNIX_SCRIPT_REFERNCE= "/UnixScripTemplate.st";
+    private final String UNIX_SCRIPT_REFERENCE = "/UnixScriptTemplate.st";
 
     @Parameter(defaultValue = "${project}")
     private MavenProject project;
@@ -110,16 +110,22 @@ public class InstallerGoalMojo extends AbstractMojo {
     )
     private String mainClass;
 
+    @Parameter(
+            name = "jmxPort",
+            defaultValue = "7180"
+    )
+    private String jmxPort;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         File mainJarRepo = this.resolveProjectArtifact();
         List<File> dependenciesJarRepo = this.resolveTransitiveDependecies();
-        String unixScriptTemplate= readStream(getClass().getResourceAsStream(UNIX_SCRIPT_REFERNCE));
+        String unixScriptTemplate= readStream(getClass().getResourceAsStream(UNIX_SCRIPT_REFERENCE));
 
 
         InstallerGoalConfig config = new InstallerGoalConfig(this.outputDirectory, this.configDirectory,
                 this.includeDirectory, this.connectorName, this.description, this.userService, this.mainClass,
-                mainJarRepo, dependenciesJarRepo, unixScriptTemplate);
+                this.jmxPort, mainJarRepo, dependenciesJarRepo, unixScriptTemplate);
         try {
             InstallerGoalLauncher.launchInstallerGoal(config,getLog());
         } catch (IOException e) {
