@@ -32,7 +32,9 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
+import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.common.api.PropertyType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -52,6 +54,7 @@ import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public enum MetadataManager {
     MANAGER;
@@ -404,6 +407,20 @@ public enum MetadataManager {
     }
 
     public void addConnectorRef(ConnectorName name, String actorRef) {
+        if(!exists(name)){
+            String version = null;
+            Set<DataStoreName> dataStoreRefs = null;
+            Set<ClusterName> clusterRefs = null;
+            Map<ClusterName, Map< Selector, Selector>> clusterProperties = null;
+            Set<PropertyType> requiredProperties = null;
+            Set<PropertyType> optionalProperties = null;
+            Set<Operations> supportedOperations = null;
+            ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs, clusterRefs,
+                    clusterProperties, requiredProperties, optionalProperties, supportedOperations);
+            connectorMetadata.setActorRef(actorRef);
+
+            createConnector(connectorMetadata);
+        }
         ConnectorMetadata connectorMetadata = getConnector(name);
         connectorMetadata.setActorRef(actorRef);
         createConnector(connectorMetadata, false);
