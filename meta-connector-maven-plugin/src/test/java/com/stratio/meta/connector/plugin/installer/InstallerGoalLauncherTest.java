@@ -16,32 +16,8 @@
  * under the License.
  */
 
-package com.stratio.meta.rest.models;
+package com.stratio.meta.connector.plugin.installer;
 
-import java.util.Iterator;
+public class InstallerGoalLauncherTest {
 
-public abstract class JsonResultSet implements Iterable<JsonRow> {
-
-    /**
-     * Get a Iterator over the ResultSet.
-     *
-     * @return Iterator
-     */
-    public abstract Iterator<JsonRow> iterator();
-
-    /**
-     * Get the size of ResultSet.
-     *
-     * @return the size of ResultSet
-     */
-    public abstract int size();
-
-    /**
-     * Check if ResultSet is empty.
-     *
-     * @return {@code true} if is empty
-     */
-    public boolean isEmpty() {
-        return size() < 1;
-    }
 }

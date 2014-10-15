@@ -93,6 +93,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     }
 
     case ex:Execute=>{
+      log.info("Processing query: " + ex)
       try {
         runningJobs.put(ex.queryId,sender)
         val result=connector.getQueryEngine().execute(ex.workflow)
@@ -101,8 +102,9 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         //router forward (connector.getQueryEngine(),ex)
 
       } catch {
-        case ex: Exception => {
-          val result=Result.createExecutionErrorResult(ex.getStackTraceString)
+        case e: Exception => {
+          val result=Result.createExecutionErrorResult(e.getStackTraceString)
+          result.setQueryId(ex.queryId)
           sender ! result
         }
         case err: Error =>

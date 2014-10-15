@@ -112,7 +112,7 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         return indexMetadata;
     }
 
-    public MetadataOperation createMetadataOperationMessage(String queryId) {
+    public MetadataOperation createMetadataOperationMessage() {
         MetadataOperation result = null;
 
         switch (this.executionType) {

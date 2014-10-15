@@ -23,35 +23,54 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.maven.plugin.logging.Log;
+import org.stringtemplate.v4.ST;
 
 public class InstallerGoalLauncher {
 
-    public static void launchInstallerGoal(InstallerGoalConfig config) throws IOException {
-        //Create TARGET Directory
-        File targetDirectory = new File(FilenameUtils.concat(config.getConfigDirectory(), config.getConnectorName()));
+
+
+    public static void launchInstallerGoal(InstallerGoalConfig config, Log log) throws IOException {
+
+        log.info("Create TARGET directory.");
+        File targetDirectory = new File(FilenameUtils.concat(config.getOutputDirectory(), config.getConnectorName()));
         if (targetDirectory.exists()) {
+            log.info("Remove previous TARGET directory");
             FileUtils.forceDelete(targetDirectory);
         }
         File includeConfigDirectory = new File(config.getIncludeDirectory());
         FileUtils.copyDirectory(includeConfigDirectory,targetDirectory);
 
-        //Create LIB Directory
+        log.info("Create LIB directory.");
         File libDirectory = new File(FilenameUtils.concat(targetDirectory.toString(), "lib"));
         FileUtils.copyFileToDirectory(config.getMainJarRepo(),libDirectory);
         for(File jarFile:config.getDependenciesJarRepo()){
             FileUtils.copyFileToDirectory(jarFile,libDirectory);
         }
 
-        //Create CONF Directory
+        log.info("Create CONF directory.");
         File confDirectory = new File(FilenameUtils.concat(targetDirectory.toString(), "conf"));
         File confConfigDirectory= new File(config.getConfigDirectory());
         FileUtils.copyDirectory(confConfigDirectory,confDirectory);
 
-        //Create BIN Directory
+        log.info("Create BIN Directory");
         File binDirectory = new File(FilenameUtils.concat(targetDirectory.toString(), "bin"));
         FileUtils.forceMkdir(binDirectory);
 
+        log.info("Launch template");
+        String outputString=(config.getUnixScriptTemplate());
+        outputString=outputString.replaceAll("<name>", config.getConnectorName());
+        outputString=outputString.replaceAll("<desc>", config.getDescription());
+        outputString=outputString.replaceAll("<user>", config.getUserService());
+        outputString=outputString.replaceAll("<mainClass>", config.getMainClass());
 
+        File binFile= new File(FilenameUtils.concat(binDirectory.toString(),config.getConnectorName()));
+        FileUtils.writeStringToFile(binFile,outputString);
+        if(!binFile.setExecutable(true)){
+            throw new IOException("Can't change executable option.");
+        }
+
+        log.info("Process complete: " + config.getOutputDirectory());
     }
 
 }

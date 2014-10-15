@@ -18,6 +18,9 @@ package com.stratio.meta.connector.plugin.installer;/*
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +41,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 
+
 @Mojo(
         name = "install",
         requiresDependencyResolution = ResolutionScope.RUNTIME
@@ -46,6 +50,8 @@ import org.apache.maven.project.MavenProject;
         phase = LifecyclePhase.INSTALL
 )
 public class InstallerGoalMojo extends AbstractMojo {
+
+    private final String UNIX_SCRIPT_REFERNCE= "/UnixScripTemplate.st";
 
     @Parameter(defaultValue = "${project}")
     private MavenProject project;
@@ -87,6 +93,12 @@ public class InstallerGoalMojo extends AbstractMojo {
     private String connectorName;
 
     @Parameter(
+            name = "description",
+            defaultValue = "Description for ${project.artifactId}-${project.version}"
+    )
+    private String description;
+
+    @Parameter(
             name = "userService",
             defaultValue = "root"
     )
@@ -102,14 +114,31 @@ public class InstallerGoalMojo extends AbstractMojo {
     public void execute() throws MojoExecutionException, MojoFailureException {
         File mainJarRepo = this.resolveProjectArtifact();
         List<File> dependenciesJarRepo = this.resolveTransitiveDependecies();
+        String unixScriptTemplate= readStream(getClass().getResourceAsStream(UNIX_SCRIPT_REFERNCE));
+
+
         InstallerGoalConfig config = new InstallerGoalConfig(this.outputDirectory, this.configDirectory,
-                this.includeDirectory, this.connectorName, this.userService, this.mainClass, mainJarRepo,
-                dependenciesJarRepo);
+                this.includeDirectory, this.connectorName, this.description, this.userService, this.mainClass,
+                mainJarRepo, dependenciesJarRepo, unixScriptTemplate);
         try {
-            InstallerGoalLauncher.launchInstallerGoal(config);
+            InstallerGoalLauncher.launchInstallerGoal(config,getLog());
         } catch (IOException e) {
             throw  new MojoExecutionException("Problem with Launcher: " + e.getMessage(),e.getCause());
         }
+    }
+
+    public static String readStream(InputStream is) {
+        StringBuilder sb = new StringBuilder(512);
+        try {
+            Reader r = new InputStreamReader(is, "UTF-8");
+            int c = 0;
+            while ((c = r.read()) != -1) {
+                sb.append((char) c);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return sb.toString();
     }
 
     private File resolveProjectArtifact() throws MojoFailureException {

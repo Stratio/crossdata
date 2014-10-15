@@ -184,28 +184,25 @@ public class Normalizator {
         }
     }
 
-    public void normalizeGroupBy(GroupBy groupBy) throws BadFormatException, AmbiguousNameException,
-            NotExistNameException, NotValidColumnException {
-        Set<ColumnName> columnNames = new HashSet<>();
-        for (Selector selector : groupBy.getSelectorIdentifier()) {
-            switch (selector.getType()) {
-            case FUNCTION:
-                throw new BadFormatException("Function include into groupBy is not valid");
-            case COLUMN:
-                checkColumnSelector((ColumnSelector) selector);
-                if (!columnNames.add(((ColumnSelector) selector).getName())) {
-                    throw new BadFormatException("COLUMN into group by is repeated");
-                }
-                break;
-            case ASTERISK:
-                throw new BadFormatException("Asterisk include into groupBy is not valid");
+    private void checkFormatBySelectorIdentifier(Selector selector, Set<ColumnName> columnNames)
+            throws BadFormatException, NotValidColumnException, NotExistNameException, AmbiguousNameException {
+        switch (selector.getType()) {
+        case FUNCTION:
+            throw new BadFormatException("Function include into groupBy is not valid");
+        case COLUMN:
+            checkColumnSelector((ColumnSelector) selector);
+            if (!columnNames.add(((ColumnSelector) selector).getName())) {
+                throw new BadFormatException("COLUMN into group by is repeated");
             }
+            break;
+        case ASTERISK:
+            throw new BadFormatException("Asterisk include into groupBy is not valid");
         }
-        // Check if all columns are correct
-        for (Selector selector : fields.getSelectors()) {
-            switch (selector.getType()) {
-            case FUNCTION:
+    }
 
+    private void checkColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
+        switch (selector.getType()) {
+            case FUNCTION:
                 break;
             case COLUMN:
                 ColumnName name = ((ColumnSelector) selector).getName();
@@ -217,7 +214,18 @@ public class Normalizator {
             case ASTERISK:
                 throw new BadFormatException("Asterisk is not valid with group by statements");
             }
+    }
+
+    public void normalizeGroupBy(GroupBy groupBy) throws BadFormatException, AmbiguousNameException,
+            NotExistNameException, NotValidColumnException {
+        Set<ColumnName> columnNames = new HashSet<>();
+        for (Selector selector : groupBy.getSelectorIdentifier()) {
+            checkFormatBySelectorIdentifier(selector,columnNames);
         }
+        // Check if all columns are correct
+        for (Selector selector : fields.getSelectors()) {
+            checkColumns(selector,columnNames);
+       }
     }
 
     public void checkJoinRelations(List<Relation> relations) throws BadFormatException,
@@ -255,6 +263,13 @@ public class Normalizator {
         if (relation.getOperator().isInGroup(Operator.Group.ARITHMETIC)) {
             throw new BadFormatException("Compare operations are just valid");
         }
+        checkRelationFormatLeft(relation);
+        checkRelationFormatRight(relation);
+    }
+
+    private void checkRelationFormatLeft(Relation relation)
+            throws BadFormatException, AmbiguousNameException, NotExistNameException, NotValidColumnException,
+            YodaConditionException {
         switch (relation.getLeftTerm().getType()) {
         case FUNCTION:
             throw new BadFormatException("Functions not supported yet");
@@ -269,6 +284,10 @@ public class Normalizator {
         case INTEGER:
             throw new YodaConditionException();
         }
+    }
+
+    private void checkRelationFormatRight(Relation relation)
+            throws BadFormatException, AmbiguousNameException, NotExistNameException {
         switch (relation.getRightTerm().getType()) {
         case FUNCTION:
             throw new BadFormatException("Functions not supported yet");
@@ -285,7 +304,6 @@ public class Normalizator {
         case ASTERISK:
             throw new BadFormatException("Asterisk not supported in relations.");
         }
-
     }
 
     public void checkColumnType(Selector left, Selector right)
@@ -299,6 +317,11 @@ public class Normalizator {
         ColumnName leftColumnName = ((ColumnSelector) left).getName();
         ColumnMetadata leftColumnMetadata = MetadataManager.MANAGER.getColumn(leftColumnName);
 
+        checkColumnRight(right, leftColumnName, leftColumnMetadata);
+    }
+
+    private void checkColumnRight(Selector right, ColumnName leftColumnName, ColumnMetadata leftColumnMetadata)
+            throws NotMatchDataTypeException, BadFormatException {
         switch (right.getType()) {
         case COLUMN:
             ColumnName rightColumnName = ((ColumnSelector) right).getName();

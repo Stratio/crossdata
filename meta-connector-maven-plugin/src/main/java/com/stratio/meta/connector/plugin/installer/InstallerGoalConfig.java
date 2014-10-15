@@ -26,22 +26,26 @@ public class InstallerGoalConfig {
     private final String configDirectory;
     private final String includeDirectory;
     private final String connectorName;
+    private final String description;
     private final String userService;
     private final String mainClass;
     private final File mainJarRepo;
     private final List<File> dependenciesJarRepo;
+    private final String unixScriptTemplate;
 
     public InstallerGoalConfig(String outputDirectory, String configDirectory, String includeDirectory,
-            String connectorName, String userService, String mainClass, File mainJarRepo,
-            List<File> dependenciesJarRepo) {
+            String connectorName, String description, String userService, String mainClass, File mainJarRepo,
+            List<File> dependenciesJarRepo, String unixScriptTemplate) {
         this.outputDirectory = outputDirectory;
         this.configDirectory = configDirectory;
         this.includeDirectory = includeDirectory;
         this.connectorName = connectorName;
+        this.description = description;
         this.userService = userService;
         this.mainClass = mainClass;
         this.mainJarRepo = mainJarRepo;
         this.dependenciesJarRepo = dependenciesJarRepo;
+        this.unixScriptTemplate = unixScriptTemplate;
     }
 
     public String getOutputDirectory() {
@@ -74,5 +78,13 @@ public class InstallerGoalConfig {
 
     public List<File> getDependenciesJarRepo() {
         return dependenciesJarRepo;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getUnixScriptTemplate() {
+        return unixScriptTemplate;
     }
 }
