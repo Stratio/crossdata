@@ -128,8 +128,12 @@ class CoordinatorActorTest extends ActorReceiveUtils with FunSuiteLike with Mock
       StringUtils.getAkkaActorRefUri(connectorActor))
     MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
 
-    var mycluster=metadataManager.createTestCatalog("MyTestCatalog")
-    metadataManager.createTestTable(new ClusterName("mycluster"),"myCatalog","myTable",Array("name","age"),null,null,null)
+    val myDatastore=metadataManager.createTestDatastore()
+    metadataManager.createTestCluster("myCluster",myDatastore)
+    metadataManager.createTestCatalog("MyCatalog")
+    metadataManager.createTestTable(new ClusterName("myCluster"),"myCatalog","myTable",Array("name","age"),
+      Array(ColumnType.VARCHAR,ColumnType.INT),Array("name"),Array("name"))
+
   }
 
   test("Should return a KO message") {
