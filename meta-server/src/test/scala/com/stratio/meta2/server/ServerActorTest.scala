@@ -106,7 +106,7 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
       new util.ArrayList[ColumnName](),
       new util.ArrayList[ColumnName]()
     )
-  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table myTable;",
+  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table myTable1;",
     new CatalogName(catalogName)),
     metadataStatement1)
   val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
