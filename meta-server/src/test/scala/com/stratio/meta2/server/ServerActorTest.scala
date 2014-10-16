@@ -63,8 +63,7 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
   //lazy val system1 = ActorSystem(clusterName, config)
 
   val connectorManagerActor = system.actorOf(MockConnectorManagerActor.props(), "ConnectorManagerActor")
-  val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
-    "CoordinatorActor")
+  val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()), "CoordinatorActor")
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
 
   var queryId = "query_id-2384234-1341234-23434"
