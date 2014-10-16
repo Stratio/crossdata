@@ -921,6 +921,13 @@ public class Planner {
         return projects;
     }
 
+    /**
+     * Generate a select operand.
+     *
+     * @param selectStatement The source select statement.
+     * @param tableMetadataMap A map with the table metadata indexed by table name.
+     * @return A {@link com.stratio.meta.common.logicalplan.Select}.
+     */
     protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap) {
         Map<ColumnName, String> aliasMap = new HashMap<>();
         Map<String, ColumnType> typeMap = new HashMap<>();
@@ -936,7 +943,8 @@ public class Planner {
                                 .get(ColumnSelector.class.cast(s).getName()).getColumnType()
                 );
             } else {
-                aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()), s.toString());
+                aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()),
+                        ((ColumnSelector)s).getName().getName());
             }
         }
 

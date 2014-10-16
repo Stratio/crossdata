@@ -20,15 +20,14 @@ package com.stratio.meta2.server.planner
 
 import java.util
 
-import akka.actor.ActorSystem
 import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.communication.ACK
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
-import com.stratio.meta2.common.data.{ClusterName, TableName, CatalogName, ColumnName}
+import com.stratio.meta2.common.data.{CatalogName, ClusterName, ColumnName, TableName}
 import com.stratio.meta2.common.metadata.ColumnType
 import com.stratio.meta2.core.engine.Engine
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.{CreateTableStatement, CreateCatalogStatement, SelectStatement}
+import com.stratio.meta2.core.statements.{CreateCatalogStatement, CreateTableStatement, SelectStatement}
 import com.stratio.meta2.server.actors._
 import com.stratio.meta2.server.utilities.createEngine
 import org.apache.log4j.Logger
@@ -42,9 +41,9 @@ class PlannerActorIT extends ActorReceiveUtils with FunSuiteLike with ServerConf
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[PlannerActorIT])
-  lazy val system1 = ActorSystem(clusterName, config)
+  //lazy val system1 = ActorSystem(clusterName, config)
   val engine: Engine = createEngine.create()
-  val connectorManagerRef = system1.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
+  val connectorManagerRef = system.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
   val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()), "TestCoordinatorActor")
   val plannerActor = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
 

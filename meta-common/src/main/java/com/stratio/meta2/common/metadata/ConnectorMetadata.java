@@ -18,6 +18,8 @@
 
 package com.stratio.meta2.common.metadata;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,19 +36,20 @@ import com.stratio.meta2.common.statements.structures.selectors.Selector;
 public class ConnectorMetadata implements IMetadata {
 
     private final ConnectorName name;
-    private final String version;
-    private final Set<DataStoreName> dataStoreRefs;
+    private String version;
+    private Set<DataStoreName> dataStoreRefs;
 
-    private Set<ClusterName> clusterRefs;
+    //TODO; We can get this info also from clusterProperties.entrySet()
+    private Set<ClusterName> clusterRefs = new HashSet<>();
 
-    private Map<ClusterName, Map<Selector, Selector>> clusterProperties;
+    private Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
 
     private Status status;
     private String actorRef;
 
-    private final Set<PropertyType> requiredProperties;
-    private final Set<PropertyType> optionalProperties;
-    private final Set<Operations> supportedOperations;
+    private Set<PropertyType> requiredProperties;
+    private Set<PropertyType> optionalProperties;
+    private Set<Operations> supportedOperations;
 
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Set<ClusterName> clusterRefs, Map<ClusterName, Map<Selector, Selector>> clusterProperties,
@@ -61,6 +64,24 @@ public class ConnectorMetadata implements IMetadata {
         this.optionalProperties = optionalProperties;
         this.supportedOperations = supportedOperations;
         this.status = Status.OFFLINE;
+    }
+
+    public ConnectorMetadata(ConnectorName name, String version,
+            Set<DataStoreName> dataStoreRefs, Set<ClusterName> clusterRefs,
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties, Status status, String actorRef,
+            Set<PropertyType> requiredProperties,
+            Set<PropertyType> optionalProperties,
+            Set<Operations> supportedOperations) {
+        this.name = name;
+        this.version = version;
+        this.dataStoreRefs = dataStoreRefs;
+        this.clusterRefs = clusterRefs;
+        this.clusterProperties = clusterProperties;
+        this.status = status;
+        this.actorRef = actorRef;
+        this.requiredProperties = requiredProperties;
+        this.optionalProperties = optionalProperties;
+        this.supportedOperations = supportedOperations;
     }
 
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
@@ -150,4 +171,30 @@ public class ConnectorMetadata implements IMetadata {
         return supportedOperations.contains(operation);
     }
 
+    public void addClusterProperties(ClusterName clusterName, Map<Selector, Selector> options) {
+        if(clusterProperties == null){
+            this.clusterProperties = new HashMap<>();
+        }
+        clusterProperties.put(clusterName, options);
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public void setDataStoreRefs(Set<DataStoreName> dataStoreRefs) {
+        this.dataStoreRefs = dataStoreRefs;
+    }
+
+    public void setRequiredProperties(Set<PropertyType> requiredProperties) {
+        this.requiredProperties = requiredProperties;
+    }
+
+    public void setOptionalProperties(Set<PropertyType> optionalProperties) {
+        this.optionalProperties = optionalProperties;
+    }
+
+    public void setSupportedOperations(Set<Operations> supportedOperations) {
+        this.supportedOperations = supportedOperations;
+    }
 }

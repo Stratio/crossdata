@@ -25,12 +25,12 @@ import com.stratio.meta2.common.data.ClusterName
 class DummyIConnector extends IConnector{
   override def getConnectorName: String = "myDummyConnector"
   override def getDatastoreName: Array[String] = null
-  override def shutdown(): Unit = null
-  override def init(configuration: IConfiguration): Unit = null
+  override def shutdown: Unit = {}
+  override def init(configuration: IConfiguration):Unit ={}
   override def getMetadataEngine: IMetadataEngine = new DummyIMetadataEngine()
   override def getQueryEngine: IQueryEngine = null
   override def isConnected(name: ClusterName): Boolean = false
-  override def close(name: ClusterName): Unit = null
-  override def connect(credentials: ICredentials, config: ConnectorClusterConfig): Unit = null
+  override def close(name: ClusterName): Unit = {}
+  override def connect(credentials: ICredentials, config: ConnectorClusterConfig): Unit = {}
   override def getStorageEngine: IStorageEngine = null
 }

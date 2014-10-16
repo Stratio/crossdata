@@ -21,7 +21,6 @@ package com.stratio.meta2.server.actors
 import java.util.UUID
 
 import akka.actor.{Actor, Props, ReceiveTimeout}
-import akka.cluster.ClusterEvent._
 import akka.routing.RoundRobinRouter
 import com.stratio.meta.common.ask.{Command, Connect, Query}
 import com.stratio.meta.common.result._

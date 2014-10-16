@@ -32,7 +32,9 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
+import com.stratio.meta.common.connector.Operations;
 import com.stratio.meta.common.result.QueryStatus;
+import com.stratio.meta2.common.api.PropertyType;
 import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -41,6 +43,7 @@ import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.FirstLevelName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.Name;
+import com.stratio.meta2.common.data.NameType;
 import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
@@ -52,6 +55,7 @@ import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.IMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
+import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public enum MetadataManager {
     MANAGER;
@@ -342,7 +346,7 @@ public enum MetadataManager {
 
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
         shouldBeInit();
-        for (DataStoreName dataStore : connectorMetadata.getDataStoreRefs()) {
+        for (DataStoreName dataStore: connectorMetadata.getDataStoreRefs()) {
             shouldExist(dataStore);
         }
         try {
@@ -404,9 +408,32 @@ public enum MetadataManager {
     }
 
     public void addConnectorRef(ConnectorName name, String actorRef) {
-        ConnectorMetadata connectorMetadata = getConnector(name);
-        connectorMetadata.setActorRef(actorRef);
-        createConnector(connectorMetadata, false);
+        if(!exists(name)){
+            String version = null;
+            Set<DataStoreName> dataStoreRefs = null;
+            Set<ClusterName> clusterRefs = null;
+            Map<ClusterName, Map< Selector, Selector>> clusterProperties = null;
+            Set<PropertyType> requiredProperties = null;
+            Set<PropertyType> optionalProperties = null;
+            Set<Operations> supportedOperations = null;
+            ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs, clusterRefs,
+                    clusterProperties, requiredProperties, optionalProperties, supportedOperations);
+            connectorMetadata.setActorRef(actorRef);
+            try {
+                writeLock.lock();
+                beginTransaction();
+                metadata.put(connectorMetadata.getName(), connectorMetadata);
+                commitTransaction();
+            } catch (Exception ex) {
+                throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+            } finally {
+                writeLock.unlock();
+            }
+        } else {
+            ConnectorMetadata connectorMetadata = getConnector(name);
+            connectorMetadata.setActorRef(actorRef);
+            createConnector(connectorMetadata, false);
+        }
     }
 
     public void setConnectorStatus(ConnectorName name, Status status) {
@@ -477,4 +504,33 @@ public enum MetadataManager {
         createCatalog(catalogMetadata, false);
     }
 
+    public List<String> getCatalogs() {
+        List<String> catalogsMetadata=new ArrayList<>();
+        for(Name name:metadata.keySet()) {
+            if (name.getType()== NameType.CATALOG) {
+                catalogsMetadata.add(getCatalog((CatalogName)name).getName().getName());
+            }
+        }
+        return catalogsMetadata;
+    }
+
+    public List<TableMetadata> getTables() {
+        List<TableMetadata> tablesMetadatas=new ArrayList<>();
+        for(Name name:metadata.keySet()) {
+            if (name.getType()== NameType.TABLE) {
+                tablesMetadatas.add(getTable((TableName) name));
+            }
+        }
+        return tablesMetadatas;
+    }
+
+    public List<ColumnMetadata> getColumns() {
+        List<ColumnMetadata> columnsMetadatas=new ArrayList<>();
+        for(Name name:metadata.keySet()) {
+            if (name.getType()== NameType.COLUMN) {
+                columnsMetadatas.add(getColumn((ColumnName) name));
+            }
+        }
+        return columnsMetadatas;
+    }
 }

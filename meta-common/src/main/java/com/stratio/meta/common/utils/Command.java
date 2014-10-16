@@ -16,11 +16,11 @@
  * under the License.
  */
 
-package com.stratio.meta2.common.data;
+package com.stratio.meta.common.utils;
 
-public enum Status {
-    OFFLINE,
-    ONLINE,
-    SHUTTING_DOWN,
-    INITIALIZING
+/**
+ * Created by carlos on 15/10/14.
+ */
+public interface Command {
+    void invoke();
 }
