@@ -28,7 +28,7 @@ LOGFILE=${INIT_HOME}/logs
 pidDir=${INIT_HOME}
 serviceUser=<user>
 javaCommandLineKeyword=<mainClassName>
-connectorClass=<mainClass>l
+connectorClass=<mainClass>
 JMXPort=<jmxPort>
 # If JAVA_HOME has not been set, try to determine it.ner
 JVM_SEARCH_DIRS="/usr/java/default /usr/java/latest /opt/java"
@@ -77,12 +77,6 @@ JMX_OPTIONS="-Dcom.sun.management.jmxremote.port=${JMXPort} -Dcom.sun.management
 javaArgs="$javaArgs -classpath $CLASSPATH -Djava.net.preferIPv4Stack=true ${JMX_OPTIONS} ${connectorClass}"
 javaCommandLine="${JAVA_HOME}/bin/java $javaArgs"
 
-if [ -f "${lockFile}" ]; then
-	echo "Error: Script already running" && exit 1
-fi
-
-touch $lockFile
-
 if [ ! -d "$pidDir" ]; then
 	mkdir -p "$pidDir"
 	if [ $? -ne 0 ]; then exit 1; fi
@@ -93,15 +87,14 @@ pidFile="$pidDir/$NAME.pid"
 function checkProcessIsRunning {
 	local pid="$1"
 	if [ -z "$pid" -o "$pid" == " " ]; then return 1; fi
-	if [ ! -e /proc/$pid ]; then return 1; fi
+	ps -Af | grep ${pid} | grep java
+    if [ $? -ne 0 ]; then return 1; fi
 	return 0;
 }
 
 # Returns 0 if the process with PID $1 is our Java service process.
 function checkProcessIsOurService {
 	local pid="$1"
-	local cmd="$(ps -p $pid --no-headers -o comm)"
-	if [ "$cmd" != "java" ]; then return 1; fi
 	ps -Af | grep ${pid} | grep java
 	if [ $? -ne 0 ]; then return 1; fi
 	return 0;
@@ -109,17 +102,17 @@ function checkProcessIsOurService {
 
 # Returns 0 when the service is running and sets the variable $servicePid to the PID.
 function getServicePid {
-	if [ ! -f "${pidFile}" ]; then return 1; fi
-	local servicePid="$(<'$pidFile')"
+	if [ ! -f $pidFile ]; then return 1; fi
+	local servicePid="$(<$pidFile)"
 	checkProcessIsRunning $servicePid || return 1
 	checkProcessIsOurService $servicePid || return 1
 	return 0;
 }
 
 function startServiceProcess {
-	cd "${BASEDIR}" || return 1
+	cd $BASEDIR || return 1
 	rm -f $pidFile
-	local cmd="setsid $javaCommandLine >>$LOGFILE 2>&1 & echo \$! >$pidFile"
+	local cmd="$javaCommandLine >>$LOGFILE 2>&1 & echo \$! >$pidFile"
 	#sudo -u $serviceUser $SHELL -c "$cmd" || return 1
 	echo "Launching service process: ${cmd}"
 	su - $serviceUser -c "$cmd" || return 1
