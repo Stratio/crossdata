@@ -1,6 +1,11 @@
 #!/bin/bash
 @LICENSE_HEADER@
 
+JMXPort=7194
+
+
+JMX_OPTIONS="-Dcom.sun.management.jmxremote.port=${JMXPort} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+
 # Read configuration variable file if it is present
 if [ -r /etc/default/meta ]; then
     . /etc/default/meta
@@ -62,12 +67,21 @@ then
   REPO="${BASEDIR}"/@REPO@
 fi
 
-CLASSPATH="${CLASSPATH}:${META_CONF}/:${META_LIB}/*:"
+#CLASSPATH="${CLASSPATH}:${META_CONF}/:${META_LIB}/*:"
+
+LIB_CLASSPATH=""
+while read line
+do
+        LIB_CLASSPATH="${LIB_CLASSPATH}:${META_LIB}/$line"
+done < "${META_CONF}/libs-order"
+
+CLASSPATH="${CLASSPATH}:${META_CONF}/:${LIB_CLASSPATH}:${META_LIB}/*:"
 
 
 exec "${JAVACMD}" ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ \
   -classpath "${CLASSPATH}" \
   -Dapp.name="@APP_NAME@" \
   -Dapp.pid="$$" \
+  ${JMX_OPTIONS} \
   @MAINCLASS@ \
   @APP_ARGUMENTS@"$@"@UNIX_BACKGROUND@
