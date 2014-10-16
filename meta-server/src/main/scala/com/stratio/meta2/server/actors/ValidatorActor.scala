@@ -57,6 +57,7 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
       }catch{
         case e:ValidationException => {
           val errorResult = Result.createValidationErrorResult(e.getMessage)
+          log.error("Validation error: " + e.getMessage + " from sender: " + sender.toString())
           errorResult.setQueryId(query.getQueryId)
           sender ! errorResult
         }

@@ -83,7 +83,7 @@ public class APIManager {
             ((MetadataResult) result).setCatalogList(catalogs);
             //result = MetadataResult.createSuccessMetadataResult();
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
-            List<TableMetadata> tables = new ArrayList<>();
+            List<TableMetadata> tables;
             if (cmd.params() != null && !cmd.params().isEmpty()) {
                 String catalog = (String) cmd.params().get(0);
                 LOG.info("Processing " + APICommand.LIST_TABLES().toString());
@@ -117,7 +117,11 @@ public class APIManager {
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
             persistManifest((Manifest) cmd.params().get(0));
-            result = CommandResult.createCommandResult("Manifest added.");
+            result = CommandResult.createCommandResult(
+                            "Manifest added "
+                            + System.lineSeparator()
+                            + ((Manifest) cmd.params().get(0)).toString());
+
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.RESET_METADATA().toString());
             result = resetMetadata();
