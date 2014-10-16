@@ -41,6 +41,7 @@ import com.stratio.meta2.common.api.connector.DataStoreRefsType;
 import com.stratio.meta2.common.api.connector.SupportedOperationsType;
 import com.stratio.meta2.common.api.datastore.BehaviorsType;
 import com.stratio.meta2.common.api.datastore.DataStoreType;
+import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.ColumnMetadata;
@@ -82,20 +83,36 @@ public class APIManager {
             ((MetadataResult) result).setCatalogList(catalogs);
             //result = MetadataResult.createSuccessMetadataResult();
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
-            LOG.info("Processing " + APICommand.LIST_TABLES().toString());
-            List<TableMetadata> tables = MetadataManager.MANAGER.getTables();
+            List<TableMetadata> tables = new ArrayList<>();
+            if (cmd.params() != null && !cmd.params().isEmpty()) {
+                String catalog = (String) cmd.params().get(0);
+                LOG.info("Processing " + APICommand.LIST_TABLES().toString());
+                tables = MetadataManager.MANAGER.getTablesByCatalogName(new CatalogName(catalog));
+            } else {
+                LOG.info("Processing " + APICommand.LIST_TABLES().toString());
+                tables = MetadataManager.MANAGER.getTables();
+            }
             result = MetadataResult.createSuccessMetadataResult();
             ((MetadataResult) result).setTableList(tables);
         } else if (APICommand.LIST_COLUMNS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_COLUMNS().toString());
-            List<ColumnMetadata> columns = MetadataManager.MANAGER.getColumns();
-            result = MetadataResult.createSuccessMetadataResult();
+            List<ColumnMetadata> columns;
             //TODO Remove this part when migrates to new ColumnMetadata
-            List<com.stratio.meta.common.metadata.structures.ColumnMetadata> columnsResult=new ArrayList<>();
-            for (ColumnMetadata columnMetadata:columns){
+            List<com.stratio.meta.common.metadata.structures.ColumnMetadata> columnsResult = new ArrayList<>();
+            if (cmd.params() != null && !cmd.params().isEmpty()) {
+                String catalog = (String) cmd.params().get(0);
+                String table = (String) cmd.params().get(1);
+                columns = MetadataManager.MANAGER.getColumnByTable(catalog, table);
+            } else {
+                columns = MetadataManager.MANAGER.getColumns();
+            }
+
+            for (ColumnMetadata columnMetadata : columns) {
                 columnsResult.add(new com.stratio.meta.common.metadata.structures.ColumnMetadata(columnMetadata
                         .getName().getTableName().getName(), columnMetadata.getName().getName()));
             }
+            
+            result = MetadataResult.createSuccessMetadataResult();
             ((MetadataResult) result).setColumnList(columnsResult);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
@@ -187,15 +204,15 @@ public class APIManager {
         // Create Metadata
         ConnectorMetadata connectorMetadata;
 
-        if(MetadataManager.MANAGER.exists(name)){
+        if (MetadataManager.MANAGER.exists(name)) {
             connectorMetadata = MetadataManager.MANAGER.getConnector(name);
             connectorMetadata.setVersion(version);
             connectorMetadata.setDataStoreRefs(
                     ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs
                             .getDataStoreName()));
-            connectorMetadata.setRequiredProperties((requiredProperties == null)? null: ManifestHelper
+            connectorMetadata.setRequiredProperties((requiredProperties == null) ? null : ManifestHelper
                     .convertManifestPropertiesToMetadataProperties(requiredProperties.getProperty()));
-            connectorMetadata.setOptionalProperties((optionalProperties == null)? null: ManifestHelper
+            connectorMetadata.setOptionalProperties((optionalProperties == null) ? null : ManifestHelper
                     .convertManifestPropertiesToMetadataProperties(optionalProperties.getProperty()));
             connectorMetadata.setSupportedOperations(ManifestHelper.convertManifestOperationsToMetadataOperations
                     (supportedOperations.getOperation()));
@@ -204,8 +221,8 @@ public class APIManager {
                     name,
                     version,
                     dataStoreRefs.getDataStoreName(),
-                    (requiredProperties == null)? null: requiredProperties.getProperty(),
-                    (optionalProperties == null)? null: optionalProperties.getProperty(),
+                    (requiredProperties == null) ? null : requiredProperties.getProperty(),
+                    (optionalProperties == null) ? null : optionalProperties.getProperty(),
                     supportedOperations.getOperation());
         }
 

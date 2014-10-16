@@ -533,4 +533,32 @@ public enum MetadataManager {
         }
         return columnsMetadatas;
     }
+
+    public List<TableMetadata> getTablesByCatalogName(CatalogName catalogName) {
+        List<TableMetadata> tableList=new ArrayList<>();
+        for(Name name:metadata.keySet()) {
+            if (name.getType()== NameType.TABLE) {
+                TableMetadata table=getTable((TableName)name);
+                if (table.getName().getCatalogName().equals(catalogName)){
+                    tableList.add(table);
+                }
+            }
+        }
+        return tableList;
+    }
+
+    public List<ColumnMetadata> getColumnByTable(String catalog,String tableName) {
+        List<ColumnMetadata> columnList=new ArrayList<>();
+        for(Name name:metadata.keySet()) {
+            if (name.getType()== NameType.COLUMN) {
+                ColumnMetadata column=getColumn((ColumnName)name);
+                if (column.getName().getTableName().getName().equals(tableName) && column.getName()
+                        .getTableName().getCatalogName().getName().equals(catalog)){
+                    columnList.add(column);
+                }
+            }
+        }
+        return columnList;
+    }
+
 }
