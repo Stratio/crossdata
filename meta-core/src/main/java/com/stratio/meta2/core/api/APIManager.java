@@ -19,8 +19,7 @@
 package com.stratio.meta2.core.api;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -43,6 +42,7 @@ import com.stratio.meta2.common.api.datastore.BehaviorsType;
 import com.stratio.meta2.common.api.datastore.DataStoreType;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
+import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
 import com.stratio.meta2.common.metadata.DataStoreMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
@@ -76,17 +76,26 @@ public class APIManager {
         Result result;
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
+            List<String> catalogs = MetadataManager.MANAGER.getCatalogs();
             result = MetadataResult.createSuccessMetadataResult();
+            ((MetadataResult) result).setCatalogList(catalogs);
+            //result = MetadataResult.createSuccessMetadataResult();
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_TABLES().toString());
+            List<TableMetadata> tables = MetadataManager.MANAGER.getTables();
             result = MetadataResult.createSuccessMetadataResult();
-            Map<String, TableMetadata> tableList = new HashMap<>();
-            //Add db tables.
-            //TODO: Review...
-            //Add ephemeral tables.
-            MetadataResult.class.cast(result).setTableList(new ArrayList(tableList.keySet()));
-            result =
-                    Result.createExecutionErrorResult("CATALOG " + cmd.params().get(0) + " not found");
+            ((MetadataResult) result).setTableList(tables);
+        } else if (APICommand.LIST_COLUMNS().equals(cmd.commandType())) {
+            LOG.info("Processing " + APICommand.LIST_COLUMNS().toString());
+            List<ColumnMetadata> columns = MetadataManager.MANAGER.getColumns();
+            result = MetadataResult.createSuccessMetadataResult();
+            //TODO Remove this part when migrates to new ColumnMetadata
+            List<com.stratio.meta.common.metadata.structures.ColumnMetadata> columnsResult=new ArrayList<>();
+            for (ColumnMetadata columnMetadata:columns){
+                columnsResult.add(new com.stratio.meta.common.metadata.structures.ColumnMetadata(columnMetadata
+                        .getName().getTableName().getName(), columnMetadata.getName().getName()));
+            }
+            ((MetadataResult) result).setColumnList(columnsResult);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
             persistManifest((Manifest) cmd.params().get(0));
