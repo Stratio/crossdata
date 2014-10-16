@@ -84,8 +84,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         case workflow: ManagementWorkflow => {
 
-          log.info(">>>>>> TRACE: ManagementWorkflow ")
-
+          log.info("ManagementWorkflow received")
 
           val queryId = plannedQuery.getQueryId
           if(workflow.getExecutionType == ExecutionType.ATTACH_CONNECTOR){
