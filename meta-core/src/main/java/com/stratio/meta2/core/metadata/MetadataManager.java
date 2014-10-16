@@ -545,7 +545,7 @@ public enum MetadataManager {
         for(Name name:metadata.keySet()) {
             if (name.getType()== NameType.TABLE) {
                 TableMetadata table=getTable((TableName)name);
-                if (table.getName().getCatalogName().equals(catalogName)){
+                if (table.getName().getCatalogName()==catalogName){
                     tableList.add(table);
                 }
             }
