@@ -345,7 +345,7 @@ public enum MetadataManager {
 
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
         shouldBeInit();
-        for (DataStoreName dataStore : connectorMetadata.getDataStoreRefs()) {
+        for (DataStoreName dataStore: connectorMetadata.getDataStoreRefs()) {
             shouldExist(dataStore);
         }
         try {
@@ -418,12 +418,21 @@ public enum MetadataManager {
             ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs, clusterRefs,
                     clusterProperties, requiredProperties, optionalProperties, supportedOperations);
             connectorMetadata.setActorRef(actorRef);
-
-            createConnector(connectorMetadata);
+            try {
+                writeLock.lock();
+                beginTransaction();
+                metadata.put(connectorMetadata.getName(), connectorMetadata);
+                commitTransaction();
+            } catch (Exception ex) {
+                throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+            } finally {
+                writeLock.unlock();
+            }
+        } else {
+            ConnectorMetadata connectorMetadata = getConnector(name);
+            connectorMetadata.setActorRef(actorRef);
+            createConnector(connectorMetadata, false);
         }
-        ConnectorMetadata connectorMetadata = getConnector(name);
-        connectorMetadata.setActorRef(actorRef);
-        createConnector(connectorMetadata, false);
     }
 
     public void setConnectorStatus(ConnectorName name, Status status) {
