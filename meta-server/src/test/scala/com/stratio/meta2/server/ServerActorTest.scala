@@ -39,6 +39,7 @@ import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta2.core.grid.Grid
 import com.stratio.meta2.core.metadata.{MetadataManager, MetadataManagerTestHelper}
+import com.stratio.meta2.core.planner.SelectValidatedQueryWrapper
 import com.stratio.meta2.core.query._
 import com.stratio.meta2.core.statements.{CreateTableStatement, InsertIntoStatement, MetadataStatement, SelectStatement}
 import com.stratio.meta2.server.actors.CoordinatorActor
@@ -70,10 +71,13 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
   var queryIdIncrement = 0
   val catalogName = "testCatalog"
 
-  val selectStatement: SelectStatement = null
-  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)), selectStatement)
-  val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
-  val selectPlannedQuery = new SelectPlannedQuery(selectValidatedQuery, new QueryWorkflow(queryId + queryIdIncrement,
+  val selectStatement: SelectStatement = new SelectStatement(new TableName("myCatalog","myTable"))
+  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM mycatalog.mytable",
+    new CatalogName(catalogName)), selectStatement)
+  //val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
+  val selectValidatedQueryWrapper = new SelectValidatedQueryWrapper(selectStatement,selectParsedQuery)
+  val selectPlannedQuery = new SelectPlannedQuery(selectValidatedQueryWrapper,
+    new QueryWorkflow(queryId + queryIdIncrement,
     StringUtils.getAkkaActorRefUri(connectorActor),
     ExecutionType.SELECT, ResultType.RESULTS, new LogicalWorkflow(null)))
 
@@ -123,8 +127,7 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
 
   def initialize() = {
-    var grid = Grid.initializer.withContactPoint("127.0.0.1").withPort(7800)
-      .withListenAddress("127.0.0.1")
+    var grid = Grid.initializer.withContactPoint("127.0.0.1").withPort(7800).withListenAddress("127.0.0.1")
       .withMinInitialMembers(1)
       .withJoinTimeoutInMs(5000)
       .withPersistencePath("/tmp/borrar").init()
