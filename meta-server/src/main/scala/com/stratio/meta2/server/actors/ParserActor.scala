@@ -52,6 +52,7 @@ class ParserActor(validator: ActorRef, parser: Parser) extends Actor with TimeTr
           sender ! error
         }
       }
+
       log.info("Finish Parser Task")
     }
     case _ => {
