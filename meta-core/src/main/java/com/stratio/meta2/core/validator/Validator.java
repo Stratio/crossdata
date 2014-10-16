@@ -33,6 +33,7 @@ import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.Name;
+import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
@@ -138,6 +139,9 @@ public class Validator {
             case VALIDATE_SELECT:
                 validateSelect(parsedQuery);
                 break;
+            case MUST_BE_CONNECTED:
+                validateConnectorConnected(parsedQuery.getStatement());
+                break;
             default:
                 break;
             }
@@ -159,6 +163,18 @@ public class Validator {
         }
 
         return validatedQuery;
+    }
+
+    private void validateConnectorConnected(MetaStatement statement) throws ValidationException {
+        if(statement instanceof AttachConnectorStatement){
+            AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) statement;
+            ConnectorName connectorName = attachConnectorStatement.getConnectorName();
+            if(!MetadataManager.MANAGER.checkConnectorStatus(connectorName, Status.ONLINE)){
+                throw new ValidationException("Connector "+ connectorName + " is not connected.");
+            }
+        } else {
+            throw new ValidationException("Invalid validation [MUST_BE_CONNECTED] for "+ statement);
+        }
     }
 
     private void validateName(boolean exist, Name name, boolean hasIfExist)

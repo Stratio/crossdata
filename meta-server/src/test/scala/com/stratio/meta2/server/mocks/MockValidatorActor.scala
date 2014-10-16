@@ -38,6 +38,7 @@ class MockValidatorActor() extends Actor {
       sender ! ACK(query.getQueryId,QueryStatus.VALIDATED)
     }
     case _ => {
+      println("Unknown message received by ValidatorActor");
       sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
   }

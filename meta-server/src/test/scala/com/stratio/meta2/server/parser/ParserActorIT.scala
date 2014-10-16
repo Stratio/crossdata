@@ -18,45 +18,63 @@
 
 package com.stratio.meta2.server.parser
 
-import akka.actor.{ActorSystem, actorRef2Scala}
-import com.stratio.meta.common.ask.Query
-import com.stratio.meta.common.result.QueryStatus
-import com.stratio.meta.communication.ACK
-import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
-import com.stratio.meta2.core.engine.Engine
-import com.stratio.meta2.server.actors._
+import com.stratio.meta2.common.result.ErrorResult
+import com.stratio.meta2.core.parser.Parser
+import com.stratio.meta2.server.ServerActorTest
+import com.stratio.meta2.server.actors.ParserActor
 import com.stratio.meta2.server.mocks.MockValidatorActor
-import com.stratio.meta2.server.utilities.createEngine
 import org.apache.log4j.Logger
-import org.scalatest.{FunSuiteLike, Suite}
+import org.scalatest.Suite
 
 import scala.concurrent.duration.DurationInt
 
-class ParserActorIT extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
+class ParserActorIT extends ServerActorTest{
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[ParserActorIT])
-  lazy val system1 = ActorSystem(clusterName, config)
-  val engine: Engine = createEngine.create()
-  //val connectorManagerRef = system1.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
-  //val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()),  "TestCoordinatorActor")
-  //val plannerRef = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
-  //val validatorRef = system.actorOf(ValidatorActor.props(plannerRef, engine.getValidator()), "TestValidatorActor")
+
   val validatorRef = system.actorOf(MockValidatorActor.props(), "TestValidatorActor")
   val parserActor = {
-    system1.actorOf(ParserActor.props(validatorRef, engine.getParser()), "TestParserActor")
+    system.actorOf(ParserActor.props(validatorRef, new Parser()), "TestParserActor")
   }
 
-
-  test("Parser->Validator->Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
-    within(5000 millis) {
-      val myqueryId="queryId";
-      val query = new Query(myqueryId, "catalog", "select * from mytable;", "carlos")
-      parserActor ! query
-      val ack=expectMsg(ACK(myqueryId,QueryStatus.PARSED))
-      //val ack=expectMsg(ACK("queryi",QueryStatus.PARSED))//this should fail
+   test("Should return a KO message") {
+    initialize()
+    within(1000 millis) {
+      parserActor ! "anything; this doesn't make any sense"
+      val exception = expectMsgType[ErrorResult]
     }
   }
+
+  /*
+  test("Select query") {
+    initialize()
+    connectorActor !(queryId + (1), "updatemylastqueryId")
+    plannerActor ! selectValidatedQueryWrapper
+    expectMsgType[QueryResult]
+  }
+
+  test("Storage query") {
+    initialize()
+    initializeTablesInfinispan()
+    connectorActor !(queryId + (2), "updatemylastqueryId")
+    coordinatorActor ! storagePlannedQuery
+    expectMsgType[CommandResult]
+  }
+
+  test("Metadata query") {
+    initialize()
+    connectorActor !(queryId + (3), "updatemylastqueryId")
+    coordinatorActor ! metadataPlannedQuery0
+    expectMsgType[MetadataResult]
+
+    connectorActor !(queryId + (4), "updatemylastqueryId")
+    coordinatorActor ! metadataPlannedQuery1
+    expectMsgType[MetadataResult]
+
+  }
+  */
+
 
 }
 

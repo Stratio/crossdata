@@ -24,7 +24,7 @@ import com.stratio.meta2.common.data.{CatalogName, ClusterName, TableName}
 import com.stratio.meta2.common.metadata.{CatalogMetadata, IndexMetadata, TableMetadata}
 
 class DummyIMetadataEngine extends IMetadataEngine{
-  override def createCatalog(targetCluster: ClusterName, catalogMetadata: CatalogMetadata): Unit = null
+  override def createCatalog(targetCluster: ClusterName, catalogMetadata: CatalogMetadata): Unit = {}
 
   override def createTable(targetCluster: ClusterName, tableMetadata: TableMetadata): Unit = {
       println("very slow function")
@@ -36,11 +36,11 @@ class DummyIMetadataEngine extends IMetadataEngine{
       QueryResult.createSuccessQueryResult()
   }
 
-  override def createIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata): Unit = null
+  override def createIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata): Unit = {}
 
-  override def dropCatalog(targetCluster: ClusterName, name: CatalogName): Unit = null
+  override def dropCatalog(targetCluster: ClusterName, name: CatalogName): Unit = {}
 
-  override def dropTable(targetCluster: ClusterName, name: TableName): Unit = null
+  override def dropTable(targetCluster: ClusterName, name: TableName): Unit = {}
 
-  override def dropIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata): Unit = null
+  override def dropIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata): Unit = {}
 }

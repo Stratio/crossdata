@@ -59,6 +59,7 @@ public class MetadataResult extends Result {
     }
 
     public List<String> getCatalogList() {
+
         return catalogList;
     }
 

@@ -56,7 +56,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
   override def handleHeartbeat(heartbeat: HeartbeatSig) = {
     //println("receiving heartbeat signal")
     runningJobs.foreach{
-      keyval=> keyval._2 ! IAmAlive(keyval._1)
+      keyval:(String,ActorRef)=> keyval._2 ! IAmAlive(keyval._1)
     }
   }
 
@@ -81,7 +81,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
     case connectRequest: com.stratio.meta.communication.Connect => {
       log.debug("->" + "Receiving MetadataRequest")
-      log.info(">>>>>> TRACE: " + self + " received connect command")
+      log.info("Received connect command")
       connector.connect(connectRequest.credentials, connectRequest.connectorClusterConfig)
       this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
       sender ! "ok"
@@ -117,7 +117,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     case metadataOp: MetadataOperation => {
       var qId:String=metadataOp.queryId
 
-      println(">>>>>>>>>> TRACE: Received queryId = " + qId)
+      log.info("Received queryId = " + qId)
 
       try {
         val opclass=metadataOp.getClass().toString().split('.')
@@ -172,7 +172,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       val result=MetadataResult.createSuccessMetadataResult()
       result.setQueryId(qId)
 
-      println(">>>>>>>>>> TRACE: Sending back queryId = " + qId)
+      log.info("Sending back queryId = " + qId)
 
       sender ! result
     }
