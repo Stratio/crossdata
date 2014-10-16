@@ -37,12 +37,10 @@ package com.stratio.meta2.server.connectorManager
  */
 
 
-import akka.actor.ActorSystem
 import com.stratio.meta.common.executionplan.ExecutionWorkflow
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.data.CatalogName
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.server.actors.ConnectorManagerActor
 import org.scalatest.FunSuiteLike
 
 //import org.scalamock.scalatest.MockFactory
@@ -58,9 +56,9 @@ class ConnectorManagerActorTest extends ActorReceiveUtils with FunSuiteLike with
 
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorManagerActorTest])
-  lazy val system1 = ActorSystem(clusterName, config)
+  //lazy val system1 = ActorSystem(clusterName, config)
 
-  val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(null), "ConnectorManagerActor")
+  //val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(null), "ConnectorManagerActor")
 
   val baseQuery = new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
   val selectedQuery = new SelectParsedQuery(baseQuery, null)

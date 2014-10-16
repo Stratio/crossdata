@@ -18,7 +18,6 @@
 
 package com.stratio.meta2.server.planner
 
-import akka.actor.ActorSystem
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.result.ErrorResult
 import com.stratio.meta2.core.engine.Engine
@@ -33,9 +32,9 @@ class PlannerActorTest extends ActorReceiveUtils with FunSuiteLike with ServerCo
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[PlannerActorTest])
-  lazy val system1 = ActorSystem(clusterName, config)
+  //lazy val system1 = ActorSystem(clusterName, config)
   val engine: Engine = createEngine.create()
-  val connectorManagerRef = system1.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
+  val connectorManagerRef = system.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
   val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()), "TestCoordinatorActor")
   val plannerActor = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
 

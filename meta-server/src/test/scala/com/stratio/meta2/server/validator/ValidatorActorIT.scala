@@ -21,7 +21,7 @@ package com.stratio.meta2.server.validator
 
 import java.util
 
-import akka.actor.{ActorSystem, actorRef2Scala}
+import akka.actor.actorRef2Scala
 import com.stratio.meta.common.exceptions.ValidationException
 import com.stratio.meta.communication.ACK
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
@@ -29,8 +29,8 @@ import com.stratio.meta2.common.data.{CatalogName, ClusterName, ColumnName}
 import com.stratio.meta2.common.metadata.ColumnType
 import com.stratio.meta2.common.metadata.structures.TableType
 import com.stratio.meta2.core.engine.Engine
-import com.stratio.meta2.core.query.{SelectParsedQuery, BaseQuery, MetadataParsedQuery, ValidatedQuery}
-import com.stratio.meta2.core.statements.{SelectStatement, CreateTableStatement}
+import com.stratio.meta2.core.query.{BaseQuery, MetadataParsedQuery, SelectParsedQuery, ValidatedQuery}
+import com.stratio.meta2.core.statements.{CreateTableStatement, SelectStatement}
 import com.stratio.meta2.core.validator.Validator
 import com.stratio.meta2.server.actors._
 import com.stratio.meta2.server.mocks.MockPlannerActor
@@ -45,7 +45,7 @@ class ValidatorActorIT extends ActorReceiveUtils with FunSuiteLike with ServerCo
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[ValidatorActorIT])
-  lazy val system1 = ActorSystem(clusterName, config)
+  //lazy val system1 = ActorSystem(clusterName, config)
   val engine: Engine = createEngine.create()
   //val connectorManagerRef = system1.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
   //val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()),  "TestCoordinatorActor")
@@ -58,7 +58,7 @@ class ValidatorActorIT extends ActorReceiveUtils with FunSuiteLike with ServerCo
   //test("Select Validator->Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
   test("Select Validator->Planner->Coordinator->ConnectorManager->Ok: sends a query and should get an exception") {
     within(5000 millis) {
-      var tablename = new com.stratio.meta2.common.data.TableName("catalog", "table")
+      val tablename = new com.stratio.meta2.common.data.TableName("catalog", "table")
       val parsedQuery = new SelectParsedQuery(
         new BaseQuery(
           myQueryId,
@@ -83,7 +83,7 @@ class ValidatorActorIT extends ActorReceiveUtils with FunSuiteLike with ServerCo
     val localvalidatorActor = system.actorOf(ValidatorActor.props(plannerRef, m), "localTestValidatorActor")
     within(5000 millis) {
       val tablename = new com.stratio.meta2.common.data.TableName("catalog", "table")
-      var columns=new util.HashMap[ColumnName,ColumnType]()
+      val columns=new util.HashMap[ColumnName,ColumnType]()
       columns.put(new ColumnName("catalog","table","column"),ColumnType.INT)
       val partitionKey=new util.ArrayList[ColumnName]()
       partitionKey.add(new ColumnName("catalog","table","column"))
