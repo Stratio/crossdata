@@ -26,11 +26,9 @@ BASEDIR=${INIT_HOME}
 CONFDIR=${INIT_HOME}/conf
 LOGFILE=${INIT_HOME}/logs
 pidDir=${INIT_HOME}
-lockDir=${INIT_HOME}
-lockFile=${lockDir}/<name>
 serviceUser=<user>
 javaCommandLineKeyword=<mainClassName>
-connectorClass=<mainClass>
+connectorClass=<mainClass>l
 JMXPort=<jmxPort>
 # If JAVA_HOME has not been set, try to determine it.ner
 JVM_SEARCH_DIRS="/usr/java/default /usr/java/latest /opt/java"
@@ -79,15 +77,9 @@ JMX_OPTIONS="-Dcom.sun.management.jmxremote.port=${JMXPort} -Dcom.sun.management
 javaArgs="$javaArgs -classpath $CLASSPATH -Djava.net.preferIPv4Stack=true ${JMX_OPTIONS} ${connectorClass}"
 javaCommandLine="${JAVA_HOME}/bin/java $javaArgs"
 
-if [ -f $lockFile ]; then
-	echo "Error: Script already running" && exit 1
-fi
-
-touch $lockFile
-
 if [ ! -d "$pidDir" ]; then
 	mkdir -p "$pidDir"
-	if [ $? -ne 0 ]; then rm -f $lockFile; exit 1; fi
+	if [ $? -ne 0 ]; then exit 1; fi
 fi
 pidFile="$pidDir/$NAME.pid"
 
@@ -202,30 +194,25 @@ case "$1" in
 	start)
 		startService
 		retval=$?
-		rm -f $lockFile
 		exit $retval
 	;;
 	stop)
 		stopService
 		retval=$?
-		rm -f $lockFile
 		exit $retval
 	;;
 	restart)
 		stopService && startService
 		retval=$?
-		rm -f $lockFile
 		exit $retval
 	;;
 	status)
 		checkServiceStatus
 		retval=$?
-		rm -f $lockFile
 		exit $retval
 	;;
 	*)
 		echo "Usage: $0 {start|stop|restart|status}"
-		rm -f $lockFile
 		exit 1
 	;;
 esac
