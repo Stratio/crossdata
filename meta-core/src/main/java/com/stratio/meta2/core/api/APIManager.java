@@ -78,18 +78,18 @@ public class APIManager {
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
             List<String> catalogs = MetadataManager.MANAGER.getCatalogs();
-            result = MetadataResult.createSuccessMetadataResult();
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_CATALOGS);
             ((MetadataResult) result).setCatalogList(catalogs);
             //result = MetadataResult.createSuccessMetadataResult();
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_TABLES().toString());
             List<TableMetadata> tables = MetadataManager.MANAGER.getTables();
-            result = MetadataResult.createSuccessMetadataResult();
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_TABLES);
             ((MetadataResult) result).setTableList(tables);
         } else if (APICommand.LIST_COLUMNS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_COLUMNS().toString());
             List<ColumnMetadata> columns = MetadataManager.MANAGER.getColumns();
-            result = MetadataResult.createSuccessMetadataResult();
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_COLUMNS);
             //TODO Remove this part when migrates to new ColumnMetadata
             List<com.stratio.meta.common.metadata.structures.ColumnMetadata> columnsResult=new ArrayList<>();
             for (ColumnMetadata columnMetadata:columns){
