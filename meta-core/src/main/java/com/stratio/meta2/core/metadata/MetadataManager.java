@@ -342,9 +342,10 @@ public enum MetadataManager {
 
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
         shouldBeInit();
-        for (DataStoreName dataStore : connectorMetadata.getDataStoreRefs()) {
-            shouldExist(dataStore);
-        }
+        //TODO Check whether datastores can be added after adding connectors
+        //for (DataStoreName dataStore : connectorMetadata.getDataStoreRefs()) {
+        //    shouldExist(dataStore);
+        //}
         try {
             writeLock.lock();
             if (unique) {
