@@ -48,21 +48,30 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
   override def receive: Receive = {
     case query: ParsedQuery => {
       val timer = initTimer()
-      var validatedQuery:ValidatedQuery=null
-      try{
+      var validatedQuery: ValidatedQuery = null
+      try {
         validatedQuery = validator.validate(query)
         log.info("Query validated")
         finishTimer(timer)
         planner forward validatedQuery
-      }catch{
-        case e:ValidationException => {
-          sender ! e
+
+
+      } catch {
+        case e: ValidationException => {
+          log.info(e.getMessage())
+          val result = Result.createValidationErrorResult(e.getMessage)
+          result.setQueryId(query.getQueryId)
+          sender ! result
         }
       }
     }
-    case _ => {
-      log.error("Unknown message received by ValidatorActor");
+    case unknown: Any => {
+      log.error(unknown);
       sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
+    //    case _ => {
+    //      log.error("Unknown message received by ValidatorActor");
+    //      sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
+    //    }
   }
 }
