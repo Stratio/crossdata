@@ -43,6 +43,7 @@ import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.data.FirstLevelName;
 import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.Name;
+import com.stratio.meta2.common.data.NameType;
 import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
@@ -507,5 +508,35 @@ public enum MetadataManager {
         shouldBeInit();
         exists(connectorName);
         return (getConnector(connectorName).getStatus() == status);
+    }
+
+    public List<String> getCatalogs() {
+        List<String> catalogsMetadata=new ArrayList<>();
+        for(Name name:metadata.keySet()) {
+            if (name.getType()== NameType.CATALOG) {
+                catalogsMetadata.add(getCatalog((CatalogName)name).getName().getName());
+            }
+        }
+        return catalogsMetadata;
+    }
+
+    public List<TableMetadata> getTables() {
+        List<TableMetadata> tablesMetadatas=new ArrayList<>();
+        for(Name name:metadata.keySet()) {
+            if (name.getType()== NameType.TABLE) {
+                tablesMetadatas.add(getTable((TableName) name));
+            }
+        }
+        return tablesMetadatas;
+    }
+
+    public List<ColumnMetadata> getColumns() {
+        List<ColumnMetadata> columnsMetadatas=new ArrayList<>();
+        for(Name name:metadata.keySet()) {
+            if (name.getType()== NameType.COLUMN) {
+                columnsMetadatas.add(getColumn((ColumnName) name));
+            }
+        }
+        return columnsMetadatas;
     }
 }
