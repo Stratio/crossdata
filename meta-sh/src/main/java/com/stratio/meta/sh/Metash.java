@@ -191,16 +191,14 @@ public class Metash {
     /**
      * Set the console prompt.
      *
-     * @param currentKeyspace The currentCatalog.
+     * @param currentCatalog The current catalog.
      */
-    private void setPrompt(String currentKeyspace) {
+    private void setPrompt(String currentCatalog) {
         StringBuilder sb = new StringBuilder("metash-sh:");
-        if (currentKeyspace == null) {
-            sb.append(metaDriver.getUserName());
-        } else {
-            sb.append(metaDriver.getUserName());
+        sb.append(metaDriver.getUserName());
+        if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
             sb.append(":");
-            sb.append(currentKeyspace);
+            sb.append(currentCatalog);
         }
         sb.append("> ");
         console.setPrompt(sb.toString());
@@ -407,15 +405,17 @@ public class Metash {
 
     private String updateCatalog(String toExecute) {
         String currentCatalog = metaDriver.getCurrentCatalog();
-        String newCatalog = toExecute.replace("use ", "").replace(";", "").trim();
+        String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();
 
         List<String> catalogs = metaDriver.listCatalogs().getCatalogList();
-        if(catalogs.contains(newCatalog)){
+        if(catalogs.contains(newCatalog.toLowerCase())){
             metaDriver.setCurrentCatalog(newCatalog);
             currentCatalog = metaDriver.getCurrentCatalog();
-            setPrompt(currentCatalog);
+        } else {
+            LOG.error("Catalog "+newCatalog+" doesn't exist.");
         }
 
+        setPrompt(currentCatalog);
         return currentCatalog;
     }
 

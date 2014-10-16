@@ -514,7 +514,7 @@ public enum MetadataManager {
         List<String> catalogsMetadata=new ArrayList<>();
         for(Name name:metadata.keySet()) {
             if (name.getType()== NameType.CATALOG) {
-                catalogsMetadata.add(getCatalog((CatalogName)name).getName().getName());
+                catalogsMetadata.add(getCatalog((CatalogName)name).getName().getName().toLowerCase());
             }
         }
         return catalogsMetadata;
