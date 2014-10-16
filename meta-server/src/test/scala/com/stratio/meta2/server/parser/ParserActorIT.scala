@@ -21,7 +21,6 @@ package com.stratio.meta2.server.parser
 import com.stratio.meta.common.ask.Query
 import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.communication.ACK
-import com.stratio.meta2.common.result.ErrorResult
 import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.planner.Planner
 import com.stratio.meta2.core.validator.Validator
@@ -42,7 +41,7 @@ class ParserActorIT extends ServerActorTest{
   val mockPlannerRef= system.actorOf(MockPlannerActor.props(), "TestMockPlannerActor")
   val mockCoordinatorActor = system.actorOf(MockCoordinatorActor.props(),  "TestMockCoordinatorActor")
 
-  val plannerRef0= system.actorOf(PlannerActor.props(coordinatorActor,new Planner()), "TestPlannerActor0")
+  val plannerRef0= system.actorOf(PlannerActor.props(mockCoordinatorActor,new Planner()), "TestPlannerActor0")
   val validatorRef0 = system.actorOf(ValidatorActor.props(mockPlannerRef,new Validator()), "TestValidatorActor0")
   val validatorRef1 = system.actorOf(ValidatorActor.props(plannerRef0,new Validator()), "TestValidatorActor1")
 
@@ -57,6 +56,7 @@ class ParserActorIT extends ServerActorTest{
   }
 
 
+  /*
   test("Should return a KO message") {
     initialize()
     within(1000 millis) {
@@ -90,9 +90,22 @@ class ParserActorIT extends ServerActorTest{
     initializeTablesInfinispan()
     within(6000 millis) {
       parserActor1 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
-      val ack = expectMsgType[ACK]
-      assert(ack.queryId == queryId + (1))
-      assert(ack.status==QueryStatus.PLANNED)
+      val ack0 = expectMsgType[ACK]
+      assert(ack0.queryId == queryId + (1))
+      assert(ack0.status==QueryStatus.PLANNED)
+    }
+  }
+  */
+
+  test("Select query; parser ,validator, planner, and mockCoordinator") {
+    initialize()
+    initializeTablesInfinispan()
+    Thread.sleep(3000)
+    within(6000 millis) {
+      parserActor2 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
+      val ack0 = expectMsgType[ACK]
+      assert(ack0.queryId == queryId + (1))
+      assert(ack0.status==QueryStatus.EXECUTED)
     }
   }
 

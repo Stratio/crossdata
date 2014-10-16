@@ -50,13 +50,11 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
       println("validator receiving parsedquery")
       var validatedQuery:ValidatedQuery=null
       try{
-        println("validator validating")
         validatedQuery = validator.validate(query)
         println("sending message to planner "+planner)
         planner forward validatedQuery
       }catch{
         case e:ValidationException => {
-          println("error validating")
           val errorResult = Result.createValidationErrorResult(e.getMessage)
           errorResult.setQueryId(query.getQueryId)
           sender ! errorResult

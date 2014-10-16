@@ -19,7 +19,10 @@
 package com.stratio.meta2.server.mocks
 
 import akka.actor.{Actor, Props}
+import com.stratio.meta.common.result.QueryStatus
+import com.stratio.meta.communication.ACK
 import com.stratio.meta2.common.result.Result
+import com.stratio.meta2.core.query.SelectPlannedQuery
 
 object MockCoordinatorActor{
   def props(): Props = Props(new MockValidatorActor())
@@ -31,6 +34,9 @@ object MockCoordinatorActor{
 class MockCoordinatorActor() extends Actor {
 
   override def receive: Receive = {
+    case query:SelectPlannedQuery=>{
+      sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
+    }
     case _ => {
       println("Unknown message received by ValidatorActor");
       sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")

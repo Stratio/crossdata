@@ -25,6 +25,7 @@ import javax.transaction.TransactionManager
 
 import akka.pattern.ask
 import com.stratio.connectors.MockConnectorActor
+import com.stratio.meta.common.connector.Operations
 import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.utils.StringUtils
@@ -147,25 +148,20 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
     val dataStoreRefs = new util.ArrayList[String]().asInstanceOf[util.List[String]]
     val requiredProperties = new util.ArrayList[PropertyType]().asInstanceOf[util.List[PropertyType]]
     val optionalProperties = new util.ArrayList[PropertyType]().asInstanceOf[util.List[PropertyType]]
-    val supportedOperations = new util.ArrayList[String]()
-    val connectorMetadata = new ConnectorMetadata(
-      new ConnectorName(connectorName.name),
-      "version",
-      dataStoreRefs,
-      requiredProperties,
-      optionalProperties,
-      supportedOperations
-    )
 
-    MetadataManager.MANAGER.createConnector(connectorMetadata)
-    MetadataManager.MANAGER.addConnectorRef(new ConnectorName(connectorName.name),
-      StringUtils.getAkkaActorRefUri(connectorActor))
-    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
   }
 
   def initializeTablesInfinispan(): TableMetadata = {
+    val operations=new java.util.HashSet[Operations]()
+    operations.add(Operations.PROJECT)
     val myDatastore = metadataManager.createTestDatastore()
     metadataManager.createTestCluster("myCluster", myDatastore)
+    val clusternames=new java.util.HashSet[ClusterName]()
+    clusternames.add(new ClusterName("myCluster"))
+    metadataManager.createTestConnector("myTestConnector",new DataStoreName(myDatastore.getName()),
+      clusternames,
+      operations,
+      StringUtils.getAkkaActorRefUri(connectorActor))
     metadataManager.createTestCatalog("myCatalog")
     metadataManager.createTestTable(new ClusterName("myCluster"), "myCatalog", "myTable", Array("name", "age"),
       Array(ColumnType.VARCHAR, ColumnType.INT), Array("name"), Array("name"))
