@@ -56,7 +56,9 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
         planner forward validatedQuery
       }catch{
         case e:ValidationException => {
-          sender ! e
+          val errorResult = Result.createValidationErrorResult(e.getMessage)
+          errorResult.setQueryId(query.getQueryId)
+          sender ! errorResult
         }
       }
     }

@@ -503,4 +503,9 @@ public enum MetadataManager {
         createCatalog(catalogMetadata, false);
     }
 
+    public boolean checkConnectorStatus(ConnectorName connectorName, Status status) {
+        shouldBeInit();
+        exists(connectorName);
+        return (getConnector(connectorName).getStatus() == status);
+    }
 }
