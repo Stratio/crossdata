@@ -20,89 +20,81 @@ package com.stratio.meta2.server.planner
 
 import java.util
 
-import com.stratio.meta.common.result.QueryStatus
-import com.stratio.meta.communication.ACK
-import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
-import com.stratio.meta2.common.data.{CatalogName, ClusterName, ColumnName, TableName}
-import com.stratio.meta2.common.metadata.ColumnType
-import com.stratio.meta2.core.engine.Engine
-import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.{CreateCatalogStatement, CreateTableStatement, SelectStatement}
-import com.stratio.meta2.server.actors._
-import com.stratio.meta2.server.utilities.createEngine
+import com.stratio.meta2.common.data.{ClusterName, TableName}
+import com.stratio.meta2.common.metadata.{ColumnType, TableMetadata}
+import com.stratio.meta2.common.result.ErrorResult
+import com.stratio.meta2.core.metadata.MetadataManagerTestHelper
+import com.stratio.meta2.core.planner.{Planner, PlannerBaseTest, PlannerLogicalWorkflowTest}
+import com.stratio.meta2.server.ServerActorTest
+import com.stratio.meta2.server.actors.PlannerActor
 import org.apache.log4j.Logger
-import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FunSuiteLike, Suite}
+import org.scalatest.Suite
 
 import scala.concurrent.duration.DurationInt
 
-
-class PlannerActorIT extends ActorReceiveUtils with FunSuiteLike with ServerConfig with MockFactory {
+class PlannerActorIT extends ServerActorTest{
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[PlannerActorIT])
-  //lazy val system1 = ActorSystem(clusterName, config)
-  val engine: Engine = createEngine.create()
-  val connectorManagerRef = system.actorOf(ConnectorManagerActor.props(null), "TestConnectorManagerActor")
-  val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()), "TestCoordinatorActor")
-  val plannerActor = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
 
-  var queryId="query_id-2384234-1341234-23434"
-  var tablename = new com.stratio.meta2.common.data.TableName("catalog", "table")
-  val selectParsedQuery = new SelectParsedQuery(
-        new BaseQuery(
-          queryId,
-          "select * from myQuery;",
-          new CatalogName("myCatalog")
-        ), new SelectStatement(tablename)
-  )
-  val map0=new util.HashMap[ColumnName,ColumnType]()
-  map0.put(new ColumnName("keyspace","table","column"),ColumnType.BOOLEAN)
-  val list0=new util.ArrayList[ColumnName]()
-  list0.add(new ColumnName("keyspace","table","column"))
-  val metadataStatement=new CreateCatalogStatement(new CatalogName("mycatalog"),true,null)
-  val metadataStatement2=new CreateTableStatement( new TableName("mycatalog", "mytable"), new ClusterName("cluster"),
-    map0,list0,list0)
-  val metadataParsedQuery = new MetadataParsedQuery(
-    new BaseQuery(
-      queryId,
-      "create catalog syntax",
-      new CatalogName("myCatalog")
-    ), metadataStatement
-  )
-  val metadataParsedQuery2 = new MetadataParsedQuery(
-    new BaseQuery(
-      queryId,
-      "create table syntax",
-      new CatalogName("myCatalog")
-    ), metadataStatement2
-  )
-  val mdvq=new MetadataValidatedQuery(metadataParsedQuery)
-  val mdvq2=new MetadataValidatedQuery(metadataParsedQuery2)
-  val svq=new SelectValidatedQuery(selectParsedQuery)
+  val plannerActor = system.actorOf(PlannerActor.props(coordinatorActor,new Planner()),"PlannerActor")
+  val plannerLogicalWorkflowTest=new PlannerLogicalWorkflowTest()
+  val plannerBaseTest=new PlannerBaseTest()
+  val mdmth=new MetadataManagerTestHelper()
 
-  test("Metadata Planner->Coordinator->ConnectorManager->Ok: sends a query and should recieve Ok") {
-    within(500000 millis) {
-      plannerActor ! mdvq
-      expectMsg(ACK("query_id-2384234-1341234-23434",QueryStatus.PLANNED)) // bounded to 1 second
-      //val ack:ACK=expectMsg(ACK).asInstanceOf[ACK]// bounded to 1 second
 
-      //plannerActor ! mdvq2
-      //expectMsg(ACK("query_id-2384234-1341234-23434",QueryStatus.PLANNED)) // bounded to 1 second
+  //val inputText = "SELECT mycatalog.mytable.name mycatalog.mytable.age FROM mycatalog.mytable;"
+  val inputText = "SELECT * FROM mycatalog.mytable;"
+  val columns1 = Array( "name", "age" )
+  val columnTypes1 = Array(ColumnType.TEXT, ColumnType.INT)
+  val partitionKeys1 = Array("name")
+  val clusteringKeys1 = Array("name")
+  val t1 = mdmth.defineTable(new ClusterName("mycluster"), "mycatalog", "mytable", columns1, columnTypes1, partitionKeys1, clusteringKeys1)
+  //val workflow = plannerBaseTest.getWorkflow(inputText, "selTectBasicWhere", t1)
+  val tablesMetadata:java.util.List[TableMetadata]=new util.ArrayList[TableMetadata]()
+  val tables:java.util.List[TableName]=new util.ArrayList[TableName]()
+  tables.add(new TableName("myCatalog","myTable"))
+  selectValidatedQueryWrapper.addTableMetadata(t1)
+  selectValidatedQueryWrapper.setTables(tables)
 
-      assert(true)
+
+   test("Should return a KO message") {
+    initialize()
+    within(1000 millis) {
+      plannerActor ! "anything; this doesn't make any sense"
+      val exception = expectMsgType[ErrorResult]
     }
   }
 
   /*
-  test("Select Planner->Coordinator->ConnectorManager->Ok: sends a query and should receive Ok") {
-    within(5000 millis) {
-      plannerActor ! svq
-      expectMsg(ACK) // bounded to 1 second
-      assert(true)
-    }
+  test("Select query") {
+    initialize()
+    connectorActor !(queryId + (1), "updatemylastqueryId")
+    plannerActor ! selectValidatedQueryWrapper
+    expectMsgType[QueryResult]
+  }
+
+  test("Storage query") {
+    initialize()
+    initializeTablesInfinispan()
+    connectorActor !(queryId + (2), "updatemylastqueryId")
+    coordinatorActor ! storagePlannedQuery
+    expectMsgType[CommandResult]
+  }
+
+  test("Metadata query") {
+    initialize()
+    connectorActor !(queryId + (3), "updatemylastqueryId")
+    coordinatorActor ! metadataPlannedQuery0
+    expectMsgType[MetadataResult]
+
+    connectorActor !(queryId + (4), "updatemylastqueryId")
+    coordinatorActor ! metadataPlannedQuery1
+    expectMsgType[MetadataResult]
+
   }
   */
+
 
 }
 
