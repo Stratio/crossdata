@@ -29,7 +29,7 @@ pidDir=${INIT_HOME}
 serviceUser=<user>
 serviceGroup=<user>
 javaCommandLineKeyword=<mainClassName>
-connectorClass=<mainClass>l
+connectorClass=<mainClass>
 JMXPort=<jmxPort>
 # If JAVA_HOME has not been set, try to determine it.ner
 JVM_SEARCH_DIRS="/usr/java/default /usr/java/latest /opt/java"
