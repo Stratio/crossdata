@@ -84,14 +84,16 @@ public class APIManager {
             //result = MetadataResult.createSuccessMetadataResult();
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
             List<TableMetadata> tables;
+
             if (cmd.params() != null && !cmd.params().isEmpty()) {
                 String catalog = (String) cmd.params().get(0);
                 LOG.info("Processing " + APICommand.LIST_TABLES().toString());
-                tables = MetadataManager.MANAGER.getTablesByCatalogName(new CatalogName(catalog));
+                tables = MetadataManager.MANAGER.getTablesByCatalogName(catalog);
             } else {
                 LOG.info("Processing " + APICommand.LIST_TABLES().toString());
                 tables = MetadataManager.MANAGER.getTables();
             }
+
             result = MetadataResult.createSuccessMetadataResult();
             ((MetadataResult) result).setTableList(tables);
         } else if (APICommand.LIST_COLUMNS().equals(cmd.commandType())) {
@@ -111,7 +113,7 @@ public class APIManager {
                 columnsResult.add(new com.stratio.meta.common.metadata.structures.ColumnMetadata(columnMetadata
                         .getName().getTableName().getName(), columnMetadata.getName().getName()));
             }
-            
+
             result = MetadataResult.createSuccessMetadataResult();
             ((MetadataResult) result).setColumnList(columnsResult);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {

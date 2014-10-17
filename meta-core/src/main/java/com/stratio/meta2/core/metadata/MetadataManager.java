@@ -540,13 +540,17 @@ public enum MetadataManager {
         return columnsMetadatas;
     }
 
-    public List<TableMetadata> getTablesByCatalogName(CatalogName catalogName) {
+    public List<TableMetadata> getTablesByCatalogName(String catalogName) {
         List<TableMetadata> tableList=new ArrayList<>();
         for(Name name:metadata.keySet()) {
-            if (name.getType()== NameType.TABLE) {
-                TableMetadata table=getTable((TableName)name);
-                if (table.getName().getCatalogName()==catalogName){
-                    tableList.add(table);
+            if (name.getType()== NameType.CATALOG) {
+                CatalogName catalog=(CatalogName)name;
+                if (catalog.getName().equals(catalogName)){
+                    CatalogMetadata catalogMetadata=getCatalog(catalog);
+                    for (Map.Entry<TableName, TableMetadata> entry : catalogMetadata.getTables().entrySet())
+                    {
+                        tableList.add(entry.getValue());
+                    }
                 }
             }
         }
@@ -555,12 +559,21 @@ public enum MetadataManager {
 
     public List<ColumnMetadata> getColumnByTable(String catalog,String tableName) {
         List<ColumnMetadata> columnList=new ArrayList<>();
+
         for(Name name:metadata.keySet()) {
-            if (name.getType()== NameType.COLUMN) {
-                ColumnMetadata column=getColumn((ColumnName)name);
-                if (column.getName().getTableName().getName().equals(tableName) && column.getName()
-                        .getTableName().getCatalogName().getName().equals(catalog)){
-                    columnList.add(column);
+            if (name.getType()== NameType.CATALOG) {
+                CatalogName catalogName=(CatalogName)name;
+                if (catalogName.getName()==catalog){
+                    CatalogMetadata catalogMetadata=getCatalog(catalogName);
+                    for (Map.Entry<TableName, TableMetadata> entry : catalogMetadata.getTables().entrySet())
+                    {
+                        TableMetadata tableMetadata=entry.getValue();
+                        if (tableMetadata.getName().getName().equals(tableName)){
+                            for (Map.Entry<ColumnName, ColumnMetadata> entry2 : tableMetadata.getColumns().entrySet()){
+                                columnList.add(entry2.getValue());
+                            }
+                        }
+                    }
                 }
             }
         }
