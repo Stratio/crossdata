@@ -23,7 +23,7 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication._
-import com.stratio.meta2.common.data.ConnectorName
+import com.stratio.meta2.common.data.{Status, ConnectorName}
 import com.stratio.meta2.core.connector.ConnectorManager
 import com.stratio.meta2.core.metadata.MetadataManager
 import org.apache.log4j.Logger
@@ -98,6 +98,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
           sender ! new Connect(null, connectorClusterConfig)
         }
       }
+      MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
 
     }
 
