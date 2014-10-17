@@ -43,7 +43,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
 
   override def preStart(): Unit = {
-    Cluster(context.system).subscribe(self, classOf[MemberEvent])
+    Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
 
@@ -75,7 +75,6 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       }
     }
 
-
     /**
      * CONNECTOR answers its name.
      */
@@ -102,47 +101,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
     }
 
-      /*
-    case query: StorageInProgressQuery => {
-      log.info("storage in progress query")
-      //connectorsMap(query.getConnectorName()) ! query
-      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! query
-    }
-
-    case query: SelectInProgressQuery => {
-      val clustername = new ClusterName("//TODO:") //TODO: the query should give me the cluster's name
-      val executionStep = query.getExecutionStep
-      log.info("select in progress query")
-      //connectorsMap(query.getConnectorName()) ! Execute(clustername,workflow)
-      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! Execute(null, executionStep)
-    }
-
-    case query: MetadataInProgressQuery => {
-
-      val statement = query.getStatement()
-      //val messagesender=connectorsMap(query.getConnectorName())
-      val messagesender = query.getExecutionStep.getActorRef
-
-      statement match {
-        case createCatalogStatement: CreateCatalogStatement => {
-          println("Createcatalog statement")
-          //messagesender ! CreateCatalog(query.getClusterName,query.getDefaultCatalog)
-          //createCatalogStatement
-        }
-        case createTableStatement: CreateTableStatement => {
-          println("CreateTableStatement")
-        }
-        case _ =>
-          println("Unidentified MetadataInProgressQuery Received")
-      }
-
-      log.info("metadata in progress query")
-      //connectorsMap(query.getConnectorName()) ! query
-      query.getExecutionStep.getActorRef.asInstanceOf[ActorRef] ! query
-    }
-    */
-
-    //pass the message to the connectorActor to extract the member in the cluster
+    //Pass the message to the connectorActor to extract the member in the cluster
     case state: CurrentClusterState => {
       logger.info("Current members: " + state.members.mkString(", "))
       //TODO Process CurrentClusterState

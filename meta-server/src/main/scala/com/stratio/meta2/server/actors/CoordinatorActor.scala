@@ -32,6 +32,7 @@ import com.stratio.meta2.core.coordinator.Coordinator
 import com.stratio.meta2.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query.PlannedQuery
+import scala.collection.JavaConversions._
 
 object CoordinatorActor {
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor
@@ -39,7 +40,10 @@ object CoordinatorActor {
 }
 
 class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends Actor with ActorLogging {
+
   log.info("Lifting coordinator actor")
+  val connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE)
+  MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
 
   def receive = {
 
@@ -135,6 +139,10 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           log.error("non recognized workflow")
         }
       }
+    }
+
+    case result: ConnectResult => {
+      log.info("Connect result received from " + sender + " with SessionId = " + result.getSessionId);
     }
 
     case result: Result => {
