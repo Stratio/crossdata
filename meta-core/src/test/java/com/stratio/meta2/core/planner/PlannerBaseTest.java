@@ -26,6 +26,7 @@ import static org.testng.Assert.fail;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -39,9 +40,11 @@ import com.stratio.meta.common.logicalplan.LogicalWorkflow;
 import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.logicalplan.Select;
 import com.stratio.meta.common.logicalplan.Window;
+import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.statements.structures.window.TimeUnit;
 import com.stratio.meta.common.statements.structures.window.WindowType;
 import com.stratio.meta2.common.data.ColumnName;
+import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.core.grammar.ParsingTest;
 import com.stratio.meta2.core.metadata.MetadataManagerTestHelper;
@@ -153,6 +156,15 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
 
     public void assertSelect(LogicalWorkflow workflow) {
         assertTrue(Select.class.isInstance(workflow.getLastStep()), "Select step not found.");
+    }
+
+    public void assertSelect(LogicalWorkflow workflow,
+            Map<ColumnName, String> columnMap,
+            Map<String, ColumnType> typeMap) {
+        assertTrue(Select.class.isInstance(workflow.getLastStep()), "Select step not found.");
+        Select s = Select.class.cast(workflow.getLastStep());
+        assertEquals(columnMap, s.getColumnMap(), "Invalid column map");
+        assertEquals(typeMap, s.getTypeMap(), "Invalid type map");
     }
 
     public void assertWindow(LogicalWorkflow workflow, WindowType type, int numRows,

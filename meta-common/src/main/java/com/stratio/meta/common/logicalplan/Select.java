@@ -73,7 +73,7 @@ public class Select extends TransformationStep {
         Map.Entry<ColumnName, String> entry = null;
         while (it.hasNext()) {
             entry = it.next();
-            sb.append(entry.getKey()).append(" AS ").append(entry.getValue());
+            sb.append(entry.getKey().getQualifiedName()).append(" AS ").append(entry.getValue());
             if (it.hasNext()) {
                 sb.append(", ");
             }
