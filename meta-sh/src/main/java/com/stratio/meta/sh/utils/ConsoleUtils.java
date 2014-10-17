@@ -148,10 +148,10 @@ public class ConsoleUtils {
         sb.append(System.lineSeparator());
         sb.append(bar).append(System.lineSeparator());
         sb.append("| ");
-        for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
+        for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
             sb.append(
                     StringUtils.rightPad(columnMetadata.getColumnNameToShow(),
-                            colWidths.get(columnMetadata.getColumnAlias()) + 12)).append("| ");
+                            colWidths.get(columnMetadata.getColumnName()) + 1)).append("| ");
         }
 
         sb.append(System.lineSeparator());
@@ -182,13 +182,13 @@ public class ConsoleUtils {
         Map<String, Integer> colWidths = new HashMap<>();
 
         // Get column names or aliases width
-        for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
-            colWidths.put(columnMetadata.getColumnAlias(), columnMetadata.getColumnNameToShow().length());
+        for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
+            colWidths.put(columnMetadata.getColumnName(), columnMetadata.getColumnNameToShow().length());
         }
 
         // Find widest cell content of every column
-        for (Row row : resultSet) {
-            for (String key : row.getCells().keySet()) {
+        for (Row row: resultSet) {
+            for (String key: row.getCells().keySet()) {
                 String cellContent = String.valueOf(row.getCell(key).getValue());
                 int currentWidth = colWidths.get(key);
                 if (cellContent.length() > currentWidth) {
