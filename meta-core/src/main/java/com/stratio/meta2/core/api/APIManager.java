@@ -79,7 +79,7 @@ public class APIManager {
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
             List<String> catalogs = MetadataManager.MANAGER.getCatalogs();
-            result = MetadataResult.createSuccessMetadataResult();
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_CATALOGS);
             ((MetadataResult) result).setCatalogList(catalogs);
             //result = MetadataResult.createSuccessMetadataResult();
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
@@ -93,8 +93,7 @@ public class APIManager {
                 LOG.info("Processing " + APICommand.LIST_TABLES().toString());
                 tables = MetadataManager.MANAGER.getTables();
             }
-
-            result = MetadataResult.createSuccessMetadataResult();
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_TABLES);
             ((MetadataResult) result).setTableList(tables);
         } else if (APICommand.LIST_COLUMNS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_COLUMNS().toString());
@@ -113,13 +112,14 @@ public class APIManager {
                 columnsResult.add(new com.stratio.meta.common.metadata.structures.ColumnMetadata(columnMetadata
                         .getName().getTableName().getName(), columnMetadata.getName().getName()));
             }
-
-            result = MetadataResult.createSuccessMetadataResult();
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_COLUMNS);
             ((MetadataResult) result).setColumnList(columnsResult);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
             persistManifest((Manifest) cmd.params().get(0));
-            result = CommandResult.createCommandResult("Manifest added.");
+            result = CommandResult.createCommandResult("Manifest added "
+                    + System.lineSeparator()
+                    + ((Manifest) cmd.params().get(0)).toString());
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.RESET_METADATA().toString());
             result = resetMetadata();

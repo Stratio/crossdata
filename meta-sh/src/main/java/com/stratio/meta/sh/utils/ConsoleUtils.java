@@ -56,7 +56,9 @@ import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
+import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.StorageResult;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.connector.ConnectorFactory;
 import com.stratio.meta2.common.api.connector.ConnectorType;
@@ -110,6 +112,12 @@ public class ConsoleUtils {
         } else if (result instanceof ConnectResult) {
             ConnectResult connectResult = (ConnectResult) result;
             return String.valueOf("Connected with SessionId=" + connectResult.getSessionId());
+        } else if (result instanceof MetadataResult) {
+            MetadataResult metadataResult = (MetadataResult) result;
+            return metadataResult.toString();
+        } else if (result instanceof StorageResult) {
+            StorageResult storageResult = (StorageResult) result;
+            return storageResult.toString();
         } else {
             return "Unknown result";
         }
@@ -143,7 +151,7 @@ public class ConsoleUtils {
         for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
             sb.append(
                     StringUtils.rightPad(columnMetadata.getColumnNameToShow(),
-                            colWidths.get(columnMetadata.getColumnName()) + 12)).append("| ");
+                            colWidths.get(columnMetadata.getColumnAlias()) + 12)).append("| ");
         }
 
         sb.append(System.lineSeparator());
@@ -175,7 +183,7 @@ public class ConsoleUtils {
 
         // Get column names or aliases width
         for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
-            colWidths.put(columnMetadata.getColumnName(), columnMetadata.getColumnNameToShow().length());
+            colWidths.put(columnMetadata.getColumnAlias(), columnMetadata.getColumnNameToShow().length());
         }
 
         // Find widest cell content of every column
@@ -325,10 +333,11 @@ public class ConsoleUtils {
             JAXBElement<DataStoreType> unmarshalledDataStore = (JAXBElement<DataStoreType>) unmarshaller
                     .unmarshal(path);
             return unmarshalledDataStore.getValue();
-        } catch (JAXBException | SAXException e ) {
+        } catch (JAXBException | SAXException e) {
             throw new ManifestException(e);
         }
     }
+
     private static Manifest parseFromXmlToConnectorManifest(InputStream path) throws ManifestException {
         try {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);

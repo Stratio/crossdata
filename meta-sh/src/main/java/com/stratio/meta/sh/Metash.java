@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -190,16 +191,16 @@ public class Metash {
     /**
      * Set the console prompt.
      *
-     * @param currentKeyspace The currentCatalog.
+     * @param currentCatalog The current catalog.
      */
-    private void setPrompt(String currentKeyspace) {
+    private void setPrompt(String currentCatalog) {
         StringBuilder sb = new StringBuilder("metash-sh:");
-        if (currentKeyspace == null) {
+        if (currentCatalog == null) {
             sb.append(metaDriver.getUserName());
         } else {
             sb.append(metaDriver.getUserName());
             sb.append(":");
-            sb.append(currentKeyspace);
+            sb.append(currentCatalog);
         }
         sb.append("> ");
         console.setPrompt(sb.toString());
@@ -374,7 +375,7 @@ public class Metash {
                             .startsWith("add datastore")) {
                         sendManifest(toExecute);
                         println("");
-                    } else if(toExecute.toLowerCase().startsWith("reset metadata")){
+                    } else if (toExecute.toLowerCase().startsWith("reset metadata")) {
                         resetMetadata();
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);
@@ -405,14 +406,21 @@ public class Metash {
     }
 
     private String updateCatalog(String toExecute) {
-        String newCatalog = toExecute.replace("use ", "").replace(";", "");
+        String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();
         metaDriver.setCurrentCatalog(newCatalog);
         String currentCatalog = metaDriver.getCurrentCatalog();
+        List<String> catalogs = metaDriver.listCatalogs().getCatalogList();
+        if (catalogs.contains(newCatalog.toLowerCase())) {
+            metaDriver.setCurrentCatalog(newCatalog);
+            currentCatalog = metaDriver.getCurrentCatalog();
+        } else {
+            LOG.error("Catalog " + newCatalog + " doesn't exist.");
+        }
         setPrompt(currentCatalog);
         return currentCatalog;
     }
 
-    public void resetMetadata(){
+    public void resetMetadata() {
         metaDriver.resetMetadata();
     }
 
@@ -420,17 +428,17 @@ public class Metash {
         LOG.debug("Command: " + sentence);
         // Get manifest type
 
-        String [] tokens = sentence.split(" ");
-        if(tokens.length != 3){
+        String[] tokens = sentence.split(" ");
+        if (tokens.length != 3) {
             return "ERROR: Invalid ADD syntax";
         }
 
         int type_manifest;
-        if(tokens[1].equalsIgnoreCase("datastore")){
+        if (tokens[1].equalsIgnoreCase("datastore")) {
             type_manifest = Manifest.TYPE_DATASTORE;
-        }else if (tokens[1].equalsIgnoreCase("connector")) {
+        } else if (tokens[1].equalsIgnoreCase("connector")) {
             type_manifest = Manifest.TYPE_CONNECTOR;
-        }else{
+        } else {
             return "ERROR: Unknown type: " + tokens[1];
         }
 

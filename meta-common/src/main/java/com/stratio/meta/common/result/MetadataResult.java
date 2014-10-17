@@ -26,6 +26,24 @@ import com.stratio.meta2.common.result.Result;
 
 public class MetadataResult extends Result {
 
+    /**
+     * Operation types
+     */
+
+    public static final int OPERATION_CREATE_CATALOG = 1;
+
+    public static final int OPERATION_LIST_CATALOGS = 2;
+
+    public static final int OPERATION_LIST_TABLES = 3;
+
+    public static final int OPERATION_LIST_COLUMNS = 4;
+
+    /**
+     * Operation bound to the {@link com.stratio.meta.common.result.MetadataResult}
+     */
+
+    private int operation = 0;
+
     private static final long serialVersionUID = 7257573696937869953L;
 
     /**
@@ -46,21 +64,47 @@ public class MetadataResult extends Result {
     /**
      * Private constructor of the factory.
      */
-    private MetadataResult() {
+    private MetadataResult(final int operation) {
+        this.operation = operation;
     }
 
     /**
-     * Create a successful query.
+     * Creates a successful query.
+     *
+     * @param operation to bind
+     * @return A {@link com.stratio.meta.common.result.MetadataResult}.
+     */
+
+    public static MetadataResult createSuccessMetadataResult(final int operation) {
+        return new MetadataResult
+                (operation);
+    }
+
+    /**
+     * Creates a successful query.
      *
      * @return A {@link com.stratio.meta.common.result.MetadataResult}.
      */
+    @Deprecated
     public static MetadataResult createSuccessMetadataResult() {
-        return new MetadataResult();
+        return new MetadataResult
+                (0);
     }
 
     public List<String> getCatalogList() {
 
         return catalogList;
+    }
+
+    /**
+     * Gets the operation bound to the {@link com.stratio.meta.common.result.MetadataResult}
+     *
+     * @return int with the operation type
+     */
+
+    public int getOperation() {
+
+        return operation;
     }
 
     /**
@@ -96,5 +140,30 @@ public class MetadataResult extends Result {
      */
     public void setColumnList(List<ColumnMetadata> columnList) {
         this.columnList = columnList;
+    }
+
+    /**
+     * Analyzes the operation bound to the MetadataResult and generates an String
+     *
+     * @return String
+     */
+    @Override
+    public String toString() {
+        switch (this.operation) {
+
+        case MetadataResult.OPERATION_CREATE_CATALOG:
+            return "Catalog created successfully";
+        case MetadataResult.OPERATION_LIST_CATALOGS:
+            return catalogList.toString();
+        case MetadataResult.OPERATION_LIST_TABLES:
+            return tableList.toString();
+        case MetadataResult.OPERATION_LIST_COLUMNS:
+            return columnList.toString();
+
+        default:
+            return "OK";
+
+        }
+
     }
 }

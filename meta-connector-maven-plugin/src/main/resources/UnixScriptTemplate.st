@@ -27,8 +27,9 @@ CONFDIR=${INIT_HOME}/conf
 LOGFILE=${INIT_HOME}/logs
 pidDir=${INIT_HOME}
 serviceUser=<user>
+serviceGroup=<user>
 javaCommandLineKeyword=<mainClassName>
-connectorClass=<mainClass>l
+connectorClass=<mainClass>
 JMXPort=<jmxPort>
 # If JAVA_HOME has not been set, try to determine it.ner
 JVM_SEARCH_DIRS="/usr/java/default /usr/java/latest /opt/java"
@@ -78,7 +79,7 @@ javaArgs="$javaArgs -classpath $CLASSPATH -Djava.net.preferIPv4Stack=true ${JMX_
 javaCommandLine="${JAVA_HOME}/bin/java $javaArgs"
 
 if [ ! -d "$pidDir" ]; then
-	mkdir -p "$pidDir"
+	mkdir -p "$pidDir" && chown $serviceUser:$serviceGroup "$pidDir
 	if [ $? -ne 0 ]; then exit 1; fi
 fi
 pidFile="$pidDir/$NAME.pid"
