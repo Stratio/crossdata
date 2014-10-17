@@ -23,7 +23,7 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import akka.util.Timeout
 import com.stratio.meta.common.connector.IConnector
-import com.stratio.meta.common.result.{CommandResult, MetadataResult}
+import com.stratio.meta.common.result.{ConnectResult, StorageResult, CommandResult, MetadataResult}
 import com.stratio.meta.communication._
 import com.stratio.meta2.common
 import com.stratio.meta2.common.result.Result
@@ -42,21 +42,21 @@ object ConnectorActor {
 
 
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with ActorLogging {
-//class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
+  //class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
 
-  implicit val timeout=Timeout(20 seconds)
+  implicit val timeout = Timeout(20 seconds)
 
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
   var state = State.Stopped
   var parentActorRef: ActorRef = null
-  var runningJobs:Map[String,ActorRef]=new ListMap[String,ActorRef]()
+  var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
 
   override def handleHeartbeat(heartbeat: HeartbeatSig) = {
     //println("receiving heartbeat signal")
-    runningJobs.foreach{
-      keyval:(String,ActorRef)=> keyval._2 ! IAmAlive(keyval._1)
+    runningJobs.foreach {
+      keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
     }
   }
 
@@ -66,8 +66,8 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
 
-  override def receive = super.receive orElse{
-  //override def receive = {
+  override def receive = super.receive orElse {
+    //override def receive = {
 
 
     //case RouterRoutees(routees)=> routees foreach context.watch
@@ -84,7 +84,8 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       log.info("Received connect command")
       connector.connect(connectRequest.credentials, connectRequest.connectorClusterConfig)
       this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
-      sender ! "ok"
+      sender ! ConnectResult.createConnectResult("Connected successfully");//TODO once persisted sessionId,
+      // attach it in this info recover it to
     }
 
     case _: com.stratio.meta.communication.Shutdown => {
@@ -92,18 +93,18 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       this.shutdown()
     }
 
-    case ex:Execute=>{
+    case ex: Execute => {
       log.info("Processing query: " + ex)
       try {
-        runningJobs.put(ex.queryId,sender)
-        val result=connector.getQueryEngine().execute(ex.workflow)
+        runningJobs.put(ex.queryId, sender)
+        val result = connector.getQueryEngine().execute(ex.workflow)
         result.setQueryId(ex.queryId)
         sender ! result
         //router forward (connector.getQueryEngine(),ex)
 
       } catch {
         case e: Exception => {
-          val result=Result.createExecutionErrorResult(e.getStackTraceString)
+          val result = Result.createExecutionErrorResult(e.getStackTraceString)
           result.setQueryId(ex.queryId)
           sender ! result
         }
@@ -115,46 +116,46 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     }
 
     case metadataOp: MetadataOperation => {
-      var qId:String=metadataOp.queryId
+      var qId: String = metadataOp.queryId
 
       log.info("Received queryId = " + qId)
 
       try {
-        val opclass=metadataOp.getClass().toString().split('.')
+        val opclass = metadataOp.getClass().toString().split('.')
         val eng = connector.getMetadataEngine()
 
-        opclass( opclass.length -1 ) match{
-          case "CreateTable" =>{
-            println("creating table from  "+self.path)
-            qId=metadataOp.asInstanceOf[CreateTable].queryId
+        opclass(opclass.length - 1) match {
+          case "CreateTable" => {
+            println("creating table from  " + self.path)
+            qId = metadataOp.asInstanceOf[CreateTable].queryId
             eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
               metadataOp.asInstanceOf[CreateTable].tableMetadata)
           }
-          case "CreateCatalog"=>{
-            qId=metadataOp.asInstanceOf[CreateCatalog].queryId
+          case "CreateCatalog" => {
+            qId = metadataOp.asInstanceOf[CreateCatalog].queryId
             eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
               metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
           }
-          case "CreateIndex"=>{
-            qId=metadataOp.asInstanceOf[CreateIndex].queryId
+          case "CreateIndex" => {
+            qId = metadataOp.asInstanceOf[CreateIndex].queryId
             eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
               metadataOp.asInstanceOf[CreateIndex].indexMetadata)
           }
-          case "DropCatalog"=>{
-            qId=metadataOp.asInstanceOf[DropIndex].queryId
+          case "DropCatalog" => {
+            qId = metadataOp.asInstanceOf[DropIndex].queryId
             eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+              metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
           }
-          case "DropIndex"=>{
-            qId=metadataOp.asInstanceOf[DropIndex].queryId
-            eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster,metadataOp.asInstanceOf[DropIndex].indexMetadata)
+          case "DropIndex" => {
+            qId = metadataOp.asInstanceOf[DropIndex].queryId
+            eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
           }
-          case "DropTable"=>{
-            qId=metadataOp.asInstanceOf[DropTable].queryId
-            eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster,metadataOp.asInstanceOf[DropTable].tableName)
+          case "DropTable" => {
+            qId = metadataOp.asInstanceOf[DropTable].queryId
+            eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
           }
-          case "CreateTableAndCatalog"=>{
-            qId=metadataOp.asInstanceOf[CreateTableAndCatalog].queryId
+          case "CreateTableAndCatalog" => {
+            qId = metadataOp.asInstanceOf[CreateTableAndCatalog].queryId
             eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
               metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
             eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
@@ -163,13 +164,13 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         }
       } catch {
         case ex: Exception => {
-          val result=Result.createExecutionErrorResult(ex.getStackTraceString)
+          val result = Result.createExecutionErrorResult(ex.getStackTraceString)
           sender ! result
         }
         case err: Error =>
           log.error("error in ConnectorActor( receiving MetaOperation)")
       }
-      val result=MetadataResult.createSuccessMetadataResult()
+      val result = MetadataResult.createSuccessMetadataResult()
       result.setQueryId(qId)
 
       log.info("Sending back queryId = " + qId)
@@ -177,10 +178,10 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       sender ! result
     }
 
-    case result:Result =>
-      println("connectorActor receives Result with ID="+result.getQueryId())
+    case result: Result =>
+      println("connectorActor receives Result with ID=" + result.getQueryId())
       parentActorRef ! result
-      //TODO:  ManagementWorkflow
+    //TODO:  ManagementWorkflow
 
     case storageOp: StorageOperation => {
       val qId: String = storageOp.queryId
@@ -194,20 +195,19 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
             eng.insert(clustername, table, rows)
           }
         }
-        val result = CommandResult.createCommandResult("ok")
+        val result = StorageResult.createSuccessFulStorageResult("Inserted successfully");
         result.setQueryId(qId)
         sender ! result
       } catch {
         case ex: Exception => {
           log.debug(ex.getStackTraceString)
-          val result=common.result.Result.createExecutionErrorResult(ex.getStackTraceString)
+          val result = common.result.Result.createExecutionErrorResult(ex.getStackTraceString)
           sender ! result
         }
         case err: Error =>
           log.error("error in ConnectorActor( receiving StorageOperation)")
       }
-      val result=CommandResult.createCommandResult("ok") //TODO: why does MetadataResult have
-      //TODO: createSuccessfulMetaResult and CommandResult doesn't have createSuccessfulCommandResult?
+      val result = StorageResult.createSuccessFulStorageResult("Storage operation successful");
       result.setQueryId(qId)
       sender ! result
     }
