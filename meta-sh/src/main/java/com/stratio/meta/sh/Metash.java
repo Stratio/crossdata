@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
-import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -37,6 +36,7 @@ import com.stratio.meta.common.exceptions.ConnectionException;
 import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta2.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
 import com.stratio.meta.sh.help.HelpContent;
 import com.stratio.meta.sh.help.HelpManager;
@@ -47,7 +47,6 @@ import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
 import com.stratio.meta2.common.api.Manifest;
-import com.stratio.meta2.common.result.Result;
 
 import jline.console.ConsoleReader;
 
@@ -191,14 +190,16 @@ public class Metash {
     /**
      * Set the console prompt.
      *
-     * @param currentCatalog The current catalog.
+     * @param currentKeyspace The currentCatalog.
      */
-    private void setPrompt(String currentCatalog) {
+    private void setPrompt(String currentKeyspace) {
         StringBuilder sb = new StringBuilder("metash-sh:");
-        sb.append(metaDriver.getUserName());
-        if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
+        if (currentKeyspace == null) {
+            sb.append(metaDriver.getUserName());
+        } else {
+            sb.append(metaDriver.getUserName());
             sb.append(":");
-            sb.append(currentCatalog);
+            sb.append(currentKeyspace);
         }
         sb.append("> ");
         console.setPrompt(sb.toString());
@@ -404,17 +405,9 @@ public class Metash {
     }
 
     private String updateCatalog(String toExecute) {
+        String newCatalog = toExecute.replace("use ", "").replace(";", "");
+        metaDriver.setCurrentCatalog(newCatalog);
         String currentCatalog = metaDriver.getCurrentCatalog();
-        String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();
-
-        List<String> catalogs = metaDriver.listCatalogs().getCatalogList();
-        if(catalogs.contains(newCatalog.toLowerCase())){
-            metaDriver.setCurrentCatalog(newCatalog);
-            currentCatalog = metaDriver.getCurrentCatalog();
-        } else {
-            LOG.error("Catalog "+newCatalog+" doesn't exist.");
-        }
-
         setPrompt(currentCatalog);
         return currentCatalog;
     }

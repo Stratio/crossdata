@@ -116,11 +116,7 @@ public class APIManager {
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
             persistManifest((Manifest) cmd.params().get(0));
-            result = CommandResult.createCommandResult(
-                    "Manifest added "
-                            + System.lineSeparator()
-                            + ((Manifest) cmd.params().get(0)).toString());
-
+            result = CommandResult.createCommandResult("Manifest added.");
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.RESET_METADATA().toString());
             result = resetMetadata();

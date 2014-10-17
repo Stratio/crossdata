@@ -51,8 +51,7 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
       var validatedQuery: ValidatedQuery = null
       try {
         validatedQuery = validator.validate(query)
-        log.info("Query validated")
-        finishTimer(timer)
+        println("sending message to planner "+planner)
         planner forward validatedQuery
 
       } catch {

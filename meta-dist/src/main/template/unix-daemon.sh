@@ -6,10 +6,6 @@ NAME=meta
 SCRIPTNAME=/etc/init.d/${NAME}
 USER=meta
 GROUP=sds
-JMXPort=7194
-
-
-JMX_OPTIONS="-Dcom.sun.management.jmxremote.port=${JMXPort} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
 
 # Read configuration variable file if it is present
 [ -r /etc/default/${NAME} ] && . /etc/default/${NAME}
@@ -110,19 +106,12 @@ fi
   exit 1
 fi
 
-#CLASSPATH="${CLASSPATH}:${META_CONF}/:${META_LIB}/*:"
-LIB_CLASSPATH=""
-while read line
-do
-        LIB_CLASSPATH="${LIB_CLASSPATH}:${META_LIB}/$line"
-done < "${META_CONF}/libs-order"
-
-CLASSPATH="${CLASSPATH}:${META_CONF}/:${LIB_CLASSPATH}:${META_LIB}/*:"
+CLASSPATH="${CLASSPATH}:${META_CONF}/:${META_LIB}/*:"
 
 jsvc_exec()
 {
     ${JSVCCMD} -home ${JAVA_HOME} -cp ${CLASSPATH} -user ${META_SERVER_USER} -outfile ${META_LOG_OUT} -errfile ${META_LOG_ERR} \
-    -pidfile ${META_SERVER_PID} ${JAVA_OPTS} ${JMX_OPTIONS} @EXTRA_JVM_ARGUMENTS@ $1 @MAINCLASS@ @APP_ARGUMENTS@
+    -pidfile ${META_SERVER_PID} ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ $1 @MAINCLASS@ @APP_ARGUMENTS@
 }
 
 case "$1" in

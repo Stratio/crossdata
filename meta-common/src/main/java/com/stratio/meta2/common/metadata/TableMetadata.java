@@ -19,11 +19,8 @@
 package com.stratio.meta2.common.metadata;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.log4j.Logger;
 
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
@@ -32,8 +29,6 @@ import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 
 public class TableMetadata implements IMetadata {
-
-    private static final Logger LOG = Logger.getLogger(TableMetadata.class);
 
     private static final long serialVersionUID = 937637791215246279L;
 
@@ -45,7 +40,7 @@ public class TableMetadata implements IMetadata {
 
     private final Map<ColumnName, ColumnMetadata> columns;
 
-    private Map<IndexName, IndexMetadata> indexes;
+    private final Map<IndexName, IndexMetadata> indexes;
 
     private final ClusterName clusterRef;
 
@@ -132,10 +127,7 @@ public class TableMetadata implements IMetadata {
      * @return Whether is indexed or not.
      */
     public boolean isIndexed(ColumnName columnName) {
-        if(indexes == null){
-            return false;
-        }
-        for (IndexMetadata indexMetadata: indexes.values()) {
+        for (IndexMetadata indexMetadata : indexes.values()) {
             if (indexMetadata.getColumns().containsKey(columnName)) {
                 return true;
             }
@@ -144,18 +136,11 @@ public class TableMetadata implements IMetadata {
     }
 
     public void addIndex(IndexName name, IndexMetadata data) {
-        if(indexes == null){
-            indexes = new HashMap<>();
-        }
         indexes.put(name, data);
     }
 
-    public void deleteIndex(IndexName indexName) {
-        if(indexes != null){
-            indexes.remove(indexName);
-        } else {
-            LOG.error("Index " + indexName + " not found in  " + this.name);
-        }
+    public void deleteIndex(IndexName name) {
+        indexes.remove(name);
     }
 
 }
