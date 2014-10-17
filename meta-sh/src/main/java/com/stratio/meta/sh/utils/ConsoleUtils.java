@@ -58,6 +58,7 @@ import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
 import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.QueryResult;
+import com.stratio.meta.common.result.StorageResult;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.connector.ConnectorFactory;
 import com.stratio.meta2.common.api.connector.ConnectorType;
@@ -114,7 +115,9 @@ public class ConsoleUtils {
         } else if (result instanceof MetadataResult) {
             MetadataResult metadataResult = (MetadataResult) result;
             return metadataResult.toString();
-
+        } else if (result instanceof StorageResult) {
+            StorageResult storageResult = (StorageResult) result;
+            return storageResult.toString();
         } else {
             return "Unknown result";
         }
