@@ -60,9 +60,11 @@ class CoordinatorActorTest extends ServerActorTest{
     coordinatorActor ! metadataPlannedQuery0
     expectMsgType[MetadataResult]
 
+    /*
     connectorActor !(queryId + (4), "updatemylastqueryId")
     coordinatorActor ! metadataPlannedQuery1
     expectMsgType[MetadataResult]
+    */
 
   }
 

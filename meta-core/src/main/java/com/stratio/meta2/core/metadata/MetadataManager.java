@@ -346,10 +346,9 @@ public enum MetadataManager {
 
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
         shouldBeInit();
-        //TODO Check whether datastores can be added after adding connectors
-        //for (DataStoreName dataStore : connectorMetadata.getDataStoreRefs()) {
-        //    shouldExist(dataStore);
-        //}
+        for (DataStoreName dataStore: connectorMetadata.getDataStoreRefs()) {
+            shouldExist(dataStore);
+        }
         try {
             writeLock.lock();
             if (unique) {
@@ -515,7 +514,7 @@ public enum MetadataManager {
         List<String> catalogsMetadata=new ArrayList<>();
         for(Name name:metadata.keySet()) {
             if (name.getType()== NameType.CATALOG) {
-                catalogsMetadata.add(getCatalog((CatalogName)name).getName().getName().toLowerCase());
+                catalogsMetadata.add(getCatalog((CatalogName)name).getName().getName());
             }
         }
         return catalogsMetadata;

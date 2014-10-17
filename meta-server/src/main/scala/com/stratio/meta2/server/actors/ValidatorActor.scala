@@ -47,12 +47,11 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
 
   override def receive: Receive = {
     case query: ParsedQuery => {
-      val timer = initTimer()
+      println("validator receiving parsedquery")
       var validatedQuery:ValidatedQuery=null
       try{
         validatedQuery = validator.validate(query)
-        log.info("Query validated")
-        finishTimer(timer)
+        println("sending message to planner "+planner)
         planner forward validatedQuery
       }catch{
         case e:ValidationException => {

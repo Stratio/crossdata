@@ -73,6 +73,8 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
 
   override def receive: Actor.Receive = {
 
+
+
     /* The driver sends the connect message. */
     case c: Connect => {
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
@@ -103,7 +105,6 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
     case message: Query => {
       clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor), message, localAffinity = true)
     }
-
     case result: Result => {
       val handler = driver.getResultHandler(result.getQueryId)
       if (handler != null) {
