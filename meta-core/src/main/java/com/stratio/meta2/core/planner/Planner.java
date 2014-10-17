@@ -203,6 +203,10 @@ public class Planner {
             executionPaths.add(ep);
         }
 
+        for(ExecutionPath ep : executionPaths){
+            LOG.info("ExecutionPaths: " + ep);
+        }
+
         //Merge execution paths
         ExecutionWorkflow executionWorkflow = mergeExecutionPaths(queryId, executionPaths, unionSteps);
         return executionWorkflow;
@@ -227,6 +231,8 @@ public class Planner {
                     executionPaths.get(0).getAvailableConnectors(),
                     ResultType.RESULTS);
         }
+
+        LOG.info("UnionSteps: " + unionSteps.toString());
 
         //Find first UnionStep
         UnionStep mergeStep = null;
@@ -264,6 +270,7 @@ public class Planner {
             for (int index = 0; index < paths.length; index++) {
                 toRemove.clear();
                 for (ConnectorMetadata connector : paths[index].getAvailableConnectors()) {
+                    LOG.info("op: " + mergeStep.getOperation() + " -> " + connector.supports(mergeStep.getOperation()));
                     if (!connector.supports(mergeStep.getOperation())) {
                         toRemove.add(connector);
                     }
@@ -969,6 +976,14 @@ public class Planner {
             for(Map.Entry<ColumnName, ColumnMetadata> column : metadata.getColumns().entrySet()){
                 aliasMap.put(column.getKey(), column.getKey().getName());
                 typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
+            }
+            if(selectStatement.getJoin() != null){
+                TableMetadata metadataJoin = tableMetadataMap.get(selectStatement.getJoin().getTablename()
+                        .getQualifiedName());
+                for(Map.Entry<ColumnName, ColumnMetadata> column : metadataJoin.getColumns().entrySet()){
+                    aliasMap.put(column.getKey(), column.getKey().getName());
+                    typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
+                }
             }
         }
         

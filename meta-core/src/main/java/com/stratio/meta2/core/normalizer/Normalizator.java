@@ -410,6 +410,7 @@ public class Normalizator {
                 for(TableName tableName:fields.getTableNames()){
                     if(tableName.getName().equalsIgnoreCase(columnName.getTableName().getName())){
                         columnName.setTableName(tableName);
+                        selectTableName = tableName;
                     }
                 }
                 if(!columnName.isCompletedName()){
