@@ -38,7 +38,7 @@ public abstract class Result implements Serializable {
     /**
      * Query identifier associated with the result.
      */
-    private String queryId;
+    protected String queryId;
 
     public static ErrorResult createErrorResult(ErrorType type, String errorMessage, Exception e) {
         return new ErrorResult(type, errorMessage, e);
