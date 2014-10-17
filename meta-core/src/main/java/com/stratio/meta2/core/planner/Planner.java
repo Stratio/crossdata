@@ -479,7 +479,7 @@ public class Planner {
      */
     protected LogicalWorkflow buildWorkflow(SelectValidatedQuery query) {
         Map<String, TableMetadata> tableMetadataMap = new HashMap<>();
-        for (TableMetadata tm : query.getTableMetadata()) {
+        for (TableMetadata tm: query.getTableMetadata()) {
             tableMetadataMap.put(tm.getName().getQualifiedName(), tm);
         }
         //Define the list of projects

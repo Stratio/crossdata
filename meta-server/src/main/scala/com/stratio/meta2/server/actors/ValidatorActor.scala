@@ -55,7 +55,6 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
         finishTimer(timer)
         planner forward validatedQuery
 
-
       } catch {
         case e: ValidationException => {
           log.info(e.getMessage())

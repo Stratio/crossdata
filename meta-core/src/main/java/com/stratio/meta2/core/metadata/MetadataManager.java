@@ -96,7 +96,8 @@ public enum MetadataManager {
         case INDEX:
             result = exists((IndexName) name);
             break;
-        default: break;
+        default:
+            break;
         }
         return result;
     }
@@ -346,9 +347,10 @@ public enum MetadataManager {
 
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
         shouldBeInit();
-        for (DataStoreName dataStore: connectorMetadata.getDataStoreRefs()) {
-            shouldExist(dataStore);
-        }
+        //TODO Check whether datastores can be added after adding connectors
+        //for (DataStoreName dataStore : connectorMetadata.getDataStoreRefs()) {
+        //    shouldExist(dataStore);
+        //}
         try {
             writeLock.lock();
             if (unique) {
@@ -408,11 +410,11 @@ public enum MetadataManager {
     }
 
     public void addConnectorRef(ConnectorName name, String actorRef) {
-        if(!exists(name)){
+        if (!exists(name)) {
             String version = null;
             Set<DataStoreName> dataStoreRefs = null;
             Set<ClusterName> clusterRefs = null;
-            Map<ClusterName, Map< Selector, Selector>> clusterProperties = null;
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties = null;
             Set<PropertyType> requiredProperties = null;
             Set<PropertyType> optionalProperties = null;
             Set<Operations> supportedOperations = null;
@@ -504,20 +506,26 @@ public enum MetadataManager {
         createCatalog(catalogMetadata, false);
     }
 
+    public boolean checkConnectorStatus(ConnectorName connectorName, Status status) {
+        shouldBeInit();
+        exists(connectorName);
+        return (getConnector(connectorName).getStatus() == status);
+    }
+
     public List<String> getCatalogs() {
-        List<String> catalogsMetadata=new ArrayList<>();
-        for(Name name:metadata.keySet()) {
-            if (name.getType()== NameType.CATALOG) {
-                catalogsMetadata.add(getCatalog((CatalogName)name).getName().getName());
+        List<String> catalogsMetadata = new ArrayList<>();
+        for (Name name : metadata.keySet()) {
+            if (name.getType() == NameType.CATALOG) {
+                catalogsMetadata.add(getCatalog((CatalogName) name).getName().getName().toLowerCase());
             }
         }
         return catalogsMetadata;
     }
 
     public List<TableMetadata> getTables() {
-        List<TableMetadata> tablesMetadatas=new ArrayList<>();
-        for(Name name:metadata.keySet()) {
-            if (name.getType()== NameType.TABLE) {
+        List<TableMetadata> tablesMetadatas = new ArrayList<>();
+        for (Name name : metadata.keySet()) {
+            if (name.getType() == NameType.TABLE) {
                 tablesMetadatas.add(getTable((TableName) name));
             }
         }
@@ -525,12 +533,40 @@ public enum MetadataManager {
     }
 
     public List<ColumnMetadata> getColumns() {
-        List<ColumnMetadata> columnsMetadatas=new ArrayList<>();
-        for(Name name:metadata.keySet()) {
-            if (name.getType()== NameType.COLUMN) {
+        List<ColumnMetadata> columnsMetadatas = new ArrayList<>();
+        for (Name name : metadata.keySet()) {
+            if (name.getType() == NameType.COLUMN) {
                 columnsMetadatas.add(getColumn((ColumnName) name));
             }
         }
         return columnsMetadatas;
     }
+
+    public List<TableMetadata> getTablesByCatalogName(CatalogName catalogName) {
+        List<TableMetadata> tableList = new ArrayList<>();
+        for (Name name : metadata.keySet()) {
+            if (name.getType() == NameType.TABLE) {
+                TableMetadata table = getTable((TableName) name);
+                if (table.getName().getCatalogName() == catalogName) {
+                    tableList.add(table);
+                }
+            }
+        }
+        return tableList;
+    }
+
+    public List<ColumnMetadata> getColumnByTable(String catalog, String tableName) {
+        List<ColumnMetadata> columnList = new ArrayList<>();
+        for (Name name : metadata.keySet()) {
+            if (name.getType() == NameType.COLUMN) {
+                ColumnMetadata column = getColumn((ColumnName) name);
+                if (column.getName().getTableName().getName().equals(tableName) && column.getName()
+                        .getTableName().getCatalogName().getName().equals(catalog)) {
+                    columnList.add(column);
+                }
+            }
+        }
+        return columnList;
+    }
+
 }
