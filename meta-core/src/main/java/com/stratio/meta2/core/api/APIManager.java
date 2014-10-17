@@ -123,12 +123,20 @@ public class APIManager {
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.RESET_METADATA().toString());
             result = resetMetadata();
+        }else if(APICommand.LIST_CONNECTORS().equals(cmd.commandType())){
+            LOG.info("Processing " + APICommand.LIST_CONNECTORS().toString());
+            result = listConnectors();
         } else {
             result =
                     Result.createExecutionErrorResult("Command " + cmd.commandType() + " not supported");
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
         return result;
+    }
+
+    private Result listConnectors() {
+        //TODO: Finish get connector metadata.
+        return null;
     }
 
     private Result resetMetadata() {

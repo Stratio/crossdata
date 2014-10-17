@@ -219,6 +219,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     result.asInstanceOf[CommandResult]
   }
 
+  def listConnectors():CommandResult = {
+    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CONNECTORS, null))
+    result.asInstanceOf[CommandResult]
+  }
+
   /**
    * Get the IResultHandler associated with a query identifier.
    * @param queryId Query identifier.
