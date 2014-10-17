@@ -197,9 +197,6 @@ public class Metash {
         StringBuilder sb = new StringBuilder("Crossdata-sh:");
         sb.append(metaDriver.getUserName());
         if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
-            sb.append(metaDriver.getUserName());
-        } else {
-            sb.append(metaDriver.getUserName());
             sb.append(":");
             sb.append(currentCatalog);
         }
