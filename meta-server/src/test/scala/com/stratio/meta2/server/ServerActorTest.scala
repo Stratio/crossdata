@@ -23,6 +23,8 @@ import java.util
 import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
 
+
+import scala.collection.JavaConversions._
 import akka.pattern.ask
 import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.executionplan._
@@ -41,7 +43,8 @@ import com.stratio.meta2.core.grid.Grid
 import com.stratio.meta2.core.metadata.{MetadataManager, MetadataManagerTestHelper}
 import com.stratio.meta2.core.planner.SelectValidatedQueryWrapper
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.{CreateTableStatement, InsertIntoStatement, MetadataStatement, SelectStatement}
+import com.stratio.meta2.core.statements.{CreateCatalogStatement,CreateTableStatement, InsertIntoStatement, MetadataStatement,
+SelectStatement}
 import com.stratio.meta2.server.actors.CoordinatorActor
 import com.stratio.meta2.server.mocks.MockConnectorManagerActor
 import org.scalamock.scalatest.MockFactory
@@ -70,9 +73,13 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
   var queryId = "query_id-2384234-1341234-23434"
   var queryIdIncrement = 0
   val catalogName = "testCatalog"
+  val  myclusterName= "myCluster"
+  val tableName="myTable"
+  val columnName="columnName"
 
-  val selectStatement: SelectStatement = new SelectStatement(new TableName("myCatalog","myTable"))
-  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM mycatalog.mytable",
+
+  val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,tableName))
+  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM "+catalogName+".mytable",
     new CatalogName(catalogName)), selectStatement)
   //val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
   val selectValidatedQueryWrapper = new SelectValidatedQueryWrapper(selectStatement,selectParsedQuery)
@@ -82,20 +89,24 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
     ExecutionType.SELECT, ResultType.RESULTS, new LogicalWorkflow(null)))
 
   val storageStatement: InsertIntoStatement = null
-  val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno,dos) into mytable;",
+  val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno,dos) into "+tableName+";",
     new CatalogName(catalogName)), storageStatement)
   val storageValidatedQuery = new StorageValidatedQuery(storageParsedQuery)
   val storagePlannedQuery = new StoragePlannedQuery(storageValidatedQuery, new StorageWorkflow(queryId + queryIdIncrement,
     StringUtils.getAkkaActorRefUri(connectorActor), ExecutionType.INSERT, ResultType.RESULTS))
 
-  val metadataStatement0: MetadataStatement = null
+  val metadataStatement0: MetadataStatement = new CreateCatalogStatement(
+    new CatalogName(catalogName),
+    true,
+    ""
+  )
   val metadataParsedQuery0 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),
     metadataStatement0)
   val metadataValidatedQuery0: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery0)
   val metadataWorkflow0=new MetadataWorkflow(queryId + queryIdIncrement,  null, ExecutionType.CREATE_CATALOG, ResultType.RESULTS)
   metadataWorkflow0.setCatalogMetadata(
     new CatalogMetadata(
-      new CatalogName("myCatalog"),
+      new CatalogName(catalogName),
       new util.HashMap[Selector, Selector](),
       new util.HashMap[TableName,TableMetadata]()
     )
@@ -104,13 +115,13 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
 
 
   val metadataStatement1: MetadataStatement =  new CreateTableStatement(TableType.DATABASE,
-      new TableName("myCatalog","myTable"),
-      new ClusterName("myCluster"),
+      new TableName(catalogName,tableName),
+      new ClusterName(myclusterName),
       new util.HashMap[ColumnName, ColumnType](),
       new util.ArrayList[ColumnName](),
       new util.ArrayList[ColumnName]()
     )
-  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table myTable1;",
+  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table "+tableName+";",
     new CatalogName(catalogName)),
     metadataStatement1)
   val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
@@ -119,9 +130,25 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
     ResultType.RESULTS)
   metadataWorkflow1.setCatalogMetadata(
     new CatalogMetadata(
-      new CatalogName("myCatalog"),
+      //new CatalogName("myCatalog"),
+      new CatalogName(catalogName),
       new util.HashMap[Selector, Selector](),
       new util.HashMap[TableName,TableMetadata]()
+    )
+  )
+  val columnNme= new ColumnName(catalogName,tableName,columnName)
+  val myList=new java.util.ArrayList[ColumnName]()
+  myList.add(columnNme)
+  metadataWorkflow1.setTableMetadata(
+  new TableMetadata(
+    false,
+    new TableName(catalogName, tableName),
+    new util.HashMap[Selector, Selector](),
+    new util.HashMap[ColumnName, ColumnMetadata](),
+    new util.HashMap[IndexName, IndexMetadata](),
+    new ClusterName(myclusterName),
+    myList,
+    new java.util.ArrayList[ColumnName]()
     )
   )
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
@@ -166,9 +193,9 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
 
   def initializeTablesInfinispan(): TableMetadata = {
     val myDatastore = metadataManager.createTestDatastore()
-    metadataManager.createTestCluster("myCluster", myDatastore)
-    metadataManager.createTestCatalog("myCatalog")
-    metadataManager.createTestTable(new ClusterName("myCluster"), "myCatalog", "myTable", Array("name", "age"),
+    metadataManager.createTestCluster(myclusterName, myDatastore)
+    metadataManager.createTestCatalog(catalogName)
+    metadataManager.createTestTable(new ClusterName(myclusterName), catalogName,"table1", Array("name", "age"),
       Array(ColumnType.VARCHAR, ColumnType.INT), Array("name"), Array("name"))
   }
 

@@ -110,7 +110,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         case workflow4: QueryWorkflow => {
           log.info("CoordinatorActor: QueryWorkflow received")
-          println("CoordinatorActor: QueryWorkflow received")
           val queryId = plannedQuery.getQueryId
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
@@ -138,6 +137,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
       val clientActor = context.actorSelection(StringUtils.getAkkaActorRefUri(executionInfo
         .asInstanceOf[ExecutionInfo].getSender))
+
       if(executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess){
         coordinator.persist(executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.asInstanceOf[MetadataWorkflow])
       }
