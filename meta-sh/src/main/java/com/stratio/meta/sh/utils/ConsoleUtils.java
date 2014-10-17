@@ -174,8 +174,14 @@ public class ConsoleUtils {
         Map<String, Integer> colWidths = new HashMap<>();
 
         // Get column names or aliases width
-        for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
+        /*for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
             colWidths.put(columnMetadata.getColumnName(), columnMetadata.getColumnNameToShow().length());
+        }*/
+
+        // Get column names
+        Row firstRow = resultSet.iterator().next();
+        for (String key: firstRow.getCells().keySet()) {
+            colWidths.put(key, key.length());
         }
 
         // Find widest cell content of every column
