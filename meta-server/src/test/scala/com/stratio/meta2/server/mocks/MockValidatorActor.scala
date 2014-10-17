@@ -35,6 +35,7 @@ class MockValidatorActor() extends Actor {
 
   override def receive: Receive = {
     case query: ParsedQuery => {
+      println("\n\n\n MOCKVALIDATORACTOR receiving from "+sender+"\n\n\n")
       sender ! ACK(query.getQueryId,QueryStatus.VALIDATED)
     }
     case _ => {

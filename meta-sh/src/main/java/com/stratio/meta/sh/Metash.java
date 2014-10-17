@@ -37,7 +37,6 @@ import com.stratio.meta.common.exceptions.ConnectionException;
 import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
-import com.stratio.meta2.common.result.Result;
 import com.stratio.meta.driver.BasicDriver;
 import com.stratio.meta.sh.help.HelpContent;
 import com.stratio.meta.sh.help.HelpManager;
@@ -48,6 +47,7 @@ import com.stratio.meta.sh.utils.ConsoleUtils;
 import com.stratio.meta.sh.utils.MetaCompletionHandler;
 import com.stratio.meta.sh.utils.MetaCompletor;
 import com.stratio.meta2.common.api.Manifest;
+import com.stratio.meta2.common.result.Result;
 
 import jline.console.ConsoleReader;
 
@@ -191,14 +191,12 @@ public class Metash {
     /**
      * Set the console prompt.
      *
-     * @param currentCatalog The current catalog.
+     * @param currentCatalog The currentCatalog.
      */
     private void setPrompt(String currentCatalog) {
-        StringBuilder sb = new StringBuilder("metash-sh:");
-        if (currentCatalog == null) {
-            sb.append(metaDriver.getUserName());
-        } else {
-            sb.append(metaDriver.getUserName());
+        StringBuilder sb = new StringBuilder("Crossdata-sh:");
+        sb.append(metaDriver.getUserName());
+        if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
             sb.append(":");
             sb.append(currentCatalog);
         }
