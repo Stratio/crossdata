@@ -57,6 +57,7 @@ import com.stratio.meta2.core.statements.AttachConnectorStatement;
 import com.stratio.meta2.core.statements.CreateCatalogStatement;
 import com.stratio.meta2.core.statements.CreateIndexStatement;
 import com.stratio.meta2.core.statements.CreateTableStatement;
+import com.stratio.meta2.core.statements.DeleteStatement;
 import com.stratio.meta2.core.statements.DescribeStatement;
 import com.stratio.meta2.core.statements.DetachClusterStatement;
 import com.stratio.meta2.core.statements.DetachConnectorStatement;
@@ -350,6 +351,11 @@ public class Validator {
             hasIfExists = insertIntoStatement.isIfNotExists();
         }
 
+        if (stmt instanceof DeleteStatement) {
+            DeleteStatement deleteStatement = (DeleteStatement) stmt;
+            name = deleteStatement.getTableName();
+        }
+
         if (stmt instanceof DetachClusterStatement) {
             DetachClusterStatement detachClusterStatement = (DetachClusterStatement) stmt;
             name =detachClusterStatement.getTableMetadata().getName();
@@ -366,6 +372,7 @@ public class Validator {
             name = createIndexStatement.getTableName();
             hasIfExists = createIndexStatement.isCreateIfNotExists();
         }
+
 
         validateName(exist, name, hasIfExists);
     }
