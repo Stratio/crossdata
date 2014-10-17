@@ -25,7 +25,7 @@ import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.query.SelectPlannedQuery
 
 object MockCoordinatorActor{
-  def props(): Props = Props(new MockValidatorActor())
+  def props(): Props = Props(new MockCoordinatorActor())
 }
 
 /**
@@ -35,6 +35,7 @@ class MockCoordinatorActor() extends Actor {
 
   override def receive: Receive = {
     case query:SelectPlannedQuery=>{
+      println("MockcCoordinator actor sending EXECUTED")
       sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
     }
     case _ => {
