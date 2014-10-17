@@ -19,13 +19,11 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.stratio.meta.common.result.QueryStatus
-import com.stratio.meta.communication.ACK
+import com.stratio.meta.common.exceptions.PlanningException
 import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.planner.Planner
-import com.stratio.meta2.core.query.{StorageValidatedQuery, SelectValidatedQuery, MetadataValidatedQuery}
+import com.stratio.meta2.core.query.{MetadataValidatedQuery, SelectValidatedQuery, StorageValidatedQuery}
 import org.apache.log4j.Logger
-import com.stratio.meta.common.exceptions.PlanningException
 
 object PlannerActor {
   def props(executor: ActorRef, planner: Planner): Props = Props(new PlannerActor(executor, planner))
@@ -57,11 +55,9 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
     }
     case query: SelectValidatedQuery => {
       log.info("\n\nGetting SelectValidatedQuery; sending ack to "+sender+"\n\n")
-      val timer = initTimer()
       try {
         val planned = planner.planQuery(query)
-        finishTimer(timer)
-        log.info("Sending " + planned.getClass + " to coordinator actor")
+        log.info("\n\nplanner actor Sending " + planned.getClass + " to "+coordinator+"\n\n")
         coordinator forward planned
       } catch {
         case pe:PlanningException => {
