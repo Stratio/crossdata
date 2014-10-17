@@ -56,6 +56,7 @@ import com.stratio.meta.common.exceptions.ManifestException;
 import com.stratio.meta.common.metadata.structures.ColumnMetadata;
 import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.ConnectResult;
+import com.stratio.meta.common.result.MetadataResult;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta2.common.api.Manifest;
 import com.stratio.meta2.common.api.connector.ConnectorFactory;
@@ -110,6 +111,10 @@ public class ConsoleUtils {
         } else if (result instanceof ConnectResult) {
             ConnectResult connectResult = (ConnectResult) result;
             return String.valueOf("Connected with SessionId=" + connectResult.getSessionId());
+        } else if (result instanceof MetadataResult) {
+            MetadataResult metadataResult = (MetadataResult) result;
+            return metadataResult.toString();
+
         } else {
             return "Unknown result";
         }
@@ -331,10 +336,11 @@ public class ConsoleUtils {
             JAXBElement<DataStoreType> unmarshalledDataStore = (JAXBElement<DataStoreType>) unmarshaller
                     .unmarshal(path);
             return unmarshalledDataStore.getValue();
-        } catch (JAXBException | SAXException e ) {
+        } catch (JAXBException | SAXException e) {
             throw new ManifestException(e);
         }
     }
+
     private static Manifest parseFromXmlToConnectorManifest(InputStream path) throws ManifestException {
         try {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);

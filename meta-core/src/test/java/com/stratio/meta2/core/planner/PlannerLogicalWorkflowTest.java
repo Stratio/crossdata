@@ -23,6 +23,8 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.util.HashMap;
+
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
@@ -32,6 +34,7 @@ import com.stratio.meta.common.logicalplan.Project;
 import com.stratio.meta.common.statements.structures.window.TimeUnit;
 import com.stratio.meta.common.statements.structures.window.WindowType;
 import com.stratio.meta2.common.data.ClusterName;
+import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.TableMetadata;
 
@@ -66,6 +69,23 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
     @Test
     public void selectMultipleColumns() {
         String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t1.c FROM demo.t1;";
+        String[] expectedColumns = { "demo.t1.a", "demo.t1.b", "demo.t1.c" };
+
+        String[] columnsT1 = { "a", "b", "c"};
+        ColumnType [] columnTypes1 = {ColumnType.INT, ColumnType.INT, ColumnType.INT};
+        String [] partitionKeys1 = {"a"};
+        String [] clusteringKeys1 = {};
+        TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
+                partitionKeys1, clusteringKeys1);
+
+        LogicalWorkflow workflow = getWorkflow(inputText, "selectSingleColumn", t1);
+        assertColumnsInProject(workflow, "demo.t1", expectedColumns);
+        assertSelect(workflow);
+    }
+
+    @Test
+    public void selectMultipleColumnsWithAlias() {
+        String inputText = "SELECT demo.t1.a AS a, demo.t1.b AS b, demo.t1.c AS c FROM demo.t1;";
         String[] expectedColumns = { "demo.t1.a", "demo.t1.b", "demo.t1.c" };
 
         String[] columnsT1 = { "a", "b", "c"};
