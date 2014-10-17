@@ -23,13 +23,13 @@ import java.util
 import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
 
-import akka.pattern.ask
+import akka.testkit.ImplicitSender
 import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.connector.Operations
 import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.logicalplan.LogicalWorkflow
 import com.stratio.meta.common.utils.StringUtils
-import com.stratio.meta.communication.{getConnectorName, replyConnectorName}
+import com.stratio.meta.communication.{replyConnectorName, getConnectorName}
 import com.stratio.meta.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.meta2.common.api.PropertyType
 import com.stratio.meta2.common.data._
@@ -47,19 +47,21 @@ import com.stratio.meta2.server.actors.CoordinatorActor
 import com.stratio.meta2.server.mocks.MockConnectorManagerActor
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuiteLike, Suite}
+import scala.concurrent.duration.DurationInt
+import akka.pattern.ask
 
 import scala.concurrent.Await
-import scala.concurrent.duration.DurationInt
 
 
-trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig {
+trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
+ImplicitSender {
   this: Suite =>
 
   val metadataManager=new MetadataManagerTestHelper()
+
   def incQueryId(): String = {
     queryIdIncrement += 1; return queryId + queryIdIncrement
   }
-
 
   //lazy val system1 = ActorSystem(clusterName, config)
 
@@ -67,12 +69,14 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
   val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()), "CoordinatorActor")
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
 
+
   var queryId = "query_id-2384234-1341234-23434"
   var queryIdIncrement = 0
-  val catalogName = "testCatalog"
+  val catalogName = "myCatalog"
+  val myClusterName ="myCluster"
 
-  val selectStatement: SelectStatement = new SelectStatement(new TableName("myCatalog","myTable"))
-  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM mycatalog.mytable",
+  val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,"myTable"))
+  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM "+catalogName+".mytable",
     new CatalogName(catalogName)), selectStatement)
   //val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
   val selectValidatedQueryWrapper = new SelectValidatedQueryWrapper(selectStatement,selectParsedQuery)
@@ -95,7 +99,7 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
   val metadataWorkflow0=new MetadataWorkflow(queryId + queryIdIncrement,  null, ExecutionType.CREATE_CATALOG, ResultType.RESULTS)
   metadataWorkflow0.setCatalogMetadata(
     new CatalogMetadata(
-      new CatalogName("myCatalog"),
+      new CatalogName(catalogName),
       new util.HashMap[Selector, Selector](),
       new util.HashMap[TableName,TableMetadata]()
     )
@@ -104,8 +108,8 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
 
 
   val metadataStatement1: MetadataStatement =  new CreateTableStatement(TableType.DATABASE,
-      new TableName("myCatalog","myTable"),
-      new ClusterName("myCluster"),
+      new TableName(catalogName,"myTable"),
+      new ClusterName(myClusterName),
       new util.HashMap[ColumnName, ColumnType](),
       new util.ArrayList[ColumnName](),
       new util.ArrayList[ColumnName]()
@@ -119,7 +123,7 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
     ResultType.RESULTS)
   metadataWorkflow1.setCatalogMetadata(
     new CatalogMetadata(
-      new CatalogName("myCatalog"),
+      new CatalogName(catalogName),
       new util.HashMap[Selector, Selector](),
       new util.HashMap[TableName,TableMetadata]()
     )
@@ -143,8 +147,6 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
     MetadataManager.MANAGER.init(metadataMap, lock, tm.asInstanceOf[TransactionManager])
     MetadataManager.MANAGER.clear()
 
-    val future = connectorActor ? getConnectorName()
-    val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
     val dataStoreRefs = new util.ArrayList[String]().asInstanceOf[util.List[String]]
     val requiredProperties = new util.ArrayList[PropertyType]().asInstanceOf[util.List[PropertyType]]
     val optionalProperties = new util.ArrayList[PropertyType]().asInstanceOf[util.List[PropertyType]]
@@ -154,16 +156,29 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
   def initializeTablesInfinispan(): TableMetadata = {
     val operations=new java.util.HashSet[Operations]()
     operations.add(Operations.PROJECT)
+    operations.add(Operations.SELECT_OPERATOR)
     val myDatastore = metadataManager.createTestDatastore()
-    metadataManager.createTestCluster("myCluster", myDatastore)
+    val clustername=metadataManager.createTestCluster(myClusterName, myDatastore)
     val clusternames=new java.util.HashSet[ClusterName]()
-    clusternames.add(new ClusterName("myCluster"))
-    metadataManager.createTestConnector("myTestConnector",new DataStoreName(myDatastore.getName()),
+    clusternames.add(clustername)
+    val future = connectorActor ? getConnectorName()
+    val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
+    println("creating connector "+connectorName.name)
+    val myConnector=metadataManager.createTestConnector(connectorName.name,new DataStoreName(myDatastore.getName()),
       clusternames,
       operations,
       StringUtils.getAkkaActorRefUri(connectorActor))
-    metadataManager.createTestCatalog("myCatalog")
-    metadataManager.createTestTable(new ClusterName("myCluster"), "myCatalog", "myTable", Array("name", "age"),
+    metadataManager.createTestCatalog(catalogName)
+    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
+
+    val clusterMetadata = MetadataManager.MANAGER.getCluster(clustername)
+    val connectorsMap = new java.util.HashMap[ConnectorName, ConnectorAttachedMetadata]()
+    connectorsMap.put(new ConnectorName(connectorName.name), new ConnectorAttachedMetadata(new ConnectorName
+    (connectorName.name), clustername, new util.HashMap[Selector, Selector]()))
+    clusterMetadata.setConnectorAttachedRefs(connectorsMap)
+    MetadataManager.MANAGER.createCluster(clusterMetadata, false)
+
+    metadataManager.createTestTable(clustername, catalogName, "myTable", Array("name", "age"),
       Array(ColumnType.VARCHAR, ColumnType.INT), Array("name"), Array("name"))
   }
 

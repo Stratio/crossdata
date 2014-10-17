@@ -37,22 +37,22 @@ class ParserActorIT extends ServerActorTest{
 
   override lazy val logger = Logger.getLogger(classOf[ParserActorIT])
 
-  val mockValidatorRef = system.actorOf(MockValidatorActor.props(), "TestMockValidatorActor")
-  val mockPlannerRef= system.actorOf(MockPlannerActor.props(), "TestMockPlannerActor")
-  val mockCoordinatorActor = system.actorOf(MockCoordinatorActor.props(),  "TestMockCoordinatorActor")
+  val mockValidatorRef_i = system.actorOf(MockValidatorActor.props(), "TestMockValidatorActor_i")
+  val mockPlannerRef_i= system.actorOf(MockPlannerActor.props(), "TestMockPlannerActor_i")
+  val mockCoordinatorActor_i = system.actorOf(MockCoordinatorActor.props(),  "TestMockCoordinatorActor_i")
 
-  val plannerRef0= system.actorOf(PlannerActor.props(mockCoordinatorActor,new Planner()), "TestPlannerActor0")
-  val validatorRef0 = system.actorOf(ValidatorActor.props(mockPlannerRef,new Validator()), "TestValidatorActor0")
-  val validatorRef1 = system.actorOf(ValidatorActor.props(plannerRef0,new Validator()), "TestValidatorActor1")
+  val plannerRef0= system.actorOf(PlannerActor.props(mockCoordinatorActor_i,new Planner()), "TestPlannerActor0_i")
+  val validatorRef0 = system.actorOf(ValidatorActor.props(mockPlannerRef_i,new Validator()), "TestValidatorActor0_i")
+  val validatorRef1 = system.actorOf(ValidatorActor.props(plannerRef0,new Validator()), "TestValidatorActor1_i")
 
   val parserActor0 = {
-    system.actorOf(ParserActor.props(mockValidatorRef, new Parser()), "TestParserActor0")
+    system.actorOf(ParserActor.props(mockValidatorRef_i, new Parser()), "TestParserActor0_i")
   }
   val parserActor1 = {
-    system.actorOf(ParserActor.props(validatorRef0, new Parser()), "TestParserActor1")
+    system.actorOf(ParserActor.props(validatorRef0, new Parser()), "TestParserActor1_i")
   }
   val parserActor2 = {
-    system.actorOf(ParserActor.props(validatorRef1, new Parser()), "TestParserActor2")
+    system.actorOf(ParserActor.props(validatorRef1, new Parser()), "TestParserActor2_i")
   }
 
 
@@ -100,10 +100,10 @@ class ParserActorIT extends ServerActorTest{
   test("Select query; parser ,validator, planner, and mockCoordinator") {
     initialize()
     initializeTablesInfinispan()
-    Thread.sleep(3000)
     within(6000 millis) {
       parserActor2 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
       val ack0 = expectMsgType[ACK]
+      println("lastSender ="+lastSender)
       assert(ack0.queryId == queryId + (1))
       assert(ack0.status==QueryStatus.EXECUTED)
     }

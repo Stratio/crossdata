@@ -31,6 +31,7 @@ serviceGroup="<user>"
 javaCommandLineKeyword="<mainClassName>"
 connectorClass="<mainClass>"
 JMXPort="<jmxPort>"
+
 # If JAVA_HOME has not been set, try to determine it.ner
 JVM_SEARCH_DIRS="/usr/java/default /usr/java/latest /opt/java"
 
@@ -81,6 +82,8 @@ javaCommandLine="${JAVA_HOME}/bin/java $javaArgs"
 if [ ! -d "$pidDir" ]; then
 	mkdir -p "$pidDir"
 	if [ $? -ne 0 ]; then exit 1; fi
+    if [ -z "$serviceGroup" ]; then chgrp $serviceGroup "$pidDir"; fi
+    if [ $? -ne 0 ]; then exit 1; fi
 fi
 pidFile="$pidDir/$NAME.pid"
 
