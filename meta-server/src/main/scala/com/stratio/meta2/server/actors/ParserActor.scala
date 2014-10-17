@@ -26,8 +26,6 @@ import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.query.BaseQuery
 import org.apache.log4j.Logger
-import com.stratio.meta.communication.ACK
-import com.stratio.meta.common.result.QueryStatus
 
 object ParserActor {
   def props(validator: ActorRef, parser: Parser): Props = Props(new ParserActor(validator, parser))
@@ -46,7 +44,7 @@ class ParserActor(validator: ActorRef, parser: Parser) extends Actor with TimeTr
         val stmt = parser.parse(baseQuery)
         log.debug("Query parsed: " + stmt.getStatement)
         validator forward stmt
-        sender ! ACK(queryId, QueryStatus.PARSED)
+        //sender ! ACK(queryId, QueryStatus.PARSED)
       }catch {
         case pe: ParsingException => {
           log.error("Parsing error: " + pe.getMessage + " sender: " + sender.toString())
