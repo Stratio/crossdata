@@ -151,7 +151,7 @@ public class ConsoleUtils {
         for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
             sb.append(
                     StringUtils.rightPad(columnMetadata.getColumnNameToShow(),
-                            colWidths.get(columnMetadata.getColumnName()) + 12)).append("| ");
+                            colWidths.get(columnMetadata.getColumnAlias()) + 12)).append("| ");
         }
 
         sb.append(System.lineSeparator());
@@ -183,7 +183,7 @@ public class ConsoleUtils {
 
         // Get column names or aliases width
         for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
-            colWidths.put(columnMetadata.getColumnName(), columnMetadata.getColumnNameToShow().length());
+            colWidths.put(columnMetadata.getColumnAlias(), columnMetadata.getColumnNameToShow().length());
         }
 
         // Find widest cell content of every column
