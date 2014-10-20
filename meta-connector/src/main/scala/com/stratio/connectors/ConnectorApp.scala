@@ -21,7 +21,7 @@ package com.stratio.connectors
 import akka.actor.{ActorRef, ActorSystem}
 import akka.routing.RoundRobinRouter
 import com.stratio.connectors.config.ConnectConfig
-import com.stratio.meta.common.connector.IConnector
+import com.stratio.meta.common.connector.{IConfiguration, IConnector}
 import com.stratio.meta.communication.Shutdown
 import org.apache.log4j.Logger
 
@@ -47,7 +47,7 @@ class ConnectorApp extends ConnectConfig {
 
   def startup(connector: IConnector): ActorRef = {
     actorClusterNode = system.actorOf(ConnectorActor.props(connector.getConnectorName, connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor")
-    connector.init(null)
+    connector.init(new IConfiguration {})
     actorClusterNode
   }
 

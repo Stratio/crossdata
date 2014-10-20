@@ -17,7 +17,7 @@
  */
 
 import com.stratio.meta.common.exceptions.ExecutionException
-import com.stratio.meta.common.result.{StorageResult, CommandResult, QueryResult, MetadataResult}
+import com.stratio.meta.common.result.{MetadataResult, QueryResult, StorageResult}
 import com.stratio.meta2.server.ServerActorTest
 import org.apache.log4j.Logger
 import org.scalatest.Suite
@@ -41,6 +41,7 @@ class CoordinatorActorTest extends ServerActorTest{
 
   test("Select query") {
     initialize()
+    initializeTablesInfinispan()
     connectorActor !(queryId + (1), "updatemylastqueryId")
     coordinatorActor ! selectPlannedQuery
     expectMsgType[QueryResult]

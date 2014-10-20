@@ -444,6 +444,12 @@ public enum MetadataManager {
         createConnector(connectorMetadata, false);
     }
 
+    public void setConnectorStatus(List<ConnectorName> names, Status status) {
+        for(ConnectorName connectorName: names){
+            setConnectorStatus(connectorName, status);
+        }
+    }
+
     public String getConnectorRef(ConnectorName name) {
         return getConnector(name).getActorRef();
     }
@@ -580,6 +586,40 @@ public enum MetadataManager {
             }
         }
         return columnList;
+    }
+
+    public List<IMetadata> getMetadatas(String clazz){
+        List<IMetadata> connectorsMetadata = new ArrayList<>();
+        for(Map.Entry<FirstLevelName, IMetadata> entry: metadata.entrySet()){
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata.getClass().toString().equalsIgnoreCase(clazz)){
+                connectorsMetadata.add(iMetadata);
+            }
+        }
+        return connectorsMetadata;
+    }
+
+    public List<ConnectorMetadata> getConnectors(Status status){
+        List<ConnectorMetadata> onlineConnectors = new ArrayList<>();
+        for(Map.Entry<FirstLevelName, IMetadata> entry: metadata.entrySet()){
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata instanceof ConnectorMetadata){
+                ConnectorMetadata connectorMetadata = (ConnectorMetadata) iMetadata;
+                if(connectorMetadata.getStatus() == status){
+                    onlineConnectors.add(connectorMetadata);
+                }
+            }
+        }
+        return onlineConnectors;
+    }
+
+    public List<ConnectorName> getConnectorNames(Status status){
+        List<ConnectorName> onlineConnectorNames = new ArrayList<>();
+        List<ConnectorMetadata> onlineConnectors = getConnectors(status);
+        for(ConnectorMetadata connectorMetadata: onlineConnectors){
+            onlineConnectorNames.add(connectorMetadata.getName());
+        }
+        return onlineConnectorNames;
     }
 
 }

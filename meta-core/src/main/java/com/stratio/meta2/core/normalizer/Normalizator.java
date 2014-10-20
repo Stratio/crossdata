@@ -202,30 +202,30 @@ public class Normalizator {
 
     private void checkColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
         switch (selector.getType()) {
-            case FUNCTION:
-                break;
-            case COLUMN:
-                ColumnName name = ((ColumnSelector) selector).getName();
-                if (!columnNames.contains(name)) {
-                    throw new BadFormatException(
-                            "All columns in the select clause must be in the group by or it must be aggregation function.");
-                }
-                break;
-            case ASTERISK:
-                throw new BadFormatException("Asterisk is not valid with group by statements");
+        case FUNCTION:
+            break;
+        case COLUMN:
+            ColumnName name = ((ColumnSelector) selector).getName();
+            if (!columnNames.contains(name)) {
+                throw new BadFormatException(
+                        "All columns in the select clause must be in the group by or it must be aggregation function.");
             }
+            break;
+        case ASTERISK:
+            throw new BadFormatException("Asterisk is not valid with group by statements");
+        }
     }
 
     public void normalizeGroupBy(GroupBy groupBy) throws BadFormatException, AmbiguousNameException,
             NotExistNameException, NotValidColumnException {
         Set<ColumnName> columnNames = new HashSet<>();
         for (Selector selector : groupBy.getSelectorIdentifier()) {
-            checkFormatBySelectorIdentifier(selector,columnNames);
+            checkFormatBySelectorIdentifier(selector, columnNames);
         }
         // Check if all columns are correct
         for (Selector selector : fields.getSelectors()) {
-            checkColumns(selector,columnNames);
-       }
+            checkColumns(selector, columnNames);
+        }
     }
 
     public void checkJoinRelations(List<Relation> relations) throws BadFormatException,
@@ -287,7 +287,7 @@ public class Normalizator {
     }
 
     private void checkRelationFormatRight(Relation relation)
-            throws BadFormatException, AmbiguousNameException, NotExistNameException {
+            throws BadFormatException, AmbiguousNameException, NotExistNameException, NotValidColumnException {
         switch (relation.getRightTerm().getType()) {
         case FUNCTION:
             throw new BadFormatException("Functions not supported yet");
@@ -384,25 +384,37 @@ public class Normalizator {
     }
 
     public TableName searchTableNameByColumn(ColumnName columnName) throws AmbiguousNameException,
-            NotExistNameException {
+            NotExistNameException, NotValidColumnException {
         TableName selectTableName = null;
         if (columnName.isCompletedName()) {
             if (MetadataManager.MANAGER.exists(columnName)) {
                 selectTableName = columnName.getTableName();
             }
         } else {
-            boolean tableFind = false;
-            for (TableName tableName : fields.getTableNames()) {
-                columnName.setTableName(tableName);
-                if (MetadataManager.MANAGER.exists(columnName)) {
-                    if (tableFind) {
-                        throw new AmbiguousNameException(columnName);
-                    }
-                    selectTableName = tableName;
-                    tableFind = true;
-                } else {
-                    columnName.setTableName(null);
+            if (columnName.getTableName() == null) {
+                boolean tableFind = false;
+                for (TableName tableName : fields.getTableNames()) {
+                    columnName.setTableName(tableName);
+                    if (MetadataManager.MANAGER.exists(columnName)) {
+                        if (tableFind) {
+                            throw new AmbiguousNameException(columnName);
+                        }
+                        selectTableName = tableName;
+                        tableFind = true;
+                    } else {
+                        columnName.setTableName(null);
 
+                    }
+                }
+            } else {
+                for(TableName tableName:fields.getTableNames()){
+                    if(tableName.getName().equalsIgnoreCase(columnName.getTableName().getName())){
+                        columnName.setTableName(tableName);
+                        selectTableName = tableName;
+                    }
+                }
+                if(!columnName.isCompletedName()){
+                    throw new NotValidColumnException(columnName);
                 }
             }
         }
@@ -443,7 +455,8 @@ public class Normalizator {
             case ASTERISK:
                 result.addAll(checkAsteriskSelector());
                 break;
-            default: break;
+            default:
+                break;
             }
         }
         return result;
@@ -457,7 +470,7 @@ public class Normalizator {
     }
 
     private void checkRightSelector(ColumnName name, Operator operator, Selector rightTerm)
-            throws BadFormatException, AmbiguousNameException, NotExistNameException {
+            throws BadFormatException, AmbiguousNameException, NotExistNameException, NotValidColumnException {
         // Get column type from MetadataManager
         ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(name);
 

@@ -79,10 +79,10 @@ ImplicitSender {
   var queryIdIncrement = 0
   val tableName="myTable"
   val columnName="columnName"
-  val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,tableName))
+
   val catalogName = "myCatalog"
   val myClusterName ="myCluster"
-
+  val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,tableName))
 
   val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM "+catalogName+".mytable",
     new CatalogName(catalogName)), selectStatement)

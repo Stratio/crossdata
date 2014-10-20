@@ -110,7 +110,6 @@ public class Coordinator implements Serializable {
 
     public Result persistAttachCluster(ClusterName clusterName, DataStoreName datastoreName,
             Map<Selector, Selector> options) {
-        //TODO Move this type of operations to MetadataManager in order to use a single lock
 
         // Create and persist Cluster metadata
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, datastoreName, options, new HashMap<ConnectorName, ConnectorAttachedMetadata>());

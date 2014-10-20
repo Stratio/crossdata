@@ -20,6 +20,8 @@ package com.stratio.meta2.server.parser
 
 import com.stratio.meta.common.ask.Query
 import com.stratio.meta.communication.ACK
+
+import com.stratio.meta.common.result.QueryResult
 import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.planner.Planner
 import com.stratio.meta2.core.validator.Validator
@@ -58,6 +60,8 @@ class ParserActorIT extends ServerActorTest{
   val parserActor3 = {
     system.actorOf(ParserActor.props(validatorRef2, new Parser()), "TestParserActor3_i")
   }
+
+
 
 
   /*
@@ -99,7 +103,6 @@ class ParserActorIT extends ServerActorTest{
       assert(ack0.status==QueryStatus.PLANNED)
     }
   }
-  */
 
   test("Select query; parser ,validator, planner, and mockCoordinator") {
     initialize()
@@ -112,6 +115,18 @@ class ParserActorIT extends ServerActorTest{
     //  assert(ack0.status==QueryResult)
     }
   }
+  */
+
+  test("Select query; parser ,validator, planner, coordinator and mockConnector") {
+    initialize()
+    initializeTablesInfinispan()
+    within(6000 millis) {
+      parserActor3 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
+      val result=expectMsgType[QueryResult]
+      assert(result.getQueryId()==queryId + (1))
+    }
+  }
+
 
 
 }

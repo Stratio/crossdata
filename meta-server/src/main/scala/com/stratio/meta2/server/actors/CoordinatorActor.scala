@@ -39,7 +39,10 @@ object CoordinatorActor {
 }
 
 class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends Actor with ActorLogging {
+
   log.info("Lifting coordinator actor")
+  val connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE)
+  MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
 
   def receive = {
 
@@ -125,6 +128,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           executionInfo.setWorkflow(workflow)
+          //log.info("Coordinate workflow: " + workflow.toString);
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if (ResultType.RESULTS.equals(workflow.getResultType)) {
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
@@ -142,6 +146,10 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           log.error("non recognized workflow")
         }
       }
+    }
+
+    case result: ConnectResult => {
+      log.info("Connect result received from " + sender + " with SessionId = " + result.getSessionId);
     }
 
     case result: Result => {
