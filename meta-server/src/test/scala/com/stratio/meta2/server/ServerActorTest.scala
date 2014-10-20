@@ -197,7 +197,6 @@ ImplicitSender {
     clusternames.add(clustername)
     val future = connectorActor ? getConnectorName()
     val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
-    println("creating connector "+connectorName.name)
     val myConnector=metadataManager.createTestConnector(connectorName.name,new DataStoreName(myDatastore.getName()),
       clusternames,
       operations,
