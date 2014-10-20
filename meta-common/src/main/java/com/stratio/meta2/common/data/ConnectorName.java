@@ -27,7 +27,7 @@ public class ConnectorName extends FirstLevelName {
 
     public ConnectorName(String connectorName) {
         super();
-        this.name = connectorName;
+        this.name = connectorName.toLowerCase();
     }
 
     public String getName() {

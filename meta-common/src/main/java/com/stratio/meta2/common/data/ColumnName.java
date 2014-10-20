@@ -40,7 +40,7 @@ public class ColumnName extends Name {
         } else {
             this.tableName = null;
         }
-        this.name = columnName;
+        this.name = columnName.toLowerCase();
     }
 
     /**
@@ -51,7 +51,7 @@ public class ColumnName extends Name {
      */
     public ColumnName(TableName tableName, String columnName) {
         this.tableName = tableName;
-        this.name = columnName;
+        this.name = columnName.toLowerCase();
     }
 
     public TableName getTableName() {
