@@ -19,6 +19,7 @@
 package com.stratio.meta2.core.api;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.transaction.HeuristicMixedException;
@@ -41,7 +42,6 @@ import com.stratio.meta2.common.api.connector.DataStoreRefsType;
 import com.stratio.meta2.common.api.connector.SupportedOperationsType;
 import com.stratio.meta2.common.api.datastore.BehaviorsType;
 import com.stratio.meta2.common.api.datastore.DataStoreType;
-import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ConnectorName;
 import com.stratio.meta2.common.data.DataStoreName;
 import com.stratio.meta2.common.metadata.ColumnMetadata;
@@ -123,11 +123,49 @@ public class APIManager {
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.RESET_METADATA().toString());
             result = resetMetadata();
+        }else if(APICommand.LIST_CONNECTORS().equals(cmd.commandType())){
+            LOG.info("Processing " + APICommand.LIST_CONNECTORS().toString());
+            result = listConnectors();
         } else {
             result =
                     Result.createExecutionErrorResult("Command " + cmd.commandType() + " not supported");
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
+        return result;
+    }
+
+    private Result listConnectors() {
+        Result result;
+        List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
+        StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
+
+        for (ConnectorMetadata connector : connectors) {
+            stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
+                    .append("\t").append(connector.getStatus());
+            if (connector.getClusterRefs() == null) {
+                stringBuilder = stringBuilder.append("\t")
+                        .append("UNKNOWN");
+            } else {
+                stringBuilder = stringBuilder.append("\t")
+                        .append(Arrays.toString(connector.getClusterRefs().toArray()));
+            }
+            if (connector.getDataStoreRefs() == null) {
+                stringBuilder = stringBuilder.append("\t")
+                        .append("UNKNOWN");
+            } else {
+                stringBuilder = stringBuilder.append("\t")
+                        .append(Arrays.toString(connector.getDataStoreRefs().toArray()));
+            }
+            if (connector.getActorRef() == null) {
+                stringBuilder = stringBuilder.append("\t")
+                        .append("UNKNOWN");
+            } else {
+                stringBuilder = stringBuilder.append("\t")
+                        .append(connector.getActorRef());
+            }
+            stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
+        }
+        result = CommandResult.createCommandResult(stringBuilder.toString());
         return result;
     }
 

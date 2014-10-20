@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 
 import com.stratio.meta.common.exceptions.ConnectionException;
 import com.stratio.meta.common.exceptions.ManifestException;
+import com.stratio.meta.common.result.CommandResult;
 import com.stratio.meta.common.result.IResultHandler;
 import com.stratio.meta.common.result.QueryResult;
 import com.stratio.meta.driver.BasicDriver;
@@ -378,6 +379,8 @@ public class Metash {
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);
                         println("");
+                    }else if(toExecute.toLowerCase().startsWith("list connectors")){
+                        listConnectors();
                     } else {
                         executeQuery(toExecute);
                         println("");
@@ -401,6 +404,11 @@ public class Metash {
         } catch (Exception e) {
             LOG.error("Cannot read from console.", e);
         }
+    }
+
+    private void listConnectors() {
+        CommandResult commandResult= metaDriver.listConnectors();
+        LOG.info(commandResult.getResult());
     }
 
     private String updateCatalog(String toExecute) {

@@ -444,6 +444,12 @@ public enum MetadataManager {
         createConnector(connectorMetadata, false);
     }
 
+    public void setConnectorStatus(List<ConnectorName> names, Status status) {
+        for(ConnectorName connectorName: names){
+            setConnectorStatus(connectorName, status);
+        }
+    }
+
     public String getConnectorRef(ConnectorName name) {
         return getConnector(name).getActorRef();
     }
@@ -580,6 +586,46 @@ public enum MetadataManager {
             }
         }
         return columnList;
+    }
+
+    public List<IMetadata> getMetadatas(String clazz){
+        List<IMetadata> connectorsMetadata = new ArrayList<>();
+        for(Map.Entry<FirstLevelName, IMetadata> entry: metadata.entrySet()){
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata.getClass().toString().equalsIgnoreCase(clazz)){
+                connectorsMetadata.add(iMetadata);
+            }
+        }
+        return connectorsMetadata;
+    }
+
+    public List<ConnectorMetadata> getConnectors() {
+        List<ConnectorMetadata> connectors = new ArrayList<>();
+        for (Map.Entry<FirstLevelName, IMetadata> entry : metadata.entrySet()) {
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata instanceof ConnectorMetadata) {
+                connectors.add((ConnectorMetadata) iMetadata);
+            }
+        }
+        return connectors;
+    }
+
+    public List<ConnectorMetadata> getConnectors(Status status){
+        List<ConnectorMetadata> onlineConnectors = new ArrayList<>();
+        for (ConnectorMetadata connector : getConnectors()) {
+            if (connector.getStatus() == status) {
+                onlineConnectors.add(connector);
+            }
+        }
+        return onlineConnectors;
+    }
+
+    public List<ConnectorName> getConnectorNames(Status status){
+        List<ConnectorName> onlineConnectorNames = new ArrayList<>();
+        for(ConnectorMetadata connectorMetadata: getConnectors(status)){
+            onlineConnectorNames.add(connectorMetadata.getName());
+        }
+        return onlineConnectorNames;
     }
 
 }

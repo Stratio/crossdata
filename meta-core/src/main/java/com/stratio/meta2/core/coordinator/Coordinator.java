@@ -50,6 +50,9 @@ import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.Selector;
 import com.stratio.meta2.core.metadata.MetadataManager;
 
+import scala.Console;
+import scala.Predef;
+
 public class Coordinator implements Serializable {
 
     /**
@@ -59,7 +62,7 @@ public class Coordinator implements Serializable {
 
     public void persist(MetadataWorkflow metadataWorkflow) {
 
-        switch (metadataWorkflow.getExecutionType()) {
+       switch (metadataWorkflow.getExecutionType()) {
         case CREATE_CATALOG:
             persistCreateCatalog(metadataWorkflow.getCatalogMetadata());
             break;
@@ -107,7 +110,6 @@ public class Coordinator implements Serializable {
 
     public Result persistAttachCluster(ClusterName clusterName, DataStoreName datastoreName,
             Map<Selector, Selector> options) {
-        //TODO Move this type of operations to MetadataManager in order to use a single lock
 
         // Create and persist Cluster metadata
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, datastoreName, options, new HashMap<ConnectorName, ConnectorAttachedMetadata>());

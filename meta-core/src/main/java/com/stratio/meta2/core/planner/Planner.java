@@ -177,6 +177,15 @@ public class Planner {
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
                 .getAttachedConnectors(Status.ONLINE, tables);
 
+        StringBuilder sb = new StringBuilder("Candidate connectors: ");
+        for(Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()){
+            for(ConnectorMetadata cm : tableEntry.getValue()){
+                sb.append("table: ").append(tableEntry.getKey().toString())
+                        .append(cm.getName()).append(" ").append(cm.getActorRef());
+            }
+        }
+        LOG.info(sb.toString());
+
         List<ExecutionPath> executionPaths = new ArrayList<>();
         Map<UnionStep, Set<ExecutionPath>> unionSteps = new HashMap<>();
         //Iterate through the initial steps and build valid execution paths
@@ -192,6 +201,10 @@ public class Planner {
                 paths.add(ep);
             }
             executionPaths.add(ep);
+        }
+
+        for(ExecutionPath ep : executionPaths){
+            LOG.info("ExecutionPaths: " + ep);
         }
 
         //Merge execution paths
@@ -218,6 +231,8 @@ public class Planner {
                     executionPaths.get(0).getAvailableConnectors(),
                     ResultType.RESULTS);
         }
+
+        LOG.info("UnionSteps: " + unionSteps.toString());
 
         //Find first UnionStep
         UnionStep mergeStep = null;
@@ -255,6 +270,7 @@ public class Planner {
             for (int index = 0; index < paths.length; index++) {
                 toRemove.clear();
                 for (ConnectorMetadata connector : paths[index].getAvailableConnectors()) {
+                    LOG.info("op: " + mergeStep.getOperation() + " -> " + connector.supports(mergeStep.getOperation()));
                     if (!connector.supports(mergeStep.getOperation())) {
                         toRemove.add(connector);
                     }
@@ -960,6 +976,14 @@ public class Planner {
             for(Map.Entry<ColumnName, ColumnMetadata> column : metadata.getColumns().entrySet()){
                 aliasMap.put(column.getKey(), column.getKey().getName());
                 typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
+            }
+            if(selectStatement.getJoin() != null){
+                TableMetadata metadataJoin = tableMetadataMap.get(selectStatement.getJoin().getTablename()
+                        .getQualifiedName());
+                for(Map.Entry<ColumnName, ColumnMetadata> column : metadataJoin.getColumns().entrySet()){
+                    aliasMap.put(column.getKey(), column.getKey().getName());
+                    typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
+                }
             }
         }
         
