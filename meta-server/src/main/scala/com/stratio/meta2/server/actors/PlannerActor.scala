@@ -44,10 +44,13 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
         coordinator forward planned
       } catch {
         case pe:PlanningException => {
-          val errorResult = Result.createValidationErrorResult(pe.getMessage)
           log.error("Planning error: " + pe.getMessage + " from sender: " + sender.toString())
+          val errorResult = Result.createValidationErrorResult(pe.getMessage)
           errorResult.setQueryId(query.getQueryId)
           sender ! errorResult
+        }
+        case e:Exception =>{
+          log.error("Planning error: " + e.getMessage + " from sender: " + sender.toString())
         }
       }
       /*val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
