@@ -19,6 +19,8 @@
 package com.stratio.meta2.server.parser
 
 import com.stratio.meta.common.ask.Query
+import com.stratio.meta.communication.ACK
+
 import com.stratio.meta.common.result.QueryResult
 import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.planner.Planner
@@ -55,10 +57,11 @@ class ParserActorIT extends ServerActorTest{
   val parserActor2 = {
     system.actorOf(ParserActor.props(validatorRef1, new Parser()), "TestParserActor2_i")
   }
-
   val parserActor3 = {
     system.actorOf(ParserActor.props(validatorRef2, new Parser()), "TestParserActor3_i")
   }
+
+
 
 
   /*
@@ -109,7 +112,7 @@ class ParserActorIT extends ServerActorTest{
       val ack0 = expectMsgType[ACK]
       println("lastSender ="+lastSender)
       assert(ack0.queryId == queryId + (1))
-      assert(ack0.status==QueryStatus.EXECUTED)
+    //  assert(ack0.status==QueryResult)
     }
   }
   */

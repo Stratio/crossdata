@@ -23,7 +23,11 @@ import java.util
 import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
 
+
+
+
 import akka.testkit.ImplicitSender
+
 import com.stratio.connectors.MockConnectorActor
 import com.stratio.meta.common.connector.Operations
 import com.stratio.meta.common.executionplan._
@@ -42,7 +46,8 @@ import com.stratio.meta2.core.grid.Grid
 import com.stratio.meta2.core.metadata.{MetadataManager, MetadataManagerTestHelper}
 import com.stratio.meta2.core.planner.SelectValidatedQueryWrapper
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.{CreateTableStatement, InsertIntoStatement, MetadataStatement, SelectStatement}
+import com.stratio.meta2.core.statements.{CreateCatalogStatement,CreateTableStatement, InsertIntoStatement, MetadataStatement,
+SelectStatement}
 import com.stratio.meta2.server.actors.CoordinatorActor
 import com.stratio.meta2.server.mocks.MockConnectorManagerActor
 import org.scalamock.scalatest.MockFactory
@@ -72,10 +77,13 @@ ImplicitSender {
 
   var queryId = "query_id-2384234-1341234-23434"
   var queryIdIncrement = 0
+  val tableName="myTable"
+  val columnName="columnName"
+
   val catalogName = "myCatalog"
   val myClusterName ="myCluster"
+  val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,tableName))
 
-  val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,"myTable"))
   val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM "+catalogName+".mytable",
     new CatalogName(catalogName)), selectStatement)
   //val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
@@ -86,13 +94,17 @@ ImplicitSender {
     ExecutionType.SELECT, ResultType.RESULTS, new LogicalWorkflow(null)))
 
   val storageStatement: InsertIntoStatement = null
-  val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno,dos) into mytable;",
+  val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno,dos) into "+tableName+";",
     new CatalogName(catalogName)), storageStatement)
   val storageValidatedQuery = new StorageValidatedQuery(storageParsedQuery)
   val storagePlannedQuery = new StoragePlannedQuery(storageValidatedQuery, new StorageWorkflow(queryId + queryIdIncrement,
     StringUtils.getAkkaActorRefUri(connectorActor), ExecutionType.INSERT, ResultType.RESULTS))
 
-  val metadataStatement0: MetadataStatement = null
+  val metadataStatement0: MetadataStatement = new CreateCatalogStatement(
+    new CatalogName(catalogName),
+    true,
+    ""
+  )
   val metadataParsedQuery0 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),
     metadataStatement0)
   val metadataValidatedQuery0: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery0)
@@ -108,13 +120,16 @@ ImplicitSender {
 
 
   val metadataStatement1: MetadataStatement =  new CreateTableStatement(TableType.DATABASE,
-      new TableName(catalogName,"myTable"),
+
+      new TableName(catalogName,tableName),
       new ClusterName(myClusterName),
+
+
       new util.HashMap[ColumnName, ColumnType](),
       new util.ArrayList[ColumnName](),
       new util.ArrayList[ColumnName]()
     )
-  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table myTable;",
+  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table "+tableName+"1"+";",
     new CatalogName(catalogName)),
     metadataStatement1)
   val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
@@ -126,6 +141,21 @@ ImplicitSender {
       new CatalogName(catalogName),
       new util.HashMap[Selector, Selector](),
       new util.HashMap[TableName,TableMetadata]()
+    )
+  )
+  val columnNme= new ColumnName(catalogName,tableName+"1",columnName)
+  val myList=new java.util.ArrayList[ColumnName]()
+  myList.add(columnNme)
+  metadataWorkflow1.setTableMetadata(
+  new TableMetadata(
+    false,
+    new TableName(catalogName, tableName+"1"),
+    new util.HashMap[Selector, Selector](),
+    new util.HashMap[ColumnName, ColumnMetadata](),
+    new util.HashMap[IndexName, IndexMetadata](),
+    new ClusterName(myClusterName),
+    myList,
+    new java.util.ArrayList[ColumnName]()
     )
   )
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
@@ -158,6 +188,10 @@ ImplicitSender {
     operations.add(Operations.PROJECT)
     operations.add(Operations.SELECT_OPERATOR)
     val myDatastore = metadataManager.createTestDatastore()
+
+    metadataManager.createTestCluster(myClusterName, myDatastore)
+    metadataManager.createTestCatalog(catalogName)
+
     val clustername=metadataManager.createTestCluster(myClusterName, myDatastore)
     val clusternames=new java.util.HashSet[ClusterName]()
     clusternames.add(clustername)
@@ -179,6 +213,7 @@ ImplicitSender {
     MetadataManager.MANAGER.createCluster(clusterMetadata, false)
 
     metadataManager.createTestTable(clustername, catalogName, "myTable", Array("name", "age"),
+
       Array(ColumnType.VARCHAR, ColumnType.INT), Array("name"), Array("name"))
   }
 

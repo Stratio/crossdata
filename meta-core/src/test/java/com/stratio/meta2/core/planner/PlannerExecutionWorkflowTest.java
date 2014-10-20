@@ -402,6 +402,51 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
+
+    @Test
+    public void mergeExecutionPathsJoinException(){
+
+        ColumnName [] columns1 = getColumnNames(table1);
+        ColumnName [] columns2 = getColumnNames(table2);
+
+        Project project1 = getProject("table1", columns1);
+        Project project2 = getProject("table2", columns2);
+
+        ColumnType [] types = {ColumnType.INT, ColumnType.TEXT};
+        Select select = getSelect(columns1, types);
+
+        Join join = getJoin("joinId");
+
+        //Link the elements
+        project1.setNextStep(join);
+        project2.setNextStep(join);
+        join.setNextStep(select);
+
+        List<ConnectorMetadata> availableConnectors = new ArrayList<>();
+        availableConnectors.add(connector2);
+
+        ExecutionPath path1 = new ExecutionPath(project1, project1, availableConnectors);
+        ExecutionPath path2 = new ExecutionPath(project2, project2, availableConnectors);
+
+        HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
+        Set<ExecutionPath> paths = new HashSet<>();
+        paths.add(path1);
+        paths.add(path2);
+        unions.put(join, paths);
+
+        ExecutionWorkflow executionWorkflow = null;
+        try {
+            executionWorkflow = plannerWrapper.mergeExecutionPaths(
+                    "qid", new ArrayList<>(paths),
+                    unions);
+            fail("Expecting planning exception");
+        } catch (PlanningException e) {
+            assertNotNull(e, "Expecting Planning exception");
+        }
+
+    }
+
+
     @Test
     public void mergeExecutionPathsPartialJoin(){
 
