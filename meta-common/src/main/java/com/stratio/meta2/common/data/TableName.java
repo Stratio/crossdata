@@ -40,7 +40,7 @@ public class TableName extends Name {
             this.catalogName = new CatalogName(catalogName);
         }
 
-        this.name = tableName;
+        this.name = tableName.toLowerCase();
     }
 
     public CatalogName getCatalogName() {

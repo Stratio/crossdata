@@ -46,9 +46,9 @@ class PlannerActorIT extends ServerActorTest{
   //val inputText = "SELECT mycatalog.mytable.name mycatalog.mytable.age FROM mycatalog.mytable;"
   val inputText = "SELECT * FROM mycatalog.mytable;"
   val columns1 = Array( "name", "age" )
-  val columnTypes1 = Array(ColumnType.TEXT, ColumnType.INT)
-  val partitionKeys1 = Array("name")
-  val clusteringKeys1 = Array("name")
+  override val columnTypes1 = Array(ColumnType.TEXT, ColumnType.INT)
+  override val partitionKeys1 = Array("name")
+  override val clusteringKeys1 = Array("name")
   val t1 = mdmth.defineTable(new ClusterName("mycluster"), "mycatalog", "mytable", columns1, columnTypes1, partitionKeys1, clusteringKeys1)
   //val workflow = plannerBaseTest.getWorkflow(inputText, "selTectBasicWhere", t1)
   val tablesMetadata:java.util.List[TableMetadata]=new util.ArrayList[TableMetadata]()

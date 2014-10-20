@@ -23,7 +23,7 @@ public class CatalogName extends FirstLevelName {
 
     public CatalogName(String catalogName) {
         super();
-        this.name = catalogName;
+        this.name = catalogName.toLowerCase();
     }
 
     public String getName() {

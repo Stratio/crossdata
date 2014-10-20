@@ -61,6 +61,7 @@ import com.stratio.meta2.common.data.CatalogName;
 import com.stratio.meta2.common.data.ClusterName;
 import com.stratio.meta2.common.data.ColumnName;
 import com.stratio.meta2.common.data.ConnectorName;
+import com.stratio.meta2.common.data.IndexName;
 import com.stratio.meta2.common.data.Status;
 import com.stratio.meta2.common.data.TableName;
 import com.stratio.meta2.common.metadata.CatalogMetadata;
@@ -69,6 +70,7 @@ import com.stratio.meta2.common.metadata.ColumnMetadata;
 import com.stratio.meta2.common.metadata.ColumnType;
 import com.stratio.meta2.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.meta2.common.metadata.ConnectorMetadata;
+import com.stratio.meta2.common.metadata.IndexMetadata;
 import com.stratio.meta2.common.metadata.TableMetadata;
 import com.stratio.meta2.common.statements.structures.selectors.AsteriskSelector;
 import com.stratio.meta2.common.statements.structures.selectors.ColumnSelector;
@@ -177,11 +179,11 @@ public class Planner {
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
                 .getAttachedConnectors(Status.ONLINE, tables);
 
-        StringBuilder sb = new StringBuilder("Candidate connectors: ");
+        StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
         for(Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()){
             for(ConnectorMetadata cm : tableEntry.getValue()){
                 sb.append("table: ").append(tableEntry.getKey().toString())
-                        .append(cm.getName()).append(" ").append(cm.getActorRef());
+                        .append(cm.getName()).append(" ").append(cm.getActorRef()).append(System.lineSeparator());
             }
         }
         LOG.info(sb.toString());
@@ -193,10 +195,19 @@ public class Planner {
             TableName targetTable = ((Project) step).getTableName();
             LOG.info("Table: " + targetTable);
             ExecutionPath ep = defineExecutionPath(step, candidatesConnectors.get(targetTable));
+            LOG.info("Last step: " + ep.getLast());
             if (UnionStep.class.isInstance(ep.getLast())) {
                 Set<ExecutionPath> paths = unionSteps.get(ep.getLast());
                 if (paths == null) {
                     paths = new HashSet<>();
+                    unionSteps.put((UnionStep)ep.getLast(), paths);
+                }
+                paths.add(ep);
+            }else if(ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())){
+                Set<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
+                if (paths == null) {
+                    paths = new HashSet<>();
+                    unionSteps.put((UnionStep)(ep.getLast().getNextStep()), paths);
                 }
                 paths.add(ep);
             }
@@ -458,8 +469,7 @@ public class Planner {
             } else {
                 availableConnectors.removeAll(toRemove);
 
-                if (current.getNextStep() == null
-                        || UnionStep.class.isInstance(current.getNextStep())) {
+                if (current.getNextStep() == null || UnionStep.class.isInstance(current.getNextStep())) {
                     exit = true;
                     last = current;
                 } else {
@@ -653,7 +663,8 @@ public class Planner {
             ClusterName clusterName = createTableStatement.getClusterName();
             List<ColumnName> partitionKey = createTableStatement.getPartitionKey();
             List<ColumnName> clusterKey = createTableStatement.getClusterKey();
-            TableMetadata tableMetadata = new TableMetadata(name, options, columnMap, null,
+            Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+            TableMetadata tableMetadata = new TableMetadata(name, options, columnMap, indexes,
                     clusterName, partitionKey, clusterKey);
             metadataWorkflow.setTableName(name);
             metadataWorkflow.setTableMetadata(tableMetadata);
@@ -914,8 +925,6 @@ public class Planner {
         t1.setNextStep(j);
         t2.setNextStep(j);
         j.addPreviousSteps(t1, t2);
-        j.addSourceIdentifier(targetTable);
-        j.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
         stepMap.put(sb.toString(), j);
         return stepMap;
     }

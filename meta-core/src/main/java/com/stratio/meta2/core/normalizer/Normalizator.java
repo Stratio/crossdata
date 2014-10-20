@@ -289,8 +289,6 @@ public class Normalizator {
     private void checkRelationFormatRight(Relation relation)
             throws BadFormatException, AmbiguousNameException, NotExistNameException, NotValidColumnException {
         switch (relation.getRightTerm().getType()) {
-        case FUNCTION:
-            throw new BadFormatException("Functions not supported yet");
         case COLUMN:
         case STRING:
         case FLOATING_POINT:
@@ -300,9 +298,9 @@ public class Normalizator {
             checkRightSelector(columnSelector.getName(), relation.getOperator(), relation.getRightTerm());
             break;
         case RELATION:
-            throw new BadFormatException("Operation not supported yet.");
+        case FUNCTION:
         case ASTERISK:
-            throw new BadFormatException("Asterisk not supported in relations.");
+            throw new BadFormatException("Not supported yet.");
         }
     }
 
