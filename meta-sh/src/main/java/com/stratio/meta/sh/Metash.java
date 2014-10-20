@@ -195,7 +195,7 @@ public class Metash {
      * @param currentCatalog The currentCatalog.
      */
     private void setPrompt(String currentCatalog) {
-        StringBuilder sb = new StringBuilder("Crossdata-sh:");
+        StringBuilder sb = new StringBuilder("crossdata-sh:");
         sb.append(metaDriver.getUserName());
         if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
             sb.append(":");
