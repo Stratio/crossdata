@@ -156,9 +156,14 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       val queryId = result.getQueryId
       log.info("Receiving result from " + sender + " with queryId = " + queryId + " result: " + result)
       val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
-      val clientActor = context.actorSelection(StringUtils.getAkkaActorRefUri(executionInfo
-        .asInstanceOf[ExecutionInfo].getSender))
-
+      //TODO Add two methods to StringUtils to retrieve AkkaActorRefUri tokening with # for connectors,
+      // and $ for clients
+      val target = executionInfo.asInstanceOf[ExecutionInfo].getSender.toString
+          .replace("Actor[", "").replace("]", "").split("#")(0)
+      //val clientActor = context.actorSelection(StringUtils.getAkkaActorRefUri(executionInfo
+      //  .asInstanceOf[ExecutionInfo].getSender))
+      val clientActor = context.actorSelection(target)
+      log.info("Send result to: " + clientActor.toString())
 
       if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
 
