@@ -32,11 +32,21 @@ public class MetadataResult extends Result {
 
     public static final int OPERATION_CREATE_CATALOG = 1;
 
-    public static final int OPERATION_LIST_CATALOGS = 2;
+    public static final int OPERATION_CREATE_TABLE = 2;
 
-    public static final int OPERATION_LIST_TABLES = 3;
+    public static final int OPERATION_CREATE_INDEX = 3;
 
-    public static final int OPERATION_LIST_COLUMNS = 4;
+    public static final int OPERATION_DROP_CATALOG = 4;
+
+    public static final int OPERATION_DROP_TABLE = 5;
+
+    public static final int OPERATION_DROP_INDEX= 6;
+
+    public static final int OPERATION_LIST_CATALOGS = 7;
+
+    public static final int OPERATION_LIST_TABLES = 8;
+
+    public static final int OPERATION_LIST_COLUMNS = 9;
 
     /**
      * Operation bound to the {@link com.stratio.meta.common.result.MetadataResult}
@@ -152,7 +162,17 @@ public class MetadataResult extends Result {
         switch (this.operation) {
 
         case MetadataResult.OPERATION_CREATE_CATALOG:
-            return "Catalog created successfully";
+            return "CATALOG created successfully";
+        case MetadataResult.OPERATION_CREATE_TABLE:
+            return "TABLE created successfully";
+        case MetadataResult.OPERATION_CREATE_INDEX:
+            return "INDEX created successfully";
+        case MetadataResult.OPERATION_DROP_CATALOG:
+            return "CATALOG dropped successfully";
+        case MetadataResult.OPERATION_DROP_TABLE:
+            return "TABLE dropped successfully";
+        case MetadataResult.OPERATION_DROP_INDEX:
+            return "INDEX dropped successfully";
         case MetadataResult.OPERATION_LIST_CATALOGS:
             return catalogList.toString();
         case MetadataResult.OPERATION_LIST_TABLES:

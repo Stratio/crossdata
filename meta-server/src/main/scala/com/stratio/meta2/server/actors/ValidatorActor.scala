@@ -53,6 +53,7 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
         validatedQuery = validator.validate(query)
         log.info("Query validated")
         finishTimer(timer)
+        sender ! "validated"
         planner forward validatedQuery
 
       } catch {

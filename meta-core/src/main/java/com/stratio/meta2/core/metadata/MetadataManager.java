@@ -571,7 +571,7 @@ public enum MetadataManager {
         for(Name name:metadata.keySet()) {
             if (name.getType()== NameType.CATALOG) {
                 CatalogName catalogName=(CatalogName)name;
-                if (catalogName.getName()==catalog){
+                if (catalogName.getName().equals(catalog)){
                     CatalogMetadata catalogMetadata=getCatalog(catalogName);
                     for (Map.Entry<TableName, TableMetadata> entry : catalogMetadata.getTables().entrySet())
                     {
@@ -599,15 +599,22 @@ public enum MetadataManager {
         return connectorsMetadata;
     }
 
+    public List<ConnectorMetadata> getConnectors() {
+        List<ConnectorMetadata> connectors = new ArrayList<>();
+        for (Map.Entry<FirstLevelName, IMetadata> entry : metadata.entrySet()) {
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata instanceof ConnectorMetadata) {
+                connectors.add((ConnectorMetadata) iMetadata);
+            }
+        }
+        return connectors;
+    }
+
     public List<ConnectorMetadata> getConnectors(Status status){
         List<ConnectorMetadata> onlineConnectors = new ArrayList<>();
-        for(Map.Entry<FirstLevelName, IMetadata> entry: metadata.entrySet()){
-            IMetadata iMetadata = entry.getValue();
-            if (iMetadata instanceof ConnectorMetadata){
-                ConnectorMetadata connectorMetadata = (ConnectorMetadata) iMetadata;
-                if(connectorMetadata.getStatus() == status){
-                    onlineConnectors.add(connectorMetadata);
-                }
+        for (ConnectorMetadata connector : getConnectors()) {
+            if (connector.getStatus() == status) {
+                onlineConnectors.add(connector);
             }
         }
         return onlineConnectors;
@@ -615,8 +622,7 @@ public enum MetadataManager {
 
     public List<ConnectorName> getConnectorNames(Status status){
         List<ConnectorName> onlineConnectorNames = new ArrayList<>();
-        List<ConnectorMetadata> onlineConnectors = getConnectors(status);
-        for(ConnectorMetadata connectorMetadata: onlineConnectors){
+        for(ConnectorMetadata connectorMetadata: getConnectors(status)){
             onlineConnectorNames.add(connectorMetadata.getName());
         }
         return onlineConnectorNames;

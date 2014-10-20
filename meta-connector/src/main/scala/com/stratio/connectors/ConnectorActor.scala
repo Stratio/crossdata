@@ -83,7 +83,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       log.info("Received connect command")
       connector.connect(connectRequest.credentials, connectRequest.connectorClusterConfig)
       this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
-      sender ! ConnectResult.createConnectResult("Connected successfully");//TODO once persisted sessionId,
+      sender ! ConnectResult.createConnectResult("Connected successfully"); //TODO once persisted sessionId,
       // attach it in this info recover it to
     }
 
@@ -116,7 +116,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
     case metadataOp: MetadataOperation => {
       var qId: String = metadataOp.queryId
-
+      var metadataOperation: Int = 0
       log.info("Received queryId = " + qId)
 
       try {
@@ -129,11 +129,13 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
             qId = metadataOp.asInstanceOf[CreateTable].queryId
             eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
               metadataOp.asInstanceOf[CreateTable].tableMetadata)
+            metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
           }
           case "CreateCatalog" => {
             qId = metadataOp.asInstanceOf[CreateCatalog].queryId
             eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
               metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+            metadataOperation = MetadataResult.OPERATION_CREATE_CATALOG
           }
           case "CreateIndex" => {
             qId = metadataOp.asInstanceOf[CreateIndex].queryId
@@ -143,15 +145,18 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
           case "DropCatalog" => {
             qId = metadataOp.asInstanceOf[DropIndex].queryId
             eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-              metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+
           }
           case "DropIndex" => {
             qId = metadataOp.asInstanceOf[DropIndex].queryId
             eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
+            metadataOperation = MetadataResult.OPERATION_DROP_INDEX
           }
           case "DropTable" => {
             qId = metadataOp.asInstanceOf[DropTable].queryId
             eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
+            metadataOperation = MetadataResult.OPERATION_DROP_TABLE
           }
           case "CreateTableAndCatalog" => {
             qId = metadataOp.asInstanceOf[CreateTableAndCatalog].queryId
@@ -159,6 +164,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
               metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
             eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
               metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
+            metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
           }
         }
       } catch {
@@ -169,7 +175,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
         case err: Error =>
           log.error("error in ConnectorActor( receiving MetaOperation)")
       }
-      val result = MetadataResult.createSuccessMetadataResult()
+      val result = MetadataResult.createSuccessMetadataResult(metadataOperation)
       result.setQueryId(qId)
 
       log.info("Sending back queryId = " + qId)
