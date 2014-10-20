@@ -565,7 +565,7 @@ public enum MetadataManager {
         for(Name name:metadata.keySet()) {
             if (name.getType()== NameType.CATALOG) {
                 CatalogName catalogName=(CatalogName)name;
-                if (catalogName.getName()==catalog){
+                if (catalogName.getName().equals(catalog)){
                     CatalogMetadata catalogMetadata=getCatalog(catalogName);
                     for (Map.Entry<TableName, TableMetadata> entry : catalogMetadata.getTables().entrySet())
                     {
