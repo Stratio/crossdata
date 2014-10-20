@@ -31,6 +31,10 @@ import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta.common.connector.ConnectorClusterConfig
 import com.stratio.meta2.common.statements.structures.selectors.SelectorHelper
 import scala.collection.JavaConversions._
+import akka.util.Timeout
+import scala.concurrent.duration.FiniteDuration
+import java.util.concurrent.TimeUnit
+import scala.concurrent.{Await, Future}
 
 object ConnectorManagerActor {
   def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
@@ -39,11 +43,42 @@ object ConnectorManagerActor {
 class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
-  log.info("Lifting connector actor")
+  log.info("Lifting connector manager actor")
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
 
+  val connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE)
+  MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
+  for(connectorName <- connectors){
+    val thisAddress = Cluster(context.system).selfAddress
+    val connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName)
+
+    // akka.tcp://MetaServerCluster@127.0.0.1:60835/user/ConnectorActor/$d
+    val actorRefString = connectorMetadata.getActorRef
+    val remoteHost = actorRefString.split("@")(1).split(":")(0)
+    val remotePort = actorRefString.split("@")(1).split(":")(1).split("/")(0)
+
+    /*
+    // Remove connector from cluster in order to be able to perform a new join next
+    val remoteAddress = new Address(thisAddress.protocol, thisAddress.system, remoteHost, remotePort.toInt)
+    log.info(">>>>> TRACE: Sending leave signal to " + remoteAddress)
+    Cluster(context.system).leave(remoteAddress)
+    Cluster(context.system).down(remoteAddress)
+    */
+
+    // Ask connector to join to the cluster again
+    val rejoin = new Rejoin(thisAddress.protocol, thisAddress.system, thisAddress.host.get, thisAddress.port.get)
+    val actorRef = context.actorSelection(actorRefString)
+    log.info("Sending " + rejoin + " to " + actorRef)
+    actorRef ! rejoin
+
+    Cluster(context.system).publishCurrentClusterState()
+    val duration = new FiniteDuration(10, TimeUnit.SECONDS)
+    val futureActorRef = actorRef.resolveOne(duration)
+    Cluster(context.system).sendCurrentClusterState(Await.result(futureActorRef, duration))
+  }
+
   override def preStart(): Unit = {
-    Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
+    Cluster(context.system).subscribe(self, classOf[MemberEvent])
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
 
@@ -106,10 +141,12 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       logger.info("Current members: " + state.members.mkString(", "))
       //TODO Process CurrentClusterState
     }
+
     case member: UnreachableMember => {
       logger.info("Member detected as unreachable: " + member)
       //TODO Process UnreachableMember
     }
+
     case member: MemberRemoved => {
       logger.info("Member is Removed: " + member.member.address)
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
@@ -117,18 +154,30 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
         com.stratio.meta2.common.data.Status.OFFLINE)
     }
+
+    case member: MemberExited => {
+      logger.info("Member is exiting: " + member.member.address)
+      val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
+      val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
+      MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
+        com.stratio.meta2.common.data.Status.SHUTTING_DOWN)
+    }
+
     case _: MemberEvent => {
       logger.info("Receiving anything else")
       //TODO Process MemberEvent
     }
-    case _: ClusterDomainEvent => {
-      logger.debug("ClusterDomainEvent")
+
+    case clusterDomainEvent: ClusterDomainEvent => {
+      logger.debug("ClusterDomainEvent: " + clusterDomainEvent)
       //TODO Process ClusterDomainEvent
     }
+
     case ReceiveTimeout => {
       logger.warn("ReceiveTimeout")
       //TODO Process ReceiveTimeout
     }
+
     case _=>
       logger.error("Unknown event")
     //      sender ! "OK"

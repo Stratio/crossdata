@@ -42,8 +42,6 @@ object CoordinatorActor {
 class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends Actor with ActorLogging {
 
   log.info("Lifting coordinator actor")
-  val connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE)
-  MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
 
   def receive = {
 
