@@ -31,6 +31,7 @@ import com.stratio.meta2.core.execution.ExecutionManager
 import com.stratio.meta.common.connector.ConnectorClusterConfig
 import com.stratio.meta2.common.statements.structures.selectors.SelectorHelper
 import scala.collection.JavaConversions._
+import com.stratio.meta.common.result.ConnectResult
 
 object ConnectorManagerActor {
   def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
@@ -65,7 +66,6 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
           case "connector" => {
             val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
             connectorActorRef ! getConnectorName()
-            //connectorActorRef ! Start()
           }
           case _ =>{
             log.debug("MemberUp: rol is not in this actor.")
@@ -79,8 +79,9 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
      * CONNECTOR answers its name.
      */
     case msg: replyConnectorName => {
-      log.info("Connector Name received from " + sender)
+      log.info("Connector Name " + msg.name + " received from " + sender)
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
+      log.info("Registering connector at: " + actorRefUri)
       val connectorName = new ConnectorName(msg.name)
       ExecutionManager.MANAGER.createEntry(actorRefUri, connectorName, true)
 
@@ -101,6 +102,10 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
     }
 
+    case c: ConnectResult => {
+      logger.info("Connect result from " + sender + " => " + c.getSessionId)
+    }
+
     //Pass the message to the connectorActor to extract the member in the cluster
     case state: CurrentClusterState => {
       logger.info("Current members: " + state.members.mkString(", "))
@@ -112,8 +117,10 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     }
     case member: MemberRemoved => {
       logger.info("Member is Removed: " + member.member.address)
-      val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
-      val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
+      logger.info("Member info: " + member.toString)
+      val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address)
+      //val actorRefUri = member.member.address +
+      val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri +"/user/ConnectorActor/")
       MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
         com.stratio.meta2.common.data.Status.OFFLINE)
     }
@@ -122,15 +129,15 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       //TODO Process MemberEvent
     }
     case _: ClusterDomainEvent => {
-      logger.debug("ClusterDomainEvent")
+      //logger.debug("ClusterDomainEvent")
       //TODO Process ClusterDomainEvent
     }
     case ReceiveTimeout => {
       logger.warn("ReceiveTimeout")
       //TODO Process ReceiveTimeout
     }
-    case _=>
-      logger.error("Unknown event")
+    case unknown: Any=>
+      logger.error("Unknown event: " + unknown)
     //      sender ! "OK"
     //memberActorRef.tell(objectConWorkflow, context.sender)
   }
