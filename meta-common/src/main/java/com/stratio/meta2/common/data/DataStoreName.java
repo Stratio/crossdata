@@ -27,7 +27,7 @@ public class DataStoreName extends FirstLevelName {
 
     public DataStoreName(String dataStoreName) {
         super();
-        this.name = dataStoreName;
+        this.name = dataStoreName.toLowerCase();
     }
 
     public String getName() {

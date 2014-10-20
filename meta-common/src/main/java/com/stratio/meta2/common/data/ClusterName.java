@@ -23,7 +23,7 @@ public class ClusterName extends FirstLevelName {
 
     public ClusterName(String clusterName) {
         super();
-        this.name = clusterName;
+        this.name = clusterName.toLowerCase();
     }
 
     public String getName() {

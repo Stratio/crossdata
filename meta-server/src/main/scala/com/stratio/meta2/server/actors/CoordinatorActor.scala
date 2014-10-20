@@ -41,20 +41,22 @@ object CoordinatorActor {
 class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends Actor with ActorLogging {
 
   log.info("Lifting coordinator actor")
-  val connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE)
-  MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
+  try{
+    val connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE)
+    MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
+  }catch{
+    case e:Exception=>{
+      log.error("\n\n\nCouldn't initialize MetadataManager from CoordinatorActor well")
+    }
+  }
 
   def receive = {
-
     case plannedQuery: PlannedQuery => {
 
       val workflow = plannedQuery.getExecutionWorkflow()
       log.debug("Workflow for " + workflow.getActorRef)
 
       workflow match {
-
-
-
         case workflow1: MetadataWorkflow => {
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))

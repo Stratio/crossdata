@@ -19,8 +19,6 @@
 package com.stratio.meta2.server.parser
 
 import com.stratio.meta.common.ask.Query
-import com.stratio.meta.communication.ACK
-
 import com.stratio.meta.common.result.QueryResult
 import com.stratio.meta2.core.parser.Parser
 import com.stratio.meta2.core.planner.Planner
@@ -122,8 +120,16 @@ class ParserActorIT extends ServerActorTest{
     initializeTablesInfinispan()
     within(6000 millis) {
       parserActor3 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
-      val result=expectMsgType[QueryResult]
-      assert(result.getQueryId()==queryId + (1))
+      fishForMessage(6 seconds){
+        case msg:QueryResult =>{
+          assert(msg.getQueryId()==queryId + (1))
+          true
+        }
+        case other:Any =>{
+          println("receiving message of type"+other.getClass()+" and ignoring it")
+          false
+        }
+      }
     }
   }
 
