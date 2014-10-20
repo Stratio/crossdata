@@ -81,7 +81,6 @@ public class APIManager {
             List<String> catalogs = MetadataManager.MANAGER.getCatalogs();
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_CATALOGS);
             ((MetadataResult) result).setCatalogList(catalogs);
-            //result = MetadataResult.createSuccessMetadataResult();
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
             List<TableMetadata> tables;
 
