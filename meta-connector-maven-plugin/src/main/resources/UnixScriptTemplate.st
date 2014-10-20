@@ -27,6 +27,7 @@ CONFDIR=${INIT_HOME}/conf
 LOGFILE=${INIT_HOME}/logs
 pidDir=${INIT_HOME}
 serviceUser=<user>
+serviceGroup=""
 javaCommandLineKeyword=<mainClassName>
 connectorClass=<mainClass>l
 JMXPort=<jmxPort>
@@ -78,8 +79,10 @@ javaArgs="$javaArgs -classpath $CLASSPATH -Djava.net.preferIPv4Stack=true ${JMX_
 javaCommandLine="${JAVA_HOME}/bin/java $javaArgs"
 
 if [ ! -d "$pidDir" ]; then
-	mkdir -p "$pidDir"
+	mkdir -p "$pidDir" && chown $serviceUser "$pidDir"
 	if [ $? -ne 0 ]; then exit 1; fi
+    if [ -z "$serviceGroup" ]; then chgrp $serviceGroup "$pidDir"; fi
+    if [ $? -ne 0 ]; then exit 1; fi
 fi
 pidFile="$pidDir/$NAME.pid"
 

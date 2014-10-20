@@ -23,6 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -929,22 +930,28 @@ public class Planner {
      * @return A {@link com.stratio.meta.common.logicalplan.Select}.
      */
     protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap) {
-        Map<ColumnName, String> aliasMap = new HashMap<>();
-        Map<String, ColumnType> typeMap = new HashMap<>();
+        Map<ColumnName, String> aliasMap = new LinkedHashMap<>();
+        Map<String, ColumnType> typeMap = new LinkedHashMap<>();
         boolean addAll = false;
         for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
             if(AsteriskSelector.class.isInstance(s)){
                 addAll = true;
             }else if (s.getAlias() != null) {
-                aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()), s.getAlias());
+                ColumnSelector cs = ColumnSelector.class.cast(s);
+                aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()), s.getAlias());
 
-                typeMap.put(s.toString(),
+                typeMap.put(s.getAlias(),
                         tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
                                 .get(ColumnSelector.class.cast(s).getName()).getColumnType()
                 );
             } else {
-                aliasMap.put(new ColumnName(selectStatement.getTableName(), s.toString()),
-                        ((ColumnSelector)s).getName().getName());
+                ColumnSelector cs = ColumnSelector.class.cast(s);
+                aliasMap.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
+                        cs.getName().getName());
+                typeMap.put(cs.getName().getName(),
+                        tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
+                                .get(cs.getName()).getColumnType()
+                );
             }
         }
 

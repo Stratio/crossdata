@@ -18,11 +18,14 @@
 
 package com.stratio.meta2.server.parser
 
-import com.stratio.meta2.common.result.ErrorResult
+import com.stratio.meta.common.ask.Query
+import com.stratio.meta.communication.ACK
 import com.stratio.meta2.core.parser.Parser
+import com.stratio.meta2.core.planner.Planner
+import com.stratio.meta2.core.validator.Validator
 import com.stratio.meta2.server.ServerActorTest
-import com.stratio.meta2.server.actors.ParserActor
-import com.stratio.meta2.server.mocks.MockValidatorActor
+import com.stratio.meta2.server.actors.{ParserActor, PlannerActor, ValidatorActor}
+import com.stratio.meta2.server.mocks.{MockCoordinatorActor, MockPlannerActor, MockValidatorActor}
 import org.apache.log4j.Logger
 import org.scalatest.Suite
 
@@ -33,47 +36,82 @@ class ParserActorIT extends ServerActorTest{
 
   override lazy val logger = Logger.getLogger(classOf[ParserActorIT])
 
-  val validatorRef = system.actorOf(MockValidatorActor.props(), "TestValidatorActor")
-  val parserActor = {
-    system.actorOf(ParserActor.props(validatorRef, new Parser()), "TestParserActor")
+  val mockValidatorRef_i = system.actorOf(MockValidatorActor.props(), "TestMockValidatorActor_i")
+  val mockPlannerRef_i= system.actorOf(MockPlannerActor.props(), "TestMockPlannerActor_i")
+  val mockCoordinatorActor_i = system.actorOf(MockCoordinatorActor.props(),  "TestMockCoordinatorActor_i")
+
+  val plannerRef0= system.actorOf(PlannerActor.props(mockCoordinatorActor_i,new Planner()), "TestPlannerActor0_i")
+  val plannerRef1= system.actorOf(PlannerActor.props(coordinatorActor,new Planner()), "TestPlannerActor1_i")
+  val validatorRef0 = system.actorOf(ValidatorActor.props(mockPlannerRef_i,new Validator()), "TestValidatorActor0_i")
+  val validatorRef1 = system.actorOf(ValidatorActor.props(plannerRef0,new Validator()), "TestValidatorActor1_i")
+  val validatorRef2 = system.actorOf(ValidatorActor.props(plannerRef1,new Validator()), "TestValidatorActor2_i")
+
+  val parserActor0 = {
+    system.actorOf(ParserActor.props(mockValidatorRef_i, new Parser()), "TestParserActor0_i")
+  }
+  val parserActor1 = {
+    system.actorOf(ParserActor.props(validatorRef0, new Parser()), "TestParserActor1_i")
+  }
+  val parserActor2 = {
+    system.actorOf(ParserActor.props(validatorRef1, new Parser()), "TestParserActor2_i")
+  }
+  val parserActor3 = {
+    system.actorOf(ParserActor.props(validatorRef2, new Parser()), "TestParserActor3_i")
   }
 
-   test("Should return a KO message") {
+
+  /*
+  test("Should return a KO message") {
     initialize()
     within(1000 millis) {
-      parserActor ! "anything; this doesn't make any sense"
+      parserActor0 ! "anything; this doesn't make any sense"
       val exception = expectMsgType[ErrorResult]
     }
   }
 
-  /*
-  test("Select query") {
+  test("Select query; only parser") {
     initialize()
-    connectorActor !(queryId + (1), "updatemylastqueryId")
-    plannerActor ! selectValidatedQueryWrapper
-    expectMsgType[QueryResult]
+    within(6000 millis) {
+      parserActor0 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
+      //val ack = expectMsgType[ACK]
+      //assert(ack.queryId == queryId + (1))
+      //assert(ack.status==QueryStatus.PARSED)
+    }
   }
 
-  test("Storage query") {
+  test("Select query; parser and validatormock") {
+    initialize()
+    within(6000 millis) {
+      parserActor0 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
+      //val ack = expectMsgType[ACK]
+      //assert(ack.queryId == queryId + (1))
+      //assert(ack.status==QueryStatus.VALIDATED)
+    }
+  }
+
+  test("Select query; parser ,validator and plannermock") {
     initialize()
     initializeTablesInfinispan()
-    connectorActor !(queryId + (2), "updatemylastqueryId")
-    coordinatorActor ! storagePlannedQuery
-    expectMsgType[CommandResult]
-  }
-
-  test("Metadata query") {
-    initialize()
-    connectorActor !(queryId + (3), "updatemylastqueryId")
-    coordinatorActor ! metadataPlannedQuery0
-    expectMsgType[MetadataResult]
-
-    connectorActor !(queryId + (4), "updatemylastqueryId")
-    coordinatorActor ! metadataPlannedQuery1
-    expectMsgType[MetadataResult]
-
+    within(6000 millis) {
+      parserActor1 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
+      val ack0 = expectMsgType[ACK]
+      assert(ack0.queryId == queryId + (1))
+      assert(ack0.status==QueryStatus.PLANNED)
+    }
   }
   */
+
+  test("Select query; parser ,validator, planner, and mockCoordinator") {
+    initialize()
+    initializeTablesInfinispan()
+    within(6000 millis) {
+      parserActor2 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
+      val ack0 = expectMsgType[ACK]
+      println("lastSender ="+lastSender)
+      assert(ack0.queryId == queryId + (1))
+    //  assert(ack0.status==QueryResult)
+    }
+  }
 
 
 }

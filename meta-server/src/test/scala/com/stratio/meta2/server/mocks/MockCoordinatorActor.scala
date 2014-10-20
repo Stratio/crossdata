@@ -22,21 +22,21 @@ import akka.actor.{Actor, Props}
 import com.stratio.meta.common.result.QueryStatus
 import com.stratio.meta.communication.ACK
 import com.stratio.meta2.common.result.Result
-import com.stratio.meta2.core.query.ParsedQuery
+import com.stratio.meta2.core.query.SelectPlannedQuery
 
-object MockValidatorActor {
-  def props(): Props = Props(new MockValidatorActor())
+object MockCoordinatorActor{
+  def props(): Props = Props(new MockCoordinatorActor())
 }
 
 /**
  * Actor in charge of the validation of sentences.
  */
-class MockValidatorActor() extends Actor {
+class MockCoordinatorActor() extends Actor {
 
   override def receive: Receive = {
-    case query: ParsedQuery => {
-      println("\n\n\n MOCKVALIDATORACTOR receiving from "+sender+"\n\n\n")
-      sender ! ACK(query.getQueryId,QueryStatus.VALIDATED)
+    case query:SelectPlannedQuery=>{
+      println("MockcCoordinator actor sending EXECUTED")
+      sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
     }
     case _ => {
       println("Unknown message received by ValidatorActor");

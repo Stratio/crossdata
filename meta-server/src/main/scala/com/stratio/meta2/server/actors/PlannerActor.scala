@@ -19,11 +19,10 @@
 package com.stratio.meta2.server.actors
 
 import akka.actor.{Actor, ActorRef, Props}
-import com.stratio.meta.common.result.QueryStatus
-import com.stratio.meta.communication.ACK
+import com.stratio.meta.common.exceptions.PlanningException
 import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.core.planner.Planner
-import com.stratio.meta2.core.query.{StorageValidatedQuery, SelectValidatedQuery, MetadataValidatedQuery}
+import com.stratio.meta2.core.query.{MetadataValidatedQuery, SelectValidatedQuery, StorageValidatedQuery}
 import org.apache.log4j.Logger
 
 object PlannerActor {
@@ -39,33 +38,56 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
     case query: MetadataValidatedQuery => {
       log.info("\n\nGetting MetadataValidatedQuery; sending ack to "+sender+"\n\n")
       val timer = initTimer()
-      val planned = planner.planQuery(query)
-      finishTimer(timer)
-      coordinator forward planned
-
-      val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
-      sender ! ack
+      try {
+        val planned = planner.planQuery(query)
+        finishTimer(timer)
+        coordinator forward planned
+      } catch {
+        case pe:PlanningException => {
+          val errorResult = Result.createValidationErrorResult(pe.getMessage)
+          log.error("Planning error: " + pe.getMessage + " from sender: " + sender.toString())
+          errorResult.setQueryId(query.getQueryId)
+          sender ! errorResult
+        }
+      }
+      /*val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
+      sender ! ack*/
     }
     case query: SelectValidatedQuery => {
       log.info("\n\nGetting SelectValidatedQuery; sending ack to "+sender+"\n\n")
-      val timer = initTimer()
-      val planned = planner.planQuery(query)
-      finishTimer(timer)
-      log.info("Sending " + planned.getClass + " to coordinator actor")
-      coordinator forward planned
-
-      val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
-      sender ! ack
+      try {
+        val planned = planner.planQuery(query)
+        log.info("\n\nplanner actor Sending " + planned.getClass + " to "+coordinator+"\n\n")
+        coordinator forward planned
+      } catch {
+        case pe:PlanningException => {
+          val errorResult = Result.createValidationErrorResult(pe.getMessage)
+          log.error("Planning error: " + pe.getMessage + " from sender: " + sender.toString())
+          errorResult.setQueryId(query.getQueryId)
+          sender ! errorResult
+        }
+      }
+      /*val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
+      sender ! ack*/
     }
 
     case query: StorageValidatedQuery => {
       log.info("\n\nGetting StorageValidatedQuery; sending ack to "+sender+"\n\n")
       val timer = initTimer()
-      val planned = planner.planQuery(query)
-      finishTimer(timer)
-      coordinator forward planned
-      val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
-      sender ! ack
+      try {
+        val planned = planner.planQuery(query)
+        finishTimer(timer)
+        coordinator forward planned
+      } catch {
+        case pe:PlanningException => {
+          val errorResult = Result.createValidationErrorResult(pe.getMessage)
+          log.error("Planning error: " + pe.getMessage + " from sender: " + sender.toString())
+          errorResult.setQueryId(query.getQueryId)
+          sender ! errorResult
+        }
+      }
+      /*val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
+      sender ! ack*/
     }
 
     case _ => {

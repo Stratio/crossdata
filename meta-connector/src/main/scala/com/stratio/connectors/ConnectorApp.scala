@@ -47,7 +47,7 @@ class ConnectorApp extends ConnectConfig {
 
   def startup(connector: IConnector): ActorRef = {
     actorClusterNode = system.actorOf(ConnectorActor.props(connector.getConnectorName, connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor")
-    actorClusterNode ! "I'm in!!!"
+    connector.init(null)
     actorClusterNode
   }
 
