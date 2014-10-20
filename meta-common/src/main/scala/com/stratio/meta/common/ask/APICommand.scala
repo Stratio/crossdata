@@ -21,6 +21,7 @@ package com.stratio.meta.common.ask
 /**
  * Types of supported API operations.
  */
+@SerialVersionUID(1L)
 object APICommand extends Enumeration {
   type APICommand = Value
   val LIST_CATALOGS = Value("LIST_CATALOGS")

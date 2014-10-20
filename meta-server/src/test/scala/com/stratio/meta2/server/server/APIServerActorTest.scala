@@ -113,7 +113,7 @@ with ImplicitSender with DefaultTimeout with FunSuiteLike {
     val cmd: Command = new Command(APICommand.LIST_TABLES, params)
     var result: MetadataResult = null
     within(5000 millis) {
-      result = executeAPICommand(cmd, false)
+      result = executeAPICommand(cmd, true)
     }
   }
 

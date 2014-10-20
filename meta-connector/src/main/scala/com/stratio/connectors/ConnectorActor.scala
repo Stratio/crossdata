@@ -19,7 +19,7 @@
 package com.stratio.connectors
 
 import akka.actor._
-import akka.cluster.Cluster
+import akka.cluster.{Member, Cluster}
 import akka.cluster.ClusterEvent._
 import akka.util.Timeout
 import com.stratio.meta.common.connector.IConnector
@@ -39,7 +39,6 @@ object State extends Enumeration {
 object ConnectorActor {
   def props(connectorName: String, connector: IConnector): Props = Props(new ConnectorActor(connectorName, connector))
 }
-
 
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with ActorLogging {
   //class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
@@ -62,7 +61,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
   override def preStart(): Unit = {
     //#subscribe
-    Cluster(context.system).subscribe(self, classOf[MemberEvent])
+    Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
 
@@ -218,7 +217,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
     }
 
     case MemberUp(member) =>
-      println("member up")
+      log.info("Member up")
       log.debug("*******Member is Up: {} {}!!!!!", member.toString, member.getRoles)
     //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "connectoractor" )
     //actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address)
@@ -240,7 +239,6 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
   def shutdown() = {
     println("ConnectorActor is shutting down")
-    //connector.close(new ClusterName(""))
     this.state = State.Stopping
     connector.shutdown()
     this.state = State.Stopped
