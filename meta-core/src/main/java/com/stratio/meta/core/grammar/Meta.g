@@ -341,6 +341,7 @@ T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 attachClusterStatement returns [AttachClusterStatement acs]
     @init{
         boolean ifNotExists = false;
+        j = "";
     }
     @after{
         acs = new AttachClusterStatement(
@@ -353,8 +354,7 @@ attachClusterStatement returns [AttachClusterStatement acs]
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     clusterName=T_IDENT
     T_ON T_DATASTORE dataStoreName=T_IDENT
-    T_WITH T_OPTIONS
-    j=getJson
+    (T_WITH T_OPTIONS j=getJson)?
 ;
 
 detachClusterStatement returns [DetachClusterStatement dcs]
@@ -379,11 +379,14 @@ alterClusterStatement returns [AlterClusterStatement acs]
 // ========================================================
 
 attachConnectorStatement returns [AttachConnectorStatement acs]
+    @init{
+        optionsJson = "";
+    }
     @after{
         $acs = new AttachConnectorStatement(new ConnectorName($connectorName.text),
         new ClusterName($clusterName.text), optionsJson);
     }:
-    T_ATTACH T_CONNECTOR connectorName=T_IDENT T_TO clusterName=T_IDENT T_WITH T_OPTIONS optionsJson=getJson
+    T_ATTACH T_CONNECTOR connectorName=T_IDENT T_TO clusterName=T_IDENT (T_WITH T_OPTIONS optionsJson=getJson)?
 ;
 
 detachConnectorStatement returns [DetachConnectorStatement dcs]

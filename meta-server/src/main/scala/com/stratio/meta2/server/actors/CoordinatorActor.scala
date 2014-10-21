@@ -25,7 +25,6 @@ import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
 import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{Connect, ConnectToConnector, DisconnectFromConnector, _}
-import com.stratio.meta2.common
 import com.stratio.meta2.common.data.{ConnectorName, Status}
 import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.common.statements.structures.selectors.SelectorHelper
@@ -47,13 +46,12 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
     MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
   } catch {
     case e: Exception => {
-      log.error("\n\n\nCouldn't initialize MetadataManager from CoordinatorActor well")
+      log.error("Couldn't set connectors to OFFLINE")
     }
   }
 
   def receive = {
 
-    //case plannedQuery: SelectPlannedQuery => {  }
     case plannedQuery: PlannedQuery => {
       val workflow = plannedQuery.getExecutionWorkflow()
       log.debug("Workflow for " + workflow.getActorRef)
@@ -191,7 +189,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       log.info("disconnected from connector ")
 
     case _ => {
-      //sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
       sender ! new ExecutionException("Non recognized workflow")
     }
 

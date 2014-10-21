@@ -124,6 +124,7 @@ public class MetaUtils {
             "MATCH",
             "DATASTORE",
             "CONNECTOR",
+            "CONNECTORS",
             "CLUSTER",
             "METADATA",
             "CATALOG");
