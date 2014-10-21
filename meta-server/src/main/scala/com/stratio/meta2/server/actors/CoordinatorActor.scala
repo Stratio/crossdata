@@ -25,11 +25,12 @@ import com.stratio.meta.common.executionplan._
 import com.stratio.meta.common.result._
 import com.stratio.meta.common.utils.StringUtils
 import com.stratio.meta.communication.{Connect, ConnectToConnector, DisconnectFromConnector, _}
+import com.stratio.meta2.common
 import com.stratio.meta2.common.data.{ConnectorName, Status}
 import com.stratio.meta2.common.result.Result
 import com.stratio.meta2.common.statements.structures.selectors.SelectorHelper
 import com.stratio.meta2.core.coordinator.Coordinator
-import com.stratio.meta2.core.execution.{ExecutionInfo, ExecutionManager}
+import com.stratio.meta2.core.execution.{ExecutionManagerException, ExecutionInfo, ExecutionManager}
 import com.stratio.meta2.core.metadata.MetadataManager
 import com.stratio.meta2.core.query.PlannedQuery
 
@@ -41,11 +42,11 @@ object CoordinatorActor {
 class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends Actor with ActorLogging {
 
   log.info("Lifting coordinator actor")
-  try{
+  try {
     val connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE)
     MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
-  }catch{
-    case e:Exception=>{
+  } catch {
+    case e: Exception => {
       log.error("\n\n\nCouldn't initialize MetadataManager from CoordinatorActor well")
     }
   }
@@ -93,7 +94,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
 
-          val actorRef=context.actorSelection(workflow.getActorRef())
+          val actorRef = context.actorSelection(workflow.getActorRef())
           actorRef ! workflow2.getStorageOperation()
 
         }
@@ -138,7 +139,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             log.info("ActorRef: " + actorRef.toString())
 
             actorRef.asInstanceOf[ActorSelection] ! workflow4.getExecuteOperation(queryId)
-          }else if(ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)){
+          } else if (ResultType.TRIGGER_EXECUTION.equals(workflow.getResultType)) {
 
             //TODO Trigger next step execution.
             throw new UnsupportedOperationException("Trigger execution not supported")
@@ -157,22 +158,28 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
     case result: Result => {
       val queryId = result.getQueryId
       log.info("Receiving result from " + sender + " with queryId = " + queryId + " result: " + result)
-      val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
-      //TODO Add two methods to StringUtils to retrieve AkkaActorRefUri tokening with # for connectors,
-      // and $ for clients
-      val target = executionInfo.asInstanceOf[ExecutionInfo].getSender.toString
+      try {
+        val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
+        //TODO Add two methods to StringUtils to retrieve AkkaActorRefUri tokening with # for connectors,
+        // and $ for clients
+        val target = executionInfo.asInstanceOf[ExecutionInfo].getSender.toString
           .replace("Actor[", "").replace("]", "").split("#")(0)
-      //val clientActor = context.actorSelection(StringUtils.getAkkaActorRefUri(executionInfo
-      //  .asInstanceOf[ExecutionInfo].getSender))
-      val clientActor = context.actorSelection(target)
-      log.info("Send result to: " + clientActor.toString())
+        //val clientActor = context.actorSelection(StringUtils.getAkkaActorRefUri(executionInfo
+        //  .asInstanceOf[ExecutionInfo].getSender))
+        val clientActor = context.actorSelection(target)
+        log.info("Send result to: " + clientActor.toString())
 
-      if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
+        if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
 
-        coordinator.persist(executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.asInstanceOf[MetadataWorkflow])
+          coordinator.persist(executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.asInstanceOf[MetadataWorkflow])
+        }
+        ExecutionManager.MANAGER.deleteEntry(queryId)
+        clientActor ! result
+      } catch {
+        case ex: ExecutionManagerException => {
+          log.error(ex.getStackTraceString + "cannot access queryId actorRef associated value")
+        }
       }
-      ExecutionManager.MANAGER.deleteEntry(queryId)
-      clientActor ! result
     }
 
     case ctc: ConnectToConnector =>

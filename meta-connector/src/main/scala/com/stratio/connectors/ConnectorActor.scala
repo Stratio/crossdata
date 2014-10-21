@@ -26,7 +26,7 @@ import com.stratio.meta.common.connector.IConnector
 import com.stratio.meta.common.result.{ConnectResult, StorageResult, CommandResult, MetadataResult}
 import com.stratio.meta.communication._
 import com.stratio.meta2.common
-import com.stratio.meta2.common.result.Result
+import com.stratio.meta2.common.result.{ErrorResult, Result}
 
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
@@ -222,7 +222,7 @@ ActorLogging {
             eng.insert(clustername, table, rows)
           }
         }
-        val result = StorageResult.createSuccessFulStorageResult("Inserted successfully");
+        val result = StorageResult.createSuccessFulStorageResult("INSERTED successfully");
         result.setQueryId(qId)
         sender ! result
       } catch {
@@ -231,12 +231,12 @@ ActorLogging {
           val result = common.result.Result.createExecutionErrorResult(ex.getStackTraceString)
           sender ! result
         }
-        case err: Error =>
+        case err: Error => {
           log.error("error in ConnectorActor( receiving StorageOperation)")
+          val result = common.result.Result.createExecutionErrorResult("error in ConnectorActor")
+          sender ! result
+        }
       }
-      val result = StorageResult.createSuccessFulStorageResult("Storage operation successful");
-      result.setQueryId(qId)
-      sender ! result
     }
 
     case msg: getConnectorName => {
