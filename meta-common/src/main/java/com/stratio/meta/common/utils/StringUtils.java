@@ -158,7 +158,7 @@ public class StringUtils {
 
     public static String getAkkaActorRefUri(Object object){
         if(object != null) {
-            return object.toString().replace("Actor[", "").replace("]", "").split("\\$")[0];
+            return object.toString().replace("Actor[", "").replace("]", "").split("\\$")[0].split("#")[0];
         }
         return null;
     }

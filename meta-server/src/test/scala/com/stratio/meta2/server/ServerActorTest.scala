@@ -46,16 +46,13 @@ import com.stratio.meta2.core.grid.Grid
 import com.stratio.meta2.core.metadata.{MetadataManager, MetadataManagerTestHelper}
 import com.stratio.meta2.core.planner.SelectValidatedQueryWrapper
 import com.stratio.meta2.core.query._
-import com.stratio.meta2.core.statements.{CreateCatalogStatement,CreateTableStatement, InsertIntoStatement, MetadataStatement,
-SelectStatement}
+import com.stratio.meta2.core.statements.{CreateCatalogStatement,CreateTableStatement, InsertIntoStatement, MetadataStatement, SelectStatement}
 import com.stratio.meta2.server.actors.CoordinatorActor
 import com.stratio.meta2.server.mocks.MockConnectorManagerActor
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuiteLike, Suite}
-import scala.collection.mutable
 import scala.concurrent.duration.DurationInt
 import akka.pattern.ask
-import com.stratio.meta.common.executionplan.ExecutionPath
 import scala.concurrent.Await
 import com.stratio.meta2.core.planner.PlannerExecutionWorkflowTest
 
@@ -82,6 +79,7 @@ ImplicitSender {
   val tableName1="myTable1"
   val tableName2="myTable2"
   val columnName="columnName"
+
   val catalogName = "myCatalog"
   val myClusterName ="myCluster"
 
@@ -97,7 +95,9 @@ ImplicitSender {
   val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,tableName))
   val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM "+catalogName+"." +tableName,
     new CatalogName(catalogName)), selectStatement)
+  //val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
   val selectValidatedQueryWrapper = new SelectValidatedQueryWrapper(selectStatement,selectParsedQuery)
+
   val storageStatement: InsertIntoStatement = null
   //TODO
   //make the implementation of storageStatement.
@@ -127,6 +127,8 @@ ImplicitSender {
 
       new TableName(catalogName,tableName1),
       new ClusterName(myClusterName),
+
+
       new util.HashMap[ColumnName, ColumnType](),
       new util.ArrayList[ColumnName](),
       new util.ArrayList[ColumnName]()
@@ -264,5 +266,3 @@ ImplicitSender {
 
 
 }
-
-
