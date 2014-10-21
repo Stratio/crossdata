@@ -34,6 +34,9 @@ case class ACK(queryId: String, status: QueryStatus) extends Serializable
 @SerialVersionUID(-4225642367894752659L)
 case class Connect(credentials: ICredentials, connectorClusterConfig: ConnectorClusterConfig) extends Serializable
 
+@SerialVersionUID(-1155642323894542659L)
+case class Rejoin(protocol: String, system: String, host: String, port: Int) extends Serializable
+
 @SerialVersionUID(-2255642367894752659L)
 case class Reply(msg: String) extends Serializable
 

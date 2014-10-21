@@ -37,11 +37,14 @@ object State extends Enumeration {
 }
 
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector): Props = Props(new ConnectorActor(connectorName, connector))
+  def props(connectorName: String, connector: IConnector): Props = Props(new ConnectorActor
+  (connectorName, connector))
 }
 
-class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with ActorLogging {
-  //class ConnectorActor(connectorName:String,conn:IConnector) extends Actor with ActorLogging {
+class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with
+ActorLogging {
+
+  //log.info("Lifting connector actor")
 
   implicit val timeout = Timeout(20 seconds)
 
@@ -50,7 +53,6 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
   var state = State.Stopped
   var parentActorRef: ActorRef = null
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
-
 
   override def handleHeartbeat(heartbeat: HeartbeatSig) = {
     //println("receiving heartbeat signal")
@@ -61,13 +63,12 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 
   override def preStart(): Unit = {
     //#subscribe
-    Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
+    Cluster(context.system).subscribe(self, classOf[MemberEvent])
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
 
   override def receive = super.receive orElse {
     //override def receive = {
-
 
     //case RouterRoutees(routees)=> routees foreach context.watch
 
@@ -85,6 +86,27 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
       sender ! ConnectResult.createConnectResult("Connected successfully"); //TODO once persisted sessionId,
       // attach it in this info recover it to
+    }
+
+    case rejoin: Rejoin => {
+
+      log.info("Received " + rejoin + " from " + sender)
+
+      Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
+
+      /*
+      log.info("Leaving")
+      Cluster(context.system).leave(Cluster(context.system).selfAddress)
+      Thread.sleep(5000)
+
+      log.info("Down")
+      Cluster(context.system).down(Cluster(context.system).selfAddress)
+      Thread.sleep(5000)
+
+      val seedAddress = new Address(rejoin.protocol, rejoin.system, rejoin.host, rejoin.port)
+      log.info("Joining to " + seedAddress)
+      Cluster(context.system).join(seedAddress)
+      */
     }
 
     case _: com.stratio.meta.communication.Shutdown => {
@@ -222,24 +244,29 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
       sender ! replyConnectorName(connectorName)
     }
 
-    case MemberUp(member) =>
+    case MemberUp(member) => {
       log.info("Member up")
       log.debug("*******Member is Up: {} {}!!!!!", member.toString, member.getRoles)
     //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "connectoractor" )
     //actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address)
+    }
 
-    case state: CurrentClusterState =>
-      log.debug("Current members: {}", state.members.mkString(", "))
+    case state: CurrentClusterState => {
+      log.info("Current members: {}", state.members.mkString(", "))
+    }
 
-    case UnreachableMember(member) =>
-      log.debug("Member detected as unreachable: {}", member)
+    case UnreachableMember(member) => {
+      log.info("Member detected as unreachable: {}", member)
+    }
 
-    case MemberRemoved(member, previousStatus) =>
-      log.debug("Member is Removed: {} after {}",
+    case MemberRemoved(member, previousStatus) => {
+      log.info("Member is Removed: {} after {}",
         member.address, previousStatus)
+    }
 
-    case _: MemberEvent =>
-      log.debug("Receiving anything else")
+    case _: MemberEvent => {
+      log.info("Receiving anything else")
+    }
 
   }
 
