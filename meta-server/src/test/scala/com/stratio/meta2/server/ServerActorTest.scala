@@ -225,7 +225,7 @@ ImplicitSender {
     //create table
     val table1= metadataManager.createTestTable(clusterName1, catalogName, tableName, Array("name", "age"),
 
-      Array(ColumnType.VARCHAR, ColumnType.INT), Array("name"), Array("name"))
+      Array(ColumnType.TEXT, ColumnType.INT), Array("name"), Array("name"))
 
     val initialSteps: java.util.List[LogicalStep] = new java.util.LinkedList[LogicalStep]
     val project: Project = getProject(tableName2)
