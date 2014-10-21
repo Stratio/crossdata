@@ -51,6 +51,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
   }
 
   def receive = {
+    //case plannedQuery: SelectPlannedQuery => {  }
     case plannedQuery: PlannedQuery => {
 
       val workflow = plannedQuery.getExecutionWorkflow()
@@ -130,7 +131,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           executionInfo.setWorkflow(workflow)
-          //log.info("Coordinate workflow: " + workflow.toString);
+          log.info("Coordinate workflow: " + workflow.toString);
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if (ResultType.RESULTS.equals(workflow.getResultType)) {
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)

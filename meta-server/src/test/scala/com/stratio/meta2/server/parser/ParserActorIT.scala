@@ -120,7 +120,8 @@ class ParserActorIT extends ServerActorTest{
     initialize()
     initializeTablesInfinispan()
     within(6000 millis) {
-      parserActor3 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
+      parserActor3 ! Query(queryId + (1), catalogName, "SELECT "+catalogName+"."+tableName+".name FROM " +
+        catalogName+"."+tableName+";", "user0")
       fishForMessage(6 seconds){
         case msg:QueryResult =>{
           assert(msg.getQueryId()==queryId + (1))
@@ -192,7 +193,7 @@ class ParserActorIT extends ServerActorTest{
       }
     }
     within(6000 millis) {
-      val query="create TABLE mynewcatalog.demo ON CLUSTER myCluster(field1 varchar PRIMARY KEY , field2 varchar);"
+      val query="create TABLE mynewcatalog.demo ON CLUSTER "+myClusterName+"(field1 varchar PRIMARY KEY , field2 varchar);"
       parserActor3 ! Query(queryId + (2), "mynewcatalog", query,"user0")
       fishForMessage(6 seconds){
         case msg:MetadataResult =>{
