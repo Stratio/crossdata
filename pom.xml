@@ -21,13 +21,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.stratio.meta</groupId>
-    <artifactId>meta-parent</artifactId>
+    <groupId>com.stratio.crossdata</groupId>
+    <artifactId>crossdata-parent</artifactId>
     <packaging>pom</packaging>
     <version>0.1.0-SNAPSHOT</version>
-    <name>Stratio META parent</name>
-    <description>Stratio META</description>
-    <url>https://github.com/Stratio/stratio-meta/</url>
+    <name>Stratio Crossdata parent</name>
+    <description>Stratio Crossdata parent</description>
+    <url>http://stratio.github.io/com.stratio.crossdata/</url>
 
     <licenses>
         <license>
@@ -37,8 +37,8 @@
     </licenses>
 
     <scm>
-        <url>scm:git:git@github.com:Stratio/stratio-meta.git</url>
-        <connection>https://github.com/Stratio/stratio-meta/</connection>
+        <url>scm:git:git@github.com:Stratio/com.stratio.crossdata.git</url>
+        <connection>https://github.com/Stratio/com.stratio.crossdata/</connection>
     </scm>
 
     <developers>
@@ -73,32 +73,27 @@
             <email>dhiguero at stratio dot com</email>
         </developer>
         <developer>
-            <id>opuertas</id>
-            <name>Óscar Puertas</name>
-            <email>opuertas at stratio dot com</email>
+            <id>idiaz</id>
+            <name>Ivan Diaz</name>
+            <email>idiaz at stratio dot com</email>
         </developer>
         <developer>
             <id>jjlopez</id>
             <name>Juanjo Lopez</name>
             <email>jjlopez at stratio dot com</email>
         </developer>
-        <developer>
-            <id>idiaz</id>
-            <name>Ivan Diaz</name>
-            <email>idiaz at stratio dot com</email>
-        </developer>
-
     </developers>
 
+
     <modules>
-        <module>meta-common</module>
-        <module>meta-core</module>
-        <module>meta-driver</module>
-        <module>meta-server</module>
-        <module>meta-sh</module>
-        <module>meta-dist</module>
-        <module>meta-connector</module>
-        <module>meta-connector-maven-plugin</module>
+        <module>crossdata-common</module>
+        <module>crossdata-core</module>
+        <module>crossdata-driver</module>
+        <module>crossdata-server</module>
+        <module>crossdata-shell</module>
+        <module>crossdata-dist</module>
+        <module>crossdata-connector</module>
+        <module>crossdata-connector-maven-plugin</module>
     </modules>
     <properties>
         <scala.version>2.10.4</scala.version>

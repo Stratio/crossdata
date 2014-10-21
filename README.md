@@ -16,15 +16,15 @@ Compiling Crossdata involves generating a set of files (.tokens, Lexers, and Par
    > mvn clean compile install
 ```
 
-## Running the crossdata-server##
+## Running the com.stratio.crossdata-server##
 
 ```
-   > mvn exec:java -DskipTests -pl meta-server -Dexec.mainClass="com.stratio.meta.server.MetaApplication"
+   > mvn exec:java -DskipTests -pl com.stratio.crossdata-server -Dexec.mainClass="com.stratio.com.stratio.crossdata.server.MetaApplication"
 ```
 
 ## Running the crosdata-shell ##
 
-The crossdata-shell allows users to launch interactive queries against a set of Crossdata servers. 
+The com.stratio.crossdata-shell allows users to launch interactive queries against a set of Crossdata servers. 
 Works both in Unix and Windows.
 The shell features:
 
@@ -34,19 +34,19 @@ The shell features:
  - Help command
 
 ```
-   > mvn exec:java -pl meta-sh -Dexec.mainClass="com.stratio.meta.sh.Metash"
+   > mvn exec:java -pl com.stratio.crossdata-sh -Dexec.mainClass="com.stratio.com.stratio.crossdata.sh.Metash"
 ```
 
 The shell also supports asynchronous query execution by means of the --async parameter. This execution mode is required for streaming queries.
 
 ```
-   > mvn exec:java -pl meta-sh -Dexec.mainClass="com.stratio.meta.sh.Metash" -Dexec.args="--async"
+   > mvn exec:java -pl com.stratio.crossdata-sh -Dexec.mainClass="com.stratio.com.stratio.crossdata.sh.Metash" -Dexec.args="--async"
 ```
 
 Additionally, you can execute an script upon launching the shell. The script will be executed first, and the prompt will be shown afterwards.
 
 ```
-   > mvn exec:java -pl meta-sh -Dexec.mainClass="com.stratio.meta.sh.Metash" -Dexec.args="--script /path/script.metaql"
+   > mvn exec:java -pl com.stratio.crossdata-sh -Dexec.mainClass="com.stratio.com.stratio.crossdata.sh.Metash" -Dexec.args="--script /path/script.metaql"
 ```
 
 
@@ -55,7 +55,7 @@ Additionally, you can execute an script upon launching the shell. The script wil
 ```
    > mvn package
 ```
-See [this link](https://github.com/Stratio/stratio-meta/edit/release/0.0.4/meta-dist/src/main/include/README.md) to know start/stop the server and the shell from the dist packages
+See [this link](https://github.com/Stratio/stratio-com.stratio.crossdata/edit/release/0.0.4/com.stratio.crossdata-dist/src/main/include/README.md) to know start/stop the server and the shell from the dist packages
 
 
 ## Useful commands ##
@@ -67,7 +67,7 @@ Once the shell is running, you can exit the program introducing the word **exit*
 You can find more information about this project (tutorials, examples, etc...) in http://wordpress.dev.strat.io/
 
 ## Send issues to Jira ##
-You can send us issues in https://crossdata.atlassian.net
+You can send us issues in https://com.stratio.crossdata.atlassian.net
 
 # License #
 

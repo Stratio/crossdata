@@ -1,0 +1,13 @@
+target/
+src/main/java/com/stratio/com.stratio.crossdata/grammar/generated/
+src/main/java/com/stratio/com.stratio.crossdata/client/help/generated/
+.classpath
+.project
+.settings
+nbproject/
+build.xml
+nbactions.xml
+.idea
+*.iml
+src/main/resources/history.txt
+*.orig
