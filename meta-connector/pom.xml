@@ -31,7 +31,6 @@
     <version>1.0</version>
     <url>https://github.com/Stratio/stratio-meta/</url>
 
-
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -40,9 +39,9 @@
     </licenses>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <akka.version>2.2.4</akka.version>
-        <scala.version>2.10.4</scala.version>
-        <meta.version>0.1.0-SNAPSHOT</meta.version>
+        <!--akka.version>2.2.4</akka.version-->
+        <!--scala.version>2.10.4</scala.version-->
+        <!--meta.version>0.1.0-SNAPSHOT</meta.version-->
     </properties>
 
     <dependencies>
@@ -51,12 +50,12 @@
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-core</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.meta</groupId>
             <artifactId>meta-common</artifactId>
-            <version>${meta.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
@@ -112,6 +111,11 @@
                     <groupId>org.scala-lang</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_2.10</artifactId>
+            <version>${akka.version}</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>

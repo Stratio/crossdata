@@ -44,7 +44,7 @@ object ConnectorActor {
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with
 ActorLogging {
 
-  //log.info("Lifting connector actor")
+  log.info("Lifting connector actor")
 
   implicit val timeout = Timeout(20 seconds)
 
@@ -62,9 +62,7 @@ ActorLogging {
   }
 
   override def preStart(): Unit = {
-    //#subscribe
-    Cluster(context.system).subscribe(self, classOf[MemberEvent])
-    //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
+    Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
   }
 
   override def receive = super.receive orElse {
@@ -88,27 +86,6 @@ ActorLogging {
       // attach it in this info recover it to
     }
 
-    case rejoin: Rejoin => {
-
-      log.info("Received " + rejoin + " from " + sender)
-
-      Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
-
-      /*
-      log.info("Leaving")
-      Cluster(context.system).leave(Cluster(context.system).selfAddress)
-      Thread.sleep(5000)
-
-      log.info("Down")
-      Cluster(context.system).down(Cluster(context.system).selfAddress)
-      Thread.sleep(5000)
-
-      val seedAddress = new Address(rejoin.protocol, rejoin.system, rejoin.host, rejoin.port)
-      log.info("Joining to " + seedAddress)
-      Cluster(context.system).join(seedAddress)
-      */
-    }
-
     case _: com.stratio.meta.communication.Shutdown => {
       log.debug("->" + "Receiving Shutdown")
       this.shutdown()
@@ -121,7 +98,6 @@ ActorLogging {
         val result = connector.getQueryEngine().execute(ex.workflow)
         result.setQueryId(ex.queryId)
         sender ! result
-        //router forward (connector.getQueryEngine(),ex)
 
       } catch {
         case e: Exception => {
@@ -247,8 +223,6 @@ ActorLogging {
     case MemberUp(member) => {
       log.info("Member up")
       log.debug("*******Member is Up: {} {}!!!!!", member.toString, member.getRoles)
-    //val actorRefe=context.actorSelection(RootActorPath(member.address) / "user" / "connectoractor" )
-    //actorRefe ! "hola "+member.address+ "  "+RootActorPath(member.address)
     }
 
     case state: CurrentClusterState => {

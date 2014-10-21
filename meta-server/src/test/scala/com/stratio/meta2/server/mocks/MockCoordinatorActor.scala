@@ -19,8 +19,10 @@
 package com.stratio.meta2.server.mocks
 
 import akka.actor.{Actor, Props}
+import com.stratio.meta.common.result.QueryStatus
+import com.stratio.meta.communication.ACK
 import com.stratio.meta2.common.result.Result
-import com.stratio.meta2.core.query.SelectPlannedQuery
+import com.stratio.meta2.core.query.{MetadataPlannedQuery, SelectPlannedQuery}
 
 object MockCoordinatorActor{
   def props(): Props = Props(new MockCoordinatorActor())
@@ -32,9 +34,13 @@ object MockCoordinatorActor{
 class MockCoordinatorActor() extends Actor {
 
   override def receive: Receive = {
+    case query:MetadataPlannedQuery=>{
+      println("MockCoordinator actor sending EXECUTED")
+      sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
+    }
     case query:SelectPlannedQuery=>{
       println("MockCoordinator actor sending EXECUTED")
-      //sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
+      sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
     }
     case _ => {
       println("Unknown message received by ValidatorActor");

@@ -93,6 +93,11 @@ class MockConnectorActor() extends Actor with ActorLogging {
           result.setQueryId( metadataOp.asInstanceOf[CreateCatalog].queryId )
           sender ! result
         }
+        case "CreateTableAndCatalog"=>{
+          println(">>>>>>>>>>>>>>>>>>>>>>> create table and catalog")
+          result.setQueryId( metadataOp.asInstanceOf[CreateTableAndCatalog].queryId )
+          sender ! result
+        }
         case "CreateIndex"=>{
           result.setQueryId( metadataOp.asInstanceOf[CreateIndex].queryId )
           sender ! result
