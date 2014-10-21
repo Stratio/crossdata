@@ -628,13 +628,15 @@ public class Planner {
             // Recover ActorRef from ConnectorMetadata
             List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,
                     createTableStatement.getClusterName());
-            String actorRefUri = connectors.iterator().next().getActorRef();
+            ConnectorMetadata chosenConnectorMetadata = connectors.iterator().next();
+            String actorRefUri = chosenConnectorMetadata.getActorRef();
+            Set<Operations> supportedOperations = chosenConnectorMetadata.getSupportedOperations();
 
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
             ResultType type = ResultType.RESULTS;
 
             if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
-                    createTableStatement.getClusterName())) {
+                    createTableStatement.getClusterName()) && supportedOperations.contains(Operations.CREATE_CATALOG)) {
                 executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
 
                 // Create MetadataWorkFlow
