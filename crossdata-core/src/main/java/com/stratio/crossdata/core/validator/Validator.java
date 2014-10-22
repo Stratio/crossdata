@@ -22,10 +22,12 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
 import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
+import com.stratio.crossdata.common.exceptions.validation.NotConnectionException;
 import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -172,10 +174,10 @@ public class Validator {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) statement;
             ConnectorName connectorName = attachConnectorStatement.getConnectorName();
             if(!MetadataManager.MANAGER.checkConnectorStatus(connectorName, Status.ONLINE)){
-                throw new ValidationException("Connector "+ connectorName + " is not connected.");
+                throw new NotConnectionException("Connector "+ connectorName + " is not connected.");
             }
         } else {
-            throw new ValidationException("Invalid validation [MUST_BE_CONNECTED] for "+ statement);
+            throw new NotConnectionException("Invalid validation [MUST_BE_CONNECTED] for "+ statement);
         }
     }
 
@@ -310,14 +312,14 @@ public class Validator {
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
             if (alterCatalogStatement.getOptions() == null || alterCatalogStatement.getOptions().isEmpty()) {
-                throw new ValidationException("AlterCatalog options can't be empty");
+                throw new BadFormatException("AlterCatalog options can't be empty");
             }
 
         }
         if (stmt instanceof AlterClusterStatement) {
             AlterClusterStatement alterClusterStatement = (AlterClusterStatement) stmt;
             if (alterClusterStatement.getOptions() == null || alterClusterStatement.getOptions().isEmpty()) {
-                throw new ValidationException("AlterCluster options can't be empty");
+                throw new BadFormatException("AlterCluster options can't be empty");
             }
         }
 
@@ -423,13 +425,13 @@ public class Validator {
         if (stmt instanceof AttachClusterStatement) {
             AttachClusterStatement myStmt = (AttachClusterStatement) stmt;
             if (myStmt.getOptions().isEmpty()) {
-                throw new ValidationException("AttachClusterStatement options can't be empty");
+                throw new BadFormatException("AttachClusterStatement options can't be empty");
             }
         } else {
             if (stmt instanceof AttachConnectorStatement) {
                 AttachConnectorStatement myStmt = (AttachConnectorStatement) stmt;
                 if (myStmt.getOptions() == null || myStmt.getOptions().isEmpty()) {
-                    throw new ValidationException("AttachConnectorStatement options can't be empty");
+                    throw new BadFormatException("AttachConnectorStatement options can't be empty");
                 }
             }
         }
