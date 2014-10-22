@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.connector;
 
+import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
@@ -36,13 +37,12 @@ public interface IQueryEngine {
      *                 contains the {@link com.stratio.crossdata.common.logicalplan.LogicalStep} to be
      *                 executed.
      * @return A {@link com.stratio.crossdata.common.result.QueryResult}.
-     * @throws UnsupportedException If the required set of operations are not supported by the
-     *                              connector.
-     * @throws ExecutionException   If the execution of the required steps fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                 supported by the connector or ExecutionException if the execution of the required
+     *                 steps fails.
      */
     public QueryResult execute(LogicalWorkflow workflow)
-            throws UnsupportedException,
-            ExecutionException;
+            throws ConnectorException;
 
     /**
      * Execute a workflow asynchronously to retrieve a subset of data. Each time new data becomes available, the
@@ -53,20 +53,20 @@ public interface IQueryEngine {
      *                      contains the {@link com.stratio.crossdata.common.logicalplan.LogicalStep} to be
      *                      executed.
      * @param resultHandler A result handler to receive incoming results.
-     * @throws ExecutionException If the execution of the required steps fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                 supported by the connector or ExecutionException if the execution of the required
+     *                 steps fails.
      */
     public void asyncExecute(String queryId, LogicalWorkflow workflow, IResultHandler resultHandler)
-            throws UnsupportedException,
-            ExecutionException;
+            throws ConnectorException;
 
     /**
      * Stop an asynchronous query.
      *
      * @param queryId The query identifier.
-     * @throws UnsupportedException If the required operation is not supported.
-     * @throws ExecutionException   If the execution of the required steps fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                 supported by the connector or ExecutionException if the execution fails.
      */
-    public void stop(String queryId) throws UnsupportedException,
-            ExecutionException;
+    public void stop(String queryId) throws ConnectorException;
 
 }

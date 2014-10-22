@@ -21,12 +21,16 @@ package com.stratio.crossdata.common.exceptions;
 /**
  * Execution exception thrown by the Driver if the statement could not be executed.
  */
-public class ExecutionException extends Exception {
+public class ExecutionException extends ConnectorException {
 
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
      */
     private static final long serialVersionUID = 9044542877799283335L;
+
+    public ExecutionException(Exception e){
+        super(e);
+    }
 
     public ExecutionException(String message) {
         super(message);

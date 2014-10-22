@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.connector;
 
+import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.data.CatalogName;
@@ -38,69 +39,63 @@ public interface IMetadataEngine {
      *
      * @param targetCluster   Target cluster.
      * @param catalogMetadata CATALOG metadata.
-     * @throws UnsupportedException If the operation is not supported.
-     * @throws ExecutionException   If the execution fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                 supported by the connector or ExecutionException if the execution fails.
      */
     public void createCatalog(ClusterName targetCluster, CatalogMetadata catalogMetadata)
-            throws UnsupportedException,
-            ExecutionException;
+            throws ConnectorException;
 
     /**
      * Create a table in the underlying datastore.
      *
      * @param targetCluster Target cluster.
      * @param tableMetadata TABLE metadata.
-     * @throws UnsupportedException If the operation is not supported.
-     * @throws ExecutionException   If the execution fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                 supported by the connector or ExecutionException if the execution fails.
      */
     public void createTable(ClusterName targetCluster, TableMetadata tableMetadata)
-            throws UnsupportedException,
-            ExecutionException;
+            throws ConnectorException;
 
     /**
      * Drop an existing catalog.
      *
      * @param targetCluster Target cluster.
      * @param name          The name of the catalog.
-     * @throws UnsupportedException If the operation is not supported.
-     * @throws ExecutionException   If the execution fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                 supported by the connector or ExecutionException if the execution fails.
      */
-    public void dropCatalog(ClusterName targetCluster, CatalogName name) throws UnsupportedException,
-            ExecutionException;
+    public void dropCatalog(ClusterName targetCluster, CatalogName name) throws ConnectorException;
 
     /**
      * Drop an existing table.
      *
      * @param targetCluster Target cluster.
      * @param name          The name of the table.
-     * @throws UnsupportedException If the operation is not supported.
-     * @throws ExecutionException   If the execution fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                 supported by the connector or ExecutionException if the execution fails.
      */
-    public void dropTable(ClusterName targetCluster, TableName name) throws UnsupportedException,
-            ExecutionException;
+    public void dropTable(ClusterName targetCluster, TableName name) throws ConnectorException;
 
     /**
      * Create an INDEX in the underlying datastore.
      *
      * @param targetCluster Target cluster.
      * @param indexMetadata The index.
-     * @throws UnsupportedException If the operation is not supported.
-     * @throws ExecutionException   If the execution fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                 supported by the connector or ExecutionException if the execution fails.
      */
     public void createIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
-            throws UnsupportedException,
-            ExecutionException;
+            throws ConnectorException;
 
     /**
      * Drop an existing index.
      *
      * @param targetCluster Target cluster.
      * @param indexMetadata The name of the table.
-     * @throws UnsupportedException If the operation is not supported.
-     * @throws ExecutionException   If the execution fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                 supported by the connector or ExecutionException if the execution fails.
      */
     public void dropIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
-            throws UnsupportedException,
-            ExecutionException;
+            throws ConnectorException;
 
 }
