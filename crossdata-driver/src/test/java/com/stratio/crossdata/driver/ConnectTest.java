@@ -27,11 +27,8 @@ import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.exceptions.ConnectionException;
-import com.stratio.crossdata.common.exceptions.ManifestException;
-import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.Result;
-import com.stratio.crossdata.common.api.datastore.DataStoreType;
 
 public class ConnectTest extends DriverParentTest {
 
@@ -54,5 +51,4 @@ public class ConnectTest extends DriverParentTest {
 
     }
 
-   
 }

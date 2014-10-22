@@ -23,8 +23,8 @@ import java.util.Map;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models a {@code CREATE CATALOG} statement from the META language. CATALOG
@@ -73,7 +73,7 @@ public class CreateCatalogStatement extends MetadataStatement {
     }
 
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_NOT_EXIST_CATALOG);
+        return new ValidationRequirements().add(ValidationTypes.MUST_NOT_EXIST_CATALOG);
     }
 
     public CatalogName getCatalogName() {

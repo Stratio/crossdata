@@ -31,8 +31,8 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.structures.TableType;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models a {@code CREATE TABLE} statement of the META language.
@@ -208,9 +208,9 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     }
 
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG)
-                .add(Validation.MUST_EXIST_CLUSTER)
-                .add(Validation.MUST_NOT_EXIST_TABLE);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_CLUSTER)
+                .add(ValidationTypes.MUST_NOT_EXIST_TABLE);
     }
 
     @Override

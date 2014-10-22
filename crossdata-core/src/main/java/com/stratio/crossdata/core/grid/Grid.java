@@ -30,7 +30,7 @@ import org.jgroups.JChannel;
  * Class providing several in-memory data grid artifacts, as distributed data stores, locks and
  * broadcast channels.
  */
-public class Grid implements Closeable {
+public final class Grid implements Closeable {
 
     private static final String FORK_CHANNEL_PREFIX = "fork-";
 

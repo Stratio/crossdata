@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.AmbiguousNameException;
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
@@ -30,15 +32,11 @@ import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
 import com.stratio.crossdata.common.exceptions.validation.NotValidColumnException;
 import com.stratio.crossdata.common.exceptions.validation.YodaConditionException;
-import com.stratio.crossdata.common.statements.structures.relationships.Operator;
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
-import com.stratio.crossdata.core.structures.GroupBy;
-import com.stratio.crossdata.core.structures.InnerJoin;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.relationships.Operator;
+import com.stratio.crossdata.common.statements.structures.relationships.Relation;
 import com.stratio.crossdata.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.selectors.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.selectors.SelectExpression;
@@ -48,6 +46,8 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.structures.GroupBy;
+import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.structures.OrderBy;
 
 public class Normalizator {
@@ -92,8 +92,7 @@ public class Normalizator {
     }
 
     public void normalizeJoins()
-            throws NotExistNameException, BadFormatException, AmbiguousNameException,
-            NotValidColumnException, YodaConditionException {
+            throws ValidationException {
         InnerJoin innerJoin = ((SelectStatement) parsedQuery.getStatement()).getJoin();
         if (innerJoin != null) {
             normalizeJoins(innerJoin);
@@ -102,8 +101,7 @@ public class Normalizator {
     }
 
     public void normalizeJoins(InnerJoin innerJoin)
-            throws NotExistNameException, BadFormatException, AmbiguousNameException,
-            NotValidColumnException, YodaConditionException {
+            throws ValidationException {
         TableName joinTable = innerJoin.getTablename();
         checkTable(joinTable);
         fields.getTableNames().add(joinTable);
@@ -111,8 +109,7 @@ public class Normalizator {
     }
 
     private void normalizeWhere()
-            throws BadFormatException, AmbiguousNameException, NotValidColumnException,
-            NotExistNameException, YodaConditionException {
+            throws ValidationException {
         List<Relation> where = ((SelectStatement) parsedQuery.getStatement()).getWhere();
         if (where != null && !where.isEmpty()) {
             normalizeWhere(where);
@@ -121,8 +118,7 @@ public class Normalizator {
     }
 
     private void normalizeWhere(List<Relation> where)
-            throws BadFormatException, AmbiguousNameException, NotValidColumnException,
-            NotExistNameException, YodaConditionException {
+            throws ValidationException {
         checkWhereRelations(where);
     }
 
@@ -135,13 +131,12 @@ public class Normalizator {
         if (orderBy != null) {
             normalizeOrderBy(orderBy);
             fields.setOrderBy(orderBy);
-            throw new ValidationException("ORDER BY not supported yet.");
+            throw new BadFormatException("ORDER BY not supported yet.");
         }
     }
 
     public void normalizeOrderBy(OrderBy orderBy)
-            throws BadFormatException, AmbiguousNameException, NotExistNameException,
-            NotValidColumnException {
+            throws ValidationException {
         for (Selector selector : orderBy.getSelectorList()) {
             switch (selector.getType()) {
             case COLUMN:
@@ -160,7 +155,7 @@ public class Normalizator {
     }
 
     public void normalizeSelectExpression()
-            throws AmbiguousNameException, NotExistNameException, NotValidColumnException {
+            throws ValidationException {
         SelectExpression selectExpression = ((SelectStatement) parsedQuery.getStatement()).getSelectExpression();
         if (selectExpression != null) {
             normalizeSelectExpresion(selectExpression);
@@ -168,7 +163,7 @@ public class Normalizator {
     }
 
     public void normalizeSelectExpresion(SelectExpression selectExpression)
-            throws AmbiguousNameException, NotExistNameException, NotValidColumnException {
+            throws ValidationException {
         fields.setDistinctSelect(selectExpression.isDistinct());
         List<Selector> normalizeSelectors = checkListSelector(selectExpression.getSelectorList());
         fields.getSelectors().addAll(normalizeSelectors);
@@ -180,12 +175,12 @@ public class Normalizator {
         if (groupBy != null) {
             normalizeGroupBy(groupBy);
             fields.setGroupBy(groupBy);
-            throw new ValidationException("GROUP BY not supported yet.");
+            throw new BadFormatException("GROUP BY not supported yet.");
         }
     }
 
     private void checkFormatBySelectorIdentifier(Selector selector, Set<ColumnName> columnNames)
-            throws BadFormatException, NotValidColumnException, NotExistNameException, AmbiguousNameException {
+            throws ValidationException {
         switch (selector.getType()) {
         case FUNCTION:
             throw new BadFormatException("Function include into groupBy is not valid");
@@ -216,8 +211,7 @@ public class Normalizator {
         }
     }
 
-    public void normalizeGroupBy(GroupBy groupBy) throws BadFormatException, AmbiguousNameException,
-            NotExistNameException, NotValidColumnException {
+    public void normalizeGroupBy(GroupBy groupBy) throws ValidationException {
         Set<ColumnName> columnNames = new HashSet<>();
         for (Selector selector : groupBy.getSelectorIdentifier()) {
             checkFormatBySelectorIdentifier(selector, columnNames);
@@ -228,9 +222,7 @@ public class Normalizator {
         }
     }
 
-    public void checkJoinRelations(List<Relation> relations) throws BadFormatException,
-            AmbiguousNameException, NotExistNameException, NotValidColumnException,
-            YodaConditionException {
+    public void checkJoinRelations(List<Relation> relations) throws ValidationException {
         for (Relation relation : relations) {
             checkRelation(relation);
             switch (relation.getOperator()) {
@@ -249,17 +241,14 @@ public class Normalizator {
         }
     }
 
-    public void checkWhereRelations(List<Relation> relations) throws BadFormatException,
-            AmbiguousNameException, NotExistNameException, NotValidColumnException,
-            YodaConditionException {
+    public void checkWhereRelations(List<Relation> relations) throws ValidationException {
         for (Relation relation : relations) {
             checkRelation(relation);
         }
     }
 
     public void checkRelation(Relation relation)
-            throws NotValidColumnException, NotExistNameException, AmbiguousNameException,
-            BadFormatException, YodaConditionException {
+            throws ValidationException {
         if (relation.getOperator().isInGroup(Operator.Group.ARITHMETIC)) {
             throw new BadFormatException("Compare operations are just valid");
         }
@@ -268,8 +257,7 @@ public class Normalizator {
     }
 
     private void checkRelationFormatLeft(Relation relation)
-            throws BadFormatException, AmbiguousNameException, NotExistNameException, NotValidColumnException,
-            YodaConditionException {
+            throws ValidationException {
         switch (relation.getLeftTerm().getType()) {
         case FUNCTION:
             throw new BadFormatException("Functions not supported yet");
@@ -287,7 +275,7 @@ public class Normalizator {
     }
 
     private void checkRelationFormatRight(Relation relation)
-            throws BadFormatException, AmbiguousNameException, NotExistNameException, NotValidColumnException {
+            throws ValidationException {
         switch (relation.getRightTerm().getType()) {
         case COLUMN:
         case STRING:
@@ -304,60 +292,7 @@ public class Normalizator {
         }
     }
 
-    public void checkColumnType(Selector left, Selector right)
-            throws YodaConditionException, BadFormatException, NotMatchDataTypeException {
-        if (left.getType() == SelectorType.FUNCTION || right.getType() == SelectorType.FUNCTION) {
-            return;
-        }
-        if (left.getType() != SelectorType.COLUMN) {
-            throw new YodaConditionException();
-        }
-        ColumnName leftColumnName = ((ColumnSelector) left).getName();
-        ColumnMetadata leftColumnMetadata = MetadataManager.MANAGER.getColumn(leftColumnName);
-
-        checkColumnRight(right, leftColumnName, leftColumnMetadata);
-    }
-
-    private void checkColumnRight(Selector right, ColumnName leftColumnName, ColumnMetadata leftColumnMetadata)
-            throws NotMatchDataTypeException, BadFormatException {
-        switch (right.getType()) {
-        case COLUMN:
-            ColumnName rightColumnName = ((ColumnSelector) right).getName();
-            ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
-            if (leftColumnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
-                throw new NotMatchDataTypeException(rightColumnName);
-            }
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk not supported in relations.");
-        case BOOLEAN:
-            if (leftColumnMetadata.getColumnType() != ColumnType.BOOLEAN) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case STRING:
-            if (leftColumnMetadata.getColumnType() != ColumnType.TEXT) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case INTEGER:
-            if (leftColumnMetadata.getColumnType() != ColumnType.INT &&
-                    leftColumnMetadata.getColumnType() != ColumnType.BIGINT) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case FLOATING_POINT:
-            if (leftColumnMetadata.getColumnType() != ColumnType.FLOAT
-                    && leftColumnMetadata.getColumnType() != ColumnType.DOUBLE) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case RELATION:
-            throw new BadFormatException("Operation not supported in where.");
-        }
-    }
-
-    public void checkTable(TableName tableName) throws NotExistNameException {
+    public void checkTable(TableName tableName) throws ValidationException {
         if (!tableName.isCompletedName()) {
             tableName.setCatalogName(parsedQuery.getDefaultCatalog());
         }
@@ -366,8 +301,7 @@ public class Normalizator {
         }
     }
 
-    public void checkColumnSelector(ColumnSelector selector) throws AmbiguousNameException,
-            NotExistNameException, NotValidColumnException {
+    public void checkColumnSelector(ColumnSelector selector) throws ValidationException {
         ColumnName columnName = selector.getName();
         if (columnName.isCompletedName()) {
             if (!MetadataManager.MANAGER.exists(columnName)) {
@@ -381,8 +315,7 @@ public class Normalizator {
 
     }
 
-    public TableName searchTableNameByColumn(ColumnName columnName) throws AmbiguousNameException,
-            NotExistNameException, NotValidColumnException {
+    public TableName searchTableNameByColumn(ColumnName columnName) throws ValidationException {
         TableName selectTableName = null;
         if (columnName.isCompletedName()) {
             if (MetadataManager.MANAGER.exists(columnName)) {
@@ -405,13 +338,13 @@ public class Normalizator {
                     }
                 }
             } else {
-                for(TableName tableName:fields.getTableNames()){
-                    if(tableName.getName().equalsIgnoreCase(columnName.getTableName().getName())){
+                for (TableName tableName : fields.getTableNames()) {
+                    if (tableName.getName().equalsIgnoreCase(columnName.getTableName().getName())) {
                         columnName.setTableName(tableName);
                         selectTableName = tableName;
                     }
                 }
-                if(!columnName.isCompletedName()){
+                if (!columnName.isCompletedName()) {
                     throw new NotValidColumnException(columnName);
                 }
             }
@@ -435,8 +368,7 @@ public class Normalizator {
         return columnSelectors;
     }
 
-    public List<Selector> checkListSelector(List<Selector> selectors) throws AmbiguousNameException,
-            NotExistNameException, NotValidColumnException {
+    public List<Selector> checkListSelector(List<Selector> selectors) throws ValidationException {
         List<Selector> result = new ArrayList<>();
         for (Selector selector : selectors) {
             switch (selector.getType()) {
@@ -461,14 +393,14 @@ public class Normalizator {
     }
 
     public void checkFunctionSelector(FunctionSelector functionSelector)
-            throws AmbiguousNameException, NotExistNameException, NotValidColumnException {
+            throws ValidationException {
         List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());
         functionSelector.getFunctionColumns().clear();
         functionSelector.getFunctionColumns().addAll(normalizeSelector);
     }
 
     private void checkRightSelector(ColumnName name, Operator operator, Selector rightTerm)
-            throws BadFormatException, AmbiguousNameException, NotExistNameException, NotValidColumnException {
+            throws ValidationException {
         // Get column type from MetadataManager
         ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(name);
 
@@ -485,10 +417,10 @@ public class Normalizator {
         }
 
         // Create compatibilities table for ColumnType, Operator and SelectorType
-        checkCompatibility(columnMetadata.getColumnType(), operator, rightTermType);
+        checkCompatibility(columnMetadata, operator, rightTermType);
     }
 
-    private SelectorType convertMetadataTypeToSelectorType(ColumnType columnType) throws BadFormatException {
+    private SelectorType convertMetadataTypeToSelectorType(ColumnType columnType) throws ValidationException {
         SelectorType selectorType = null;
         switch (columnType) {
         case INT:
@@ -515,40 +447,55 @@ public class Normalizator {
         return selectorType;
     }
 
-    private void checkCompatibility(ColumnType columnType, Operator operator, SelectorType valueType)
-            throws BadFormatException {
-        switch (columnType) {
+    private void checkCompatibility(ColumnMetadata column, Operator operator, SelectorType valueType)
+            throws ValidationException {
+        switch (column.getColumnType()) {
         case BOOLEAN:
-            if (operator != Operator.EQ) {
-                throw new BadFormatException("Boolean relations only accept equal operator.");
-            }
-            if (valueType != SelectorType.BOOLEAN) {
-                throw new BadFormatException("Boolean relations only accept TRUE or FALSE.");
-            }
+            checkBooleanCompatibility(column,operator,valueType);
             break;
         case INT:
         case BIGINT:
         case DOUBLE:
         case FLOAT:
-            if ((valueType != SelectorType.INTEGER) && (valueType != SelectorType.FLOATING_POINT)) {
-                throw new BadFormatException("Numeric term not found.");
-            }
+            checkNumericCompatibility(column,valueType);
             break;
         case TEXT:
         case VARCHAR:
-            if (valueType != SelectorType.STRING) {
-                throw new BadFormatException("String term not found.");
-            }
-            if (operator != Operator.EQ && operator != Operator.DISTINCT) {
-                throw new BadFormatException("String relations only accept equal operator.");
-            }
+            checkStringCompatibility(column,operator,valueType);
             break;
         case NATIVE:
-            throw new BadFormatException("Native types not supported yet.");
         case SET:
         case LIST:
         case MAP:
-            throw new BadFormatException("Collections not supported yet.");
+            throw new BadFormatException("Native and Collections not supported yet.");
         }
+    }
+
+    private void checkBooleanCompatibility(ColumnMetadata column, Operator operator, SelectorType valueType)
+            throws ValidationException {
+        if (operator != Operator.EQ) {
+            throw new BadFormatException("Boolean relations only accept equal operator.");
+        }
+        if (valueType != SelectorType.BOOLEAN) {
+            throw new NotMatchDataTypeException(column.getName());
+        }
+    }
+
+    private void checkNumericCompatibility(ColumnMetadata column, SelectorType valueType)
+            throws ValidationException {
+        if ((valueType != SelectorType.INTEGER) && (valueType != SelectorType.FLOATING_POINT)) {
+            throw new NotMatchDataTypeException(column.getName());
+        }
+    }
+
+    private void checkStringCompatibility(ColumnMetadata column, Operator operator, SelectorType valueType)
+            throws ValidationException {
+        if (valueType != SelectorType.STRING) {
+            throw new NotMatchDataTypeException(column.getName());
+        }
+        if (operator != Operator.EQ && operator != Operator.DISTINCT) {
+            throw new BadFormatException("String relations only accept equal operator.");
+        }
+
     }
 }

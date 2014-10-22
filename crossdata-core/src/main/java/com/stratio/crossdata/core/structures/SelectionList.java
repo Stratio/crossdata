@@ -84,7 +84,7 @@ public class SelectionList extends SelectionClause {
 
         List<String> ids = new ArrayList<>();
 
-        Selection selection = this.getSelection();
+
         if (selection.getType() == Selection.TYPE_SELECTOR) {
             SelectionSelectors sSelectors = (SelectionSelectors) selection;
             for (SelectionSelector sSelector : sSelectors.getSelectors()) {
@@ -111,7 +111,7 @@ public class SelectionList extends SelectionClause {
 
         List<SelectorGroupBy> selectorsList = new ArrayList<>();
 
-        Selection selection = this.getSelection();
+
         if (selection.getType() == Selection.TYPE_SELECTOR) {
 
             SelectionSelectors selectors = (SelectionSelectors) selection;

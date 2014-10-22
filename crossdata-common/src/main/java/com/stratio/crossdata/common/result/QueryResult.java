@@ -23,7 +23,7 @@ import com.stratio.crossdata.common.data.ResultSet;
 /**
  * Result of the execution of a query in META.
  */
-public class QueryResult extends Result {
+public final class QueryResult extends Result {
 
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
@@ -146,4 +146,7 @@ public class QueryResult extends Result {
         this.resultPage = resultPage;
     }
 
+    public boolean isIgnoredQuery() {
+        return ignoredQuery;
+    }
 }

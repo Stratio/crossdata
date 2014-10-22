@@ -32,8 +32,8 @@ import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.GroupBy;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.structures.OrderBy;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -342,7 +342,7 @@ public class SelectStatement extends MetaStatement implements Serializable {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation
+        return new ValidationRequirements().add(ValidationTypes
                 .VALIDATE_SELECT);
     }
 

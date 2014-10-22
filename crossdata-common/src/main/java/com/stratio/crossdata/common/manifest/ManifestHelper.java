@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.api;
+package com.stratio.crossdata.common.manifest;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -24,8 +24,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.stratio.crossdata.common.connector.Operations;
-import com.stratio.crossdata.common.api.connector.ConnectorType;
-import com.stratio.crossdata.common.api.datastore.DataStoreType;
 import com.stratio.crossdata.common.data.DataStoreName;
 
 public class ManifestHelper implements Serializable {

@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.common.result;
 
-public class DisconnectResult extends Result {
+public final class DisconnectResult extends Result {
 
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.

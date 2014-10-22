@@ -24,8 +24,8 @@ import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 public class AttachConnectorStatement extends MetadataStatement {
 
@@ -50,10 +50,10 @@ public class AttachConnectorStatement extends MetadataStatement {
     }
 
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER)
-                .add(Validation.MUST_EXIST_CONNECTOR)
-                .add(Validation.VALID_CONNECTOR_OPTIONS)
-                .add(Validation.MUST_BE_CONNECTED);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CLUSTER)
+                .add(ValidationTypes.MUST_EXIST_CONNECTOR)
+                .add(ValidationTypes.VALID_CONNECTOR_OPTIONS)
+                .add(ValidationTypes.MUST_BE_CONNECTED);
     }
 
     public ConnectorName getConnectorName() {

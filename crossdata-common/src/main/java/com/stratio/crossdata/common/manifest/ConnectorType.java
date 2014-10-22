@@ -24,15 +24,12 @@
 //
 
 
-package com.stratio.crossdata.common.api.connector;
+package com.stratio.crossdata.common.manifest;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
-
-import com.stratio.crossdata.common.api.CrossdataManifest;
-import com.stratio.crossdata.common.api.PropertiesType;
 
 /**
  * <p>Java class for ConnectorType complex type.

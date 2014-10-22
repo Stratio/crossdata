@@ -25,7 +25,7 @@ import javax.transaction.TransactionManager
 
 import akka.pattern.ask
 import akka.testkit.ImplicitSender
-import com.stratio.crossdata.common.api.PropertyType
+import com.stratio.crossdata.common.manifest.PropertyType
 import com.stratio.crossdata.common.connector.Operations
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.executionplan._

@@ -24,7 +24,7 @@
 //
 
 
-package com.stratio.crossdata.common.api.connector;
+package com.stratio.crossdata.common.manifest;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -36,16 +36,16 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for DataStoreRefsType complex type.
+ * <p>Java class for SupportedOperationsType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="DataStoreRefsType">
+ * &lt;complexType name="SupportedOperationsType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="DataStoreName" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded"/>
+ *         &lt;element name="operation" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -55,28 +55,28 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "DataStoreRefsType", propOrder = {
-    "dataStoreName"
+@XmlType(name = "SupportedOperationsType", propOrder = {
+    "operation"
 })
-public class DataStoreRefsType implements Serializable {
+public class SupportedOperationsType implements Serializable {
 
-    private static final long serialVersionUID = 8550578478889881840L;
-    @XmlElement(name = "DataStoreName", required = true)
-    protected List<String> dataStoreName;
+    private static final long serialVersionUID = -4751976486009901230L;
+    @XmlElement(required = true)
+    protected List<String> operation;
 
     /**
-     * Gets the value of the dataStoreName property.
+     * Gets the value of the operation property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the dataStoreName property.
+     * This is why there is not a <CODE>set</CODE> method for the operation property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getDataStoreName().add(newItem);
+     *    getOperation().add(newItem);
      * </pre>
      * 
      * 
@@ -86,11 +86,11 @@ public class DataStoreRefsType implements Serializable {
      * 
      * 
      */
-    public List<String> getDataStoreName() {
-        if (dataStoreName == null) {
-            dataStoreName = new ArrayList<String>();
+    public List<String> getOperation() {
+        if (operation == null) {
+            operation = new ArrayList<String>();
         }
-        return this.dataStoreName;
+        return this.operation;
     }
 
 }

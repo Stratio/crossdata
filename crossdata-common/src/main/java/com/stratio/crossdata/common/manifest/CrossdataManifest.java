@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.api;
+package com.stratio.crossdata.common.manifest;
 
 import java.io.Serializable;
 

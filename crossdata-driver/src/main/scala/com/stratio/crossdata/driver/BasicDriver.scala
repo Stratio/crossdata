@@ -32,7 +32,7 @@ import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, Dri
 import com.stratio.crossdata.driver.result.SyncResultHandler
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import org.apache.log4j.Logger
-import com.stratio.crossdata.common.api.CrossdataManifest
+import com.stratio.crossdata.common.manifest.CrossdataManifest
 
 import scala.concurrent.duration._
 
