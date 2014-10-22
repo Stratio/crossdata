@@ -19,6 +19,11 @@
 package com.stratio.crossdata.core.metadata;
 
 public class MetadataManagerException extends RuntimeException {
+
+    public MetadataManagerException(Exception e){
+        super(e);
+    }
+
     public MetadataManagerException(String message) {
         super(message);
     }

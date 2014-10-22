@@ -165,7 +165,7 @@ public enum MetadataManager {
             this.tm = tm;
             this.isInit = true;
         } else {
-            throw new NullPointerException("Any parameter can't be NULL");
+            throw new IllegalArgumentException("Any parameter can't be NULL");
         }
     }
 
@@ -192,7 +192,7 @@ public enum MetadataManager {
             metadata.put(catalogMetadata.getName(), catalogMetadata);
             commitTransaction();
         } catch (Exception ex) {
-            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+            throw new MetadataManagerException(ex);
         } finally {
             writeLock.unlock();
         }
@@ -229,7 +229,7 @@ public enum MetadataManager {
             metadata.put(tableMetadata.getName().getCatalogName(), catalogMetadata);
             commitTransaction();
         } catch (Exception ex) {
-            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+            throw new MetadataManagerException(ex);
         } finally {
             writeLock.unlock();
         }
@@ -280,7 +280,7 @@ public enum MetadataManager {
 
             commitTransaction();
         } catch (Exception ex) {
-            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+            throw new MetadataManagerException(ex);
         } finally {
             writeLock.unlock();
         }
@@ -302,7 +302,7 @@ public enum MetadataManager {
             metadata.put(clusterMetadata.getName(), clusterMetadata);
             commitTransaction();
         } catch (Exception ex) {
-            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+            throw new MetadataManagerException(ex);
         } finally {
             writeLock.unlock();
         }
@@ -329,7 +329,7 @@ public enum MetadataManager {
             metadata.put(dataStoreMetadata.getName(), dataStoreMetadata);
             commitTransaction();
         } catch (Exception ex) {
-            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+            throw new MetadataManagerException(ex);
         } finally {
             writeLock.unlock();
         }
@@ -348,9 +348,6 @@ public enum MetadataManager {
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
         shouldBeInit();
         //TODO Check whether datastores can be added after adding connectors
-        //for (DataStoreName dataStore: connectorMetadata.getDataStoreRefs()) {
-        //    shouldExist(dataStore);
-        //}
         try {
             writeLock.lock();
             if (unique) {
@@ -360,7 +357,7 @@ public enum MetadataManager {
             metadata.put(connectorMetadata.getName(), connectorMetadata);
             commitTransaction();
         } catch (Exception ex) {
-            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+            throw new MetadataManagerException(ex);
         } finally {
             writeLock.unlock();
         }
@@ -393,7 +390,7 @@ public enum MetadataManager {
             }
             commitTransaction();
         } catch (Exception ex) {
-            throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+            throw new MetadataManagerException(ex);
         } finally {
             writeLock.unlock();
         }
@@ -427,7 +424,7 @@ public enum MetadataManager {
                 metadata.put(connectorMetadata.getName(), connectorMetadata);
                 commitTransaction();
             } catch (Exception ex) {
-                throw new MetadataManagerException(ex.getMessage(), ex.getCause());
+                throw new MetadataManagerException(ex);
             } finally {
                 writeLock.unlock();
             }

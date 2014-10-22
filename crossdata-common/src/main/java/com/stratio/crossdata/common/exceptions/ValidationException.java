@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.exceptions;
 /**
  * Validation exception thrown by the Driver if the statement could not be validated.
  */
-public class ValidationException extends Exception {
+public abstract class ValidationException extends Exception {
 
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
@@ -34,6 +34,10 @@ public class ValidationException extends Exception {
 
     public ValidationException(String msg, Throwable cause) {
         super(msg, cause);
+    }
+
+    public ValidationException(Exception ex) {
+        super(ex);
     }
 
 }

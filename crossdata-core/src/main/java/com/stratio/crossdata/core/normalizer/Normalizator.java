@@ -135,7 +135,7 @@ public class Normalizator {
         if (orderBy != null) {
             normalizeOrderBy(orderBy);
             fields.setOrderBy(orderBy);
-            throw new ValidationException("ORDER BY not supported yet.");
+            throw new BadFormatException("ORDER BY not supported yet.");
         }
     }
 
@@ -180,7 +180,7 @@ public class Normalizator {
         if (groupBy != null) {
             normalizeGroupBy(groupBy);
             fields.setGroupBy(groupBy);
-            throw new ValidationException("GROUP BY not supported yet.");
+            throw new BadFormatException("GROUP BY not supported yet.");
         }
     }
 
