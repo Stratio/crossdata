@@ -415,7 +415,9 @@ public class Validator {
             validate=false;
         }
 
-        if(validate){validateName(exist, name, hasIfExists);}
+        if(validate){
+            validateName(exist, name, hasIfExists);
+        }
     }
 
     private void validateOptions(MetaStatement stmt) throws ValidationException {
@@ -473,41 +475,49 @@ public class Validator {
 
     public void validateColumnType(ColumnMetadata columnMetadata, Selector right)
             throws BadFormatException, NotMatchDataTypeException {
-
+        NotMatchDataTypeException notMatchDataTypeException=null;
+        BadFormatException badFormatException=null;
         switch (right.getType()) {
         case COLUMN:
             ColumnName rightColumnName = ((ColumnSelector) right).getName();
             ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
             if (columnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
-                throw new NotMatchDataTypeException(rightColumnName);
+                notMatchDataTypeException=new NotMatchDataTypeException(rightColumnName);
             }
             break;
         case ASTERISK:
-            throw new BadFormatException("Asterisk not supported in relations.");
+            badFormatException=new BadFormatException("Asterisk not supported in relations.");
+            break;
         case BOOLEAN:
             if (columnMetadata.getColumnType() != ColumnType.BOOLEAN) {
-                throw new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case STRING:
             if (columnMetadata.getColumnType() != ColumnType.TEXT) {
-                throw new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case INTEGER:
             if (columnMetadata.getColumnType() != ColumnType.INT &&
                     columnMetadata.getColumnType() != ColumnType.BIGINT) {
-                throw new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case FLOATING_POINT:
             if (columnMetadata.getColumnType() != ColumnType.FLOAT &&
                     columnMetadata.getColumnType() != ColumnType.DOUBLE) {
-                throw new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case RELATION:
-            throw new BadFormatException("Operation not supported in where.");
+            badFormatException=new BadFormatException("Operation not supported in where.");
+            break;
+        }
+        if(notMatchDataTypeException!=null){
+            throw notMatchDataTypeException;
+        }else if (badFormatException!=null){
+            throw badFormatException;
         }
     }
 
