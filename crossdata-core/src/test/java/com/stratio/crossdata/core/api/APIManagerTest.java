@@ -59,6 +59,6 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
         CommandResult cmdR = (CommandResult) result;
         String resultStr = (String) cmdR.getResult();
-        assertTrue(resultStr.equals("Manifest added."));
+        assertTrue(resultStr.equals("CrossdataManifest added."));
     }
 }

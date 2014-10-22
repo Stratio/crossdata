@@ -20,11 +20,11 @@ package com.stratio.crossdata.common.api;
 
 import java.io.Serializable;
 
-public abstract class Manifest implements Serializable {
+public abstract class CrossdataManifest implements Serializable {
 
   /*
    * NOTE: Every time we create a new DataStoreType and a new ConnectorType with xjc, we have to check:
-   * - both classes must extend Manifest
+   * - both classes must extend CrossdataManifest
    * - update ManifestHelper if necessary
    * - the rest of created classes must implement Serializable
    * - Create some getters and setters
@@ -36,7 +36,7 @@ public abstract class Manifest implements Serializable {
 
     protected int manifestType;
 
-    protected Manifest(int manifestType) {
+    protected CrossdataManifest(int manifestType) {
         this.manifestType = manifestType;
     }
 

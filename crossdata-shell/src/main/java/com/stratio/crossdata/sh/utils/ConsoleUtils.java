@@ -49,6 +49,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.xml.sax.SAXException;
 
+import com.stratio.crossdata.common.api.CrossdataManifest;
 import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
@@ -59,7 +60,6 @@ import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.StorageResult;
-import com.stratio.crossdata.common.api.Manifest;
 import com.stratio.crossdata.common.api.connector.ConnectorFactory;
 import com.stratio.crossdata.common.api.connector.ConnectorType;
 import com.stratio.crossdata.common.api.datastore.DataStoreFactory;
@@ -300,18 +300,18 @@ public class ConsoleUtils {
         }
     }
 
-    public static Manifest parseFromXmlToManifest(int manifestType, String path) throws
+    public static CrossdataManifest parseFromXmlToManifest(int manifestType, String path) throws
             ManifestException, FileNotFoundException {
-        if (manifestType == Manifest.TYPE_DATASTORE) {
+        if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
             return parseFromXmlToDataStoreManifest(new FileInputStream(path));
         } else {
             return parseFromXmlToConnectorManifest(new FileInputStream(path));
         }
     }
 
-    public static Manifest parseFromXmlToManifest(int manifestType, InputStream path) throws
+    public static CrossdataManifest parseFromXmlToManifest(int manifestType, InputStream path) throws
             ManifestException {
-        if (manifestType == Manifest.TYPE_DATASTORE) {
+        if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
             return parseFromXmlToDataStoreManifest(path);
         } else {
             return parseFromXmlToConnectorManifest(path);
@@ -338,7 +338,7 @@ public class ConsoleUtils {
         }
     }
 
-    private static Manifest parseFromXmlToConnectorManifest(InputStream path) throws ManifestException {
+    private static CrossdataManifest parseFromXmlToConnectorManifest(InputStream path) throws ManifestException {
         try {
             SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
             Schema schema = sf.newSchema(ConsoleUtils.class.getResource(CONNECTOR_SCHEMA_PATH));
