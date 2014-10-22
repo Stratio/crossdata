@@ -18,8 +18,8 @@
 
 package com.stratio.crossdata.core.statements;
 
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 public class DropConnectorStatement extends MetadataStatement {
 
@@ -36,7 +36,7 @@ public class DropConnectorStatement extends MetadataStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_CONNECTOR);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CONNECTOR);
     }
 
     public String getName() {

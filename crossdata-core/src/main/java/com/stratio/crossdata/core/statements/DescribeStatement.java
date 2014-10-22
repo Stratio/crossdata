@@ -27,8 +27,8 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models a {@code DESCRIBE} statement from the META language.
@@ -136,10 +136,10 @@ public class DescribeStatement extends MetadataStatement implements ITableStatem
     public ValidationRequirements getValidationRequirements() {
         ValidationRequirements validationRequirements = new ValidationRequirements();
         if (catalog != null) {
-            validationRequirements.add(Validation.MUST_EXIST_CATALOG);
+            validationRequirements.add(ValidationTypes.MUST_EXIST_CATALOG);
         }
         if (tableName != null) {
-            validationRequirements.add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE);
+            validationRequirements.add(ValidationTypes.MUST_EXIST_CATALOG).add(ValidationTypes.MUST_EXIST_TABLE);
         }
 
         return validationRequirements;

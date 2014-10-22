@@ -16,9 +16,9 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.validator;
+package com.stratio.crossdata.core.validator.requirements;
 
-public enum Validation {
+public enum ValidationTypes {
     MUST_NOT_EXIST_CATALOG,
     MUST_EXIST_CATALOG,
     MUST_EXIST_TABLE,

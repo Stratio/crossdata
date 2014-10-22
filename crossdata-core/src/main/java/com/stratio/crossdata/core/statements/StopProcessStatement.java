@@ -20,7 +20,7 @@ package com.stratio.crossdata.core.statements;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 public class StopProcessStatement extends MetadataStatement {
 
