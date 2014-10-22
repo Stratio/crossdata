@@ -55,12 +55,12 @@ import jline.console.ConsoleReader;
 /**
  * Interactive META console.
  */
-public class Metash {
+public class Shell {
 
     /**
      * Class logger.
      */
-    private static final Logger LOG = Logger.getLogger(Metash.class);
+    private static final Logger LOG = Logger.getLogger(Shell.class);
 
     /**
      * Help content to be shown when the internal command {@code help} is used.
@@ -97,7 +97,7 @@ public class Metash {
     /**
      * Class constructor.
      */
-    public Metash(boolean useAsync) {
+    public Shell(boolean useAsync) {
         HelpManager hm = new HelpManager();
         help = hm.loadHelpContent();
         this.useAsync = useAsync;
@@ -131,7 +131,7 @@ public class Metash {
             index++;
         }
 
-        Metash sh = new Metash(async);
+        Shell sh = new Shell(async);
         if (sh.connect()) {
             if (initScript != null) {
                 sh.executeScript(initScript);
@@ -195,7 +195,7 @@ public class Metash {
      * @param currentCatalog The currentCatalog.
      */
     private void setPrompt(String currentCatalog) {
-        StringBuilder sb = new StringBuilder("com.stratio.crossdata-sh:");
+        StringBuilder sb = new StringBuilder("xdsh:");
         sb.append(metaDriver.getUserName());
         if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
             sb.append(":");

@@ -124,7 +124,6 @@ ImplicitSender {
       new TableName(catalogName,tableName1),
       new ClusterName(myClusterName),
 
-
       new util.HashMap[ColumnName, ColumnType](),
       new util.ArrayList[ColumnName](),
       new util.ArrayList[ColumnName]()
@@ -187,6 +186,7 @@ ImplicitSender {
     val operations=new java.util.HashSet[Operations]()
     operations.add(Operations.PROJECT)
     operations.add(Operations.SELECT_OPERATOR)
+    operations.add(Operations.INSERT)
 
     //create metadatamanager
     val myDatastore = metadataManager.createTestDatastore()

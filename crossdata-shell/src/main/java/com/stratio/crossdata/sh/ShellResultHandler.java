@@ -32,14 +32,14 @@ public class ShellResultHandler implements IResultHandler {
     /**
      * Parent Meta shell.
      */
-    private final Metash parent;
+    private final Shell parent;
 
     /**
      * Class constructor.
      *
      * @param parent Parent metashell that will be informed when results are available.
      */
-    public ShellResultHandler(Metash parent) {
+    public ShellResultHandler(Shell parent) {
         this.parent = parent;
     }
 
