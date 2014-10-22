@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.driver.result
 
+import com.stratio.crossdata.common.exceptions.validation.NotControlledValidationException
 import com.stratio.crossdata.common.exceptions.{ExecutionException, ParsingException, UnsupportedException, ValidationException}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.result.ErrorResult
@@ -59,26 +60,15 @@ class SyncResultHandler extends IResultHandler {
         nonQueryResult = result
         allResults = true;
     }
-    allResults = true;
+    allResults = true
     notify()
   }
 
   override def processError(errorResult: Result): Unit = synchronized {
     val e = errorResult.asInstanceOf[ErrorResult]
     println("processError: " + e)
-    if (ErrorType.PARSING.equals(e.getType)) {
-      exception = new ParsingException(e.getErrorMessage)
-    } else if (ErrorType.VALIDATION.equals(e.getType)) {
-      exception = new ValidationException(e.getErrorMessage)
-    } else if (ErrorType.EXECUTION.equals(e.getType)) {
-      exception = new ExecutionException(e.getErrorMessage)
-    } else if (ErrorType.NOT_SUPPORTED.equals(e.getType)) {
-      exception = new UnsupportedException(e.getErrorMessage)
-    } else {
-      exception = new UnsupportedException(e.getErrorMessage)
-    }
-
-    errorFound = true;
+    exception=e.getException
+    errorFound = true
     notify()
   }
 

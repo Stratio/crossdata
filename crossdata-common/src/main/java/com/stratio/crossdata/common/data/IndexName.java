@@ -86,15 +86,15 @@ public class IndexName extends Name {
                     getTableName().getName(), getName());
         } else {
             String catalogName = UNKNOWN_NAME;
-            String tableName = UNKNOWN_NAME;
+            String newTableName = UNKNOWN_NAME;
             if (this.getTableName() != null) {
-                tableName = this.getTableName().getName();
+                newTableName = this.getTableName().getName();
                 if (this.getTableName().getCatalogName() != null) {
                     catalogName = this.getTableName().getCatalogName().getName();
                 }
             }
 
-            result = QualifiedNames.getIndexQualifiedName(catalogName, tableName, getName());
+            result = QualifiedNames.getIndexQualifiedName(catalogName, newTableName, getName());
         }
         return result;
     }

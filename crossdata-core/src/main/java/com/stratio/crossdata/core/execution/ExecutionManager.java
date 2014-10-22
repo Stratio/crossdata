@@ -80,7 +80,7 @@ public enum ExecutionManager {
             this.tm = tm;
             this.isInit = true;
         } else {
-            throw new NullPointerException("Any parameter can't be NULL");
+            throw new IllegalArgumentException("Any parameter can't be NULL");
         }
     }
     public synchronized void clear()
@@ -106,7 +106,7 @@ public enum ExecutionManager {
             executionData.put(key, value);
             commitTransaction();
         } catch (Exception ex) {
-            throw new ExecutionManagerException(ex.getMessage(), ex.getCause());
+            throw new ExecutionManagerException(ex);
         } finally {
             writeLock.unlock();
         }

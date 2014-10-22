@@ -105,29 +105,6 @@ public final class ParserUtils {
         return sb.toString();
     }
 
-    private static String createSuggestion(Set<String> bestMatches,
-            AntlrError antlrError,
-            int charPosition,
-            String suggestionFromToken,
-            String errorWord) {
-        StringBuilder sb = new StringBuilder();
-        if ((bestMatches.isEmpty() || antlrError == null) && (charPosition < 1)) {
-            //Append all the initial tokens because we didn't find a good match for first token
-            sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.lineSeparator());
-        } else if (!"".equalsIgnoreCase(suggestionFromToken)) {
-            //Antlr returned a T_... token which have a equivalence with the reserved tokens of Meta
-            sb.append("\"").append(suggestionFromToken).append("\"").append("?");
-            sb.append(System.lineSeparator());
-        } else if (errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+")) {
-            // There is no a perfect equivalence with the reserved tokens of Meta but
-            // there might be a similar word
-            for (String match : bestMatches) {
-                sb.append("\"").append(match).append("\"").append(", ");
-            }
-            sb.append("?").append(System.lineSeparator());
-        }
-        return sb.toString();
-    }
 
     public static String getSuggestion(String query, AntlrError antlrError) {
         // We initialize the errorWord with the first word of the query
@@ -199,7 +176,7 @@ public final class ParserUtils {
             if (workingDir.endsWith("stratio-com.stratio.crossdata")) {
                 workingDir = workingDir.concat("/com.stratio.crossdata-core/");
             } else if (!workingDir.endsWith("com.stratio.crossdata-core")) {
-                workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
+                workingDir = workingDir.substring(0, workingDir.lastIndexOf('/'));
                 workingDir = workingDir.concat("/com.stratio.crossdata-core/");
             } else {
                 workingDir = workingDir.concat("/");
@@ -214,7 +191,7 @@ public final class ParserUtils {
             String line = bufferedReaderF.readLine();
             while (line != null) {
                 if (line.startsWith(targetToken)) {
-                    replacement = line.substring(line.indexOf(":") + 1);
+                    replacement = line.substring(line.indexOf(':') + 1);
                     replacement = replacement.replace("[#", "\"");
                     replacement = replacement.replace("#]", "\"");
                     replacement = replacement.replace(" ", "");
@@ -238,8 +215,8 @@ public final class ParserUtils {
 
     public static String translateLiteralsToCQL(String metaStr) {
         StringBuilder sb = new StringBuilder();
-        int startSquareBracketPosition = metaStr.indexOf("{");
-        int endSquareBracketPosition = metaStr.indexOf("}");
+        int startSquareBracketPosition = metaStr.indexOf('{');
+        int endSquareBracketPosition = metaStr.indexOf('}');
         String propsStr = metaStr.substring(startSquareBracketPosition + 1, endSquareBracketPosition).trim();
         if (propsStr.length() < 3) {
             return metaStr;

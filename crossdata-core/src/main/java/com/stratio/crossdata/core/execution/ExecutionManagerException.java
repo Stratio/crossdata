@@ -23,6 +23,10 @@ public class ExecutionManagerException extends RuntimeException {
         super(message);
     }
 
+    public ExecutionManagerException(Exception e) {
+        super(e.getMessage());
+    }
+
     public ExecutionManagerException(String message, Throwable cause) {
         super(message, cause);
     }
