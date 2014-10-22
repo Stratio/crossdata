@@ -292,45 +292,6 @@ public class Normalizator {
         }
     }
 
-    private void checkColumnRight(Selector right, ColumnName leftColumnName, ColumnMetadata leftColumnMetadata)
-            throws ValidationException {
-        switch (right.getType()) {
-        case COLUMN:
-            ColumnName rightColumnName = ((ColumnSelector) right).getName();
-            ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
-            if (leftColumnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
-                throw new NotMatchDataTypeException(rightColumnName);
-            }
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk not supported in relations.");
-        case BOOLEAN:
-            if (leftColumnMetadata.getColumnType() != ColumnType.BOOLEAN) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case STRING:
-            if (leftColumnMetadata.getColumnType() != ColumnType.TEXT) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case INTEGER:
-            if (leftColumnMetadata.getColumnType() != ColumnType.INT &&
-                    leftColumnMetadata.getColumnType() != ColumnType.BIGINT) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case FLOATING_POINT:
-            if (leftColumnMetadata.getColumnType() != ColumnType.FLOAT
-                    && leftColumnMetadata.getColumnType() != ColumnType.DOUBLE) {
-                throw new NotMatchDataTypeException(leftColumnName);
-            }
-            break;
-        case RELATION:
-            throw new BadFormatException("Operation not supported in where.");
-        }
-    }
-
     public void checkTable(TableName tableName) throws ValidationException {
         if (!tableName.isCompletedName()) {
             tableName.setCatalogName(parsedQuery.getDefaultCatalog());
