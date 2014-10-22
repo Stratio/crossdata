@@ -136,7 +136,7 @@
                                     </jvmSettings>
                                 </program>
                                 <program>
-                                    <mainClass>com.stratio.com.stratio.crossdata.sh.Metash</mainClass>
+                                    <mainClass>com.stratio.com.stratio.crossdata.sh.Shell</mainClass>
                                     <id>crossdata-sh</id>
                                     <platforms>
                                         <platform>unix</platform>
