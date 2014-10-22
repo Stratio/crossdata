@@ -126,11 +126,14 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       var foundServers = mutable.HashSet[Address]()
       val members = state.getMembers
       for(member <- members){
+        logger.info("Address: " + member.address + ", roles: " + member.getRoles )
         if(member.getRoles.contains("server")){
           foundServers += member.address
+          logger.info("New server added. Size: " + foundServers.size)
         }
       }
       if(foundServers.size == 1){
+        logger.info("Resetting Connectors status")
         val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
         MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
       }

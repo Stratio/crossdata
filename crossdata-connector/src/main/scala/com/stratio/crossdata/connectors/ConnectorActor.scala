@@ -43,7 +43,7 @@ object ConnectorActor {
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with
 ActorLogging {
 
-  log.info("Lifting connectormanager actor")
+  log.info("Lifting connector actor")
 
   implicit val timeout = Timeout(20 seconds)
 
