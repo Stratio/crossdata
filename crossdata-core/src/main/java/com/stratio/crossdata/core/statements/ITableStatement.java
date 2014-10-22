@@ -42,28 +42,6 @@ public interface ITableStatement {
 
     public CatalogName getEffectiveCatalog();
 
-  /*
-  public TableName getTableName() {
-    return tableName;
-  }
 
-  public void setTableName(TableName tableName) {
-    this.tableName = tableName;
-  }
-
-  @Override
-  public String getEffectiveCatalog() {
-    String effective;
-    if(tableName != null){
-      effective = tableName.getCatalogName().getName();
-    }else{
-      effective = catalog;
-    }
-    if(sessionCatalog != null){
-      effective = sessionCatalog;
-    }
-    return effective;
-  }
-  */
 
 }

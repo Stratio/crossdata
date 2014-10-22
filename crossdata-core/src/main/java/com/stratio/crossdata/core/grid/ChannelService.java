@@ -125,7 +125,7 @@ public class ChannelService implements Closeable {
             }
             return new ForkChannel(channel, name, name, true, ProtocolStack.ABOVE, FRAG2.class);
         } catch (Exception e) {
-            throw new GridException("Unable to fork channel");
+            throw new GridException(e);
         }
     }
 

@@ -146,4 +146,7 @@ public final class QueryResult extends Result {
         this.resultPage = resultPage;
     }
 
+    public boolean isIgnoredQuery() {
+        return ignoredQuery;
+    }
 }

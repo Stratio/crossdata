@@ -85,7 +85,7 @@ public class Parser {
             if (foundErrors.isEmpty()) {
                 foundErrors.addError(new AntlrError("Unknown parser error", e.getMessage()));
             } else if (foundErrors.getAntlrErrors().iterator().next().getMessage().contains("missing")) {
-                throw new ParsingException(e.getMessage());
+                throw new ParsingException(e);
             }
         }
         if (!foundErrors.isEmpty()) {

@@ -119,7 +119,7 @@ public enum ExecutionManager {
             executionData.remove(key);
             commitTransaction();
         } catch (Exception ex) {
-            throw new ExecutionManagerException(ex.getMessage(), ex.getCause());
+            throw new ExecutionManagerException(ex);
         } finally {
             writeLock.unlock();
         }

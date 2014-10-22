@@ -137,4 +137,8 @@ public class StoreService implements Closeable {
         }
         gc.shutdown();
     }
+
+    public JChannel getChannel() {
+        return channel;
+    }
 }
