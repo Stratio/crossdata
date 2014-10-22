@@ -22,7 +22,7 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-public class MetaUtils {
+public final class MetaUtils {
 
     public static final Set<String> INITIALS = Sets.newHashSet(
             "CREATE",

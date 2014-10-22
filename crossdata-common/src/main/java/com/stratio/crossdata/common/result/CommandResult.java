@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.result;
 /**
  * Result of the execution of a command in META.
  */
-public class CommandResult extends Result {
+public final class CommandResult extends Result {
 
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
