@@ -410,12 +410,11 @@ public enum MetadataManager {
         if (!exists(name)) {
             String version = null;
             Set<DataStoreName> dataStoreRefs = null;
-            Set<ClusterName> clusterRefs = null;
             Map<ClusterName, Map<Selector, Selector>> clusterProperties = null;
             Set<PropertyType> requiredProperties = null;
             Set<PropertyType> optionalProperties = null;
             Set<Operations> supportedOperations = null;
-            ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs, clusterRefs,
+            ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
                     clusterProperties, requiredProperties, optionalProperties, supportedOperations);
             connectorMetadata.setActorRef(actorRef);
             try {
