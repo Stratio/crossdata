@@ -32,7 +32,7 @@ object DriverConfig {
   /**
    * Root config name
    */
-  val PARENT_CONFIG_NAME = "com.stratio.crossdata-driver"
+  val PARENT_CONFIG_NAME = "crossdata-driver"
   /**
    * Key to retry times
    */
