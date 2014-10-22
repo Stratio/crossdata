@@ -34,6 +34,7 @@ import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable
 
 object ConnectorManagerActor {
   def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
@@ -67,7 +68,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       while (it.hasNext()) {
         val rol = it.next()
         rol match {
-          case "connectormanager" => {
+          case "connector" => {
             val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
             connectorActorRef ! getConnectorName()
           }
@@ -85,7 +86,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     case msg: replyConnectorName => {
       logger.info("Connector Name " + msg.name + " received from " + sender)
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
-      logger.info("Registering connectormanager at: " + actorRefUri)
+      logger.info("Registering connector at: " + actorRefUri)
       val connectorName = new ConnectorName(msg.name)
       ExecutionManager.MANAGER.createEntry(actorRefUri, connectorName, true)
 
@@ -113,14 +114,16 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     //Pass the message to the connectorActor to extract the member in the cluster
     case state: CurrentClusterState => {
       logger.info("Current members: " + state.members.mkString(", "))
-      //TODO Check if I'm the only server
-      try {
+      var foundServers = mutable.HashSet[Address]()
+      val members = state.getMembers
+      for(member <- members){
+        if(member.getRoles.contains("server")){
+          foundServers += member.address
+        }
+      }
+      if(foundServers.size == 1){
         val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
         MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
-      } catch {
-        case e: Exception => {
-          log.error("Couldn't set connectors to OFFLINE")
-        }
       }
     }
 
