@@ -60,26 +60,15 @@ class SyncResultHandler extends IResultHandler {
         nonQueryResult = result
         allResults = true;
     }
-    allResults = true;
+    allResults = true
     notify()
   }
 
   override def processError(errorResult: Result): Unit = synchronized {
     val e = errorResult.asInstanceOf[ErrorResult]
     println("processError: " + e)
-    if (ErrorType.PARSING.equals(e.getType)) {
-      exception = new ParsingException(e.getErrorMessage)
-    } else if (ErrorType.VALIDATION.equals(e.getType)) {
-      exception = new NotControlledValidationException(e);
-    } else if (ErrorType.EXECUTION.equals(e.getType)) {
-      exception = new ExecutionException(e.getErrorMessage)
-    } else if (ErrorType.NOT_SUPPORTED.equals(e.getType)) {
-      exception = new UnsupportedException(e.getErrorMessage)
-    } else {
-      exception = new UnsupportedException(e.getErrorMessage)
-    }
-
-    errorFound = true;
+    exception=e.getException
+    errorFound = true
     notify()
   }
 
