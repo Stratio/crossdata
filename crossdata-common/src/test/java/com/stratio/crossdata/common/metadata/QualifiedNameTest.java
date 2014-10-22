@@ -51,7 +51,7 @@ public class QualifiedNameTest {
     @Test
     public void testConnectorQualifiedName() {
         String name = QualifiedNames.getConnectorQualifiedName("test");
-        Assert.assertEquals(name, "connectormanager.test");
+        Assert.assertEquals(name, "connector.test");
     }
 
     @Test

@@ -457,7 +457,7 @@ public enum MetadataManager {
     /**
      * Get the connectors that are attached to the clusters that store the requested tables.
      *
-     * @param connectorStatus The status of the connectormanager.
+     * @param connectorStatus The status of the connector.
      * @param tables          The list of table names.
      * @return A map associating table names with a list of the available connectors.
      */

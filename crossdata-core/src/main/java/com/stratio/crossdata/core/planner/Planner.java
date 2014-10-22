@@ -175,7 +175,7 @@ public class Planner {
         //Get the list of tables accessed in this query
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
 
-        //Obtain the map of connectormanager that is able to access those tables.
+        //Obtain the map of connector that is able to access those tables.
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
                 .getAttachedConnectors(Status.ONLINE, tables);
 
@@ -465,7 +465,7 @@ public class Planner {
             //Remove invalid connectors
             if (toRemove.size() == availableConnectors.size()) {
                 throw new PlanningException(
-                        "Cannot determine execution path as no connectormanager supports " + current.toString());
+                        "Cannot determine execution path as no connector supports " + current.toString());
             } else {
                 availableConnectors.removeAll(toRemove);
 
@@ -498,7 +498,7 @@ public class Planner {
 
     /**
      * Build a workflow with the {@link com.stratio.crossdata.common.logicalplan.LogicalStep} required to
-     * execute a query. This method does not determine which connectormanager will execute which part of the
+     * execute a query. This method does not determine which connector will execute which part of the
      * workflow.
      *
      * @param query The query to be planned.

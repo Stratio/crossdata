@@ -27,7 +27,7 @@ public class DetachConnectorStatementTest extends ParsingTest {
     @Test
     public void detachConnectorSimple() {
         String inputText = "DETACH CONNECTOR myConnector FROM myCluster;";
-        String expectedText = "DETACH CONNECTOR connectormanager.myConnector FROM cluster.myCluster;";
+        String expectedText = "DETACH CONNECTOR connector.myConnector FROM cluster.myCluster;";
         testRegularStatement(inputText, expectedText, "detachConnectorSimple");
     }
 

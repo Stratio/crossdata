@@ -24,7 +24,7 @@ import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.result.QueryResult;
 
 /**
- * Interface provided by a connectormanager to access query related operations such as retrieving as set of
+ * Interface provided by a connector to access query related operations such as retrieving as set of
  * results.
  */
 public interface IQueryEngine {
@@ -37,7 +37,7 @@ public interface IQueryEngine {
      *                 executed.
      * @return A {@link com.stratio.crossdata.common.result.QueryResult}.
      * @throws UnsupportedException If the required set of operations are not supported by the
-     *                              connectormanager.
+     *                              connector.
      * @throws ExecutionException   If the execution of the required steps fails.
      */
     public QueryResult execute(LogicalWorkflow workflow)
