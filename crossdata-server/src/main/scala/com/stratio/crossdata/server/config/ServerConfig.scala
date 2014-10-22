@@ -26,7 +26,7 @@ import org.apache.log4j.Logger
 
 object ServerConfig {
   val SERVER_BASIC_CONFIG = "server-reference.conf"
-  val PARENT_CONFIG_NAME = "com.stratio.crossdata-server"
+  val PARENT_CONFIG_NAME = "crossdata-server"
 
 
   val SERVER_CLUSTER_NAME_KEY = "config.cluster.name"
