@@ -118,7 +118,7 @@ public class GridInitializer {
 
         ChannelService channelService = new ChannelServiceBuilder()
                 .withPort(port)
-                .withContactPoint(listenAddress)
+                .withListenAddress(listenAddress)
                 .withContactPoints(contactPoints)
                 .withMinInitialMembers(minInitialMembers)
                 .withJoinTimeoutInMs(timeout)

@@ -84,12 +84,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.stratio.meta</groupId>
+            <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-server</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.stratio.meta</groupId>
+            <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-shell</artifactId>
             <version>${project.parent.version}</version>
         </dependency>

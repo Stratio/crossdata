@@ -8,11 +8,11 @@ nbactions.xml
 nb-configuration.xml
 .idea
 *.iml
-meta-core/src/main/java/com/stratio/meta/core/grammar/generated
+crossdata-core/src/main/java/com/stratio/crossdata/core/grammar/generated
 src/main/resources/history.txt
 *.orig
 */.cache
-meta-core/test-output/*
+crossdata-core/test-output/*
 sonar-project.properties
 */.sonar
 */test-output

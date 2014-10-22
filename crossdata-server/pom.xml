@@ -223,24 +223,24 @@
         </dependency>
         <dependency>
             <!-- Dependency for core test to server test -->
-            <groupId>com.stratio.meta</groupId>
+            <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-core</artifactId>
             <version>${project.parent.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.stratio.meta</groupId>
+            <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-core</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.stratio.meta</groupId>
+            <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-common</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.stratio.meta</groupId>
+            <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-connector</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
