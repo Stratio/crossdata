@@ -25,14 +25,14 @@ import org.apache.log4j.Logger
 
 object ConnectConfig {
   val CONNECTOR_BASIC_CONFIG = "connector-reference.conf"
-  val PARENT_CONFIG_NAME = "com.stratio.crossdata-connectormanager"
+  val PARENT_CONFIG_NAME = "crossdata-connector"
 
   val CONNECTOR_CLUSTER_NAME_KEY = "config.cluster.name"
   val CONNECTOR_ACTOR_NAME_KEY = "config.cluster.actor"
   val CONNECTOR_USER_CONFIG_FILE = "external.config.filename"
   val CONNECTOR_USER_CONFIG_RESOURCE = "external.config.resource"
-  val CONNECTOR_NAME = "config.connectormanager.name"
-  val CONNECTOR_ACTOR_NUM = "config.akka.number.connectormanager-actor"
+  val CONNECTOR_NAME = "config.connector.name"
+  val CONNECTOR_ACTOR_NUM = "config.akka.number.connector-actor"
 }
 
 trait ConnectConfig {
