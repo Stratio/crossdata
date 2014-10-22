@@ -119,7 +119,7 @@ public class ChannelServiceBuilder {
 
             return new ChannelService(listenIp, contactIps, minInitialMembers, timeout);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new GridException(e);
         }
     }
 

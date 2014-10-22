@@ -18,13 +18,10 @@
 
 package com.stratio.crossdata.core.statements;
 
-import org.apache.log4j.Logger;
-
 import com.stratio.crossdata.core.validator.ValidationRequirements;
 
 public class StopProcessStatement extends MetadataStatement {
 
-    private static final Logger LOG = Logger.getLogger(StopProcessStatement.class);
     private String queryId;
 
     public StopProcessStatement(String queryId) {

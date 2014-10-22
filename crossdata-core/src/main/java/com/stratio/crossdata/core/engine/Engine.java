@@ -33,6 +33,7 @@ import com.stratio.crossdata.core.connector.ConnectorManager;
 import com.stratio.crossdata.core.coordinator.Coordinator;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
+import com.stratio.crossdata.core.grid.GridException;
 import com.stratio.crossdata.core.grid.GridInitializer;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizer;
@@ -84,7 +85,7 @@ public class Engine {
             this.grid = initializeGrid(config);
         } catch (Exception e) {
             LOG.error("Unable to start grid", e);
-            throw new RuntimeException("Unable to start grid: " + config, e);
+            throw new GridException("Unable to start grid: " + config, e);
         }
 
         // Initialize MetadataManager

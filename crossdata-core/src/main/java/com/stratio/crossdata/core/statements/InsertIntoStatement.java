@@ -20,14 +20,12 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import com.stratio.crossdata.common.utils.StringUtils;
-import com.stratio.crossdata.core.structures.Option;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.utils.StringUtils;
+import com.stratio.crossdata.core.structures.Option;
 import com.stratio.crossdata.core.validator.Validation;
 import com.stratio.crossdata.core.validator.ValidationRequirements;
 
@@ -46,10 +44,7 @@ public class InsertIntoStatement extends StorageStatement {
      * Constant to define an {@code INSERT INTO} that takes literal values as input.
      */
     public static final int TYPE_VALUES_CLAUSE = 2;
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(SelectStatement.class);
+
     /**
      * The name of the target table.
      */

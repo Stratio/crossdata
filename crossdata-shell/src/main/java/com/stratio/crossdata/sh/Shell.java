@@ -413,14 +413,18 @@ public class Shell {
 
     private String updateCatalog(String toExecute) {
         String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();
-        metaDriver.setCurrentCatalog(newCatalog);
         String currentCatalog = metaDriver.getCurrentCatalog();
-        List<String> catalogs = metaDriver.listCatalogs().getCatalogList();
-        if (catalogs.contains(newCatalog.toLowerCase())) {
+        if(newCatalog.isEmpty()){
             metaDriver.setCurrentCatalog(newCatalog);
-            currentCatalog = metaDriver.getCurrentCatalog();
+            currentCatalog = newCatalog;
         } else {
-            LOG.error("Catalog " + newCatalog + " doesn't exist.");
+            List<String> catalogs = metaDriver.listCatalogs().getCatalogList();
+            if (catalogs.contains(newCatalog.toLowerCase())) {
+                metaDriver.setCurrentCatalog(newCatalog);
+                currentCatalog = newCatalog;
+            } else {
+                LOG.error("Catalog " + newCatalog + " doesn't exist.");
+            }
         }
         setPrompt(currentCatalog);
         return currentCatalog;
