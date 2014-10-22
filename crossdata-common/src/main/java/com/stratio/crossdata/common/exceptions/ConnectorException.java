@@ -19,7 +19,7 @@
 package com.stratio.crossdata.common.exceptions;
 
 /**
- * Exception thrown by a connectormanager operation.
+ * Exception thrown by a connector operation.
  */
 public class ConnectorException extends Exception {
 

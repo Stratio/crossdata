@@ -370,7 +370,7 @@ public class Metash {
                         println("");
                     } else if (toExecute.toLowerCase().startsWith("help")) {
                         showHelp(sb.toString());
-                    } else if (toExecute.toLowerCase().startsWith("add connectormanager") || toExecute.toLowerCase()
+                    } else if (toExecute.toLowerCase().startsWith("add connector") || toExecute.toLowerCase()
                             .startsWith("add datastore")) {
                         sendManifest(toExecute);
                         println("");
@@ -442,7 +442,7 @@ public class Metash {
         int type_manifest;
         if (tokens[1].equalsIgnoreCase("datastore")) {
             type_manifest = CrossdataManifest.TYPE_DATASTORE;
-        } else if (tokens[1].equalsIgnoreCase("connectormanager")) {
+        } else if (tokens[1].equalsIgnoreCase("connector")) {
             type_manifest = CrossdataManifest.TYPE_CONNECTOR;
         } else {
             return "ERROR: Unknown type: " + tokens[1];

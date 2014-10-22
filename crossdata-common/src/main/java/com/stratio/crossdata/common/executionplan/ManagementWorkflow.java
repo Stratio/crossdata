@@ -31,7 +31,7 @@ import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
 
 /**
- * Execute operations related with connectormanager and cluster management.
+ * Execute operations related with connector and cluster management.
  */
 public class ManagementWorkflow extends ExecutionWorkflow {
 
@@ -46,7 +46,7 @@ public class ManagementWorkflow extends ExecutionWorkflow {
     private DataStoreName datastoreName = null;
 
     /**
-     * Name of the connectormanager.
+     * Name of the connector.
      */
     private ConnectorName connectorName = null;
 

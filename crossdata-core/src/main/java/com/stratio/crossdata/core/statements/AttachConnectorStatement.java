@@ -33,7 +33,7 @@ public class AttachConnectorStatement extends MetadataStatement {
     private ClusterName clusterName;
 
     /**
-     * The map of options passed to the connectormanager during its attachment.
+     * The map of options passed to the connector during its attachment.
      */
     private Map<Selector, Selector> options = null;
 

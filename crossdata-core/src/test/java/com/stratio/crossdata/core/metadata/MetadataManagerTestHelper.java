@@ -121,10 +121,10 @@ public class MetadataManagerTestHelper {
     }
 
     /**
-     * Create a test connectormanager.
+     * Create a test connector.
      *
-     * @param name          The connectormanager name.
-     * @param dataStoreName The dataStore associated with this connectormanager.
+     * @param name          The connector name.
+     * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName,
@@ -140,10 +140,10 @@ public class MetadataManagerTestHelper {
     }
 
     /**
-     * Create a test connectormanager.
+     * Create a test connector.
      *
-     * @param name          The connectormanager name.
-     * @param dataStoreName The dataStore associated with this connectormanager.
+     * @param name          The connector name.
+     * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
@@ -161,10 +161,10 @@ public class MetadataManagerTestHelper {
     }
 
     /**
-     * Create a test connectormanager.
+     * Create a test connector.
      *
-     * @param name          The connectormanager name.
-     * @param dataStoreName The dataStore associated with this connectormanager.
+     * @param name          The connector name.
+     * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
      */
     public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,

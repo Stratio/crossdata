@@ -4,4 +4,4 @@ command="mvn -pl . exec:java -Dexec.mainClass=com.stratio.connectors.ConnectorAp
 echo $command
 eval $command
 
-#sbt "run-main com.stratio.connectormanager.ConnectorApp 2551"
+#sbt "run-main com.stratio.connector.ConnectorApp 2551"
