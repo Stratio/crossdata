@@ -30,18 +30,18 @@ import javax.transaction.SystemException;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.api.CrossdataManifest;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.MetadataResult;
-import com.stratio.crossdata.common.api.ManifestHelper;
-import com.stratio.crossdata.common.api.PropertiesType;
-import com.stratio.crossdata.common.api.connector.ConnectorType;
-import com.stratio.crossdata.common.api.connector.DataStoreRefsType;
-import com.stratio.crossdata.common.api.connector.SupportedOperationsType;
-import com.stratio.crossdata.common.api.datastore.BehaviorsType;
-import com.stratio.crossdata.common.api.datastore.DataStoreType;
+import com.stratio.crossdata.common.manifest.ManifestHelper;
+import com.stratio.crossdata.common.manifest.PropertiesType;
+import com.stratio.crossdata.common.manifest.ConnectorType;
+import com.stratio.crossdata.common.manifest.DataStoreRefsType;
+import com.stratio.crossdata.common.manifest.SupportedOperationsType;
+import com.stratio.crossdata.common.manifest.BehaviorsType;
+import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;

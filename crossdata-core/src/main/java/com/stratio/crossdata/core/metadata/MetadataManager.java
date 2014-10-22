@@ -34,7 +34,7 @@ import javax.transaction.TransactionManager;
 
 import com.stratio.crossdata.common.connector.Operations;
 import com.stratio.crossdata.common.result.QueryStatus;
-import com.stratio.crossdata.common.api.PropertyType;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;

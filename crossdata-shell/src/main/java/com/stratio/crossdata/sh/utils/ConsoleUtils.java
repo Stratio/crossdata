@@ -49,7 +49,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.xml.sax.SAXException;
 
-import com.stratio.crossdata.common.api.CrossdataManifest;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
@@ -60,10 +60,10 @@ import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.StorageResult;
-import com.stratio.crossdata.common.api.connector.ConnectorFactory;
-import com.stratio.crossdata.common.api.connector.ConnectorType;
-import com.stratio.crossdata.common.api.datastore.DataStoreFactory;
-import com.stratio.crossdata.common.api.datastore.DataStoreType;
+import com.stratio.crossdata.common.manifest.ConnectorFactory;
+import com.stratio.crossdata.common.manifest.ConnectorType;
+import com.stratio.crossdata.common.manifest.DataStoreFactory;
+import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
 
