@@ -32,6 +32,10 @@ public class GridException extends RuntimeException {
         super();
     }
 
+    public GridException(Exception e) {
+        super(e.getMessage());
+    }
+
     /**
      * @see RuntimeException#RuntimeException(String message)
      */

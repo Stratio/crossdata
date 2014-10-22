@@ -23,6 +23,10 @@ import java.util.Map;
 
 public class SelectorHelper {
 
+    private SelectorHelper(){
+
+    }
+
     public static Map<String, String> convertSelectorMapToStringMap(Map<Selector, Selector> selectorsMap) {
         Map<String, String> stringsMap = new HashMap<>();
         for(Map.Entry<Selector,Selector> entry: selectorsMap.entrySet()){

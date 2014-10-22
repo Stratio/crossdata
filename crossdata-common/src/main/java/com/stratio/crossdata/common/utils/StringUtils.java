@@ -42,6 +42,10 @@ import com.stratio.crossdata.common.statements.structures.selectors.StringSelect
  */
 public class StringUtils {
 
+    private StringUtils(){
+
+    }
+
     /**
      * Class logger.
      */

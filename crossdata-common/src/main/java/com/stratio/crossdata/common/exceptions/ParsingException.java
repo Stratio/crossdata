@@ -37,6 +37,11 @@ public class ParsingException extends RuntimeException {
         this.errors = null;
     }
 
+    public ParsingException(Exception e) {
+        super(e.getMessage());
+        this.errors=null;
+    }
+
     public ParsingException(String message, List<String> errors) {
         super(message);
         this.errors = errors;

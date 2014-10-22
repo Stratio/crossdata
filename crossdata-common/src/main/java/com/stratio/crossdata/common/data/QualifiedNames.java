@@ -19,6 +19,11 @@
 package com.stratio.crossdata.common.data;
 
 public class QualifiedNames {
+
+    private QualifiedNames(){
+
+    }
+
     public static String getCatalogQualifiedName(String name) {
         return normalize(name);
     }
