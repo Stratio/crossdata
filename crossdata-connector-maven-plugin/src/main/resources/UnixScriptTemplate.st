@@ -7,7 +7,7 @@
 # Should-Stop: $all
 # Default-Start: 2 3 4 5
 # Default-Stop: 0 1 6
-# Short-Description: Crossdata connectormanager
+# Short-Description: Crossdata connector
 # Description: <desc>
 ### END INIT INFO
 # Developed by pmadrid@stratio.com

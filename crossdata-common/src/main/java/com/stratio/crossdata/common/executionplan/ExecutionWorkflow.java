@@ -24,7 +24,7 @@ import com.stratio.crossdata.common.logicalplan.LogicalStep;
 
 /**
  * Execution step abstraction. This class contains all the information
- * required in order to execute a LogicalWorkflow in a specific connectormanager.
+ * required in order to execute a LogicalWorkflow in a specific connector.
  * Notice that a ExecutionStep may trigger further workflow execution.
  */
 public class ExecutionWorkflow implements Serializable {
@@ -45,7 +45,7 @@ public class ExecutionWorkflow implements Serializable {
     private boolean persistOnSuccess = false;
 
     /**
-     * The target actor reference associated with the connectormanager.
+     * The target actor reference associated with the connector.
      */
     private String actorRef;
 

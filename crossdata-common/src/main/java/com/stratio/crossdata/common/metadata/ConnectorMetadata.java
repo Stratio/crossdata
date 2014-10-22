@@ -162,7 +162,7 @@ public class ConnectorMetadata implements IMetadata {
     }
 
     /**
-     * Determine if the connectormanager supports a specific operation.
+     * Determine if the connector supports a specific operation.
      *
      * @param operation The required operation.
      * @return Whether it is supported.
