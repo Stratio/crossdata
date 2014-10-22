@@ -119,8 +119,7 @@ public class Planner {
         //Plan the workflow execution into different connectors.
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query.getQueryId(), workflow);
         //Return the planned query.
-        SelectPlannedQuery pq = new SelectPlannedQuery(query, executionWorkflow);
-        return pq;
+        return new SelectPlannedQuery(query, executionWorkflow);
     }
 
     /**
@@ -219,8 +218,7 @@ public class Planner {
         }
 
         //Merge execution paths
-        ExecutionWorkflow executionWorkflow = mergeExecutionPaths(queryId, executionPaths, unionSteps);
-        return executionWorkflow;
+        return mergeExecutionPaths(queryId, executionPaths, unionSteps);
     }
 
     /**
@@ -997,9 +995,8 @@ public class Planner {
                 }
             }
         }
-        
-        Select result = new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap);
-        return result;
+
+        return new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap);
     }
 
 }

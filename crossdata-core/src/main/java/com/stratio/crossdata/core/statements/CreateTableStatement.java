@@ -86,11 +86,6 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     private boolean ifNotExists;
 
     /**
-     * Whether the table will be created.
-     */
-    private boolean createTable = false;
-
-    /**
      * Class constructor.
      *
      * @param tableType    TABLE type {@link com.stratio.crossdata.common.metadata.structures.TableType}.
