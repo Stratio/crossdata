@@ -26,7 +26,7 @@ import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.common.data.ClusterName;
 
 /**
- * Common interface for META connectors. A connectormanager provides implementations for storage and query
+ * Common interface for META connectors. A connector provides implementations for storage and query
  * engines. Notice that connectors do not need to provide both functionalities at the same time.
  */
 public interface IConnector {
@@ -39,7 +39,7 @@ public interface IConnector {
     public String getConnectorName();
 
     /**
-     * Get the names of the datastores required by the connectormanager.
+     * Get the names of the datastores required by the connector.
      * Several connectors may declare the same datastore name.
      *
      * @return The names.
@@ -47,10 +47,10 @@ public interface IConnector {
     public String[] getDatastoreName();
 
     /**
-     * Initialize the connectormanager service.
+     * Initialize the connector service.
      *
      * @param configuration The configuration.
-     * @throws InitializationException If the connectormanager initialization fails.
+     * @throws InitializationException If the connector initialization fails.
      */
     public void init(IConfiguration configuration) throws InitializationException;
 
@@ -89,7 +89,7 @@ public interface IConnector {
      * Get the storage engine.
      *
      * @return An implementation of {@link com.stratio.crossdata.common.connector.IStorageEngine}.
-     * @throws UnsupportedException If the connectormanager does not provide this functionality.
+     * @throws UnsupportedException If the connector does not provide this functionality.
      */
     public IStorageEngine getStorageEngine() throws UnsupportedException;
 
@@ -97,7 +97,7 @@ public interface IConnector {
      * Get the query engine.
      *
      * @return An implementation of {@link com.stratio.crossdata.common.connector.IQueryEngine}.
-     * @throws UnsupportedException If the connectormanager does not provide this functionality.
+     * @throws UnsupportedException If the connector does not provide this functionality.
      */
     public IQueryEngine getQueryEngine() throws UnsupportedException;
 
@@ -105,7 +105,7 @@ public interface IConnector {
      * Get the metadata engine.
      *
      * @return An implementation of {@link com.stratio.crossdata.common.connector.IMetadataEngine}.
-     * @throws UnsupportedException If the connectormanager does not provide this functionality.
+     * @throws UnsupportedException If the connector does not provide this functionality.
      */
     public IMetadataEngine getMetadataEngine() throws UnsupportedException;
 }

@@ -46,7 +46,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
-
+  var connectorsAlreadyReset = false
 
   log.info("Lifting coordinator actor")
   try {
@@ -68,7 +68,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
   def receive = {
 
     /**
-     * A new actor connects to the cluster. If the new actor is a connectormanager, we requests its name.
+     * A new actor connects to the cluster. If the new actor is a connector, we requests its name.
      */
     //TODO Check that new actors are recognized and their information stored in the MetadataManager
     case mu: MemberUp => {
@@ -123,16 +123,22 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     //Pass the message to the connectorActor to extract the member in the cluster
     case state: CurrentClusterState => {
       logger.info("Current members: " + state.members.mkString(", "))
-      var foundServers = mutable.HashSet[Address]()
-      val members = state.getMembers
-      for(member <- members){
-        if(member.getRoles.contains("server")){
-          foundServers += member.address
+      if(!connectorsAlreadyReset){
+        var foundServers = mutable.HashSet[Address]()
+        val members = state.getMembers
+        for(member <- members){
+          logger.info("Address: " + member.address + ", roles: " + member.getRoles )
+          if(member.getRoles.contains("server")){
+            foundServers += member.address
+            logger.info("New server added. Size: " + foundServers.size)
+          }
         }
-      }
-      if(foundServers.size == 1){
-        val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
-        MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
+        if(foundServers.size == 1){
+          logger.info("Resetting Connectors status")
+          val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
+          MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
+          connectorsAlreadyReset = true
+        }
       }
     }
 

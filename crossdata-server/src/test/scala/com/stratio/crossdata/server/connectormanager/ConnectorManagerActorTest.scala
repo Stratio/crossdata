@@ -18,8 +18,6 @@
 
 package com.stratio.crossdata.server.connectormanager
 
-
-
 import com.stratio.crossdata.common.result.ErrorResult
 import com.stratio.crossdata.server.ServerActorTest
 import org.apache.log4j.Logger

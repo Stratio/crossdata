@@ -19,7 +19,6 @@
 package com.stratio.crossdata.sh;
 
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.Test;
 
@@ -29,7 +28,7 @@ public class MetashTestIT {
     public void testSendManifest() throws Exception {
         Shell metash = new Shell(false);
         //TODO Generate a temp file with the manifest
-        String result = metash.sendManifest("ADD DATASTORE 'com.stratio.crossdata-common/src/main/resources/com/stratio/com.stratio.crossdata/connectormanager/DataStoreDefinition.xml'");
+        String result = metash.sendManifest("ADD DATASTORE 'crossdata-common/src/main/resources/com/stratio/com.stratio.crossdata/connector/DataStoreDefinition.xml'");
         assertNotNull(result, "testSendManifest returns a empty String");
     }
 

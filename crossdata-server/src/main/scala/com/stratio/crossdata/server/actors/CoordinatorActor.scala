@@ -209,11 +209,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
     case ctc: ConnectToConnector =>
       MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(ctc.msg), data.Status.ONLINE)
-      log.info("connected to connectormanager ")
+      log.info("Connected to connector")
 
     case dfc: DisconnectFromConnector =>
       MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(dfc.msg), data.Status.OFFLINE)
-      log.info("disconnected from connectormanager ")
+      log.info("Disconnected from connector")
 
     case _ => {
       sender ! new ExecutionException("Non recognized workflow")

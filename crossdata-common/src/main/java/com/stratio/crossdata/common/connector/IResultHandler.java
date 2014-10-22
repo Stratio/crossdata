@@ -22,7 +22,7 @@ import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.result.QueryResult;
 
 /**
- * Callback interface for connectormanager query results.
+ * Callback interface for connector query results.
  */
 public interface IResultHandler {
 

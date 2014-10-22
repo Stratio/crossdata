@@ -24,7 +24,7 @@ import java.util.Map;
 import com.stratio.crossdata.common.data.ClusterName;
 
 /**
- * Configuration used by a connectormanager to establish a connection to a specific cluster.
+ * Configuration used by a connector to establish a connection to a specific cluster.
  */
 public class ConnectorClusterConfig implements Serializable {
 
@@ -35,7 +35,7 @@ public class ConnectorClusterConfig implements Serializable {
     private final ClusterName name;
 
     /**
-     * Map of options required by a connectormanager in order to be able to establish a connection
+     * Map of options required by a connector in order to be able to establish a connection
      * to an existing datastore cluster.
      */
     private final Map<String, String> options;
