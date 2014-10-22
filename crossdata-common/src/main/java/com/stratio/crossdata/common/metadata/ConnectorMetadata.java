@@ -52,36 +52,29 @@ public class ConnectorMetadata implements IMetadata {
     private Set<Operations> supportedOperations;
 
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
-            Set<ClusterName> clusterRefs, Map<ClusterName, Map<Selector, Selector>> clusterProperties,
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations) {
-        this.name = name;
-        this.version = version;
-        this.dataStoreRefs = dataStoreRefs;
-        this.clusterRefs = clusterRefs;
-        this.clusterProperties = clusterProperties;
-        this.requiredProperties = requiredProperties;
-        this.optionalProperties = optionalProperties;
-        this.supportedOperations = supportedOperations;
-        this.status = Status.OFFLINE;
+        this(name,version,dataStoreRefs,clusterProperties,Status.OFFLINE,null,requiredProperties,optionalProperties,
+                supportedOperations);
     }
 
     public ConnectorMetadata(ConnectorName name, String version,
-            Set<DataStoreName> dataStoreRefs, Set<ClusterName> clusterRefs,
+            Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties, Status status, String actorRef,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations) {
+
         this.name = name;
         this.version = version;
         this.dataStoreRefs = dataStoreRefs;
-        this.clusterRefs = clusterRefs;
         this.clusterProperties = clusterProperties;
-        this.status = status;
-        this.actorRef = actorRef;
         this.requiredProperties = requiredProperties;
         this.optionalProperties = optionalProperties;
         this.supportedOperations = supportedOperations;
+        this.status = status;
+        this.actorRef = actorRef;
     }
 
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,

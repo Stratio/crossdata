@@ -31,8 +31,15 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.Cell;
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.data.Status;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
@@ -53,17 +60,6 @@ import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.TransformationStep;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Window;
-import com.stratio.crossdata.common.statements.structures.relationships.Operator;
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
-import com.stratio.crossdata.common.utils.StringUtils;
-import com.stratio.crossdata.core.structures.InnerJoin;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.IndexName;
-import com.stratio.crossdata.common.data.Status;
-import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -72,10 +68,13 @@ import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.relationships.Operator;
+import com.stratio.crossdata.common.statements.structures.relationships.Relation;
 import com.stratio.crossdata.common.statements.structures.selectors.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.selectors.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
 import com.stratio.crossdata.common.statements.structures.selectors.SelectorType;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
@@ -91,6 +90,8 @@ import com.stratio.crossdata.core.statements.CreateTableStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.structures.InnerJoin;
+import com.stratio.crossdata.core.utils.CoreUtils;
 
 /**
  * Class in charge of defining the set of {@link com.stratio.crossdata.common.logicalplan.LogicalStep}
@@ -777,7 +778,7 @@ public class Planner {
         return storageWorkflow;
     }
 
-    private Row getInsertRow(InsertIntoStatement statement) {
+    private Row getInsertRow(InsertIntoStatement statement) throws PlanningException {
         Row row = new Row();
 
         List<Selector> values = statement.getCellValues();
@@ -786,7 +787,8 @@ public class Planner {
         for (int i = 0; i < ids.size(); i++) {
             ColumnName columnName = ids.get(i);
             Selector value = values.get(i);
-            Cell cell = new Cell(value);
+            Object cellContent = CoreUtils.convertSelectorToObject(value, columnName);
+            Cell cell = new Cell(cellContent);
             row.addCell(columnName.getName(), cell);
         }
         return row;

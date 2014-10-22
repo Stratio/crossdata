@@ -147,7 +147,6 @@ ImplicitSender {
   myList.add(columnNme)
   metadataWorkflow1.setTableMetadata(
   new TableMetadata(
-    false,
     new TableName(catalogName, tableName1),
     new util.HashMap[Selector, Selector](),
     new util.HashMap[ColumnName, ColumnMetadata](),

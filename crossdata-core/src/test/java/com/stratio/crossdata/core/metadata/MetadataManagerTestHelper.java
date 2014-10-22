@@ -153,8 +153,8 @@ public class MetadataManagerTestHelper {
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterList, clusterProperties,
-                new HashSet<PropertyType>(), new HashSet<PropertyType>(), new HashSet<Operations>());
+                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), new HashSet<Operations>());
+        connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorName;
@@ -175,8 +175,8 @@ public class MetadataManagerTestHelper {
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterList,clusterProperties,
-                new HashSet<PropertyType>(), new HashSet<PropertyType>(), options);
+                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options);
+        connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorMetadata;

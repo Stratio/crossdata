@@ -20,8 +20,6 @@ package com.stratio.crossdata.common.data;
 
 import java.io.Serializable;
 
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-
 public class Cell implements Serializable {
 
     private static final long serialVersionUID = 7100387802412023310L;
@@ -47,10 +45,6 @@ public class Cell implements Serializable {
 
     @Override
     public String toString() {
-        String string = String.valueOf(value);
-        if(value instanceof Selector){
-            string = ((Selector) value).getStringValue();
-        }
-        return string;
+        return String.valueOf(value);
     }
 }

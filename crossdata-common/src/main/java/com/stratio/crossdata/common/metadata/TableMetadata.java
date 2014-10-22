@@ -32,8 +32,6 @@ public class TableMetadata implements IMetadata {
 
     private static final long serialVersionUID = 937637791215246279L;
 
-    private final boolean ephemeral;
-
     private final TableName name;
 
     private final Map<Selector, Selector> options;
@@ -47,11 +45,10 @@ public class TableMetadata implements IMetadata {
     private final List<ColumnName> partitionKey;
     private final List<ColumnName> clusterKey;
 
-    public TableMetadata(boolean ephemeral, TableName name, Map<Selector, Selector> options,
+    public TableMetadata(TableName name, Map<Selector, Selector> options,
             Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
             ClusterName clusterRef,
             List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
-        this.ephemeral = ephemeral;
         this.name = name;
         this.options = options;
         this.columns = columns;
@@ -60,17 +57,6 @@ public class TableMetadata implements IMetadata {
 
         this.partitionKey = partitionKey;
         this.clusterKey = clusterKey;
-    }
-
-    public TableMetadata(TableName name, Map<Selector, Selector> options,
-            Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
-            ClusterName clusterRef,
-            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
-        this(false, name, options, columns, indexes, clusterRef, partitionKey, clusterKey);
-    }
-
-    public boolean isEphemeral() {
-        return ephemeral;
     }
 
     public TableName getName() {
