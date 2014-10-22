@@ -27,7 +27,7 @@ public class MetashTestIT {
 
     @Test
     public void testSendManifest() throws Exception {
-        Metash metash = new Metash(false);
+        Shell metash = new Shell(false);
         //TODO Generate a temp file with the manifest
         String result = metash.sendManifest("ADD DATASTORE 'com.stratio.crossdata-common/src/main/resources/com/stratio/com.stratio.crossdata/connectormanager/DataStoreDefinition.xml'");
         assertNotNull(result, "testSendManifest returns a empty String");

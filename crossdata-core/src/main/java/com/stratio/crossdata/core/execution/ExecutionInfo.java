@@ -33,6 +33,8 @@ public class ExecutionInfo implements Serializable {
 
     private boolean persistOnSuccess = false;
 
+    private boolean removeOnSuccess = true;
+
     public ExecutionInfo() {
     }
 
@@ -66,5 +68,13 @@ public class ExecutionInfo implements Serializable {
 
     public void setPersistOnSuccess(boolean persistOnSuccess) {
         this.persistOnSuccess = persistOnSuccess;
+    }
+
+    public boolean isRemoveOnSuccess() {
+        return removeOnSuccess;
+    }
+
+    public void setRemoveOnSuccess(boolean removeOnSuccess) {
+        this.removeOnSuccess = removeOnSuccess;
     }
 }
