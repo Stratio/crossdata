@@ -24,7 +24,7 @@ import akka.cluster.ClusterEvent._
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.ConnectorName
-import com.stratio.crossdata.common.result.ConnectResult
+import com.stratio.crossdata.common.result.{Result, ConnectResult}
 import com.stratio.crossdata.common.statements.structures.selectors.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
@@ -32,6 +32,7 @@ import com.stratio.crossdata.core.connector.ConnectorManager
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
+import com.stratio.crossdata.common.data.Status
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -43,11 +44,19 @@ object ConnectorManagerActor {
 class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
-  logger.info("Lifting connectormanager manager actor")
+  logger.info("Lifting connector manager actor")
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
 
-  val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
-  MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
+
+  log.info("Lifting coordinator actor")
+  try {
+    val connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE)
+    MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
+  } catch {
+    case e: Exception => {
+      log.error("Couldn't set connectors to OFFLINE")
+    }
+  }
 
   override def preStart(): Unit = {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
@@ -103,7 +112,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
           sender ! new Connect(null, connectorClusterConfig)
         }
       }
-      MetadataManager.MANAGER.setConnectorStatus(connectorName, data.Status.ONLINE)
+      MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
 
     }
 
@@ -169,6 +178,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     }
 
     case unknown: Any=> {
+      sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
       logger.error("Unknown event: " + unknown)
     }
   }

@@ -19,7 +19,7 @@
 package com.stratio.crossdata.server.parser
 
 import com.stratio.crossdata.common.ask.Query
-import com.stratio.crossdata.common.result.{MetadataResult, QueryStatus, QueryResult}
+import com.stratio.crossdata.common.result.{StorageResult, MetadataResult, QueryStatus, QueryResult}
 import com.stratio.crossdata.communication.ACK
 import com.stratio.crossdata.core.parser.Parser
 import com.stratio.crossdata.core.planner.Planner
@@ -251,14 +251,14 @@ class ParserActorIT extends ServerActorTest{
     }
   }
 
-  /*
-  test("Metadata query; parser ,validator, planner, coordinator and mockConnector") {
+  test("Insert query; parser ,validator, planner, coordinator and mockConnector") {
     initialize()
     initializeTablesInfinispan()
+    val myquery="INSERT INTO "+catalogName+"."+tableName+"(name, age) VALUES (\"user0\", 88);"
     within(6000 millis) {
-      parserActor3 ! Query(queryId + (1), "mynewcatalog", "create catalog mynewCatalog;", "user0")
+      parserActor3 ! Query(queryId + (1), catalogName, myquery, "user0")
       fishForMessage(6 seconds){
-        case msg:MetadataResult =>{
+        case msg:StorageResult =>{
           logger.info("receiving message of type "+msg.getClass()+"from "+lastSender)
           assert(msg.getQueryId==queryId + (1))
           true
@@ -269,23 +269,7 @@ class ParserActorIT extends ServerActorTest{
         }
       }
     }
-    within(6000 millis) {
-      val query="create TABLE mynewcatalog.demo ON CLUSTER "+myClusterName+"(field1 varchar PRIMARY KEY , field2 varchar);"
-      parserActor3 ! Query(queryId + (2), "mynewcatalog", query,"user0")
-      fishForMessage(6 seconds){
-        case msg:MetadataResult =>{
-          logger.info("receiving message of type "+msg.getClass()+"from "+lastSender)
-          assert(msg.getQueryId==queryId + (2))
-          true
-        }
-        case other:Any =>{
-          logger.info("receiving message of type "+other.getClass()+" and ignoring it")
-          false
-        }
-      }
-    }
   }
-  */
 
 }
 

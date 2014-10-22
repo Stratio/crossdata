@@ -21,7 +21,7 @@ package com.stratio.crossdata.server.mocks
 import akka.actor.{Actor, Props}
 import com.stratio.crossdata.common.result.{Result, QueryStatus}
 import com.stratio.crossdata.communication.ACK
-import com.stratio.crossdata.core.query.{MetadataPlannedQuery, SelectPlannedQuery}
+import com.stratio.crossdata.core.query.{StoragePlannedQuery, MetadataPlannedQuery, SelectPlannedQuery}
 
 object MockCoordinatorActor{
   def props(): Props = Props(new MockCoordinatorActor())
@@ -38,6 +38,10 @@ class MockCoordinatorActor() extends Actor {
       sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
     }
     case query:SelectPlannedQuery=>{
+      println("MockCoordinator actor sending EXECUTED")
+      sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
+    }
+    case query:StoragePlannedQuery=>{
       println("MockCoordinator actor sending EXECUTED")
       sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
     }

@@ -35,6 +35,7 @@ import com.stratio.crossdata.common.metadata.structures.TableType
 import com.stratio.crossdata.common.statements.structures.selectors.Selector
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
+import com.stratio.crossdata.core.connector.ConnectorManager
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.grid.Grid
@@ -42,9 +43,9 @@ import com.stratio.crossdata.core.metadata.{MetadataManager, MetadataManagerTest
 import com.stratio.crossdata.core.planner.{PlannerExecutionWorkflowTest, SelectValidatedQueryWrapper}
 import com.stratio.crossdata.core.query._
 import com.stratio.crossdata.core.statements.{CreateCatalogStatement, CreateTableStatement, InsertIntoStatement, MetadataStatement, SelectStatement}
-import com.stratio.crossdata.server.actors.CoordinatorActor
+import com.stratio.crossdata.server.actors.{ConnectorManagerActor, CoordinatorActor}
 import com.stratio.crossdata.server.config.{ActorReceiveUtils, ServerConfig}
-import com.stratio.crossdata.server.mocks.{MockConnectorActor, MockConnectorManagerActor}
+import com.stratio.crossdata.server.mocks.MockConnectorActor
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuiteLike, Suite}
 
@@ -63,7 +64,7 @@ ImplicitSender {
     queryIdIncrement += 1; return queryId + queryIdIncrement
   }
 //Actors in this tests
-  val connectorManagerActor = system.actorOf(MockConnectorManagerActor.props(), "ConnectorManagerActor")
+  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(new ConnectorManager() ),  "ConnectorManagerActor")
   val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()), "CoordinatorActor")
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
 
@@ -197,10 +198,10 @@ ImplicitSender {
 
     val future = connectorActor ? getConnectorName()
     val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
-    println("creating connectormanager "+connectorName.name)
+    println("creating connector "+connectorName.name)
 
 
-    //Create connectormanager
+    //Create connector
     val myConnector=metadataManager.createTestConnector(connectorName.name,new DataStoreName(myDatastore.getName()),
       clusternames,
       operations,
