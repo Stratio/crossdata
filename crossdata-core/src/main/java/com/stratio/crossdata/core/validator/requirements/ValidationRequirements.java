@@ -16,23 +16,28 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.validator;
+package com.stratio.crossdata.core.validator.requirements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ValidationRequirements {
-    private final List<Validation> validations;
+    private final List<ValidationTypes> validations;
+
+    public ValidationRequirements(ValidationTypes ... types) {
+        this.validations = Arrays.asList(types);
+    }
 
     public ValidationRequirements() {
         this.validations = new ArrayList<>();
     }
 
-    List<Validation> getValidations() {
+    public List<ValidationTypes> getValidations() {
         return validations;
     }
 
-    public ValidationRequirements add(Validation requirement) {
+    public ValidationRequirements add(ValidationTypes requirement) {
         this.validations.add(requirement);
         return this;
     }

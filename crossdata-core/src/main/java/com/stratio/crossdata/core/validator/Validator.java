@@ -68,6 +68,7 @@ import com.stratio.crossdata.core.statements.DropIndexStatement;
 import com.stratio.crossdata.core.statements.DropTableStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.MetaStatement;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 public class Validator {
     /**
@@ -79,7 +80,7 @@ public class Validator {
     public ValidatedQuery validate(ParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
         ValidatedQuery validatedQuery = null;
         LOG.info("Validating MetaStatements...");
-        for (Validation val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
+        for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
             switch (val) {
             case MUST_NOT_EXIST_CATALOG:
                 validateCatalog(parsedQuery.getStatement(), false);

@@ -106,7 +106,7 @@ public class ChannelService implements Closeable {
         try {
             stack.init();
         } catch (Exception e) {
-            throw new RuntimeException("Unable to create channel", e);
+            throw new GridException("Unable to create channel", e);
         }
     }
 
@@ -125,7 +125,7 @@ public class ChannelService implements Closeable {
             }
             return new ForkChannel(channel, name, name, true, ProtocolStack.ABOVE, FRAG2.class);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to fork channel");
+            throw new GridException("Unable to fork channel");
         }
     }
 

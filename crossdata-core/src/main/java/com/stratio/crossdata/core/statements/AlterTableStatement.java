@@ -26,8 +26,8 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models an {@code ALTER TABLE} statement from the META language.
@@ -118,20 +118,20 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
         ValidationRequirements validationRequirements;
         switch (option) {
         case 1:
-            validationRequirements = new ValidationRequirements().add(Validation.MUST_EXIST_TABLE)
-                    .add(Validation.MUST_EXIST_COLUMN);
+            validationRequirements = new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE)
+                    .add(ValidationTypes.MUST_EXIST_COLUMN);
             break;
         case 2:
-            validationRequirements = new ValidationRequirements().add(Validation.MUST_EXIST_TABLE)
-                    .add(Validation.MUST_NOT_EXIST_COLUMN);
+            validationRequirements = new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE)
+                    .add(ValidationTypes.MUST_NOT_EXIST_COLUMN);
             break;
         case 3:
-            validationRequirements = new ValidationRequirements().add(Validation.MUST_EXIST_TABLE)
-                    .add(Validation.MUST_EXIST_COLUMN);
+            validationRequirements = new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE)
+                    .add(ValidationTypes.MUST_EXIST_COLUMN);
             break;
         case 4:
-            validationRequirements = new ValidationRequirements().add(Validation.MUST_EXIST_TABLE)
-                    .add(Validation.MUST_EXIST_PROPERTIES);
+            validationRequirements = new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE)
+                    .add(ValidationTypes.MUST_EXIST_PROPERTIES);
             break;
         default:
             validationRequirements = new ValidationRequirements();

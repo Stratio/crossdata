@@ -23,19 +23,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.relationships.Relation;
+import com.stratio.crossdata.common.statements.structures.selectors.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.window.Window;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.GroupBy;
 import com.stratio.crossdata.core.structures.InnerJoin;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.statements.structures.selectors.SelectExpression;
 import com.stratio.crossdata.core.structures.OrderBy;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models a {@code SELECT} statement from the META language.
@@ -46,10 +44,7 @@ public class SelectStatement extends MetaStatement implements Serializable {
      * Maximum limit of rows to be retreived in a query.
      */
     private static final int MAX_LIMIT = 10000;
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(SelectStatement.class);
+
     /**
      * The name of the target table.
      */
@@ -347,7 +342,7 @@ public class SelectStatement extends MetaStatement implements Serializable {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation
+        return new ValidationRequirements().add(ValidationTypes
                 .VALIDATE_SELECT);
     }
 

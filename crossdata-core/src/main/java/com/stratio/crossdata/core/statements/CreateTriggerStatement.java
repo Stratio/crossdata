@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.core.statements;
 
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models a {@code CREATE TRIGGER} statement from the META language.
