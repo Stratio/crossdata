@@ -32,8 +32,15 @@ import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, ExecutionManagerException}
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.PlannedQuery
+import com.stratio.crossdata.common.logicalplan.PartialResults
 
 object CoordinatorActor {
+
+  /**
+   * Token attached to query identifiers when the query is part of a trigger execution workflow.
+   */
+  val TriggerToken = "_T"
+
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor
   (connectorMgr, coordinator))
 }
@@ -121,6 +128,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           executionInfo.setWorkflow(workflow1)
+
           log.info("\n\nCoordinate workflow: " + workflow1.toString)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if(ResultType.RESULTS.equals(workflow1.getResultType)) {
@@ -130,9 +138,22 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             actorSelection.asInstanceOf[ActorSelection] ! workflow1.getExecuteOperation(queryId)
             log.info("\nmessage sent to" + actorRef.toString())
           }else if(ResultType.TRIGGER_EXECUTION.equals(workflow1.getResultType)){
+            //Register the top level workflow
+            ExecutionManager.MANAGER.createEntry(queryId+CoordinatorActor.TriggerToken, executionInfo)
 
-          //TODO Trigger next step execution.
-          throw new UnsupportedOperationException("Trigger execution not supported")
+            //Register the result workflow
+            val nextExecutionInfo = new ExecutionInfo
+            nextExecutionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+            nextExecutionInfo.setWorkflow(workflow1.getNextExecutionWorkflow)
+
+            ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo)
+
+            val actorRef = StringUtils.getAkkaActorRefUri(workflow1.getActorRef())
+            val actorSelection=context.actorSelection(actorRef)
+            actorSelection.asInstanceOf[ActorSelection] ! workflow1.getExecuteOperation(queryId+CoordinatorActor
+              .TriggerToken)
+            log.info("\nmessage sent to" + actorRef.toString())
+
           }
         }
         case _ => {
@@ -160,11 +181,25 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         log.info("Send result to: " + clientActor.toString())
 
         if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
-
           coordinator.persist(executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.asInstanceOf[MetadataWorkflow])
         }
-        ExecutionManager.MANAGER.deleteEntry(queryId)
-        clientActor ! result
+        if(executionInfo.asInstanceOf[ExecutionInfo].isRemoveOnSuccess) {
+          ExecutionManager.MANAGER.deleteEntry(queryId)
+        }
+
+        if(queryId.endsWith(CoordinatorActor.TriggerToken)){
+          val triggerQueryId = queryId.substring(0, queryId.length-CoordinatorActor.TriggerToken.length)
+          log.info("Retrieving Triggering queryId: " + triggerQueryId);
+          val executionInfo = ExecutionManager.MANAGER.getValue(triggerQueryId).asInstanceOf[ExecutionInfo]
+          val partialResults = result.asInstanceOf[QueryResult].getResultSet
+          executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+          val actorRef = StringUtils.getAkkaActorRefUri(executionInfo.getWorkflow.getActorRef())
+          val actorSelection=context.actorSelection(actorRef)
+          actorSelection.asInstanceOf[ActorSelection] ! executionInfo.getWorkflow.asInstanceOf[QueryWorkflow]
+            .getExecuteOperation(queryId+CoordinatorActor.TriggerToken)
+        }else {
+          clientActor ! result
+        }
       } catch {
         case ex: ExecutionManagerException => {
           log.error(ex.getStackTraceString + "cannot access queryId actorRef associated value")

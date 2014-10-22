@@ -23,7 +23,7 @@ import java.util.List;
 import com.stratio.crossdata.common.metadata.structures.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
-public class MetadataResult extends Result {
+public final class MetadataResult extends Result {
 
     /**
      * Operation types

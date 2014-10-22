@@ -25,8 +25,8 @@ import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models a {@code ATTACH CLUSTER} statement from the META language. A cluster represents
@@ -93,8 +93,8 @@ public class AttachClusterStatement extends MetadataStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_DATASTORE)
-                .add(Validation.VALID_CLUSTER_OPTIONS);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_DATASTORE)
+                .add(ValidationTypes.VALID_CLUSTER_OPTIONS);
     }
 
     public Map<Selector, Selector> getOptions() {

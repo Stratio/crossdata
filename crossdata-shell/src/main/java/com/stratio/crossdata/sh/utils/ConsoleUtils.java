@@ -71,7 +71,7 @@ import jline.console.ConsoleReader;
 import jline.console.history.History;
 import jline.console.history.MemoryHistory;
 
-public class ConsoleUtils {
+public final class ConsoleUtils {
 
     /**
      * Class logger.

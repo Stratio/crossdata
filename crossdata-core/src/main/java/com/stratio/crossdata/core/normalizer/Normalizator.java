@@ -135,7 +135,7 @@ public class Normalizator {
         if (orderBy != null) {
             normalizeOrderBy(orderBy);
             fields.setOrderBy(orderBy);
-            throw new ValidationException("ORDER BY not supported yet.");
+            throw new BadFormatException("ORDER BY not supported yet.");
         }
     }
 
@@ -180,7 +180,7 @@ public class Normalizator {
         if (groupBy != null) {
             normalizeGroupBy(groupBy);
             fields.setGroupBy(groupBy);
-            throw new ValidationException("GROUP BY not supported yet.");
+            throw new BadFormatException("GROUP BY not supported yet.");
         }
     }
 
@@ -320,40 +320,49 @@ public class Normalizator {
 
     private void checkColumnRight(Selector right, ColumnName leftColumnName, ColumnMetadata leftColumnMetadata)
             throws NotMatchDataTypeException, BadFormatException {
+        NotMatchDataTypeException notMatchDataTypeException=null;
+        BadFormatException badFormatException=null;
         switch (right.getType()) {
         case COLUMN:
             ColumnName rightColumnName = ((ColumnSelector) right).getName();
             ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
             if (leftColumnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
-                throw new NotMatchDataTypeException(rightColumnName);
+                notMatchDataTypeException=new NotMatchDataTypeException(rightColumnName);
             }
             break;
         case ASTERISK:
-            throw new BadFormatException("Asterisk not supported in relations.");
+            badFormatException= new BadFormatException("Asterisk not supported in relations.");
+            break;
         case BOOLEAN:
             if (leftColumnMetadata.getColumnType() != ColumnType.BOOLEAN) {
-                throw new NotMatchDataTypeException(leftColumnName);
+                notMatchDataTypeException=new NotMatchDataTypeException(leftColumnName);
             }
             break;
         case STRING:
             if (leftColumnMetadata.getColumnType() != ColumnType.TEXT) {
-                throw new NotMatchDataTypeException(leftColumnName);
+                notMatchDataTypeException=new NotMatchDataTypeException(leftColumnName);
             }
             break;
         case INTEGER:
             if (leftColumnMetadata.getColumnType() != ColumnType.INT &&
                     leftColumnMetadata.getColumnType() != ColumnType.BIGINT) {
-                throw new NotMatchDataTypeException(leftColumnName);
+                notMatchDataTypeException=new NotMatchDataTypeException(leftColumnName);
             }
             break;
         case FLOATING_POINT:
             if (leftColumnMetadata.getColumnType() != ColumnType.FLOAT
                     && leftColumnMetadata.getColumnType() != ColumnType.DOUBLE) {
-                throw new NotMatchDataTypeException(leftColumnName);
+                notMatchDataTypeException=new NotMatchDataTypeException(leftColumnName);
             }
             break;
         case RELATION:
-            throw new BadFormatException("Operation not supported in where.");
+            badFormatException= new BadFormatException("Operation not supported in where.");
+            break;
+        }
+        if (notMatchDataTypeException!=null){
+            throw notMatchDataTypeException;
+        }else if(badFormatException!=null){
+            throw badFormatException;
         }
     }
 
@@ -517,13 +526,14 @@ public class Normalizator {
 
     private void checkCompatibility(ColumnType columnType, Operator operator, SelectorType valueType)
             throws BadFormatException {
+        BadFormatException badFormatException=null;
         switch (columnType) {
         case BOOLEAN:
             if (operator != Operator.EQ) {
-                throw new BadFormatException("Boolean relations only accept equal operator.");
+                badFormatException= new BadFormatException("Boolean relations only accept equal operator.");
             }
             if (valueType != SelectorType.BOOLEAN) {
-                throw new BadFormatException("Boolean relations only accept TRUE or FALSE.");
+                badFormatException= new BadFormatException("Boolean relations only accept TRUE or FALSE.");
             }
             break;
         case INT:
@@ -531,24 +541,29 @@ public class Normalizator {
         case DOUBLE:
         case FLOAT:
             if ((valueType != SelectorType.INTEGER) && (valueType != SelectorType.FLOATING_POINT)) {
-                throw new BadFormatException("Numeric term not found.");
+                badFormatException= new BadFormatException("Numeric term not found.");
             }
             break;
         case TEXT:
         case VARCHAR:
             if (valueType != SelectorType.STRING) {
-                throw new BadFormatException("String term not found.");
+                badFormatException=new BadFormatException("String term not found.");
             }
             if (operator != Operator.EQ && operator != Operator.DISTINCT) {
-                throw new BadFormatException("String relations only accept equal operator.");
+                badFormatException= new BadFormatException("String relations only accept equal operator.");
             }
             break;
         case NATIVE:
-            throw new BadFormatException("Native types not supported yet.");
+            badFormatException=new BadFormatException("Native types not supported yet.");
+            break;
         case SET:
         case LIST:
         case MAP:
-            throw new BadFormatException("Collections not supported yet.");
+            badFormatException=new BadFormatException("Collections not supported yet.");
+            break;
+        }
+        if (badFormatException!=null){
+            throw badFormatException;
         }
     }
 }

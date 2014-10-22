@@ -18,8 +18,8 @@
 
 package com.stratio.crossdata.core.statements;
 
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models a {@code ALTER CLUSTER} statement from the META language.
@@ -63,7 +63,7 @@ public class AlterClusterStatement extends MetadataStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER).add(Validation.MUST_EXIST_PROPERTIES);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CLUSTER).add(ValidationTypes.MUST_EXIST_PROPERTIES);
     }
 
     public String getClusterName() {

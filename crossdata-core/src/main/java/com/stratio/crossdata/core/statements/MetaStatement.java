@@ -23,7 +23,7 @@ import java.util.List;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models a generic Statement supported by the META language.

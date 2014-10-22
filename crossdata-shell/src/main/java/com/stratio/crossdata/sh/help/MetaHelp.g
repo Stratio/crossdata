@@ -24,9 +24,9 @@ options {
 }
 
 @header {
-	package com.stratio.meta.sh.help.generated;
-	import com.stratio.meta.sh.help.HelpType;
-	import com.stratio.meta.sh.help.HelpStatement;
+	package com.stratio.crossdata.sh.help.generated;
+	import com.stratio.crossdata.sh.help.HelpType;
+	import com.stratio.crossdata.sh.help.HelpStatement;
 }
 
 @members {
@@ -40,7 +40,7 @@ options {
 }
 
 @lexer::header {
-	package com.stratio.meta.sh.help.generated;
+	package com.stratio.crossdata.sh.help.generated;
 }
 
 @lexer::members {

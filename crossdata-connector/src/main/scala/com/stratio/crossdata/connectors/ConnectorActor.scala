@@ -29,6 +29,7 @@ import com.stratio.crossdata.communication._
 
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
+import org.apache.log4j.Logger
 
 object State extends Enumeration {
   type state = Value
@@ -43,7 +44,9 @@ object ConnectorActor {
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with
 ActorLogging {
 
-  log.info("Lifting connector actor")
+  lazy val logger = Logger.getLogger(classOf[ConnectorActor])
+
+  logger.info("Lifting connector actor")
 
   implicit val timeout = Timeout(20 seconds)
 
@@ -77,8 +80,8 @@ ActorLogging {
     }
 
     case connectRequest: com.stratio.crossdata.communication.Connect => {
-      log.debug("->" + "Receiving MetadataRequest")
-      log.info("Received connect command")
+      logger.debug("->" + "Receiving MetadataRequest")
+      logger.info("Received connect command")
       connector.connect(connectRequest.credentials, connectRequest.connectorClusterConfig)
       this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
       sender ! ConnectResult.createConnectResult("Connected successfully"); //TODO once persisted sessionId,
@@ -86,12 +89,12 @@ ActorLogging {
     }
 
     case _: com.stratio.crossdata.communication.Shutdown => {
-      log.debug("->" + "Receiving Shutdown")
+      logger.debug("->" + "Receiving Shutdown")
       this.shutdown()
     }
 
     case ex: Execute => {
-      log.info("Processing query: " + ex)
+      logger.info("Processing query: " + ex)
       try {
         runningJobs.put(ex.queryId, sender)
         val result = connector.getQueryEngine().execute(ex.workflow)
@@ -105,7 +108,7 @@ ActorLogging {
           sender ! result
         }
         case err: Error =>
-          log.error("error in ConnectorActor( receiving LogicalWorkflow )")
+          logger.error("error in ConnectorActor( receiving LogicalWorkflow )")
       } finally {
         runningJobs.remove(ex.queryId)
       }
@@ -114,7 +117,7 @@ ActorLogging {
     case metadataOp: MetadataOperation => {
       var qId: String = metadataOp.queryId
       var metadataOperation: Int = 0
-      log.info("Received queryId = " + qId)
+      logger.info("Received queryId = " + qId)
 
       try {
         val opclass = metadataOp.getClass().toString().split('.')
@@ -170,12 +173,12 @@ ActorLogging {
           sender ! result
         }
         case err: Error =>
-          log.error("error in ConnectorActor( receiving MetaOperation)")
+          logger.error("error in ConnectorActor( receiving MetaOperation)")
       }
       val result = MetadataResult.createSuccessMetadataResult(metadataOperation)
       result.setQueryId(qId)
 
-      log.info("Sending back queryId = " + qId)
+      logger.info("Sending back queryId = " + qId)
 
       sender ! result
     }
@@ -202,12 +205,12 @@ ActorLogging {
         sender ! result
       } catch {
         case ex: Exception => {
-          log.debug(ex.getStackTraceString)
+          logger.debug(ex.getStackTraceString)
           val result = Result.createExecutionErrorResult(ex.getStackTraceString)
           sender ! result
         }
         case err: Error => {
-          log.error("error in ConnectorActor( receiving StorageOperation)")
+          logger.error("error in ConnectorActor( receiving StorageOperation)")
           val result = crossdata.common.result.Result.createExecutionErrorResult("error in ConnectorActor")
           sender ! result
         }
@@ -215,30 +218,29 @@ ActorLogging {
     }
 
     case msg: getConnectorName => {
-      log.info(sender + " asked for my name")
+      logger.info(sender + " asked for my name")
       sender ! replyConnectorName(connectorName)
     }
 
     case MemberUp(member) => {
-      log.info("Member up")
-      log.debug("*******Member is Up: {} {}!!!!!", member.toString, member.getRoles)
+      logger.info("Member up")
+      logger.debug("Member is Up: " + member.toString + member.getRoles + "!")
     }
 
     case state: CurrentClusterState => {
-      log.info("Current members: {}", state.members.mkString(", "))
+      logger.info("Current members: " + state.members.mkString(", "))
     }
 
     case UnreachableMember(member) => {
-      log.info("Member detected as unreachable: {}", member)
+      logger.info("Member detected as unreachable: " + member)
     }
 
     case MemberRemoved(member, previousStatus) => {
-      log.info("Member is Removed: {} after {}",
-        member.address, previousStatus)
+      logger.info("Member is Removed: " + member.address + " after " + previousStatus)
     }
 
     case _: MemberEvent => {
-      log.info("Receiving anything else")
+      logger.info("Receiving anything else")
     }
 
   }

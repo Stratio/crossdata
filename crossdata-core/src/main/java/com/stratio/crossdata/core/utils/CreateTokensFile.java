@@ -30,7 +30,7 @@ import java.nio.charset.Charset;
 
 import org.apache.log4j.Logger;
 
-public class CreateTokensFile {
+public final class CreateTokensFile {
 
     /**
      * Class logger.
@@ -50,7 +50,7 @@ public class CreateTokensFile {
             if (workingDir.endsWith("stratio-com.stratio.crossdata")) {
                 workingDir = workingDir.concat("/com.stratio.crossdata-core/");
             } else if (!workingDir.endsWith("com.stratio.crossdata-core")) {
-                workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
+                workingDir = workingDir.substring(0, workingDir.lastIndexOf('/'));
                 workingDir = workingDir.concat("/com.stratio.crossdata-core/");
             } else {
                 workingDir = workingDir.concat("/");
@@ -70,8 +70,8 @@ public class CreateTokensFile {
                 line = br.readLine();
                 while (line != null) {
                     if (line.startsWith("T_")) {
-                        String token = line.substring(2, line.indexOf(":") + 2);
-                        String replacement = line.substring(line.indexOf(":") + 1);
+                        String token = line.substring(2, line.indexOf(':') + 2);
+                        String replacement = line.substring(line.indexOf(':') + 1);
                         replacement = replacement.replace(";", "");
                         replacement = replacement.replace("'", "");
                         replacement = replacement.replace(" ", "");

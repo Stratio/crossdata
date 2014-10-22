@@ -28,8 +28,8 @@ import com.stratio.crossdata.core.utils.ParserUtils;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models an {@code UPDATE} statement from the META language.
@@ -173,8 +173,8 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE)
-                .add(Validation.MUST_EXIST_COLUMN);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG).add(ValidationTypes.MUST_EXIST_TABLE)
+                .add(ValidationTypes.MUST_EXIST_COLUMN);
     }
 
     public TableName getTableName() {

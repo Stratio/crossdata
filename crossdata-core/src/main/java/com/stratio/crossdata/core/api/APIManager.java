@@ -74,7 +74,6 @@ public class APIManager {
      * @return A {@link com.stratio.crossdata.common.result.MetadataResult}.
      */
     public Result processRequest(Command cmd) {
-        //TODO: create "LIST CONNECTORS" command
         Result result;
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
@@ -118,7 +117,7 @@ public class APIManager {
             persistManifest((CrossdataManifest) cmd.params().get(0));
             result = CommandResult.createCommandResult("CrossdataManifest added "
                     + System.lineSeparator()
-                    + ((CrossdataManifest) cmd.params().get(0)).toString());
+                    + cmd.params().get(0).toString());
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.RESET_METADATA().toString());
             result = resetMetadata();
