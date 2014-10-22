@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.crossdata.common.connector.Operations;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.ClusterName;

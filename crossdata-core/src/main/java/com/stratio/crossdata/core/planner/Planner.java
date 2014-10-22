@@ -30,7 +30,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -829,7 +829,7 @@ public class Planner {
      * @param tableName The table metadata.
      * @param selector  The relationship selector.
      * @param operator  The relationship operator.
-     * @return An {@link com.stratio.crossdata.common.connector.Operations} object.
+     * @return An {@link com.stratio.crossdata.common.metadata.Operations} object.
      */
     protected Operations getFilterOperation(final TableMetadata tableName,
             final Selector selector,

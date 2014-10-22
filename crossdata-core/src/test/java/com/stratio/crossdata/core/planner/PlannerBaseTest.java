@@ -30,7 +30,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.logicalplan.Filter;

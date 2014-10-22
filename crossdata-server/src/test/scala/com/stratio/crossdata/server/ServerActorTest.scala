@@ -26,7 +26,6 @@ import javax.transaction.TransactionManager
 import akka.pattern.ask
 import akka.testkit.ImplicitSender
 import com.stratio.crossdata.common.manifest.PropertyType
-import com.stratio.crossdata.common.connector.Operations
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.executionplan._
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, Project, Select}
@@ -51,6 +50,8 @@ import org.scalatest.{FunSuiteLike, Suite}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import com.stratio.crossdata.communication.replyConnectorName
+import com.stratio.crossdata.communication.getConnectorName
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with

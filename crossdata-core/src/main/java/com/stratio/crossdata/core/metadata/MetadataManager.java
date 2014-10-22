@@ -32,7 +32,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.CatalogName;

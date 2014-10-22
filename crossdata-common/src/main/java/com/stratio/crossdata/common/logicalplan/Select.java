@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.logicalplan;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 

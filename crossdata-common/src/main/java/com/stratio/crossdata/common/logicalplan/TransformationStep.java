@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.logicalplan;
 import java.util.Arrays;
 import java.util.List;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 
 /**
  * Class definition for {@link com.stratio.crossdata.common.logicalplan.LogicalStep} that are

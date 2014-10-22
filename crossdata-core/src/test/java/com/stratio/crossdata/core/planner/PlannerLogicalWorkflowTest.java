@@ -26,7 +26,7 @@ import static org.testng.Assert.fail;
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.statements.structures.window.TimeUnit;

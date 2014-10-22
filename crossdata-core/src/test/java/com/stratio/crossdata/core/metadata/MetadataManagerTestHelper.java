@@ -37,7 +37,7 @@ import org.apache.commons.io.FileUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;

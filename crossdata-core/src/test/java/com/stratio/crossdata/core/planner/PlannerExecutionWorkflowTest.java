@@ -37,7 +37,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
