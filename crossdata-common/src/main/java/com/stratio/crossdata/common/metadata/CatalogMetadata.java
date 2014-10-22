@@ -27,10 +27,6 @@ import com.stratio.crossdata.common.statements.structures.selectors.Selector;
 
 public class CatalogMetadata implements IMetadata {
 
-    private QueryStatus queryStatus = QueryStatus.PLANNED;
-
-    private String queryId = null;
-
     private final CatalogName name;
 
     private final Map<Selector, Selector> options;
@@ -54,22 +50,6 @@ public class CatalogMetadata implements IMetadata {
 
     public Map<TableName, TableMetadata> getTables() {
         return tables;
-    }
-
-    public QueryStatus getQueryStatus() {
-        return queryStatus;
-    }
-
-    public String getQueryId() {
-        return queryId;
-    }
-
-    public void setQueryId(String queryId) {
-        this.queryId = queryId;
-    }
-
-    public void setQueryStatus(QueryStatus queryStatus) {
-        this.queryStatus = queryStatus;
     }
 
     @Override

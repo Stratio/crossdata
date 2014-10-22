@@ -501,13 +501,6 @@ public enum MetadataManager {
         return tableMetadata.getColumns().get(name);
     }
 
-    public void setQueryStatus(CatalogName catalogName, QueryStatus queryStatus, String queryId) {
-        CatalogMetadata catalogMetadata = getCatalog(catalogName);
-        catalogMetadata.setQueryStatus(queryStatus);
-        catalogMetadata.setQueryId(queryId);
-        createCatalog(catalogMetadata, false);
-    }
-
     public boolean checkConnectorStatus(ConnectorName connectorName, Status status) {
         shouldBeInit();
         exists(connectorName);
