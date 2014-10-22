@@ -30,7 +30,7 @@ import java.nio.charset.Charset;
 
 import org.apache.log4j.Logger;
 
-public class CreateTokensFile {
+public final class CreateTokensFile {
 
     /**
      * Class logger.

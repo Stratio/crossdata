@@ -32,7 +32,7 @@ import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.utils.MetaUtils;
 
-public class ParserUtils {
+public final class ParserUtils {
 
     /**
      * Class logger.
