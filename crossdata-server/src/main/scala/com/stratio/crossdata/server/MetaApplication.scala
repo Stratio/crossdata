@@ -32,7 +32,6 @@ object MetaApplication extends App {
     commandLoop()
   }
 
-
   metaServer.init(null)
   metaServer.start()
   commandLoop()

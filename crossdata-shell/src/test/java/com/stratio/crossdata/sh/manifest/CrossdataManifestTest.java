@@ -23,22 +23,22 @@ import static org.testng.Assert.fail;
 
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.api.CrossdataManifest;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
-import com.stratio.crossdata.common.api.Manifest;
 import com.stratio.crossdata.common.api.ManifestHelper;
 
-public class ManifestTest {
+public class CrossdataManifestTest {
 
     @Test
     public void testDataStoreManifest() {
 
-        Manifest manifest = null;
+        CrossdataManifest manifest = null;
         try {
-            manifest = ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_DATASTORE,
+            manifest = ConsoleUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_DATASTORE,
                     getClass().getResourceAsStream("/com/stratio/crossdata/connector/DataStoreDefinition.xml"));
         } catch (ManifestException e) {
-            fail("Manifest validation failed", e);
+            fail("CrossdataManifest validation failed", e);
         }
 
         String parsedManifest = ManifestHelper.manifestToString(manifest);
@@ -86,12 +86,12 @@ public class ManifestTest {
     @Test
     public void testConnectorManifest() {
 
-        Manifest manifest = null;
+        CrossdataManifest manifest = null;
         try {
-            manifest = ConsoleUtils.parseFromXmlToManifest(Manifest.TYPE_CONNECTOR,
+            manifest = ConsoleUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_CONNECTOR,
                     getClass().getResourceAsStream("/com/stratio/crossdata/connector/ConnectorDefinition.xml"));
         } catch (ManifestException e) {
-            fail("Manifest validation failed", e);
+            fail("CrossdataManifest validation failed", e);
         }
 
         String parsedManifest = ManifestHelper.manifestToString(manifest);

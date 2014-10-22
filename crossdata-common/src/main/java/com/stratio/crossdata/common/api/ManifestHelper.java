@@ -32,7 +32,7 @@ public class ManifestHelper implements Serializable {
 
     private static final long serialVersionUID = -6979108221035957858L;
 
-    public static String manifestToString(Manifest manifest) {
+    public static String manifestToString(CrossdataManifest manifest) {
         String result = null;
         if (manifest instanceof DataStoreType) {
             return dataStoreManifestToString((DataStoreType) manifest);
@@ -77,9 +77,11 @@ public class ManifestHelper implements Serializable {
         }
 
         // BEHAVIORS
-        sb.append("Behaviors: ").append(System.lineSeparator());
-        for (String behavior : dataStoreType.getBehaviors().getBehavior()) {
-            sb.append("\t").append("Behavior: ").append(behavior).append(System.lineSeparator());
+        if(dataStoreType.getBehaviors() != null){
+            sb.append("Behaviors: ").append(System.lineSeparator());
+            for (String behavior : dataStoreType.getBehaviors().getBehavior()) {
+                sb.append("\t").append("Behavior: ").append(behavior).append(System.lineSeparator());
+            }
         }
 
         // RESULT

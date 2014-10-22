@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import com.stratio.crossdata.common.api.Manifest;
+import com.stratio.crossdata.common.api.CrossdataManifest;
 import com.stratio.crossdata.common.api.PropertiesType;
 
 /**
@@ -65,7 +65,7 @@ import com.stratio.crossdata.common.api.PropertiesType;
     "optionalProperties",
     "behaviors"
 })
-public class DataStoreType extends Manifest {
+public class DataStoreType extends CrossdataManifest {
 
     @XmlElement(name = "Name", required = true)
     protected String name;
@@ -79,7 +79,7 @@ public class DataStoreType extends Manifest {
     protected BehaviorsType behaviors;
 
     public DataStoreType() {
-        super(Manifest.TYPE_DATASTORE);
+        super(CrossdataManifest.TYPE_DATASTORE);
     }
 
     /**

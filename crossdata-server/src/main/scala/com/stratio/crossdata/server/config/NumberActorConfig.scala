@@ -24,7 +24,7 @@ import com.typesafe.config.Config
 object NumberActorConfig {
 
   val API_ACTOR_NUM = "config.akka.number.api-actor "
-  val CONNECTOR_MANAG_ACTOR_NUM = "config.akka.number.connectormanager-manager-actor"
+  val CONNECTOR_MANAG_ACTOR_NUM = "config.akka.number.connector-manager-actor"
   val COORDINATOR_ACTOR_NUM = "config.akka.number.coordinator-actor"
   val EXECUTOR_ACTOR_NUM = "config.akka.number.executor-actor"
   val NORMALIZER_ACTOR_NUM = "config.akka.number.normalizer-actor"

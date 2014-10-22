@@ -33,6 +33,7 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.api.CrossdataManifest;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.result.CommandResult;
@@ -47,7 +48,6 @@ import com.stratio.crossdata.sh.help.generated.MetaHelpParser;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
 import com.stratio.crossdata.sh.utils.MetaCompletionHandler;
 import com.stratio.crossdata.sh.utils.MetaCompletor;
-import com.stratio.crossdata.common.api.Manifest;
 import com.stratio.crossdata.common.result.Result;
 
 import jline.console.ConsoleReader;
@@ -441,20 +441,20 @@ public class Metash {
 
         int type_manifest;
         if (tokens[1].equalsIgnoreCase("datastore")) {
-            type_manifest = Manifest.TYPE_DATASTORE;
+            type_manifest = CrossdataManifest.TYPE_DATASTORE;
         } else if (tokens[1].equalsIgnoreCase("connectormanager")) {
-            type_manifest = Manifest.TYPE_CONNECTOR;
+            type_manifest = CrossdataManifest.TYPE_CONNECTOR;
         } else {
             return "ERROR: Unknown type: " + tokens[1];
         }
 
-        // Create Manifest object from XML file
-        Manifest manifest;
+        // Create CrossdataManifest object from XML file
+        CrossdataManifest manifest;
         try {
             manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest,
                     tokens[2].replace(";", "").replace("\"", "").replace("'", ""));
         } catch (ManifestException | FileNotFoundException e) {
-            LOG.error("Manifest couldn't be parsed", e);
+            LOG.error("CrossdataManifest couldn't be parsed", e);
             return null;
         }
 
@@ -465,7 +465,7 @@ public class Metash {
         try {
             metaResult = metaDriver.addManifest(manifest);
         } catch (ManifestException e) {
-            LOG.error("Manifest couldn't be parsed", e);
+            LOG.error("CrossdataManifest couldn't be parsed", e);
             return null;
         }
         queryEnd = System.currentTimeMillis();

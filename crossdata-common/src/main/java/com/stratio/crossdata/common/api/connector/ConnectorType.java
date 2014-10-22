@@ -31,7 +31,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
-import com.stratio.crossdata.common.api.Manifest;
+import com.stratio.crossdata.common.api.CrossdataManifest;
 import com.stratio.crossdata.common.api.PropertiesType;
 
 /**
@@ -67,7 +67,7 @@ import com.stratio.crossdata.common.api.PropertiesType;
     "optionalProperties",
     "supportedOperations"
 })
-public class ConnectorType extends Manifest {
+public class ConnectorType extends CrossdataManifest {
 
     @XmlElement(name = "ConnectorName", required = true)
     protected String connectorName;
@@ -83,7 +83,7 @@ public class ConnectorType extends Manifest {
     protected SupportedOperationsType supportedOperations;
 
     public ConnectorType() {
-        super(Manifest.TYPE_CONNECTOR);
+        super(CrossdataManifest.TYPE_CONNECTOR);
     }
 
     /**

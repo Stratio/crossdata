@@ -58,7 +58,7 @@ public class ConnectTest extends DriverParentTest {
     public void sendManifest() {
         Result metaResult = null;
 
-        // Create Manifest
+        // Create CrossdataManifest
         DataStoreType manifest = new DataStoreType();
 
 
@@ -66,8 +66,8 @@ public class ConnectTest extends DriverParentTest {
         try {
             metaResult = driver.addManifest(manifest);
         } catch (ManifestException e) {
-            logger.error("Manifest name doesn't match LETTER (LETTER | DIGIT | '_')*", e);
-            fail("Manifest name doesn't match LETTER (LETTER | DIGIT | '_')*", e);
+            logger.error("CrossdataManifest name doesn't match LETTER (LETTER | DIGIT | '_')*", e);
+            fail("CrossdataManifest name doesn't match LETTER (LETTER | DIGIT | '_')*", e);
         }
 
         // Process result

@@ -30,11 +30,11 @@ import javax.transaction.SystemException;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.api.CrossdataManifest;
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.MetadataResult;
-import com.stratio.crossdata.common.api.Manifest;
 import com.stratio.crossdata.common.api.ManifestHelper;
 import com.stratio.crossdata.common.api.PropertiesType;
 import com.stratio.crossdata.common.api.connector.ConnectorType;
@@ -115,10 +115,10 @@ public class APIManager {
             ((MetadataResult) result).setColumnList(columnsResult);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
-            persistManifest((Manifest) cmd.params().get(0));
-            result = CommandResult.createCommandResult("Manifest added "
+            persistManifest((CrossdataManifest) cmd.params().get(0));
+            result = CommandResult.createCommandResult("CrossdataManifest added "
                     + System.lineSeparator()
-                    + ((Manifest) cmd.params().get(0)).toString());
+                    + ((CrossdataManifest) cmd.params().get(0)).toString());
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.RESET_METADATA().toString());
             result = resetMetadata();
@@ -181,8 +181,8 @@ public class APIManager {
         return result;
     }
 
-    private void persistManifest(Manifest manifest) {
-        if (manifest.getManifestType() == Manifest.TYPE_DATASTORE) {
+    private void persistManifest(CrossdataManifest manifest) {
+        if (manifest.getManifestType() == CrossdataManifest.TYPE_DATASTORE) {
             persistDataStore((DataStoreType) manifest);
         } else {
             persistConnector((ConnectorType) manifest);

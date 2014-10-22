@@ -32,7 +32,7 @@ import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, Dri
 import com.stratio.crossdata.driver.result.SyncResultHandler
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import org.apache.log4j.Logger
-import com.stratio.crossdata.common.api.Manifest
+import com.stratio.crossdata.common.api.CrossdataManifest
 
 import scala.concurrent.duration._
 
@@ -202,7 +202,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return A CommandResult with a string
    */
   @throws(classOf[ManifestException])
-  def addManifest(manifest: Manifest): CommandResult = {
+  def addManifest(manifest: CrossdataManifest): CommandResult = {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(manifest)
     val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.ADD_MANIFEST, params))
