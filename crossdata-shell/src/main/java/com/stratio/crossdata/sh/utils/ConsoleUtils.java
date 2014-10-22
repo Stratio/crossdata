@@ -83,8 +83,8 @@ public class ConsoleUtils {
      */
     private static final int DAYS_HISTORY_ENTRY_VALID = 30;
 
-    private static final String DATASTORE_SCHEMA_PATH = "/com/stratio/crossdata/connectormanager/DataStoreDefinition.xsd";
-    private static final String CONNECTOR_SCHEMA_PATH = "/com/stratio/crossdata/connectormanager/ConnectorDefinition.xsd";
+    private static final String DATASTORE_SCHEMA_PATH = "/com/stratio/crossdata/connector/DataStoreDefinition.xsd";
+    private static final String CONNECTOR_SCHEMA_PATH = "/com/stratio/crossdata/connector/ConnectorDefinition.xsd";
 
     /**
      * Private class constructor as all methods are static.

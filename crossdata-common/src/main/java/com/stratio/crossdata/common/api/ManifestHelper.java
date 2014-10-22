@@ -77,9 +77,11 @@ public class ManifestHelper implements Serializable {
         }
 
         // BEHAVIORS
-        sb.append("Behaviors: ").append(System.lineSeparator());
-        for (String behavior : dataStoreType.getBehaviors().getBehavior()) {
-            sb.append("\t").append("Behavior: ").append(behavior).append(System.lineSeparator());
+        if(dataStoreType.getBehaviors() != null){
+            sb.append("Behaviors: ").append(System.lineSeparator());
+            for (String behavior : dataStoreType.getBehaviors().getBehavior()) {
+                sb.append("\t").append("Behavior: ").append(behavior).append(System.lineSeparator());
+            }
         }
 
         // RESULT

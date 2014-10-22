@@ -113,7 +113,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     //Pass the message to the connectorActor to extract the member in the cluster
     case state: CurrentClusterState => {
       logger.info("Current members: " + state.members.mkString(", "))
-      //TODO Process CurrentClusterState
+      //TODO Check if I'm the only server
       try {
         val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
         MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
@@ -122,7 +122,6 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
           log.error("Couldn't set connectors to OFFLINE")
         }
       }
-
     }
 
     case member: UnreachableMember => {
