@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.server.connectormanager
 
+import akka.cluster.ClusterEvent.MemberUp
 import com.stratio.crossdata.common.result.ErrorResult
 import com.stratio.crossdata.server.ServerActorTest
 import org.apache.log4j.Logger
@@ -36,6 +37,11 @@ class ConnectorManagerActorTest extends ServerActorTest{
         connectorManagerActor ! "non making sense message"
         expectMsgType[ErrorResult]
       }
+  }
+  test("MemberUp"){
+    initialize()
+    initializeTablesInfinispan()
+    connectorManagerActor ! new MemberUp(null)
   }
         /*
         fishForMessage(6 seconds){
