@@ -28,7 +28,7 @@ import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
 /**
- * Interface provided by a connectormanager to access metadata related operations such as creating new
+ * Interface provided by a connector to access metadata related operations such as creating new
  * catalogs or tables.
  */
 public interface IMetadataEngine {

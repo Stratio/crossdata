@@ -45,7 +45,7 @@ public class QualifiedNames {
     }
 
     public static String getConnectorQualifiedName(String name) {
-        return normalize("connectormanager." + name);
+        return normalize("connector." + name);
     }
 
     public static String getDataStoreQualifiedName(String name) {

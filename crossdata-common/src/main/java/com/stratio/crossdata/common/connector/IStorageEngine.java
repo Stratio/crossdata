@@ -27,7 +27,7 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
 /**
- * Interface provided by a connectormanager to access storage related operations such as inserting new
+ * Interface provided by a connector to access storage related operations such as inserting new
  * data.
  */
 public interface IStorageEngine {

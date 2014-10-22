@@ -155,7 +155,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_INNER_JOIN);
         operationsC1.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
 
-        //Streaming connectormanager.
+        //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
         operationsC2.add(Operations.PROJECT);
         operationsC2.add(Operations.SELECT_OPERATOR);
@@ -285,7 +285,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         assertEquals(path.getLast(), select, "Invalid last step");
 
         assertEquals(path.getAvailableConnectors().size(), 1, "Invalid size");
-        assertEquals(path.getAvailableConnectors().get(0), connector1, "Invalid connectormanager selected");
+        assertEquals(path.getAvailableConnectors().get(0), connector1, "Invalid connector selected");
     }
 
     @Test

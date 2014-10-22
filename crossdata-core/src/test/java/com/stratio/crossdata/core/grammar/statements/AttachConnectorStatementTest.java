@@ -27,7 +27,7 @@ public class AttachConnectorStatementTest extends ParsingTest {
     @Test
     public void attachConnectorSimple1() {
         String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {\"ConsistencyLevel\": \"Quorum\", 'DefaultLimit': 999};";
-        String expectedText = "ATTACH CONNECTOR connectormanager.cass_con_native TO cluster.cassandraCluster WITH OPTIONS " +
+        String expectedText = "ATTACH CONNECTOR connector.cass_con_native TO cluster.cassandraCluster WITH OPTIONS " +
                 "{'ConsistencyLevel': 'Quorum', 'DefaultLimit': 999};";
         testRegularStatement(inputText, expectedText, "attachConnectorSimple1");
     }
@@ -35,7 +35,7 @@ public class AttachConnectorStatementTest extends ParsingTest {
     @Test
     public void attachConnectorSimple2() {
         String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {'ConsistencyLevel': 'Quorum', \"DefaultLimit\": 999};";
-        String expectedText = "ATTACH CONNECTOR connectormanager.cass_con_native TO cluster.cassandraCluster WITH OPTIONS " +
+        String expectedText = "ATTACH CONNECTOR connector.cass_con_native TO cluster.cassandraCluster WITH OPTIONS " +
                 "{'ConsistencyLevel': 'Quorum', 'DefaultLimit': 999};";
         testRegularStatement(inputText, expectedText, "attachConnectorSimple2");
     }
@@ -54,7 +54,7 @@ public class AttachConnectorStatementTest extends ParsingTest {
 
     @Test
     public void attachConnectorWrongJson() {
-        String inputText = "ATTACH CONNECTOR productionMadrid ON DATASTORE cassandra WITH OPTIONS {connectormanager.path: /home/stratio/connectormanager/cass_con_native.xml};";
+        String inputText = "ATTACH CONNECTOR productionMadrid ON DATASTORE cassandra WITH OPTIONS {connector.path: /home/stratio/connector/cass_con_native.xml};";
         testParserFails(inputText, "attachConnectorWrongJson");
     }
 
