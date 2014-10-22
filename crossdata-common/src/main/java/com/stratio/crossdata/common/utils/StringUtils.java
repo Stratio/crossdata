@@ -141,21 +141,6 @@ public class StringUtils {
         return obj;
     }
 
-    public static String getStringFromOptions(Map<Selector, Selector> options) {
-        StringBuilder sb = new StringBuilder("{");
-        Iterator<Map.Entry<Selector, Selector>> entryIt = options.entrySet().iterator();
-        Map.Entry<Selector, Selector> e;
-        while (entryIt.hasNext()) {
-            e = entryIt.next();
-            sb.append(e.getKey()).append(": ").append(e.getValue());
-            if (entryIt.hasNext()) {
-                sb.append(", ");
-            }
-        }
-        sb.append("}");
-        return sb.toString();
-    }
-
     public static String getAkkaActorRefUri(Object object){
         if(object != null) {
             return object.toString().replace("Actor[", "").replace("]", "").split("\\$")[0].split("#")[0];
