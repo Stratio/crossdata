@@ -92,7 +92,7 @@ public class ConnectorMetadata implements IMetadata {
         } else {
             this.optionalProperties = null;
         }
-        this.supportedOperations = ManifestHelper.convertManifestOperationsToMetadataOperations(supportedOperations);
+        this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
         this.status = Status.OFFLINE;
     }
 
@@ -189,4 +189,18 @@ public class ConnectorMetadata implements IMetadata {
     public void setSupportedOperations(Set<Operations> supportedOperations) {
         this.supportedOperations = supportedOperations;
     }
+
+    public void setSupportedOperations(List<String> supportedOperations) {
+        this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
+    }
+
+    private Set<Operations> convertManifestOperationsToMetadataOperations(
+            List<String> supportedOperations) {
+        Set<Operations> operations = new HashSet<>();
+        for (String supportedOperation : supportedOperations) {
+            operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
+        }
+        return operations;
+    }
+
 }

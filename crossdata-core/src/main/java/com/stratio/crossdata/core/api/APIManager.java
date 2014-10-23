@@ -20,7 +20,9 @@ package com.stratio.crossdata.core.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -33,6 +35,7 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
@@ -252,8 +255,7 @@ public class APIManager {
                     .convertManifestPropertiesToMetadataProperties(requiredProperties.getProperty()));
             connectorMetadata.setOptionalProperties((optionalProperties == null) ? null : ManifestHelper
                     .convertManifestPropertiesToMetadataProperties(optionalProperties.getProperty()));
-            connectorMetadata.setSupportedOperations(ManifestHelper.convertManifestOperationsToMetadataOperations
-                    (supportedOperations.getOperation()));
+            connectorMetadata.setSupportedOperations(supportedOperations.getOperation());
         } else {
             connectorMetadata = new ConnectorMetadata(
                     name,
@@ -267,5 +269,8 @@ public class APIManager {
         // Persist
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
     }
+
+
+
 
 }
