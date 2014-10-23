@@ -29,7 +29,6 @@ object createEngine {
   def create(): Engine = {
     val engineConfig: EngineConfig = {
       val result = new EngineConfig
-      result.setSparkMaster("local[2]")
       result.setGridListenAddress("localhost")
       result.setGridContactHosts(Array[String]())
       result.setGridMinInitialMembers(1)
