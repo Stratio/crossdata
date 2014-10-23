@@ -135,7 +135,12 @@ public final class ConsoleUtils {
             return System.lineSeparator() + "OK";
         }
 
-        ResultSet resultSet = queryResult.getResultSet();
+        ResultSet resultSet = null;
+        try {
+            resultSet = queryResult.getResultSet();
+        } finally {
+            LOG.debug("Result size:" + resultSet.size());
+        }
 
         Map<String, Integer> colWidths = calculateColWidths(resultSet);
 

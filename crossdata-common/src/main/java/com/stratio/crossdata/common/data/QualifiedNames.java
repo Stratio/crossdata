@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.common.data;
 
-public class QualifiedNames {
+public final class QualifiedNames {
 
     private QualifiedNames(){
 

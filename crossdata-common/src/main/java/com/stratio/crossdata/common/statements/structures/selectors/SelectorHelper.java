@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.statements.structures.selectors;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SelectorHelper {
+public final class SelectorHelper {
 
     private SelectorHelper(){
 

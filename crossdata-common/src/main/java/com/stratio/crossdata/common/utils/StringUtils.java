@@ -40,7 +40,7 @@ import com.stratio.crossdata.common.statements.structures.selectors.StringSelect
 /**
  * Utility class for String transformation operations.
  */
-public class StringUtils {
+public final class StringUtils {
 
     private StringUtils(){
 
