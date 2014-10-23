@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.exceptions.ConnectionException;
+import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
@@ -35,7 +35,6 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
-import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.statements.structures.selectors.ColumnSelector;
@@ -179,7 +178,7 @@ public class Validator {
         if(statement instanceof AttachConnectorStatement){
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) statement;
             ConnectorName connectorName = attachConnectorStatement.getConnectorName();
-            if(!MetadataManager.MANAGER.checkConnectorStatus(connectorName, Status.ONLINE)){
+            if(!MetadataManager.MANAGER.checkConnectorStatus(connectorName, ConnectorStatus.ONLINE)){
                 throw new NotConnectionException("Connector "+ connectorName + " is not connected.");
             }
         } else {

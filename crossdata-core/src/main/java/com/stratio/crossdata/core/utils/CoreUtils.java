@@ -12,6 +12,9 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public final class CoreUtils {
 
+    public CoreUtils() {
+    }
+
     public static Object convertSelectorToObject(Selector selector, ColumnName columnName) throws PlanningException {
         Object result = null;
         ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);

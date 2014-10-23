@@ -153,15 +153,6 @@ public class ManifestHelper implements Serializable {
         return dataStoreNames;
     }
 
-    public static Set<Operations> convertManifestOperationsToMetadataOperations(
-            List<String> supportedOperations) {
-        Set<Operations> operations = new HashSet<>();
-        for (String supportedOperation : supportedOperations) {
-            operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
-        }
-        return operations;
-    }
-
     public static Set<String> convertManifestBehaviorsToMetadataBehaviors(List<String> behaviors) {
         Set<String> metadataBehaviors = new HashSet<>();
         for (String behavior : behaviors) {

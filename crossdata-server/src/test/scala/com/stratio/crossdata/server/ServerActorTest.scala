@@ -209,7 +209,7 @@ ImplicitSender {
 
     //create catalog
     metadataManager.createTestCatalog(catalogName)
-    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
+    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), ConnectorStatus.ONLINE)
 
     val clusterMetadata = MetadataManager.MANAGER.getCluster(testcluster)
     val connectorsMap = new java.util.HashMap[ConnectorName, ConnectorAttachedMetadata]()
