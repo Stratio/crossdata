@@ -140,6 +140,7 @@ public class APIManager {
         for (ConnectorMetadata connector : connectors) {
             stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
                     .append("\t").append(connector.getConnectorStatus());
+            // ClusterRefs
             if (connector.getClusterRefs() == null) {
                 stringBuilder = stringBuilder.append("\t")
                         .append("UNKNOWN");
@@ -147,6 +148,7 @@ public class APIManager {
                 stringBuilder = stringBuilder.append("\t")
                         .append(Arrays.toString(connector.getClusterRefs().toArray()));
             }
+            // DatastoreRefs
             if (connector.getDataStoreRefs() == null) {
                 stringBuilder = stringBuilder.append("\t")
                         .append("UNKNOWN");
@@ -154,6 +156,7 @@ public class APIManager {
                 stringBuilder = stringBuilder.append("\t")
                         .append(Arrays.toString(connector.getDataStoreRefs().toArray()));
             }
+            // ActorRef
             if (connector.getActorRef() == null) {
                 stringBuilder = stringBuilder.append("\t")
                         .append("UNKNOWN");
@@ -161,6 +164,7 @@ public class APIManager {
                 stringBuilder = stringBuilder.append("\t")
                         .append(connector.getActorRef());
             }
+
             stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
         }
         result = CommandResult.createCommandResult(stringBuilder.toString());
