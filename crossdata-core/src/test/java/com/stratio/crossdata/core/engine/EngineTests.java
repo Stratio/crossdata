@@ -35,8 +35,6 @@ public class EngineTests {
 
         engineConfig = new EngineConfig();
 
-        engineConfig.setSparkMaster("local");
-        engineConfig.setClasspathJars("/");
         engineConfig.setGridListenAddress("localhost");
         engineConfig.setGridContactHosts(new String[] { });
         engineConfig.setGridMinInitialMembers(1);

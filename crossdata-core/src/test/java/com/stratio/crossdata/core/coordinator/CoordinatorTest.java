@@ -38,6 +38,11 @@ import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
 
 public class CoordinatorTest extends MetadataManagerTestHelper {
 
+    /**
+     * Testing an API operation (attaching a cluster to a datastore)
+     *
+     * @throws Exception
+     */
     @Test
     public void testAttachCluster() throws Exception {
 

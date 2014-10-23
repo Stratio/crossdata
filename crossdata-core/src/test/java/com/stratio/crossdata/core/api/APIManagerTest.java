@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.core.api;
 
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
@@ -27,18 +28,94 @@ import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
-import com.stratio.crossdata.common.result.CommandResult;
-import com.stratio.crossdata.common.result.Result;
+import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.manifest.BehaviorsType;
+import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.manifest.PropertiesType;
 import com.stratio.crossdata.common.manifest.PropertyType;
-import com.stratio.crossdata.common.manifest.DataStoreType;
+import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
 
 public class APIManagerTest extends MetadataManagerTestHelper {
 
     @Test
-    public void testProcessRequest() throws Exception {
-        APIManager apiMangager = new APIManager();
+    public void testPersistDataStore() throws Exception {
+        APIManager ApiManager = new APIManager();
+
+        DataStoreType dataStoreType = new DataStoreType();
+
+        dataStoreType.setName("dataStoreTest");
+
+        dataStoreType.setVersion("0.1.0");
+
+        PropertiesType requiredProperties = new PropertiesType();
+        List<PropertyType> property = new ArrayList<>();
+        PropertyType propertyType = new PropertyType();
+        propertyType.setPropertyName("RequiredProperty");
+        propertyType.setDescription("Test");
+        property.add(propertyType);
+        requiredProperties.setProperty(property);
+        dataStoreType.setRequiredProperties(requiredProperties);
+
+        PropertiesType optionalProperties = new PropertiesType();
+        property = new ArrayList<>();
+        propertyType = new PropertyType();
+        propertyType.setPropertyName("OptionalProperty");
+        propertyType.setDescription("Test");
+        property.add(propertyType);
+        optionalProperties.setProperty(property);
+        dataStoreType.setOptionalProperties(optionalProperties);
+
+        BehaviorsType behaviorsType = new BehaviorsType();
+        List<String> behavior = new ArrayList<>();
+        behavior.add("Test");
+        behaviorsType.setBehavior(behavior);
+        dataStoreType.setBehaviors(behaviorsType);
+
+        List params = new ArrayList();
+        params.add(dataStoreType);
+
+        Command cmd = new Command(APICommand.ADD_MANIFEST(), params);
+
+        String expectedResult = "DATASTORE" + System.lineSeparator() + "Name: dataStoreTest" + System.lineSeparator()
+                + "Version: 0.1.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
+                System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
+                System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
+                "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
+                "Behaviors: " + System.lineSeparator() + "\tBehavior: Test" + System.lineSeparator();
+
+        CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
+
+        String str = String.valueOf(result.getResult());
+
+        assertTrue(str.equalsIgnoreCase(expectedResult), "Expected: " + expectedResult + System.lineSeparator() +
+                "   Found: " + str);
+    }
+
+    @Test
+    public void testListConnectors() throws Exception {
+        APIManager ApiManager = new APIManager();
+        Command cmd = new Command(APICommand.LIST_CONNECTORS(), null);
+        createTestConnector("connectorTest", new DataStoreName("datastoreTest"), "akkaActorRef");
+        CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
+        String expectedResult = System.lineSeparator() + "Connector: connector.connectortest" +
+                "\tONLINE\t[]\t[]\takkaActorRef" + System.lineSeparator();
+        String str = String.valueOf(result.getResult());
+        assertTrue(str.equalsIgnoreCase(expectedResult), "Expected: " + expectedResult + System.lineSeparator() +
+                "   Found: " + str);
+    }
+
+    @Test
+    public void testConstructor() throws Exception {
+        APIManager ApiManager = new APIManager();
+        assertNotNull(ApiManager);
+    }
+
+    @Test
+    public void testAddDataStore() throws Exception {
+        APIManager ApiManager = new APIManager();
         List params = new ArrayList<DataStoreType>();
         DataStoreType dataStoreType = new DataStoreType();
         dataStoreType.setName("CassandraDataStore");
@@ -55,7 +132,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         params.add(dataStoreType);
         Command cmd = new Command(APICommand.ADD_MANIFEST(), params);
-        Result result = apiMangager.processRequest(cmd);
+        Result result = ApiManager.processRequest(cmd);
         assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
         CommandResult cmdR = (CommandResult) result;
         String resultStr = (String) cmdR.getResult();

@@ -959,6 +959,7 @@ public class Planner {
     protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap) {
         Map<ColumnName, String> aliasMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
+        LinkedHashMap<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
         boolean addAll = false;
         for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
             if(AsteriskSelector.class.isInstance(s)){
@@ -966,6 +967,10 @@ public class Planner {
             }else if (s.getAlias() != null) {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
                 aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()), s.getAlias());
+
+                typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()),
+                        tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(ColumnSelector.class
+                                .cast(s).getName()).getColumnType());
 
                 typeMap.put(s.getAlias(),
                         tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
@@ -975,6 +980,10 @@ public class Planner {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
                 aliasMap.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
                         cs.getName().getName());
+
+                typeMapFromColumnName.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
+                        tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
+
                 typeMap.put(cs.getName().getName(),
                         tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
                                 .get(cs.getName()).getColumnType()
@@ -986,6 +995,10 @@ public class Planner {
             TableMetadata metadata = tableMetadataMap.get(selectStatement.getTableName().getQualifiedName());
             for(Map.Entry<ColumnName, ColumnMetadata> column : metadata.getColumns().entrySet()){
                 aliasMap.put(column.getKey(), column.getKey().getName());
+
+                typeMapFromColumnName.put(column.getKey(),
+                        column.getValue().getColumnType());
+
                 typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
             }
             if(selectStatement.getJoin() != null){
@@ -993,12 +1006,16 @@ public class Planner {
                         .getQualifiedName());
                 for(Map.Entry<ColumnName, ColumnMetadata> column : metadataJoin.getColumns().entrySet()){
                     aliasMap.put(column.getKey(), column.getKey().getName());
+
+                    typeMapFromColumnName.put(column.getKey(),
+                            column.getValue().getColumnType());
+
                     typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
                 }
             }
         }
 
-        return new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap);
+        return new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap, typeMapFromColumnName);
     }
 
 }

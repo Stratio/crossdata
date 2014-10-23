@@ -57,6 +57,11 @@ public class Coordinator implements Serializable {
      */
     private static final Logger LOG = Logger.getLogger(Coordinator.class);
 
+    /**
+     * Persists workflow in infinispan
+     *
+     * @param metadataWorkflow
+     */
     public void persist(MetadataWorkflow metadataWorkflow) {
 
        switch (metadataWorkflow.getExecutionType()) {
@@ -85,6 +90,12 @@ public class Coordinator implements Serializable {
         }
     }
 
+    /**
+     * Executes operations that do not send anything to the underlying connectors
+     *
+     * @param workflow
+     * @return com.stratio.crossdata.common.result.Result
+     */
     public Result executeManagementOperation(ManagementOperation workflow){
         Result result = Result.createErrorResult(ErrorType.COORDINATION, "Wrong management operation");
 
@@ -105,6 +116,14 @@ public class Coordinator implements Serializable {
         return result;
     }
 
+    /**
+     * Persists cluster's characteristics in infinispan
+     *
+     * @param clusterName
+     * @param datastoreName
+     * @param options
+     * @return
+     */
     public Result persistAttachCluster(ClusterName clusterName, DataStoreName datastoreName,
             Map<Selector, Selector> options) {
 
@@ -129,6 +148,14 @@ public class Coordinator implements Serializable {
         return CommandResult.createCommandResult("Cluster attached successfully");
     }
 
+    /**
+     * Detaches cluster from infinispan
+     *
+     * @param clusterName
+     * @param datastoreName
+     * @param options
+     * @return
+     */
     public Result persistDetachCluster(ClusterName clusterName, DataStoreName datastoreName,
             Map<Selector, Selector> options) {
         //TODO Move this type of operations to MetadataManager in order to use a single lock
@@ -145,14 +172,29 @@ public class Coordinator implements Serializable {
         return CommandResult.createCommandResult("CLUSTER attached successfully");
     }
 
+    /**
+     * Persists catalog data in infinispan
+     *
+     * @param catalog
+     */
     public void persistCreateCatalog(CatalogMetadata catalog) {
         MetadataManager.MANAGER.createCatalog(catalog);
     }
 
+    /**
+     * Persists table Metadata in invinispan
+     *
+     * @param table
+     */
     public void persistCreateTable(TableMetadata table) {
         MetadataManager.MANAGER.createTable(table);
     }
 
+    /**
+     * Persists index Metadata in invinispan
+     *
+     * @param index
+     */
     public void persistCreateIndex(IndexMetadata index) {
         // TODO move to MetadataManager
         TableMetadata table = MetadataManager.MANAGER.getTable(index.getName().getTableName());
@@ -160,14 +202,29 @@ public class Coordinator implements Serializable {
         MetadataManager.MANAGER.createTable(table, false);
     }
 
+    /**
+     * Deletes catalog from infinispan
+     *
+     * @param catalog
+     */
     public void persistDropCatalog(CatalogName catalog) {
         MetadataManager.MANAGER.deleteCatalog(catalog);
     }
 
+    /**
+     * Deletes table data from infinispan
+     *
+     * @param table
+     */
     public void persistDropTable(TableName table) {
         MetadataManager.MANAGER.deleteTable(table);
     }
 
+    /**
+     * Deletes index from infinispan
+     *
+     * @param index
+     */
     public void persistDropIndex(IndexName index) {
         // TODO move to MetadataManager
         TableMetadata table = MetadataManager.MANAGER.getTable(index.getTableName());
@@ -175,6 +232,14 @@ public class Coordinator implements Serializable {
         MetadataManager.MANAGER.createTable(table, false);
     }
 
+    /**
+     * Persists attached connector's metadata in infinispan
+     *
+     * @param clusterName
+     * @param connectorName
+     * @param options
+     * @return
+     */
     public Result persistAttachConnector(ClusterName clusterName, ConnectorName connectorName,
             Map<Selector, Selector> options) {
 
@@ -205,6 +270,14 @@ public class Coordinator implements Serializable {
         return CommandResult.createCommandResult("CONNECTOR attached successfully");
     }
 
+    /**
+     * Deletes persisted data from an attached connector in infinispan
+     *
+     * @param clusterName
+     * @param connectorName
+     * @param options
+     * @return
+     */
     public Result persistDetachConnector(ClusterName clusterName, ConnectorName connectorName,
             Map<Selector, Selector> options) {
         ClusterMetadata clusterMetadata =
