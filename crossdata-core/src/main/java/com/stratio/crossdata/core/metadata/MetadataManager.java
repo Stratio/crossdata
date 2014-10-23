@@ -576,17 +576,6 @@ public enum MetadataManager {
         return columnList;
     }
 
-    public List<IMetadata> getMetadatas(String clazz){
-        List<IMetadata> connectorsMetadata = new ArrayList<>();
-        for(Map.Entry<FirstLevelName, IMetadata> entry: metadata.entrySet()){
-            IMetadata iMetadata = entry.getValue();
-            if (iMetadata.getClass().toString().equalsIgnoreCase(clazz)){
-                connectorsMetadata.add(iMetadata);
-            }
-        }
-        return connectorsMetadata;
-    }
-
     public List<ConnectorMetadata> getConnectors() {
         List<ConnectorMetadata> connectors = new ArrayList<>();
         for (Map.Entry<FirstLevelName, IMetadata> entry : metadata.entrySet()) {
@@ -616,4 +605,7 @@ public enum MetadataManager {
         return onlineConnectorNames;
     }
 
+    public boolean isEmpty() {
+        return metadata.isEmpty();
+    }
 }

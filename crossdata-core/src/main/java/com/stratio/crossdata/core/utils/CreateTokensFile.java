@@ -47,11 +47,11 @@ public final class CreateTokensFile {
         String line = null;
         try {
             String workingDir = System.getProperty("user.dir");
-            if (workingDir.endsWith("stratio-com.stratio.crossdata")) {
-                workingDir = workingDir.concat("/com.stratio.crossdata-core/");
-            } else if (!workingDir.endsWith("com.stratio.crossdata-core")) {
+            if (workingDir.endsWith("crossdata")) {
+                workingDir = workingDir.concat("/crossdata-core/");
+            } else if (!workingDir.endsWith("crossdata-core")) {
                 workingDir = workingDir.substring(0, workingDir.lastIndexOf('/'));
-                workingDir = workingDir.concat("/com.stratio.crossdata-core/");
+                workingDir = workingDir.concat("/crossdata-core/");
             } else {
                 workingDir = workingDir.concat("/");
             }
