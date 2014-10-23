@@ -16,20 +16,48 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.selectors;
+package com.stratio.crossdata.common.statements.structures;
 
 /**
- * Asterisk selector.
+ * Boolean selector.
  */
-public class AsteriskSelector extends Selector {
+public class BooleanSelector extends Selector {
+
+    /**
+     * Boolean value.
+     */
+    private final boolean value;
+
+    /**
+     * Class constructor.
+     *
+     * @param value The boolean value.
+     */
+    public BooleanSelector(boolean value) {
+        this.value = value;
+    }
+
+    public BooleanSelector(String value) {
+        this.value = Boolean.valueOf(value);
+    }
+
+    /**
+     * Get the value of this selector.
+     *
+     * @return A boolean value.
+     */
+    public boolean getValue() {
+        return value;
+    }
+
+    @Override
+    public SelectorType getType() {
+        return SelectorType.BOOLEAN;
+    }
 
     @Override
     public String toString() {
-        return "*";
-    }
-
-    @Override public SelectorType getType() {
-        return SelectorType.ASTERISK;
+        return Boolean.toString(value);
     }
 
     @Override
@@ -41,8 +69,11 @@ public class AsteriskSelector extends Selector {
             return false;
         }
 
-        AsteriskSelector that = (AsteriskSelector) o;
+        BooleanSelector that = (BooleanSelector) o;
 
+        if (value != that.value) {
+            return false;
+        }
         if (!alias.equals(that.alias)) {
             return false;
         }
@@ -56,6 +87,7 @@ public class AsteriskSelector extends Selector {
         if (alias != null){
             result = alias.hashCode();
         }
+        result = 31 * result + (value ? 1 : 0);
         return result;
     }
 }

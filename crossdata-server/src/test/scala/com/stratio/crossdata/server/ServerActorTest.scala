@@ -32,7 +32,6 @@ import com.stratio.crossdata.common.executionplan._
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, Project, Select}
 import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.metadata.structures.TableType
-import com.stratio.crossdata.common.statements.structures.selectors.Selector
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
 import com.stratio.crossdata.core.connector.ConnectorManager
@@ -53,6 +52,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import com.stratio.crossdata.communication.replyConnectorName
 import com.stratio.crossdata.communication.getConnectorName
+import com.stratio.crossdata.common.statements.structures.Selector
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with

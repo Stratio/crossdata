@@ -25,7 +25,6 @@ import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.ConnectorName
 import com.stratio.crossdata.common.result.{Result, ConnectResult}
-import com.stratio.crossdata.common.statements.structures.selectors.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
 import com.stratio.crossdata.core.connector.ConnectorManager
@@ -36,6 +35,7 @@ import com.stratio.crossdata.common.data.ConnectorStatus
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
+import com.stratio.crossdata.common.statements.structures.SelectorHelper
 
 object ConnectorManagerActor {
   def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))

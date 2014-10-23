@@ -20,7 +20,7 @@ package com.stratio.crossdata.core.structures;
 
 import java.io.Serializable;
 
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 @Deprecated
 public class Ordering implements Serializable {

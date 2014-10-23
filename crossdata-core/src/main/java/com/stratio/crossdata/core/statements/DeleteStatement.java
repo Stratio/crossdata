@@ -20,7 +20,7 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.List;
 
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
@@ -42,7 +42,7 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
     private TableName tableName = null;
 
     /**
-     * The list of {@link com.stratio.crossdata.common.statements.structures.relationships.Relation} found
+     * The list of {@link com.stratio.crossdata.common.statements.structures.Relation} found
      * in the WHERE clause.
      */
     private List<Relation> whereClauses;
@@ -53,7 +53,7 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
     }
 
     /**
-     * Add a new {@link com.stratio.crossdata.common.statements.structures.relationships.Relation} found in
+     * Add a new {@link com.stratio.crossdata.common.statements.structures.Relation} found in
      * a WHERE clause.
      *
      * @param relation The relation.

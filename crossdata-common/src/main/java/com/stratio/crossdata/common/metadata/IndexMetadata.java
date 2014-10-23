@@ -22,7 +22,7 @@ import java.util.Map;
 
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 public class IndexMetadata implements IMetadata {
     private final IndexName name;

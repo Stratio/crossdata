@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.stratio.crossdata.common.result.QueryStatus;
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;

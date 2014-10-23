@@ -16,10 +16,10 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.relationships;
+package com.stratio.crossdata.common.statements.structures;
 
 /**
- * Operators supported in an {@link com.stratio.crossdata.common.statements.structures.relationships.Relation}.
+ * Operators supported in an {@link Relation}.
  */
 public enum Operator {
     ADD(Group.ARITHMETIC) {

@@ -19,7 +19,7 @@ Compiling Crossdata involves generating a set of files (.tokens, Lexers, and Par
 ## Running the com.stratio.crossdata-server##
 
 ```
-   > mvn exec:java -DskipTests -pl com.stratio.crossdata-server -Dexec.mainClass="com.stratio.com.stratio.crossdata.server.MetaApplication"
+   > mvn exec:java -DskipTests -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.MetaApplication"
 ```
 
 ## Running the crosdata-shell ##
@@ -34,19 +34,20 @@ The shell features:
  - Help command
 
 ```
-   > mvn exec:java -pl com.stratio.crossdata-sh -Dexec.mainClass="com.stratio.com.stratio.crossdata.sh.Metash"
+   > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell"
 ```
 
-The shell also supports asynchronous query execution by means of the --async parameter. This execution mode is required for streaming queries.
+The shell also supports synchronous query execution by means of the --sync parameter. This execution mode is required for streaming queries.
 
 ```
-   > mvn exec:java -pl com.stratio.crossdata-sh -Dexec.mainClass="com.stratio.com.stratio.crossdata.sh.Metash" -Dexec.args="--async"
+   > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--sync"
 ```
 
 Additionally, you can execute an script upon launching the shell. The script will be executed first, and the prompt will be shown afterwards.
 
 ```
-   > mvn exec:java -pl com.stratio.crossdata-sh -Dexec.mainClass="com.stratio.com.stratio.crossdata.sh.Metash" -Dexec.args="--script /path/script.metaql"
+   > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec
+   .args="--script /path/script.metaql"
 ```
 
 

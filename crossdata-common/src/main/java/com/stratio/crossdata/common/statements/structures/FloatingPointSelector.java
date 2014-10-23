@@ -16,50 +16,43 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.selectors;
+package com.stratio.crossdata.common.statements.structures;
 
 /**
- * String selector. This type of Selector will be used for enquoted strings.
+ * A floating point selector.
  */
-public class StringSelector extends Selector {
+public class FloatingPointSelector extends Selector {
 
     /**
-     * The string value.
+     * Double precision value.
      */
-    private final String value;
+    private final double value;
 
     /**
      * Class constructor.
      *
-     * @param value The string value.
+     * @param value A double value.
      */
-    public StringSelector(String value) {
+    public FloatingPointSelector(String value) {
+        this.value = Double.valueOf(value);
+    }
+
+    public FloatingPointSelector(double value) {
         this.value = value;
     }
 
-    /**
-     * Get the value.
-     *
-     * @return The string value.
-     */
-    public String getValue() {
+    public double getValue() {
         return value;
     }
 
     @Override
     public SelectorType getType() {
-        return SelectorType.STRING;
+        return SelectorType.FLOATING_POINT;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb=new StringBuilder();
-        sb.append("'").append(value).append("'");
-        return sb.toString();
-    }
-
-    @Override public String getStringValue() {
-        return getValue();
+        return Double.toString(value);
     }
 
     @Override
@@ -71,12 +64,12 @@ public class StringSelector extends Selector {
             return false;
         }
 
-        StringSelector that = (StringSelector) o;
+        FloatingPointSelector that = (FloatingPointSelector) o;
 
-        if (!alias.equals(that.alias)) {
+        if (Double.compare(that.value, value) != 0) {
             return false;
         }
-        if (!value.equals(that.value)) {
+        if (!alias.equals(that.alias)) {
             return false;
         }
 
@@ -85,11 +78,13 @@ public class StringSelector extends Selector {
 
     @Override
     public int hashCode() {
+        long temp;
         int result = 1;
         if (alias != null){
             result = alias.hashCode();
         }
-        result = 31 * result + value.hashCode();
+        temp = Double.doubleToLongBits(value);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 }

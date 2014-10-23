@@ -16,49 +16,30 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.selectors;
+package com.stratio.crossdata.common.statements.structures;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.TableName;
-
-/**
- * Single column selector.
- */
-public class ColumnSelector extends Selector {
+public class RelationSelector extends Selector {
 
     /**
-     * Name of the selected column.
+     *
      */
-    private ColumnName name;
+    private final Relation relation;
 
-    public ColumnSelector(ColumnName name) {
-        this.name = name;
+    public RelationSelector(Relation relation) {
+        this.relation = relation;
     }
 
-    public ColumnName getName() {
-        return name;
+    public Relation getRelation() {
+        return relation;
+    }
+
+    @Override public SelectorType getType() {
+        return SelectorType.RELATION;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(name.toString());
-        if (this.alias != null) {
-            sb.append(" AS ").append(alias);
-        }
-        return sb.toString();
-    }
-
-    @Override public SelectorType getType() {
-        return SelectorType.COLUMN;
-    }
-
-    @Override
-    public Set<TableName> getSelectorTables() {
-        return new HashSet(Arrays.asList(this.name.getTableName()));
+        return relation.toString();
     }
 
     @Override
@@ -70,12 +51,12 @@ public class ColumnSelector extends Selector {
             return false;
         }
 
-        ColumnSelector that = (ColumnSelector) o;
+        RelationSelector that = (RelationSelector) o;
 
         if (!alias.equals(that.alias)) {
             return false;
         }
-        if (!name.equals(that.name)) {
+        if (!relation.equals(that.relation)) {
             return false;
         }
 
@@ -88,7 +69,7 @@ public class ColumnSelector extends Selector {
         if (alias != null){
             result = alias.hashCode();
         }
-        result = 31 * result + name.hashCode();
+        result = 31 * result + relation.hashCode();
         return result;
     }
 }

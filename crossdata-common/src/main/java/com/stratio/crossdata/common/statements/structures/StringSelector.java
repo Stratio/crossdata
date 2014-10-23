@@ -16,32 +16,50 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.selectors;
+package com.stratio.crossdata.common.statements.structures;
 
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
-
-public class RelationSelector extends Selector {
+/**
+ * String selector. This type of Selector will be used for enquoted strings.
+ */
+public class StringSelector extends Selector {
 
     /**
-     *
+     * The string value.
      */
-    private final Relation relation;
+    private final String value;
 
-    public RelationSelector(Relation relation) {
-        this.relation = relation;
+    /**
+     * Class constructor.
+     *
+     * @param value The string value.
+     */
+    public StringSelector(String value) {
+        this.value = value;
     }
 
-    public Relation getRelation() {
-        return relation;
+    /**
+     * Get the value.
+     *
+     * @return The string value.
+     */
+    public String getValue() {
+        return value;
     }
 
-    @Override public SelectorType getType() {
-        return SelectorType.RELATION;
+    @Override
+    public SelectorType getType() {
+        return SelectorType.STRING;
     }
 
     @Override
     public String toString() {
-        return relation.toString();
+        StringBuilder sb=new StringBuilder();
+        sb.append("'").append(value).append("'");
+        return sb.toString();
+    }
+
+    @Override public String getStringValue() {
+        return getValue();
     }
 
     @Override
@@ -53,12 +71,12 @@ public class RelationSelector extends Selector {
             return false;
         }
 
-        RelationSelector that = (RelationSelector) o;
+        StringSelector that = (StringSelector) o;
 
         if (!alias.equals(that.alias)) {
             return false;
         }
-        if (!relation.equals(that.relation)) {
+        if (!value.equals(that.value)) {
             return false;
         }
 
@@ -71,7 +89,7 @@ public class RelationSelector extends Selector {
         if (alias != null){
             result = alias.hashCode();
         }
-        result = 31 * result + relation.hashCode();
+        result = 31 * result + value.hashCode();
         return result;
     }
 }

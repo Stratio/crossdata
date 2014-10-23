@@ -16,43 +16,49 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.selectors;
+package com.stratio.crossdata.common.statements.structures;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.TableName;
 
 /**
- * A floating point selector.
+ * Single column selector.
  */
-public class FloatingPointSelector extends Selector {
+public class ColumnSelector extends Selector {
 
     /**
-     * Double precision value.
+     * Name of the selected column.
      */
-    private final double value;
+    private ColumnName name;
 
-    /**
-     * Class constructor.
-     *
-     * @param value A double value.
-     */
-    public FloatingPointSelector(String value) {
-        this.value = Double.valueOf(value);
+    public ColumnSelector(ColumnName name) {
+        this.name = name;
     }
 
-    public FloatingPointSelector(double value) {
-        this.value = value;
-    }
-
-    public double getValue() {
-        return value;
-    }
-
-    @Override
-    public SelectorType getType() {
-        return SelectorType.FLOATING_POINT;
+    public ColumnName getName() {
+        return name;
     }
 
     @Override
     public String toString() {
-        return Double.toString(value);
+        StringBuilder sb = new StringBuilder(name.toString());
+        if (this.alias != null) {
+            sb.append(" AS ").append(alias);
+        }
+        return sb.toString();
+    }
+
+    @Override public SelectorType getType() {
+        return SelectorType.COLUMN;
+    }
+
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return new HashSet(Arrays.asList(this.name.getTableName()));
     }
 
     @Override
@@ -64,12 +70,12 @@ public class FloatingPointSelector extends Selector {
             return false;
         }
 
-        FloatingPointSelector that = (FloatingPointSelector) o;
+        ColumnSelector that = (ColumnSelector) o;
 
-        if (Double.compare(that.value, value) != 0) {
+        if (!alias.equals(that.alias)) {
             return false;
         }
-        if (!alias.equals(that.alias)) {
+        if (!name.equals(that.name)) {
             return false;
         }
 
@@ -78,13 +84,11 @@ public class FloatingPointSelector extends Selector {
 
     @Override
     public int hashCode() {
-        long temp;
         int result = 1;
         if (alias != null){
             result = alias.hashCode();
         }
-        temp = Double.doubleToLongBits(value);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        result = 31 * result + name.hashCode();
         return result;
     }
 }
