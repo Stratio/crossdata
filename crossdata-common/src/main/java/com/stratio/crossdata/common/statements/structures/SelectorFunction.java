@@ -16,52 +16,48 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.selectors;
+package com.stratio.crossdata.common.statements.structures;
 
-import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 import com.stratio.crossdata.common.data.TableName;
 
-public class SelectorGroupBy extends SelectorMeta implements Serializable {
+public class SelectorFunction extends SelectorMeta {
 
-    private static final long serialVersionUID = 7595223293190216610L;
+    private TableName name;
+    private List<SelectorMeta> params;
 
-    private GroupByFunction gbFunction;
-
-    private SelectorMeta param;
-
-    public SelectorGroupBy(GroupByFunction gbFunction, SelectorMeta param) {
-        this.type = SelectorMeta.TYPE_GROUPBY;
-        this.gbFunction = gbFunction;
-        this.param = param;
+    public SelectorFunction(TableName name, List<SelectorMeta> params) {
+        this.type = TYPE_FUNCTION;
+        this.name = name;
+        this.params = params;
     }
 
-    public GroupByFunction getGbFunction() {
-        return gbFunction;
+    public TableName getName() {
+        return name;
     }
 
-    public void setGbFunction(GroupByFunction gbFunction) {
-        this.gbFunction = gbFunction;
+    public void setName(TableName name) {
+        this.name = name;
     }
 
-    public SelectorMeta getParam() {
-        return param;
-    }
-
-    public void setParam(SelectorMeta param) {
-        this.param = param;
+    public List<SelectorMeta> getParams() {
+        return params;
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(gbFunction.name());
-        sb.append("(").append(param).append(")");
+        StringBuilder sb = new StringBuilder(name.getName());
+        sb.append(Arrays.toString(params.toArray()).replace("[", "(").replace("]", ")"));
         return sb.toString();
     }
 
     @Override
     public void addTablename(TableName tablename) {
-        param.addTablename(tablename);
+        for (SelectorMeta param : params) {
+            param.addTablename(tablename);
+        }
     }
 
 }

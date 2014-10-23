@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.data.TableName;
 
 public class InnerJoin implements Serializable {

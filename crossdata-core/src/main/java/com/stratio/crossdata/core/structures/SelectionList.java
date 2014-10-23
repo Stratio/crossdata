@@ -22,11 +22,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.stratio.crossdata.common.statements.structures.selectors.GroupByFunction;
-import com.stratio.crossdata.common.statements.structures.selectors.SelectorFunction;
-import com.stratio.crossdata.common.statements.structures.selectors.SelectorGroupBy;
-import com.stratio.crossdata.common.statements.structures.selectors.SelectorIdentifier;
-import com.stratio.crossdata.common.statements.structures.selectors.SelectorMeta;
+import com.stratio.crossdata.common.statements.structures.GroupByFunction;
+import com.stratio.crossdata.common.statements.structures.SelectorFunction;
+import com.stratio.crossdata.common.statements.structures.SelectorGroupBy;
+import com.stratio.crossdata.common.statements.structures.SelectorIdentifier;
+import com.stratio.crossdata.common.statements.structures.SelectorMeta;
 import com.stratio.crossdata.common.data.TableName;
 
 public class SelectionList extends SelectionClause {

@@ -25,7 +25,6 @@ import com.stratio.crossdata.common.data.ConnectorName
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.executionplan._
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.common.statements.structures.selectors.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{Connect, ConnectToConnector, DisconnectFromConnector, _}
 import com.stratio.crossdata.core.coordinator.Coordinator
@@ -33,6 +32,7 @@ import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, Ex
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.IPlannedQuery
 import com.stratio.crossdata.common.logicalplan.PartialResults
+import com.stratio.crossdata.common.statements.structures.SelectorHelper
 
 object CoordinatorActor {
 

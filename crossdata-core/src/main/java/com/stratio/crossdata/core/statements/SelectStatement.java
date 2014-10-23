@@ -25,8 +25,8 @@ import java.util.Map;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
-import com.stratio.crossdata.common.statements.structures.selectors.SelectExpression;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.window.Window;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.GroupBy;
@@ -75,7 +75,7 @@ public class SelectStatement extends MetaStatement implements Serializable {
      */
     private boolean whereInc = false;
     /**
-     * The list of {@link com.stratio.crossdata.common.statements.structures.relationships.Relation} found
+     * The list of {@link com.stratio.crossdata.common.statements.structures.Relation} found
      * in the WHERE clause.
      */
     private List<Relation> where = null;
@@ -118,7 +118,7 @@ public class SelectStatement extends MetaStatement implements Serializable {
      * Class constructor.
      *
      * @param selectExpression The
-     *                         {@link com.stratio.crossdata.common.statements.structures.selectors.SelectExpression} of the
+     *                         {@link com.stratio.crossdata.common.statements.structures.SelectExpression} of the
      *                         Select statement.
      * @param tableName        The name of the target table.
      */

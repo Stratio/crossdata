@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.selectors;
+package com.stratio.crossdata.common.statements.structures;
 
 import java.io.Serializable;
 import java.util.HashSet;

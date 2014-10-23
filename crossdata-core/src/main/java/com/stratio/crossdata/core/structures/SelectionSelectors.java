@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.stratio.crossdata.common.statements.structures.selectors.SelectorIdentifier;
+import com.stratio.crossdata.common.statements.structures.SelectorIdentifier;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.TableName;
 

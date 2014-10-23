@@ -26,7 +26,7 @@ import com.stratio.crossdata.common.logicalplan.LogicalWorkflow
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.QueryStatus
 import com.stratio.crossdata.common.security.ICredentials
-import com.stratio.crossdata.common.statements.structures.selectors.Selector
+import com.stratio.crossdata.common.statements.structures.Selector
 
 @SerialVersionUID(-4155622367894752659L)
 case class ACK(queryId: String, status: QueryStatus) extends Serializable
