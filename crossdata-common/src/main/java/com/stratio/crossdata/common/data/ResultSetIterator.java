@@ -49,12 +49,12 @@ public class ResultSetIterator implements Iterator<com.stratio.crossdata.common.
     }
 
     @Override
-    public com.stratio.crossdata.common.data.Row next() throws NoSuchElementException {
+    public com.stratio.crossdata.common.data.Row next() {
         return resultSet.getRows().get(current++);
     }
 
     @Override
-    public void remove() throws UnsupportedOperationException, IllegalStateException {
+    public void remove() {
         resultSet.remove(current);
     }
 }
