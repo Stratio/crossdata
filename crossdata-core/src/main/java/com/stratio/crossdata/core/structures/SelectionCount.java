@@ -37,26 +37,12 @@ public class SelectionCount extends SelectionClause {
      * Class constructor.
      */
     public SelectionCount() {
+        this.symbol = '*';
         this.type = TYPE_COUNT;
-    }
-
-    public SelectionCount(char symbol, boolean identInc, String identifier) {
-        this.type = TYPE_COUNT;
-        this.symbol = symbol;
-        this.identInc = identInc;
-        this.identifier = identifier;
-    }
-
-    public SelectionCount(char symbol) {
-        this(symbol, false, null);
     }
 
     public char getSymbol() {
         return symbol;
-    }
-
-    public void setSymbol(char symbol) {
-        this.symbol = symbol;
     }
 
     public boolean isIdentInc() {
@@ -92,7 +78,6 @@ public class SelectionCount extends SelectionClause {
      */
     @Override
     public List<String> getIds() {
-
         return new ArrayList<>();
     }
 
@@ -103,7 +88,6 @@ public class SelectionCount extends SelectionClause {
      */
     @Override
     public List<SelectorGroupBy> getSelectorsGroupBy() {
-
         return new ArrayList<>();
     }
 
@@ -119,7 +103,6 @@ public class SelectionCount extends SelectionClause {
      */
     @Override
     public boolean containsFunctions() {
-
         return false;
     }
 }
