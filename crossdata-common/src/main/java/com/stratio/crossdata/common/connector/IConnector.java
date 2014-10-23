@@ -36,7 +36,7 @@ public interface IConnector {
      *
      * @return A name.
      */
-    public String getConnectorName();
+    String getConnectorName();
 
     /**
      * Get the names of the datastores required by the connector.
@@ -44,7 +44,7 @@ public interface IConnector {
      *
      * @return The names.
      */
-    public String[] getDatastoreName();
+    String[] getDatastoreName();
 
     /**
      * Initialize the connector service.
@@ -52,7 +52,7 @@ public interface IConnector {
      * @param configuration The configuration.
      * @throws InitializationException If the connector initialization fails.
      */
-    public void init(IConfiguration configuration) throws InitializationException;
+    void init(IConfiguration configuration) throws InitializationException;
 
     /**
      * Connect to a datastore using a set of options.
@@ -61,7 +61,7 @@ public interface IConnector {
      * @param config      The cluster configuration.
      * @throws ConnectionException If the connection could not be established.
      */
-    public void connect(ICredentials credentials, ConnectorClusterConfig config)
+    void connect(ICredentials credentials, ConnectorClusterConfig config)
             throws ConnectionException;
 
     /**
@@ -69,21 +69,21 @@ public interface IConnector {
      *
      * @throws ConnectionException If the close operation cannot be performed.
      */
-    public void close(ClusterName name) throws ConnectionException;
+    void close(ClusterName name) throws ConnectionException;
 
     /**
      * Shutdown send a sing to terminate all operations of the connectormanager and then close all clusters connection.
      *
      * @throws ExecutionException If the shutdown operation cannot be performed.
      */
-    public void shutdown() throws ExecutionException;
+    void shutdown() throws ExecutionException;
 
     /**
      * Retrieve the connectivity status with the datastore.
      *
      * @return Whether it is connected or not.
      */
-    public boolean isConnected(ClusterName name);
+    boolean isConnected(ClusterName name);
 
     /**
      * Get the storage engine.
@@ -91,7 +91,7 @@ public interface IConnector {
      * @return An implementation of {@link com.stratio.crossdata.common.connector.IStorageEngine}.
      * @throws UnsupportedException If the connector does not provide this functionality.
      */
-    public IStorageEngine getStorageEngine() throws UnsupportedException;
+    IStorageEngine getStorageEngine() throws UnsupportedException;
 
     /**
      * Get the query engine.
@@ -99,7 +99,7 @@ public interface IConnector {
      * @return An implementation of {@link com.stratio.crossdata.common.connector.IQueryEngine}.
      * @throws UnsupportedException If the connector does not provide this functionality.
      */
-    public IQueryEngine getQueryEngine() throws UnsupportedException;
+    IQueryEngine getQueryEngine() throws UnsupportedException;
 
     /**
      * Get the metadata engine.
@@ -107,5 +107,5 @@ public interface IConnector {
      * @return An implementation of {@link com.stratio.crossdata.common.connector.IMetadataEngine}.
      * @throws UnsupportedException If the connector does not provide this functionality.
      */
-    public IMetadataEngine getMetadataEngine() throws UnsupportedException;
+    IMetadataEngine getMetadataEngine() throws UnsupportedException;
 }

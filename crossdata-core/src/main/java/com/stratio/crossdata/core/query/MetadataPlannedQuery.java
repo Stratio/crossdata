@@ -21,7 +21,7 @@ package com.stratio.crossdata.core.query;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.result.QueryStatus;
 
-public class MetadataPlannedQuery extends MetadataValidatedQuery implements PlannedQuery {
+public class MetadataPlannedQuery extends MetadataValidatedQuery implements IPlannedQuery {
 
     private final ExecutionWorkflow executionWorkflow;
 

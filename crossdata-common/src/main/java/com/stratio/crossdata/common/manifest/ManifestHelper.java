@@ -23,19 +23,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.DataStoreName;
 
-public class ManifestHelper implements Serializable {
+public final class ManifestHelper implements Serializable {
 
     private static final long serialVersionUID = -6979108221035957858L;
+
+    private ManifestHelper(){
+
+    }
 
     public static String manifestToString(CrossdataManifest manifest) {
         String result = null;
         if (manifest instanceof DataStoreType) {
-            return dataStoreManifestToString((DataStoreType) manifest);
+            result= dataStoreManifestToString((DataStoreType) manifest);
         } else if (manifest instanceof ConnectorType) {
-            return connectorManifestToString((ConnectorType) manifest);
+            result = connectorManifestToString((ConnectorType) manifest);
         }
         return result;
     }
@@ -151,15 +154,6 @@ public class ManifestHelper implements Serializable {
             dataStoreNames.add(new DataStoreName(name));
         }
         return dataStoreNames;
-    }
-
-    public static Set<Operations> convertManifestOperationsToMetadataOperations(
-            List<String> supportedOperations) {
-        Set<Operations> operations = new HashSet<>();
-        for (String supportedOperation : supportedOperations) {
-            operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
-        }
-        return operations;
     }
 
     public static Set<String> convertManifestBehaviorsToMetadataBehaviors(List<String> behaviors) {

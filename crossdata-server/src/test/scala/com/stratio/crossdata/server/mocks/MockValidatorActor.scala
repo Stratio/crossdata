@@ -21,7 +21,7 @@ package com.stratio.crossdata.server.mocks
 import akka.actor.{Actor, Props}
 import com.stratio.crossdata.common.result.{Result, QueryStatus}
 import com.stratio.crossdata.communication.ACK
-import com.stratio.crossdata.core.query.ParsedQuery
+import com.stratio.crossdata.core.query.IParsedQuery
 
 object MockValidatorActor {
   def props(): Props = Props(new MockValidatorActor())
@@ -33,7 +33,7 @@ object MockValidatorActor {
 class MockValidatorActor() extends Actor {
 
   override def receive: Receive = {
-    case query: ParsedQuery => {
+    case query: IParsedQuery => {
       println("\n\n\n MOCKVALIDATORACTOR receiving from "+sender+"\n\n\n")
       sender ! ACK(query.getQueryId,QueryStatus.VALIDATED)
     }

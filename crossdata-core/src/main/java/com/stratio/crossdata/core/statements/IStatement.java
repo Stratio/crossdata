@@ -21,10 +21,11 @@ package com.stratio.crossdata.core.statements;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 public interface IStatement {
+
     /**
      * Get the validations requirements for the statement
      *
      * @return ValidationRequirements is a validation option list
      */
-    public ValidationRequirements getValidationRequirements();
+    ValidationRequirements getValidationRequirements();
 }

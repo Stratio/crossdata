@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.statements.structures.selectors;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.stratio.crossdata.common.utils.StringUtils;
@@ -49,7 +50,7 @@ public class SelectorFunction extends SelectorMeta {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(name.getName());
-        sb.append("(").append(StringUtils.stringList(params, ", ")).append(")");
+        sb.append(Arrays.toString(params.toArray()).replace("[", "(").replace("]", ")"));
         return sb.toString();
     }
 

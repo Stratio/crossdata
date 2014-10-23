@@ -42,14 +42,14 @@ import com.stratio.crossdata.common.statements.structures.selectors.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
 import com.stratio.crossdata.core.normalizer.NormalizedFields;
+import com.stratio.crossdata.core.query.IParsedQuery;
+import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
-import com.stratio.crossdata.core.query.ValidatedQuery;
 import com.stratio.crossdata.core.statements.AlterCatalogStatement;
 import com.stratio.crossdata.core.statements.AlterClusterStatement;
 import com.stratio.crossdata.core.statements.AlterTableStatement;
@@ -78,10 +78,11 @@ public class Validator {
     private static final Logger LOG = Logger.getLogger(Validator.class);
     private Normalizator normalizator = null;
 
-    public ValidatedQuery validate(ParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
-        ValidatedQuery validatedQuery = null;
+    public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
+        IValidatedQuery validatedQuery = null;
         LOG.info("Validating MetaStatements...");
         for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
+
             switch (val) {
             case MUST_NOT_EXIST_CATALOG:
                 validateCatalog(parsedQuery.getStatement(), false);
@@ -169,14 +170,14 @@ public class Validator {
     }
 
     private void validateConnectorConnected(MetaStatement statement) throws ValidationException {
-        if(statement instanceof AttachConnectorStatement){
+        if (statement instanceof AttachConnectorStatement) {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) statement;
             ConnectorName connectorName = attachConnectorStatement.getConnectorName();
-            if(!MetadataManager.MANAGER.checkConnectorStatus(connectorName, ConnectorStatus.ONLINE)){
-                throw new NotConnectionException("Connector "+ connectorName + " is not connected.");
+            if (!MetadataManager.MANAGER.checkConnectorStatus(connectorName, ConnectorStatus.ONLINE)) {
+                throw new NotConnectionException("Connector " + connectorName + " is not connected.");
             }
         } else {
-            throw new NotConnectionException("Invalid validation [MUST_BE_CONNECTED] for "+ statement);
+            throw new NotConnectionException("Invalid validation [MUST_BE_CONNECTED] for " + statement);
         }
     }
 
@@ -190,7 +191,7 @@ public class Validator {
 
     }
 
-    private void validateSelect(ParsedQuery parsedQuery) throws ValidationException {
+    private void validateSelect(IParsedQuery parsedQuery) throws ValidationException {
         SelectParsedQuery selectParsedQuery = (SelectParsedQuery) parsedQuery;
         normalizator = new Normalizator(selectParsedQuery);
         normalizator.execute();
@@ -300,7 +301,7 @@ public class Validator {
 
         if (stmt instanceof CreateIndexStatement) {
             CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
-            for(ColumnName column:createIndexStatement.getTargetColumns()){
+            for (ColumnName column : createIndexStatement.getTargetColumns()) {
                 validateName(exist, column, false);
             }
         }
@@ -360,7 +361,7 @@ public class Validator {
 
         if (stmt instanceof DetachClusterStatement) {
             DetachClusterStatement detachClusterStatement = (DetachClusterStatement) stmt;
-            name =detachClusterStatement.getTableMetadata().getName();
+            name = detachClusterStatement.getTableMetadata().getName();
         }
 
         if (stmt instanceof AttachClusterStatement) {
@@ -375,14 +376,13 @@ public class Validator {
             hasIfExists = createIndexStatement.isCreateIfNotExists();
         }
 
-
         validateName(exist, name, hasIfExists);
     }
 
     private void validateCatalog(MetaStatement stmt, boolean exist)
             throws IgnoreQueryException, ExistNameException, NotExistNameException {
         Name name = null;
-        boolean validate=true;
+        boolean validate = true;
         boolean hasIfExists = false;
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
@@ -410,13 +410,13 @@ public class Validator {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
             name = insertIntoStatement.getCatalogName();
             hasIfExists = insertIntoStatement.isIfNotExists();
-        } else{
+        } else {
             //TODO: ¿should through exception?
             //Correctness - Method call passes null for nonnull parameter
-            validate=false;
+            validate = false;
         }
 
-        if(validate){
+        if (validate) {
             validateName(exist, name, hasIfExists);
         }
     }
@@ -476,48 +476,48 @@ public class Validator {
 
     public void validateColumnType(ColumnMetadata columnMetadata, Selector right)
             throws BadFormatException, NotMatchDataTypeException {
-        NotMatchDataTypeException notMatchDataTypeException=null;
-        BadFormatException badFormatException=null;
+        NotMatchDataTypeException notMatchDataTypeException = null;
+        BadFormatException badFormatException = null;
         switch (right.getType()) {
         case COLUMN:
             ColumnName rightColumnName = ((ColumnSelector) right).getName();
             ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
             if (columnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
-                notMatchDataTypeException=new NotMatchDataTypeException(rightColumnName);
+                notMatchDataTypeException = new NotMatchDataTypeException(rightColumnName);
             }
             break;
         case ASTERISK:
-            badFormatException=new BadFormatException("Asterisk not supported in relations.");
+            badFormatException = new BadFormatException("Asterisk not supported in relations.");
             break;
         case BOOLEAN:
             if (columnMetadata.getColumnType() != ColumnType.BOOLEAN) {
-                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case STRING:
             if (columnMetadata.getColumnType() != ColumnType.TEXT) {
-                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case INTEGER:
             if (columnMetadata.getColumnType() != ColumnType.INT &&
                     columnMetadata.getColumnType() != ColumnType.BIGINT) {
-                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case FLOATING_POINT:
             if (columnMetadata.getColumnType() != ColumnType.FLOAT &&
                     columnMetadata.getColumnType() != ColumnType.DOUBLE) {
-                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case RELATION:
-            badFormatException=new BadFormatException("Operation not supported in where.");
+            badFormatException = new BadFormatException("Operation not supported in where.");
             break;
         }
-        if(notMatchDataTypeException!=null){
+        if (notMatchDataTypeException != null) {
             throw notMatchDataTypeException;
-        }else if (badFormatException!=null){
+        } else if (badFormatException != null) {
             throw badFormatException;
         }
     }

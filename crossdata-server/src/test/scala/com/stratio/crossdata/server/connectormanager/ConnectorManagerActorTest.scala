@@ -37,33 +37,15 @@ class ConnectorManagerActorTest extends ServerActorTest{
         expectMsgType[ErrorResult]
       }
   }
-        /*
-        fishForMessage(6 seconds){
-        case msg:StorageResult =>{
-          logger.info("receiving message of type "+msg.getClass()+"from "+lastSender)
-          assert(msg.getQueryId==queryId + (1))
-          true
-        }
-        case other:Any =>{
-          logger.info("receiving message of type "+other.getClass()+" and ignoring it")
-          false
-        }
-      }
-        */
-
-  
-      //expectMsg(Connect.getClass)
-
-   
-
-      /*
-      val pq= new SelectPlannedQuery(null,null)
-      expectMsg("Ok") // bounded to 1 second
-
-      //val m = mock[IConnector]
-      //(m.getConnectorName _).expects().returning("My New CONNECTOR")
-      //assert(m.getConnectorName().equals("My New CONNECTOR"))
-      */
+  test("MemberUp"){
+    initialize()
+    initializeTablesInfinispan()
+    Thread.sleep(20000)
+    within(36000 millis) {
+      connectorManagerActor ! "sendMemberup"
+      //val mu = expectMsgType[MemberUp]
+    }
   }
+}
 
 

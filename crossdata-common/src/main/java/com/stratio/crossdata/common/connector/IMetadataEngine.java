@@ -18,12 +18,10 @@
 
 package com.stratio.crossdata.common.connector;
 
-import com.stratio.crossdata.common.exceptions.ConnectorException;
-import com.stratio.crossdata.common.exceptions.ExecutionException;
-import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
@@ -40,9 +38,9 @@ public interface IMetadataEngine {
      * @param targetCluster   Target cluster.
      * @param catalogMetadata CATALOG metadata.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
-     *                 supported by the connector or ExecutionException if the execution fails.
+     *                            supported by the connector or ExecutionException if the execution fails.
      */
-    public void createCatalog(ClusterName targetCluster, CatalogMetadata catalogMetadata)
+    void createCatalog(ClusterName targetCluster, CatalogMetadata catalogMetadata)
             throws ConnectorException;
 
     /**
@@ -51,9 +49,9 @@ public interface IMetadataEngine {
      * @param targetCluster Target cluster.
      * @param tableMetadata TABLE metadata.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
-     *                 supported by the connector or ExecutionException if the execution fails.
+     *                            supported by the connector or ExecutionException if the execution fails.
      */
-    public void createTable(ClusterName targetCluster, TableMetadata tableMetadata)
+    void createTable(ClusterName targetCluster, TableMetadata tableMetadata)
             throws ConnectorException;
 
     /**
@@ -62,9 +60,9 @@ public interface IMetadataEngine {
      * @param targetCluster Target cluster.
      * @param name          The name of the catalog.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
-     *                 supported by the connector or ExecutionException if the execution fails.
+     *                            supported by the connector or ExecutionException if the execution fails.
      */
-    public void dropCatalog(ClusterName targetCluster, CatalogName name) throws ConnectorException;
+    void dropCatalog(ClusterName targetCluster, CatalogName name) throws ConnectorException;
 
     /**
      * Drop an existing table.
@@ -72,9 +70,9 @@ public interface IMetadataEngine {
      * @param targetCluster Target cluster.
      * @param name          The name of the table.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
-     *                 supported by the connector or ExecutionException if the execution fails.
+     *                            supported by the connector or ExecutionException if the execution fails.
      */
-    public void dropTable(ClusterName targetCluster, TableName name) throws ConnectorException;
+    void dropTable(ClusterName targetCluster, TableName name) throws ConnectorException;
 
     /**
      * Create an INDEX in the underlying datastore.
@@ -82,9 +80,9 @@ public interface IMetadataEngine {
      * @param targetCluster Target cluster.
      * @param indexMetadata The index.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
-     *                 supported by the connector or ExecutionException if the execution fails.
+     *                            supported by the connector or ExecutionException if the execution fails.
      */
-    public void createIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
+    void createIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
             throws ConnectorException;
 
     /**
@@ -93,9 +91,9 @@ public interface IMetadataEngine {
      * @param targetCluster Target cluster.
      * @param indexMetadata The name of the table.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
-     *                 supported by the connector or ExecutionException if the execution fails.
+     *                            supported by the connector or ExecutionException if the execution fails.
      */
-    public void dropIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
+    void dropIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
             throws ConnectorException;
 
 }

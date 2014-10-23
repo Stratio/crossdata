@@ -43,7 +43,7 @@ import com.stratio.crossdata.common.statements.structures.selectors.SelectExpres
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
 import com.stratio.crossdata.common.statements.structures.selectors.SelectorType;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.query.ParsedQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.GroupBy;
@@ -53,7 +53,7 @@ import com.stratio.crossdata.core.structures.OrderBy;
 public class Normalizator {
 
     private NormalizedFields fields = new NormalizedFields();
-    private ParsedQuery parsedQuery;
+    private IParsedQuery parsedQuery;
 
     public Normalizator(SelectParsedQuery parsedQuery) {
         this.parsedQuery = parsedQuery;
@@ -63,7 +63,7 @@ public class Normalizator {
         return fields;
     }
 
-    public ParsedQuery getParsedQuery() {
+    public IParsedQuery getParsedQuery() {
         return parsedQuery;
     }
 

@@ -26,8 +26,8 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.DropIndexStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -43,7 +43,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -65,7 +65,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -87,7 +87,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("INDEX must exist");

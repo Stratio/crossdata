@@ -31,7 +31,7 @@ import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 
 /**
  * MetaParser tests that recognize the different options of each Statement.
@@ -40,8 +40,8 @@ public class ParsingTest {
 
     protected final Parser parser = new Parser();
 
-    public ParsedQuery testRegularStatement(String inputText, String methodName) {
-        ParsedQuery st = null;
+    public IParsedQuery testRegularStatement(String inputText, String methodName) {
+        IParsedQuery st = null;
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
             st = parser.parse(baseQuery);
@@ -66,9 +66,9 @@ public class ParsingTest {
         return st;
     }
 
-    public ParsedQuery testRegularStatement(String inputText, String expectedQuery,
+    public IParsedQuery testRegularStatement(String inputText, String expectedQuery,
             String methodName) {
-        ParsedQuery st = null;
+        IParsedQuery st = null;
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
             //st = parser.parse("", inputText);
@@ -94,9 +94,9 @@ public class ParsingTest {
         return st;
     }
 
-    public ParsedQuery testRegularStatementSession(String sessionCatalog, String inputText,
+    public IParsedQuery testRegularStatementSession(String sessionCatalog, String inputText,
             String methodName) {
-        ParsedQuery st = null;
+        IParsedQuery st = null;
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText,
                     new CatalogName(sessionCatalog));
@@ -122,9 +122,9 @@ public class ParsingTest {
         return st;
     }
 
-    public ParsedQuery testRegularStatementSession(String sessionCatalog, String inputText,
+    public IParsedQuery testRegularStatementSession(String sessionCatalog, String inputText,
             String expectedText, String methodName) {
-        ParsedQuery st = null;
+        IParsedQuery st = null;
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText,
                     new CatalogName(sessionCatalog));
@@ -152,7 +152,7 @@ public class ParsingTest {
     }
 
     public void testParserFails(String inputText, String methodName) {
-        ParsedQuery st;
+        IParsedQuery st;
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
             st = parser.parse(baseQuery);
@@ -184,7 +184,7 @@ public class ParsingTest {
     }
 
     public void testParserFails(String sessionCatalog, String inputText, String methodName) {
-        ParsedQuery st;
+        IParsedQuery st;
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
             st = parser.parse(baseQuery);

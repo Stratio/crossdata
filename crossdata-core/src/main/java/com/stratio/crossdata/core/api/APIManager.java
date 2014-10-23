@@ -30,26 +30,26 @@ import javax.transaction.SystemException;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
-import com.stratio.crossdata.common.result.CommandResult;
-import com.stratio.crossdata.common.result.MetadataResult;
-import com.stratio.crossdata.common.manifest.ManifestHelper;
-import com.stratio.crossdata.common.manifest.PropertiesType;
-import com.stratio.crossdata.common.manifest.ConnectorType;
-import com.stratio.crossdata.common.manifest.DataStoreRefsType;
-import com.stratio.crossdata.common.manifest.SupportedOperationsType;
-import com.stratio.crossdata.common.manifest.BehaviorsType;
-import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.manifest.BehaviorsType;
+import com.stratio.crossdata.common.manifest.ConnectorType;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
+import com.stratio.crossdata.common.manifest.DataStoreRefsType;
+import com.stratio.crossdata.common.manifest.DataStoreType;
+import com.stratio.crossdata.common.manifest.ManifestHelper;
+import com.stratio.crossdata.common.manifest.PropertiesType;
+import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.ErrorType;
+import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
@@ -252,8 +252,7 @@ public class APIManager {
                     .convertManifestPropertiesToMetadataProperties(requiredProperties.getProperty()));
             connectorMetadata.setOptionalProperties((optionalProperties == null) ? null : ManifestHelper
                     .convertManifestPropertiesToMetadataProperties(optionalProperties.getProperty()));
-            connectorMetadata.setSupportedOperations(ManifestHelper.convertManifestOperationsToMetadataOperations
-                    (supportedOperations.getOperation()));
+            connectorMetadata.setSupportedOperations(supportedOperations.getOperation());
         } else {
             connectorMetadata = new ConnectorMetadata(
                     name,
@@ -267,5 +266,8 @@ public class APIManager {
         // Persist
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
     }
+
+
+
 
 }

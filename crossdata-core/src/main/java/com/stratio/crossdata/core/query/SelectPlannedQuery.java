@@ -21,7 +21,7 @@ package com.stratio.crossdata.core.query;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.result.QueryStatus;
 
-public class SelectPlannedQuery extends SelectValidatedQuery implements PlannedQuery {
+public class SelectPlannedQuery extends SelectValidatedQuery implements IPlannedQuery {
 
     private final ExecutionWorkflow executionWorkflow;
 

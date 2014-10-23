@@ -19,8 +19,6 @@
 package com.stratio.crossdata.common.connector;
 
 import com.stratio.crossdata.common.exceptions.ConnectorException;
-import com.stratio.crossdata.common.exceptions.ExecutionException;
-import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.result.QueryResult;
 
@@ -38,10 +36,10 @@ public interface IQueryEngine {
      *                 executed.
      * @return A {@link com.stratio.crossdata.common.result.QueryResult}.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
-     *                 supported by the connector or ExecutionException if the execution of the required
-     *                 steps fails.
+     *                            supported by the connector or ExecutionException if the execution of the required
+     *                            steps fails.
      */
-    public QueryResult execute(LogicalWorkflow workflow)
+    QueryResult execute(LogicalWorkflow workflow)
             throws ConnectorException;
 
     /**
@@ -54,10 +52,10 @@ public interface IQueryEngine {
      *                      executed.
      * @param resultHandler A result handler to receive incoming results.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
-     *                 supported by the connector or ExecutionException if the execution of the required
-     *                 steps fails.
+     *                            supported by the connector or ExecutionException if the execution of the required
+     *                            steps fails.
      */
-    public void asyncExecute(String queryId, LogicalWorkflow workflow, IResultHandler resultHandler)
+    void asyncExecute(String queryId, LogicalWorkflow workflow, IResultHandler resultHandler)
             throws ConnectorException;
 
     /**
@@ -65,8 +63,8 @@ public interface IQueryEngine {
      *
      * @param queryId The query identifier.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
-     *                 supported by the connector or ExecutionException if the execution fails.
+     *                            supported by the connector or ExecutionException if the execution fails.
      */
-    public void stop(String queryId) throws ConnectorException;
+    void stop(String queryId) throws ConnectorException;
 
 }

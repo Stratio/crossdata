@@ -12,7 +12,7 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public final class CoreUtils {
 
-    public CoreUtils() {
+    private CoreUtils() {
     }
 
     public static Object convertSelectorToObject(Selector selector, ColumnName columnName) throws PlanningException {

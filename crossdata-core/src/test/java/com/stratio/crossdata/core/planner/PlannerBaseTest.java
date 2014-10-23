@@ -46,7 +46,7 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.core.grammar.ParsingTest;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
-import com.stratio.crossdata.core.query.ParsedQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 
@@ -66,7 +66,7 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
 
     public LogicalWorkflow getWorkflow(String statement, String methodName,
             TableMetadata... tableMetadataList) {
-        ParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
         SelectStatement ss = spq.getStatement();
 

@@ -20,7 +20,7 @@ package com.stratio.crossdata.core.query;
 
 import com.stratio.crossdata.common.result.QueryStatus;
 
-public class StorageValidatedQuery extends StorageParsedQuery implements ValidatedQuery {
+public class StorageValidatedQuery extends StorageParsedQuery implements IValidatedQuery {
 
     public StorageValidatedQuery(StorageParsedQuery storageParsedQuery) {
         super(storageParsedQuery);

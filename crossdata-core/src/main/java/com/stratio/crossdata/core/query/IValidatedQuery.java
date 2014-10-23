@@ -18,20 +18,6 @@
 
 package com.stratio.crossdata.core.query;
 
-import com.stratio.crossdata.common.result.QueryStatus;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.core.statements.MetaStatement;
-
-public interface ParsedQuery {
-
-    public String getQuery();
-
-    public String getQueryId();
-
-    public QueryStatus getStatus();
-
-    public CatalogName getDefaultCatalog();
-
-    public MetaStatement getStatement();
+public interface IValidatedQuery extends IParsedQuery {
 
 }
