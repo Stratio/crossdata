@@ -21,7 +21,7 @@ package com.stratio.crossdata.core.structures;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.stratio.crossdata.common.statements.structures.selectors.SelectorGroupBy;
+import com.stratio.crossdata.common.statements.structures.SelectorGroupBy;
 import com.stratio.crossdata.common.data.TableName;
 
 public class SelectionCount extends SelectionClause {

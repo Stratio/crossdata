@@ -16,15 +16,23 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.selectors;
+package com.stratio.crossdata.common.statements.structures;
 
-public enum SelectorType {
-    FUNCTION,
-    COLUMN,
-    ASTERISK,
-    BOOLEAN,
-    STRING,
-    INTEGER,
-    FLOATING_POINT,
-    RELATION
+import java.util.HashMap;
+import java.util.Map;
+
+public final class SelectorHelper {
+
+    private SelectorHelper(){
+
+    }
+
+    public static Map<String, String> convertSelectorMapToStringMap(Map<Selector, Selector> selectorsMap) {
+        Map<String, String> stringsMap = new HashMap<>();
+        for(Map.Entry<Selector,Selector> entry: selectorsMap.entrySet()){
+            stringsMap.put(entry.getKey().getStringValue(), entry.getValue().getStringValue());
+        }
+        return stringsMap;
+    }
+
 }

@@ -25,7 +25,7 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
@@ -35,18 +35,32 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 public class AlterTableStatement extends MetadataStatement implements ITableStatement {
 
     /**
+     * Alter a new column data type using {@code ALTER}.
+     */
+    private static final int ALTER_COLUMN = 1;
+
+    /**
+     * Add a new column using {@code ADD}.
+     */
+    private static final int ADD_COLUMN = 2;
+
+    /**
+     * Drop a column using {@code DROP}.
+     */
+    private static final int DROP_COLUMN = 3;
+
+    /**
+     * Establish a set of options using {@code WITH}.
+     */
+    private static final int ALTER_OPTIONS = 4;
+
+    /**
      * The target table.
      */
     private TableName tableName;
 
     /**
-     * Type of alter. Accepted values are:
-     * <ul>
-     * <li>1: Alter a column data type using {@code ALTER}.</li>
-     * <li>2: Add a new column using {@code ADD}.</li>
-     * <li>3: Drop a column using {@code DROP}.</li>
-     * <li>4: Establish a set of options using {@code WITH}.</li>
-     * </ul>
+     * Type of alter.
      */
     private int option;
 
@@ -89,20 +103,20 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
         sb.append(tableName.getQualifiedName());
         switch (option) {
-        case 1:
+        case ALTER_COLUMN:
             sb.append(" ALTER ").append(column.getQualifiedName());
             sb.append(" TYPE ").append(type);
             break;
-        case 2:
+        case ADD_COLUMN:
             sb.append(" ADD ");
             sb.append(column.getQualifiedName()).append(" ");
             sb.append(type);
             break;
-        case 3:
+        case DROP_COLUMN:
             sb.append(" DROP ");
             sb.append(column.getQualifiedName());
             break;
-        case 4:
+        case ALTER_OPTIONS:
             sb.append(" WITH ").append(properties);
             break;
         default:

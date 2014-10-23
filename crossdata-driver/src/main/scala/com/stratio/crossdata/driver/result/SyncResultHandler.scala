@@ -18,7 +18,6 @@
 
 package com.stratio.crossdata.driver.result
 
-import com.stratio.crossdata.common.exceptions.validation.NotControlledValidationException
 import com.stratio.crossdata.common.exceptions.{ExecutionException, ParsingException, UnsupportedException, ValidationException}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.result.ErrorResult
