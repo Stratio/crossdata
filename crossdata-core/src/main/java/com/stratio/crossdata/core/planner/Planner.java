@@ -30,6 +30,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.Cell;
@@ -38,7 +39,6 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
-import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
@@ -177,7 +177,7 @@ public class Planner {
 
         //Obtain the map of connector that is able to access those tables.
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
-                .getAttachedConnectors(Status.ONLINE, tables);
+                .getAttachedConnectors(ConnectorStatus.ONLINE, tables);
 
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
         for(Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()){
@@ -625,7 +625,7 @@ public class Planner {
             CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
 
             // Recover ActorRef from ConnectorMetadata
-            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,
+            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(ConnectorStatus.ONLINE,
                     createTableStatement.getClusterName());
             ConnectorMetadata chosenConnectorMetadata = connectors.iterator().next();
             String actorRefUri = chosenConnectorMetadata.getActorRef();

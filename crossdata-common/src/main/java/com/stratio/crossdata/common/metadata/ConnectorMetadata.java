@@ -24,12 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;
 
 public class ConnectorMetadata implements IMetadata {
@@ -43,7 +43,7 @@ public class ConnectorMetadata implements IMetadata {
 
     private Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
 
-    private Status status;
+    private ConnectorStatus connectorStatus;
     private String actorRef;
 
     private Set<PropertyType> requiredProperties;
@@ -54,13 +54,13 @@ public class ConnectorMetadata implements IMetadata {
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations) {
-        this(name,version,dataStoreRefs,clusterProperties,Status.OFFLINE,null,requiredProperties,optionalProperties,
+        this(name,version,dataStoreRefs,clusterProperties, ConnectorStatus.OFFLINE,null,requiredProperties,optionalProperties,
                 supportedOperations);
     }
 
     public ConnectorMetadata(ConnectorName name, String version,
             Set<DataStoreName> dataStoreRefs,
-            Map<ClusterName, Map<Selector, Selector>> clusterProperties, Status status, String actorRef,
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties, ConnectorStatus connectorStatus, String actorRef,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations) {
@@ -72,7 +72,7 @@ public class ConnectorMetadata implements IMetadata {
         this.requiredProperties = requiredProperties;
         this.optionalProperties = optionalProperties;
         this.supportedOperations = supportedOperations;
-        this.status = status;
+        this.connectorStatus = connectorStatus;
         this.actorRef = actorRef;
     }
 
@@ -93,7 +93,7 @@ public class ConnectorMetadata implements IMetadata {
             this.optionalProperties = null;
         }
         this.supportedOperations = ManifestHelper.convertManifestOperationsToMetadataOperations(supportedOperations);
-        this.status = Status.OFFLINE;
+        this.connectorStatus = ConnectorStatus.OFFLINE;
     }
 
     public ConnectorName getName() {
@@ -136,12 +136,12 @@ public class ConnectorMetadata implements IMetadata {
         this.clusterProperties = clusterProperties;
     }
 
-    public Status getStatus() {
-        return status;
+    public ConnectorStatus getConnectorStatus() {
+        return connectorStatus;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setConnectorStatus(ConnectorStatus connectorStatus) {
+        this.connectorStatus = connectorStatus;
     }
 
     public String getActorRef() {
@@ -149,7 +149,7 @@ public class ConnectorMetadata implements IMetadata {
     }
 
     public void setActorRef(String actorRef) {
-        this.status = Status.ONLINE;
+        this.connectorStatus = ConnectorStatus.ONLINE;
         this.actorRef = actorRef;
     }
 

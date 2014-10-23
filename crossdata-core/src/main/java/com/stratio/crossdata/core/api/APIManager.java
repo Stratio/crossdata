@@ -139,7 +139,7 @@ public class APIManager {
 
         for (ConnectorMetadata connector : connectors) {
             stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
-                    .append("\t").append(connector.getStatus());
+                    .append("\t").append(connector.getConnectorStatus());
             if (connector.getClusterRefs() == null) {
                 stringBuilder = stringBuilder.append("\t")
                         .append("UNKNOWN");
