@@ -83,7 +83,7 @@ public class SelectorIdentifier extends SelectorMeta implements Serializable {
     }
 
     /**
-     * Set field and tables fields through the given identifier
+     * Set field and tables fields through the given identifier.
      *
      * @param identifier COLUMN identifier. It must be composed by a table, a dot ('.') and a field,
      *                   or just a field.
