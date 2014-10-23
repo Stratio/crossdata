@@ -4,10 +4,20 @@ import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.statements.structures.GroupByFunction;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.SelectorFunction;
+import com.stratio.crossdata.common.statements.structures.SelectorGroupBy;
+import com.stratio.crossdata.common.statements.structures.SelectorIdentifier;
+import com.stratio.crossdata.common.statements.structures.SelectorMeta;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 
 public class SelectionClauseTest {
 
@@ -60,4 +70,50 @@ public class SelectionClauseTest {
         assertFalse(selectionClause.containsFunctions(),
                 selectionClause.toString() + " shouldn't contain functions");
     }
+
+
+    @Test
+    public void testSelectionArsteriskList() throws Exception {
+
+        SelectionList selectionList=new SelectionList(false, new SelectionAsterisk());
+        selectionList.addTablename(new TableName("catalogTest","tableTest"));
+
+        assertFalse(selectionList.containsFunctions());
+
+        assertTrue(selectionList.getIds().isEmpty());
+
+        assertTrue(selectionList.getSelectorsGroupBy().isEmpty());
+    }
+
+    @Test
+    public void testSelectionSelectorsList() throws Exception {
+        List<SelectionSelector> selectors= new ArrayList<>();
+
+        SelectorMeta selectorIdentifier=new SelectorIdentifier("test");
+        SelectionSelector selectionSelector=new SelectionSelector(selectorIdentifier,false,"");
+
+        List<SelectorMeta> param= new ArrayList<>();
+        param.add(selectorIdentifier);
+        SelectorMeta selectorFunction=new SelectorFunction(new TableName("catalogTest","tableTest"),param);
+        SelectionSelector selectionSelectorFunction=new SelectionSelector(selectorFunction,false,"");
+        SelectorMeta selectorGroupby=new SelectorGroupBy(GroupByFunction.AVG,selectorIdentifier);
+        SelectionSelector selectionSelectorGrupby=new SelectionSelector(selectorGroupby,false,"");
+
+        selectors.add(selectionSelector);
+        selectors.add(selectionSelectorFunction);
+        selectors.add(selectionSelectorGrupby);
+
+        SelectionSelectors selectionSelectors=new SelectionSelectors(selectors);
+
+        SelectionList selectionList=new SelectionList(false, selectionSelectors);
+        selectionList.addTablename(new TableName("catalogTest","tableTest"));
+
+        assertTrue(selectionList.containsFunctions());
+
+        assertFalse(selectionList.getIds().isEmpty());
+
+        assertFalse(selectionList.getSelectorsGroupBy().isEmpty());
+    }
+
+
 }

@@ -172,21 +172,15 @@ public final class ParserUtils {
         String replacement = "";
         BufferedReader bufferedReaderF = null;
         try {
-            String workingDir = System.getProperty("user.dir");
-            if (workingDir.endsWith("stratio-crossdata")) {
-                workingDir = workingDir.concat("/crossdata-core/");
-            } else if (!workingDir.endsWith("crossdata-core")) {
-                workingDir = workingDir.substring(0, workingDir.lastIndexOf('/'));
-                workingDir = workingDir.concat("/crossdata-core/");
-            } else {
-                workingDir = workingDir.concat("/");
-            }
 
-            String metaTokens = workingDir + "src/main/resources/com/stratio/crossdata/parser/tokens.txt";
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+            FileInputStream tokensFile = new FileInputStream(
+                    classLoader.getResource("com/stratio/crossdata/parser/tokens.txt").getFile());
 
             bufferedReaderF = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(metaTokens), Charset.forName("UTF-8")));
+                            tokensFile, Charset.forName("UTF-8")));
 
             String line = bufferedReaderF.readLine();
             while (line != null) {
