@@ -29,7 +29,6 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.core.api.APIManager;
-import com.stratio.crossdata.core.connector.ConnectorManager;
 import com.stratio.crossdata.core.coordinator.Coordinator;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
@@ -43,7 +42,7 @@ import com.stratio.crossdata.core.validator.Validator;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
- * {@link Parser}, {@link Validator} and {@link Planner}
+ * {@link Parser}, {@link Validator} and {@link Planner}.
  */
 public class Engine {
 
@@ -51,25 +50,31 @@ public class Engine {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Engine.class.getName());
+
     /**
-     * The {@link com.stratio.crossdata.core.parser.Parser} responsible for parse.
+     * The {@link com.stratio.crossdata.core.parser.Parser} responsible for parsing.
      */
     private final Parser parser;
+
     /**
      * The {@link Validator} responsible for validation.
      */
     private final Validator validator;
+
     /**
      * The {@link Planner} responsible for planning.
      */
     private final Planner planner;
+
     /**
      * The {@link com.stratio.crossdata.core.api.APIManager} responsible for API calls.
      */
     private final APIManager manager;
-    private final Coordinator coordinator;
 
-    private final ConnectorManager connectorManager;
+    /**
+     * The {@link com.stratio.crossdata.core.coordinator.Coordinator} in charge of query coordination.
+     */
+    private final Coordinator coordinator;
 
     private final Grid grid;
     private Normalizer normalizer;
@@ -106,7 +111,6 @@ public class Engine {
         planner = new Planner();
         coordinator = new Coordinator();
         setNormalizer(new Normalizer());
-        connectorManager = new ConnectorManager();
     }
 
     /**
@@ -160,10 +164,6 @@ public class Engine {
 
     public Coordinator getCoordinator() {
         return coordinator;
-    }
-
-    public ConnectorManager getConnectorManager() {
-        return connectorManager;
     }
 
     /**

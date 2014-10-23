@@ -40,7 +40,7 @@ public class GridInitializer {
     private static final Logger LOG = Logger.getLogger(GridInitializer.class);
 
     /**
-     * Package constructor
+     * Package constructor.
      */
     GridInitializer() {
         //TODO

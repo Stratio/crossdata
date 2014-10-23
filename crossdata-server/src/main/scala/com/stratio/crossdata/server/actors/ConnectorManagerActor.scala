@@ -38,10 +38,10 @@ import scala.collection.mutable
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 
 object ConnectorManagerActor {
-  def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
+  def props(): Props = Props()
 }
 
-class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor with ActorLogging {
+class ConnectorManagerActor() extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")

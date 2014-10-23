@@ -67,7 +67,7 @@ ImplicitSender {
     queryIdIncrement += 1; return queryId + queryIdIncrement
   }
 //Actors in this tests
-  val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(new ConnectorManager() ),
+  val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(),
   "ConnectorManagerActor")
   val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
     "CoordinatorActor")

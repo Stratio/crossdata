@@ -30,17 +30,17 @@ import com.stratio.crossdata.common.logicalplan.LogicalStep;
 public class ExecutionWorkflow implements Serializable {
 
     /**
-     * Query identification string
+     * Query identification string.
      */
     protected final String queryId;
 
     /**
-     * Actor reference of the query sender
+     * Actor reference of the query sender.
      */
     private String sender;
 
     /**
-     * Whether the server should save  information or not once the execution succeed
+     * Whether the server should save  information or not once the execution succeed.
      */
     private boolean persistOnSuccess = false;
 

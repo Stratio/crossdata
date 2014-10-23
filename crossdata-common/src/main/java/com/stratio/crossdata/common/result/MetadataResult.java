@@ -23,36 +23,64 @@ import java.util.List;
 import com.stratio.crossdata.common.metadata.structures.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
+/**
+ * Class to return results from the execution of a metadata-related operation.
+ */
 public final class MetadataResult extends Result {
 
     /**
-     * Operation types
+     * Operation identifier to create catalog.
      */
-
     public static final int OPERATION_CREATE_CATALOG = 1;
 
+    /**
+     * Operation identifier to create table.
+     */
     public static final int OPERATION_CREATE_TABLE = 2;
 
+    /**
+     * Operation identifier to create index.
+     */
     public static final int OPERATION_CREATE_INDEX = 3;
 
+    /**
+     * Operation identifier to drop catalog.
+     */
     public static final int OPERATION_DROP_CATALOG = 4;
 
+    /**
+     * Operation identifier to drop table.
+     */
     public static final int OPERATION_DROP_TABLE = 5;
 
+    /**
+     * Operation identifier to drop index.
+     */
     public static final int OPERATION_DROP_INDEX= 6;
 
+    /**
+     * Operation identifier to list catalogs.
+     */
     public static final int OPERATION_LIST_CATALOGS = 7;
 
+    /**
+     * Operation identifier to list tables.
+     */
     public static final int OPERATION_LIST_TABLES = 8;
 
+    /**
+     * Operation identifier to list columns.
+     */
     public static final int OPERATION_LIST_COLUMNS = 9;
 
     /**
-     * Operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}
+     * Operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}.
      */
-
     private int operation = 0;
 
+    /**
+     * Serial version UID in order to be Serializable.
+     */
     private static final long serialVersionUID = 7257573696937869953L;
 
     /**
@@ -106,7 +134,7 @@ public final class MetadataResult extends Result {
     }
 
     /**
-     * Gets the operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}
+     * Gets the operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}.
      *
      * @return int with the operation type
      */
@@ -152,9 +180,9 @@ public final class MetadataResult extends Result {
     }
 
     /**
-     * Analyzes the operation bound to the MetadataResult and generates an String
+     * Analyzes the operation bound to the MetadataResult and generates an String.
      *
-     * @return String
+     * @return The string representation of the operation to be carried out.
      */
     @Override
     public String toString() {

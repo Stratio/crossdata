@@ -47,7 +47,7 @@ public enum ErrorType {
      */
     NOT_SUPPORTED,
     /**
-     * Critical exceptions for connectors
+     * Critical exceptions for connectors.
      */
     CRITICAL,
     /**
