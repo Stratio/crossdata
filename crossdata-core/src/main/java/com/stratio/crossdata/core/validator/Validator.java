@@ -82,77 +82,72 @@ public class Validator {
         ValidatedQuery validatedQuery = null;
         LOG.info("Validating MetaStatements...");
         for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
-            try {
-                switch (val) {
-                case MUST_NOT_EXIST_CATALOG:
-                    validateCatalog(parsedQuery.getStatement(), false);
-                    break;
-                case MUST_EXIST_CATALOG:
-                    validateCatalog(parsedQuery.getStatement(), true);
-                    break;
-                case MUST_EXIST_TABLE:
-                    validateTable(parsedQuery.getStatement(), true);
-                    break;
-                case MUST_NOT_EXIST_TABLE:
-                    validateTable(parsedQuery.getStatement(), false);
-                    break;
-                case MUST_NOT_EXIST_CLUSTER:
-                    validateCluster(parsedQuery.getStatement(), false);
-                    break;
-                case MUST_EXIST_CLUSTER:
-                    validateCluster(parsedQuery.getStatement(), true);
-                    break;
-                case MUST_EXIST_CONNECTOR:
-                    validateConnector(parsedQuery.getStatement(), true);
-                    break;
-                case MUST_NOT_EXIST_CONNECTOR:
-                    validateConnector(parsedQuery.getStatement(), false);
-                    break;
-                case MUST_EXIST_DATASTORE:
-                    validateDatastore(parsedQuery.getStatement(), true);
-                    break;
-                case MUST_NOT_EXIST_DATASTORE:
-                    validateDatastore(parsedQuery.getStatement(), false);
-                    break;
-                case VALID_CLUSTER_OPTIONS:
-                    validateOptions(parsedQuery.getStatement());
-                    break;
-                case VALID_CONNECTOR_OPTIONS:
-                    validateOptions(parsedQuery.getStatement());
-                    break;
-                case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
-                    break;
-                case MUST_EXIST_PROPERTIES:
-                    validateExistsProperties(parsedQuery.getStatement());
-                    break;
-                case MUST_NOT_EXIST_INDEX:
-                    validateIndex(parsedQuery.getStatement(), false);
-                    break;
-                case MUST_EXIST_INDEX:
-                    validateIndex(parsedQuery.getStatement(), true);
-                    break;
-                case MUST_EXIST_COLUMN:
-                    validateColumn(parsedQuery.getStatement(), true);
-                    break;
-                case MUST_NOT_EXIST_COLUMN:
-                    validateColumn(parsedQuery.getStatement(), false);
-                    break;
-                case VALIDATE_TYPES:
-                    validateInsertTypes(parsedQuery.getStatement());
-                    break;
-                case VALIDATE_SELECT:
-                    validateSelect(parsedQuery);
-                    break;
-                case MUST_BE_CONNECTED:
-                    validateConnectorConnected(parsedQuery.getStatement());
-                    break;
-                default:
-                    break;
-                }
-            }catch(ValidationException ve){
-                throw ve;
-            }catch(IgnoreQueryException iqe){
-                throw iqe;
+
+            switch (val) {
+            case MUST_NOT_EXIST_CATALOG:
+                validateCatalog(parsedQuery.getStatement(), false);
+                break;
+            case MUST_EXIST_CATALOG:
+                validateCatalog(parsedQuery.getStatement(), true);
+                break;
+            case MUST_EXIST_TABLE:
+                validateTable(parsedQuery.getStatement(), true);
+                break;
+            case MUST_NOT_EXIST_TABLE:
+                validateTable(parsedQuery.getStatement(), false);
+                break;
+            case MUST_NOT_EXIST_CLUSTER:
+                validateCluster(parsedQuery.getStatement(), false);
+                break;
+            case MUST_EXIST_CLUSTER:
+                validateCluster(parsedQuery.getStatement(), true);
+                break;
+            case MUST_EXIST_CONNECTOR:
+                validateConnector(parsedQuery.getStatement(), true);
+                break;
+            case MUST_NOT_EXIST_CONNECTOR:
+                validateConnector(parsedQuery.getStatement(), false);
+                break;
+            case MUST_EXIST_DATASTORE:
+                validateDatastore(parsedQuery.getStatement(), true);
+                break;
+            case MUST_NOT_EXIST_DATASTORE:
+                validateDatastore(parsedQuery.getStatement(), false);
+                break;
+            case VALID_CLUSTER_OPTIONS:
+                validateOptions(parsedQuery.getStatement());
+                break;
+            case VALID_CONNECTOR_OPTIONS:
+                validateOptions(parsedQuery.getStatement());
+                break;
+            case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
+                break;
+            case MUST_EXIST_PROPERTIES:
+                validateExistsProperties(parsedQuery.getStatement());
+                break;
+            case MUST_NOT_EXIST_INDEX:
+                validateIndex(parsedQuery.getStatement(), false);
+                break;
+            case MUST_EXIST_INDEX:
+                validateIndex(parsedQuery.getStatement(), true);
+                break;
+            case MUST_EXIST_COLUMN:
+                validateColumn(parsedQuery.getStatement(), true);
+                break;
+            case MUST_NOT_EXIST_COLUMN:
+                validateColumn(parsedQuery.getStatement(), false);
+                break;
+            case VALIDATE_TYPES:
+                validateInsertTypes(parsedQuery.getStatement());
+                break;
+            case VALIDATE_SELECT:
+                validateSelect(parsedQuery);
+                break;
+            case MUST_BE_CONNECTED:
+                validateConnectorConnected(parsedQuery.getStatement());
+                break;
+            default:
+                break;
             }
         }
 
@@ -175,14 +170,14 @@ public class Validator {
     }
 
     private void validateConnectorConnected(MetaStatement statement) throws ValidationException {
-        if(statement instanceof AttachConnectorStatement){
+        if (statement instanceof AttachConnectorStatement) {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) statement;
             ConnectorName connectorName = attachConnectorStatement.getConnectorName();
-            if(!MetadataManager.MANAGER.checkConnectorStatus(connectorName, ConnectorStatus.ONLINE)){
-                throw new NotConnectionException("Connector "+ connectorName + " is not connected.");
+            if (!MetadataManager.MANAGER.checkConnectorStatus(connectorName, ConnectorStatus.ONLINE)) {
+                throw new NotConnectionException("Connector " + connectorName + " is not connected.");
             }
         } else {
-            throw new NotConnectionException("Invalid validation [MUST_BE_CONNECTED] for "+ statement);
+            throw new NotConnectionException("Invalid validation [MUST_BE_CONNECTED] for " + statement);
         }
     }
 
@@ -306,7 +301,7 @@ public class Validator {
 
         if (stmt instanceof CreateIndexStatement) {
             CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
-            for(ColumnName column:createIndexStatement.getTargetColumns()){
+            for (ColumnName column : createIndexStatement.getTargetColumns()) {
                 validateName(exist, column, false);
             }
         }
@@ -366,7 +361,7 @@ public class Validator {
 
         if (stmt instanceof DetachClusterStatement) {
             DetachClusterStatement detachClusterStatement = (DetachClusterStatement) stmt;
-            name =detachClusterStatement.getTableMetadata().getName();
+            name = detachClusterStatement.getTableMetadata().getName();
         }
 
         if (stmt instanceof AttachClusterStatement) {
@@ -381,14 +376,13 @@ public class Validator {
             hasIfExists = createIndexStatement.isCreateIfNotExists();
         }
 
-
         validateName(exist, name, hasIfExists);
     }
 
     private void validateCatalog(MetaStatement stmt, boolean exist)
             throws IgnoreQueryException, ExistNameException, NotExistNameException {
         Name name = null;
-        boolean validate=true;
+        boolean validate = true;
         boolean hasIfExists = false;
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
@@ -416,13 +410,13 @@ public class Validator {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
             name = insertIntoStatement.getCatalogName();
             hasIfExists = insertIntoStatement.isIfNotExists();
-        } else{
+        } else {
             //TODO: ¿should through exception?
             //Correctness - Method call passes null for nonnull parameter
-            validate=false;
+            validate = false;
         }
 
-        if(validate){
+        if (validate) {
             validateName(exist, name, hasIfExists);
         }
     }
@@ -482,48 +476,48 @@ public class Validator {
 
     public void validateColumnType(ColumnMetadata columnMetadata, Selector right)
             throws BadFormatException, NotMatchDataTypeException {
-        NotMatchDataTypeException notMatchDataTypeException=null;
-        BadFormatException badFormatException=null;
+        NotMatchDataTypeException notMatchDataTypeException = null;
+        BadFormatException badFormatException = null;
         switch (right.getType()) {
         case COLUMN:
             ColumnName rightColumnName = ((ColumnSelector) right).getName();
             ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
             if (columnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
-                notMatchDataTypeException=new NotMatchDataTypeException(rightColumnName);
+                notMatchDataTypeException = new NotMatchDataTypeException(rightColumnName);
             }
             break;
         case ASTERISK:
-            badFormatException=new BadFormatException("Asterisk not supported in relations.");
+            badFormatException = new BadFormatException("Asterisk not supported in relations.");
             break;
         case BOOLEAN:
             if (columnMetadata.getColumnType() != ColumnType.BOOLEAN) {
-                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case STRING:
             if (columnMetadata.getColumnType() != ColumnType.TEXT) {
-                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case INTEGER:
             if (columnMetadata.getColumnType() != ColumnType.INT &&
                     columnMetadata.getColumnType() != ColumnType.BIGINT) {
-                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case FLOATING_POINT:
             if (columnMetadata.getColumnType() != ColumnType.FLOAT &&
                     columnMetadata.getColumnType() != ColumnType.DOUBLE) {
-                notMatchDataTypeException=new NotMatchDataTypeException(columnMetadata.getName());
+                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case RELATION:
-            badFormatException=new BadFormatException("Operation not supported in where.");
+            badFormatException = new BadFormatException("Operation not supported in where.");
             break;
         }
-        if(notMatchDataTypeException!=null){
+        if (notMatchDataTypeException != null) {
             throw notMatchDataTypeException;
-        }else if (badFormatException!=null){
+        } else if (badFormatException != null) {
             throw badFormatException;
         }
     }
