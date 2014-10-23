@@ -93,4 +93,7 @@ public class BehaviorsType implements Serializable {
         return this.behavior;
     }
 
+    public void setBehavior(List<String> behavior) {
+        this.behavior = behavior;
+    }
 }

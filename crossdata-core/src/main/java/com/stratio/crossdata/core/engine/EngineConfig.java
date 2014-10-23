@@ -18,8 +18,6 @@
 
 package com.stratio.crossdata.core.engine;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -31,11 +29,6 @@ public class EngineConfig {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(EngineConfig.class.getName());
-
-    /**
-     * Name of the Job in Spark.
-     */
-    private static final String JOBNAME = "stratioDeepWithMeta";
 
     /**
      * Jars to exclude. Prefixes.
@@ -81,11 +74,6 @@ public class EngineConfig {
      * Grid files persistence path.
      */
     private String gridPersistencePath;
-
-    /**
-     * Spark Master spark://HOST:PORT/.
-     */
-    private String sparkMaster;
 
     /**
      * List of *.jar in the classpath.
@@ -146,54 +134,6 @@ public class EngineConfig {
 
     public void setGridPersistencePath(String gridPersistencePath) {
         this.gridPersistencePath = gridPersistencePath;
-    }
-
-    /**
-     * Get Spark Master URL.
-     *
-     * @return Spark Master URL in a String.
-     */
-    public String getSparkMaster() {
-        return sparkMaster;
-    }
-
-    /**
-     * Set Spark Master URL.
-     *
-     * @param sparkMaster Spark Master URL spark://HOST:PORT/
-     */
-    public void setSparkMaster(String sparkMaster) {
-        this.sparkMaster = sparkMaster;
-    }
-
-    /**
-     * Get the default Job Name in Spark.
-     *
-     * @return the job name.
-     */
-    public String getJobName() {
-        return JOBNAME;
-    }
-
-    /**
-     * Set path which cointains spark classpath.
-     *
-     * @param path Path to classpath
-     */
-    public void setClasspathJars(String path) {
-        jars = new ArrayList<>();
-        File file = new File(path);
-        if (file.exists() && !sparkMaster.toLowerCase().startsWith("local")
-                && file.listFiles() != null) {
-            File[] files = file.listFiles();
-            for (File f : files) {
-                if (filterJars(f.getName())) {
-                    jars.add(path + f.getName());
-                }
-            }
-        } else if (!sparkMaster.toLowerCase().startsWith("local")) {
-            LOG.error("Spark classpath null or incorrect directory.");
-        }
     }
 
     /**
@@ -270,7 +210,6 @@ public class EngineConfig {
         sb.append(", gridMinInitialMembers=").append(gridMinInitialMembers);
         sb.append(", gridJoinTimeout=").append(gridJoinTimeout);
         sb.append(", gridPersistencePath='").append(gridPersistencePath).append('\'');
-        sb.append(", sparkMaster='").append(sparkMaster).append('\'');
         sb.append(", jars=").append(jars);
         sb.append(", kafkaServer='").append(kafkaServer).append('\'');
         sb.append(", kafkaPort=").append(kafkaPort);

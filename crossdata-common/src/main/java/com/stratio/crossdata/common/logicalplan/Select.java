@@ -41,6 +41,8 @@ public class Select extends TransformationStep {
      */
     private final Map<String, ColumnType> typeMap;
 
+    private final Map<ColumnName, ColumnType> typeMapFromColumnName;
+
     /**
      * Class constructor.
      * 
@@ -52,10 +54,12 @@ public class Select extends TransformationStep {
      * @param typeMap
      *            The mapping of column types.
      */
-    public Select(Operations operation, Map<ColumnName, String> columnMap, Map<String, ColumnType> typeMap) {
+    public Select(Operations operation, Map<ColumnName, String> columnMap, Map<String, ColumnType> typeMap,
+            Map<ColumnName, ColumnType> typeMapFromColumnName) {
         super(operation);
         this.columnMap = columnMap;
         this.typeMap = typeMap;
+        this.typeMapFromColumnName = typeMapFromColumnName;
     }
 
     public Map<ColumnName, String> getColumnMap() {
@@ -64,6 +68,10 @@ public class Select extends TransformationStep {
 
     public Map<String, ColumnType> getTypeMap() {
         return typeMap;
+    }
+
+    public Map<ColumnName, ColumnType> getTypeMapFromColumnName() {
+        return typeMapFromColumnName;
     }
 
     @Override
