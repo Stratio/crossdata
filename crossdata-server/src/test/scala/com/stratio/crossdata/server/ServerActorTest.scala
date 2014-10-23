@@ -23,6 +23,7 @@ import java.util
 import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
 
+import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.testkit.ImplicitSender
 import com.stratio.crossdata.common.manifest.PropertyType
@@ -58,6 +59,7 @@ trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFacto
 ImplicitSender {
   this: Suite =>
 
+  lazy val system1 = ActorSystem(clusterName, config)
   val metadataManager=new MetadataManagerTestHelper()
   val plannertest= new PlannerExecutionWorkflowTest()
 
@@ -65,8 +67,10 @@ ImplicitSender {
     queryIdIncrement += 1; return queryId + queryIdIncrement
   }
 //Actors in this tests
-  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(new ConnectorManager() ),  "ConnectorManagerActor")
-  val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()), "CoordinatorActor")
+  val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(new ConnectorManager() ),
+  "ConnectorManagerActor")
+  val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
+    "CoordinatorActor")
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
 
 //Variables
