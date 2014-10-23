@@ -28,7 +28,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 /**
  * Class that models a generic Statement supported by the META language.
  */
-public abstract class MetaStatement implements IStatement{
+public abstract class MetaStatement{
 
     /**
      * Whether the query is an internal command or it returns a

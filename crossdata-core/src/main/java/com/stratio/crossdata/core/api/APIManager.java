@@ -261,10 +261,10 @@ public class APIManager {
             connectorMetadata = new ConnectorMetadata(
                     name,
                     version,
-                    dataStoreRefs.getDataStoreName(),
+                    (dataStoreRefs == null) ? null : dataStoreRefs.getDataStoreName(),
                     (requiredProperties == null) ? null : requiredProperties.getProperty(),
                     (optionalProperties == null) ? null : optionalProperties.getProperty(),
-                    supportedOperations.getOperation());
+                    (supportedOperations == null) ? null : supportedOperations.getOperation());
         }
 
         // Persist

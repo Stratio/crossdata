@@ -206,7 +206,6 @@ public class SelectStatement extends MetaStatement implements Serializable {
      *
      * @return {@code true} if is included.
      */
-    @Deprecated
     public boolean isOrderInc() {
         return orderInc;
     }

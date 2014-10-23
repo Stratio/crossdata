@@ -76,7 +76,7 @@ class MockConnectorActor() extends Actor with ActorLogging {
 
     case metadataOp: MetadataOperation => {
       println(">>>>>>>>>>>>>>>>>>>>>>> metadataOp2")
-      val result=MetadataResult.createSuccessMetadataResult()
+      val result=MetadataResult.createSuccessMetadataResult(0)
       val opclass=metadataOp.getClass().toString().split('.')
       opclass( opclass.length -1 ) match{
         case "CreateTable" =>{
