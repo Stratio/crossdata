@@ -62,14 +62,16 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
   }
 
-  override def postStop(): Unit =
+  override def postStop(): Unit = {
     Cluster(context.system).unsubscribe(self)
+  }
 
   def receive = {
 
     /**
      * A new actor connects to the cluster. If the new actor is a connector, we requests its name.
      */
+    //TODO Check that new actors are recognized and their information stored in the MetadataManager
     case mu: MemberUp => {
       logger.info("Member is Up: " + mu.toString + mu.member.getRoles)
       val it = mu.member.getRoles.iterator()
