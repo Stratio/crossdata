@@ -33,8 +33,6 @@ import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, P
 import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.metadata.structures.TableType
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
-import com.stratio.crossdata.core.connector.ConnectorManager
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.grid.Grid

@@ -27,7 +27,6 @@ import com.stratio.crossdata.common.data.ConnectorName
 import com.stratio.crossdata.common.result.{Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
-import com.stratio.crossdata.core.connector.ConnectorManager
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
