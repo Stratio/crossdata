@@ -174,7 +174,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
     @Test
     public void testResetMetadata() throws Exception {
         APIManager ApiManager = new APIManager();
-        createTestConnector("connectorTest", new DataStoreName("datastoreTest"), "akkaActorRef");
+        createTestConnector("connectorTest2", new DataStoreName("datastoreTest"), "akkaActorRef");
         Command cmd = new Command(APICommand.RESET_METADATA(), null);
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
 
