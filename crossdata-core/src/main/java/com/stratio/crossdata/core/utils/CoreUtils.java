@@ -33,6 +33,10 @@ public final class CoreUtils {
     private CoreUtils() {
     }
 
+    public static CoreUtils create(){
+        return new CoreUtils();
+    }
+
     public static Object convertSelectorToObject(Selector selector, ColumnName columnName) throws PlanningException {
         Object result = null;
         ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
@@ -76,7 +80,7 @@ public final class CoreUtils {
         return result;
     }
 
-    private static boolean convertSelectorToBoolean(Selector selector) throws PlanningException {
+    private static Boolean convertSelectorToBoolean(Selector selector) throws PlanningException {
         boolean result;
         try {
             BooleanSelector booleanSelector = (BooleanSelector) selector;
@@ -87,7 +91,7 @@ public final class CoreUtils {
         return result;
     }
 
-    private static float convertSelectorToFloat(Selector selector) throws PlanningException {
+    private static Float convertSelectorToFloat(Selector selector) throws PlanningException {
         float result;
         try {
             FloatingPointSelector floatingPointSelector = (FloatingPointSelector) selector;
@@ -98,7 +102,7 @@ public final class CoreUtils {
         return result;
     }
 
-    private static double convertSelectorToDouble(Selector selector) throws PlanningException {
+    private static Double convertSelectorToDouble(Selector selector) throws PlanningException {
         double result;
         try {
             FloatingPointSelector floatingPointSelector = (FloatingPointSelector) selector;
@@ -109,7 +113,7 @@ public final class CoreUtils {
         return result;
     }
 
-    private static int convertSelectorToInteger(Selector selector) throws PlanningException {
+    private static Integer convertSelectorToInteger(Selector selector) throws PlanningException {
         int result;
         try {
             IntegerSelector integerSelector = (IntegerSelector) selector;
@@ -120,7 +124,7 @@ public final class CoreUtils {
         return result;
     }
 
-    private static long convertSelectorToLong(Selector selector) throws PlanningException {
+    private static Long convertSelectorToLong(Selector selector) throws PlanningException {
         long result;
         try {
             IntegerSelector integerSelector = (IntegerSelector) selector;
