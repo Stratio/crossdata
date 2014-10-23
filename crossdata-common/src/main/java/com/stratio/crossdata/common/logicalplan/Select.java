@@ -70,7 +70,7 @@ public class Select extends TransformationStep {
     public String toString() {
         StringBuilder sb = new StringBuilder("SELECT (");
         Iterator<Map.Entry<ColumnName, String>> it = columnMap.entrySet().iterator();
-        Map.Entry<ColumnName, String> entry = null;
+        Map.Entry<ColumnName, String> entry;
         while (it.hasNext()) {
             entry = it.next();
             sb.append(entry.getKey().getQualifiedName()).append(" AS ").append(entry.getValue());
