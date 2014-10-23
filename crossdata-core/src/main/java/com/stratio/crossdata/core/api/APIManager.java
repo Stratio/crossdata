@@ -20,9 +20,7 @@ package com.stratio.crossdata.core.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -32,27 +30,26 @@ import javax.transaction.SystemException;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
-import com.stratio.crossdata.common.metadata.Operations;
-import com.stratio.crossdata.common.result.CommandResult;
-import com.stratio.crossdata.common.result.MetadataResult;
-import com.stratio.crossdata.common.manifest.ManifestHelper;
-import com.stratio.crossdata.common.manifest.PropertiesType;
-import com.stratio.crossdata.common.manifest.ConnectorType;
-import com.stratio.crossdata.common.manifest.DataStoreRefsType;
-import com.stratio.crossdata.common.manifest.SupportedOperationsType;
-import com.stratio.crossdata.common.manifest.BehaviorsType;
-import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.manifest.BehaviorsType;
+import com.stratio.crossdata.common.manifest.ConnectorType;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
+import com.stratio.crossdata.common.manifest.DataStoreRefsType;
+import com.stratio.crossdata.common.manifest.DataStoreType;
+import com.stratio.crossdata.common.manifest.ManifestHelper;
+import com.stratio.crossdata.common.manifest.PropertiesType;
+import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.ErrorType;
+import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
@@ -142,7 +139,7 @@ public class APIManager {
 
         for (ConnectorMetadata connector : connectors) {
             stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
-                    .append("\t").append(connector.getStatus());
+                    .append("\t").append(connector.getConnectorStatus());
             if (connector.getClusterRefs() == null) {
                 stringBuilder = stringBuilder.append("\t")
                         .append("UNKNOWN");

@@ -16,18 +16,11 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common;
+package com.stratio.crossdata.common.data;
 
-public class Status {
-
-    private String message;
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
+public enum ConnectorStatus {
+    OFFLINE,
+    ONLINE,
+    SHUTTING_DOWN,
+    INITIALIZING
 }

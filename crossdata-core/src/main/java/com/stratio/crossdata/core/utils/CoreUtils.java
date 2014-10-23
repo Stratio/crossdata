@@ -12,6 +12,9 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public final class CoreUtils {
 
+    public CoreUtils() {
+    }
+
     public static Object convertSelectorToObject(Selector selector, ColumnName columnName) throws PlanningException {
         Object result = null;
         ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
@@ -50,7 +53,7 @@ public final class CoreUtils {
             StringSelector stringSelector = (StringSelector) selector;
             result = stringSelector.getValue();
         } catch (ClassCastException cce) {
-            throw new PlanningException(cce.getMessage());
+            throw new PlanningException(selector + " cannot be converted to String", cce);
         }
         return result;
     }
@@ -61,7 +64,7 @@ public final class CoreUtils {
             BooleanSelector booleanSelector = (BooleanSelector) selector;
             result = booleanSelector.getValue();
         } catch (ClassCastException cce) {
-            throw new PlanningException(cce.getMessage());
+            throw new PlanningException(selector + " cannot be converted to boolean", cce);
         }
         return result;
     }
@@ -72,7 +75,7 @@ public final class CoreUtils {
             FloatingPointSelector floatingPointSelector = (FloatingPointSelector) selector;
             result = (float) floatingPointSelector.getValue();
         } catch (ClassCastException cce) {
-            throw new PlanningException(cce.getMessage());
+            throw new PlanningException(selector + " cannot be converted to float", cce);
         }
         return result;
     }
@@ -83,7 +86,7 @@ public final class CoreUtils {
             FloatingPointSelector floatingPointSelector = (FloatingPointSelector) selector;
             result = floatingPointSelector.getValue();
         } catch (ClassCastException cce) {
-            throw new PlanningException(cce.getMessage());
+            throw new PlanningException(selector + " cannot be converted to double", cce);
         }
         return result;
     }
@@ -94,7 +97,7 @@ public final class CoreUtils {
             IntegerSelector integerSelector = (IntegerSelector) selector;
             result = (int) integerSelector.getValue();
         } catch (ClassCastException cce) {
-            throw new PlanningException(cce.getMessage());
+            throw new PlanningException(selector + " cannot be converted to int", cce);
         }
         return result;
     }
@@ -105,7 +108,7 @@ public final class CoreUtils {
             IntegerSelector integerSelector = (IntegerSelector) selector;
             result = integerSelector.getValue();
         } catch (ClassCastException cce) {
-            throw new PlanningException(cce.getMessage());
+            throw new PlanningException(selector + " cannot be converted to long", cce);
         }
         return result;
     }
