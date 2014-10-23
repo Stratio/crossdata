@@ -83,71 +83,77 @@ public class Validator {
         ValidatedQuery validatedQuery = null;
         LOG.info("Validating MetaStatements...");
         for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
-            switch (val) {
-            case MUST_NOT_EXIST_CATALOG:
-                validateCatalog(parsedQuery.getStatement(), false);
-                break;
-            case MUST_EXIST_CATALOG:
-                validateCatalog(parsedQuery.getStatement(), true);
-                break;
-            case MUST_EXIST_TABLE:
-                validateTable(parsedQuery.getStatement(), true);
-                break;
-            case MUST_NOT_EXIST_TABLE:
-                validateTable(parsedQuery.getStatement(), false);
-                break;
-            case MUST_NOT_EXIST_CLUSTER:
-                validateCluster(parsedQuery.getStatement(), false);
-                break;
-            case MUST_EXIST_CLUSTER:
-                validateCluster(parsedQuery.getStatement(), true);
-                break;
-            case MUST_EXIST_CONNECTOR:
-                validateConnector(parsedQuery.getStatement(), true);
-                break;
-            case MUST_NOT_EXIST_CONNECTOR:
-                validateConnector(parsedQuery.getStatement(), false);
-                break;
-            case MUST_EXIST_DATASTORE:
-                validateDatastore(parsedQuery.getStatement(), true);
-                break;
-            case MUST_NOT_EXIST_DATASTORE:
-                validateDatastore(parsedQuery.getStatement(), false);
-                break;
-            case VALID_CLUSTER_OPTIONS:
-                validateOptions(parsedQuery.getStatement());
-                break;
-            case VALID_CONNECTOR_OPTIONS:
-                validateOptions(parsedQuery.getStatement());
-                break;
-            case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
-                break;
-            case MUST_EXIST_PROPERTIES:
-                validateExistsProperties(parsedQuery.getStatement());
-                break;
-            case MUST_NOT_EXIST_INDEX:
-                validateIndex(parsedQuery.getStatement(), false);
-                break;
-            case MUST_EXIST_INDEX:
-                validateIndex(parsedQuery.getStatement(), true);
-                break;
-            case MUST_EXIST_COLUMN:
-                validateColumn(parsedQuery.getStatement(), true);
-                break;
-            case MUST_NOT_EXIST_COLUMN:
-                validateColumn(parsedQuery.getStatement(), false);
-                break;
-            case VALIDATE_TYPES:
-                validateInsertTypes(parsedQuery.getStatement());
-                break;
-            case VALIDATE_SELECT:
-                validateSelect(parsedQuery);
-                break;
-            case MUST_BE_CONNECTED:
-                validateConnectorConnected(parsedQuery.getStatement());
-                break;
-            default:
-                break;
+            try {
+                switch (val) {
+                case MUST_NOT_EXIST_CATALOG:
+                    validateCatalog(parsedQuery.getStatement(), false);
+                    break;
+                case MUST_EXIST_CATALOG:
+                    validateCatalog(parsedQuery.getStatement(), true);
+                    break;
+                case MUST_EXIST_TABLE:
+                    validateTable(parsedQuery.getStatement(), true);
+                    break;
+                case MUST_NOT_EXIST_TABLE:
+                    validateTable(parsedQuery.getStatement(), false);
+                    break;
+                case MUST_NOT_EXIST_CLUSTER:
+                    validateCluster(parsedQuery.getStatement(), false);
+                    break;
+                case MUST_EXIST_CLUSTER:
+                    validateCluster(parsedQuery.getStatement(), true);
+                    break;
+                case MUST_EXIST_CONNECTOR:
+                    validateConnector(parsedQuery.getStatement(), true);
+                    break;
+                case MUST_NOT_EXIST_CONNECTOR:
+                    validateConnector(parsedQuery.getStatement(), false);
+                    break;
+                case MUST_EXIST_DATASTORE:
+                    validateDatastore(parsedQuery.getStatement(), true);
+                    break;
+                case MUST_NOT_EXIST_DATASTORE:
+                    validateDatastore(parsedQuery.getStatement(), false);
+                    break;
+                case VALID_CLUSTER_OPTIONS:
+                    validateOptions(parsedQuery.getStatement());
+                    break;
+                case VALID_CONNECTOR_OPTIONS:
+                    validateOptions(parsedQuery.getStatement());
+                    break;
+                case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
+                    break;
+                case MUST_EXIST_PROPERTIES:
+                    validateExistsProperties(parsedQuery.getStatement());
+                    break;
+                case MUST_NOT_EXIST_INDEX:
+                    validateIndex(parsedQuery.getStatement(), false);
+                    break;
+                case MUST_EXIST_INDEX:
+                    validateIndex(parsedQuery.getStatement(), true);
+                    break;
+                case MUST_EXIST_COLUMN:
+                    validateColumn(parsedQuery.getStatement(), true);
+                    break;
+                case MUST_NOT_EXIST_COLUMN:
+                    validateColumn(parsedQuery.getStatement(), false);
+                    break;
+                case VALIDATE_TYPES:
+                    validateInsertTypes(parsedQuery.getStatement());
+                    break;
+                case VALIDATE_SELECT:
+                    validateSelect(parsedQuery);
+                    break;
+                case MUST_BE_CONNECTED:
+                    validateConnectorConnected(parsedQuery.getStatement());
+                    break;
+                default:
+                    break;
+                }
+            }catch(ValidationException ve){
+                throw ve;
+            }catch(IgnoreQueryException iqe){
+                throw iqe;
             }
         }
 
