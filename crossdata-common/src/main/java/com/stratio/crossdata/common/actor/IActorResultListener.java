@@ -16,8 +16,19 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.query;
+package com.stratio.crossdata.common.actor;
 
-public interface ValidatedQuery extends ParsedQuery {
+import com.stratio.crossdata.common.result.Result;
 
+/**
+ * Interface for actors listening for streaming results.
+ */
+public interface IActorResultListener {
+
+    /**
+     * Process an incoming result.
+     *
+     * @param result The results.
+     */
+    void processResults(Result result);
 }

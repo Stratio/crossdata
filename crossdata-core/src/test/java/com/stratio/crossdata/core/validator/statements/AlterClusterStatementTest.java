@@ -25,8 +25,8 @@ import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.AlterClusterStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -42,7 +42,7 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -64,7 +64,7 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -84,7 +84,7 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("CLUSTER options must exists");
@@ -104,7 +104,7 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("CLUSTER must exists");

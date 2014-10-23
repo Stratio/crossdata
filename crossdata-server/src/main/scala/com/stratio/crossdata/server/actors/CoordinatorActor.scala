@@ -31,7 +31,7 @@ import com.stratio.crossdata.communication.{Connect, ConnectToConnector, Disconn
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, ExecutionManagerException}
 import com.stratio.crossdata.core.metadata.MetadataManager
-import com.stratio.crossdata.core.query.PlannedQuery
+import com.stratio.crossdata.core.query.IPlannedQuery
 import com.stratio.crossdata.common.logicalplan.PartialResults
 
 object CoordinatorActor {
@@ -51,7 +51,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
   def receive = {
 
-    case plannedQuery: PlannedQuery => {
+    case plannedQuery: IPlannedQuery => {
       val workflow = plannedQuery.getExecutionWorkflow()
       log.debug("Workflow for " + workflow.getActorRef)
 

@@ -25,8 +25,8 @@ import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.DropConnectorStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -41,7 +41,7 @@ public class DropConnectorStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropConnectorStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -60,7 +60,7 @@ public class DropConnectorStatementTest extends BasicValidatorTest {
         Validator validator = new Validator();
         BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropConnectorStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("CONNECTOR must exist");

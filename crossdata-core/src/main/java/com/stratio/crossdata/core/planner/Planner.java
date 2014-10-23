@@ -76,13 +76,13 @@ import com.stratio.crossdata.common.statements.structures.selectors.Selector;
 import com.stratio.crossdata.common.statements.structures.selectors.SelectorType;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
+import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
-import com.stratio.crossdata.core.query.ValidatedQuery;
 import com.stratio.crossdata.core.statements.AttachClusterStatement;
 import com.stratio.crossdata.core.statements.AttachConnectorStatement;
 import com.stratio.crossdata.core.statements.CreateCatalogStatement;
@@ -153,7 +153,7 @@ public class Planner {
      * @param query A valid query.
      * @return A {@link com.stratio.crossdata.common.logicalplan.LogicalWorkflow}
      */
-    protected LogicalWorkflow buildWorkflow(ValidatedQuery query) {
+    protected LogicalWorkflow buildWorkflow(IValidatedQuery query) {
         LogicalWorkflow result = null;
         if (query instanceof SelectValidatedQuery) {
             result = buildWorkflow((SelectValidatedQuery) query);

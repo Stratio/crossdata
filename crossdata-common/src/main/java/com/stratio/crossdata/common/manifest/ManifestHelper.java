@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.DataStoreName;
 
 public final class ManifestHelper implements Serializable {

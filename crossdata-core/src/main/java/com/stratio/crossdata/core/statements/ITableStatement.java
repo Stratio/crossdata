@@ -28,20 +28,22 @@ import com.stratio.crossdata.common.data.TableName;
 public interface ITableStatement {
 
     /**
-     * The target table.
-     */
-
-    /**
      * Get the table to be described.
      *
      * @return The name or null if not set.
      */
-    public TableName getTableName();
+    TableName getTableName();
 
-    public void setTableName(TableName tableName);
+    /**
+     * Set the table name.
+     * @param tableName The name.
+     */
+    void setTableName(TableName tableName);
 
-    public CatalogName getEffectiveCatalog();
-
-
+    /**
+     * Get the catalog associated with the table.
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName}.
+     */
+    CatalogName getEffectiveCatalog();
 
 }

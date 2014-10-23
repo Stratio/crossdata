@@ -23,12 +23,12 @@ import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.structures.DescribeType;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.DescribeStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -44,7 +44,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -65,7 +65,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("myCatalog"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("CATALOG must exist");
@@ -86,7 +86,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -107,7 +107,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("describeid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("TABLE must exist");
@@ -127,7 +127,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -147,7 +147,7 @@ public class DescribeStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, describeStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);

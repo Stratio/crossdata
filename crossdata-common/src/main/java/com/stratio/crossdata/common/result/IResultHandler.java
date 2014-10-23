@@ -19,7 +19,7 @@
 package com.stratio.crossdata.common.result;
 
 /**
- * Callback interface for classes receiving asynchronous results from com.stratio.crossdata servers.
+ * Callback interface for classes receiving asynchronous results from crossdata servers.
  */
 public interface IResultHandler {
 
@@ -29,19 +29,19 @@ public interface IResultHandler {
      * @param queryId The query identifier.
      * @param status  The query status.
      */
-    public void processAck(String queryId, QueryStatus status);
+    void processAck(String queryId, QueryStatus status);
 
     /**
      * Process an error result.
      *
      * @param errorResult The error.
      */
-    public void processError(Result errorResult);
+    void processError(Result errorResult);
 
     /**
      * Process a successful result.
      *
      * @param result The result.
      */
-    public void processResult(Result result);
+    void processResult(Result result);
 }

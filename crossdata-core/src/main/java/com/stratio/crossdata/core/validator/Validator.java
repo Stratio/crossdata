@@ -42,14 +42,14 @@ import com.stratio.crossdata.common.statements.structures.selectors.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
 import com.stratio.crossdata.core.normalizer.NormalizedFields;
+import com.stratio.crossdata.core.query.IParsedQuery;
+import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
-import com.stratio.crossdata.core.query.ValidatedQuery;
 import com.stratio.crossdata.core.statements.AlterCatalogStatement;
 import com.stratio.crossdata.core.statements.AlterClusterStatement;
 import com.stratio.crossdata.core.statements.AlterTableStatement;
@@ -78,8 +78,8 @@ public class Validator {
     private static final Logger LOG = Logger.getLogger(Validator.class);
     private Normalizator normalizator = null;
 
-    public ValidatedQuery validate(ParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
-        ValidatedQuery validatedQuery = null;
+    public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
+        IValidatedQuery validatedQuery = null;
         LOG.info("Validating MetaStatements...");
         for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
             try {
@@ -196,7 +196,7 @@ public class Validator {
 
     }
 
-    private void validateSelect(ParsedQuery parsedQuery) throws ValidationException {
+    private void validateSelect(IParsedQuery parsedQuery) throws ValidationException {
         SelectParsedQuery selectParsedQuery = (SelectParsedQuery) parsedQuery;
         normalizator = new Normalizator(selectParsedQuery);
         normalizator.execute();

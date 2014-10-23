@@ -20,7 +20,6 @@ package com.stratio.crossdata.common.metadata;
 
 import java.util.Map;
 
-import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.selectors.Selector;

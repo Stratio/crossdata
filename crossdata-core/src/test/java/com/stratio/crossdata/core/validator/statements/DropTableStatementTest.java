@@ -26,8 +26,8 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.DropTableStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -42,7 +42,7 @@ public class DropTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -61,7 +61,7 @@ public class DropTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -80,7 +80,7 @@ public class DropTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("TABLE must exist");

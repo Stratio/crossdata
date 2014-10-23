@@ -22,7 +22,7 @@ import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.core.statements.MetaStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 
-public class MetadataParsedQuery extends BaseQuery implements ParsedQuery {
+public class MetadataParsedQuery extends BaseQuery implements IParsedQuery {
 
     private MetaStatement statement;
 

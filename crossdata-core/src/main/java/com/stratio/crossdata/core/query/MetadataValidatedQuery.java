@@ -20,7 +20,7 @@ package com.stratio.crossdata.core.query;
 
 import com.stratio.crossdata.common.result.QueryStatus;
 
-public class MetadataValidatedQuery extends MetadataParsedQuery implements ValidatedQuery {
+public class MetadataValidatedQuery extends MetadataParsedQuery implements IValidatedQuery {
 
     public MetadataValidatedQuery(MetadataParsedQuery metadataParsedQuery) {
         super(metadataParsedQuery);

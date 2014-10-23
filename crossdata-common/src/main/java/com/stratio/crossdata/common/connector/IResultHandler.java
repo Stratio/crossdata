@@ -32,12 +32,12 @@ public interface IResultHandler {
      * @param queryId The query identifier.
      * @param exception The exception found.
      */
-    public void processException(String queryId, ExecutionException exception);
+    void processException(String queryId, ExecutionException exception);
 
     /**
      * Process a successful result.
      *
      * @param result The result.
      */
-    public void processResult(QueryResult result);
+    void processResult(QueryResult result);
 }

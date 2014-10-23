@@ -25,8 +25,8 @@ import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.AlterCatalogStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -41,7 +41,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("CATALOG options must exist");
@@ -60,7 +60,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("unknown"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("CATALOG must exist");
@@ -80,7 +80,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
