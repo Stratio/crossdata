@@ -53,11 +53,10 @@ ActorLogging {
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
   var state = State.Stopped
-  var parentActorRef: ActorRef = null
+  var parentActorRef: ActorRef = ???
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
   override def handleHeartbeat(heartbeat: HeartbeatSig) = {
-    //println("receiving heartbeat signal")
     runningJobs.foreach {
       keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
     }
@@ -68,31 +67,20 @@ ActorLogging {
   }
 
   override def receive = super.receive orElse {
-    //override def receive = {
-
-    //case RouterRoutees(routees)=> routees foreach context.watch
-
-    //case heartbeat: HeartbeatSig =>  handleHeartbeat(heartbeat)
-
     case _: com.stratio.crossdata.communication.Start => {
-      //context.actorSelection(RootActorPath(mu.member.address) / "user" / "coordinatorActor")
       parentActorRef = sender
     }
-
     case connectRequest: com.stratio.crossdata.communication.Connect => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received connect command")
       connector.connect(connectRequest.credentials, connectRequest.connectorClusterConfig)
       this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
       sender ! ConnectResult.createConnectResult("Connected successfully"); //TODO once persisted sessionId,
-      // attach it in this info recover it to
     }
-
     case _: com.stratio.crossdata.communication.Shutdown => {
       logger.debug("->" + "Receiving Shutdown")
       this.shutdown()
     }
-
     case ex: Execute => {
       logger.info("Processing query: " + ex)
       try {
@@ -100,7 +88,6 @@ ActorLogging {
         val result = connector.getQueryEngine().execute(ex.workflow)
         result.setQueryId(ex.queryId)
         sender ! result
-
       } catch {
         case e: Exception => {
           val result = Result.createExecutionErrorResult(e.getStackTraceString)
@@ -113,19 +100,16 @@ ActorLogging {
         runningJobs.remove(ex.queryId)
       }
     }
-
     case metadataOp: MetadataOperation => {
       var qId: String = metadataOp.queryId
       var metadataOperation: Int = 0
       logger.info("Received queryId = " + qId)
-
       try {
         val opclass = metadataOp.getClass().toString().split('.')
         val eng = connector.getMetadataEngine()
-
         opclass(opclass.length - 1) match {
           case "CreateTable" => {
-            println("creating table from  " + self.path)
+            logger.debug("creating table from  " + self.path)
             qId = metadataOp.asInstanceOf[CreateTable].queryId
             eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
               metadataOp.asInstanceOf[CreateTable].tableMetadata)
@@ -146,7 +130,6 @@ ActorLogging {
             qId = metadataOp.asInstanceOf[DropIndex].queryId
             eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
             metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-
           }
           case "DropIndex" => {
             qId = metadataOp.asInstanceOf[DropIndex].queryId
@@ -177,17 +160,13 @@ ActorLogging {
       }
       val result = MetadataResult.createSuccessMetadataResult(metadataOperation)
       result.setQueryId(qId)
-
       logger.info("Sending back queryId = " + qId)
-
       sender ! result
     }
-
     case result: Result =>
-      println("connectorActor receives Result with ID=" + result.getQueryId())
+      logger.debug("connectorActor receives Result with ID=" + result.getQueryId())
       parentActorRef ! result
     //TODO:  ManagementWorkflow
-
     case storageOp: StorageOperation => {
       val qId: String = storageOp.queryId
       try {
@@ -216,12 +195,10 @@ ActorLogging {
         }
       }
     }
-
     case msg: getConnectorName => {
       logger.info(sender + " asked for my name")
       sender ! replyConnectorName(connectorName)
     }
-
     case MemberUp(member) => {
       logger.info("Member up")
       logger.debug("Member is Up: " + member.toString + member.getRoles + "!")
@@ -230,23 +207,19 @@ ActorLogging {
     case state: CurrentClusterState => {
       logger.info("Current members: " + state.members.mkString(", "))
     }
-
     case UnreachableMember(member) => {
       logger.info("Member detected as unreachable: " + member)
     }
-
     case MemberRemoved(member, previousStatus) => {
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
     }
-
     case _: MemberEvent => {
       logger.info("Receiving anything else")
     }
-
   }
 
   def shutdown() = {
-    println("ConnectorActor is shutting down")
+    logger.debug("ConnectorActor is shutting down")
     this.state = State.Stopping
     connector.shutdown()
     this.state = State.Stopped
