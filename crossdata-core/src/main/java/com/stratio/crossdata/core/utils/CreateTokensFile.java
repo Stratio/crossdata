@@ -47,17 +47,17 @@ public final class CreateTokensFile {
         String line = null;
         try {
             String workingDir = System.getProperty("user.dir");
-            if (workingDir.endsWith("stratio-com.stratio.crossdata")) {
-                workingDir = workingDir.concat("/com.stratio.crossdata-core/");
-            } else if (!workingDir.endsWith("com.stratio.crossdata-core")) {
+            if (workingDir.endsWith("crossdata")) {
+                workingDir = workingDir.concat("/crossdata-core/");
+            } else if (!workingDir.endsWith("crossdata-core")) {
                 workingDir = workingDir.substring(0, workingDir.lastIndexOf('/'));
-                workingDir = workingDir.concat("/com.stratio.crossdata-core/");
+                workingDir = workingDir.concat("/crossdata-core/");
             } else {
                 workingDir = workingDir.concat("/");
             }
 
-            String metaGrammarPath = workingDir + "src/main/java/com/stratio/com.stratio.crossdata/core/grammar/Meta.g";
-            String metaTokens = workingDir + "src/main/resources/com/stratio/com.stratio.crossdata/parser/tokens.txt";
+            String metaGrammarPath = workingDir + "src/main/java/com/stratio/crossdata/core/grammar/Meta.g";
+            String metaTokens = workingDir + "src/main/resources/com/stratio/crossdata/parser/tokens.txt";
             File fileGrammar = new File(metaGrammarPath);
             File outFile = new File(metaTokens);
 

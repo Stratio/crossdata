@@ -18,24 +18,9 @@
 
 package com.stratio.crossdata.core.engine;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
-import org.apache.log4j.Logger;
 
 public class EngineConfig {
-
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(EngineConfig.class.getName());
-
-    /**
-     * Jars to exclude. Prefixes.
-     */
-    private static final String[] FORBIDDEN_JARS = { "akka" };
 
     /**
      * The Grid listen address.
@@ -69,105 +54,101 @@ public class EngineConfig {
 
 
     /**
-     * returns the address where infinispan is listening
-     * @return
+     * returns the address where infinispan is listening.
+     * @return A String representation of the address.
      */
     public String getGridListenAddress() {
         return gridListenAddress;
     }
 
     /**
-     * sets the address where infinispan is listening
-     * @param gridListenAddress
+     * sets the address where infinispan is listening.
+     * @param gridListenAddress The address.
      */
     public void setGridListenAddress(String gridListenAddress) {
         this.gridListenAddress = gridListenAddress;
     }
 
     /**
-     * returns the hosts where infinispan is working
-     * @return
+     * returns the hosts where infinispan is working.
+     * @return An array of host addresses.
      */
     public String[] getGridContactHosts() {
         return gridContactHosts.clone();
     }
 
     /**
-     * sets the hosts where infinispan is working
-     * @param gridContactHosts
+     * sets the hosts where infinispan is working.
+     * @param gridContactHosts The array of contact hosts.
      */
     public void setGridContactHosts(String[] gridContactHosts) {
         this.gridContactHosts = Arrays.copyOf(gridContactHosts, gridContactHosts.length);
     }
 
     /**
-     * returns the port infinispan is listening to
-     * @return
+     * returns the port infinispan is listening to.
+     * @return The port.
      */
     public int getGridPort() {
         return gridPort;
     }
 
     /**
-     * returns the port infinispan is listening to
-     * @param gridPort
+     * returns the port infinispan is listening to.
+     * @param gridPort The port.
      */
     public void setGridPort(int gridPort) {
         this.gridPort = gridPort;
     }
 
     /**
-     * returns server-application.conf's com.stratio.crossdata-server.config.grid.min-initial-members value
-     * @return
+     * returns server-application.conf's crossdata-server.config.grid.min-initial-members value.
+     * @return The minimum number of initial members.
      */
     public int getGridMinInitialMembers() {
         return gridMinInitialMembers;
     }
 
     /**
-     * overrides server-application.conf's com.stratio.crossdata-server.config.grid.min-initial-members value
-     * @param gridMinInitialMembers
+     * overrides server-application.conf's crossdata-server.config.grid.min-initial-members value.
+     * @param gridMinInitialMembers The minimum number of initial members.
      */
     public void setGridMinInitialMembers(int gridMinInitialMembers) {
         this.gridMinInitialMembers = gridMinInitialMembers;
     }
 
     /**
-     * returns server-application.conf's com.stratio.crossdata-server.config.grid.join-timeout value
-     * @return
+     * returns server-application.conf's crossdata-server.config.grid.join-timeout value.
+     * @return The timeout.
      */
     public long getGridJoinTimeout() {
         return gridJoinTimeout;
     }
 
     /**
-     * overrides server-application.conf's com.stratio.crossdata-server.config.grid.join-timeout value
-     * @return
+     * Overrides server-application.conf's crossdata-server.config.grid.join-timeout value.
+     * @return The timeout.
      */
     public void setGridJoinTimeout(long gridJoinTimeout) {
         this.gridJoinTimeout = gridJoinTimeout;
     }
 
     /**
-     * returns the path where infinispan stores its data
-     * @return
+     * Returns the path where infinispan stores its data.
+     * @return The persistence path.
      */
     public String getGridPersistencePath() {
         return gridPersistencePath;
     }
 
     /**
-     * sets the path where infinispan stores its data
-     * @param gridPersistencePath
+     * Sets the path where infinispan stores its data.
+     * @param gridPersistencePath The persistence path.
      */
     public void setGridPersistencePath(String gridPersistencePath) {
         this.gridPersistencePath = gridPersistencePath;
     }
 
-    /**
-     * returns the String representation of the object
-     * @return
-     */
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("EngineConfig{");

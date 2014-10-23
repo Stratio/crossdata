@@ -73,7 +73,7 @@ public abstract class SelectionClause {
     }
 
     /**
-     * Checks whether the selection clause contains some function or not
+     * Checks whether the selection clause contains some function or not.
      *
      * @return true, if functions are used; false, otherwise.
      */
