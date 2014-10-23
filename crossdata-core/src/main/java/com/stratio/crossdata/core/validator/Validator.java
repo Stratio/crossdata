@@ -479,6 +479,9 @@ public class Validator {
         NotMatchDataTypeException notMatchDataTypeException = null;
         BadFormatException badFormatException = null;
         switch (right.getType()) {
+        case FUNCTION:
+            LOG.info("Function is not validate yet");
+            break;
         case COLUMN:
             ColumnName rightColumnName = ((ColumnSelector) right).getName();
             ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);

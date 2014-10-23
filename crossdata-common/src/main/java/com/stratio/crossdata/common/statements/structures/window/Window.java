@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.statements.structures.window;
 import java.io.Serializable;
 
 /**
- * Window
+ * Window clause in a Select operation.
  */
 public class Window implements Serializable {
 
@@ -79,7 +79,7 @@ public class Window implements Serializable {
     }
 
     /**
-     * Set the number of time units and unit for WindowType.TEMPORAL
+     * Set the number of time units and unit for WindowType.TEMPORAL.
      *
      * @param numTimeUnits Number of time units.
      * @param unit         Time unit.

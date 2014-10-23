@@ -27,7 +27,6 @@ import com.stratio.crossdata.common.data.ConnectorName
 import com.stratio.crossdata.common.result.{Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
-import com.stratio.crossdata.core.connector.ConnectorManager
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
@@ -38,10 +37,10 @@ import scala.collection.mutable
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 
 object ConnectorManagerActor {
-  def props(connectorManager: ConnectorManager): Props = Props(new ConnectorManagerActor(connectorManager))
+  def props(): Props = Props()
 }
 
-class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor with ActorLogging {
+class ConnectorManagerActor() extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
