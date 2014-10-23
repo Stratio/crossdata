@@ -19,7 +19,6 @@
 package com.stratio.crossdata.common.data;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 public class ResultSetIterator implements Iterator<com.stratio.crossdata.common.data.Row> {
 

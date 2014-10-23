@@ -37,7 +37,7 @@ import scala.collection.mutable
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 
 object ConnectorManagerActor {
-  def props(): Props = Props()
+  def props(): Props = Props(new ConnectorManagerActor())
 }
 
 class ConnectorManagerActor() extends Actor with ActorLogging {

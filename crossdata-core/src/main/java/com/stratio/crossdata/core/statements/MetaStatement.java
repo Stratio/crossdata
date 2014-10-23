@@ -53,11 +53,6 @@ public abstract class MetaStatement{
     protected CatalogName sessionCatalog = null;
 
     /**
-     * The type of statement to be executed.
-     */
-    protected StatementType type = null;
-
-    /**
      * Default class constructor.
      */
 
