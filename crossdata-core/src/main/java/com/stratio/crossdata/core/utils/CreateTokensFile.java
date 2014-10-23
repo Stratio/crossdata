@@ -56,8 +56,8 @@ public final class CreateTokensFile {
                 workingDir = workingDir.concat("/");
             }
 
-            String metaGrammarPath = workingDir + "src/main/java/com/stratio/com.stratio.crossdata/core/grammar/Meta.g";
-            String metaTokens = workingDir + "src/main/resources/com/stratio/com.stratio.crossdata/parser/tokens.txt";
+            String metaGrammarPath = workingDir + "src/main/java/com/stratio/crossdata/core/grammar/Meta.g";
+            String metaTokens = workingDir + "src/main/resources/com/stratio/crossdata/parser/tokens.txt";
             File fileGrammar = new File(metaGrammarPath);
             File outFile = new File(metaTokens);
 
