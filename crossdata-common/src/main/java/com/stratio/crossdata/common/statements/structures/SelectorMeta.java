@@ -16,12 +16,28 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.selectors;
+package com.stratio.crossdata.common.statements.structures;
 
-public enum GroupByFunction {
-    SUM,
-    MAX,
-    MIN,
-    AVG,
-    COUNT
+import com.stratio.crossdata.common.data.TableName;
+
+public abstract class SelectorMeta {
+
+    public static final int TYPE_IDENT = 1;
+    public static final int TYPE_FUNCTION = 2;
+    public static final int TYPE_GROUPBY = 3;
+
+    protected int type;
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
+    @Override
+    public abstract String toString();
+
+    public abstract void addTablename(TableName tablename);
 }

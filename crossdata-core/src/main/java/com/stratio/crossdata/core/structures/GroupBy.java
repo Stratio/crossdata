@@ -21,7 +21,7 @@ package com.stratio.crossdata.core.structures;
 import java.io.Serializable;
 import java.util.List;
 
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 public class GroupBy implements Serializable {
 

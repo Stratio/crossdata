@@ -23,7 +23,7 @@ import java.util.List;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
@@ -60,7 +60,7 @@ public class InsertIntoStatement extends StorageStatement {
      */
     private SelectStatement selectStatement;
     /**
-     * A list of {@link com.stratio.crossdata.common.statements.structures.selectors.Selector} with the
+     * A list of {@link com.stratio.crossdata.common.statements.structures.Selector} with the
      * literal values to be assigned if the insert type matches {@code TYPE_VALUES_CLAUSE}.
      */
     private List<Selector> cellValues;
@@ -89,7 +89,7 @@ public class InsertIntoStatement extends StorageStatement {
      * @param ids             List of name of fields in the table.
      * @param selectStatement a {@link com.stratio.crossdata.core.statements.InsertIntoStatement}
      * @param cellValues      List of
-     *                        {@link com.stratio.crossdata.common.statements.structures.selectors.Selector} to insert.
+     *                        {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
      * @param ifNotExists     Boolean that indicates if IF NOT EXISTS clause is included in the query.
      * @param optsInc         Boolean that indicates if there is options in the query.
      * @param options         Query options.
@@ -129,7 +129,7 @@ public class InsertIntoStatement extends StorageStatement {
      * @param tableName   Tablename target.
      * @param ids         List of name of fields in the table.
      * @param cellValues  List of
-     *                    {@link com.stratio.crossdata.common.statements.structures.selectors.Selector} to insert.
+     *                    {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
      * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
      * @param options     Query options.
      */
@@ -157,7 +157,7 @@ public class InsertIntoStatement extends StorageStatement {
      * @param tableName   Tablename target.
      * @param ids         List of name of fields in the table.
      * @param cellValues  List of
-     *                    {@link com.stratio.crossdata.common.statements.structures.selectors.Selector} to insert.
+     *                    {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
      * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
      */
     public InsertIntoStatement(TableName tableName, List<ColumnName> ids, List<Selector> cellValues,

@@ -2,11 +2,20 @@
 
     package com.stratio.crossdata.core.grammar.generated;
     import com.stratio.crossdata.common.data.*;
-    import com.stratio.crossdata.common.statements.structures.selectors.*;
-    import com.stratio.crossdata.common.statements.structures.relationships.*;
+    import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
+    import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+    import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+    import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+    import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+    import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+    import com.stratio.crossdata.common.statements.structures.Operator;
+    import com.stratio.crossdata.common.statements.structures.Relation;
+    import com.stratio.crossdata.common.statements.structures.RelationSelector;
+    import com.stratio.crossdata.common.statements.structures.SelectExpression;
+    import com.stratio.crossdata.common.statements.structures.Selector;
+    import com.stratio.crossdata.common.statements.structures.StringSelector;
     import com.stratio.crossdata.common.statements.structures.window.*;
     import com.stratio.crossdata.core.statements.*;
-    import com.stratio.crossdata.core.structures.*;
     import com.stratio.crossdata.core.structures.*;
     import com.stratio.crossdata.core.utils.*;
     import com.stratio.crossdata.common.metadata.*;
@@ -14,15 +23,14 @@
     import java.util.LinkedHashMap;
     import java.util.LinkedList;
     import java.util.Map;
-    import java.util.Set;
-    import java.util.HashSet;
+
     import org.apache.commons.lang3.tuple.MutablePair;
     import com.stratio.crossdata.common.exceptions.*;
 
 
 import org.antlr.runtime.*;
-import java.util.Stack;
-import java.util.List;
+
+    import java.util.List;
 import java.util.ArrayList;
 
 @SuppressWarnings("all")

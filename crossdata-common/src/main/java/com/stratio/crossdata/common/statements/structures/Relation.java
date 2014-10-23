@@ -16,13 +16,12 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures.relationships;
+package com.stratio.crossdata.common.statements.structures;
 
 import java.io.Serializable;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
 
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
