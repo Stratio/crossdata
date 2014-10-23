@@ -18,6 +18,6 @@
 
 package com.stratio.crossdata.core.query;
 
-public interface InProgressQuery extends PlannedQuery {
+public interface InProgressQuery extends IPlannedQuery {
 
 }

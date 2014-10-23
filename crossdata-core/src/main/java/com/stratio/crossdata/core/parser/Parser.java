@@ -25,11 +25,11 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.core.grammar.generated.MetaLexer;
 import com.stratio.crossdata.core.grammar.generated.MetaParser;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.utils.AntlrError;
 import com.stratio.crossdata.core.utils.ErrorsHelper;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.statements.MetaStatement;
@@ -44,8 +44,8 @@ public class Parser {
      */
     private static final Logger LOG = Logger.getLogger(Parser.class);
 
-    public ParsedQuery parse(BaseQuery baseQuery) throws ParsingException {
-        ParsedQuery result = null;
+    public IParsedQuery parse(BaseQuery baseQuery) throws ParsingException {
+        IParsedQuery result = null;
         MetaStatement metaStatement = this
                 .parseStatement(baseQuery.getDefaultCatalog().toString(), baseQuery.getQuery());
         if (metaStatement instanceof SelectStatement) {

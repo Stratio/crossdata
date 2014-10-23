@@ -21,7 +21,7 @@ package com.stratio.crossdata.server.actors
 import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.crossdata.common.exceptions.ValidationException
 import com.stratio.crossdata.common.result.Result
-import com.stratio.crossdata.core.query.{ValidatedQuery, ParsedQuery}
+import com.stratio.crossdata.core.query.{IValidatedQuery, IParsedQuery}
 import com.stratio.crossdata.core.validator.Validator
 import org.apache.log4j.Logger
 
@@ -46,9 +46,9 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
   val log = Logger.getLogger(classOf[ValidatorActor])
 
   override def receive: Receive = {
-    case query: ParsedQuery => {
+    case query: IParsedQuery => {
       val timer = initTimer()
-      var validatedQuery: ValidatedQuery = null
+      var validatedQuery: IValidatedQuery = null
       try {
         validatedQuery = validator.validate(query)
         log.info("Query validated")

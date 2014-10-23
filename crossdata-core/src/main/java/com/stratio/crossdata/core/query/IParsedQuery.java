@@ -16,19 +16,22 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.actor;
+package com.stratio.crossdata.core.query;
 
-import com.stratio.crossdata.common.result.Result;
+import com.stratio.crossdata.common.result.QueryStatus;
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.core.statements.MetaStatement;
 
-/**
- * Interface for actors listening for streaming results.
- */
-public interface ActorResultListener {
+public interface IParsedQuery {
 
-    /**
-     * Process an incoming result.
-     *
-     * @param result The results.
-     */
-    public void processResults(Result result);
+    String getQuery();
+
+    String getQueryId();
+
+    QueryStatus getStatus();
+
+    CatalogName getDefaultCatalog();
+
+    MetaStatement getStatement();
+
 }
