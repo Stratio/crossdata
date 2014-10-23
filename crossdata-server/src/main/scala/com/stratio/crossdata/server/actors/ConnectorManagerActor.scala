@@ -113,7 +113,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
           sender ! new Connect(null, connectorClusterConfig)
         }
       }
-      MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
+      MetadataManager.MANAGER.setConnectorStatus(connectorName, ConnectorStatus.ONLINE)
 
     }
 
@@ -136,8 +136,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
         }
         if(foundServers.size == 1){
           logger.info("Resetting Connectors status")
-          val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
-          MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
+          val connectors = MetadataManager.MANAGER.getConnectorNames(data.ConnectorStatus.ONLINE)
+          MetadataManager.MANAGER.setConnectorStatus(connectors, data.ConnectorStatus.OFFLINE)
           connectorsAlreadyReset = true
         }
       }
@@ -154,7 +154,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address)
       val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri +"/user/ConnectorActor/")
       MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
-        data.Status.OFFLINE)
+        data.ConnectorStatus.OFFLINE)
     }
 
     case member: MemberExited => {
@@ -162,7 +162,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
       val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
       MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
-        data.Status.SHUTTING_DOWN)
+        data.ConnectorStatus.SHUTTING_DOWN)
     }
 
     case _: MemberEvent => {
