@@ -20,17 +20,41 @@ package com.stratio.crossdata.core.structures;
 
 import com.stratio.crossdata.common.data.TableName;
 
+/**
+ * Abstract class that represents the selection clause of a {@code SELECT} statement. It can either be
+ * an Asterisk or a set of columns.
+ */
 public abstract class Selection {
 
+    /**
+     * Constant to define that the selection is composed of a set of fields.
+     */
     public static final int TYPE_SELECTOR = 1;
+
+    /**
+     * Constant to define that the selection should include all fields of the target table.
+     */
     public static final int TYPE_ASTERISK = 2;
 
+    /**
+     * Type of selection.
+     */
     protected int type;
 
+    /**
+     * Get the type of selection.
+     *
+     * @return A number being 1 a {@code TYPE_SELECTOR} and 2 a {@code TYPE_ASTERISK}.
+     */
     public int getType() {
         return type;
     }
 
+    /**
+     * Set the type of selection.
+     *
+     * @param type 1 for {@code TYPE_SELECTOR} and 2 for {@code TYPE_ASTERISK}.
+     */
     public void setType(int type) {
         this.type = type;
     }
@@ -38,6 +62,11 @@ public abstract class Selection {
     @Override
     public abstract String toString();
 
+    /**
+     * Add a tablename to that relates to the list of tables refered by the selection.
+     *
+     * @param tablename The table name.
+     */
     public abstract void addTablename(TableName tablename);
 
     /**

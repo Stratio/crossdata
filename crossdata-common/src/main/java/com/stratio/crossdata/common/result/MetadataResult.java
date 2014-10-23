@@ -111,25 +111,12 @@ public final class MetadataResult extends Result {
      * @param operation to bind
      * @return A {@link com.stratio.crossdata.common.result.MetadataResult}.
      */
-
     public static MetadataResult createSuccessMetadataResult(final int operation) {
         return new MetadataResult
                 (operation);
     }
 
-    /**
-     * Creates a successful query.
-     *
-     * @return A {@link com.stratio.crossdata.common.result.MetadataResult}.
-     */
-    @Deprecated
-    public static MetadataResult createSuccessMetadataResult() {
-        return new MetadataResult
-                (0);
-    }
-
     public List<String> getCatalogList() {
-
         return catalogList;
     }
 
@@ -140,7 +127,6 @@ public final class MetadataResult extends Result {
      */
 
     public int getOperation() {
-
         return operation;
     }
 
