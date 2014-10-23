@@ -53,7 +53,7 @@ ActorLogging {
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
   var state = State.Stopped
-  var parentActorRef: ActorRef = ???
+  var parentActorRef: Option[ActorRef] = None
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
   override def handleHeartbeat(heartbeat: HeartbeatSig):Unit = {
@@ -70,7 +70,7 @@ ActorLogging {
 
   override def receive:Receive = super.receive orElse {
     case _: com.stratio.crossdata.communication.Start => {
-      parentActorRef = sender
+      parentActorRef = Some(sender)
     }
     case connectRequest: com.stratio.crossdata.communication.Connect => {
       logger.debug("->" + "Receiving MetadataRequest")
@@ -167,7 +167,7 @@ ActorLogging {
     }
     case result: Result =>
       logger.debug("connectorActor receives Result with ID=" + result.getQueryId())
-      parentActorRef ! result
+      parentActorRef.get ! result
     //TODO:  ManagementWorkflow
     case storageOp: StorageOperation => {
       val qId: String = storageOp.queryId
