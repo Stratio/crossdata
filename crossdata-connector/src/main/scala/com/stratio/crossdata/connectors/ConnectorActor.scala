@@ -20,12 +20,12 @@ package com.stratio.crossdata.connectors
 
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent._
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.IConnector
 import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, Result, StorageResult}
-import com.stratio.crossdata.communication._
+import com.stratio.crossdata.communication.{CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation, getConnectorName, replyConnectorName}
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.{ListMap, Map}

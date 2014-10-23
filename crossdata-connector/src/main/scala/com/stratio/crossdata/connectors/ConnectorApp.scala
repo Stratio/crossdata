@@ -18,8 +18,9 @@
 
 package com.stratio.crossdata.connectors
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import akka.routing.RoundRobinRouter
+import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.common.connector.{IConfiguration, IConnector}
 import com.stratio.crossdata.communication.Shutdown
@@ -45,10 +46,10 @@ class ConnectorApp extends ConnectConfig {
     system.shutdown()
   }
 
-  def startup(connector: IConnector): ActorRef = {
+  def startup(connector: IConnector): ActorSelection= {
     actorClusterNode = system.actorOf(ConnectorActor.props(connector.getConnectorName, connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor")
     connector.init(new IConfiguration {})
-    actorClusterNode
+    system.actorSelection( StringUtils.getAkkaActorRefUri(actorClusterNode.toString()))
   }
 
 }
