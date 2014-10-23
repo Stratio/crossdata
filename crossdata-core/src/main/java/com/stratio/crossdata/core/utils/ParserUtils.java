@@ -173,16 +173,16 @@ public final class ParserUtils {
         BufferedReader bufferedReaderF = null;
         try {
             String workingDir = System.getProperty("user.dir");
-            if (workingDir.endsWith("stratio-com.stratio.crossdata")) {
-                workingDir = workingDir.concat("/com.stratio.crossdata-core/");
-            } else if (!workingDir.endsWith("com.stratio.crossdata-core")) {
+            if (workingDir.endsWith("stratio-crossdata")) {
+                workingDir = workingDir.concat("/crossdata-core/");
+            } else if (!workingDir.endsWith("crossdata-core")) {
                 workingDir = workingDir.substring(0, workingDir.lastIndexOf('/'));
-                workingDir = workingDir.concat("/com.stratio.crossdata-core/");
+                workingDir = workingDir.concat("/crossdata-core/");
             } else {
                 workingDir = workingDir.concat("/");
             }
 
-            String metaTokens = workingDir + "src/main/resources/com/stratio/com.stratio.crossdata/parser/tokens.txt";
+            String metaTokens = workingDir + "src/main/resources/com/stratio/crossdata/parser/tokens.txt";
 
             bufferedReaderF = new BufferedReader(
                     new InputStreamReader(
@@ -211,63 +211,6 @@ public final class ParserUtils {
             }
         }
         return replacement;
-    }
-
-    public static String translateLiteralsToCQL(String metaStr) {
-        StringBuilder sb = new StringBuilder();
-        int startSquareBracketPosition = metaStr.indexOf('{');
-        int endSquareBracketPosition = metaStr.indexOf('}');
-        String propsStr = metaStr.substring(startSquareBracketPosition + 1, endSquareBracketPosition).trim();
-        if (propsStr.length() < 3) {
-            return metaStr;
-        }
-        sb.append(metaStr.substring(0, startSquareBracketPosition + 1));
-        String[] props = propsStr.split(",");
-        for (String prop : props) {
-            String[] keyAndValue = prop.trim().split(":");
-            if (keyAndValue[0].contains("'")) {
-                sb.append(keyAndValue[0].trim()).append(": ");
-            } else {
-                sb.append("'").append(keyAndValue[0].trim()).append("'").append(": ");
-            }
-
-            if (keyAndValue[1].trim().matches("[0123456789.]+")) {
-                sb.append(keyAndValue[1].trim()).append(", ");
-            } else {
-                if (keyAndValue[1].contains("'")) {
-                    sb.append(keyAndValue[1].trim()).append(", ");
-                } else {
-                    sb.append("'").append(keyAndValue[1].trim()).append("'").append(", ");
-                }
-
-            }
-        }
-        sb = sb.delete(sb.length() - 2, sb.length());
-        sb.append(metaStr.substring(endSquareBracketPosition));
-        return sb.toString();
-    }
-
-    public static String addSingleQuotesToString(String strList, String separator) {
-        StringBuilder sb = new StringBuilder();
-        String[] eltos = strList.split(separator);
-        for (String elto : eltos) {
-            elto = elto.trim();
-            if (elto.matches("[0123456789.]+")) {
-                sb.append(elto).append(", ");
-            } else {
-                if (elto.contains("'")) {
-                    sb.append(elto).append(", ");
-                } else {
-                    sb.append("'").append(elto).append("'").append(", ");
-                }
-            }
-        }
-        if (sb.charAt(sb.length() - 2) == ',') {
-            return sb.substring(0, sb.length() - 2);
-        } else {
-            return sb.substring(0, sb.length());
-        }
-
     }
 
 }

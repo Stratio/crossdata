@@ -23,9 +23,13 @@ package com.stratio.crossdata.common.exceptions;
  * phase. The error may be related to the configuration, the connectivity or any other
  * problem the connector may encounter during the initialization.
  */
-public class InitializationException extends Exception {
+public class InitializationException extends ConnectorException {
 
     private static final long serialVersionUID = -3453090024561154440L;
+
+    public InitializationException(Exception e){
+        super(e);
+    }
 
     public InitializationException(String msg) {
         super(msg);

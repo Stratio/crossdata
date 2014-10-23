@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.core.statements;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import com.stratio.crossdata.common.utils.StringUtils;
@@ -43,12 +44,6 @@ public class AttachConnectorStatement extends MetadataStatement {
         this.options = StringUtils.convertJsonToOptions(json);
     }
 
-    @Override
-    public String toString() {
-        return "ATTACH CONNECTOR " + connectorName + " TO " + clusterName + " WITH OPTIONS " + StringUtils
-                .getStringFromOptions(options);
-    }
-
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CLUSTER)
                 .add(ValidationTypes.MUST_EXIST_CONNECTOR)
@@ -66,5 +61,25 @@ public class AttachConnectorStatement extends MetadataStatement {
 
     public Map<Selector, Selector> getOptions() {
         return options;
+    }
+
+    private String getStringFromOptions(Map<Selector, Selector> options) {
+        StringBuilder sb = new StringBuilder("{");
+        Iterator<Map.Entry<Selector, Selector>> entryIt = options.entrySet().iterator();
+        Map.Entry<Selector, Selector> e;
+        while (entryIt.hasNext()) {
+            e = entryIt.next();
+            sb.append(e.getKey()).append(": ").append(e.getValue());
+            if (entryIt.hasNext()) {
+                sb.append(", ");
+            }
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "ATTACH CONNECTOR " + connectorName + " TO " + clusterName + " WITH OPTIONS " + getStringFromOptions(options);
     }
 }

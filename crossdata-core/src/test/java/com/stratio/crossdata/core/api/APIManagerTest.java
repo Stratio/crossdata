@@ -29,9 +29,9 @@ import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.Result;
-import com.stratio.crossdata.common.api.PropertiesType;
-import com.stratio.crossdata.common.api.PropertyType;
-import com.stratio.crossdata.common.api.datastore.DataStoreType;
+import com.stratio.crossdata.common.manifest.PropertiesType;
+import com.stratio.crossdata.common.manifest.PropertyType;
+import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
 
 public class APIManagerTest extends MetadataManagerTestHelper {

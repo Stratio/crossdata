@@ -32,9 +32,9 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
-import com.stratio.crossdata.common.connector.Operations;
-import com.stratio.crossdata.common.result.QueryStatus;
-import com.stratio.crossdata.common.api.PropertyType;
+import com.stratio.crossdata.common.data.ConnectorStatus;
+import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -44,7 +44,6 @@ import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.NameType;
-import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -410,12 +409,11 @@ public enum MetadataManager {
         if (!exists(name)) {
             String version = null;
             Set<DataStoreName> dataStoreRefs = null;
-            Set<ClusterName> clusterRefs = null;
             Map<ClusterName, Map<Selector, Selector>> clusterProperties = null;
             Set<PropertyType> requiredProperties = null;
             Set<PropertyType> optionalProperties = null;
             Set<Operations> supportedOperations = null;
-            ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs, clusterRefs,
+            ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
                     clusterProperties, requiredProperties, optionalProperties, supportedOperations);
             connectorMetadata.setActorRef(actorRef);
             try {
@@ -435,15 +433,15 @@ public enum MetadataManager {
         }
     }
 
-    public void setConnectorStatus(ConnectorName name, Status status) {
+    public void setConnectorStatus(ConnectorName name, ConnectorStatus connectorStatus) {
         ConnectorMetadata connectorMetadata = getConnector(name);
-        connectorMetadata.setStatus(status);
+        connectorMetadata.setConnectorStatus(connectorStatus);
         createConnector(connectorMetadata, false);
     }
 
-    public void setConnectorStatus(List<ConnectorName> names, Status status) {
+    public void setConnectorStatus(List<ConnectorName> names, ConnectorStatus connectorStatus) {
         for(ConnectorName connectorName: names){
-            setConnectorStatus(connectorName, status);
+            setConnectorStatus(connectorName, connectorStatus);
         }
     }
 
@@ -454,11 +452,11 @@ public enum MetadataManager {
     /**
      * Get the connectors that are attached to the clusters that store the requested tables.
      *
-     * @param connectorStatus The status of the connector.
+     * @param connectorConnectorStatus The status of the connector.
      * @param tables          The list of table names.
      * @return A map associating table names with a list of the available connectors.
      */
-    public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
+    public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(ConnectorStatus connectorConnectorStatus,
             List<TableName> tables) {
         Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
         List<ConnectorMetadata> connectors;
@@ -472,7 +470,7 @@ public enum MetadataManager {
             connectors = new ArrayList<>();
             for (ConnectorName connectorName : connectorNames) {
                 ConnectorMetadata connectorMetadata = getConnector(connectorName);
-                if (connectorMetadata.getStatus() == connectorStatus) {
+                if (connectorMetadata.getConnectorStatus() == connectorConnectorStatus) {
                     connectors.add(connectorMetadata);
                 }
             }
@@ -482,13 +480,13 @@ public enum MetadataManager {
         return result;
     }
 
-    public List<ConnectorMetadata> getAttachedConnectors(Status status, ClusterName clusterName) {
+    public List<ConnectorMetadata> getAttachedConnectors(ConnectorStatus connectorStatus, ClusterName clusterName) {
         List<ConnectorMetadata> connectors = new ArrayList<>();
         Set<ConnectorName> connectorNames = getCluster(clusterName)
                 .getConnectorAttachedRefs().keySet();
         for (ConnectorName connectorName : connectorNames) {
             ConnectorMetadata connectorMetadata = getConnector(connectorName);
-            if (connectorMetadata.getStatus() == status) {
+            if (connectorMetadata.getConnectorStatus() == connectorStatus) {
                 connectors.add(connectorMetadata);
             }
         }
@@ -502,17 +500,10 @@ public enum MetadataManager {
         return tableMetadata.getColumns().get(name);
     }
 
-    public void setQueryStatus(CatalogName catalogName, QueryStatus queryStatus, String queryId) {
-        CatalogMetadata catalogMetadata = getCatalog(catalogName);
-        catalogMetadata.setQueryStatus(queryStatus);
-        catalogMetadata.setQueryId(queryId);
-        createCatalog(catalogMetadata, false);
-    }
-
-    public boolean checkConnectorStatus(ConnectorName connectorName, Status status) {
+    public boolean checkConnectorStatus(ConnectorName connectorName, ConnectorStatus connectorStatus) {
         shouldBeInit();
         exists(connectorName);
-        return (getConnector(connectorName).getStatus() == status);
+        return (getConnector(connectorName).getConnectorStatus() == connectorStatus);
     }
 
     public List<String> getCatalogs() {
@@ -607,19 +598,19 @@ public enum MetadataManager {
         return connectors;
     }
 
-    public List<ConnectorMetadata> getConnectors(Status status){
+    public List<ConnectorMetadata> getConnectors(ConnectorStatus connectorStatus){
         List<ConnectorMetadata> onlineConnectors = new ArrayList<>();
         for (ConnectorMetadata connector : getConnectors()) {
-            if (connector.getStatus() == status) {
+            if (connector.getConnectorStatus() == connectorStatus) {
                 onlineConnectors.add(connector);
             }
         }
         return onlineConnectors;
     }
 
-    public List<ConnectorName> getConnectorNames(Status status){
+    public List<ConnectorName> getConnectorNames(ConnectorStatus connectorStatus){
         List<ConnectorName> onlineConnectorNames = new ArrayList<>();
-        for(ConnectorMetadata connectorMetadata: getConnectors(status)){
+        for(ConnectorMetadata connectorMetadata: getConnectors(connectorStatus)){
             onlineConnectorNames.add(connectorMetadata.getName());
         }
         return onlineConnectorNames;

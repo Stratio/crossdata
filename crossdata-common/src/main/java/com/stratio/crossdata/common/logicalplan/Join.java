@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.logicalplan;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.relationships.Relation;
 
 /**

@@ -25,6 +25,10 @@ public class ConnectorException extends Exception {
 
     private static final long serialVersionUID = -847420817619537147L;
 
+    public ConnectorException(Exception e){
+        super(e);
+    }
+
     public ConnectorException(String msg) {
         super(msg);
     }

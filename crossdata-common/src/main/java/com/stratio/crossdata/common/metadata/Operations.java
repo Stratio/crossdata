@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.connector;
+package com.stratio.crossdata.common.metadata;
 
 /**
  * Operations supported by an {@link com.stratio.crossdata.common.connector.IConnector}.

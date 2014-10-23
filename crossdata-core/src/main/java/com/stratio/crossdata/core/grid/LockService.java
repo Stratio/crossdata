@@ -69,4 +69,7 @@ public class LockService implements Closeable {
         lockService.unlockAll();
     }
 
+    public JChannel getChannel() {
+        return channel;
+    }
 }

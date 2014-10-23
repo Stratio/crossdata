@@ -23,8 +23,8 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent._
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
-import com.stratio.crossdata.common.data.{ConnectorName, Status}
-import com.stratio.crossdata.common.result.{ConnectResult, Result}
+import com.stratio.crossdata.common.data.ConnectorName
+import com.stratio.crossdata.common.result.{Result, ConnectResult}
 import com.stratio.crossdata.common.statements.structures.selectors.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
@@ -32,6 +32,7 @@ import com.stratio.crossdata.core.connector.ConnectorManager
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
+import com.stratio.crossdata.common.data.ConnectorStatus
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -49,8 +50,8 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
 
   log.info("Lifting coordinator actor")
   try {
-    val connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE)
-    MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
+    val connectors = MetadataManager.MANAGER.getConnectorNames(ConnectorStatus.ONLINE)
+    MetadataManager.MANAGER.setConnectorStatus(connectors, ConnectorStatus.OFFLINE)
   } catch {
     case e: Exception => {
       log.error("Couldn't set connectors to OFFLINE")
@@ -58,11 +59,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
   }
 
   override def preStart(): Unit = {
-    //try {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
-    //}catch{
-      //e:Exception=>
-    //}
   }
 
   override def postStop(): Unit = {
@@ -75,16 +72,19 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
      * A new actor connects to the cluster. If the new actor is a connector, we requests its name.
      */
     //TODO Check that new actors are recognized and their information stored in the MetadataManager
-    case "sendMemberup"=>
     case mu: MemberUp => {
-      logger.info("\n\n\n\nMember is Up: " + mu.toString + mu.member.getRoles)
+      logger.info("Member is Up: " + mu.toString + mu.member.getRoles)
       val it = mu.member.getRoles.iterator()
       while (it.hasNext()) {
-        val rol = it.next()
-        rol match {
+        val role = it.next()
+        role match {
           case "connector" => {
+            logger.debug("Asking its name to the connector " + mu.member.address)
             val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
             connectorActorRef ! getConnectorName()
+          }
+          case _ => {
+            logger.debug(mu.member.address + " has the role: " + role)
           }
         }
       }
@@ -134,7 +134,7 @@ class ConnectorManagerActor(connectorManager: ConnectorManager) extends Actor wi
             logger.info("New server added. Size: " + foundServers.size)
           }
         }
-        if(foundServers.size > 0){
+        if(foundServers.size == 1){
           logger.info("Resetting Connectors status")
           val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
           MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)

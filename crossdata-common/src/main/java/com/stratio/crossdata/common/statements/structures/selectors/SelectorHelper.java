@@ -21,7 +21,11 @@ package com.stratio.crossdata.common.statements.structures.selectors;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SelectorHelper {
+public final class SelectorHelper {
+
+    private SelectorHelper(){
+
+    }
 
     public static Map<String, String> convertSelectorMapToStringMap(Map<Selector, Selector> selectorsMap) {
         Map<String, String> stringsMap = new HashMap<>();

@@ -65,7 +65,7 @@ public class ExecutionPath {
         sb.append("]");
         sb.append(initial).append(System.lineSeparator());
         LogicalStep pointer = initial;
-        while(pointer != last && pointer != null){
+        while(pointer.equals(last) && pointer != null){
             sb.append(pointer).append(System.lineSeparator());
             pointer = pointer.getNextStep();
         }

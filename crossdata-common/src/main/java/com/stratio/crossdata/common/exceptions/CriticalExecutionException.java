@@ -23,6 +23,10 @@ package com.stratio.crossdata.common.exceptions;
  */
 public class CriticalExecutionException extends ExecutionException{
 
+    public CriticalExecutionException(Exception e){
+        super(e);
+    }
+
     public CriticalExecutionException(String message) {
         super(message);
     }

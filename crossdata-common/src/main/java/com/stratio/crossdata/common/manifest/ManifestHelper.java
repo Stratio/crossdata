@@ -16,16 +16,14 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.api;
+package com.stratio.crossdata.common.manifest;
 
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.stratio.crossdata.common.connector.Operations;
-import com.stratio.crossdata.common.api.connector.ConnectorType;
-import com.stratio.crossdata.common.api.datastore.DataStoreType;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.DataStoreName;
 
 public class ManifestHelper implements Serializable {
@@ -153,15 +151,6 @@ public class ManifestHelper implements Serializable {
             dataStoreNames.add(new DataStoreName(name));
         }
         return dataStoreNames;
-    }
-
-    public static Set<Operations> convertManifestOperationsToMetadataOperations(
-            List<String> supportedOperations) {
-        Set<Operations> operations = new HashSet<>();
-        for (String supportedOperation : supportedOperations) {
-            operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
-        }
-        return operations;
     }
 
     public static Set<String> convertManifestBehaviorsToMetadataBehaviors(List<String> behaviors) {

@@ -23,10 +23,10 @@ import static org.testng.Assert.fail;
 
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.api.CrossdataManifest;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
-import com.stratio.crossdata.common.api.ManifestHelper;
+import com.stratio.crossdata.common.manifest.ManifestHelper;
 
 public class CrossdataManifestTest {
 

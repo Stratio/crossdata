@@ -26,8 +26,7 @@ import javax.transaction.TransactionManager
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.testkit.ImplicitSender
-import com.stratio.crossdata.common.api.PropertyType
-import com.stratio.crossdata.common.connector.Operations
+import com.stratio.crossdata.common.manifest.PropertyType
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.executionplan._
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, Project, Select}
@@ -52,6 +51,8 @@ import org.scalatest.{FunSuiteLike, Suite}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import com.stratio.crossdata.communication.replyConnectorName
+import com.stratio.crossdata.communication.getConnectorName
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
@@ -151,7 +152,6 @@ ImplicitSender {
   myList.add(columnNme)
   metadataWorkflow1.setTableMetadata(
   new TableMetadata(
-    false,
     new TableName(catalogName, tableName1),
     new util.HashMap[Selector, Selector](),
     new util.HashMap[ColumnName, ColumnMetadata](),
@@ -213,7 +213,7 @@ ImplicitSender {
 
     //create catalog
     metadataManager.createTestCatalog(catalogName)
-    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
+    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), ConnectorStatus.ONLINE)
 
     val clusterMetadata = MetadataManager.MANAGER.getCluster(testcluster)
     val connectorsMap = new java.util.HashMap[ConnectorName, ConnectorAttachedMetadata]()

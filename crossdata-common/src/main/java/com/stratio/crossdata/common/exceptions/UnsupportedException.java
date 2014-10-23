@@ -22,12 +22,16 @@ package com.stratio.crossdata.common.exceptions;
  * Exception thrown when the operation is not currently supported
  * by the com.stratio.crossdata server.
  */
-public class UnsupportedException extends Exception {
+public class UnsupportedException extends ConnectorException {
 
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
      */
     private static final long serialVersionUID = 5194419221361563613L;
+
+    public UnsupportedException(Exception e){
+        super(e);
+    }
 
     public UnsupportedException(String message) {
         super(message);

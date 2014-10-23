@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.crossdata.common.api.ManifestHelper;
-import com.stratio.crossdata.common.api.PropertyType;
+import com.stratio.crossdata.common.manifest.ManifestHelper;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
 

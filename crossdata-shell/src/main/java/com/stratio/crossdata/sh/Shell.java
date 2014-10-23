@@ -33,7 +33,7 @@ import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.api.CrossdataManifest;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.result.CommandResult;
@@ -443,11 +443,11 @@ public class Shell {
             return "ERROR: Invalid ADD syntax";
         }
 
-        int type_manifest;
+        int typeManifest;
         if (tokens[1].equalsIgnoreCase("datastore")) {
-            type_manifest = CrossdataManifest.TYPE_DATASTORE;
+            typeManifest = CrossdataManifest.TYPE_DATASTORE;
         } else if (tokens[1].equalsIgnoreCase("connector")) {
-            type_manifest = CrossdataManifest.TYPE_CONNECTOR;
+            typeManifest = CrossdataManifest.TYPE_CONNECTOR;
         } else {
             return "ERROR: Unknown type: " + tokens[1];
         }
@@ -455,7 +455,7 @@ public class Shell {
         // Create CrossdataManifest object from XML file
         CrossdataManifest manifest;
         try {
-            manifest = ConsoleUtils.parseFromXmlToManifest(type_manifest,
+            manifest = ConsoleUtils.parseFromXmlToManifest(typeManifest,
                     tokens[2].replace(";", "").replace("\"", "").replace("'", ""));
         } catch (ManifestException | FileNotFoundException e) {
             LOG.error("CrossdataManifest couldn't be parsed", e);

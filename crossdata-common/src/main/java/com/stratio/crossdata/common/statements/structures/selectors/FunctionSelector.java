@@ -59,7 +59,9 @@ public class FunctionSelector extends Selector {
     public boolean isGroupByFunction() {
         String[] funcs={"sum","max","min","avg","count"};
         for(String funcname:funcs){
-            if(funcname.equalsIgnoreCase(functionName))return true;
+            if(funcname.equalsIgnoreCase(functionName)){
+                return true;
+            }
         }
         return false;
     }
