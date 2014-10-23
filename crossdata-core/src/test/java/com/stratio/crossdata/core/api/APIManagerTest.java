@@ -38,6 +38,7 @@ import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.Result;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
 
 public class APIManagerTest extends MetadataManagerTestHelper {
@@ -168,6 +169,19 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         String str = String.valueOf(result.getResult());
         assertTrue(str.equalsIgnoreCase(expectedResult), "Expected: " + expectedResult + System.lineSeparator() +
                 "   Found: " + str);
+    }
+
+    @Test
+    public void testResetMetadata() throws Exception {
+        APIManager ApiManager = new APIManager();
+        createTestConnector("connectorTest", new DataStoreName("datastoreTest"), "akkaActorRef");
+        Command cmd = new Command(APICommand.RESET_METADATA(), null);
+        CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
+
+        String str = String.valueOf(result.getResult());
+        assertTrue(str.equals("Metadata reset."), "Expected: Metadata reset." + System.lineSeparator() +
+                                                  "   Found: " + str);
+        assertTrue(MetadataManager.MANAGER.isEmpty(), "MetadataManager should be empty");
     }
 
     @Test

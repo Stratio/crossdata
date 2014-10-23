@@ -1,11 +1,24 @@
 #!/bin/bash
 @LICENSE_HEADER@
 
-DESC="SDS Meta Server"
-NAME=meta
+### BEGIN INIT INFO
+# Provides: crossdata
+# Required-Start:
+# Required-Stop:
+# Should-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Stratio Crossdata
+# Description: One LANGUAGE to rule them all
+#
+### END INIT INFO
+#
+
+DESC="Stratio Crossdata Server"
+NAME=crossdata
 SCRIPTNAME=/etc/init.d/${NAME}
-USER=meta
-GROUP=sds
+USER=stratio
+GROUP=stratio
 
 # Read configuration variable file if it is present
 [ -r /etc/default/${NAME} ] && . /etc/default/${NAME}
@@ -27,12 +40,12 @@ PRGDIR=`dirname "${PRG}"`
 BASEDIR=`cd "${PRGDIR}/.." >/dev/null; pwd`
 
 
-if [ -z "${META_CONF}" ]; then
-    META_CONF="${BASEDIR}/conf"
+if [ -z "${CROSSDATA_CONF}" ]; then
+    CROSSDATA_CONF="${BASEDIR}/conf"
 fi
 
-if [ -f "${META_CONF}/meta-env.sh" ]; then
-    source "${META_CONF}/meta-env.sh"
+if [ -f "${CROSSDATA_CONF}/crossdata-env.sh" ]; then
+    source "${CROSSDATA_CONF}/crossdata-env.sh"
 fi
 
 # Reset the REPO variable. If you need to influence this use the environment setup file.
@@ -106,12 +119,13 @@ fi
   exit 1
 fi
 
-CLASSPATH="${CLASSPATH}:${META_CONF}/:${META_LIB}/*:"
+LIB=${CROSSDATA_LIB}
+CLASSPATH=${CLASSPATH}:${CROSSDATA_CONF}/:$(JARS=("$LIB"/*.jar); IFS=:; echo "${JARS[*]}")
 
 jsvc_exec()
 {
-    ${JSVCCMD} -home ${JAVA_HOME} -cp ${CLASSPATH} -user ${META_SERVER_USER} -outfile ${META_LOG_OUT} -errfile ${META_LOG_ERR} \
-    -pidfile ${META_SERVER_PID} ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ $1 @MAINCLASS@ @APP_ARGUMENTS@
+    ${JSVCCMD} -home ${JAVA_HOME} -cp ${CLASSPATH} -user ${CROSSDATA_SERVER_USER} -outfile ${CROSSDATA_LOG_OUT} -errfile ${CROSSDATA_LOG_ERR} \
+    -pidfile ${CROSSDATA_SERVER_PID} ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ $1 @MAINCLASS@ @APP_ARGUMENTS@
 }
 
 case "$1" in
@@ -132,10 +146,10 @@ case "$1" in
         echo "The @APP_NAME@ has stopped."
     ;;
     status)
-        status -p ${META_SERVER_PID} meta
+        status -p ${CROSSDATA_SERVER_PID} crossdata
     ;;
     restart)
-        if [ -f "${META_SERVER_PID}" ]; then
+        if [ -f "${CROSSDATA_SERVER_PID}" ]; then
 
             echo "Restarting the @APP_NAME@..."
 
