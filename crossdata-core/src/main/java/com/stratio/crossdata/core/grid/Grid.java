@@ -38,6 +38,8 @@ public final class Grid implements Closeable {
     private final LockService lockService;
     private final StoreService storeService;
 
+    private static Grid grid = null;
+
     /**
      * Builds a new {@link Grid}.
      *
@@ -61,7 +63,7 @@ public final class Grid implements Closeable {
     }
 
     public static Grid getInstance() {
-        return Singleton.INSTANCE.grid;
+        return grid;
     }
 
     /**
@@ -75,11 +77,11 @@ public final class Grid implements Closeable {
     static Grid init(ChannelService channelService,
             LockService lockService,
             StoreService storeService) {
-        if (Singleton.INSTANCE.grid != null) {
-            Singleton.INSTANCE.grid.close();
+        if (grid != null) {
+            grid.close();
         }
-        Singleton.INSTANCE.grid = new Grid(channelService, lockService, storeService);
-        return Singleton.INSTANCE.grid;
+        grid = new Grid(channelService, lockService, storeService);
+        return grid;
     }
 
     /**
@@ -133,20 +135,12 @@ public final class Grid implements Closeable {
      */
     @Override
     public void close() {
-        if (Singleton.INSTANCE.grid != null) {
+        if (grid != null) {
             storeService.close();
             lockService.close();
             channelService.close();
-            Singleton.INSTANCE.grid = null;
+            grid = null;
         }
-    }
-
-    /**
-     * Singleton instance.
-     */
-    private enum Singleton {
-        INSTANCE;
-        private Grid grid;
     }
 
 }

@@ -18,18 +18,18 @@
 
 package com.stratio.crossdata.connectors
 
-import akka.actor._
+import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent._
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.IConnector
-import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.communication._
+import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, Result, StorageResult}
+import com.stratio.crossdata.communication.{CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation, getConnectorName, replyConnectorName}
+import org.apache.log4j.Logger
 
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
-import org.apache.log4j.Logger
 
 object State extends Enumeration {
   type state = Value
@@ -56,17 +56,19 @@ ActorLogging {
   var parentActorRef: ActorRef = ???
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
-  override def handleHeartbeat(heartbeat: HeartbeatSig) = {
-    runningJobs.foreach {
-      keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
-    }
+  override def handleHeartbeat(heartbeat: HeartbeatSig):Unit = {
+
+      runningJobs.foreach {
+        keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
+      }
+
   }
 
   override def preStart(): Unit = {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
   }
 
-  override def receive = super.receive orElse {
+  override def receive:Receive = super.receive orElse {
     case _: com.stratio.crossdata.communication.Start => {
       parentActorRef = sender
     }
@@ -218,7 +220,7 @@ ActorLogging {
     }
   }
 
-  def shutdown() = {
+  def shutdown():Unit = {
     logger.debug("ConnectorActor is shutting down")
     this.state = State.Stopping
     connector.shutdown()

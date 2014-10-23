@@ -2,8 +2,8 @@
 @LICENSE_HEADER@
 
 # Read configuration variable file if it is present
-if [ -r /etc/default/meta ]; then
-    . /etc/default/meta
+if [ -r /etc/default/crossdata ]; then
+    . /etc/default/crossdata
 fi
 
 # resolve links - $0 may be a softlink
@@ -23,12 +23,12 @@ PRGDIR=`dirname "${PRG}"`
 BASEDIR=`cd "${PRGDIR}/.." >/dev/null; pwd`
 
 
-if [ -z "${META_CONF}" ]; then
-    META_CONF="${BASEDIR}/conf"
+if [ -z "${CROSSDATA_CONF}" ]; then
+    CROSSDATA_CONF="${BASEDIR}/conf"
 fi
 
-if [ -f "${META_CONF}/meta-env.sh" ]; then
-    source "${META_CONF}/meta-env.sh"
+if [ -f "${CROSSDATA_CONF}/crossdata-env.sh" ]; then
+    source "${CROSSDATA_CONF}/crossdata-env.sh"
 fi
 
 
@@ -62,8 +62,8 @@ then
   REPO="${BASEDIR}"/@REPO@
 fi
 
-CLASSPATH="${CLASSPATH}:${META_CONF}/:${META_LIB}/*:"
-
+LIB=${CROSSDATA_LIB}
+CLASSPATH=${CLASSPATH}:${CROSSDATA_CONF}/:$(JARS=("$LIB"/*.jar); IFS=:; echo "${JARS[*]}")
 
 exec "${JAVACMD}" ${JAVA_OPTS} @EXTRA_JVM_ARGUMENTS@ \
   -classpath "${CLASSPATH}" \
