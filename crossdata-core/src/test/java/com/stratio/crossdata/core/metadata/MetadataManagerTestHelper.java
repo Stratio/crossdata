@@ -139,8 +139,10 @@ public class MetadataManagerTestHelper {
             String actorRef) {
         final String version = "0.1.0";
         ConnectorName connectorName = new ConnectorName(name);
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, new ArrayList<String>(),
-                new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
+        ArrayList<String> dataStoreRefs = new ArrayList<>();
+        dataStoreRefs.add(dataStoreName.getName());
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version,
+                dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorName;

@@ -506,34 +506,30 @@ public enum MetadataManager {
         return (getConnector(connectorName).getConnectorStatus() == connectorStatus);
     }
 
-    public List<String> getCatalogs() {
-        List<String> catalogsMetadata = new ArrayList<>();
+    public List<CatalogMetadata> getCatalogs() {
+        List<CatalogMetadata> catalogsMetadata = new ArrayList<>();
         for (Name name: metadata.keySet()) {
             if (name.getType() == NameType.CATALOG) {
-                catalogsMetadata.add(getCatalog((CatalogName) name).getName().getName().toLowerCase());
+                catalogsMetadata.add(getCatalog((CatalogName) name));
             }
         }
         return catalogsMetadata;
     }
 
     public List<TableMetadata> getTables() {
-        List<TableMetadata> tablesMetadatas = new ArrayList<>();
-        for (Name name : metadata.keySet()) {
-            if (name.getType() == NameType.TABLE) {
-                tablesMetadatas.add(getTable((TableName) name));
-            }
+        List<TableMetadata> tablesMetadata = new ArrayList<>();
+        for(CatalogMetadata catalogMetadata: getCatalogs()){
+            tablesMetadata.addAll(catalogMetadata.getTables().values());
         }
-        return tablesMetadatas;
+        return tablesMetadata;
     }
 
     public List<ColumnMetadata> getColumns() {
-        List<ColumnMetadata> columnsMetadatas = new ArrayList<>();
-        for (Name name : metadata.keySet()) {
-            if (name.getType() == NameType.COLUMN) {
-                columnsMetadatas.add(getColumn((ColumnName) name));
-            }
+        List<ColumnMetadata> columnsMetadata = new ArrayList<>();
+        for(TableMetadata tableMetadata: getTables()){
+            columnsMetadata.addAll(tableMetadata.getColumns().values());
         }
-        return columnsMetadatas;
+        return columnsMetadata;
     }
 
     public List<TableMetadata> getTablesByCatalogName(String catalogName) {
@@ -541,7 +537,7 @@ public enum MetadataManager {
         for(Name name:metadata.keySet()) {
             if (name.getType()== NameType.CATALOG) {
                 CatalogName catalog=(CatalogName)name;
-                if (catalog.getName().equals(catalogName)){
+                if (catalog.getName().equalsIgnoreCase(catalogName)){
                     CatalogMetadata catalogMetadata=getCatalog(catalog);
                     for (Map.Entry<TableName, TableMetadata> entry : catalogMetadata.getTables().entrySet())
                     {
@@ -559,12 +555,12 @@ public enum MetadataManager {
         for(Name name:metadata.keySet()) {
             if (name.getType()== NameType.CATALOG) {
                 CatalogName catalogName=(CatalogName)name;
-                if (catalogName.getName().equals(catalog)){
+                if (catalogName.getName().equalsIgnoreCase(catalog)){
                     CatalogMetadata catalogMetadata=getCatalog(catalogName);
                     for (Map.Entry<TableName, TableMetadata> entry : catalogMetadata.getTables().entrySet())
                     {
                         TableMetadata tableMetadata=entry.getValue();
-                        if (tableMetadata.getName().getName().equals(tableName)){
+                        if (tableMetadata.getName().getName().equalsIgnoreCase(tableName)){
                             for (Map.Entry<ColumnName, ColumnMetadata> entry2 : tableMetadata.getColumns().entrySet()){
                                 columnList.add(entry2.getValue());
                             }

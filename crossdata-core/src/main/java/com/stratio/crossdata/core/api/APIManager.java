@@ -34,7 +34,6 @@ import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
@@ -43,13 +42,13 @@ import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertiesType;
 import com.stratio.crossdata.common.manifest.SupportedOperationsType;
+import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
-import com.stratio.crossdata.common.result.ErrorType;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.execution.ExecutionManager;
@@ -78,8 +77,12 @@ public class APIManager {
         Result result;
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
-            List<String> catalogs = MetadataManager.MANAGER.getCatalogs();
+            List<CatalogMetadata> catalogsMetadata = MetadataManager.MANAGER.getCatalogs();
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_CATALOGS);
+            List<String> catalogs = new ArrayList<>();
+            for(CatalogMetadata catalogMetadata: catalogsMetadata){
+                catalogs.add(catalogMetadata.getName().getName());
+            }
             ((MetadataResult) result).setCatalogList(catalogs);
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
             List<TableMetadata> tables;
