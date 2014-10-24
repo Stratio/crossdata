@@ -42,8 +42,7 @@ public enum Grid implements Closeable {
     private boolean init = false;
 
     /**
-     * Check if Grid is init
-     * @
+     * Check if Grid is init.
      */
     private void shouldBeInit() {
         if (!init) {
