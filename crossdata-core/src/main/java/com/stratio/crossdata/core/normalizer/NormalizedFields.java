@@ -37,7 +37,7 @@ import com.stratio.crossdata.core.structures.OrderBy;
 public class NormalizedFields {
     private Set<ColumnName> columnNames = new HashSet<>();
     private Set<TableName> tableNames = new HashSet<>();
-    private Set<CatalogName> catalogNames = new HashSet<>()
+    private Set<CatalogName> catalogNames = new HashSet<>();
     // It can includes functions, column names, asterisks...
     private List<Selector> selectors = new ArrayList<>();
     private boolean distinctSelect = false;
