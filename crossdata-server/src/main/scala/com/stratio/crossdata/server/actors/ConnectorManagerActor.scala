@@ -151,7 +151,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
       logger.info("Member is Removed: " + member.member.address)
       logger.info("Member info: " + member.toString)
       val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address)
-      val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri +"/user/ConnectorActor/")
+      val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri + "/user/ConnectorActor/")
       MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
         data.ConnectorStatus.OFFLINE)
     }
