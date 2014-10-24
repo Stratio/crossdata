@@ -24,7 +24,7 @@ import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
 import com.stratio.crossdata.common.exceptions.ExecutionException
-import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, QueryResult, QueryStatus, Result, StorageResult}
 import com.stratio.crossdata.communication.{ACK, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation, getConnectorName, replyConnectorName}
 import org.apache.log4j.Logger
 
@@ -86,22 +86,22 @@ ActorLogging with IResultHandler{
     }
     case ex: Execute => {
       logger.info("Processing query: " + ex)
-      execute(ex, sender)
+      metodExecute(ex, sender)
     }
     case aex: AsyncExecute => {
       logger.info("Processing asynchronous query: " + aex)
-      asyncExecute(aex, sender)
+      metodAsyncExecute(aex, sender)
     }
     case metadataOp: MetadataOperation => {
 
-      metadataop(metadataOp, sender)
+      metod1(metadataOp, sender)
     }
     case result: Result =>
       logger.debug("connectorActor receives Result with ID=" + result.getQueryId())
       parentActorRef.get ! result
     //TODO:  ManagementWorkflow
     case storageOp: StorageOperation => {
-      storageop(storageOp, sender)
+      metodStorageop(storageOp, sender)
     }
     case msg: getConnectorName => {
       logger.info(sender + " asked for my name")
@@ -139,7 +139,7 @@ ActorLogging with IResultHandler{
   override def processException(queryId: String, exception: ExecutionException): Unit = {
     logger.info("Processing exception for async query: " + queryId)
     val source = runningJobs.get(queryId).get
-    if(source != null) {
+    if(source != None) {
       source ! Result.createErrorResult(exception)
     }else{
       logger.error("Exception for query " + queryId + " cannot be sent", exception)
@@ -149,7 +149,7 @@ ActorLogging with IResultHandler{
   override def processResult(result: QueryResult): Unit = {
     logger.info("Processing results for async query: " + result.getQueryId)
     val source = runningJobs.get(result.getQueryId).get
-    if(source != null) {
+    if(source != None) {
       source ! result
     }else{
       logger.error("Results for query " + result.getQueryId + " cannot be sent")
@@ -158,7 +158,7 @@ ActorLogging with IResultHandler{
 
 
 
-  private def execute(ex:Execute, s:ActorRef): Unit ={
+  private def metodExecute(ex:Execute, s:ActorRef): Unit ={
 
 
     try {
@@ -179,7 +179,7 @@ ActorLogging with IResultHandler{
     }
   }
 
-  private def asyncExecute(aex: AsyncExecute, sender:ActorRef) : Unit = {
+  private def metodAsyncExecute(aex: AsyncExecute, sender:ActorRef) : Unit = {
     val asyncSender = sender
     try {
       runningJobs.put(aex.queryId, asyncSender)
@@ -198,7 +198,7 @@ ActorLogging with IResultHandler{
   }
 
 
-  private def metadataop(metadataOp: MetadataOperation, s: ActorRef): Unit = {
+  private def metod1(metadataOp: MetadataOperation, s: ActorRef): Unit = {
     var qId: String = metadataOp.queryId
     var metadataOperation: Int = 0
     logger.info("Received queryId = " + qId)
@@ -206,11 +206,9 @@ ActorLogging with IResultHandler{
       val opclass = metadataOp.getClass().toString().split('.')
       val eng = connector.getMetadataEngine()
 
-      val abc = opc(opclass,  metadataOp, eng)
+      val abc = metodOpc(opclass,  metadataOp, eng)
       qId = abc._1
       metadataOperation = abc._2
-
-     
     } catch {
       case ex: Exception => {
         val result = Result.createExecutionErrorResult(ex.getStackTraceString)
@@ -225,7 +223,7 @@ ActorLogging with IResultHandler{
     s ! result
   }
 
-  private def storageop(storageOp: StorageOperation, s: ActorRef): Unit = {
+  private def metodStorageop(storageOp: StorageOperation, s: ActorRef): Unit = {
     val qId: String = storageOp.queryId
     try {
       val eng = connector.getStorageEngine()
@@ -255,7 +253,7 @@ ActorLogging with IResultHandler{
   }
 
 
-  private def opc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
+  private def metodOpc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
 
     opclass(opclass.length - 1) match {
       case "CreateTable" => {
