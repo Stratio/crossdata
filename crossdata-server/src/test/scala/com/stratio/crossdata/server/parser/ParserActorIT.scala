@@ -64,71 +64,19 @@ class ParserActorIT extends ServerActorTest{
 
 
 
-  /*
-  test("Should return a KO message") {
-    initialize()
-    within(1000 millis) {
-      parserActor0 ! "anything; this doesn't make any sense"
-      val exception = expectMsgType[ErrorResult]
-    }
-  }
-
-  test("Select query; only parser") {
-    initialize()
-    within(6000 millis) {
-      parserActor0 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
-      //val ack = expectMsgType[ACK]
-      //assert(ack.queryId == queryId + (1))
-      //assert(ack.status==QueryStatus.PARSED)
-    }
-  }
-
-  test("Select query; parser and validatormock") {
-    initialize()
-    within(6000 millis) {
-      parserActor0 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
-      //val ack = expectMsgType[ACK]
-      //assert(ack.queryId == queryId + (1))
-      //assert(ack.status==QueryStatus.VALIDATED)
-    }
-  }
-
-  test("Select query; parser ,validator and plannermock") {
-    initialize()
-    initializeTablesInfinispan()
-    within(6000 millis) {
-      parserActor1 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
-      val ack0 = expectMsgType[ACK]
-      assert(ack0.queryId == queryId + (1))
-      assert(ack0.status==QueryStatus.PLANNED)
-    }
-  }
-
-  test("Select query; parser ,validator, planner, and mockCoordinator") {
-    initialize()
-    initializeTablesInfinispan()
-    within(6000 millis) {
-      parserActor2 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
-      val ack0 = expectMsgType[ACK]
-      assert(ack0.queryId == queryId + (1))
-    //  assert(ack0.status==QueryResult)
-    }
-  }
-  */
-
   test("Select query; parser ,validator, planner, coordinator and mockConnector") {
     initialize()
     initializeTablesInfinispan()
     within(6000 millis) {
-      parserActor3 ! Query(queryId + (1), catalogName, "SELECT "+catalogName+"."+tableName+".name FROM " +
-        catalogName+"."+tableName+";", "user0")
+      parserActor3 ! Query(queryId + (1), catalogName, "SELECT "+ catalogName+"." + tableName + ".name FROM " +
+        catalogName + "." + tableName + ";", "user0")
       fishForMessage(6 seconds){
         case msg:QueryResult =>{
           assert(msg.getQueryId()==queryId + (1))
           true
         }
         case other:Any =>{
-          logger.info("receiving message of type"+other.getClass()+" and ignoring it")
+          logger.info("receiving message of type" + other.getClass() + " and ignoring it")
           false
         }
       }
@@ -162,13 +110,13 @@ class ParserActorIT extends ServerActorTest{
       parserActor2 ! Query(queryId + (1), "mynewcatalog", "create catalog mynewCatalog;", "user0")
       fishForMessage(6 seconds){
         case msg:ACK=>{
-          logger.info("receiving message of type "+msg.getClass()+"from "+lastSender)
+          logger.info("receiving message of type " + msg.getClass() + "from " + lastSender)
           assert(msg.queryId==queryId + (1))
           assert(msg.status== QueryStatus.EXECUTED)
           true
         }
         case other:Any =>{
-          logger.info("receiving message of type "+other.getClass()+" and ignoring it")
+          logger.info("receiving message of type " + other.getClass() + " and ignoring it")
           false
         }
       }
@@ -182,27 +130,28 @@ class ParserActorIT extends ServerActorTest{
       parserActor3 ! Query(queryId + (1), "mynewcatalog", "create catalog mynewCatalog;", "user0")
       fishForMessage(6 seconds){
         case msg:MetadataResult =>{
-          logger.info("receiving message of type "+msg.getClass()+"from "+lastSender)
+          logger.info("receiving message of type " + msg.getClass() + "from " + lastSender)
           assert(msg.getQueryId==queryId + (1))
           true
         }
         case other:Any =>{
-          logger.info("receiving message of type "+other.getClass()+" and ignoring it")
+          logger.info("receiving message of type " + other.getClass() + " and ignoring it")
           false
         }
       }
     }
     within(6000 millis) {
-      val query="create TABLE mynewcatalog.demo ON CLUSTER "+myClusterName+"(field1 varchar PRIMARY KEY , field2 varchar);"
+      val query="create TABLE mynewcatalog.demo ON CLUSTER " + myClusterName + "(field1 varchar PRIMARY KEY , " +
+        "field2 varchar);"
       parserActor3 ! Query(queryId + (2), "mynewcatalog", query,"user0")
       fishForMessage(6 seconds){
         case msg:MetadataResult =>{
-          logger.info("receiving message of type "+msg.getClass()+"from "+lastSender)
+          logger.info("receiving message of type " + msg.getClass() + "from " + lastSender)
           assert(msg.getQueryId==queryId + (2))
           true
         }
         case other:Any =>{
-          logger.info("receiving message of type "+other.getClass()+" and ignoring it")
+          logger.info("receiving message of type " + other.getClass() + " and ignoring it")
           false
         }
       }
@@ -213,7 +162,7 @@ class ParserActorIT extends ServerActorTest{
     initialize()
     initializeTablesInfinispan()
     within(6000 millis) {
-      val myquery="INSERT INTO "+catalogName+"."+tableName+"(name, age) VALUES (\"user0\", 88);"
+      val myquery="INSERT INTO " + catalogName + "." + tableName + "(name, age) VALUES (\"user0\", 88);"
       parserActor1 ! Query(queryId + (1), catalogName, myquery, "user0")
       fishForMessage(6 seconds) {
         case msg: ACK => {
@@ -234,17 +183,17 @@ class ParserActorIT extends ServerActorTest{
     initialize()
     initializeTablesInfinispan()
     within(6000 millis) {
-      val myquery="INSERT INTO "+catalogName+"."+tableName+"(name, age) VALUES (\"user0\", 88);"
+      val myquery="INSERT INTO " + catalogName + "." + tableName + "(name, age) VALUES (\"user0\", 88);"
       parserActor2 ! Query(queryId + (1), catalogName, myquery, "user0")
       fishForMessage(6 seconds){
         case msg:ACK=>{
-          logger.info("receiving message of type "+msg.getClass()+"from "+lastSender)
+          logger.info("receiving message of type " + msg.getClass() + "from " + lastSender)
           assert(msg.queryId==queryId + (1))
           assert(msg.status== QueryStatus.EXECUTED)
           true
         }
         case other:Any =>{
-          logger.info("receiving message of type "+other.getClass()+" and ignoring it")
+          logger.info("receiving message of type " + other.getClass() + " and ignoring it")
           false
         }
       }
@@ -254,17 +203,17 @@ class ParserActorIT extends ServerActorTest{
   test("Insert query; parser ,validator, planner, coordinator and mockConnector") {
     initialize()
     initializeTablesInfinispan()
-    val myquery="INSERT INTO "+catalogName+"."+tableName+"(name, age) VALUES (\"user0\", 88);"
+    val myquery="INSERT INTO " + catalogName + "." + tableName + "(name, age) VALUES (\"user0\", 88);"
     within(6000 millis) {
       parserActor3 ! Query(queryId + (1), catalogName, myquery, "user0")
       fishForMessage(6 seconds){
         case msg:StorageResult =>{
-          logger.info("receiving message of type "+msg.getClass()+"from "+lastSender)
+          logger.info("receiving message of type " + msg.getClass() + "from " + lastSender)
           assert(msg.getQueryId==queryId + (1))
           true
         }
         case other:Any =>{
-          logger.info("receiving message of type "+other.getClass()+" and ignoring it")
+          logger.info("receiving message of type " + other.getClass() + " and ignoring it")
           false
         }
       }
