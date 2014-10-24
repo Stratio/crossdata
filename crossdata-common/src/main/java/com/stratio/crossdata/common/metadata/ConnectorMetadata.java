@@ -205,4 +205,9 @@ public class ConnectorMetadata implements IMetadata {
         return operations;
     }
 
+    @Override public String toString() {
+        StringBuilder sb = new StringBuilder("Connector: ");
+        sb.append(name).append(" status: ").append(connectorStatus).append(" actorRef: ").append(actorRef);
+        return sb.toString();
+    }
 }

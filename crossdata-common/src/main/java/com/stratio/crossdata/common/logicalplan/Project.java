@@ -81,7 +81,9 @@ public class Project extends TransformationStep {
      * @param column The column.
      */
     public void addColumn(ColumnName column) {
-        this.columnList.add(column);
+        if(!columnList.contains(column)) {
+            this.columnList.add(column);
+        }
     }
 
     /**
