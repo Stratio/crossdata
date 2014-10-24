@@ -21,10 +21,12 @@ package com.stratio.crossdata.connectors
 import akka.pattern.ask
 import akka.util.Timeout
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IQueryEngine, IStorageEngine}
-import com.stratio.crossdata.common.data.{CatalogName, ClusterName, Row, TableName}
+import com.stratio.crossdata.common.data._
+import com.stratio.crossdata.common.executionplan.ExecutionWorkflow
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, TransformationStep}
-import com.stratio.crossdata.common.metadata.TableMetadata
+import com.stratio.crossdata.common.metadata.{IndexMetadata, ColumnMetadata, Operations, TableMetadata}
 import com.stratio.crossdata.common.result.{MetadataResult, QueryResult, StorageResult}
+import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.communication.{CreateTable, Execute, Insert}
 import com.stratio.crossdata.core.query.{BaseQuery, SelectParsedQuery, SelectPlannedQuery, SelectValidatedQuery}
 import com.stratio.crossdata.core.statements.SelectStatement
@@ -44,6 +46,17 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
   lazy val logger = Logger.getLogger(classOf[ConnectorActorAppTest])
   implicit val timeout = Timeout(3 seconds)
 
+
+
+  //val to initialize and dont use null
+  val a:Option[java.util.Map[Selector,Selector]]=None
+  val b:Option[java.util.Map[ColumnName, ColumnMetadata]]=None
+  val d:Option[java.util.Map[IndexName,IndexMetadata]]=None
+  val e:Option[ClusterName]=None
+  val f:Option[java.util.List[ColumnName]]=None
+
+
+
   test("Basic Connector Mock") {
     val m = mock[IConnector]
     (m.getConnectorName _).expects().returning("MyConnector")
@@ -52,7 +65,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
 
   test("Basic Connector App listening on a given port does not break") {
     val m = mock[IConnector]
-    (m.init _).expects(*).returning(null)
+    (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning("MyConnector")
     val c = new ConnectorApp()
     val myReference = c.startup(m)
@@ -66,22 +79,23 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     val qe = mock[IQueryEngine]
     (m.getQueryEngine _).expects().returning(qe)
     (qe.execute(_:LogicalWorkflow)).expects(*).returning(QueryResult.createSuccessQueryResult())
-    (m.init _).expects(*).returning(null)
+    (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning("MyConnector")
     val c = new ConnectorApp()
     val myReference = c.startup(m)
     var steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
-    val step= new TransformationStep(null)
+    val a:Option[Operations]= None
+    val step= new TransformationStep(a.get)
     steps.add(step)
     var workflow = new LogicalWorkflow(steps)
-    var executionStep = null//new ExecutionWorkflow(myReference, workflow, ResultType.RESULTS)
+    val executionStep:Option[ExecutionWorkflow] = None//new ExecutionWorkflow(myReference, workflow, ResultType.RESULTS)
     val pq = new SelectPlannedQuery(
       new SelectValidatedQuery(
         new SelectParsedQuery(
           new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
           , new SelectStatement(new TableName("myCatalog", "myTable"))
         )
-      ), executionStep
+      ), executionStep.get
     )
 
     val future = ask(myReference,Execute("idquery",workflow))
@@ -97,14 +111,14 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     val me = mock[IMetadataEngine]
     (me.createTable _).expects(*,*).returning(QueryResult.createSuccessQueryResult())
     (m.getMetadataEngine _).expects().returning(me)
-    (m.init _).expects(*).returning(null)
+    (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
     //val myReference = c.startup(m, port, config)
     val myReference = c.startup(m)
 
-    val message=CreateTable("queryId",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"), null, null,null,null,null,null) )
+    val message=CreateTable("queryId",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"),  a.get, b.get,d.get,e.get,f.get,f.get) )
     val future=ask(myReference , message)
     val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
     println("receiving->"+result+" after sending Metadata query")
@@ -117,7 +131,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     val ie = mock[IStorageEngine]
     //(ie.insert(_: ClusterName,_:TableMetadata,_:util.Collection[Row])).expects(*,*,*).returning()
     (ie.insert(_: ClusterName,_:TableMetadata,_:Row)).expects(*,*,*).returning()
-    (m.init _).expects(*).returning(null)
+    (m.init _).expects(*).returning(None)
     (m.getStorageEngine _).expects().returning(ie)
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
@@ -125,7 +139,9 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     //val myReference = c.startup(m, port, config)
     val myReference = c.startup(m)
 
-    val message=Insert("query",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"), null, null,null,null,null,null),new Row())
+
+    val message=Insert("query",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"),
+      a.get, b.get,d.get,e.get,f.get,f.get),new Row())
     //val future=myReference ? message
     val future=ask(myReference,message)
     val result = Await.result(future, 3 seconds).asInstanceOf[StorageResult]

@@ -23,9 +23,13 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
 import akka.util.Timeout
 import com.stratio.crossdata
-import com.stratio.crossdata.common.connector.IConnector
+import com.stratio.crossdata.common.connector.{IMetadataEngine, IConnector}
 import com.stratio.crossdata.common.result.{StorageResult, ConnectResult, MetadataResult, Result}
-import com.stratio.crossdata.communication._
+import com.stratio.crossdata.communication.{StorageOperation,getConnectorName,replyConnectorName,Insert,DropTable,
+InsertBatch,CreateIndex}
+import com.stratio.crossdata.communication.{MetadataOperation, Execute, IAmAlive, HeartbeatSig,CreateTable,
+CreateTableAndCatalog,
+CreateCatalog,DropIndex}
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.{ListMap, Map}
@@ -56,11 +60,11 @@ ActorLogging {
   var parentActorRef: Option[ActorRef] = None
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
-  override def handleHeartbeat(heartbeat: HeartbeatSig):Unit = {
+  override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
 
-      runningJobs.foreach {
-        keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
-      }
+    runningJobs.foreach {
+      keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
+    }
 
   }
 
@@ -68,7 +72,7 @@ ActorLogging {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
   }
 
-  override def receive:Receive = super.receive orElse {
+  override def receive: Receive = super.receive orElse {
     case _: com.stratio.crossdata.communication.Start => {
       parentActorRef = Some(sender)
     }
@@ -85,7 +89,7 @@ ActorLogging {
     }
     case ex: Execute => {
       logger.info("Processing query: " + ex)
-      execute(ex,sender)
+      execute(ex, sender)
     }
     case metadataOp: MetadataOperation => {
 
@@ -120,14 +124,14 @@ ActorLogging {
     }
   }
 
-  def shutdown():Unit = {
+  def shutdown(): Unit = {
     logger.debug("ConnectorActor is shutting down")
     this.state = State.Stopping
     connector.shutdown()
     this.state = State.Stopped
   }
 
-  private def execute(ex:Execute, s:ActorRef): Unit ={
+  private def execute(ex: Execute, s: ActorRef): Unit = {
 
     try {
       runningJobs.put(ex.queryId, s)
@@ -148,56 +152,61 @@ ActorLogging {
   }
 
 
-  private def metadataop(metadataOp: MetadataOperation, s:ActorRef): Unit ={
+  private def metadataop(metadataOp: MetadataOperation, s: ActorRef): Unit = {
     var qId: String = metadataOp.queryId
     var metadataOperation: Int = 0
     logger.info("Received queryId = " + qId)
     try {
       val opclass = metadataOp.getClass().toString().split('.')
       val eng = connector.getMetadataEngine()
-      opclass(opclass.length - 1) match {
-        case "CreateTable" => {
-          logger.debug("creating table from  " + self.path)
-          qId = metadataOp.asInstanceOf[CreateTable].queryId
-          eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
-            metadataOp.asInstanceOf[CreateTable].tableMetadata)
-          metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
-        }
-        case "CreateCatalog" => {
-          qId = metadataOp.asInstanceOf[CreateCatalog].queryId
-          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-          metadataOperation = MetadataResult.OPERATION_CREATE_CATALOG
-        }
-        case "CreateIndex" => {
-          qId = metadataOp.asInstanceOf[CreateIndex].queryId
-          eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
-            metadataOp.asInstanceOf[CreateIndex].indexMetadata)
-        }
-        case "DropCatalog" => {
-          qId = metadataOp.asInstanceOf[DropIndex].queryId
-          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-        }
-        case "DropIndex" => {
-          qId = metadataOp.asInstanceOf[DropIndex].queryId
-          eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
-          metadataOperation = MetadataResult.OPERATION_DROP_INDEX
-        }
-        case "DropTable" => {
-          qId = metadataOp.asInstanceOf[DropTable].queryId
-          eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
-          metadataOperation = MetadataResult.OPERATION_DROP_TABLE
-        }
-        case "CreateTableAndCatalog" => {
-          qId = metadataOp.asInstanceOf[CreateTableAndCatalog].queryId
-          eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
-            metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
-          eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
-            metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
-          metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
-        }
-      }
+
+      val abc = opc(opclass,  metadataOp, eng)
+      qId = abc._1
+      metadataOperation = abc._2
+
+      //      opclass(opclass.length - 1) match {
+      //        case "CreateTable" => {
+      //          logger.debug("creating table from  " + self.path)
+      //          qId = metadataOp.asInstanceOf[CreateTable].queryId
+      //          eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
+      //            metadataOp.asInstanceOf[CreateTable].tableMetadata)
+      //          metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
+      //        }
+      //        case "CreateCatalog" => {
+      //          qId = metadataOp.asInstanceOf[CreateCatalog].queryId
+      //          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+      //            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+      //          metadataOperation = MetadataResult.OPERATION_CREATE_CATALOG
+      //        }
+      //        case "CreateIndex" => {
+      //          qId = metadataOp.asInstanceOf[CreateIndex].queryId
+      //          eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
+      //            metadataOp.asInstanceOf[CreateIndex].indexMetadata)
+      //        }
+      //        case "DropCatalog" => {
+      //          qId = metadataOp.asInstanceOf[DropIndex].queryId
+      //          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+      //            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+      //        }
+      //        case "DropIndex" => {
+      //          qId = metadataOp.asInstanceOf[DropIndex].queryId
+      //          eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
+      //          metadataOperation = MetadataResult.OPERATION_DROP_INDEX
+      //        }
+      //        case "DropTable" => {
+      //          qId = metadataOp.asInstanceOf[DropTable].queryId
+      //          eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
+      //          metadataOperation = MetadataResult.OPERATION_DROP_TABLE
+      //        }
+      //        case "CreateTableAndCatalog" => {
+      //          qId = metadataOp.asInstanceOf[CreateTableAndCatalog].queryId
+      //          eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
+      //            metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
+      //          eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
+      //            metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
+      //          metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
+      //        }
+      //      }
     } catch {
       case ex: Exception => {
         val result = Result.createExecutionErrorResult(ex.getStackTraceString)
@@ -212,7 +221,7 @@ ActorLogging {
     s ! result
   }
 
-  private def storageop(storageOp:StorageOperation, s:ActorRef): Unit ={
+  private def storageop(storageOp: StorageOperation, s: ActorRef): Unit = {
     val qId: String = storageOp.queryId
     try {
       val eng = connector.getStorageEngine()
@@ -241,6 +250,46 @@ ActorLogging {
     }
   }
 
+  private def opc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
 
+    opclass(opclass.length - 1) match {
+      case "CreateTable" => {
+        logger.debug("creating table from  " + self.path)
+        eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
+          metadataOp.asInstanceOf[CreateTable].tableMetadata)
+        (metadataOp.asInstanceOf[CreateTable].queryId, MetadataResult.OPERATION_CREATE_TABLE)
+      }
+      case "CreateCatalog" => {
+        eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+          metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+        (metadataOp.asInstanceOf[CreateCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG)
+      }
+      case "CreateIndex" => {
+       eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
+        metadataOp.asInstanceOf[CreateIndex].indexMetadata)
+        (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX)
+      }
+      case "DropCatalog" => {
+        val qId = metadataOp.asInstanceOf[DropIndex].queryId
+        eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+          metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+        (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_CATALOG)
+      }
+      case "DropIndex" => {
+       eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
+       (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX)
+      }
+      case "DropTable" => {
+        eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
+       (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE)
+      }
+      case "CreateTableAndCatalog" => {
+        eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
+          metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
+        eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
+          metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
+        (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE)
+      }
+    }
+  }
 }
-
