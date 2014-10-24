@@ -20,34 +20,19 @@ package com.stratio.crossdata.connectors
 
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
 import akka.util.Timeout
 import com.stratio.crossdata
-import com.stratio.crossdata.common.connector.{IResultHandler, IConnector}
+import com.stratio.crossdata.common.connector.IResultHandler
+
+import com.stratio.crossdata.common.connector.IConnector
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication._
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
-import com.stratio.crossdata.communication.CreateCatalog
-import com.stratio.crossdata.communication.CreateIndex
-import com.stratio.crossdata.communication.replyConnectorName
-import akka.cluster.ClusterEvent.MemberRemoved
-import com.stratio.crossdata.communication.IAmAlive
-import com.stratio.crossdata.communication.Execute
-import akka.cluster.ClusterEvent.MemberUp
-import com.stratio.crossdata.communication.getConnectorName
-import com.stratio.crossdata.communication.CreateTableAndCatalog
-import scala.Some
-import com.stratio.crossdata.communication.DropIndex
-import com.stratio.crossdata.communication.CreateTable
-import com.stratio.crossdata.communication.InsertBatch
-import akka.cluster.ClusterEvent.CurrentClusterState
-import akka.cluster.ClusterEvent.UnreachableMember
-import com.stratio.crossdata.communication.HeartbeatSig
-import com.stratio.crossdata.communication.DropTable
-import com.stratio.crossdata.communication.Insert
+import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.communication.CreateCatalog
 import com.stratio.crossdata.communication.CreateIndex
 import com.stratio.crossdata.communication.replyConnectorName
@@ -68,7 +53,6 @@ import akka.cluster.ClusterEvent.UnreachableMember
 import com.stratio.crossdata.communication.HeartbeatSig
 import com.stratio.crossdata.communication.DropTable
 import com.stratio.crossdata.communication.Insert
-import com.stratio.crossdata.common.exceptions.ExecutionException
 
 object State extends Enumeration {
   type state = Value
@@ -96,11 +80,9 @@ ActorLogging with IResultHandler{
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
   override def handleHeartbeat(heartbeat: HeartbeatSig):Unit = {
-
       runningJobs.foreach {
         keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
       }
-
   }
 
   override def preStart(): Unit = {
@@ -124,135 +106,22 @@ ActorLogging with IResultHandler{
     }
     case ex: Execute => {
       logger.info("Processing query: " + ex)
-      try {
-        runningJobs.put(ex.queryId, sender)
-        val result = connector.getQueryEngine().execute(ex.workflow)
-        result.setQueryId(ex.queryId)
-        sender ! result
-      } catch {
-        case e: Exception => {
-          val result = Result.createExecutionErrorResult(e.getStackTraceString)
-          result.setQueryId(ex.queryId)
-          sender ! result
-        }
-        case err: Error =>
-          logger.error("error in ConnectorActor( receiving LogicalWorkflow )")
-      } finally {
-        runningJobs.remove(ex.queryId)
-      }
+      execute(ex,sender)
     }
     case aex: AsyncExecute => {
       logger.info("Processing asynchronous query: " + aex)
-      val asyncSender = sender
-      try {
-        runningJobs.put(aex.queryId, asyncSender)
-        connector.getQueryEngine().asyncExecute(aex.queryId, aex.workflow, this)
-        asyncSender ! ACK(aex.queryId, QueryStatus.IN_PROGRESS)
-      } catch {
-        case e: Exception => {
-          val result = Result.createErrorResult(e)
-          result.setQueryId(aex.queryId)
-          asyncSender ! result
-          runningJobs.remove(aex.queryId)
-        }
-        case err: Error =>
-          logger.error("error in ConnectorActor( receiving async LogicalWorkflow )")
-      }
+      asyncExecute(aex, sender)
     }
     case metadataOp: MetadataOperation => {
-      var qId: String = metadataOp.queryId
-      var metadataOperation: Int = 0
-      logger.info("Received queryId = " + qId)
-      try {
-        val opclass = metadataOp.getClass().toString().split('.')
-        val eng = connector.getMetadataEngine()
-        opclass(opclass.length - 1) match {
-          case "CreateTable" => {
-            logger.debug("creating table from  " + self.path)
-            qId = metadataOp.asInstanceOf[CreateTable].queryId
-            eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
-              metadataOp.asInstanceOf[CreateTable].tableMetadata)
-            metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
-          }
-          case "CreateCatalog" => {
-            qId = metadataOp.asInstanceOf[CreateCatalog].queryId
-            eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-              metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-            metadataOperation = MetadataResult.OPERATION_CREATE_CATALOG
-          }
-          case "CreateIndex" => {
-            qId = metadataOp.asInstanceOf[CreateIndex].queryId
-            eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
-              metadataOp.asInstanceOf[CreateIndex].indexMetadata)
-          }
-          case "DropCatalog" => {
-            qId = metadataOp.asInstanceOf[DropIndex].queryId
-            eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-          }
-          case "DropIndex" => {
-            qId = metadataOp.asInstanceOf[DropIndex].queryId
-            eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
-            metadataOperation = MetadataResult.OPERATION_DROP_INDEX
-          }
-          case "DropTable" => {
-            qId = metadataOp.asInstanceOf[DropTable].queryId
-            eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
-            metadataOperation = MetadataResult.OPERATION_DROP_TABLE
-          }
-          case "CreateTableAndCatalog" => {
-            qId = metadataOp.asInstanceOf[CreateTableAndCatalog].queryId
-            eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
-              metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
-            eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
-              metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
-            metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
-          }
-        }
-      } catch {
-        case ex: Exception => {
-          val result = Result.createExecutionErrorResult(ex.getStackTraceString)
-          sender ! result
-        }
-        case err: Error =>
-          logger.error("error in ConnectorActor( receiving MetaOperation)")
-      }
-      val result = MetadataResult.createSuccessMetadataResult(metadataOperation)
-      result.setQueryId(qId)
-      logger.info("Sending back queryId = " + qId)
-      sender ! result
+
+      metadataop(metadataOp, sender)
     }
     case result: Result =>
       logger.debug("connectorActor receives Result with ID=" + result.getQueryId())
       parentActorRef.get ! result
     //TODO:  ManagementWorkflow
     case storageOp: StorageOperation => {
-      val qId: String = storageOp.queryId
-      try {
-        val eng = connector.getStorageEngine()
-        storageOp match {
-          case Insert(queryId, clustername, table, row) => {
-            eng.insert(clustername, table, row)
-          }
-          case InsertBatch(queryId, clustername, table, rows) => {
-            eng.insert(clustername, table, rows)
-          }
-        }
-        val result = StorageResult.createSuccessFulStorageResult("INSERTED successfully");
-        result.setQueryId(qId)
-        sender ! result
-      } catch {
-        case ex: Exception => {
-          logger.debug(ex.getStackTraceString)
-          val result = Result.createExecutionErrorResult(ex.getStackTraceString)
-          sender ! result
-        }
-        case err: Error => {
-          logger.error("error in ConnectorActor( receiving StorageOperation)")
-          val result = crossdata.common.result.Result.createExecutionErrorResult("error in ConnectorActor")
-          sender ! result
-        }
-      }
+      storageop(storageOp, sender)
     }
     case msg: getConnectorName => {
       logger.info(sender + " asked for my name")
@@ -262,7 +131,6 @@ ActorLogging with IResultHandler{
       logger.info("Member up")
       logger.debug("Member is Up: " + member.toString + member.getRoles + "!")
     }
-
     case state: CurrentClusterState => {
       logger.info("Current members: " + state.members.mkString(", "))
     }
@@ -284,6 +152,7 @@ ActorLogging with IResultHandler{
     this.state = State.Stopped
   }
 
+
   override def processException(queryId: String, exception: ExecutionException): Unit = {
     logger.info("Processing exception for async query: " + queryId)
     val source = runningJobs.get(queryId).get
@@ -303,5 +172,138 @@ ActorLogging with IResultHandler{
       logger.error("Results for query " + result.getQueryId + " cannot be sent")
     }
   }
+
+  private def execute(ex:Execute, s:ActorRef): Unit ={
+
+    try {
+      runningJobs.put(ex.queryId, s)
+      val result = connector.getQueryEngine().execute(ex.workflow)
+      result.setQueryId(ex.queryId)
+      s ! result
+    } catch {
+      case e: Exception => {
+        val result = Result.createExecutionErrorResult(e.getStackTraceString)
+        result.setQueryId(ex.queryId)
+        s ! result
+      }
+      case err: Error =>
+        logger.error("error in ConnectorActor( receiving LogicalWorkflow )")
+    } finally {
+      runningJobs.remove(ex.queryId)
+    }
+  }
+
+  private def asyncExecute(aex: AsyncExecute, sender:ActorRef) : Unit = {
+    val asyncSender = sender
+    try {
+      runningJobs.put(aex.queryId, asyncSender)
+      connector.getQueryEngine().asyncExecute(aex.queryId, aex.workflow, this)
+      asyncSender ! ACK(aex.queryId, QueryStatus.IN_PROGRESS)
+    } catch {
+      case e: Exception => {
+        val result = Result.createErrorResult(e)
+        result.setQueryId(aex.queryId)
+        asyncSender ! result
+        runningJobs.remove(aex.queryId)
+      }
+      case err: Error =>
+        logger.error("error in ConnectorActor( receiving async LogicalWorkflow )")
+    }
+  }
+
+
+  private def metadataop(metadataOp: MetadataOperation, s:ActorRef): Unit ={
+    var qId: String = metadataOp.queryId
+    var metadataOperation: Int = 0
+    logger.info("Received queryId = " + qId)
+    try {
+      val opclass = metadataOp.getClass().toString().split('.')
+      val eng = connector.getMetadataEngine()
+      opclass(opclass.length - 1) match {
+        case "CreateTable" => {
+          logger.debug("creating table from  " + self.path)
+          qId = metadataOp.asInstanceOf[CreateTable].queryId
+          eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
+            metadataOp.asInstanceOf[CreateTable].tableMetadata)
+          metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
+        }
+        case "CreateCatalog" => {
+          qId = metadataOp.asInstanceOf[CreateCatalog].queryId
+          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+          metadataOperation = MetadataResult.OPERATION_CREATE_CATALOG
+        }
+        case "CreateIndex" => {
+          qId = metadataOp.asInstanceOf[CreateIndex].queryId
+          eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
+            metadataOp.asInstanceOf[CreateIndex].indexMetadata)
+        }
+        case "DropCatalog" => {
+          qId = metadataOp.asInstanceOf[DropIndex].queryId
+          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+        }
+        case "DropIndex" => {
+          qId = metadataOp.asInstanceOf[DropIndex].queryId
+          eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
+          metadataOperation = MetadataResult.OPERATION_DROP_INDEX
+        }
+        case "DropTable" => {
+          qId = metadataOp.asInstanceOf[DropTable].queryId
+          eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
+          metadataOperation = MetadataResult.OPERATION_DROP_TABLE
+        }
+        case "CreateTableAndCatalog" => {
+          qId = metadataOp.asInstanceOf[CreateTableAndCatalog].queryId
+          eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
+            metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
+          eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
+            metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
+          metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
+        }
+      }
+    } catch {
+      case ex: Exception => {
+        val result = Result.createExecutionErrorResult(ex.getStackTraceString)
+        s ! result
+      }
+      case err: Error =>
+        logger.error("error in ConnectorActor( receiving MetaOperation)")
+    }
+    val result = MetadataResult.createSuccessMetadataResult(metadataOperation)
+    result.setQueryId(qId)
+    logger.info("Sending back queryId = " + qId)
+    s ! result
+  }
+
+  private def storageop(storageOp:StorageOperation, s:ActorRef): Unit ={
+    val qId: String = storageOp.queryId
+    try {
+      val eng = connector.getStorageEngine()
+      storageOp match {
+        case Insert(queryId, clustername, table, row) => {
+          eng.insert(clustername, table, row)
+        }
+        case InsertBatch(queryId, clustername, table, rows) => {
+          eng.insert(clustername, table, rows)
+        }
+      }
+      val result = StorageResult.createSuccessFulStorageResult("INSERTED successfully");
+      result.setQueryId(qId)
+      s ! result
+    } catch {
+      case ex: Exception => {
+        logger.debug(ex.getStackTraceString)
+        val result = Result.createExecutionErrorResult(ex.getStackTraceString)
+        s ! result
+      }
+      case err: Error => {
+        logger.error("error in ConnectorActor( receiving StorageOperation)")
+        val result = crossdata.common.result.Result.createExecutionErrorResult("error in ConnectorActor")
+        s ! result
+      }
+    }
+  }
+
 }
 
