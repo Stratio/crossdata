@@ -120,7 +120,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     val message=CreateTable("queryId",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"),  a.get, b.get,d.get,e.get,f.get,f.get) )
     val future=ask(myReference , message)
     val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
-    logger.debug("receiving->"+result+" after sending Metadata query")
+    logger.debug("receiving->" + result + " after sending Metadata query")
     c.shutdown()
   }
 
@@ -142,7 +142,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     //val future=myReference ? message
     val future=ask(myReference,message)
     val result = Await.result(future, 3 seconds).asInstanceOf[StorageResult]
-    logger.debug("receiving->"+result+" after sending insert query")
+    logger.debug("receiving->" + result + " after sending insert query")
     c.shutdown()
   }
 
