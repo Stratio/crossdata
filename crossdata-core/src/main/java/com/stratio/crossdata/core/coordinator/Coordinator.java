@@ -24,32 +24,29 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.exceptions.ExecutionException;
-import com.stratio.crossdata.common.exceptions.UnsupportedException;
-import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
-import com.stratio.crossdata.common.result.CommandResult;
-import com.stratio.crossdata.common.metadata.ConnectorMetadata;
-import com.stratio.crossdata.common.result.ErrorType;
-import com.stratio.crossdata.common.result.Result;
-import com.stratio.crossdata.communication.AttachCluster;
-import com.stratio.crossdata.communication.AttachConnector;
-import com.stratio.crossdata.communication.DetachCluster;
-import com.stratio.crossdata.communication.DetachConnector;
-import com.stratio.crossdata.communication.ManagementOperation;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.communication.AttachCluster;
+import com.stratio.crossdata.communication.AttachConnector;
+import com.stratio.crossdata.communication.DetachCluster;
+import com.stratio.crossdata.communication.DetachConnector;
+import com.stratio.crossdata.communication.ManagementOperation;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 
 /**

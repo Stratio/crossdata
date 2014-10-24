@@ -30,27 +30,24 @@ import org.jgroups.JChannel;
  * Class providing several in-memory data grid artifacts, as distributed data stores, locks and
  * broadcast channels.
  */
-public final class Grid implements Closeable {
+public enum Grid implements Closeable {
+    INSTANCE;
 
     private static final String FORK_CHANNEL_PREFIX = "fork-";
 
-    private final ChannelService channelService;
-    private final LockService lockService;
-    private final StoreService storeService;
+    private ChannelService channelService;
+    private LockService lockService;
+    private StoreService storeService;
 
-    private static Grid grid = null;
+    private boolean init = false;
 
     /**
-     * Builds a new {@link Grid}.
-     *
-     * @param channelService the distributed channeling service
-     * @param lockService    the distributed locking service
-     * @param storeService   the distributed storing service
+     * Check if Grid is init.
      */
-    private Grid(ChannelService channelService, LockService lockService, StoreService storeService) {
-        this.channelService = channelService;
-        this.lockService = lockService;
-        this.storeService = storeService;
+    private void shouldBeInit() {
+        if (!init) {
+            throw new GridException("Grid isn't initialized yet");
+        }
     }
 
     /**
@@ -62,10 +59,6 @@ public final class Grid implements Closeable {
         return new GridInitializer();
     }
 
-    public static Grid getInstance() {
-        return grid;
-    }
-
     /**
      * Initializes the singleton instance.
      *
@@ -74,14 +67,17 @@ public final class Grid implements Closeable {
      * @param storeService   the distributed storing service
      * @return the singleton instance
      */
-    static Grid init(ChannelService channelService,
+    public synchronized void init(ChannelService channelService,
             LockService lockService,
             StoreService storeService) {
-        if (grid != null) {
-            grid.close();
+        if (init) {
+            throw new GridException("The grid is init already");
+        } else {
+            this.channelService = channelService;
+            this.lockService = lockService;
+            this.storeService = storeService;
+            init=true;
         }
-        grid = new Grid(channelService, lockService, storeService);
-        return grid;
     }
 
     /**
@@ -94,6 +90,7 @@ public final class Grid implements Closeable {
      * @return a distributed {@link java.util.Map} associated to the specified name
      */
     public <K, V> Map<K, V> map(String name) {
+        shouldBeInit();
         return storeService.map(name);
     }
 
@@ -105,6 +102,7 @@ public final class Grid implements Closeable {
      * @return a {@link javax.transaction.TransactionManager}
      */
     public TransactionManager transactionManager(String name) {
+        shouldBeInit();
         return storeService.transactionManager(name);
     }
 
@@ -116,6 +114,7 @@ public final class Grid implements Closeable {
      * @return a distributed {@link java.util.concurrent.locks.Lock} with the specified name
      */
     public Lock lock(String name) {
+        shouldBeInit();
         return lockService.build(name);
     }
 
@@ -127,6 +126,7 @@ public final class Grid implements Closeable {
      * @return a distributed {@link org.jgroups.Channel} with the specified name
      */
     public JChannel channel(String name) {
+        shouldBeInit();
         return channelService.build(FORK_CHANNEL_PREFIX + name);
     }
 
@@ -135,12 +135,11 @@ public final class Grid implements Closeable {
      */
     @Override
     public void close() {
-        if (grid != null) {
-            storeService.close();
-            lockService.close();
-            channelService.close();
-            grid = null;
-        }
+        shouldBeInit();
+        storeService.close();
+        lockService.close();
+        channelService.close();
+        init=false;
     }
 
 }

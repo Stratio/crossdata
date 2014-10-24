@@ -162,19 +162,19 @@ ImplicitSender {
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
 
   def initialize() = {
-    var grid = Grid.initializer.withContactPoint("127.0.0.1").withPort(7800).withListenAddress("127.0.0.1")
+    Grid.initializer.withContactPoint("127.0.0.1").withPort(7800).withListenAddress("127.0.0.1")
       .withMinInitialMembers(1)
       .withJoinTimeoutInMs(5000)
       .withPersistencePath("/tmp/borrar").init()
-    val executionMap = grid.map("myExecutionData").asInstanceOf[util.Map[String, Serializable]]
-    val lockExecution: Lock = grid.lock("myExecutionData")
-    val tmExecution: TransactionManager = grid.transactionManager("myExecutionData")
+    val executionMap = Grid.INSTANCE.map("myExecutionData").asInstanceOf[util.Map[String, Serializable]]
+    val lockExecution: Lock = Grid.INSTANCE.lock("myExecutionData")
+    val tmExecution: TransactionManager = Grid.INSTANCE.transactionManager("myExecutionData")
     ExecutionManager.MANAGER.init(executionMap, lockExecution, tmExecution)
     ExecutionManager.MANAGER.clear()
 
-    val metadataMap = grid.map("myMetadata").asInstanceOf[util.Map[FirstLevelName, IMetadata]]
-    val lock: Lock = grid.lock("myMetadata")
-    val tm = grid.transactionManager("myMetadata")
+    val metadataMap = Grid.INSTANCE.map("myMetadata").asInstanceOf[util.Map[FirstLevelName, IMetadata]]
+    val lock: Lock = Grid.INSTANCE.lock("myMetadata")
+    val tm = Grid.INSTANCE.transactionManager("myMetadata")
     MetadataManager.MANAGER.init(metadataMap, lock, tm.asInstanceOf[TransactionManager])
     MetadataManager.MANAGER.clear()
 

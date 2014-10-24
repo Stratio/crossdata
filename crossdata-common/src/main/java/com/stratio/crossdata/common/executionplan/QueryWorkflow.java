@@ -19,8 +19,12 @@
 package com.stratio.crossdata.common.executionplan;
 
 
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
+import com.stratio.crossdata.common.logicalplan.Window;
+import com.stratio.crossdata.communication.AsyncExecute;
 import com.stratio.crossdata.communication.Execute;
+import com.stratio.crossdata.communication.ExecuteOperation;
 
 /**
  * Execution step for query operations.
@@ -51,7 +55,25 @@ public class QueryWorkflow extends ExecutionWorkflow {
         return workflow;
     }
 
-    public Execute getExecuteOperation(String queryId){
+    private boolean checkStreaming(LogicalStep lastStep){
+        boolean result = false;
+        if(lastStep != null){
+            if(Window.class.isInstance(lastStep)){
+                return true;
+            }else{
+                for(LogicalStep p : lastStep.getPreviousSteps()){
+                    result |= checkStreaming(p);
+                }
+            }
+        }
+        return result;
+    }
+
+    public ExecuteOperation getExecuteOperation(String queryId){
+        //Look for window operators.
+        if(checkStreaming(workflow.getLastStep())) {
+            return new AsyncExecute(queryId, workflow);
+        }
         return new Execute(queryId, workflow);
     }
 

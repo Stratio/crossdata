@@ -53,7 +53,7 @@ import com.stratio.crossdata.common.result.Result;
 import jline.console.ConsoleReader;
 
 /**
- * Interactive META console.
+ * Interactive Crossdata console that makes use of the existing driver.
  */
 public class Shell {
 
@@ -79,6 +79,7 @@ public class Shell {
      * History file.
      */
     private File historyFile = null;
+
     /**
      * Driver that connects to the META servers.
      */
@@ -93,6 +94,11 @@ public class Shell {
      * Whether the asynchronous interface should be used.
      */
     private boolean useAsync = false;
+
+    /**
+     * Constant to transform milliseconds in seconds.
+     */
+    private static final int MS_TO_SECONDS = 1000;
 
     /**
      * Class constructor.
@@ -263,7 +269,7 @@ public class Shell {
             queryEnd = System.currentTimeMillis();
             updatePrompt(metaResult);
             println("Result: " + ConsoleUtils.stringResult(metaResult));
-            println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
+            println("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
         } catch (Exception e) {
             println("Error: " + e.getMessage());
         }
@@ -475,7 +481,7 @@ public class Shell {
         queryEnd = System.currentTimeMillis();
         updatePrompt(metaResult);
         println("Result: " + ConsoleUtils.stringResult(metaResult));
-        println("Response time: " + ((queryEnd - queryStart) / 1000) + " seconds");
+        println("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
 
         return "OK";
     }

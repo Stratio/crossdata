@@ -79,6 +79,7 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
+import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
@@ -182,7 +183,7 @@ public class Planner {
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
         for(Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()){
             for(ConnectorMetadata cm : tableEntry.getValue()){
-                sb.append("table: ").append(tableEntry.getKey().toString())
+                sb.append("table: ").append(tableEntry.getKey().toString()).append(" ")
                         .append(cm.getName()).append(" ").append(cm.getActorRef()).append(System.lineSeparator());
             }
         }
@@ -513,7 +514,7 @@ public class Planner {
         addProjectedColumns(processed, query);
 
         //TODO determine which is the correct target table if the order fails.
-        String selectTable = query.getTables().get(0).getQualifiedName();
+        String selectTable = ((SelectParsedQuery)query).getStatement().getTableName().getQualifiedName();
 
         //Add filters
         if (query.getRelationships() != null) {

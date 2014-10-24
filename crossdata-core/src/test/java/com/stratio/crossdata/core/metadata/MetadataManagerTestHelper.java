@@ -73,14 +73,14 @@ public class MetadataManagerTestHelper {
     public void setUp() {
         initializeGrid();
         //MetadataManager
-        Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("crossdata-test");
-        Lock lock = Grid.getInstance().lock("crossdata-test");
-        TransactionManager tm = Grid.getInstance().transactionManager("crossdata-test");
+        Map<FirstLevelName, IMetadata> metadataMap = Grid.INSTANCE.map("crossdata-test");
+        Lock lock = Grid.INSTANCE.lock("crossdata-test");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("crossdata-test");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
         //ExecutionManager
-        Map<String, Serializable> executionMap = Grid.getInstance().map("crossdata.executionmanager.test");
-        Lock executionLock = Grid.getInstance().lock("crossdata.executionmanager.test");
-        TransactionManager executionTM = Grid.getInstance().transactionManager("crossdata.executionmanager.test");
+        Map<String, Serializable> executionMap = Grid.INSTANCE.map("crossdata.executionmanager.test");
+        Lock executionLock = Grid.INSTANCE.lock("crossdata.executionmanager.test");
+        TransactionManager executionTM = Grid.INSTANCE.transactionManager("crossdata.executionmanager.test");
         ExecutionManager.MANAGER.init(executionMap, executionLock, executionTM);
     }
 
@@ -215,13 +215,15 @@ public class MetadataManagerTestHelper {
      * @param name          The name of the cluster.
      * @param dataStoreName The backend dataStore.
      */
-    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName connectorName) {
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName ... connectorNames) {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-        connectorAttachedRefs.put(connectorName,
-                new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
+        for(ConnectorName connectorName : connectorNames) {
+            connectorAttachedRefs.put(connectorName,
+                    new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
+        }
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);
         MetadataManager.MANAGER.createCluster(clusterMetadata, false, true);
@@ -288,7 +290,7 @@ public class MetadataManagerTestHelper {
     public void tearDown() throws Exception {
         metadataMap.clear();
         executionMap.clear();
-        Grid.getInstance().close();
+        Grid.INSTANCE.close();
         FileUtils.deleteDirectory(new File(path));
     }
 

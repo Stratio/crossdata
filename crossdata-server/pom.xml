@@ -334,7 +334,8 @@
                     </descriptors>
                     <archive>
                         <manifest>
-                            <mainClass>com.stratio.com.stratio.crossdata.server.MetaApplication</mainClass>
+                            <mainClass>
+                                com.stratio.crossdata.server.MetaApplication</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
