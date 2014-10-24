@@ -165,7 +165,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         createTestConnector("connectorTest", new DataStoreName("datastoreTest"), "akkaActorRef");
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
         String expectedResult = System.lineSeparator() + "Connector: connector.connectortest" +
-                "\tONLINE\t[]\t[]\takkaActorRef" + System.lineSeparator();
+                "\tONLINE\t[]\t[datastore.datastoretest]\takkaActorRef" + System.lineSeparator();
         String str = String.valueOf(result.getResult());
         assertTrue(str.equalsIgnoreCase(expectedResult), "Expected: " + expectedResult + System.lineSeparator() +
                 "   Found: " + str);
