@@ -213,13 +213,15 @@ public class MetadataManagerTestHelper {
      * @param name          The name of the cluster.
      * @param dataStoreName The backend dataStore.
      */
-    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName connectorName) {
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName ... connectorNames) {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-        connectorAttachedRefs.put(connectorName,
-                new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
+        for(ConnectorName connectorName : connectorNames) {
+            connectorAttachedRefs.put(connectorName,
+                    new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
+        }
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);
         MetadataManager.MANAGER.createCluster(clusterMetadata, false, true);
