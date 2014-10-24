@@ -122,7 +122,7 @@ public class APIManager {
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.RESET_METADATA().toString());
             result = resetMetadata();
-        }else if(APICommand.LIST_CONNECTORS().equals(cmd.commandType())){
+        } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_CONNECTORS().toString());
             result = listConnectors();
         } else {
@@ -271,8 +271,5 @@ public class APIManager {
         // Persist
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
     }
-
-
-
 
 }
