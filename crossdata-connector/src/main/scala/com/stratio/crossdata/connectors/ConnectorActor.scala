@@ -23,15 +23,52 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
 import akka.util.Timeout
 import com.stratio.crossdata
-import com.stratio.crossdata.common.connector.IConnector
-import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, Result, StorageResult}
-import com.stratio.crossdata.communication.{CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable, Execute, HeartbeatSig}
-import com.stratio.crossdata.communication.{IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation,
-getConnectorName, replyConnectorName}
+import com.stratio.crossdata.common.connector.{IResultHandler, IConnector}
+import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.communication._
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
+import com.stratio.crossdata.communication.CreateCatalog
+import com.stratio.crossdata.communication.CreateIndex
+import com.stratio.crossdata.communication.replyConnectorName
+import akka.cluster.ClusterEvent.MemberRemoved
+import com.stratio.crossdata.communication.IAmAlive
+import com.stratio.crossdata.communication.Execute
+import akka.cluster.ClusterEvent.MemberUp
+import com.stratio.crossdata.communication.getConnectorName
+import com.stratio.crossdata.communication.CreateTableAndCatalog
+import scala.Some
+import com.stratio.crossdata.communication.DropIndex
+import com.stratio.crossdata.communication.CreateTable
+import com.stratio.crossdata.communication.InsertBatch
+import akka.cluster.ClusterEvent.CurrentClusterState
+import akka.cluster.ClusterEvent.UnreachableMember
+import com.stratio.crossdata.communication.HeartbeatSig
+import com.stratio.crossdata.communication.DropTable
+import com.stratio.crossdata.communication.Insert
+import com.stratio.crossdata.communication.CreateCatalog
+import com.stratio.crossdata.communication.CreateIndex
+import com.stratio.crossdata.communication.replyConnectorName
+import akka.cluster.ClusterEvent.MemberRemoved
+import com.stratio.crossdata.communication.IAmAlive
+import com.stratio.crossdata.communication.Execute
+import akka.cluster.ClusterEvent.MemberUp
+import com.stratio.crossdata.communication.ACK
+import com.stratio.crossdata.communication.getConnectorName
+import com.stratio.crossdata.communication.CreateTableAndCatalog
+import scala.Some
+import com.stratio.crossdata.communication.DropIndex
+import com.stratio.crossdata.communication.CreateTable
+import com.stratio.crossdata.communication.InsertBatch
+import akka.cluster.ClusterEvent.CurrentClusterState
+import com.stratio.crossdata.communication.AsyncExecute
+import akka.cluster.ClusterEvent.UnreachableMember
+import com.stratio.crossdata.communication.HeartbeatSig
+import com.stratio.crossdata.communication.DropTable
+import com.stratio.crossdata.communication.Insert
+import com.stratio.crossdata.common.exceptions.ExecutionException
 
 object State extends Enumeration {
   type state = Value
@@ -44,7 +81,7 @@ object ConnectorActor {
 }
 
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with
-ActorLogging {
+ActorLogging with IResultHandler{
 
   lazy val logger = Logger.getLogger(classOf[ConnectorActor])
 
@@ -102,6 +139,24 @@ ActorLogging {
           logger.error("error in ConnectorActor( receiving LogicalWorkflow )")
       } finally {
         runningJobs.remove(ex.queryId)
+      }
+    }
+    case aex: AsyncExecute => {
+      logger.info("Processing asynchronous query: " + aex)
+      val asyncSender = sender
+      try {
+        runningJobs.put(aex.queryId, asyncSender)
+        connector.getQueryEngine().asyncExecute(aex.queryId, aex.workflow, this)
+        asyncSender ! ACK(aex.queryId, QueryStatus.IN_PROGRESS)
+      } catch {
+        case e: Exception => {
+          val result = Result.createErrorResult(e)
+          result.setQueryId(aex.queryId)
+          asyncSender ! result
+          runningJobs.remove(aex.queryId)
+        }
+        case err: Error =>
+          logger.error("error in ConnectorActor( receiving async LogicalWorkflow )")
       }
     }
     case metadataOp: MetadataOperation => {
@@ -227,6 +282,26 @@ ActorLogging {
     this.state = State.Stopping
     connector.shutdown()
     this.state = State.Stopped
+  }
+
+  override def processException(queryId: String, exception: ExecutionException): Unit = {
+    logger.info("Processing exception for async query: " + queryId)
+    val source = runningJobs.get(queryId).get
+    if(source != null) {
+      source ! Result.createErrorResult(exception)
+    }else{
+      logger.error("Exception for query " + queryId + " cannot be sent", exception)
+    }
+  }
+
+  override def processResult(result: QueryResult): Unit = {
+    logger.info("Processing results for async query: " + result.getQueryId)
+    val source = runningJobs.get(result.getQueryId).get
+    if(source != null) {
+      source ! result
+    }else{
+      logger.error("Results for query " + result.getQueryId + " cannot be sent")
+    }
   }
 }
 
