@@ -59,6 +59,7 @@ public class APIManager {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(APIManager.class);
+    private static final String PROCESSING= "Processing ";
 
     /**
      * Class constructor.
@@ -75,7 +76,7 @@ public class APIManager {
     public Result processRequest(Command cmd) {
         Result result;
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
-            LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
+            LOG.info(PROCESSING + APICommand.LIST_CATALOGS().toString());
             List<String> catalogs = MetadataManager.MANAGER.getCatalogs();
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_CATALOGS);
             ((MetadataResult) result).setCatalogList(catalogs);
@@ -84,10 +85,10 @@ public class APIManager {
 
             if (cmd.params() != null && !cmd.params().isEmpty()) {
                 String catalog = (String) cmd.params().get(0);
-                LOG.info("Processing " + APICommand.LIST_TABLES().toString());
+                LOG.info(PROCESSING + APICommand.LIST_TABLES().toString());
                 tables = MetadataManager.MANAGER.getTablesByCatalogName(catalog);
             } else {
-                LOG.info("Processing " + APICommand.LIST_TABLES().toString());
+                LOG.info(PROCESSING + APICommand.LIST_TABLES().toString());
                 tables = MetadataManager.MANAGER.getTables();
             }
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_TABLES);
@@ -112,16 +113,16 @@ public class APIManager {
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_COLUMNS);
             ((MetadataResult) result).setColumnList(columnsResult);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
-            LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
+            LOG.info(PROCESSING + APICommand.ADD_MANIFEST().toString());
             persistManifest((CrossdataManifest) cmd.params().get(0));
             result = CommandResult.createCommandResult("CrossdataManifest added "
                     + System.lineSeparator()
                     + cmd.params().get(0).toString());
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
-            LOG.info("Processing " + APICommand.RESET_METADATA().toString());
+            LOG.info(PROCESSING + APICommand.RESET_METADATA().toString());
             result = resetMetadata();
         } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
-            LOG.info("Processing " + APICommand.LIST_CONNECTORS().toString());
+            LOG.info(PROCESSING + APICommand.LIST_CONNECTORS().toString());
             result = listConnectors();
         } else {
             result =

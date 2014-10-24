@@ -17,42 +17,19 @@
  */
 
 package com.stratio.crossdata.connectors
-
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
 import akka.util.Timeout
 import com.stratio.crossdata
-import com.stratio.crossdata.common.connector.IResultHandler
-
-import com.stratio.crossdata.common.connector.IConnector
+import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
+import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.communication._
+import com.stratio.crossdata.communication.{ACK, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation, getConnectorName, replyConnectorName}
 import org.apache.log4j.Logger
 
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
-import com.stratio.crossdata.common.exceptions.ExecutionException
-import com.stratio.crossdata.communication.CreateCatalog
-import com.stratio.crossdata.communication.CreateIndex
-import com.stratio.crossdata.communication.replyConnectorName
-import akka.cluster.ClusterEvent.MemberRemoved
-import com.stratio.crossdata.communication.IAmAlive
-import com.stratio.crossdata.communication.Execute
-import akka.cluster.ClusterEvent.MemberUp
-import com.stratio.crossdata.communication.ACK
-import com.stratio.crossdata.communication.getConnectorName
-import com.stratio.crossdata.communication.CreateTableAndCatalog
-import scala.Some
-import com.stratio.crossdata.communication.DropIndex
-import com.stratio.crossdata.communication.CreateTable
-import com.stratio.crossdata.communication.InsertBatch
-import akka.cluster.ClusterEvent.CurrentClusterState
-import com.stratio.crossdata.communication.AsyncExecute
-import akka.cluster.ClusterEvent.UnreachableMember
-import com.stratio.crossdata.communication.HeartbeatSig
-import com.stratio.crossdata.communication.DropTable
-import com.stratio.crossdata.communication.Insert
 
 object State extends Enumeration {
   type state = Value
@@ -67,7 +44,7 @@ object ConnectorActor {
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with
 ActorLogging with IResultHandler{
 
-  lazy val logger = Logger.getLogger(classOf[ConnectorActor])
+  override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
 
   logger.info("Lifting connector actor")
 
@@ -79,17 +56,20 @@ ActorLogging with IResultHandler{
   var parentActorRef: Option[ActorRef] = None
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
-  override def handleHeartbeat(heartbeat: HeartbeatSig):Unit = {
-      runningJobs.foreach {
-        keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
-      }
+
+  override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
+
+    runningJobs.foreach {
+      keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
+    }
   }
+
 
   override def preStart(): Unit = {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
   }
 
-  override def receive:Receive = super.receive orElse {
+  override def receive: Receive = super.receive orElse {
     case _: com.stratio.crossdata.communication.Start => {
       parentActorRef = Some(sender)
     }
@@ -106,7 +86,7 @@ ActorLogging with IResultHandler{
     }
     case ex: Execute => {
       logger.info("Processing query: " + ex)
-      execute(ex,sender)
+      execute(ex, sender)
     }
     case aex: AsyncExecute => {
       logger.info("Processing asynchronous query: " + aex)
@@ -145,12 +125,15 @@ ActorLogging with IResultHandler{
     }
   }
 
-  def shutdown():Unit = {
+  def shutdown(): Unit = {
     logger.debug("ConnectorActor is shutting down")
     this.state = State.Stopping
     connector.shutdown()
     this.state = State.Stopped
   }
+
+
+
 
 
   override def processException(queryId: String, exception: ExecutionException): Unit = {
@@ -173,7 +156,10 @@ ActorLogging with IResultHandler{
     }
   }
 
+
+
   private def execute(ex:Execute, s:ActorRef): Unit ={
+
 
     try {
       runningJobs.put(ex.queryId, s)
@@ -212,56 +198,19 @@ ActorLogging with IResultHandler{
   }
 
 
-  private def metadataop(metadataOp: MetadataOperation, s:ActorRef): Unit ={
+  private def metadataop(metadataOp: MetadataOperation, s: ActorRef): Unit = {
     var qId: String = metadataOp.queryId
     var metadataOperation: Int = 0
     logger.info("Received queryId = " + qId)
     try {
       val opclass = metadataOp.getClass().toString().split('.')
       val eng = connector.getMetadataEngine()
-      opclass(opclass.length - 1) match {
-        case "CreateTable" => {
-          logger.debug("creating table from  " + self.path)
-          qId = metadataOp.asInstanceOf[CreateTable].queryId
-          eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
-            metadataOp.asInstanceOf[CreateTable].tableMetadata)
-          metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
-        }
-        case "CreateCatalog" => {
-          qId = metadataOp.asInstanceOf[CreateCatalog].queryId
-          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-          metadataOperation = MetadataResult.OPERATION_CREATE_CATALOG
-        }
-        case "CreateIndex" => {
-          qId = metadataOp.asInstanceOf[CreateIndex].queryId
-          eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
-            metadataOp.asInstanceOf[CreateIndex].indexMetadata)
-        }
-        case "DropCatalog" => {
-          qId = metadataOp.asInstanceOf[DropIndex].queryId
-          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-        }
-        case "DropIndex" => {
-          qId = metadataOp.asInstanceOf[DropIndex].queryId
-          eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
-          metadataOperation = MetadataResult.OPERATION_DROP_INDEX
-        }
-        case "DropTable" => {
-          qId = metadataOp.asInstanceOf[DropTable].queryId
-          eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
-          metadataOperation = MetadataResult.OPERATION_DROP_TABLE
-        }
-        case "CreateTableAndCatalog" => {
-          qId = metadataOp.asInstanceOf[CreateTableAndCatalog].queryId
-          eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
-            metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
-          eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
-            metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
-          metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
-        }
-      }
+
+      val abc = opc(opclass,  metadataOp, eng)
+      qId = abc._1
+      metadataOperation = abc._2
+
+     
     } catch {
       case ex: Exception => {
         val result = Result.createExecutionErrorResult(ex.getStackTraceString)
@@ -276,7 +225,7 @@ ActorLogging with IResultHandler{
     s ! result
   }
 
-  private def storageop(storageOp:StorageOperation, s:ActorRef): Unit ={
+  private def storageop(storageOp: StorageOperation, s: ActorRef): Unit = {
     val qId: String = storageOp.queryId
     try {
       val eng = connector.getStorageEngine()
@@ -305,5 +254,48 @@ ActorLogging with IResultHandler{
     }
   }
 
-}
 
+  private def opc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
+
+    opclass(opclass.length - 1) match {
+      case "CreateTable" => {
+        logger.debug("creating table from  " + self.path)
+        eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
+          metadataOp.asInstanceOf[CreateTable].tableMetadata)
+        (metadataOp.asInstanceOf[CreateTable].queryId, MetadataResult.OPERATION_CREATE_TABLE)
+      }
+      case "CreateCatalog" => {
+        eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+          metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+        (metadataOp.asInstanceOf[CreateCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG)
+      }
+      case "CreateIndex" => {
+       eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
+        metadataOp.asInstanceOf[CreateIndex].indexMetadata)
+        (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX)
+      }
+      case "DropCatalog" => {
+        val qId = metadataOp.asInstanceOf[DropIndex].queryId
+        eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
+          metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
+        (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_CATALOG)
+      }
+      case "DropIndex" => {
+       eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
+       (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX)
+      }
+      case "DropTable" => {
+        eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
+       (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE)
+      }
+      case "CreateTableAndCatalog" => {
+        eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
+          metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
+        eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
+          metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
+        (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE)
+      }
+    }
+  }
+
+}

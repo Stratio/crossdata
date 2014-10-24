@@ -36,18 +36,19 @@ class ConnectorApp extends ConnectConfig {
   lazy val system = ActorSystem(clusterName, config)
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
 
-  var actorClusterNode: ActorRef = null
+  var actorClusterNode: Option[ActorRef] = None
 
-  def shutdown() = {
+  def shutdown() :Unit= {
   }
 
-  def stop() = {
-    actorClusterNode ! Shutdown()
+  def stop():Unit = {
+    actorClusterNode.get ! Shutdown()
     system.shutdown()
   }
 
   def startup(connector: IConnector): ActorSelection= {
-    actorClusterNode = system.actorOf(ConnectorActor.props(connector.getConnectorName, connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor")
+    actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
+      connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
     connector.init(new IConfiguration {})
     system.actorSelection( StringUtils.getAkkaActorRefUri(actorClusterNode.toString()))
   }

@@ -38,9 +38,11 @@ public class NormalizedFields {
     private Set<ColumnName> columnNames = new HashSet<>();
     private Set<TableName> tableNames = new HashSet<>();
     private Set<CatalogName> catalogNames = new HashSet<>();
-    private List<Selector> selectors = new ArrayList<>(); // It can includes functions, column names, asterisks...
+    // It can includes functions, column names, asterisks...
+    private List<Selector> selectors = new ArrayList<>();
     private boolean distinctSelect = false;
-    private InnerJoin join ; // Join relations
+    // Join relations
+    private InnerJoin join ;
     private List<Relation> where = new ArrayList<>();
     private OrderBy orderBy = new OrderBy();
     private GroupBy groupBy = new GroupBy();
