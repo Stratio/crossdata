@@ -787,7 +787,8 @@ public class Planner {
         for (int i = 0; i < ids.size(); i++) {
             ColumnName columnName = ids.get(i);
             Selector value = values.get(i);
-            Object cellContent = CoreUtils.convertSelectorToObject(value, columnName);
+            CoreUtils coreUtils = CoreUtils.create();
+            Object cellContent = coreUtils.convertSelectorToObject(value, columnName);
             Cell cell = new Cell(cellContent);
             row.addCell(columnName.getName(), cell);
         }
