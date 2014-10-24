@@ -28,6 +28,9 @@ import com.stratio.crossdata.common.utils.MetaUtils;
 
 import jline.console.completer.Completer;
 
+/**
+ * Implementation of the completor used to provide possible candidates when the user pressed tab in the console.
+ */
 public class MetaCompletor implements Completer {
 
     /**

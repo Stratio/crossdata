@@ -25,6 +25,9 @@ import org.apache.log4j.Logger;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
+/**
+ * Help manager providing textual help for the different commands supported by the Crossdata shell.
+ */
 public class HelpManager {
 
     /**

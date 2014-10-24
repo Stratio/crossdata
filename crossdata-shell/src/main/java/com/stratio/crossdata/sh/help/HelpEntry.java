@@ -18,23 +18,49 @@
 
 package com.stratio.crossdata.sh.help;
 
+/**
+ * Class that contains the information of help item for Crossdata.
+ */
 public class HelpEntry {
 
+    /**
+     * The entry.
+     */
     private String entry = null;
+
+    /**
+     * The associated help.
+     */
     private String help = null;
 
+    /**
+     * Get the entry.
+     * @return The help entry.
+     */
     public String getEntry() {
         return entry;
     }
 
+    /**
+     * Set the help entry.
+     * @param entry The help topic entry.
+     */
     public void setEntry(String entry) {
         this.entry = entry;
     }
 
+    /**
+     * Get the help associated with an entry.
+     * @return A String.
+     */
     public String getHelp() {
         return help;
     }
 
+    /**
+     * Set the help associated with an entry.
+     * @param help The associated help.
+     */
     public void setHelp(String help) {
         this.help = help;
     }
