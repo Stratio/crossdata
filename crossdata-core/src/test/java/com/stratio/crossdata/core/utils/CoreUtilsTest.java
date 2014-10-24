@@ -12,9 +12,11 @@ import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
 
 public class CoreUtilsTest extends MetadataManagerTestHelper {
@@ -93,33 +95,51 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         coreUtils.convertSelectorToObject(selector, columnName);
     }
 
-    @Test
+    @Test(expectedExceptions = PlanningException.class)
     public void testFailToFloat() throws Exception {
-
+        CoreUtils coreUtils = CoreUtils.create();
+        Selector selector = new StringSelector("test");
+        ColumnName columnName = new ColumnName(table, "FloatColumn");
+        coreUtils.convertSelectorToObject(selector, columnName);
     }
 
-    @Test
+    @Test(expectedExceptions = PlanningException.class)
     public void testFailToDouble() throws Exception {
-
+        CoreUtils coreUtils = CoreUtils.create();
+        Selector selector = new StringSelector("test");
+        ColumnName columnName = new ColumnName(table, "DoubleColumn");
+        coreUtils.convertSelectorToObject(selector, columnName);
     }
 
-    @Test
+    @Test(expectedExceptions = PlanningException.class)
     public void testFailToInteger() throws Exception {
-
+        CoreUtils coreUtils = CoreUtils.create();
+        Selector selector = new StringSelector("test");
+        ColumnName columnName = new ColumnName(table, "IntColumn");
+        coreUtils.convertSelectorToObject(selector, columnName);
     }
 
-    @Test
+    @Test(expectedExceptions = PlanningException.class)
     public void testFailToLong() throws Exception {
-
+        CoreUtils coreUtils = CoreUtils.create();
+        Selector selector = new StringSelector("test");
+        ColumnName columnName = new ColumnName(table, "BigIntColumn");
+        coreUtils.convertSelectorToObject(selector, columnName);
     }
 
-    @Test
+    @Test(expectedExceptions = PlanningException.class)
     public void testFailToString() throws Exception {
-
+        CoreUtils coreUtils = CoreUtils.create();
+        Selector selector = new AsteriskSelector();
+        ColumnName columnName = new ColumnName(table, "TextColumn");
+        coreUtils.convertSelectorToObject(selector, columnName);
     }
 
-    @Test
+    @Test(expectedExceptions = PlanningException.class)
     public void testFailToBoolean() throws Exception {
-
+        CoreUtils coreUtils = CoreUtils.create();
+        Selector selector = new StringSelector("test");
+        ColumnName columnName = new ColumnName(table, "BooleanColumn");
+        coreUtils.convertSelectorToObject(selector, columnName);
     }
 }

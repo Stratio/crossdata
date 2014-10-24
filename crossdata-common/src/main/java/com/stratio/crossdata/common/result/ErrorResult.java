@@ -35,26 +35,11 @@ public class ErrorResult extends Result {
     private static final long serialVersionUID = -3692402254351549778L;
 
     /**
-     * Type of error.
+     * Exception associated with the result.
      */
-    private final ErrorType type;
-
-    /**
-     * The associated error message in case of {@code error}.
-     */
-    private final String errorMessage;
-
     private Exception exception;
 
-    public ErrorResult(ErrorType type, String errorMessage) {
-        this.type = type;
-        this.errorMessage = errorMessage;
-        this.error = true;
-    }
-
-    public ErrorResult(ErrorType type, String errorMessage, Exception e) {
-        this.type = type;
-        this.errorMessage = errorMessage;
+    public ErrorResult(Exception e) {
         this.error = true;
         this.exception = e;
     }
@@ -65,11 +50,7 @@ public class ErrorResult extends Result {
      * @return The message or null if no error occurred.
      */
     public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public ErrorType getType() {
-        return type;
+        return exception.getMessage();
     }
 
     public Exception getException() {

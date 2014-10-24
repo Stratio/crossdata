@@ -123,7 +123,7 @@ class MockConnectorActor() extends Actor with ActorLogging {
       val myclass=msg.getClass()
       println(">>>>>>>>>>>>>>>>>>>>>>>other")
       println("non recogniced message from "+sender )
-      val err=new ErrorResult(ErrorType.EXECUTION,null)
+      val err= new ErrorResult(null)
       sender ! err
     }
     case _=>{
