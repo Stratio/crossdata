@@ -24,6 +24,7 @@ import akka.util.Timeout
 import com.stratio.crossdata.common.result.Result
 
 import scala.concurrent.Await
+import com.stratio.crossdata.common.exceptions.ConnectionException
 
 /**
  * Retry mechanism that send a message to an actor a number of times,
@@ -34,8 +35,7 @@ import scala.concurrent.Await
 class RetryPolitics(retryTimes: Int, waitTime: Timeout) {
   def askRetry(remoteActor: ActorRef, message: AnyRef, waitTime: Timeout = this.waitTime, retry: Int = 0): Result = {
     if (retry == retryTimes) {
-      Result.createConnectionErrorResult("Not found answer. After " + retry
-        + " retries, timeout was exceed.");
+      Result.createConnectionErrorResult("Not found answer. After " + retry + " retries, timeout was exceed.");
     } else {
       try {
         val future = remoteActor.ask(message)(waitTime)

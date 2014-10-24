@@ -20,6 +20,13 @@ package com.stratio.crossdata.common.result;
 
 import java.io.Serializable;
 
+import com.stratio.crossdata.common.exceptions.ConnectionException;
+import com.stratio.crossdata.common.exceptions.CriticalExecutionException;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
+import com.stratio.crossdata.common.exceptions.ParsingException;
+import com.stratio.crossdata.common.exceptions.UnsupportedException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
+
 /**
  * Class that models a generic result of an action executed in META.
  */
@@ -40,36 +47,32 @@ public abstract class Result implements Serializable {
      */
     protected String queryId;
 
-    public static ErrorResult createErrorResult(ErrorType type, String errorMessage, Exception e) {
-        return new ErrorResult(type, errorMessage, e);
+    public static ErrorResult createErrorResult(Exception e) {
+        return new ErrorResult(e);
     }
 
-    public static ErrorResult createErrorResult(ErrorType type, String errorMessage) {
-        return new ErrorResult(type, errorMessage);
+    public static ErrorResult createConnectionErrorResult(String message) {
+        return new ErrorResult(new ConnectionException(message));
     }
 
-    public static ErrorResult createConnectionErrorResult(String errorMessage) {
-        return new ErrorResult(ErrorType.CONNECTION, errorMessage);
+    public static ErrorResult createParsingErrorResult(String message) {
+        return new ErrorResult(new ParsingException(message));
     }
 
-    public static ErrorResult createParsingErrorResult(String errorMessage) {
-        return new ErrorResult(ErrorType.PARSING, errorMessage);
+    public static ErrorResult createValidationErrorResult(ValidationException e) {
+        return new ErrorResult(e);
     }
 
-    public static ErrorResult createValidationErrorResult(String errorMessage) {
-        return new ErrorResult(ErrorType.VALIDATION, errorMessage);
+    public static ErrorResult createExecutionErrorResult(String message) {
+        return new ErrorResult(new ExecutionException(message));
     }
 
-    public static ErrorResult createExecutionErrorResult(String errorMessage) {
-        return new ErrorResult(ErrorType.EXECUTION, errorMessage);
+    public static ErrorResult createUnsupportedOperationErrorResult(String message) {
+        return new ErrorResult(new UnsupportedException(message));
     }
 
-    public static ErrorResult createUnsupportedOperationErrorResult(String errorMessage) {
-        return new ErrorResult(ErrorType.NOT_SUPPORTED, errorMessage);
-    }
-
-    public static ErrorResult createCriticalOperationErrorResult(String errorMessage) {
-        return new ErrorResult(ErrorType.CRITICAL, errorMessage);
+    public static ErrorResult createCriticalOperationErrorResult(String message) {
+        return new ErrorResult(new CriticalExecutionException(message));
     }
     /**
      * Get the query identifier.

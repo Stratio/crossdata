@@ -45,7 +45,7 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
       } catch {
         case pe:PlanningException => {
           log.error("Planning error: " + pe.getMessage + " from sender: " + sender.toString())
-          val errorResult = Result.createValidationErrorResult(pe.getMessage)
+          val errorResult = Result.createErrorResult(pe)
           errorResult.setQueryId(query.getQueryId)
           sender ! errorResult
         }
@@ -64,7 +64,7 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
         coordinator forward planned
       } catch {
         case pe:PlanningException => {
-          val errorResult = Result.createValidationErrorResult(pe.getMessage)
+          val errorResult = Result.createErrorResult(pe)
           log.error("Planning error: " + pe.getMessage + " from sender: " + sender.toString())
           errorResult.setQueryId(query.getQueryId)
           sender ! errorResult
@@ -83,7 +83,7 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
         coordinator forward planned
       } catch {
         case pe:PlanningException => {
-          val errorResult = Result.createValidationErrorResult(pe.getMessage)
+          val errorResult = Result.createErrorResult(pe)
           log.error("Planning error: " + pe.getMessage + " from sender: " + sender.toString())
           errorResult.setQueryId(query.getQueryId)
           sender ! errorResult

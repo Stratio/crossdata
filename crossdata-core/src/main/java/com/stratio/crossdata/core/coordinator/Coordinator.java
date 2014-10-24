@@ -24,6 +24,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.exceptions.ExecutionException;
+import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
@@ -101,18 +103,18 @@ public class Coordinator implements Serializable {
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result executeManagementOperation(ManagementOperation workflow) {
-        Result result = Result.createErrorResult(ErrorType.COORDINATION, "Wrong management operation");
+        Result result = Result.createExecutionErrorResult("Unrecognized management operation.");
 
         if (AttachCluster.class.isInstance(workflow)) {
             AttachCluster ac = AttachCluster.class.cast(workflow);
             result = persistAttachCluster(ac.targetCluster(), ac.datastoreName(), ac.options());
         } else if (DetachCluster.class.isInstance(workflow)) {
-            result = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "Not supported");
+            result = Result.createUnsupportedOperationErrorResult("Detach cluster not supported yet.");
         } else if (AttachConnector.class.isInstance(workflow)) {
             AttachConnector ac = AttachConnector.class.cast(workflow);
             result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
         } else if (DetachConnector.class.isInstance(workflow)) {
-            result = Result.createErrorResult(ErrorType.NOT_SUPPORTED, "Not supported");
+            result = Result.createUnsupportedOperationErrorResult("Detach connector not supported yet.");
         }
 
         result.setQueryId(workflow.queryId());
