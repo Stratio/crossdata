@@ -71,6 +71,9 @@ import jline.console.ConsoleReader;
 import jline.console.history.History;
 import jline.console.history.MemoryHistory;
 
+/**
+ * Utility class for console related operations.
+ */
 public final class ConsoleUtils {
 
     /**
@@ -90,7 +93,6 @@ public final class ConsoleUtils {
      * Private class constructor as all methods are static.
      */
     private ConsoleUtils() {
-
     }
 
     /**
@@ -300,6 +302,14 @@ public final class ConsoleUtils {
         }
     }
 
+    /**
+     * Parse an XML document into a {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
+     * @param manifestType The type of manifest.
+     * @param path The XML path.
+     * @return A {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
+     * @throws ManifestException If the XML is not valid.
+     * @throws FileNotFoundException If the XML file does not exists.
+     */
     public static CrossdataManifest parseFromXmlToManifest(int manifestType, String path) throws
             ManifestException, FileNotFoundException {
         if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
@@ -309,6 +319,13 @@ public final class ConsoleUtils {
         }
     }
 
+    /**
+     * Parse an XML document into a {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
+     * @param manifestType The type of manifest.
+     * @param path The {@link java.io.InputStream} to retrieve the XML.
+     * @return A {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
+     * @throws ManifestException If the XML is not valid.
+     */
     public static CrossdataManifest parseFromXmlToManifest(int manifestType, InputStream path) throws
             ManifestException {
         if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
