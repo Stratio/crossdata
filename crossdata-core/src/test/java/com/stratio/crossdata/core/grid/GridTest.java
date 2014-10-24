@@ -58,7 +58,7 @@ public class GridTest {
      */
     @AfterClass
     public void tearDown() {
-        Grid.getInstance().close();
+        Grid.INSTANCE.close();
     }
 
     /**
@@ -66,8 +66,8 @@ public class GridTest {
      */
     @Test
     public void testGridStore() throws Exception {
-        Map<String, String> map = Grid.getInstance().map("testGridStore");
-        TransactionManager tm = Grid.getInstance().transactionManager("testGridStore");
+        Map<String, String> map = Grid.INSTANCE.map("testGridStore");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("testGridStore");
         tm.begin();
         Assert.assertNotNull(map);
         map.put("k1", "v1");
@@ -82,7 +82,7 @@ public class GridTest {
      */
     @Test
     public void testGridLock() throws Exception {
-        Lock lock = Grid.getInstance().lock("testGridLock");
+        Lock lock = Grid.INSTANCE.lock("testGridLock");
         lock.lock();
         lock.unlock();
     }
@@ -92,7 +92,7 @@ public class GridTest {
      */
     @Test
     public void testGridSyncChannel() throws Exception {
-        JChannel syncChannel = Grid.getInstance().channel("testGridSyncChannel");
+        JChannel syncChannel = Grid.INSTANCE.channel("testGridSyncChannel");
         MessageDispatcher
                 dispatcher =
                 new MessageDispatcher(syncChannel, null, null, new RequestHandler() {
@@ -112,7 +112,7 @@ public class GridTest {
      */
     @Test
     public void testGridAsyncChannel() throws Exception {
-        JChannel asyncChannel = Grid.getInstance().channel("testGridAsyncChannel");
+        JChannel asyncChannel = Grid.INSTANCE.channel("testGridAsyncChannel");
         asyncChannel.setReceiver(new ReceiverAdapter() {
             public void receive(Message msg) {
                 asyncMessage = msg.getObject().toString();

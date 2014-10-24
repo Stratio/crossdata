@@ -92,7 +92,11 @@ case class InsertBatch(override val queryId: String, targetCluster: ClusterName,
 //                                IQueryEngine
 // ============================================================================
 
-case class Execute(override val queryId: String, workflow: LogicalWorkflow) extends Operation(queryId)
+sealed abstract class ExecuteOperation(queryId: String) extends Operation(queryId)
+
+case class Execute(override val queryId: String, workflow: LogicalWorkflow) extends ExecuteOperation(queryId)
+
+case class AsyncExecute(override val queryId: String, workflow: LogicalWorkflow) extends ExecuteOperation(queryId)
 
 // ============================================================================
 //                                IMetadataEngine

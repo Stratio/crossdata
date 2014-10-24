@@ -23,8 +23,6 @@ import akka.actor.{Actor, ActorLogging, Props}
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication._
-import com.stratio.crossdata.common.result.ErrorType
-
 
 
 object State extends Enumeration {
