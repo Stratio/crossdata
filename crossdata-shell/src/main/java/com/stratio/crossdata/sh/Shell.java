@@ -453,7 +453,7 @@ public class Shell {
      * @param sentence The sentence introduced by the user.
      * @return The operation result.
      */
-    private String sendManifest(String sentence) {
+    public String sendManifest(String sentence) {
         LOG.debug("Command: " + sentence);
         // Get manifest type
 

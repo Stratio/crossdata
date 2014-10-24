@@ -47,33 +47,77 @@ public abstract class Result implements Serializable {
      */
     protected String queryId;
 
+    /**
+     * Create an error result. This is the preferred way to notify that any exception
+     * has been triggered by an operation.
+     *
+     * @param e The associated exception.
+     * @return An {@link com.stratio.crossdata.common.result.ErrorResult}.
+     */
     public static ErrorResult createErrorResult(Exception e) {
         return new ErrorResult(e);
     }
 
+    /**
+     * Create a connection error result passing a message.
+     *
+     * @param message The message.
+     * @return An {@link com.stratio.crossdata.common.result.ErrorResult}.
+     */
     public static ErrorResult createConnectionErrorResult(String message) {
         return new ErrorResult(new ConnectionException(message));
     }
 
+    /**
+     * Create a parsing error result passing a message.
+     *
+     * @param message The message.
+     * @return An {@link com.stratio.crossdata.common.result.ErrorResult}.
+     */
     public static ErrorResult createParsingErrorResult(String message) {
         return new ErrorResult(new ParsingException(message));
     }
 
+    /**
+     * Create a validation error result passing a {@link com.stratio.crossdata.common.exceptions.ValidationException}.
+     *
+     * @param e Any ValidationException.
+     * @return An {@link com.stratio.crossdata.common.result.ErrorResult}.
+     */
     public static ErrorResult createValidationErrorResult(ValidationException e) {
         return new ErrorResult(e);
     }
 
+    /**
+     * Create an execution error result passing a message.
+     *
+     * @param message The message.
+     * @return An {@link com.stratio.crossdata.common.result.ErrorResult}.
+     */
     public static ErrorResult createExecutionErrorResult(String message) {
         return new ErrorResult(new ExecutionException(message));
     }
 
+    /**
+     * Create an unsupported operation error result passing a message.
+     *
+     * @param message The message.
+     * @return An {@link com.stratio.crossdata.common.result.ErrorResult}.
+     */
     public static ErrorResult createUnsupportedOperationErrorResult(String message) {
         return new ErrorResult(new UnsupportedException(message));
     }
 
+    /**
+     * Create a critical operation error result passing a message.
+     *
+     * @param message The message.
+     * @return An {@link com.stratio.crossdata.common.result.ErrorResult}.
+     */
     public static ErrorResult createCriticalOperationErrorResult(String message) {
         return new ErrorResult(new CriticalExecutionException(message));
     }
+
     /**
      * Get the query identifier.
      *
