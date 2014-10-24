@@ -17,42 +17,19 @@
  */
 
 package com.stratio.crossdata.connectors
-import com.stratio.crossdata
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
 import akka.util.Timeout
-import com.stratio.crossdata.common.connector.IMetadataEngine
+import com.stratio.crossdata
+import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
+import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.communication.StorageOperation
-import com.stratio.crossdata.communication.MetadataOperation
-
-import com.stratio.crossdata.common.connector.IResultHandler
-import com.stratio.crossdata.common.connector.IConnector
+import com.stratio.crossdata.communication.{ACK, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation, getConnectorName, replyConnectorName}
 import org.apache.log4j.Logger
+
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
-import com.stratio.crossdata.common.exceptions.ExecutionException
-import com.stratio.crossdata.communication.CreateCatalog
-import com.stratio.crossdata.communication.CreateIndex
-import com.stratio.crossdata.communication.replyConnectorName
-import akka.cluster.ClusterEvent.MemberRemoved
-import com.stratio.crossdata.communication.IAmAlive
-import com.stratio.crossdata.communication.Execute
-import akka.cluster.ClusterEvent.MemberUp
-import com.stratio.crossdata.communication.ACK
-import com.stratio.crossdata.communication.getConnectorName
-import com.stratio.crossdata.communication.CreateTableAndCatalog
-import scala.Some
-import com.stratio.crossdata.communication.DropIndex
-import com.stratio.crossdata.communication.CreateTable
-import com.stratio.crossdata.communication.InsertBatch
-import akka.cluster.ClusterEvent.CurrentClusterState
-import com.stratio.crossdata.communication.AsyncExecute
-import akka.cluster.ClusterEvent.UnreachableMember
-import com.stratio.crossdata.communication.HeartbeatSig
-import com.stratio.crossdata.communication.DropTable
-import com.stratio.crossdata.communication.Insert
 
 object State extends Enumeration {
   type state = Value
@@ -233,49 +210,7 @@ ActorLogging with IResultHandler{
       qId = abc._1
       metadataOperation = abc._2
 
-      //      opclass(opclass.length - 1) match {
-      //        case "CreateTable" => {
-      //          logger.debug("creating table from  " + self.path)
-      //          qId = metadataOp.asInstanceOf[CreateTable].queryId
-      //          eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
-      //            metadataOp.asInstanceOf[CreateTable].tableMetadata)
-      //          metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
-      //        }
-      //        case "CreateCatalog" => {
-      //          qId = metadataOp.asInstanceOf[CreateCatalog].queryId
-      //          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-      //            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-      //          metadataOperation = MetadataResult.OPERATION_CREATE_CATALOG
-      //        }
-      //        case "CreateIndex" => {
-      //          qId = metadataOp.asInstanceOf[CreateIndex].queryId
-      //          eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
-      //            metadataOp.asInstanceOf[CreateIndex].indexMetadata)
-      //        }
-      //        case "DropCatalog" => {
-      //          qId = metadataOp.asInstanceOf[DropIndex].queryId
-      //          eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-      //            metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-      //        }
-      //        case "DropIndex" => {
-      //          qId = metadataOp.asInstanceOf[DropIndex].queryId
-      //          eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
-      //          metadataOperation = MetadataResult.OPERATION_DROP_INDEX
-      //        }
-      //        case "DropTable" => {
-      //          qId = metadataOp.asInstanceOf[DropTable].queryId
-      //          eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
-      //          metadataOperation = MetadataResult.OPERATION_DROP_TABLE
-      //        }
-      //        case "CreateTableAndCatalog" => {
-      //          qId = metadataOp.asInstanceOf[CreateTableAndCatalog].queryId
-      //          eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
-      //            metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
-      //          eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
-      //            metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
-      //          metadataOperation = MetadataResult.OPERATION_CREATE_TABLE
-      //        }
-      //      }
+     
     } catch {
       case ex: Exception => {
         val result = Result.createExecutionErrorResult(ex.getStackTraceString)
