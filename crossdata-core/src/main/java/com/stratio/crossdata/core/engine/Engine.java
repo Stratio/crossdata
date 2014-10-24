@@ -35,7 +35,6 @@ import com.stratio.crossdata.core.grid.Grid;
 import com.stratio.crossdata.core.grid.GridException;
 import com.stratio.crossdata.core.grid.GridInitializer;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.normalizer.Normalizer;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.validator.Validator;
@@ -126,7 +125,6 @@ public class Engine {
                 .withJoinTimeoutInMs(config.getGridJoinTimeout())
                 .withPersistencePath(config.getGridPersistencePath()).init();
     }
-
 
     /**
      * Get the parser.

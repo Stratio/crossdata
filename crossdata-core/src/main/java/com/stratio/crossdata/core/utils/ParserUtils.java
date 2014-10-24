@@ -115,7 +115,8 @@ public final class ParserUtils {
         // We initialize the suggestion from exception messages containing "T_..."
         String suggestionFromToken = "";
 
-        if (antlrError != null) { // Antlr exception message provided information
+        if (antlrError != null) {
+            // Antlr exception message provided information
             // Update char position with the information provided by antlr
             charPosition = getCharPosition(antlrError);
             // It's not a initial token
