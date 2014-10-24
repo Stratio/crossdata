@@ -34,6 +34,7 @@ import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
@@ -126,7 +127,7 @@ public class APIManager {
             result = listConnectors();
         } else {
             result =
-                    Result.createExecutionErrorResult("Command " + cmd.commandType() + " not supported");
+                    Result.createUnsupportedOperationErrorResult("Command " + cmd.commandType() + " not supported");
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
         return result;
@@ -178,7 +179,7 @@ public class APIManager {
             ExecutionManager.MANAGER.clear();
         } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException
                 e) {
-            result = CommandResult.createErrorResult(ErrorType.EXECUTION, e.getMessage());
+            result = CommandResult.createErrorResult(e);
             LOG.error(e.getMessage());
         }
         return result;
