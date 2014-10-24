@@ -114,7 +114,7 @@ public class GridInitializer {
      *
      * @return the new {@link Grid} defined by this.
      */
-    public Grid init() {
+    public void init() {
 
         ChannelService channelService = new ChannelServiceBuilder()
                 .withPort(port)
@@ -130,7 +130,7 @@ public class GridInitializer {
         StoreService storeService = new StoreService(storeChannel, "store", path);
         LockService lockService = new LockService(lockChannel);
 
-        return Grid.init(channelService, lockService, storeService);
+        Grid.INSTANCE.init(channelService, lockService, storeService);
     }
 
 }

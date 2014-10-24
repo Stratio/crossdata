@@ -70,39 +70,13 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     assert(result2.getQueryId() == queryId + "2")
   }
 
-
-
-
   test("Send MetadataInProgressQuery to Connector") {
 
     val queryId = "queryId"
-    /*
-    val m = mock[IConnector]
-    val me = mock[IMetadataEngine]
-    val m2 = mock[IConnector]
-    val me2 = mock[IMetadataEngine]
-    val slowfunc = () => {
-      println("very slow function")
-      for (i <- 1 to 5) {
-        Thread.sleep(1000)
-        println(i + " seconds gone by")
-      }
-      QueryResult.createSuccessQueryResult()
-    }
-    (me.createTable _).expects(*, *).onCall((ClusterName, TableMetadata) => { slowfunc() })
-    (m.getMetadataEngine _).expects().returning(me)
-
-    (me2.createTable _).expects(*, *).onCall((ClusterName, TableMetadata) => { slowfunc() })
-    (m2.getMetadataEngine _).expects().returning(me2)
-
-   */
-
     val m=new DummyIConnector()
     val m2=new DummyIConnector()
     val ca1 = system1.actorOf(ConnectorActor.props("myConnector", m))
     val ca2 = system1.actorOf(ConnectorActor.props("myConnector2", m2))
-    //val connectorActor= system1.actorOf(ConnectorActor.props("myConnector",
-      //m).withRouter(RoundRobinRouter(nrOfInstances=2)), "connectorActorTest")
     val routees = Vector[ActorRef](ca1, ca2)
     val connectorActor = system1.actorOf(ConnectorActor.props("myConnector", m).withRouter(RoundRobinRouter(routees
     = routees)))
@@ -125,7 +99,6 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val result2 = Await.result(future2, 16 seconds).asInstanceOf[MetadataResult]
     println("result.getQueryId()=" + result2.getQueryId())
     assert(result2.getQueryId() == queryId + "2")
-
 
   }
 

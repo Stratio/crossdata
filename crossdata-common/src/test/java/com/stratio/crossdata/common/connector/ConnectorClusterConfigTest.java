@@ -16,42 +16,26 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.result;
+package com.stratio.crossdata.common.connector;
 
-/**
- * Types of errors reported by META when a query is processed.
- */
-public enum ErrorType {
-    /**
-     * Parsing error.
-     */
-    PARSING,
+import java.util.HashMap;
+import java.util.Map;
 
-    /**
-     * Validation error.
-     */
-    VALIDATION,
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
-    /**
-     * Execution error.
-     */
-    EXECUTION,
+import com.stratio.crossdata.common.data.ClusterName;
 
-    /**
-     * Connection error.
-     */
-    CONNECTION,
+public class ConnectorClusterConfigTest {
 
-    /**
-     * Operation not supported error.
-     */
-    NOT_SUPPORTED,
-    /**
-     * Critical exceptions for connectors.
-     */
-    CRITICAL,
-    /**
-     * Coordination error.
-     */
-    COORDINATION
+    @Test
+    public void testConnectorClusterConfig() throws Exception {
+        Map<String, String> options = new HashMap<>();
+
+        ConnectorClusterConfig connectorClusterConfig = new ConnectorClusterConfig(new ClusterName("myCluster"),
+                options);
+
+        Assert.assertTrue(connectorClusterConfig.getName().getName().equals("mycluster"));
+        Assert.assertTrue(connectorClusterConfig.getOptions().isEmpty());
+    }
 }

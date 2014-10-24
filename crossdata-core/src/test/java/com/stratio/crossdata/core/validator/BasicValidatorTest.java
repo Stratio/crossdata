@@ -159,9 +159,9 @@ public class BasicValidatorTest {
                 .withJoinTimeoutInMs(3000)
                 .withPersistencePath(path).init();
 
-        metadataMap = Grid.getInstance().map("metatest");
-        Lock lock = Grid.getInstance().lock("metatest");
-        TransactionManager tm = Grid.getInstance().transactionManager("metatest");
+        metadataMap = Grid.INSTANCE.map("metatest");
+        Lock lock = Grid.INSTANCE.lock("metatest");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("metatest");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
         MetadataManager.MANAGER.createDataStore(createDataStoreMetadata());
         MetadataManager.MANAGER.createConnector(createConnectorMetadata());
@@ -172,11 +172,11 @@ public class BasicValidatorTest {
 
     @AfterClass
     public void tearDown() throws Exception {
-        TransactionManager tm = Grid.getInstance().transactionManager("com.stratio.crossdata-test");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("com.stratio.crossdata-test");
         tm.begin();
         metadataMap.clear();
         tm.commit();
-        Grid.getInstance().close();
+        Grid.INSTANCE.close();
         FileUtils.deleteDirectory(new File(path));
     }
 }

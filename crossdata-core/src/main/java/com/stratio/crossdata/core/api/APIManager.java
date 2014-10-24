@@ -34,7 +34,6 @@ import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
@@ -49,7 +48,6 @@ import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
-import com.stratio.crossdata.common.result.ErrorType;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.execution.ExecutionManager;
@@ -61,6 +59,7 @@ public class APIManager {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(APIManager.class);
+    private static final String PROCESSING= "Processing ";
 
     /**
      * Class constructor.
@@ -77,7 +76,7 @@ public class APIManager {
     public Result processRequest(Command cmd) {
         Result result;
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
-            LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
+            LOG.info(PROCESSING + APICommand.LIST_CATALOGS().toString());
             List<String> catalogs = MetadataManager.MANAGER.getCatalogs();
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_CATALOGS);
             ((MetadataResult) result).setCatalogList(catalogs);
@@ -86,10 +85,10 @@ public class APIManager {
 
             if (cmd.params() != null && !cmd.params().isEmpty()) {
                 String catalog = (String) cmd.params().get(0);
-                LOG.info("Processing " + APICommand.LIST_TABLES().toString());
+                LOG.info(PROCESSING + APICommand.LIST_TABLES().toString());
                 tables = MetadataManager.MANAGER.getTablesByCatalogName(catalog);
             } else {
-                LOG.info("Processing " + APICommand.LIST_TABLES().toString());
+                LOG.info(PROCESSING + APICommand.LIST_TABLES().toString());
                 tables = MetadataManager.MANAGER.getTables();
             }
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_TABLES);
@@ -114,16 +113,16 @@ public class APIManager {
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_COLUMNS);
             ((MetadataResult) result).setColumnList(columnsResult);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
-            LOG.info("Processing " + APICommand.ADD_MANIFEST().toString());
+            LOG.info(PROCESSING + APICommand.ADD_MANIFEST().toString());
             persistManifest((CrossdataManifest) cmd.params().get(0));
             result = CommandResult.createCommandResult("CrossdataManifest added "
                     + System.lineSeparator()
                     + cmd.params().get(0).toString());
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
-            LOG.info("Processing " + APICommand.RESET_METADATA().toString());
+            LOG.info(PROCESSING + APICommand.RESET_METADATA().toString());
             result = resetMetadata();
-        }else if(APICommand.LIST_CONNECTORS().equals(cmd.commandType())){
-            LOG.info("Processing " + APICommand.LIST_CONNECTORS().toString());
+        } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.LIST_CONNECTORS().toString());
             result = listConnectors();
         } else {
             result =
@@ -271,8 +270,5 @@ public class APIManager {
         // Persist
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
     }
-
-
-
 
 }

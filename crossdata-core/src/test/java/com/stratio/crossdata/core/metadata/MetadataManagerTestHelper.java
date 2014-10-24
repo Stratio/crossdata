@@ -73,14 +73,14 @@ public class MetadataManagerTestHelper {
     public void setUp() {
         initializeGrid();
         //MetadataManager
-        Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("crossdata-test");
-        Lock lock = Grid.getInstance().lock("crossdata-test");
-        TransactionManager tm = Grid.getInstance().transactionManager("crossdata-test");
+        Map<FirstLevelName, IMetadata> metadataMap = Grid.INSTANCE.map("crossdata-test");
+        Lock lock = Grid.INSTANCE.lock("crossdata-test");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("crossdata-test");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
         //ExecutionManager
-        Map<String, Serializable> executionMap = Grid.getInstance().map("crossdata.executionmanager.test");
-        Lock executionLock = Grid.getInstance().lock("crossdata.executionmanager.test");
-        TransactionManager executionTM = Grid.getInstance().transactionManager("crossdata.executionmanager.test");
+        Map<String, Serializable> executionMap = Grid.INSTANCE.map("crossdata.executionmanager.test");
+        Lock executionLock = Grid.INSTANCE.lock("crossdata.executionmanager.test");
+        TransactionManager executionTM = Grid.INSTANCE.transactionManager("crossdata.executionmanager.test");
         ExecutionManager.MANAGER.init(executionMap, executionLock, executionTM);
     }
 
@@ -286,7 +286,7 @@ public class MetadataManagerTestHelper {
     public void tearDown() throws Exception {
         metadataMap.clear();
         executionMap.clear();
-        Grid.getInstance().close();
+        Grid.INSTANCE.close();
         FileUtils.deleteDirectory(new File(path));
     }
 
