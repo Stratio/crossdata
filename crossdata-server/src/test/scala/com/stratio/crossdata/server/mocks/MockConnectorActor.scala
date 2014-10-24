@@ -23,6 +23,7 @@ import akka.actor.{Actor, ActorLogging, Props}
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication._
+import org.apache.log4j.Logger
 
 
 object State extends Enumeration {
@@ -37,6 +38,7 @@ object MockConnectorActor {
 
 class MockConnectorActor() extends Actor with ActorLogging {
   var lastqueryid="wrongqueryid"
+  lazy val logger = Logger.getLogger(classOf[MockConnectorActor])
 
 
   // subscribe to cluster changes, re-subscribe when restart
@@ -52,43 +54,43 @@ class MockConnectorActor() extends Actor with ActorLogging {
       lastqueryid=queryid
     }
     case lw:LogicalWorkflow=>{
-      println(">>>>>>>>>>>>>>>>>>>>>>> lw ")
+      logger.debug(">>>>>>>>>>>>>>>>>>>>>>> lw ")
       val result=QueryResult.createSuccessQueryResult()
       result.setQueryId(lastqueryid)
       sender ! result
     }
 
     case execute: Execute=> {
-      println(">>>>>>>>>>>>>>>>>>>>>>> execute")
+      logger.debug(">>>>>>>>>>>>>>>>>>>>>>> execute")
       val result=QueryResult.createSuccessQueryResult()
       result.setQueryId( execute.queryId )
       sender ! result
     }
 
     case storageOp: StorageOperation=> {
-      println(">>>>>>>>>>>>>>>>>>>>>>> metadataOp")
+      logger.debug(">>>>>>>>>>>>>>>>>>>>>>> metadataOp")
       val result=StorageResult.createSuccessFulStorageResult("OK")
       result.setQueryId(storageOp.queryId)
       sender ! result
     }
 
     case metadataOp: MetadataOperation => {
-      println(">>>>>>>>>>>>>>>>>>>>>>> metadataOp2")
+      logger.debug(">>>>>>>>>>>>>>>>>>>>>>> metadataOp2")
       val result=MetadataResult.createSuccessMetadataResult(0)
       val opclass=metadataOp.getClass().toString().split('.')
       opclass( opclass.length -1 ) match{
         case "CreateTable" =>{
-          println(">>>>>>>>>>>>>>>>>>>>>>> create table")
+          logger.debug(">>>>>>>>>>>>>>>>>>>>>>> create table")
           result.setQueryId( metadataOp.asInstanceOf[CreateTable].queryId )
           sender ! result
         }
         case "CreateCatalog"=>{
-          println(">>>>>>>>>>>>>>>>>>>>>>> create catalog")
+          logger.debug(">>>>>>>>>>>>>>>>>>>>>>> create catalog")
           result.setQueryId( metadataOp.asInstanceOf[CreateCatalog].queryId )
           sender ! result
         }
         case "CreateTableAndCatalog"=>{
-          println(">>>>>>>>>>>>>>>>>>>>>>> create table and catalog")
+          logger.debug(">>>>>>>>>>>>>>>>>>>>>>> create table and catalog")
           result.setQueryId( metadataOp.asInstanceOf[CreateTableAndCatalog].queryId )
           sender ! result
         }
@@ -112,20 +114,20 @@ class MockConnectorActor() extends Actor with ActorLogging {
     }
 
     case msg: getConnectorName => {
-      println(">>>>>>>>>>>>>>>>>>>>>>> connectorName")
-      println("getconnectorname")
+      logger.debug(">>>>>>>>>>>>>>>>>>>>>>> connectorName")
+      logger.debug("getconnectorname")
        sender ! replyConnectorName("myConnector")
      }
 
     case msg:Object=> {
       val myclass=msg.getClass()
-      println(">>>>>>>>>>>>>>>>>>>>>>>other")
-      println("non recogniced message from "+sender )
+      logger.debug(">>>>>>>>>>>>>>>>>>>>>>>other")
+      logger.debug("non recogniced message from "+sender )
       val err= new ErrorResult(null)
       sender ! err
     }
     case _=>{
-      println(">>>>>>>>>>>>>>>>>>>>>>>other _")
+      logger.debug(">>>>>>>>>>>>>>>>>>>>>>>other _")
     }
 
   }

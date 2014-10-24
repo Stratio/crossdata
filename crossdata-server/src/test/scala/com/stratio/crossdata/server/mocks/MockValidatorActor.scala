@@ -22,6 +22,7 @@ import akka.actor.{Actor, Props}
 import com.stratio.crossdata.common.result.{Result, QueryStatus}
 import com.stratio.crossdata.communication.ACK
 import com.stratio.crossdata.core.query.IParsedQuery
+import org.apache.log4j.Logger
 
 object MockValidatorActor {
   def props(): Props = Props(new MockValidatorActor())
@@ -31,14 +32,15 @@ object MockValidatorActor {
  * Actor in charge of the validation of sentences.
  */
 class MockValidatorActor() extends Actor {
+  lazy val logger = Logger.getLogger(classOf[MockValidatorActor])
 
   override def receive: Receive = {
     case query: IParsedQuery => {
-      println("\n\n\n MOCKVALIDATORACTOR receiving from "+sender+"\n\n\n")
+      logger.debug("\n\n\n MOCKVALIDATORACTOR receiving from "+sender+"\n\n\n")
       sender ! ACK(query.getQueryId,QueryStatus.VALIDATED)
     }
     case _ => {
-      println("Unknown message received by ValidatorActor");
+      logger.debug("Unknown message received by ValidatorActor");
       sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
   }

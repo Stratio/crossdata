@@ -100,7 +100,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
 
     val future = ask(myReference,Execute("idquery",workflow))
     val result = Await.result(future, 3 seconds).asInstanceOf[QueryResult]
-    println("receiving->" + result + " after sending select query")
+    logger.debug("receiving->" + result + " after sending select query")
     assert("Hello World" == "Hello World")
     c.stop()
   }
@@ -115,13 +115,12 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
-    //val myReference = c.startup(m, port, config)
     val myReference = c.startup(m)
 
     val message=CreateTable("queryId",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"),  a.get, b.get,d.get,e.get,f.get,f.get) )
     val future=ask(myReference , message)
     val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
-    println("receiving->"+result+" after sending Metadata query")
+    logger.debug("receiving->"+result+" after sending Metadata query")
     c.shutdown()
   }
 
@@ -129,14 +128,12 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     val port = "2561"
     val m = mock[IConnector]
     val ie = mock[IStorageEngine]
-    //(ie.insert(_: ClusterName,_:TableMetadata,_:util.Collection[Row])).expects(*,*,*).returning()
     (ie.insert(_: ClusterName,_:TableMetadata,_:Row)).expects(*,*,*).returning()
     (m.init _).expects(*).returning(None)
     (m.getStorageEngine _).expects().returning(ie)
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
-    //val myReference = c.startup(m, port, config)
     val myReference = c.startup(m)
 
 
@@ -145,7 +142,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     //val future=myReference ? message
     val future=ask(myReference,message)
     val result = Await.result(future, 3 seconds).asInstanceOf[StorageResult]
-    println("receiving->"+result+" after sending insert query")
+    logger.debug("receiving->"+result+" after sending insert query")
     c.shutdown()
   }
 

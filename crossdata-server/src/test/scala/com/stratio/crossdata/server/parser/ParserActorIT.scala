@@ -33,6 +33,7 @@ import org.scalatest.Suite
 import scala.concurrent.duration.DurationInt
 
 class ParserActorIT extends ServerActorTest{
+
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[ParserActorIT])
@@ -109,7 +110,6 @@ class ParserActorIT extends ServerActorTest{
     within(6000 millis) {
       parserActor2 ! Query(queryId + (1), "mycatalog", "SELECT mycatalog.mytable.name FROM mycatalog.mytable;", "user0")
       val ack0 = expectMsgType[ACK]
-      println("lastSender ="+lastSender)
       assert(ack0.queryId == queryId + (1))
     //  assert(ack0.status==QueryResult)
     }

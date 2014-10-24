@@ -200,7 +200,7 @@ ImplicitSender {
 
     val future = connectorActor ? getConnectorName()
     val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
-    println("creating connector "+connectorName.name)
+    logger.debug("creating connector "+connectorName.name)
 
 
     //Create connector
