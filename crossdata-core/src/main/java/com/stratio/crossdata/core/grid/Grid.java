@@ -45,7 +45,7 @@ public enum Grid implements Closeable {
      * Check if Grid is init
      * @
      */
-    private void shoulBeInit() {
+    private void shouldBeInit() {
         if (!init) {
             throw new GridException("Grid isn't initialized yet");
         }
@@ -68,7 +68,7 @@ public enum Grid implements Closeable {
      * @param storeService   the distributed storing service
      * @return the singleton instance
      */
-    public void init(ChannelService channelService,
+    public synchronized void init(ChannelService channelService,
             LockService lockService,
             StoreService storeService) {
         if (init) {
@@ -77,6 +77,7 @@ public enum Grid implements Closeable {
             this.channelService = channelService;
             this.lockService = lockService;
             this.storeService = storeService;
+            init=true;
         }
     }
 
@@ -90,7 +91,7 @@ public enum Grid implements Closeable {
      * @return a distributed {@link java.util.Map} associated to the specified name
      */
     public <K, V> Map<K, V> map(String name) {
-        shoulBeInit();
+        shouldBeInit();
         return storeService.map(name);
     }
 
@@ -102,7 +103,7 @@ public enum Grid implements Closeable {
      * @return a {@link javax.transaction.TransactionManager}
      */
     public TransactionManager transactionManager(String name) {
-        shoulBeInit();
+        shouldBeInit();
         return storeService.transactionManager(name);
     }
 
@@ -114,7 +115,7 @@ public enum Grid implements Closeable {
      * @return a distributed {@link java.util.concurrent.locks.Lock} with the specified name
      */
     public Lock lock(String name) {
-        shoulBeInit();
+        shouldBeInit();
         return lockService.build(name);
     }
 
@@ -126,7 +127,7 @@ public enum Grid implements Closeable {
      * @return a distributed {@link org.jgroups.Channel} with the specified name
      */
     public JChannel channel(String name) {
-        shoulBeInit();
+        shouldBeInit();
         return channelService.build(FORK_CHANNEL_PREFIX + name);
     }
 
@@ -135,10 +136,11 @@ public enum Grid implements Closeable {
      */
     @Override
     public void close() {
-        shoulBeInit();
+        shouldBeInit();
         storeService.close();
         lockService.close();
         channelService.close();
+        init=false;
     }
 
 }
