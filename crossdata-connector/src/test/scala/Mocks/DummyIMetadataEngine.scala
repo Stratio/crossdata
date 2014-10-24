@@ -18,21 +18,29 @@
 
 package Mocks
 
-import com.stratio.crossdata.common.connector._
+import com.stratio.crossdata.common.connector.{IMetadataEngine}
 import com.stratio.crossdata.common.data.{CatalogName, ClusterName, TableName}
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.QueryResult
+import org.apache.log4j.Logger
 
 class DummyIMetadataEngine extends IMetadataEngine{
+
+  lazy val logger = Logger.getLogger(classOf[DummyIMetadataEngine])
   override def createCatalog(targetCluster: ClusterName, catalogMetadata: CatalogMetadata): Unit = {}
 
   override def createTable(targetCluster: ClusterName, tableMetadata: TableMetadata): Unit = {
-      println("very slow function")
+      logger.debug("very slow function")
       for (i <- 1 to 5) {
-        Thread.sleep(1000)
-        println(i + " seconds gone by ----")
+        val a:Int=1000
+
+        /**
+         * time to wait the creation of table.
+         */
+        Thread.sleep(a)
+        logger.debug(i + " seconds gone by ----")
       }
-      println("very Slow process (end)")
+      logger.debug("very Slow process (end)")
       QueryResult.createSuccessQueryResult()
   }
 
