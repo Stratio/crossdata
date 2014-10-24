@@ -66,10 +66,12 @@ public class Shell {
      * Help content to be shown when the internal command {@code help} is used.
      */
     private final HelpContent help;
+
     /**
      * Asynchronous result handler.
      */
     private final IResultHandler resultHandler;
+
     /**
      * Console reader.
      */
@@ -102,6 +104,8 @@ public class Shell {
 
     /**
      * Class constructor.
+     *
+     * @param useAsync Whether the queries will use the asynchronous interface.
      */
     public Shell(boolean useAsync) {
         HelpManager hm = new HelpManager();
@@ -436,11 +440,20 @@ public class Shell {
         return currentCatalog;
     }
 
-    public void resetMetadata() {
+    /**
+     * Trigger the operation to reset the metadata information.
+     */
+    private void resetMetadata() {
         metaDriver.resetMetadata();
     }
 
-    public String sendManifest(String sentence) {
+    /**
+     * Send a manifest through the driver.
+     *
+     * @param sentence The sentence introduced by the user.
+     * @return The operation result.
+     */
+    private String sendManifest(String sentence) {
         LOG.debug("Command: " + sentence);
         // Get manifest type
 

@@ -18,14 +18,29 @@
 
 package com.stratio.crossdata.sh.help;
 
+/**
+ * Wrapper class for help statements.
+ */
 public class HelpStatement {
 
+    /**
+     * The type of help requested.
+     */
     private final HelpType type;
 
+    /**
+     * Class constructor.
+     *
+     * @param type The type of {@link com.stratio.crossdata.sh.help.HelpType} to be shown.
+     */
     public HelpStatement(HelpType type) {
         this.type = type;
     }
 
+    /**
+     * Get the type of help.
+     * @return A {@link com.stratio.crossdata.sh.help.HelpType}.
+     */
     public HelpType getType() {
         return type;
     }
