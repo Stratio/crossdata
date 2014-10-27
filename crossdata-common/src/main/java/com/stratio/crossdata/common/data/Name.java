@@ -25,23 +25,50 @@ public abstract class Name implements Serializable {
     private static final long serialVersionUID = -3032254998929033117L;
     static final String UNKNOWN_NAME = "<UNKNOWN_NAME>";
 
+    /**
+     *
+     * @return boolean
+     */
     public abstract boolean isCompletedName();
 
+    /**
+     * returns qualified name
+     *
+     * @return String
+     */
     public abstract String getQualifiedName();
 
+    /**
+     * returns NameType
+     *
+     * @return NameType
+     */
     public abstract NameType getType();
 
+    /**
+     *
+     * @return String
+     */
     @Override
     public String toString() {
         return this.getQualifiedName();
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public int hashCode() {
         String code = getType() + getQualifiedName();
         return code.hashCode();
     }
 
+    /**
+     *
+     * @param o: Object
+     * @return
+     */
     @Override
     public boolean equals(Object o) {
         return (this == o) || ((o instanceof Name) && (this.hashCode() == o.hashCode()));

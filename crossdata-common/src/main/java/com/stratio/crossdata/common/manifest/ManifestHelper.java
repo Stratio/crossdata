@@ -33,6 +33,12 @@ public final class ManifestHelper implements Serializable {
 
     }
 
+    /**
+     * Converts manifest to String
+     *
+     * @param manifest
+     * @return String
+     */
     public static String manifestToString(CrossdataManifest manifest) {
         String result = null;
         if (manifest instanceof DataStoreType) {
@@ -139,6 +145,12 @@ public final class ManifestHelper implements Serializable {
         return sb.toString();
     }
 
+    /**
+     * Conversion method (Manifest Properties to Metadata Properties)
+     *
+     * @param requiredProperties
+     * @return Set<PropertyType>
+     */
     public static Set<PropertyType> convertManifestPropertiesToMetadataProperties(
             List<PropertyType> requiredProperties) {
         Set<PropertyType> metadataProperties = new HashSet<>();
@@ -148,6 +160,12 @@ public final class ManifestHelper implements Serializable {
         return metadataProperties;
     }
 
+    /**
+     * Conversion method (Manifest DataStore Names to Metadata Store Names)
+     *
+     * @param dataStoreRefs
+     * @return Set<DataStoreName>
+     */
     public static Set<DataStoreName> convertManifestDataStoreNamesToMetadataDataStoreNames(List<String> dataStoreRefs) {
         Set<DataStoreName> dataStoreNames = new HashSet<>();
         for (String name : dataStoreRefs) {
@@ -156,6 +174,12 @@ public final class ManifestHelper implements Serializable {
         return dataStoreNames;
     }
 
+    /**
+     * Conversion method (Manifest Behaviors to Metadata Behaviors)
+     *
+     * @param behaviors
+     * @return
+     */
     public static Set<String> convertManifestBehaviorsToMetadataBehaviors(List<String> behaviors) {
         Set<String> metadataBehaviors = new HashSet<>();
         for (String behavior : behaviors) {

@@ -44,6 +44,7 @@ public enum ExecutionManager {
         }
     }
 
+//TODO: javadoc
     public boolean exists(String key) {
         return executionData.containsKey(key);
     }
@@ -73,6 +74,7 @@ public enum ExecutionManager {
         }
     }
 
+//TODO: javadoc
     public synchronized void init(Map<String, Serializable> executionData, Lock writeLock, TransactionManager tm) {
         if (executionData != null && writeLock != null) {
             this.executionData = executionData;
@@ -83,6 +85,7 @@ public enum ExecutionManager {
             throw new IllegalArgumentException("Any parameter can't be NULL");
         }
     }
+//TODO: javadoc
     public synchronized void clear()
             throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException,
             RollbackException {
@@ -91,10 +94,12 @@ public enum ExecutionManager {
         commitTransaction();
     }
 
+//TODO: javadoc
     public void createEntry(String key, Serializable value) {
         createEntry(key, value, false);
     }
 
+//TODO: javadoc
     public void createEntry(String key, Serializable value, boolean override) {
         shouldBeInit();
         try {
@@ -112,6 +117,7 @@ public enum ExecutionManager {
         }
     }
 
+//TODO: javadoc
     public void deleteEntry(String key) {
         shouldBeInit();
         try {
@@ -125,6 +131,7 @@ public enum ExecutionManager {
         }
     }
 
+//TODO: javadoc
     public Serializable getValue(String key) {
         shouldBeInit();
         shouldExist(key);

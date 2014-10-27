@@ -27,36 +27,44 @@ public class TruncateStatement extends StorageStatement {
 
     private TableName tablename;
 
+//TODO:javadoc
     public TruncateStatement(TableName tablename) {
         this.command = false;
         this.tablename = tablename;
     }
 
+//TODO:javadoc
     public boolean isCatalogInc() {
         return catalogInc;
     }
 
+//TODO:javadoc
     public void setCatalogInc(boolean catalogInc) {
         this.catalogInc = catalogInc;
     }
 
+//TODO:javadoc
     public CatalogName getCatalog() {
         return catalog;
     }
 
+//TODO:javadoc
     public void setCatalog(CatalogName catalog) {
         this.catalog = catalog;
     }
 
+//TODO:javadoc
     public TableName getTablename() {
         return tablename;
     }
 
+//TODO:javadoc
     public void setTablename(TableName tablename) {
         this.tablename = tablename;
     }
 
     @Override
+//TODO:javadoc
     public String toString() {
         StringBuilder sb = new StringBuilder("TRUNCATE ");
         if (catalogInc) {
@@ -67,6 +75,7 @@ public class TruncateStatement extends StorageStatement {
     }
 
     @Override
+//TODO:javadoc
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE).add(ValidationTypes.MUST_EXIST_CATALOG);
     }

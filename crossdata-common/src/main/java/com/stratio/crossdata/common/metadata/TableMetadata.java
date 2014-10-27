@@ -45,6 +45,7 @@ public class TableMetadata implements IMetadata {
     private final List<ColumnName> partitionKey;
     private final List<ColumnName> clusterKey;
 
+//TODO:javadoc
     public TableMetadata(TableName name, Map<Selector, Selector> options,
             Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
             ClusterName clusterRef,
@@ -59,30 +60,37 @@ public class TableMetadata implements IMetadata {
         this.clusterKey = clusterKey;
     }
 
+//TODO:javadoc
     public TableName getName() {
         return name;
     }
 
+//TODO:javadoc
     public Map<Selector, Selector> getOptions() {
         return options;
     }
 
+//TODO:javadoc
     public Map<ColumnName, ColumnMetadata> getColumns() {
         return columns;
     }
 
+//TODO:javadoc
     public ClusterName getClusterRef() {
         return clusterRef;
     }
 
+//TODO:javadoc
     public List<ColumnName> getPartitionKey() {
         return partitionKey;
     }
 
+//TODO:javadoc
     public List<ColumnName> getClusterKey() {
         return clusterKey;
     }
 
+//TODO:javadoc
     public List<ColumnName> getPrimaryKey() {
         List<ColumnName> result = new ArrayList<>();
         result.addAll(partitionKey);
@@ -90,6 +98,7 @@ public class TableMetadata implements IMetadata {
         return result;
     }
 
+//TODO:javadoc
     public Map<IndexName, IndexMetadata> getIndexes() {
         return indexes;
     }
@@ -121,10 +130,12 @@ public class TableMetadata implements IMetadata {
         return false;
     }
 
+//TODO:javadoc
     public void addIndex(IndexName name, IndexMetadata data) {
         indexes.put(name, data);
     }
 
+//TODO:javadoc
     public void deleteIndex(IndexName name) {
         indexes.remove(name);
     }

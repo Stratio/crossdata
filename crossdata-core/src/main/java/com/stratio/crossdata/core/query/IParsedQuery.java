@@ -24,6 +24,7 @@ import com.stratio.crossdata.core.statements.MetaStatement;
 
 public interface IParsedQuery {
 
+//TODO:javadoc
     String getQuery();
 
     String getQueryId();

@@ -27,42 +27,51 @@ public class SelectionSelector {
     private boolean aliasInc;
     private String alias;
 
+//TODO:javadoc
     public SelectionSelector(SelectorMeta selector, boolean aliasInc, String alias) {
         this.selector = selector;
         this.aliasInc = aliasInc;
         this.alias = alias;
     }
 
+//TODO:javadoc
     public SelectionSelector(SelectorMeta selector) {
         this(selector, false, null);
     }
 
+//TODO:javadoc
     public SelectorMeta getSelector() {
         return selector;
     }
 
+//TODO:javadoc
     public void setSelector(SelectorMeta selector) {
         this.selector = selector;
     }
 
+//TODO:javadoc
     public boolean isAliasInc() {
         return aliasInc;
     }
 
+//TODO:javadoc
     public void setAliasInc(boolean aliasInc) {
         this.aliasInc = aliasInc;
     }
 
+//TODO:javadoc
     public String getAlias() {
         return alias;
     }
 
+//TODO:javadoc
     public void setAlias(String alias) {
         this.aliasInc = true;
         this.alias = alias;
     }
 
     @Override
+//TODO:javadoc
     public String toString() {
         StringBuilder sb = new StringBuilder(selector.toString());
         if (aliasInc) {
@@ -71,6 +80,7 @@ public class SelectionSelector {
         return sb.toString();
     }
 
+//TODO:javadoc
     public void addTablename(TableName tablename) {
         selector.addTablename(tablename);
     }

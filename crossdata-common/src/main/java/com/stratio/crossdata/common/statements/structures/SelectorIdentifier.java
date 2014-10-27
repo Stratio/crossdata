@@ -30,6 +30,7 @@ public class SelectorIdentifier extends SelectorMeta implements Serializable {
 
     private String field;
 
+//TODO:javadoc
     public SelectorIdentifier(String columnName) {
 
         this.type = TYPE_IDENT;
@@ -43,39 +44,47 @@ public class SelectorIdentifier extends SelectorMeta implements Serializable {
         }
     }
 
+//TODO:javadoc
     public SelectorIdentifier(TableName tableName, String fieldName) {
         this.type = TYPE_IDENT;
         this.table = tableName;
         this.field = fieldName;
     }
 
+//TODO:javadoc
     public TableName getTable() {
         return table;
     }
 
+//TODO:javadoc
     public void setTable(TableName table) {
         this.table = table;
     }
 
+//TODO:javadoc
     public String getField() {
         return field;
     }
 
+//TODO:javadoc
     public void setField(String field) {
         this.field = field;
     }
 
+//TODO:javadoc
     public boolean isColumnSelector() {
         return field.contains(".");
     }
 
     @Override
+//TODO:javadoc
     public String toString() {
 
         return (this.table == null || "*".equals(field)) ? this.field : this.table + "." + this.field;
     }
 
     @Override
+//TODO:javadoc
     public void addTablename(TableName tablename) {
         if (this.table == null) {
             this.table = tablename;
