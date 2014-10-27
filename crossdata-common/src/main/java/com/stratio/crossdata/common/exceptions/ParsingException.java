@@ -33,7 +33,7 @@ public class ParsingException extends RuntimeException {
     private final List<String> errors;
 
     /**
-     * Constructor
+     * Constructor.
      *
      * @param message String
      */
@@ -43,7 +43,7 @@ public class ParsingException extends RuntimeException {
     }
 
     /**
-     * Constructor
+     * Constructor. 
      *
      * @param e Exception
      */
@@ -53,10 +53,10 @@ public class ParsingException extends RuntimeException {
     }
 
     /**
-     * Constructor
+     * Constructor.
      *
-     * @param message
-     * @param errors
+     * @param message String with information about the exception.
+     * @param errors List of String containing information about several erros.
      */
     public ParsingException(String message, List<String> errors) {
         super(message);
@@ -64,8 +64,9 @@ public class ParsingException extends RuntimeException {
     }
 
     /**
+     * Returns a list of errors
      *
-     * @return List<String>
+     * @return List<String>.
      */
     public List<String> getErrors() {
         return this.errors;
