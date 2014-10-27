@@ -56,6 +56,9 @@ import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * Singleton to manage the metadata store.
+ */
 public enum MetadataManager {
     MANAGER;
 
@@ -71,6 +74,11 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Check if the object exist in the metadata store.
+     * @param name It is the object to check.
+     * @return True if it exists.
+     */
     public boolean exists(Name name) {
         boolean result = false;
         switch (name.getType()) {
@@ -130,6 +138,11 @@ public enum MetadataManager {
         return metadata.containsKey(name);
     }
 
+    /**
+     * Check if the table name exists.
+     * @param name It's the table name to check.
+     * @return True if it exists.
+     */
     public boolean exists(TableName name) {
         boolean result = false;
         if (exists(name.getCatalogName())) {
@@ -138,7 +151,11 @@ public enum MetadataManager {
         }
         return result;
     }
-
+    /**
+     * Check if the column name exists.
+     * @param name It's the column name to check.
+     * @return True if it exists.
+     */
     public boolean exists(ColumnName name) {
         boolean result = false;
         if (exists(name.getTableName())) {
@@ -148,6 +165,11 @@ public enum MetadataManager {
         return result;
     }
 
+    /**
+     * Check if the index name exists.
+     * @param name It's the index name to check.
+     * @return True if it exists
+     */
     public boolean exists(IndexName name) {
         boolean result = false;
         if (exists(name.getTableName())) {
@@ -157,6 +179,13 @@ public enum MetadataManager {
         return result;
     }
 
+    /**
+     * Initialize the MetadataManager. This method is mandatory to use the MetadataManager.
+     * @param metadata Map where MetadataManager persist the metadata objects.
+     * @param writeLock Distributed lock.
+     * @param tm Distributed transaction manager.
+     * @see com.stratio.crossdata.core.grid.Grid
+     */
     public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock, TransactionManager tm) {
         if (metadata != null && writeLock != null) {
             this.metadata = metadata;
@@ -168,6 +197,14 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Clear all metadata information.
+     * @throws SystemException
+     * @throws NotSupportedException
+     * @throws HeuristicRollbackException
+     * @throws HeuristicMixedException
+     * @throws RollbackException
+     */
     public synchronized void clear()
             throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException,
             RollbackException {
@@ -176,10 +213,19 @@ public enum MetadataManager {
         commitTransaction();
     }
 
+    /**
+     * Save in the metadata store a new catalog. Must be unique.
+     * @param catalogMetadata New catalog.
+     */
     public void createCatalog(CatalogMetadata catalogMetadata) {
         createCatalog(catalogMetadata, true);
     }
 
+    /**
+     * Save in the metadata store a new catalog.
+     * @param catalogMetadata New catalog.
+     * @param unique If it is true then check if the catalog is unique.
+     */
     public void createCatalog(CatalogMetadata catalogMetadata, boolean unique) {
         shouldBeInit();
         try {
@@ -197,16 +243,38 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Remove the selected catalog. Not implemented yet.
+     * @param catalogName Removed catalog name.
+     */
     public void deleteCatalog(CatalogName catalogName) {
 
     }
 
+    /**
+     * Return a selected catalog in the metadata store.
+     * @param name Name for the selected catalog.
+     * @return Selected catalog.
+     */
     public CatalogMetadata getCatalog(CatalogName name) {
         shouldBeInit();
         shouldExist(name);
         return (CatalogMetadata) metadata.get(name);
     }
 
+    /**
+     * Save in the metadata store a new table. Must be unique.
+     * @param tableMetadata New table.
+     */
+    public void createTable(TableMetadata tableMetadata) {
+        createTable(tableMetadata, true);
+    }
+
+    /**
+     * Save in the metadata store a new table.
+     * @param tableMetadata New table.
+     * @param unique If it is true then check if the table is unique.
+     */
     public void createTable(TableMetadata tableMetadata, boolean unique) {
         shouldBeInit();
         try {
@@ -234,14 +302,19 @@ public enum MetadataManager {
         }
     }
 
-    public void createTable(TableMetadata tableMetadata) {
-        createTable(tableMetadata, true);
-    }
-
+    /**
+     * Remove the selected table. Not implemented yet.
+     * @param tableName Removed table name.
+     */
     public void deleteTable(TableName tableName) {
 
     }
 
+    /**
+     * Return a selected table in the metadata store.
+     * @param name Name for the selected table.
+     * @return Selected table.
+     */
     public TableMetadata getTable(TableName name) {
         shouldBeInit();
         shouldExist(name);
@@ -249,7 +322,12 @@ public enum MetadataManager {
         return catalogMetadata.getTables().get(name);
     }
 
-    public void createCluster(ClusterMetadata clusterMetadata, boolean unique, boolean attachToDatastore) {
+    /**
+     * Persist this cluster in MetadataStore and attach with the datastore.
+     * @param clusterMetadata Metadata information that you want persist.
+     * @param unique If it's true then the cluster metadata must be unique.
+     */
+    public void createClusterAndAttach(ClusterMetadata clusterMetadata, boolean unique) {
         shouldBeInit();
         try {
             writeLock.lock();
@@ -285,6 +363,11 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Persist this cluster in MetadataStore .
+     * @param clusterMetadata Metadata information that you want persist.
+     * @param unique If it's true then the cluster metadata must be unique.
+     */
     public void createCluster(ClusterMetadata clusterMetadata, boolean unique) {
         shouldBeInit();
         try {
@@ -306,17 +389,30 @@ public enum MetadataManager {
             writeLock.unlock();
         }
     }
-
+    /**
+     * Persist this cluster in MetadataStore and attach with the datastore. Must be unique.
+     * @param clusterMetadata Metadata information that you want persist.
+     */
     public void createCluster(ClusterMetadata clusterMetadata) {
         createCluster(clusterMetadata, true);
     }
 
+    /**
+     * Return a selected cluster in the metadata store.
+     * @param name Name for the selected cluster.
+     * @return Selected cluster.
+     */
     public ClusterMetadata getCluster(ClusterName name) {
         shouldBeInit();
         shouldExist(name);
         return (ClusterMetadata) metadata.get(name);
     }
 
+    /**
+     * Save in the metadata store a new datastore.
+     * @param dataStoreMetadata New datastore.
+     * @param unique If it is true then check if the datastore is unique.
+     */
     public void createDataStore(DataStoreMetadata dataStoreMetadata, boolean unique) {
         shouldBeInit();
         try {
@@ -334,19 +430,32 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Save in the metadata store a new datastore. Must be unique.
+     * @param dataStoreMetadata New datastore.
+     */
     public void createDataStore(DataStoreMetadata dataStoreMetadata) {
         createDataStore(dataStoreMetadata, true);
     }
 
+    /**
+     * Return a selected datastore in the metadata store.
+     * @param name Name for the selected datastore.
+     * @return Selected datastore.
+     */
     public DataStoreMetadata getDataStore(DataStoreName name) {
         shouldBeInit();
         shouldExist(name);
         return (DataStoreMetadata) metadata.get(name);
     }
 
+    /**
+     * Save in the metadata store a new connector.
+     * @param connectorMetadata New connector.
+     * @param unique If it is true then check if the connector is unique.
+     */
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
         shouldBeInit();
-        //TODO Check whether datastores can be added after adding connectors
         try {
             writeLock.lock();
             if (unique) {
@@ -362,49 +471,30 @@ public enum MetadataManager {
         }
     }
 
-    public void createConnector(ConnectorMetadata connectorMetadata, boolean unique, boolean attachToCluster) {
-        shouldBeInit();
-        for (DataStoreName dataStore : connectorMetadata.getDataStoreRefs()) {
-            shouldExist(dataStore);
-            // Check clusters
-            for (ClusterName c : connectorMetadata.getClusterRefs()) {
-                shouldExist(c);
-            }
-        }
-        try {
-            writeLock.lock();
-            if (unique) {
-                shouldBeUnique(connectorMetadata.getName());
-            }
-            beginTransaction();
-            metadata.put(connectorMetadata.getName(), connectorMetadata);
-            for (ClusterName c : connectorMetadata.getClusterRefs()) {
-                IMetadata iMetadata = metadata.get(c);
-                ClusterMetadata clusterMetadata = (ClusterMetadata) iMetadata;
-                Map<ConnectorName, ConnectorAttachedMetadata> connectorList = clusterMetadata
-                        .getConnectorAttachedRefs();
-                connectorList.put(connectorMetadata.getName(), new ConnectorAttachedMetadata(connectorMetadata.getName
-                        (), c, connectorMetadata.getClusterProperties().get(c)));
-                clusterMetadata.setConnectorAttachedRefs(connectorList);
-            }
-            commitTransaction();
-        } catch (Exception ex) {
-            throw new MetadataManagerException(ex);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
+    /**
+     * Save in the metadata store a new connector. Must be unique.
+     * @param connectorMetadata New connector.
+     */
     public void createConnector(ConnectorMetadata connectorMetadata) {
         createConnector(connectorMetadata, true);
     }
 
+    /**
+     * Return a selected connector in the metadata store.
+     * @param name Name for the selected connector.
+     * @return Selected connector.
+     */
     public ConnectorMetadata getConnector(ConnectorName name) {
         shouldBeInit();
         shouldExist(name);
         return (ConnectorMetadata) metadata.get(name);
     }
 
+    /**
+     * Add a new actor reference.
+     * @param name Name for the selected connector.
+     * @param actorRef Actor reference URI.
+     */
     public void addConnectorRef(ConnectorName name, String actorRef) {
         if (!exists(name)) {
             String version = null;
@@ -433,18 +523,33 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Update connector status.
+     * @param name Name for the selected connector.
+     * @param connectorStatus New connector status.
+     */
     public void setConnectorStatus(ConnectorName name, ConnectorStatus connectorStatus) {
         ConnectorMetadata connectorMetadata = getConnector(name);
         connectorMetadata.setConnectorStatus(connectorStatus);
         createConnector(connectorMetadata, false);
     }
 
+    /**
+     * Update the status of the connector list
+     * @param names List of connectors name.
+     * @param connectorStatus New connector status.
+     */
     public void setConnectorStatus(List<ConnectorName> names, ConnectorStatus connectorStatus) {
         for(ConnectorName connectorName: names){
             setConnectorStatus(connectorName, connectorStatus);
         }
     }
 
+    /**
+     * Return a connector actor ref in the metadata store.
+     * @param name Name for the selected connector.
+     * @return Connector actor ref.
+     */
     public String getConnectorRef(ConnectorName name) {
         return getConnector(name).getActorRef();
     }
@@ -480,6 +585,12 @@ public enum MetadataManager {
         return result;
     }
 
+    /**
+     * Select a list available connector for a selected cluster.
+     * @param connectorStatus Selected status.
+     * @param clusterName Selected cluster.
+     * @return List of connector that it validate the restrictions.
+     */
     public List<ConnectorMetadata> getAttachedConnectors(ConnectorStatus connectorStatus, ClusterName clusterName) {
         List<ConnectorMetadata> connectors = new ArrayList<>();
         Set<ConnectorName> connectorNames = getCluster(clusterName)
@@ -493,6 +604,11 @@ public enum MetadataManager {
         return connectors;
     }
 
+    /**
+     * Return a selected column in the metadata store.
+     * @param name Name for the selected column.
+     * @return Selected column.
+     */
     public ColumnMetadata getColumn(ColumnName name) {
         shouldBeInit();
         shouldExist(name);
@@ -500,12 +616,22 @@ public enum MetadataManager {
         return tableMetadata.getColumns().get(name);
     }
 
+    /**
+     * Validate connector status.
+     * @param connectorName Selected connector
+     * @param connectorStatus Status to validate.
+     * @return True if the status is equal.
+     */
     public boolean checkConnectorStatus(ConnectorName connectorName, ConnectorStatus connectorStatus) {
         shouldBeInit();
         exists(connectorName);
         return (getConnector(connectorName).getConnectorStatus() == connectorStatus);
     }
 
+    /**
+     * Return all catalogs.
+     * @return List with all catalogs.
+     */
     public List<CatalogMetadata> getCatalogs() {
         List<CatalogMetadata> catalogsMetadata = new ArrayList<>();
         for (Name name: metadata.keySet()) {
@@ -516,6 +642,10 @@ public enum MetadataManager {
         return catalogsMetadata;
     }
 
+    /**
+     * Return all tables.
+     * @return List with all tables.
+     */
     public List<TableMetadata> getTables() {
         List<TableMetadata> tablesMetadata = new ArrayList<>();
         for(CatalogMetadata catalogMetadata: getCatalogs()){
@@ -524,6 +654,10 @@ public enum MetadataManager {
         return tablesMetadata;
     }
 
+    /**
+     * Return all columns.
+     * @return List with all columns.
+     */
     public List<ColumnMetadata> getColumns() {
         List<ColumnMetadata> columnsMetadata = new ArrayList<>();
         for(TableMetadata tableMetadata: getTables()){
@@ -532,6 +666,11 @@ public enum MetadataManager {
         return columnsMetadata;
     }
 
+    /**
+     * Return all tables in a selected catalog.
+     * @param catalogName Selected catalog.
+     * @return List with all tables.
+     */
     public List<TableMetadata> getTablesByCatalogName(String catalogName) {
         List<TableMetadata> tableList=new ArrayList<>();
         for(Name name:metadata.keySet()) {
@@ -549,6 +688,12 @@ public enum MetadataManager {
         return tableList;
     }
 
+    /**
+     * Return all columns in a selected table.
+     * @param catalog Selected catalog.
+     * @param tableName Selected table name.
+     * @return List with all columns.
+     */
     public List<ColumnMetadata> getColumnByTable(String catalog,String tableName) {
         List<ColumnMetadata> columnList=new ArrayList<>();
 
@@ -572,6 +717,10 @@ public enum MetadataManager {
         return columnList;
     }
 
+    /**
+     * Return all connectors.
+     * @return List with all connectors.
+     */
     public List<ConnectorMetadata> getConnectors() {
         List<ConnectorMetadata> connectors = new ArrayList<>();
         for (Map.Entry<FirstLevelName, IMetadata> entry : metadata.entrySet()) {
@@ -583,6 +732,11 @@ public enum MetadataManager {
         return connectors;
     }
 
+    /**
+     * Return all connector with a specific status.
+     * @param connectorStatus Selected status.
+     * @return List with all connectors.
+     */
     public List<ConnectorMetadata> getConnectors(ConnectorStatus connectorStatus){
         List<ConnectorMetadata> onlineConnectors = new ArrayList<>();
         for (ConnectorMetadata connector : getConnectors()) {
@@ -593,6 +747,11 @@ public enum MetadataManager {
         return onlineConnectors;
     }
 
+    /**
+     * Return all connectors name with a selected status.
+     * @param connectorStatus Selected status.
+     * @return List with all connector names.
+     */
     public List<ConnectorName> getConnectorNames(ConnectorStatus connectorStatus){
         List<ConnectorName> onlineConnectorNames = new ArrayList<>();
         for(ConnectorMetadata connectorMetadata: getConnectors(connectorStatus)){
@@ -601,6 +760,10 @@ public enum MetadataManager {
         return onlineConnectorNames;
     }
 
+    /**
+     * Check if the metadata store is empty.
+     * @return True if it's empty.
+     */
     public boolean isEmpty() {
         return metadata.isEmpty();
     }
