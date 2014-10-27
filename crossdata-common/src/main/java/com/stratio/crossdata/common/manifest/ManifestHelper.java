@@ -178,7 +178,6 @@ public final class ManifestHelper implements Serializable {
      * Conversion method (Manifest Behaviors to Metadata Behaviors)
      *
      * @param behaviors
-     * @return
      */
     public static Set<String> convertManifestBehaviorsToMetadataBehaviors(List<String> behaviors) {
         Set<String> metadataBehaviors = new HashSet<>();

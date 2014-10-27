@@ -55,8 +55,8 @@ public abstract class Name implements Serializable {
     }
 
     /**
-     *
-     * @return
+     * Method returning hash code
+     * @return Hash Code
      */
     @Override
     public int hashCode() {
@@ -65,9 +65,9 @@ public abstract class Name implements Serializable {
     }
 
     /**
-     *
-     * @param o: Object
-     * @return
+     * Method equals
+     * @param o Object to be compared
+     * @return whether Object o is equal to this object
      */
     @Override
     public boolean equals(Object o) {

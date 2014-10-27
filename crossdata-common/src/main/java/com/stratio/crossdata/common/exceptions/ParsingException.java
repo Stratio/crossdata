@@ -35,7 +35,7 @@ public class ParsingException extends RuntimeException {
     /**
      * Constructor
      *
-     * @param message:String
+     * @param message String
      */
     public ParsingException(String message) {
         super(message);
@@ -45,7 +45,7 @@ public class ParsingException extends RuntimeException {
     /**
      * Constructor
      *
-     * @param e: Exception
+     * @param e Exception
      */
     public ParsingException(Exception e) {
         super(e.getMessage());
