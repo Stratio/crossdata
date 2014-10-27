@@ -18,22 +18,36 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+/**
+ * Relation selector.
+ */
 public class RelationSelector extends Selector {
 
     /**
-     *
+     * The relation associated with the selector.
      */
     private final Relation relation;
 
+    /**
+     * Class constructor.
+     *
+     * @param relation A {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     */
     public RelationSelector(Relation relation) {
         this.relation = relation;
     }
 
+    /**
+     * Get the relation associated with the selector.
+     *
+     * @return A {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     */
     public Relation getRelation() {
         return relation;
     }
 
-    @Override public SelectorType getType() {
+    @Override
+    public SelectorType getType() {
         return SelectorType.RELATION;
     }
 
@@ -66,7 +80,7 @@ public class RelationSelector extends Selector {
     @Override
     public int hashCode() {
         int result = 1;
-        if (alias != null){
+        if (alias != null) {
             result = alias.hashCode();
         }
         result = 31 * result + relation.hashCode();

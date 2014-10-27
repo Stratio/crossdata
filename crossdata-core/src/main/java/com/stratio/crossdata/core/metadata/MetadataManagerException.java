@@ -20,14 +20,17 @@ package com.stratio.crossdata.core.metadata;
 
 public class MetadataManagerException extends RuntimeException {
 
+//TODO:javadoc
     public MetadataManagerException(Exception e){
         super(e);
     }
 
+//TODO:javadoc
     public MetadataManagerException(String message) {
         super(message);
     }
 
+//TODO:javadoc
     public MetadataManagerException(String message, Throwable cause) {
         super(message, cause);
     }

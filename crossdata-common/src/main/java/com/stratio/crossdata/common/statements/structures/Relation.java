@@ -56,18 +56,22 @@ public class Relation implements Serializable{
         this.rightTerm = rightTerm;
     }
 
+//TODO:javadoc
     public Selector getLeftTerm() {
         return leftTerm;
     }
 
+//TODO:javadoc
     public Operator getOperator() {
         return operator;
     }
 
+//TODO:javadoc
     public void setOperator(Operator operator) {
         this.operator = operator;
     }
 
+//TODO:javadoc
     public Selector getRightTerm() {
         return rightTerm;
     }
@@ -82,6 +86,7 @@ public class Relation implements Serializable{
     }
 
     @Override
+//TODO:javadoc
     public String toString() {
         StringBuilder sb = new StringBuilder(leftTerm.toString());
         sb.append(" ").append(operator).append(" ");

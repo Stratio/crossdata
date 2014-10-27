@@ -50,23 +50,42 @@ import com.stratio.crossdata.core.structures.GroupBy;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.structures.OrderBy;
 
+/**
+ * Normalizator Class.
+ */
 public class Normalizator {
 
     private NormalizedFields fields = new NormalizedFields();
     private IParsedQuery parsedQuery;
 
+    /**
+     * Class Constructor
+     * @param parsedQuery The parsed query.
+     */
     public Normalizator(SelectParsedQuery parsedQuery) {
         this.parsedQuery = parsedQuery;
     }
 
+    /**
+     * Get the obtained fields normalized.
+     * @return com.stratio.crossdata.core.normalizer.NormalizerFields
+     */
     public NormalizedFields getFields() {
         return fields;
     }
 
+    /**
+     * Get the parsed query to Normalize.
+     * @return com.stratio.crossdata.core.query.IParsedQuery;
+     */
     public IParsedQuery getParsedQuery() {
         return parsedQuery;
     }
 
+    /**
+     * execute the normalization of a parsed query.
+     * @throws ValidationException
+     */
     public void execute() throws ValidationException {
         normalizeTables();
         normalizeSelectExpression();
@@ -76,6 +95,10 @@ public class Normalizator {
         normalizeGroupBy();
     }
 
+    /**
+     * Normalize the tables of a query.
+     * @throws ValidationException
+     */
     public void normalizeTables() throws ValidationException {
         List<TableName> tableNames = parsedQuery.getStatement().getFromTables();
         if (tableNames != null && !tableNames.isEmpty()) {
@@ -83,6 +106,11 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Normalize the "from" tables of a parsed query.
+     * @param fromTables List of the from clause tables of a parsed query
+     * @throws ValidationException
+     */
     public void normalizeTables(List<TableName> fromTables) throws ValidationException {
         for (TableName tableName : fromTables) {
             checkTable(tableName);
@@ -91,6 +119,10 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Normalize all the joins of a parsed query.
+     * @throws ValidationException
+     */
     public void normalizeJoins()
             throws ValidationException {
         InnerJoin innerJoin = ((SelectStatement) parsedQuery.getStatement()).getJoin();
@@ -100,6 +132,11 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Normalize a specific inner join of a parsed query
+     * @param innerJoin The inner join
+     * @throws ValidationException
+     */
     public void normalizeJoins(InnerJoin innerJoin)
             throws ValidationException {
         TableName joinTable = innerJoin.getTablename();
@@ -122,6 +159,10 @@ public class Normalizator {
         checkWhereRelations(where);
     }
 
+    /**
+     * Normalize the order by clause of a parsed query.
+     * @throws ValidationException
+     */
     public void normalizeOrderBy()
             throws ValidationException {
 
@@ -135,6 +176,11 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Normalize an specific order by of a parsed query.
+     * @param orderBy The order by
+     * @throws ValidationException
+     */
     public void normalizeOrderBy(OrderBy orderBy)
             throws ValidationException {
         for (Selector selector : orderBy.getSelectorList()) {
@@ -154,6 +200,10 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Normalize de select clause of a parsed query.
+     * @throws ValidationException
+     */
     public void normalizeSelectExpression()
             throws ValidationException {
         SelectExpression selectExpression = ((SelectStatement) parsedQuery.getStatement()).getSelectExpression();
@@ -162,6 +212,11 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Normalize an specific select expression.
+     * @param selectExpression The select expression
+     * @throws ValidationException
+     */
     public void normalizeSelectExpresion(SelectExpression selectExpression)
             throws ValidationException {
         fields.setDistinctSelect(selectExpression.isDistinct());
@@ -169,6 +224,10 @@ public class Normalizator {
         fields.getSelectors().addAll(normalizeSelectors);
     }
 
+    /**
+     * Normalize the group by of a parsed query.
+     * @throws ValidationException
+     */
     public void normalizeGroupBy() throws ValidationException {
         GroupBy groupBy = ((SelectStatement) parsedQuery.getStatement()).getGroupBy();
         //TODO: NOT SUPORTED YET. REVIEW IN FUTURES RELEASES
@@ -211,6 +270,11 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Normalize an specific group by of a parsed query.
+     * @param groupBy
+     * @throws ValidationException
+     */
     public void normalizeGroupBy(GroupBy groupBy) throws ValidationException {
         Set<ColumnName> columnNames = new HashSet<>();
         for (Selector selector : groupBy.getSelectorIdentifier()) {
@@ -222,6 +286,11 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Validate the joins of a parsed query.
+     * @param relations A list of Relation to check.
+     * @throws ValidationException
+     */
     public void checkJoinRelations(List<Relation> relations) throws ValidationException {
         for (Relation relation : relations) {
             checkRelation(relation);
@@ -241,12 +310,22 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Validate the where clause of a parsed query.
+     * @param relations The list of Relation that contains the where clause to check
+     * @throws ValidationException
+     */
     public void checkWhereRelations(List<Relation> relations) throws ValidationException {
         for (Relation relation : relations) {
             checkRelation(relation);
         }
     }
 
+    /**
+     * Validate the relation of a parsed query.
+     * @param relation The relation of the query.
+     * @throws ValidationException
+     */
     public void checkRelation(Relation relation)
             throws ValidationException {
         if (relation.getOperator().isInGroup(Operator.Group.ARITHMETIC)) {
@@ -292,6 +371,11 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Validate the table of a parsed query.
+     * @param tableName The table name to validate
+     * @throws ValidationException
+     */
     public void checkTable(TableName tableName) throws ValidationException {
         if (!tableName.isCompletedName()) {
             tableName.setCatalogName(parsedQuery.getDefaultCatalog());
@@ -301,6 +385,11 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Validate the column selectors.
+     * @param selector The selector
+     * @throws ValidationException
+     */
     public void checkColumnSelector(ColumnSelector selector) throws ValidationException {
         ColumnName columnName = selector.getName();
         if (columnName.isCompletedName()) {
@@ -315,6 +404,12 @@ public class Normalizator {
 
     }
 
+    /**
+     * Search a table using a column name.
+     * @param columnName The column name
+     * @return com.stratio.crossdata.common.data.ColumnName
+     * @throws ValidationException
+     */
     public TableName searchTableNameByColumn(ColumnName columnName) throws ValidationException {
         TableName selectTableName = null;
         if (columnName.isCompletedName()) {
@@ -355,6 +450,10 @@ public class Normalizator {
         return selectTableName;
     }
 
+    /**
+     * Validate the conditions that have an asterisk.
+     * @return List of ColumnSelector
+     */
     public List<ColumnSelector> checkAsteriskSelector() {
         List<ColumnSelector> columnSelectors = new ArrayList<>();
         for (TableName table : fields.getTableNames()) {
@@ -368,6 +467,12 @@ public class Normalizator {
         return columnSelectors;
     }
 
+    /**
+     * Obtain a list of selectors that were validated.
+     * @param selectors The list of selectors to validate.
+     * @return List of Selectors
+     * @throws ValidationException
+     */
     public List<Selector> checkListSelector(List<Selector> selectors) throws ValidationException {
         List<Selector> result = new ArrayList<>();
         for (Selector selector : selectors) {
@@ -392,6 +497,11 @@ public class Normalizator {
         return result;
     }
 
+    /**
+     * Validate the Funtions Selectors of a parsed query.
+     * @param functionSelector The function Selector to validate.
+     * @throws ValidationException
+     */
     public void checkFunctionSelector(FunctionSelector functionSelector)
             throws ValidationException {
         List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());

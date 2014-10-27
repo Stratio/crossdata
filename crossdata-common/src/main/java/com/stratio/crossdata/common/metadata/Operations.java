@@ -154,6 +154,12 @@ public enum Operations {
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are part of the primary key with like operator.
+     */
+    FILTER_PK_LIKE("FILTER_PK_LIKE"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
      * that are not indexed by the underlying datastore with an equal operator.
      */
     FILTER_NON_INDEXED_EQ("FILTER_NON_INDEXED_EQ"),

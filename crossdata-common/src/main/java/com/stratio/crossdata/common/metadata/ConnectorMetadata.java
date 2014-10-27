@@ -50,6 +50,17 @@ public class ConnectorMetadata implements IMetadata {
     private Set<PropertyType> optionalProperties;
     private Set<Operations> supportedOperations;
 
+    /**
+     * Constructor
+     *
+     * @param name
+     * @param version
+     * @param dataStoreRefs
+     * @param clusterProperties
+     * @param requiredProperties
+     * @param optionalProperties
+     * @param supportedOperations
+     */
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
@@ -58,6 +69,19 @@ public class ConnectorMetadata implements IMetadata {
                 supportedOperations);
     }
 
+    /**
+     * Constructor
+     *
+     * @param name
+     * @param version
+     * @param dataStoreRefs
+     * @param clusterProperties
+     * @param connectorStatus
+     * @param actorRef
+     * @param requiredProperties
+     * @param optionalProperties
+     * @param supportedOperations
+     */
     public ConnectorMetadata(ConnectorName name, String version,
             Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties, ConnectorStatus connectorStatus, String actorRef,
@@ -76,6 +100,16 @@ public class ConnectorMetadata implements IMetadata {
         this.actorRef = actorRef;
     }
 
+    /**
+     * Constructor
+     *
+     * @param name
+     * @param version
+     * @param dataStoreRefs
+     * @param requiredProperties
+     * @param optionalProperties
+     * @param supportedOperations
+     */
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
             List<String> supportedOperations) {
@@ -98,58 +132,127 @@ public class ConnectorMetadata implements IMetadata {
 
     }
 
+    /**
+     * returns connector name
+     *
+     * @return ConnectorName
+     */
     public ConnectorName getName() {
         return name;
     }
 
+    /**
+     * returns version
+     *
+     * @return String
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * returns dataStoreRefs
+     *
+     * @return Set<DataStoreName>
+     */
     public Set<DataStoreName> getDataStoreRefs() {
         return dataStoreRefs;
     }
 
+    /**
+     * Returns requiredProperties
+     *
+     * @return  Set<PropertyType>
+     */
     public Set<PropertyType> getRequiredProperties() {
         return requiredProperties;
     }
 
+    /**
+     * returns optionalProperties
+     *
+     * @return Set<PropertyType>
+     */
     public Set<PropertyType> getOptionalProperties() {
         return optionalProperties;
     }
 
+    /**
+     * returns supportedOperations;
+     *
+     * @return Set<Operations>
+     */
     public Set<Operations> getSupportedOperations() {
         return supportedOperations;
     }
 
+    /**
+     * returns clusterRefs
+     *
+     * @return Set<ClusterName>
+     */
     public Set<ClusterName> getClusterRefs() {
         return clusterRefs;
     }
 
+    /**
+     * sets clusterRefs
+     *
+     */
     public void setClusterRefs(Set<ClusterName> clusterRefs) {
         this.clusterRefs = clusterRefs;
     }
 
+    /**
+     * returns clusterProperties
+     *
+     * @return  Map<ClusterName, Map<Selector, Selector>>
+     */
     public Map<ClusterName, Map<Selector, Selector>> getClusterProperties() {
         return clusterProperties;
     }
 
+    /**
+     * sets cluster properties
+     *
+     * @param clusterProperties
+     */
     public void setClusterProperties(Map<ClusterName, Map<Selector, Selector>> clusterProperties) {
         this.clusterProperties = clusterProperties;
     }
 
+    /**
+     * gets connector status
+     *
+     * @return ConnectorStatus
+     */
     public ConnectorStatus getConnectorStatus() {
         return connectorStatus;
     }
 
+    /**
+     * sets connector status
+     *
+     * @param connectorStatus
+     */
     public void setConnectorStatus(ConnectorStatus connectorStatus) {
         this.connectorStatus = connectorStatus;
     }
 
+    /**
+     * gets serialized connector actor ref
+     *
+     * @return String
+     */
     public String getActorRef() {
         return actorRef;
     }
 
+    /**
+     * Sets serialized actor ref as a String
+     *
+     * @param actorRef String of the actor reference path
+     */
     public void setActorRef(String actorRef) {
         this.connectorStatus = ConnectorStatus.ONLINE;
         this.actorRef = actorRef;
@@ -165,6 +268,12 @@ public class ConnectorMetadata implements IMetadata {
         return supportedOperations.contains(operation);
     }
 
+    /**
+     * adds properties to the cluster
+     *
+     * @param clusterName
+     * @param options
+     */
     public void addClusterProperties(ClusterName clusterName, Map<Selector, Selector> options) {
         if(clusterProperties == null){
             this.clusterProperties = new HashMap<>();
@@ -172,26 +281,56 @@ public class ConnectorMetadata implements IMetadata {
         clusterProperties.put(clusterName, options);
     }
 
+    /**
+     * Sets version
+     *
+     * @param version
+     */
     public void setVersion(String version) {
         this.version = version;
     }
 
+    /**
+     * dataStoreRefs setter
+     *
+     * @param dataStoreRefs
+     */
     public void setDataStoreRefs(Set<DataStoreName> dataStoreRefs) {
         this.dataStoreRefs = dataStoreRefs;
     }
 
+    /**
+     * setter for requiredProperties
+     *
+     * @param requiredProperties
+     */
     public void setRequiredProperties(Set<PropertyType> requiredProperties) {
         this.requiredProperties = requiredProperties;
     }
 
+    /**
+     * setter for optionalProperties
+     *
+     * @param optionalProperties
+     */
     public void setOptionalProperties(Set<PropertyType> optionalProperties) {
         this.optionalProperties = optionalProperties;
     }
 
+    /**
+     * setter for supportedOperations
+     *
+     * @param supportedOperations
+     */
     public void setSupportedOperations(Set<Operations> supportedOperations) {
         this.supportedOperations = supportedOperations;
     }
 
+    /**
+     * setter for supportedOperations
+     *
+     * @param supportedOperations
+     */
     public void setSupportedOperations(List<String> supportedOperations) {
         this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
     }
@@ -205,6 +344,11 @@ public class ConnectorMetadata implements IMetadata {
         return operations;
     }
 
+    /**
+     * returns the string represantation of the object
+     *
+     * @return String
+     */
     @Override public String toString() {
         StringBuilder sb = new StringBuilder("Connector: ");
         sb.append(name).append(" status: ").append(connectorStatus).append(" actorRef: ").append(actorRef);

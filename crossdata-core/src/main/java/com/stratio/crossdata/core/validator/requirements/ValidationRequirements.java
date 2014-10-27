@@ -25,18 +25,22 @@ import java.util.List;
 public class ValidationRequirements {
     private final List<ValidationTypes> validations;
 
+//TODO:javadoc
     public ValidationRequirements(ValidationTypes ... types) {
         this.validations = Arrays.asList(types);
     }
 
+//TODO:javadoc
     public ValidationRequirements() {
         this.validations = new ArrayList<>();
     }
 
+//TODO:javadoc
     public List<ValidationTypes> getValidations() {
         return validations;
     }
 
+//TODO:javadoc
     public ValidationRequirements add(ValidationTypes requirement) {
         this.validations.add(requirement);
         return this;

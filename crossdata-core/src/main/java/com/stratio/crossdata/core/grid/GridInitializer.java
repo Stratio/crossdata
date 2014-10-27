@@ -111,8 +111,6 @@ public class GridInitializer {
 
     /**
      * Returns the new {@link Grid} defined by this.
-     *
-     * @return the new {@link Grid} defined by this.
      */
     public void init() {
 

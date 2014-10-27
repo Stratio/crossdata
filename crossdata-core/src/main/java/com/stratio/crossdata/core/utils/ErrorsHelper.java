@@ -27,6 +27,7 @@ public class ErrorsHelper {
 
     private List<AntlrError> antlrErrors = new ArrayList<>();
 
+//TODO:javadoc
     public static String parseAntlrErrorToString(AntlrError ae, String query) {
         StringBuilder sb = new StringBuilder("Parser exception: ");
         sb.append(System.lineSeparator());
@@ -39,18 +40,22 @@ public class ErrorsHelper {
         return sb.toString();
     }
 
+//TODO:javadoc
     public void addError(AntlrError antlrError) {
         antlrErrors.add(antlrError);
     }
 
+//TODO:javadoc
     public boolean isEmpty() {
         return antlrErrors.isEmpty();
     }
 
+//TODO:javadoc
     public List<AntlrError> getAntlrErrors() {
         return antlrErrors;
     }
 
+//TODO:javadoc
     public String toString(String query) {
         String result = "Parser exception: ";
         if (!antlrErrors.isEmpty()) {
@@ -60,6 +65,7 @@ public class ErrorsHelper {
         return result;
     }
 
+//TODO:javadoc
     public List<String> getListErrors(String query) {
         List<String> results = new ArrayList<>();
         if (antlrErrors != null && !antlrErrors.isEmpty()) {
@@ -70,10 +76,12 @@ public class ErrorsHelper {
         return results;
     }
 
+//TODO:javadoc
     public String getMessage() {
         return message;
     }
 
+//TODO:javadoc
     public void setMessage(String message) {
         this.message = message;
     }

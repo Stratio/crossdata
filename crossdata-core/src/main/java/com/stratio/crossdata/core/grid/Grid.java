@@ -65,7 +65,6 @@ public enum Grid implements Closeable {
      * @param channelService the distributed channeling service
      * @param lockService    the distributed locking service
      * @param storeService   the distributed storing service
-     * @return the singleton instance
      */
     public synchronized void init(ChannelService channelService,
             LockService lockService,

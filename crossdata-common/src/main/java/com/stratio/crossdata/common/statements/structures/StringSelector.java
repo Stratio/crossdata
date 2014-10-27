@@ -58,7 +58,8 @@ public class StringSelector extends Selector {
         return sb.toString();
     }
 
-    @Override public String getStringValue() {
+    @Override
+    public String getStringValue() {
         return getValue();
     }
 
