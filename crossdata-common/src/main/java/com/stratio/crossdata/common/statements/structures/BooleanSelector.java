@@ -37,6 +37,11 @@ public class BooleanSelector extends Selector {
         this.value = value;
     }
 
+    /**
+     * Class constructor.
+     *
+     * @param value A String representation of a boolean value.
+     */
     public BooleanSelector(String value) {
         this.value = Boolean.valueOf(value);
     }

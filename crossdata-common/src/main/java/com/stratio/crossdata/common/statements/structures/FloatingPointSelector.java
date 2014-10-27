@@ -37,10 +37,20 @@ public class FloatingPointSelector extends Selector {
         this.value = Double.valueOf(value);
     }
 
+    /**
+     * Class constructor.
+     *
+     * @param value A double value.
+     */
     public FloatingPointSelector(double value) {
         this.value = value;
     }
 
+    /**
+     * Get the value associated with this selector.
+     *
+     * @return A double.
+     */
     public double getValue() {
         return value;
     }
@@ -80,7 +90,7 @@ public class FloatingPointSelector extends Selector {
     public int hashCode() {
         long temp;
         int result = 1;
-        if (alias != null){
+        if (alias != null) {
             result = alias.hashCode();
         }
         temp = Double.doubleToLongBits(value);
