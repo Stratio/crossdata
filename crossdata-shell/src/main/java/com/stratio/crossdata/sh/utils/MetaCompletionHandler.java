@@ -25,6 +25,9 @@ import jline.console.ConsoleReader;
 import jline.console.CursorBuffer;
 import jline.console.completer.CandidateListCompletionHandler;
 
+/**
+ * Completion helper for the Crossdata console.
+ */
 public class MetaCompletionHandler extends CandidateListCompletionHandler {
 
     /**

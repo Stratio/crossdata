@@ -92,7 +92,8 @@ ImplicitSender {
 
 
   val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,tableName))
-  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM "+catalogName+"." +tableName,
+  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM "+catalogName + "." +
+    tableName,
     new CatalogName(catalogName)), selectStatement)
   //val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
   val selectValidatedQueryWrapper = new SelectValidatedQueryWrapper(selectStatement,selectParsedQuery)
@@ -100,7 +101,8 @@ ImplicitSender {
   val storageStatement: InsertIntoStatement = null
   //TODO
   //make the implementation of storageStatement.
-  val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno,dos) into "+tableName+";",
+  val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno," +
+    "dos) into " + tableName + ";",
     new CatalogName(catalogName)), storageStatement)
   val storageValidatedQuery = new StorageValidatedQuery(storageParsedQuery)
   val storagePlannedQuery = new StoragePlannedQuery(storageValidatedQuery, new StorageWorkflow(queryId + queryIdIncrement,
@@ -131,7 +133,7 @@ ImplicitSender {
       new util.ArrayList[ColumnName](),
       new util.ArrayList[ColumnName]()
     )
-  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table "+tableName1+";",
+  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table " + tableName1 + ";",
     new CatalogName(catalogName)),
     metadataStatement1)
   val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
@@ -200,7 +202,7 @@ ImplicitSender {
 
     val future = connectorActor ? getConnectorName()
     val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
-    println("creating connector "+connectorName.name)
+    logger.debug("creating connector " + connectorName.name)
 
 
     //Create connector

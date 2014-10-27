@@ -139,7 +139,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             log.info("\nmessage sent to" + actorRef.toString())
           }else if(ResultType.TRIGGER_EXECUTION.equals(workflow1.getResultType)){
             //Register the top level workflow
-            ExecutionManager.MANAGER.createEntry(queryId+CoordinatorActor.TriggerToken, executionInfo)
+            ExecutionManager.MANAGER.createEntry(queryId + CoordinatorActor.TriggerToken, executionInfo)
 
             //Register the result workflow
             val nextExecutionInfo = new ExecutionInfo
@@ -150,7 +150,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             val actorRef = StringUtils.getAkkaActorRefUri(workflow1.getActorRef())
             val actorSelection=context.actorSelection(actorRef)
-            actorSelection.asInstanceOf[ActorSelection] ! workflow1.getExecuteOperation(queryId+CoordinatorActor
+            actorSelection.asInstanceOf[ActorSelection] ! workflow1.getExecuteOperation(queryId + CoordinatorActor
               .TriggerToken)
             log.info("\nmessage sent to" + actorRef.toString())
 
@@ -196,7 +196,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           val actorRef = StringUtils.getAkkaActorRefUri(executionInfo.getWorkflow.getActorRef())
           val actorSelection=context.actorSelection(actorRef)
           actorSelection.asInstanceOf[ActorSelection] ! executionInfo.getWorkflow.asInstanceOf[QueryWorkflow]
-            .getExecuteOperation(queryId+CoordinatorActor.TriggerToken)
+            .getExecuteOperation(queryId + CoordinatorActor.TriggerToken)
         }else {
           clientActor ! result
         }

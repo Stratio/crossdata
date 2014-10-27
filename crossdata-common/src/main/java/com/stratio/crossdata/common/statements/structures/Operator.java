@@ -22,30 +22,47 @@ package com.stratio.crossdata.common.statements.structures;
  * Operators supported in an {@link Relation}.
  */
 public enum Operator {
+
+    /**
+     * Addition operator.
+     */
     ADD(Group.ARITHMETIC) {
         @Override
         public String toString() {
             return "+";
         }
     },
+
+    /**
+     * Substraction operator.
+     */
     SUBTRACT(Group.ARITHMETIC) {
         @Override
         public String toString() {
             return "-";
         }
     },
+
+    /**
+     * Division operator.
+     */
     DIVISION(Group.ARITHMETIC) {
         @Override
         public String toString() {
             return "/";
         }
     },
+
+    /**
+     * Multiplication operator.
+     */
     MULTIPLICATION(Group.ARITHMETIC) {
         @Override
         public String toString() {
             return "*";
         }
     },
+
     /**
      * Constant to define inclusion relationships.
      */
@@ -55,6 +72,7 @@ public enum Operator {
             return "IN";
         }
     },
+
     /**
      * Constant to define range comparisons.
      */
@@ -64,6 +82,7 @@ public enum Operator {
             return "BETWEEN";
         }
     },
+
     /**
      * Constant to define compare relationships (e.g., >, <, =, etc.).
      */
@@ -73,6 +92,7 @@ public enum Operator {
             return "=";
         }
     },
+
     /**
      * Assign relationship for update-like statements.
      */
@@ -81,53 +101,105 @@ public enum Operator {
             return "=";
         }
     },
+
+    /**
+     * Match comparator for full-text search queries.
+     */
     MATCH(Group.COMPARATOR) {
         public String toString() {
             return "MATCH";
         }
     },
+
+    /**
+     * Greater than comparator.
+     */
     GT(Group.COMPARATOR) {
         public String toString() {
             return ">";
         }
     },
+
+    /**
+     * Less than comparator.
+     */
     LT(Group.COMPARATOR) {
         public String toString() {
             return "<";
         }
     },
+
+    /**
+     * Greater or equal than comparator.
+     */
     GET(Group.COMPARATOR) {
         public String toString() {
             return ">=";
         }
     },
+
+    /**
+     * Less or equal than compartor.
+     */
     LET(Group.COMPARATOR) {
         public String toString() {
             return "<=";
         }
     },
+
+    /**
+     * Distinct comparator.
+     */
     DISTINCT(Group.COMPARATOR) {
         public String toString() {
             return "<>";
         }
     },
+
+    /**
+     * Like comparator.
+     */
     LIKE(Group.COMPARATOR) {
         public String toString() {
             return "LIKE";
         }
     };
 
+    /**
+     * Enumeration with the groups of operators.
+     */
     public enum Group {
+
+        /**
+         * Operators used in relationships.
+         */
         COMPARATOR,
+
+        /**
+         * Arithmetic operators.
+         */
         ARITHMETIC;
     }
 
+    /**
+     * The enum group.
+     */
     private Group group;
 
+    /**
+     * Enum constructor.
+     *
+     * @param group The group the enum belongs to.
+     */
     Operator(Group group) {
         this.group = group;
     }
 
+    /**
+     * Determine whether the operator is in a particular group.
+     * @param group The group.
+     * @return Whether it belongs to the group.
+     */
     public boolean isInGroup(Group group) {
         return this.group == group;
     }

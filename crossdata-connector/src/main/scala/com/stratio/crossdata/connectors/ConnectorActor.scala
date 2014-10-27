@@ -25,9 +25,9 @@ import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, QueryResult, QueryStatus, Result, StorageResult}
-import com.stratio.crossdata.communication.{ACK, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation, getConnectorName, replyConnectorName}
+import com.stratio.crossdata.communication.{ Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation, getConnectorName, replyConnectorName}
+import com.stratio.crossdata.communication.{ACK, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable}
 import org.apache.log4j.Logger
-
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
 
@@ -35,12 +35,10 @@ object State extends Enumeration {
   type state = Value
   val Started, Stopping, Stopped = Value
 }
-
 object ConnectorActor {
   def props(connectorName: String, connector: IConnector): Props = Props(new ConnectorActor
   (connectorName, connector))
 }
-
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with
 ActorLogging with IResultHandler{
 
@@ -56,14 +54,12 @@ ActorLogging with IResultHandler{
   var parentActorRef: Option[ActorRef] = None
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
-
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
 
     runningJobs.foreach {
       keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
     }
   }
-
 
   override def preStart(): Unit = {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
@@ -124,17 +120,12 @@ ActorLogging with IResultHandler{
       logger.info("Receiving anything else")
     }
   }
-
   def shutdown(): Unit = {
     logger.debug("ConnectorActor is shutting down")
     this.state = State.Stopping
     connector.shutdown()
     this.state = State.Stopped
   }
-
-
-
-
 
   override def processException(queryId: String, exception: ExecutionException): Unit = {
     logger.info("Processing exception for async query: " + queryId)
@@ -156,10 +147,7 @@ ActorLogging with IResultHandler{
     }
   }
 
-
-
   private def metodExecute(ex:Execute, s:ActorRef): Unit ={
-
 
     try {
       runningJobs.put(ex.queryId, s)
@@ -196,7 +184,6 @@ ActorLogging with IResultHandler{
         logger.error("error in ConnectorActor( receiving async LogicalWorkflow )")
     }
   }
-
 
   private def metod1(metadataOp: MetadataOperation, s: ActorRef): Unit = {
     var qId: String = metadataOp.queryId
@@ -251,7 +238,6 @@ ActorLogging with IResultHandler{
       }
     }
   }
-
 
   private def metodOpc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
 

@@ -55,18 +55,18 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val message = CreateTable(queryId, new ClusterName("cluster"), new TableMetadata(new TableName("catalog", "mytable"), null, null, null, null, null, null))
     val message2 = CreateTable(queryId + "2", new ClusterName("cluster"), new TableMetadata(new TableName("catalog", "mytable"), null, null, null, null, null, null))
 
-    println("sending message 1")
+    logger.debug("sending message 1")
     var future = ask(ca1, message)
-    println("sending message 2")
+    logger.debug("sending message 2")
     var future2 = ask(ca2, message2)
-    println("messages sent")
+    logger.debug("messages sent")
 
     val result = Await.result(future, 12 seconds).asInstanceOf[MetadataResult]
-    println("result.getQueryId()=" + result.getQueryId())
+    logger.debug("result.getQueryId()=" + result.getQueryId())
     assert(result.getQueryId() == queryId)
 
     val result2 = Await.result(future2, 16 seconds).asInstanceOf[MetadataResult]
-    println("result.getQueryId()=" + result2.getQueryId())
+    logger.debug("result.getQueryId()=" + result2.getQueryId())
     assert(result2.getQueryId() == queryId + "2")
   }
 
@@ -86,18 +86,18 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val message2 = CreateTable(queryId + "2", new ClusterName("cluster"), new TableMetadata(new TableName("catalog", "mytable"), null, null, null, null, null, null))
 
     Thread.sleep(3000)
-    println("sending message 1")
+    logger.debug("sending message 1")
     var future = ask(connectorActor, message)
-    println("sending message 2")
+    logger.debug("sending message 2")
     var future2 = ask(connectorActor, message2)
-    println("messages sent")
+    logger.debug("messages sent")
 
     val result = Await.result(future, 12 seconds).asInstanceOf[MetadataResult]
-    println("result.getQueryId()=" + result.getQueryId())
+    logger.debug("result.getQueryId()=" + result.getQueryId())
     assert(result.getQueryId() == queryId)
 
     val result2 = Await.result(future2, 16 seconds).asInstanceOf[MetadataResult]
-    println("result.getQueryId()=" + result2.getQueryId())
+    logger.debug("result.getQueryId()=" + result2.getQueryId())
     assert(result2.getQueryId() == queryId + "2")
 
   }

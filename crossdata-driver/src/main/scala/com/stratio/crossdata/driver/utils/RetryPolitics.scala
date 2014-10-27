@@ -22,9 +22,9 @@ import akka.actor.ActorRef
 import akka.pattern.ask
 import akka.util.Timeout
 import com.stratio.crossdata.common.result.Result
+import org.apache.log4j.Logger
 
 import scala.concurrent.Await
-import com.stratio.crossdata.common.exceptions.ConnectionException
 
 /**
  * Retry mechanism that send a message to an actor a number of times,
@@ -33,6 +33,8 @@ import com.stratio.crossdata.common.exceptions.ConnectionException
  * @param waitTime Waiting time between retries.
  */
 class RetryPolitics(retryTimes: Int, waitTime: Timeout) {
+  lazy val logger = Logger.getLogger(classOf[RetryPolitics])
+
   def askRetry(remoteActor: ActorRef, message: AnyRef, waitTime: Timeout = this.waitTime, retry: Int = 0): Result = {
     if (retry == retryTimes) {
       Result.createConnectionErrorResult("Not found answer. After " + retry + " retries, timeout was exceed.");
@@ -42,7 +44,7 @@ class RetryPolitics(retryTimes: Int, waitTime: Timeout) {
         Await.result(future.mapTo[Result], waitTime.duration * 2)
       } catch {
         case ex: Exception => {
-          println("Retry " + (retry + 1) + " timeout")
+          logger.debug("Retry " + (retry + 1) + " timeout")
           askRetry(remoteActor, message, waitTime, retry + 1)
         }
       }
