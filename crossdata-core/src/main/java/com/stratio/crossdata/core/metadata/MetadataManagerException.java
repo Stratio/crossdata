@@ -18,19 +18,36 @@
 
 package com.stratio.crossdata.core.metadata;
 
+/**
+ * Exception thrown by the Metadata Manager in case it is not initialized, an entry check fails, etc.
+ */
 public class MetadataManagerException extends RuntimeException {
 
-//TODO:javadoc
-    public MetadataManagerException(Exception e){
+
+    /**
+     * Constructs a new Exception with a specific cause.
+     *
+     * @param e The associated Exception.
+     */
+    public MetadataManagerException(Exception e) {
         super(e);
     }
 
-//TODO:javadoc
+    /**
+     * Constructs a new Exception with a given message.
+     *
+     * @param message The message.
+     */
     public MetadataManagerException(String message) {
         super(message);
     }
 
-//TODO:javadoc
+    /**
+     * Constructs a new Exception with a specific message and cause.
+     *
+     * @param message The associated message.
+     * @param cause   The associated cause.
+     */
     public MetadataManagerException(String message, Throwable cause) {
         super(message, cause);
     }

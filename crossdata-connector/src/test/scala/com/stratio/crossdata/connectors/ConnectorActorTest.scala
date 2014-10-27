@@ -16,6 +16,7 @@
  * under the License.
  */
 
+import java.util
 import Mocks.DummyIConnector
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
@@ -34,6 +35,7 @@ import org.scalatest.{FunSuite, Suite}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import scala.util
 
 object ConnectorActorTest
 
@@ -48,11 +50,11 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
   val mycatalog:String="catalog"
   val mytable:String="mytable"
   val sm2:String="2"
-  val a:Option[java.util.Map[Selector, Selector]]=None
-  val b:Option[java.util.Map[ColumnName,ColumnMetadata]]=None
-  val c:Option[java.util.Map[IndexName,IndexMetadata]]=None
-  val d:Option[ClusterName]=None
-  val e:Option[java.util.List[ColumnName]]=None
+  val a:Option[java.util.Map[Selector, Selector]] = Some(new java.util.HashMap[Selector, Selector]())
+  val b:Option[java.util.Map[ColumnName,ColumnMetadata]] = Some(new java.util.HashMap[ColumnName, ColumnMetadata]())
+  val c:Option[java.util.Map[IndexName,IndexMetadata]] = Some(new java.util.HashMap[IndexName, IndexMetadata]())
+  val d:Option[ClusterName]= Some(new ClusterName(myluster))
+  val e:Option[java.util.List[ColumnName]]=Some(new java.util.ArrayList[ColumnName]())
 
   test("Send 2 slow MetadataInProgressQuery to two connectors to test concurrency") {
     val queryId = "queryId"

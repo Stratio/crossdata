@@ -28,14 +28,30 @@ public abstract class ValidationException extends Exception {
      */
     private static final long serialVersionUID = -1429028331466675420L;
 
+    /**
+     * Constructs a new Exception with a given message.
+     *
+     * @param message The message.
+     */
     public ValidationException(String message) {
         super(message);
     }
 
+    /**
+     * Constructs a new Exception with a specific message and cause.
+     *
+     * @param msg The associated message.
+     * @param cause   The associated cause.
+     */
     public ValidationException(String msg, Throwable cause) {
         super(msg, cause);
     }
 
+    /**
+     * Constructs a new Exception with a specific cause.
+     *
+     * @param ex The associated Exception.
+     */
     public ValidationException(Exception ex) {
         super(ex);
     }

@@ -82,8 +82,8 @@ public class TableMetadata implements IMetadata {
 
     /**
      * The options of the create table metadata.
-     * @return {@link java.util.Map\<com.stratio.crossdata.common.statements.structures.Selector,
-     * com.stratio.crossdata.common.statements.structures.Selector\>}
+     * @return Map with {@link com.stratio.crossdata.common.statements.structures.Selector},
+     * {@link com.stratio.crossdata.common.statements.structures.Selector}.
      */
     public Map<Selector, Selector> getOptions() {
         return options;
@@ -91,8 +91,8 @@ public class TableMetadata implements IMetadata {
 
     /**
      * Get the map that relation between ColumnName and ColumnMetadata.
-     * @return {@link java.util.Map\<com.stratio.crossdata.common.data.ColumnName,
-     * com.stratio.crossdata.common.metadata.ColumnMetadata\> }
+     * @return Map with {@link com.stratio.crossdata.common.data.ColumnName},
+     * {@link com.stratio.crossdata.common.metadata.ColumnMetadata}.
      */
     public Map<ColumnName, ColumnMetadata> getColumns() {
         return columns;
@@ -108,7 +108,7 @@ public class TableMetadata implements IMetadata {
 
     /**
      * Get the columns that conform the partition key.
-     * @return {@link java.util.List<com.stratio.crossdata.common.data.ColumnName>}
+     * @return List with {@link com.stratio.crossdata.common.data.ColumnName}.
      */
     public List<ColumnName> getPartitionKey() {
         return partitionKey;
@@ -116,7 +116,7 @@ public class TableMetadata implements IMetadata {
 
     /**
      * Get the cluster key.
-     * @return {@link java.util.List<com.stratio.crossdata.common.data.ColumnName>}
+     * @return List with {@link com.stratio.crossdata.common.data.ColumnName}.
      */
     public List<ColumnName> getClusterKey() {
         return clusterKey;
@@ -124,7 +124,7 @@ public class TableMetadata implements IMetadata {
 
     /**
      * Get the columns that are primary key.
-     * @return {@link List<com.stratio.crossdata.common.data.ColumnName>}
+     * @return List with {@link com.stratio.crossdata.common.data.ColumnName}.
      */
     public List<ColumnName> getPrimaryKey() {
         List<ColumnName> result = new ArrayList<>();
@@ -135,8 +135,8 @@ public class TableMetadata implements IMetadata {
 
     /**
      * Get the Indexes of the table.
-     * @return {@link java.util.Map\<com.stratio.crossdata.common.data.IndexName,
-     * com.stratio.crossdata.common.metadata.IndexMetadata\>}
+     * @return Map with {@link com.stratio.crossdata.common.data.IndexName},
+     * {@link com.stratio.crossdata.common.metadata.IndexMetadata}.
      */
     public Map<IndexName, IndexMetadata> getIndexes() {
         return indexes;

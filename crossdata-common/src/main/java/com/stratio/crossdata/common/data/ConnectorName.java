@@ -19,26 +19,47 @@
 package com.stratio.crossdata.common.data;
 
 public class ConnectorName extends FirstLevelName {
+
     /**
      * Serial version UID.
      */
     private static final long serialVersionUID = 4037037885060672489L;
+
+    /**
+     * Connector name.
+     */
     private final String name;
 
+    /**
+     * Constructor.
+     * @param connectorName Connector Name.
+     */
     public ConnectorName(String connectorName) {
         super();
         this.name = connectorName.toLowerCase();
     }
 
+    /**
+     * Get the Cluster Name.
+     * @return Cluster Name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Get the qualified name of the connector.
+     * @return qualified name of the connector.
+     */
     public String getQualifiedName() {
         return QualifiedNames.getConnectorQualifiedName(getName());
     }
 
-    @Override public NameType getType() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NameType getType() {
         return NameType.CONNECTOR;
     }
 
