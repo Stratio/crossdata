@@ -22,25 +22,40 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * ValidationRequirements.
+ */
 public class ValidationRequirements {
     private final List<ValidationTypes> validations;
 
-//TODO:javadoc
+    /**
+     * Class Constructor.
+     * @param types The enum with the validation types
+     */
     public ValidationRequirements(ValidationTypes ... types) {
         this.validations = Arrays.asList(types);
     }
 
-//TODO:javadoc
+    /**
+     * Initialize the validations.
+     */
     public ValidationRequirements() {
         this.validations = new ArrayList<>();
     }
 
-//TODO:javadoc
+    /**
+     * Get the validations of a query.
+     * @return {@link java.util.List<com.stratio.crossdata.core.validator.requirements.ValidationTypes>}
+     */
     public List<ValidationTypes> getValidations() {
         return validations;
     }
 
-//TODO:javadoc
+    /**
+     * Add a new validation for a query.
+     * @param requirement The validation.
+     * @return {@link com.stratio.crossdata.core.validator.requirements.ValidationRequirements}
+     */
     public ValidationRequirements add(ValidationTypes requirement) {
         this.validations.add(requirement);
         return this;
