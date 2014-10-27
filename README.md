@@ -71,7 +71,7 @@ You can send us issues in https://com.stratio.crossdata.atlassian.net
 
 
 ## Getting started ##
-In this [link](GettingStarted.md) you can follow an example of Crossdata with a Cassandra Connector as an access 
+In this [link](_doc/GettingStarted.md) you can follow an example of Crossdata with a Cassandra Connector as an access 
 to a Cassandra data store.
 
 
