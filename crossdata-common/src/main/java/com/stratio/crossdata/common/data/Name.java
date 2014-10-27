@@ -27,27 +27,27 @@ public abstract class Name implements Serializable {
 
     /**
      *
-     * @return boolean
+     * @return boolean .
      */
     public abstract boolean isCompletedName();
 
     /**
-     * returns qualified name
+     * returns qualified name.
      *
-     * @return String
+     * @return String.
      */
     public abstract String getQualifiedName();
 
     /**
-     * returns NameType
+     * returns NameType.
      *
-     * @return NameType
+     * @return NameType.
      */
     public abstract NameType getType();
 
     /**
      *
-     * @return String
+     * @return String representation of the object.
      */
     @Override
     public String toString() {
@@ -56,7 +56,7 @@ public abstract class Name implements Serializable {
 
     /**
      *
-     * @return
+     * @return object's hash code.
      */
     @Override
     public int hashCode() {
@@ -65,9 +65,9 @@ public abstract class Name implements Serializable {
     }
 
     /**
-     *
-     * @param o: Object
-     * @return
+     * Method equals
+     * @param o Object to be compared
+     * @return whether Object o is equal to this object
      */
     @Override
     public boolean equals(Object o) {

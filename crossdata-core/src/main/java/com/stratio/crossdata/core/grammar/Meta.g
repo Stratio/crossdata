@@ -504,9 +504,10 @@ dropIndexStatement returns [DropIndexStatement dis]
 	name=getIndexName { $dis.setName(name); }
 ;
 
-//CREATE HASH INDEX ON table1 (field1, field2);
-//CREATE HASH INDEX index1 ON table1 (field1, field2) USING com.company.Index.class;
-//CREATE HASH INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;
+//CREATE INDEX myIdx ON table1 (field1, field2);
+//CREATE DEFAULT INDEX ON table1 (field1, field2);
+//CREATE FULL_TEXT INDEX index1 ON table1 (field1, field2) USING com.company.Index.class;
+//CREATE CUSTOM INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;
 createIndexStatement returns [CreateIndexStatement cis]
 	@init{
 		$cis = new CreateIndexStatement();
@@ -777,7 +778,7 @@ metaStatement returns [MetaStatement st]:
     (T_START_BRACKET
         ( gID=getGenericID { sessionCatalog = gID;} )?
     T_END_BRACKET T_COMMA)?
-    (st_nsnt   = insertIntoStatement { $st = st_nsnt;}
+    (st_nsnt  = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
     | st_crta = createTableStatement { $st = st_crta;}
     | st_altt = alterTableStatement { $st = st_altt;}

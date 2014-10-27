@@ -30,8 +30,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
-import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.logicalplan.Filter;
@@ -40,17 +40,16 @@ import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
+import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.window.TimeUnit;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.core.grammar.ParsingTest;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
-import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 
 /**
@@ -77,7 +76,6 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
      */
     public ExecutionWorkflow getPlannedQuery(String statement, String methodName,
             boolean shouldFail, TableMetadata... tableMetadataList){
-        SelectValidatedQuery selectValidatedQuery;
 
         IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
@@ -107,7 +105,7 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
     }
 
     public LogicalWorkflow getWorkflow(String statement, String methodName,
-            TableMetadata... tableMetadataList) {
+            TableMetadata... tableMetadataList) throws PlanningException {
         IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
         SelectStatement ss = spq.getStatement();
@@ -178,7 +176,7 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
         //Find the workflow
 
         Iterator<LogicalStep> it = workflow.getInitialSteps().iterator();
-        LogicalStep step = null;
+        LogicalStep step;
         boolean found = false;
         //For each initial logical step try to find the join.
         while (it.hasNext() && !found) {

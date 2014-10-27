@@ -6,7 +6,7 @@ Crossdata (aka Meta) is a distributed framework that unifies the interaction wit
 
 See the Wiki for full documentation, examples, operational details and other information.
 
-See the [Javadoc] () and [Language reference] () for the internal details.
+See the [Javadoc] () and [Language reference](_doc/Grammar.md) for the internal details.
 
 ## Compiling Crossdata ##
 
@@ -69,6 +69,7 @@ You can send us issues in https://com.stratio.crossdata.atlassian.net
 
 ## Grammar ##
 
+Grammar specification for this release can be found [here](_doc/Grammar.md).
 
 ## Getting started ##
 In this [link](_doc/GettingStarted.md) you can follow an example of Crossdata with a Cassandra Connector as an access 

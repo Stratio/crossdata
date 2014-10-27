@@ -18,22 +18,20 @@
 
 package com.stratio.crossdata.core.planner;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.Project;
+import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.window.TimeUnit;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.TableMetadata;
 
 /**
  * Planner test concerning Logical workflow creation.
@@ -57,7 +55,12 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
-        LogicalWorkflow workflow = getWorkflow(inputText, "selectSingleColumn", t1);
+        LogicalWorkflow workflow = null;
+        try {
+            workflow = getWorkflow(inputText, "selectSingleColumn", t1);
+        } catch (PlanningException e) {
+            fail("LogicalWorkflow couldn't be calculated");
+        }
         assertNumberInitialSteps(workflow, 1);
         assertColumnsInProject(workflow, "demo.t1", expectedColumns);
         assertSelect(workflow);
@@ -75,7 +78,12 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
-        LogicalWorkflow workflow = getWorkflow(inputText, "selectSingleColumn", t1);
+        LogicalWorkflow workflow = null;
+        try {
+            workflow = getWorkflow(inputText, "selectSingleColumn", t1);
+        } catch (PlanningException e) {
+            fail("LogicalWorkflow couldn't be calculated");
+        }
         assertColumnsInProject(workflow, "demo.t1", expectedColumns);
         assertSelect(workflow);
     }
@@ -92,7 +100,12 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
-        LogicalWorkflow workflow = getWorkflow(inputText, "selectSingleColumn", t1);
+        LogicalWorkflow workflow = null;
+        try {
+            workflow = getWorkflow(inputText, "selectSingleColumn", t1);
+        } catch (PlanningException e) {
+            fail("LogicalWorkflow couldn't be calculated");
+        }
         assertColumnsInProject(workflow, "demo.t1", expectedColumns);
         assertSelect(workflow);
     }
@@ -120,7 +133,12 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         String[] expectedColumnsT1 = { "demo.t1.a", "demo.t1.b", "demo.t1.aa" };
         String[] expectedColumnsT2 = { "demo.t2.c", "demo.t2.d" };
 
-        LogicalWorkflow workflow = getWorkflow(inputText, "selectSingleColumn", t1, t2);
+        LogicalWorkflow workflow = null;
+        try {
+            workflow = getWorkflow(inputText, "selectSingleColumn", t1, t2);
+        } catch (PlanningException e) {
+            fail("LogicalWorkflow couldn't be calculated");
+        }
         assertNumberInitialSteps(workflow, 2);
         assertColumnsInProject(workflow, "demo.t1", expectedColumnsT1);
         assertColumnsInProject(workflow, "demo.t2", expectedColumnsT2);
@@ -152,7 +170,12 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         String[] expectedColumnsT1 = { "demo.t1.a", "demo.t1.b", "demo.t1.aa" };
         String[] expectedColumnsT2 = { "demo.t2.c", "demo.t2.d" };
 
-        LogicalWorkflow workflow = getWorkflow(inputText, "selectSingleColumn", t1, t2);
+        LogicalWorkflow workflow = null;
+        try {
+            workflow = getWorkflow(inputText, "selectSingleColumn", t1, t2);
+        } catch (PlanningException e) {
+            fail("LogicalWorkflow couldn't be calculated");
+        }
         assertNumberInitialSteps(workflow, 2);
         Project project1 = assertColumnsInProject(workflow, "demo.t1", expectedColumnsT1);
         Project project2 = assertColumnsInProject(workflow, "demo.t2", expectedColumnsT2);
@@ -175,7 +198,12 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
                 partitionKeys1, clusteringKeys1);
 
         String[] expectedColumns = { "demo.t1.a", "demo.t1.b", "demo.t1.c" };
-        LogicalWorkflow workflow = getWorkflow(inputText, "selectBasicWhere", t1);
+        LogicalWorkflow workflow = null;
+        try {
+            workflow = getWorkflow(inputText, "selectBasicWhere", t1);
+        } catch (PlanningException e) {
+            fail("LogicalWorkflow couldn't be calculated");
+        }
         Project project1 = assertColumnsInProject(workflow, "demo.t1", expectedColumns);
         assertFilterInPath(project1, Operations.FILTER_PK_EQ);
         assertSelect(workflow);
@@ -194,7 +222,12 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
                 partitionKeys1, clusteringKeys1);
 
         String[] expectedColumns = { "demo.t1.a", "demo.t1.b", "demo.t1.c" };
-        LogicalWorkflow workflow = getWorkflow(inputText, "selectBasicWhere", t1);
+        LogicalWorkflow workflow = null;
+        try {
+            workflow = getWorkflow(inputText, "selectBasicWhere", t1);
+        } catch (PlanningException e) {
+            fail("LogicalWorkflow couldn't be calculated");
+        }
         Project project1 = assertColumnsInProject(workflow, "demo.t1", expectedColumns);
         assertFilterInPath(project1, Operations.FILTER_PK_EQ);
         assertWindow(workflow, WindowType.TEMPORAL, -1, 5, TimeUnit.SECONDS);

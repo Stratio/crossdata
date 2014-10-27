@@ -251,7 +251,7 @@ public class ConnectorMetadata implements IMetadata {
     /**
      * Sets serialized actor ref as a String
      *
-     * @param actorRef:String
+     * @param actorRef String of the actor reference path
      */
     public void setActorRef(String actorRef) {
         this.connectorStatus = ConnectorStatus.ONLINE;

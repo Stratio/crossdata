@@ -30,13 +30,12 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.data.ConnectorStatus;
-import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.data.TableName;
@@ -67,16 +66,16 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
@@ -146,20 +145,6 @@ public class Planner {
     public StoragePlannedQuery planQuery(StorageValidatedQuery query) throws PlanningException {
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
         return new StoragePlannedQuery(query, executionWorkflow);
-    }
-
-    /**
-     * Build a Logical workflow for the incoming validated query.
-     *
-     * @param query A valid query.
-     * @return A {@link com.stratio.crossdata.common.logicalplan.LogicalWorkflow}
-     */
-    protected LogicalWorkflow buildWorkflow(IValidatedQuery query) {
-        LogicalWorkflow result = null;
-        if (query instanceof SelectValidatedQuery) {
-            result = buildWorkflow((SelectValidatedQuery) query);
-        }
-        return result;
     }
 
     /**
@@ -504,7 +489,7 @@ public class Planner {
      * @param query The query to be planned.
      * @return A Logical workflow.
      */
-    protected LogicalWorkflow buildWorkflow(SelectValidatedQuery query) {
+    protected LogicalWorkflow buildWorkflow(SelectValidatedQuery query) throws PlanningException {
         Map<String, TableMetadata> tableMetadataMap = new HashMap<>();
         for (TableMetadata tm : query.getTableMetadata()) {
             tableMetadataMap.put(tm.getName().getQualifiedName(), tm);
@@ -958,7 +943,8 @@ public class Planner {
      * @param tableMetadataMap A map with the table metadata indexed by table name.
      * @return A {@link com.stratio.crossdata.common.logicalplan.Select}.
      */
-    protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap) {
+    protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap)
+            throws PlanningException {
         Map<ColumnName, String> aliasMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
         LinkedHashMap<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
@@ -966,30 +952,34 @@ public class Planner {
         for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
             if(AsteriskSelector.class.isInstance(s)){
                 addAll = true;
-            }else if (s.getAlias() != null) {
-                ColumnSelector cs = ColumnSelector.class.cast(s);
-                aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()), s.getAlias());
+            } else if (ColumnSelector.class.isInstance(s)){
+                if (s.getAlias() != null) {
+                    ColumnSelector cs = ColumnSelector.class.cast(s);
+                    aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()), s.getAlias());
 
-                typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()),
-                        tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(ColumnSelector.class
-                                .cast(s).getName()).getColumnType());
+                    typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()),
+                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(ColumnSelector.class
+                                    .cast(s).getName()).getColumnType());
 
-                typeMap.put(s.getAlias(),
-                        tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
-                                .get(ColumnSelector.class.cast(s).getName()).getColumnType()
-                );
+                    typeMap.put(s.getAlias(),
+                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
+                                    .get(ColumnSelector.class.cast(s).getName()).getColumnType()
+                    );
+                } else {
+                    ColumnSelector cs = ColumnSelector.class.cast(s);
+                    aliasMap.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
+                            cs.getName().getName());
+
+                    typeMapFromColumnName.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
+                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
+
+                    typeMap.put(cs.getName().getName(),
+                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
+                                    .get(cs.getName()).getColumnType()
+                    );
+                }
             } else {
-                ColumnSelector cs = ColumnSelector.class.cast(s);
-                aliasMap.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
-                        cs.getName().getName());
-
-                typeMapFromColumnName.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
-                        tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
-
-                typeMap.put(cs.getName().getName(),
-                        tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
-                                .get(cs.getName()).getColumnType()
-                );
+                throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
             }
         }
 
