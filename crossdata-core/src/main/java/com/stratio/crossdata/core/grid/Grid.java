@@ -130,6 +130,14 @@ public enum Grid implements Closeable {
     }
 
     /**
+     * Determine whether the singleton has been initialized.
+     * @return Whether it is initialized.
+     */
+    public boolean isInit() {
+        return init;
+    }
+
+    /**
      * Closes this and all its created distributed objects.
      */
     @Override

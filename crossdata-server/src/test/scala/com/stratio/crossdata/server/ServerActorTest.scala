@@ -44,7 +44,7 @@ import com.stratio.crossdata.server.actors.{ConnectorManagerActor, CoordinatorAc
 import com.stratio.crossdata.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.crossdata.server.mocks.MockConnectorActor
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FunSuiteLike, Suite}
+import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -54,18 +54,23 @@ import com.stratio.crossdata.common.statements.structures.Selector
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
-ImplicitSender {
+ImplicitSender with BeforeAndAfterAll{
   this: Suite =>
 
-  lazy val system1 = ActorSystem(clusterName, config)
+  //lazy val system = ActorSystem(clusterName, config)
   val metadataManager=new MetadataManagerTestHelper()
   val plannertest= new PlannerExecutionWorkflowTest()
+
+  override def afterAll() {
+    println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> after all")
+    shutdown(system)
+  }
 
   def incQueryId(): String = {
     queryIdIncrement += 1; return queryId + queryIdIncrement
   }
 //Actors in this tests
-  val connectorManagerActor = system1.actorOf(ConnectorManagerActor.props(),
+  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(),
   "ConnectorManagerActor")
   val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
     "CoordinatorActor")
