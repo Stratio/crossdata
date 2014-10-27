@@ -20,17 +20,20 @@ package com.stratio.crossdata.common.metadata;
 
 import com.stratio.crossdata.common.data.ColumnName;
 
+/**
+ * ColumnMetadata class.
+ */
 public class ColumnMetadata implements IMetadata {
     private final ColumnName name;
     private final Object[] parameters;
     private final ColumnType columnType;
 
     /**
-     * Constructor
+     * Class Constructor.
      *
-     * @param name
-     * @param parameters
-     * @param columnType
+     * @param name The name of the column.
+     * @param parameters The parameters of the column.
+     * @param columnType The type of the column.
      */
     public ColumnMetadata(ColumnName name, Object[] parameters,
             ColumnType columnType) {
@@ -44,7 +47,7 @@ public class ColumnMetadata implements IMetadata {
     }
 
     /**
-     * getter for the name
+     * getter for the name.
      *
      * @return Columname
      */
@@ -53,13 +56,13 @@ public class ColumnMetadata implements IMetadata {
     }
 
     /**
-     * returns copy of the internal parameters attribute
+     * returns copy of the internal parameters attribute.
      * @return Object[]
      */
     public Object[] getParameters() { return parameters.clone(); }
 
     /**
-     *
+     * Get the Column Type.
      * @return column type
      */
     public ColumnType getColumnType() {
@@ -67,7 +70,7 @@ public class ColumnMetadata implements IMetadata {
     }
 
     /**
-     *
+     * Get the index of the column.
      * @return String
      */
     public String getIndex() {

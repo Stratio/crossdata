@@ -28,6 +28,9 @@ import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * TableMetadata class.
+ */
 public class TableMetadata implements IMetadata {
 
     private static final long serialVersionUID = 937637791215246279L;
@@ -45,7 +48,16 @@ public class TableMetadata implements IMetadata {
     private final List<ColumnName> partitionKey;
     private final List<ColumnName> clusterKey;
 
-//TODO:javadoc
+    /**
+     * Class Constructor.
+     * @param name The name of the table.
+     * @param options The options of the table that was created.
+     * @param columns The list of columns metadata of the table.
+     * @param indexes The list of indexes of the columns of the table.
+     * @param clusterRef The cluster name.
+     * @param partitionKey The list of columns that conforms the partition key.
+     * @param clusterKey The list of columns tha conforms the cluster key.
+     */
     public TableMetadata(TableName name, Map<Selector, Selector> options,
             Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
             ClusterName clusterRef,
@@ -60,37 +72,60 @@ public class TableMetadata implements IMetadata {
         this.clusterKey = clusterKey;
     }
 
-//TODO:javadoc
+    /**
+     * Get the table name of the table metadata.
+     * @return {@link com.stratio.crossdata.common.data.TableName}
+     */
     public TableName getName() {
         return name;
     }
 
-//TODO:javadoc
+    /**
+     * The options of the create table metadata.
+     * @return {@link java.util.Map\<com.stratio.crossdata.common.statements.structures.Selector,
+     * com.stratio.crossdata.common.statements.structures.Selector\>}
+     */
     public Map<Selector, Selector> getOptions() {
         return options;
     }
 
-//TODO:javadoc
+    /**
+     * Get the map that relation between ColumnName and ColumnMetadata.
+     * @return {@link java.util.Map\<com.stratio.crossdata.common.data.ColumnName,
+     * com.stratio.crossdata.common.metadata.ColumnMetadata\> }
+     */
     public Map<ColumnName, ColumnMetadata> getColumns() {
         return columns;
     }
 
-//TODO:javadoc
+    /**
+     * Get the cluster name.
+     * @return {@link com.stratio.crossdata.common.data.ClusterName}
+     */
     public ClusterName getClusterRef() {
         return clusterRef;
     }
 
-//TODO:javadoc
+    /**
+     * Get the columns that conform the partition key.
+     * @return {@link java.util.List<com.stratio.crossdata.common.data.ColumnName>}
+     */
     public List<ColumnName> getPartitionKey() {
         return partitionKey;
     }
 
-//TODO:javadoc
+    /**
+     * Get the cluster key.
+     * @return {@link java.util.List<com.stratio.crossdata.common.data.ColumnName>}
+     */
     public List<ColumnName> getClusterKey() {
         return clusterKey;
     }
 
-//TODO:javadoc
+    /**
+     * Get the columns that are primary key.
+     * @return {@link List<com.stratio.crossdata.common.data.ColumnName>}
+     */
     public List<ColumnName> getPrimaryKey() {
         List<ColumnName> result = new ArrayList<>();
         result.addAll(partitionKey);
@@ -98,7 +133,11 @@ public class TableMetadata implements IMetadata {
         return result;
     }
 
-//TODO:javadoc
+    /**
+     * Get the Indexes of the table.
+     * @return {@link java.util.Map\<com.stratio.crossdata.common.data.IndexName,
+     * com.stratio.crossdata.common.metadata.IndexMetadata\>}
+     */
     public Map<IndexName, IndexMetadata> getIndexes() {
         return indexes;
     }
@@ -130,12 +169,19 @@ public class TableMetadata implements IMetadata {
         return false;
     }
 
-//TODO:javadoc
+    /**
+     * Add an Index to a table.
+     * @param name The name of the index.
+     * @param data The metadata of the index.
+     */
     public void addIndex(IndexName name, IndexMetadata data) {
         indexes.put(name, data);
     }
 
-//TODO:javadoc
+    /**
+     * Delete an Index of a table.
+     * @param name The name of the index to remove.
+     */
     public void deleteIndex(IndexName name) {
         indexes.remove(name);
     }
