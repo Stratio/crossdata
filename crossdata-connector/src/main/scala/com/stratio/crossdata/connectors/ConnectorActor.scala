@@ -25,8 +25,9 @@ import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, QueryResult, QueryStatus, Result, StorageResult}
-import com.stratio.crossdata.communication.{ Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation, getConnectorName, replyConnectorName}
+import com.stratio.crossdata.communication.{ Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation}
 import com.stratio.crossdata.communication.{ACK, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable}
+import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
 import org.apache.log4j.Logger
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt

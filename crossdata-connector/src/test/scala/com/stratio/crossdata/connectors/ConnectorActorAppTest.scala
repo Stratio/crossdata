@@ -21,24 +21,20 @@ package com.stratio.crossdata.connectors
 import akka.pattern.ask
 import akka.util.Timeout
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IQueryEngine, IStorageEngine}
-import com.stratio.crossdata.common.data.{Row, TableName, CatalogName, ClusterName, IndexName, ColumnName}
-import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionWorkflow}
+import com.stratio.crossdata.common.data.{ClusterName, ColumnName, IndexName, Row, TableName}
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, TransformationStep}
-import com.stratio.crossdata.common.metadata.{IndexMetadata, ColumnMetadata, Operations, TableMetadata}
+import com.stratio.crossdata.common.metadata.{ColumnMetadata, IndexMetadata, Operations, TableMetadata}
 import com.stratio.crossdata.common.result.{MetadataResult, QueryResult, StorageResult}
 import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.communication.{CreateTable, Execute, Insert}
-import com.stratio.crossdata.core.query.{BaseQuery, SelectParsedQuery, SelectPlannedQuery, SelectValidatedQuery}
-import com.stratio.crossdata.core.statements.SelectStatement
 import com.typesafe.config.ConfigFactory
 import org.apache.log4j.Logger
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
-import org.testng.Assert._
+import org.testng.Assert.{assertNotNull, assertTrue}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import com.stratio.crossdata.common.utils.StringUtils
 
 
 class ConnectorActorAppTest extends FunSuite with MockFactory {
