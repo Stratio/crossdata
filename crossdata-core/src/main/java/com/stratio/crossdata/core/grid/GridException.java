@@ -28,10 +28,12 @@ public class GridException extends RuntimeException {
     /**
      * @see RuntimeException#RuntimeException()
      */
+//TODO:javadoc
     public GridException() {
         super();
     }
 
+//TODO:javadoc
     public GridException(Exception e) {
         super(e.getMessage());
     }
@@ -39,6 +41,7 @@ public class GridException extends RuntimeException {
     /**
      * @see RuntimeException#RuntimeException(String message)
      */
+//TODO:javadoc
     public GridException(String message) {
         super(message);
     }
@@ -46,6 +49,7 @@ public class GridException extends RuntimeException {
     /**
      * @see RuntimeException#RuntimeException(String message, Throwable cause)
      */
+//TODO:javadoc
     public GridException(String message, Throwable cause) {
         super(message, cause);
     }
@@ -53,6 +57,7 @@ public class GridException extends RuntimeException {
     /**
      * @see RuntimeException#RuntimeException(Throwable cause)
      */
+//TODO:javadoc
     public GridException(Throwable cause) {
         super(cause);
     }

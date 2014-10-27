@@ -28,6 +28,7 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
 public abstract class NormalizedQuery extends SelectParsedQuery {
+//TODO: javadoc
     public NormalizedQuery(SelectParsedQuery parsedQuery) {
         super(parsedQuery);
     }
@@ -36,31 +37,38 @@ public abstract class NormalizedQuery extends SelectParsedQuery {
         this((SelectParsedQuery) normalizedQuery);
     }
 
+//TODO: javadoc
     public QueryStatus getStatus() {
         return QueryStatus.NORMALIZED;
     }
 
     //IStatement Methods move to MetaStatement
+//TODO: javadoc
     public List<CatalogName> getCatalogs() {
         throw new UnsupportedOperationException();
     }
 
+//TODO: javadoc
     public List<TableName> getTables() {
         throw new UnsupportedOperationException();
     }
 
+//TODO: javadoc
     public List<ColumnName> getColumns() {
         throw new UnsupportedOperationException();
     }
 
+//TODO: javadoc
     public List<Relation> getAssignations() {
         throw new UnsupportedOperationException();
     }
 
+//TODO: javadoc
     public List<Relation> getRelationships() {
         throw new UnsupportedOperationException();
     }
 
+//TODO: javadoc
     public List<TableMetadata> getTableMetadata() {
         throw new UnsupportedOperationException();
     }

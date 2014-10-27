@@ -25,6 +25,13 @@ public class ColumnMetadata implements IMetadata {
     private final Object[] parameters;
     private final ColumnType columnType;
 
+    /**
+     * Constructor
+     *
+     * @param name
+     * @param parameters
+     * @param columnType
+     */
     public ColumnMetadata(ColumnName name, Object[] parameters,
             ColumnType columnType) {
         this.name = name;
@@ -36,16 +43,33 @@ public class ColumnMetadata implements IMetadata {
         this.columnType = columnType;
     }
 
+    /**
+     * getter for the name
+     *
+     * @return Columname
+     */
     public ColumnName getName() {
         return name;
     }
 
+    /**
+     * returns copy of the internal parameters attribute
+     * @return Object[]
+     */
     public Object[] getParameters() { return parameters.clone(); }
 
+    /**
+     *
+     * @return column type
+     */
     public ColumnType getColumnType() {
         return columnType;
     }
 
+    /**
+     *
+     * @return String
+     */
     public String getIndex() {
         throw new UnsupportedOperationException();
     }

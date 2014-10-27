@@ -56,19 +56,38 @@ Additionally, you can execute an script upon launching the shell. The script wil
 ```
    > mvn package
 ```
-See [this link](https://github.com/Stratio/stratio-com.stratio.crossdata/edit/release/0.0.4/com.stratio.crossdata-dist/src/main/include/README.md) to know start/stop the server and the shell from the dist packages
+See [this link](https://github.com/Stratio/crossdata/edit/release/0.0.4/meta-dist/src/main/include/README.md) to know start/stop the server and the shell from the dist packages
 
 
 ## Useful commands ##
 
 Once the shell is running, you can exit the program introducing the word **exit** or **quit** in the query prompt. A command help system is available by introducing the command **help**. A help entry is available per command, to check specify help topics use **help command**.
 
-## More about the project ##
-
-You can find more information about this project (tutorials, examples, etc...) in http://wordpress.dev.strat.io/
-
 ## Send issues to Jira ##
 You can send us issues in https://com.stratio.crossdata.atlassian.net
+
+
+## Grammar ##
+
+
+## Getting started ##
+In this [link](_doc/GettingStarted.md) you can follow an example of Crossdata with a Cassandra Connector as an access 
+to a Cassandra data store.
+
+
+## Connectors ##
+Crossdata can use this connectors:
+
+[Cassandra Connector](https://github.com/Stratio/stratio-connector-cassandra)
+
+[Stratio Deep Connector](https://github.com/Stratio/stratio-connector-deep)
+
+[MongoDB Connector](https://github.com/Stratio/stratio-connector-mongodb)
+
+[ElasticSearch Connector](https://github.com/Stratio/stratio-connector-elasticsearch)
+
+[Stratio Streaming Connector](https://github.com/Stratio/stratio-connector-streaming)
+
 
 # License #
 

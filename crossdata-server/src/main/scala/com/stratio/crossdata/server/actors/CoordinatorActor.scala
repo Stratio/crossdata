@@ -132,26 +132,33 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           log.info("\n\nCoordinate workflow: " + workflow1.toString)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if(ResultType.RESULTS.equals(workflow1.getResultType)) {
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
             val actorRef = StringUtils.getAkkaActorRefUri(workflow1.getActorRef())
             val actorSelection=context.actorSelection(actorRef)
-            actorSelection.asInstanceOf[ActorSelection] ! workflow1.getExecuteOperation(queryId)
+            val operation = workflow1.getExecuteOperation(queryId)
+            executionInfo.setRemoveOnSuccess(Execute.getClass.isInstance(operation))
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
+
+            actorSelection.asInstanceOf[ActorSelection] ! operation
             log.info("\nmessage sent to" + actorRef.toString())
           }else if(ResultType.TRIGGER_EXECUTION.equals(workflow1.getResultType)){
+
+            val actorRef = StringUtils.getAkkaActorRefUri(workflow1.getActorRef())
+            val actorSelection=context.actorSelection(actorRef)
+
             //Register the top level workflow
+            val operation = workflow1.getExecuteOperation(queryId + CoordinatorActor
+              .TriggerToken)
+            executionInfo.setRemoveOnSuccess(Execute.getClass.isInstance(operation))
             ExecutionManager.MANAGER.createEntry(queryId + CoordinatorActor.TriggerToken, executionInfo)
 
             //Register the result workflow
             val nextExecutionInfo = new ExecutionInfo
             nextExecutionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
             nextExecutionInfo.setWorkflow(workflow1.getNextExecutionWorkflow)
-
+            nextExecutionInfo.setRemoveOnSuccess(executionInfo.isRemoveOnSuccess)
             ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo)
 
-            val actorRef = StringUtils.getAkkaActorRefUri(workflow1.getActorRef())
-            val actorSelection=context.actorSelection(actorRef)
-            actorSelection.asInstanceOf[ActorSelection] ! workflow1.getExecuteOperation(queryId + CoordinatorActor
-              .TriggerToken)
+            actorSelection.asInstanceOf[ActorSelection] ! operation
             log.info("\nmessage sent to" + actorRef.toString())
 
           }

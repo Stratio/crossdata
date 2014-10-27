@@ -30,47 +30,57 @@ public class Option {
     private Selector nameProperty;
     private Selector valueProperty;
 
+//TODO:javadoc
     public Option(int fixedOption, Selector nameProperty, Selector properties) {
         this.fixedOption = fixedOption;
         this.nameProperty = nameProperty;
         this.valueProperty = properties;
     }
 
+//TODO:javadoc
     public Option(int fixedOption) {
         this(fixedOption, null, null);
     }
 
+//TODO:javadoc
     public Option(Selector nameProperty, Selector properties) {
         this.fixedOption = OPTION_PROPERTY;
         this.nameProperty = nameProperty;
         this.valueProperty = properties;
     }
 
+//TODO:javadoc
     public int getFixedOption() {
         return fixedOption;
     }
 
+//TODO:javadoc
     public void setFixedOption(int fixedOption) {
         this.fixedOption = fixedOption;
     }
 
+//TODO:javadoc
     public Selector getNameProperty() {
         return nameProperty;
     }
 
+//TODO:javadoc
     public void setNameProperty(Selector nameProperty) {
         this.nameProperty = nameProperty;
     }
 
+//TODO:javadoc
     public Selector getProperties() {
         return valueProperty;
     }
 
+//TODO:javadoc
     public void setProperties(Selector properties) {
         this.valueProperty = properties;
     }
 
     @Override
+//TODO:javadoc
     public String toString() {
         StringBuilder sb = new StringBuilder();
         switch (fixedOption) {

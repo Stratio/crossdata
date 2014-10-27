@@ -71,6 +71,7 @@ public enum MetadataManager {
         }
     }
 
+//TODO: javadoc
     public boolean exists(Name name) {
         boolean result = false;
         switch (name.getType()) {
@@ -130,6 +131,7 @@ public enum MetadataManager {
         return metadata.containsKey(name);
     }
 
+//TODO: javadoc
     public boolean exists(TableName name) {
         boolean result = false;
         if (exists(name.getCatalogName())) {
@@ -139,6 +141,7 @@ public enum MetadataManager {
         return result;
     }
 
+//TODO: javadoc
     public boolean exists(ColumnName name) {
         boolean result = false;
         if (exists(name.getTableName())) {
@@ -148,6 +151,7 @@ public enum MetadataManager {
         return result;
     }
 
+//TODO: javadoc
     public boolean exists(IndexName name) {
         boolean result = false;
         if (exists(name.getTableName())) {
@@ -157,6 +161,7 @@ public enum MetadataManager {
         return result;
     }
 
+//TODO: javadoc
     public synchronized void init(Map<FirstLevelName, IMetadata> metadata, Lock writeLock, TransactionManager tm) {
         if (metadata != null && writeLock != null) {
             this.metadata = metadata;
@@ -168,6 +173,7 @@ public enum MetadataManager {
         }
     }
 
+//TODO: javadoc
     public synchronized void clear()
             throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException,
             RollbackException {
@@ -176,10 +182,12 @@ public enum MetadataManager {
         commitTransaction();
     }
 
+//TODO: javadoc
     public void createCatalog(CatalogMetadata catalogMetadata) {
         createCatalog(catalogMetadata, true);
     }
 
+//TODO: javadoc
     public void createCatalog(CatalogMetadata catalogMetadata, boolean unique) {
         shouldBeInit();
         try {
@@ -197,16 +205,19 @@ public enum MetadataManager {
         }
     }
 
+//TODO: javadoc
     public void deleteCatalog(CatalogName catalogName) {
 
     }
 
+//TODO: javadoc
     public CatalogMetadata getCatalog(CatalogName name) {
         shouldBeInit();
         shouldExist(name);
         return (CatalogMetadata) metadata.get(name);
     }
 
+//TODO: javadoc
     public void createTable(TableMetadata tableMetadata, boolean unique) {
         shouldBeInit();
         try {
@@ -234,14 +245,17 @@ public enum MetadataManager {
         }
     }
 
+//TODO: javadoc
     public void createTable(TableMetadata tableMetadata) {
         createTable(tableMetadata, true);
     }
 
+//TODO: javadoc
     public void deleteTable(TableName tableName) {
 
     }
 
+//TODO: javadoc
     public TableMetadata getTable(TableName name) {
         shouldBeInit();
         shouldExist(name);
@@ -249,6 +263,7 @@ public enum MetadataManager {
         return catalogMetadata.getTables().get(name);
     }
 
+//TODO: javadoc
     public void createCluster(ClusterMetadata clusterMetadata, boolean unique, boolean attachToDatastore) {
         shouldBeInit();
         try {
@@ -285,6 +300,7 @@ public enum MetadataManager {
         }
     }
 
+//TODO: javadoc
     public void createCluster(ClusterMetadata clusterMetadata, boolean unique) {
         shouldBeInit();
         try {
@@ -307,16 +323,19 @@ public enum MetadataManager {
         }
     }
 
+//TODO: javadoc
     public void createCluster(ClusterMetadata clusterMetadata) {
         createCluster(clusterMetadata, true);
     }
 
+//TODO: javadoc
     public ClusterMetadata getCluster(ClusterName name) {
         shouldBeInit();
         shouldExist(name);
         return (ClusterMetadata) metadata.get(name);
     }
 
+//TODO: javadoc
     public void createDataStore(DataStoreMetadata dataStoreMetadata, boolean unique) {
         shouldBeInit();
         try {
@@ -334,16 +353,19 @@ public enum MetadataManager {
         }
     }
 
+//TODO: javadoc
     public void createDataStore(DataStoreMetadata dataStoreMetadata) {
         createDataStore(dataStoreMetadata, true);
     }
 
+//TODO: javadoc
     public DataStoreMetadata getDataStore(DataStoreName name) {
         shouldBeInit();
         shouldExist(name);
         return (DataStoreMetadata) metadata.get(name);
     }
 
+//TODO: javadoc
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique) {
         shouldBeInit();
         //TODO Check whether datastores can be added after adding connectors
@@ -362,6 +384,7 @@ public enum MetadataManager {
         }
     }
 
+//TODO: javadoc
     public void createConnector(ConnectorMetadata connectorMetadata, boolean unique, boolean attachToCluster) {
         shouldBeInit();
         for (DataStoreName dataStore : connectorMetadata.getDataStoreRefs()) {
@@ -395,16 +418,19 @@ public enum MetadataManager {
         }
     }
 
+//TODO: javadoc
     public void createConnector(ConnectorMetadata connectorMetadata) {
         createConnector(connectorMetadata, true);
     }
 
+//TODO: javadoc
     public ConnectorMetadata getConnector(ConnectorName name) {
         shouldBeInit();
         shouldExist(name);
         return (ConnectorMetadata) metadata.get(name);
     }
 
+//TODO: javadoc
     public void addConnectorRef(ConnectorName name, String actorRef) {
         if (!exists(name)) {
             String version = null;
@@ -433,6 +459,8 @@ public enum MetadataManager {
         }
     }
 
+//TODO: javadoc
+//TODO: javadoc
     public void setConnectorStatus(ConnectorName name, ConnectorStatus connectorStatus) {
         ConnectorMetadata connectorMetadata = getConnector(name);
         connectorMetadata.setConnectorStatus(connectorStatus);

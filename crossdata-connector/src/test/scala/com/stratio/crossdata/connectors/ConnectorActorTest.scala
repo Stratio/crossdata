@@ -21,9 +21,10 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.routing.RoundRobinRouter
 import akka.util.Timeout
-import com.stratio.crossdata.common.data.{ClusterName, TableName}
-import com.stratio.crossdata.common.metadata.TableMetadata
+import com.stratio.crossdata.common.data.{IndexName, ColumnName, ClusterName, TableName}
+import com.stratio.crossdata.common.metadata.{IndexMetadata, ColumnMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.MetadataResult
+import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.communication.CreateTable
 import com.stratio.crossdata.connectors.ConnectorActor
 import com.stratio.crossdata.connectors.config.ConnectConfig
@@ -47,6 +48,11 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
   val mycatalog:String="catalog"
   val mytable:String="mytable"
   val sm2:String="2"
+  val a:Option[java.util.Map[Selector, Selector]]=None
+  val b:Option[java.util.Map[ColumnName,ColumnMetadata]]=None
+  val c:Option[java.util.Map[IndexName,IndexMetadata]]=None
+  val d:Option[ClusterName]=None
+  val e:Option[java.util.List[ColumnName]]=None
 
   test("Send 2 slow MetadataInProgressQuery to two connectors to test concurrency") {
     val queryId = "queryId"
@@ -58,9 +64,9 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2))
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
-      null, null, null, null, null, null))
+      a.get, b.get, c.get, d.get, e.get, e.get))
     val message2 = CreateTable(queryId + sm2, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
-      null, null, null, null, null, null))
+      a.get, b.get, c.get, d.get, e.get, e.get))
 
     logger.debug("sending message 1")
     var future = ask(ca1, message)
@@ -74,7 +80,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
 
     val result2 = Await.result(future2, 16 seconds).asInstanceOf[MetadataResult]
     logger.debug("result.getQueryId()=" + result2.getQueryId())
-    assert(result2.getQueryId() == queryId +sm2)
+    assert(result2.getQueryId() == queryId + sm2)
   }
 
   test("Send MetadataInProgressQuery to Connector") {
@@ -90,9 +96,9 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
 
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
-      null, null, null, null, null, null))
+      a.get, b.get, c.get, d.get, e.get, e.get))
     val message2 = CreateTable(queryId + sm2, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
-      null, null, null, null, null, null))
+      a.get, b.get, c.get, d.get, e.get, e.get))
     /**
      * @timesleep: time to wait the make the test
      * */
