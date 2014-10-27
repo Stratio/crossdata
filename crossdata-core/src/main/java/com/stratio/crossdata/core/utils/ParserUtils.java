@@ -32,6 +32,9 @@ import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.utils.MetaUtils;
 
+/**
+ * Utility class for parser-related tasks.
+ */
 public final class ParserUtils {
 
     /**
@@ -45,8 +48,15 @@ public final class ParserUtils {
     private ParserUtils() {
     }
 
-//TODO:javadoc
-//TODO:javadoc
+    /**
+     * Generate the String representation of a map using a conjunction between the key and the value and a separator
+     * between key-value tuples.
+     *
+     * @param ids         The map of ids.
+     * @param conjunction The conjunction between key and values.
+     * @param separator   The separator between key-value tuples.
+     * @return A string representation of the map.
+     */
     public static String stringMap(Map<?, ?> ids, String conjunction, String separator) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<?, ?> entry : ids.entrySet()) {
@@ -58,7 +68,13 @@ public final class ParserUtils {
         return sb.substring(0, sb.length() - separator.length());
     }
 
-//TODO:javadoc
+    /**
+     * Generate the String representation of a set using a separator between elements.
+     *
+     * @param ids       The set of ids.
+     * @param separator The separator between elements.
+     * @return A string representation of the set.
+     */
     public static String stringSet(Set<String> ids, String separator) {
         StringBuilder sb = new StringBuilder();
         for (String id : ids) {
@@ -67,7 +83,15 @@ public final class ParserUtils {
         return sb.substring(0, sb.length() - separator.length());
     }
 
-//TODO:javadoc
+    /**
+     * Get the best matches for a string {@code str} given a set of words to compare against and a maximum Levenshtein
+     * distance.
+     *
+     * @param str         The word to get the matches for.
+     * @param words       The set of candidate words.
+     * @param maxDistance The maximum Levenshtein distance.
+     * @return A set of matching words within distance.
+     */
     public static Set<String> getBestMatches(String str, Set<String> words, int maxDistance) {
         int limit = maxDistance + 1;
         int currentLimit = 1;
@@ -85,7 +109,13 @@ public final class ParserUtils {
         return result;
     }
 
-//TODO:javadoc
+    /**
+     * Given an parsing error, obtain the position of the first character not being recognized by the underlying
+     * grammar.
+     *
+     * @param antlrError An {@link com.stratio.crossdata.core.utils.AntlrError}.
+     * @return An integer value or -1 if the position cannot be determined.
+     */
     public static Integer getCharPosition(AntlrError antlrError) {
         Integer result = -1;
         if (antlrError.getHeader().contains(":")
@@ -95,13 +125,20 @@ public final class ParserUtils {
         return result;
     }
 
-//TODO:javadoc
+    /**
+     * Mark in an parsing error message the point which the parser no longer recognizes the string.
+     *
+     * @param query The user provided query.
+     * @param ae    An {@link com.stratio.crossdata.core.utils.AntlrError}.
+     * @return A string with the character {@code ?} located in the point which the parser no longer recognizes the
+     * input string.
+     */
     public static String getQueryWithSign(String query, AntlrError ae) {
         int marker = 0;
-        String q=query;
+        String q = query;
         if (q.startsWith("[")) {
             marker = q.indexOf("], ") + 3;
-            q= q.substring(marker);
+            q = q.substring(marker);
         }
         StringBuilder sb = new StringBuilder(q);
         int pos = getCharPosition(ae) - marker;
@@ -111,8 +148,13 @@ public final class ParserUtils {
         return sb.toString();
     }
 
-
-//TODO:javadoc
+    /**
+     * Get suggestion for a given user query that cannot be successfully parsed.
+     *
+     * @param query      The user provided query.
+     * @param antlrError An {@link com.stratio.crossdata.core.utils.AntlrError}.
+     * @return A message with the suggested tokens.
+     */
     public static String getSuggestion(String query, AntlrError antlrError) {
         // We initialize the errorWord with the first word of the query
         // We initialize the token words with the initial tokens
@@ -160,7 +202,12 @@ public final class ParserUtils {
         return "";
     }
 
-//TODO:javadoc
+    /**
+     * Transform a parser token found in a message with a user-friendly replacement one.
+     *
+     * @param message The user query.
+     * @return A string containing the replacements.
+     */
     public static String translateToken(String message) {
         if (message == null) {
             return "";
@@ -176,6 +223,12 @@ public final class ParserUtils {
         }
     }
 
+    /**
+     * Get a replacement token for a given one.
+     *
+     * @param target The parser token.
+     * @return A string with the replacement token.
+     */
     private static String getReplacement(String target) {
         String targetToken = target.substring(2);
         String replacement = "";
@@ -189,7 +242,8 @@ public final class ParserUtils {
 
             bufferedReaderF = new BufferedReader(
                     new InputStreamReader(
-                            tokensFile, Charset.forName("UTF-8")));
+                            tokensFile, Charset.forName("UTF-8"))
+            );
 
             String line = bufferedReaderF.readLine();
             while (line != null) {

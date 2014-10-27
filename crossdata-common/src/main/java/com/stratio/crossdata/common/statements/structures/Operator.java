@@ -21,7 +21,6 @@ package com.stratio.crossdata.common.statements.structures;
 /**
  * Operators supported in an {@link Relation}.
  */
-//TODO:javadoc for class methods
 public enum Operator {
 
     /**
@@ -98,6 +97,7 @@ public enum Operator {
      * Assign relationship for update-like statements.
      */
     ASSIGN(Group.ARITHMETIC) {
+        @Override
         public String toString() {
             return "=";
         }
@@ -107,6 +107,7 @@ public enum Operator {
      * Match comparator for full-text search queries.
      */
     MATCH(Group.COMPARATOR) {
+        @Override
         public String toString() {
             return "MATCH";
         }
@@ -116,6 +117,7 @@ public enum Operator {
      * Greater than comparator.
      */
     GT(Group.COMPARATOR) {
+        @Override
         public String toString() {
             return ">";
         }
@@ -125,6 +127,7 @@ public enum Operator {
      * Less than comparator.
      */
     LT(Group.COMPARATOR) {
+        @Override
         public String toString() {
             return "<";
         }
@@ -134,6 +137,7 @@ public enum Operator {
      * Greater or equal than comparator.
      */
     GET(Group.COMPARATOR) {
+        @Override
         public String toString() {
             return ">=";
         }
@@ -143,6 +147,7 @@ public enum Operator {
      * Less or equal than compartor.
      */
     LET(Group.COMPARATOR) {
+        @Override
         public String toString() {
             return "<=";
         }
@@ -152,6 +157,7 @@ public enum Operator {
      * Distinct comparator.
      */
     DISTINCT(Group.COMPARATOR) {
+        @Override
         public String toString() {
             return "<>";
         }
@@ -161,6 +167,7 @@ public enum Operator {
      * Like comparator.
      */
     LIKE(Group.COMPARATOR) {
+        @Override
         public String toString() {
             return "LIKE";
         }
