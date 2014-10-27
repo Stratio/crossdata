@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.core.structures;
 
+/**
+ * Property Class.
+ */
 public abstract class Property {
 
     public static final int TYPE_NAME_VALUE = 1;
@@ -26,22 +29,30 @@ public abstract class Property {
 
     protected int type;
 
-//TODO:javadoc
+    /**
+     * Class Constructor.
+     * @param type
+     */
     public Property(int type) {
         this.type = type;
     }
 
-//TODO:javadoc
+    /**
+     * Get the type of the property.
+     * @return The type.
+     */
     public int getType() {
         return type;
     }
 
-//TODO:javadoc
+    /**
+     * Set the type of the property.
+     * @param type
+     */
     public void setType(int type) {
         this.type = type;
     }
 
     @Override
-//TODO:javadoc
     public abstract String toString();
 }

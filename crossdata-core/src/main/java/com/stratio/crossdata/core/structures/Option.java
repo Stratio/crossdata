@@ -20,6 +20,9 @@ package com.stratio.crossdata.core.structures;
 
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * Option Class.
+ */
 public class Option {
 
     public static final int OPTION_PROPERTY = 1;
@@ -30,57 +33,86 @@ public class Option {
     private Selector nameProperty;
     private Selector valueProperty;
 
-//TODO:javadoc
+    /**
+     * Class constructor.
+     * @param fixedOption The fixed option.
+     * @param nameProperty The property name.
+     * @param properties The Selector properties.
+     */
     public Option(int fixedOption, Selector nameProperty, Selector properties) {
         this.fixedOption = fixedOption;
         this.nameProperty = nameProperty;
         this.valueProperty = properties;
     }
 
-//TODO:javadoc
+    /**
+     * Class constructor.
+     * @param fixedOption
+     */
     public Option(int fixedOption) {
         this(fixedOption, null, null);
     }
 
-//TODO:javadoc
+    /**
+     * Class constructor.
+     * @param nameProperty The Selector property name.
+     * @param properties The selector properties.
+     */
     public Option(Selector nameProperty, Selector properties) {
         this.fixedOption = OPTION_PROPERTY;
         this.nameProperty = nameProperty;
         this.valueProperty = properties;
     }
 
-//TODO:javadoc
+    /**
+     * Get the fixed Option.
+     * @return The fixed Option.
+     */
     public int getFixedOption() {
         return fixedOption;
     }
 
-//TODO:javadoc
+    /**
+     * Set the fixed option.
+     * @param fixedOption
+     */
     public void setFixedOption(int fixedOption) {
         this.fixedOption = fixedOption;
     }
 
-//TODO:javadoc
+    /**
+     * Get the Selector property Name
+     * @return {@link com.stratio.crossdata.common.statements.structures.Selector}
+     */
     public Selector getNameProperty() {
         return nameProperty;
     }
 
-//TODO:javadoc
+    /**
+     * Set the Selector name property
+     * @param nameProperty
+     */
     public void setNameProperty(Selector nameProperty) {
         this.nameProperty = nameProperty;
     }
 
-//TODO:javadoc
+    /**
+     * Get the properties Selector.
+     * @return {@link com.stratio.crossdata.common.statements.structures.Selector}
+     */
     public Selector getProperties() {
         return valueProperty;
     }
 
-//TODO:javadoc
+    /**
+     * Set the selector properties.
+     * @param properties
+     */
     public void setProperties(Selector properties) {
         this.valueProperty = properties;
     }
 
     @Override
-//TODO:javadoc
     public String toString() {
         StringBuilder sb = new StringBuilder();
         switch (fixedOption) {
