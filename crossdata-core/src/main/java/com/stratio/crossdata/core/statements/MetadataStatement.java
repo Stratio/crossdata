@@ -24,6 +24,9 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
+/**
+ * Metadata Statement Class.
+ */
 public abstract class MetadataStatement extends MetaStatement {
 
     protected ClusterMetadata clusterMetadata = null;
@@ -36,57 +39,89 @@ public abstract class MetadataStatement extends MetaStatement {
 
     protected ColumnMetadata columnMetadata = null;
 
-//TODO: javadoc
+    /**
+     * Class constructor.
+     */
     public MetadataStatement() {
         super();
     }
 
-//TODO: javadoc
+    /**
+     * Get the cluster metadata of a statement.
+     * @return {@link com.stratio.crossdata.common.metadata.ClusterMetadata}
+     */
     public ClusterMetadata getClusterMetadata() {
         return clusterMetadata;
     }
 
-//TODO: javadoc
+    /**
+     * Set the cluster metadata of the statement.
+     * @param clusterMetadata The cluster metadata
+     */
     public void setClusterMetadata(ClusterMetadata clusterMetadata) {
         this.clusterMetadata = clusterMetadata;
     }
 
-//TODO: javadoc
+    /**
+     * Get de connector metadata of the statement.
+     * @return {@link com.stratio.crossdata.common.metadata.ConnectorMetadata}
+     */
     public ConnectorMetadata getConnectorMetadata() {
         return connectorMetadata;
     }
 
-//TODO: javadoc
+    /**
+     * Set the connector metadata of the statement.
+     * @param connectorMetadata The connector metadata.
+     */
     public void setConnectorMetadata(ConnectorMetadata connectorMetadata) {
         this.connectorMetadata = connectorMetadata;
     }
 
-//TODO: javadoc
+    /**
+     * Get de data store metadata of the statement.
+     * @return {@link com.stratio.crossdata.common.metadata.DataStoreMetadata}
+     */
     public DataStoreMetadata getDataStoreMetadata() {
         return dataStoreMetadata;
     }
 
-//TODO: javadoc
+    /**
+     * Set the data store metadata of the statement.
+     * @param dataStoreMetadata The data store metadata-
+     */
     public void setDataStoreMetadata(DataStoreMetadata dataStoreMetadata) {
         this.dataStoreMetadata = dataStoreMetadata;
     }
 
-//TODO: javadoc
+    /**
+     * Get the table metadata of the statement.
+     * @return {@link com.stratio.crossdata.common.metadata.TableMetadata}
+     */
     public TableMetadata getTableMetadata() {
         return tableMetadata;
     }
 
-//TODO: javadoc
+    /**
+     * Set the Table metadata of the statement.
+     * @param tableMetadata The table metadata.
+     */
     public void setTableMetadata(TableMetadata tableMetadata) {
         this.tableMetadata = tableMetadata;
     }
 
-//TODO: javadoc
+    /**
+     * Get the column metadata of the statement.
+     * @return {@link com.stratio.crossdata.common.metadata.ColumnMetadata}
+     */
     public ColumnMetadata getColumnMetadata() {
         return columnMetadata;
     }
 
-//TODO: javadoc
+    /**
+     * Set de Column metadata of the statement.
+     * @param columnMetadata The column metadata.
+     */
     public void setColumnMetadata(ColumnMetadata columnMetadata) {
         this.columnMetadata = columnMetadata;
     }

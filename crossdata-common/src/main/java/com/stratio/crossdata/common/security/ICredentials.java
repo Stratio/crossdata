@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.security;
 
+/**
+ * Interface for future credentials.
+ */
 public interface ICredentials {
 
 }

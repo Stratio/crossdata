@@ -205,7 +205,7 @@ public class MetadataManagerTestHelper {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterMetadata, false, true);
+        MetadataManager.MANAGER.createClusterAndAttach(clusterMetadata, false);
         return clusterName;
     }
 
@@ -226,7 +226,7 @@ public class MetadataManagerTestHelper {
         }
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterMetadata, false, true);
+        MetadataManager.MANAGER.createClusterAndAttach(clusterMetadata, false);
         return clusterName;
     }
 
