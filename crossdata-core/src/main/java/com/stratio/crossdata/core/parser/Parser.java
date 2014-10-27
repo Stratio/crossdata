@@ -37,6 +37,9 @@ import com.stratio.crossdata.core.statements.MetadataStatement;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
 
+/**
+ * Class that converts a String representing the user query into a {@link com.stratio.crossdata.core.query.IParsedQuery}.
+ */
 public class Parser {
 
     /**
@@ -44,6 +47,12 @@ public class Parser {
      */
     private static final Logger LOG = Logger.getLogger(Parser.class);
 
+    /**
+     * Parse incoming query.
+     * @param baseQuery Required information for parsing statement.
+     * @return Parsed Query.
+     * @throws ParsingException Couldn't be parsed.
+     */
     public IParsedQuery parse(BaseQuery baseQuery) throws ParsingException {
         IParsedQuery result = null;
         MetaStatement metaStatement = this
@@ -60,7 +69,7 @@ public class Parser {
 
     /**
      * Parse a input text and return the equivalent Statement.
-     *
+     * @param sessionCatalog Current catalog of the user.
      * @param query The input text.
      * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
      */

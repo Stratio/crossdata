@@ -19,26 +19,47 @@
 package com.stratio.crossdata.common.data;
 
 public class DataStoreName extends FirstLevelName {
+
     /**
      * Serial version UID.
      */
     private static final long serialVersionUID = 4171381082865700657L;
+
+    /**
+     * Name of the Data Store.
+     */
     private final String name;
 
+    /**
+     * Constructor.
+     * @param dataStoreName Name of the Data Store.
+     */
     public DataStoreName(String dataStoreName) {
         super();
         this.name = dataStoreName.toLowerCase();
     }
 
+    /**
+     * Get the name of the Data Store.
+     * @return name of the Data Store.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Get Qualified Name of the Data Store.
+     * @return Qualified Name.
+     */
     public String getQualifiedName() {
         return QualifiedNames.getDataStoreQualifiedName(getName());
     }
 
-    @Override public NameType getType() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NameType getType() {
         return NameType.DATASTORE;
     }
 }
