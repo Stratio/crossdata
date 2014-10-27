@@ -535,7 +535,7 @@ public enum MetadataManager {
     }
 
     /**
-     * Update the status of the connector list
+     * Update the status of the connector list.
      * @param names List of connectors name.
      * @param connectorStatus New connector status.
      */
