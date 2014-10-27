@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.core.structures;
 
+/**
+ * Type direction in order result.
+ */
 public enum OrderDirection {
     /**
      * Ascending order.

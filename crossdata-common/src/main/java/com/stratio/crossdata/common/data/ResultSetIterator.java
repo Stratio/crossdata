@@ -20,6 +20,9 @@ package com.stratio.crossdata.common.data;
 
 import java.util.Iterator;
 
+/**
+ * Iterator for ResultSet.
+ */
 public class ResultSetIterator implements Iterator<com.stratio.crossdata.common.data.Row> {
 
     /**
