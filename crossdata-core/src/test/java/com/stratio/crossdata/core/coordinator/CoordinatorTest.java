@@ -87,7 +87,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterTest =
                 new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterTest, false);
+        MetadataManager.MANAGER.createClusterAndAttach(clusterTest, false);
 
         // Create and add a test connector metadata to the metadatamanager
         ConnectorName connectorName = new ConnectorName("connectorTest");
@@ -346,7 +346,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterTest =
                 new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterTest, false);
+        MetadataManager.MANAGER.createClusterAndAttach(clusterTest, false);
     }
 
     private void createTestsCatalogAndPersist(String catalog) {
@@ -416,7 +416,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
 //        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
 //        ClusterMetadata clusterTest =
 //                new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-//        MetadataManager.MANAGER.createCluster(clusterTest, false);
+//        MetadataManager.MANAGER.createClusterAndAttach(clusterTest, false);
 //
 //        // Create and add a test connector metadata to the metadatamanager
 //        ConnectorName connectorName = new ConnectorName("connectorTest");
@@ -675,7 +675,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
 //        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
 //        ClusterMetadata clusterTest =
 //                new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-//        MetadataManager.MANAGER.createCluster(clusterTest, false);
+//        MetadataManager.MANAGER.createClusterAndAttach(clusterTest, false);
 //    }
 //
 //    private void createTestsCatalogAndPersist(String catalog) {
