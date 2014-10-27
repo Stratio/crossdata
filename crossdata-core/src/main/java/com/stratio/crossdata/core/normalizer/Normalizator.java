@@ -55,18 +55,22 @@ public class Normalizator {
     private NormalizedFields fields = new NormalizedFields();
     private IParsedQuery parsedQuery;
 
+//TODO: javadoc
     public Normalizator(SelectParsedQuery parsedQuery) {
         this.parsedQuery = parsedQuery;
     }
 
+//TODO: javadoc
     public NormalizedFields getFields() {
         return fields;
     }
 
+//TODO: javadoc
     public IParsedQuery getParsedQuery() {
         return parsedQuery;
     }
 
+//TODO: javadoc
     public void execute() throws ValidationException {
         normalizeTables();
         normalizeSelectExpression();
@@ -76,6 +80,7 @@ public class Normalizator {
         normalizeGroupBy();
     }
 
+//TODO: javadoc
     public void normalizeTables() throws ValidationException {
         List<TableName> tableNames = parsedQuery.getStatement().getFromTables();
         if (tableNames != null && !tableNames.isEmpty()) {
@@ -83,6 +88,7 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void normalizeTables(List<TableName> fromTables) throws ValidationException {
         for (TableName tableName : fromTables) {
             checkTable(tableName);
@@ -91,6 +97,7 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void normalizeJoins()
             throws ValidationException {
         InnerJoin innerJoin = ((SelectStatement) parsedQuery.getStatement()).getJoin();
@@ -100,6 +107,7 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void normalizeJoins(InnerJoin innerJoin)
             throws ValidationException {
         TableName joinTable = innerJoin.getTablename();
@@ -122,6 +130,7 @@ public class Normalizator {
         checkWhereRelations(where);
     }
 
+//TODO: javadoc
     public void normalizeOrderBy()
             throws ValidationException {
 
@@ -135,6 +144,7 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void normalizeOrderBy(OrderBy orderBy)
             throws ValidationException {
         for (Selector selector : orderBy.getSelectorList()) {
@@ -154,6 +164,7 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void normalizeSelectExpression()
             throws ValidationException {
         SelectExpression selectExpression = ((SelectStatement) parsedQuery.getStatement()).getSelectExpression();
@@ -162,6 +173,7 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void normalizeSelectExpresion(SelectExpression selectExpression)
             throws ValidationException {
         fields.setDistinctSelect(selectExpression.isDistinct());
@@ -169,6 +181,7 @@ public class Normalizator {
         fields.getSelectors().addAll(normalizeSelectors);
     }
 
+//TODO: javadoc
     public void normalizeGroupBy() throws ValidationException {
         GroupBy groupBy = ((SelectStatement) parsedQuery.getStatement()).getGroupBy();
         //TODO: NOT SUPORTED YET. REVIEW IN FUTURES RELEASES
@@ -211,6 +224,7 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void normalizeGroupBy(GroupBy groupBy) throws ValidationException {
         Set<ColumnName> columnNames = new HashSet<>();
         for (Selector selector : groupBy.getSelectorIdentifier()) {
@@ -222,6 +236,7 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void checkJoinRelations(List<Relation> relations) throws ValidationException {
         for (Relation relation : relations) {
             checkRelation(relation);
@@ -241,12 +256,14 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void checkWhereRelations(List<Relation> relations) throws ValidationException {
         for (Relation relation : relations) {
             checkRelation(relation);
         }
     }
 
+//TODO: javadoc
     public void checkRelation(Relation relation)
             throws ValidationException {
         if (relation.getOperator().isInGroup(Operator.Group.ARITHMETIC)) {
@@ -292,6 +309,7 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void checkTable(TableName tableName) throws ValidationException {
         if (!tableName.isCompletedName()) {
             tableName.setCatalogName(parsedQuery.getDefaultCatalog());
@@ -301,6 +319,7 @@ public class Normalizator {
         }
     }
 
+//TODO: javadoc
     public void checkColumnSelector(ColumnSelector selector) throws ValidationException {
         ColumnName columnName = selector.getName();
         if (columnName.isCompletedName()) {
@@ -315,6 +334,7 @@ public class Normalizator {
 
     }
 
+//TODO: javadoc
     public TableName searchTableNameByColumn(ColumnName columnName) throws ValidationException {
         TableName selectTableName = null;
         if (columnName.isCompletedName()) {
@@ -355,6 +375,7 @@ public class Normalizator {
         return selectTableName;
     }
 
+//TODO: javadoc
     public List<ColumnSelector> checkAsteriskSelector() {
         List<ColumnSelector> columnSelectors = new ArrayList<>();
         for (TableName table : fields.getTableNames()) {
@@ -368,6 +389,7 @@ public class Normalizator {
         return columnSelectors;
     }
 
+//TODO: javadoc
     public List<Selector> checkListSelector(List<Selector> selectors) throws ValidationException {
         List<Selector> result = new ArrayList<>();
         for (Selector selector : selectors) {
@@ -392,6 +414,7 @@ public class Normalizator {
         return result;
     }
 
+//TODO: javadoc
     public void checkFunctionSelector(FunctionSelector functionSelector)
             throws ValidationException {
         List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());

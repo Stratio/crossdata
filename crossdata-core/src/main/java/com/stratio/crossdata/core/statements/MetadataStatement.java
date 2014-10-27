@@ -36,46 +36,57 @@ public abstract class MetadataStatement extends MetaStatement {
 
     protected ColumnMetadata columnMetadata = null;
 
+//TODO: javadoc
     public MetadataStatement() {
         super();
     }
 
+//TODO: javadoc
     public ClusterMetadata getClusterMetadata() {
         return clusterMetadata;
     }
 
+//TODO: javadoc
     public void setClusterMetadata(ClusterMetadata clusterMetadata) {
         this.clusterMetadata = clusterMetadata;
     }
 
+//TODO: javadoc
     public ConnectorMetadata getConnectorMetadata() {
         return connectorMetadata;
     }
 
+//TODO: javadoc
     public void setConnectorMetadata(ConnectorMetadata connectorMetadata) {
         this.connectorMetadata = connectorMetadata;
     }
 
+//TODO: javadoc
     public DataStoreMetadata getDataStoreMetadata() {
         return dataStoreMetadata;
     }
 
+//TODO: javadoc
     public void setDataStoreMetadata(DataStoreMetadata dataStoreMetadata) {
         this.dataStoreMetadata = dataStoreMetadata;
     }
 
+//TODO: javadoc
     public TableMetadata getTableMetadata() {
         return tableMetadata;
     }
 
+//TODO: javadoc
     public void setTableMetadata(TableMetadata tableMetadata) {
         this.tableMetadata = tableMetadata;
     }
 
+//TODO: javadoc
     public ColumnMetadata getColumnMetadata() {
         return columnMetadata;
     }
 
+//TODO: javadoc
     public void setColumnMetadata(ColumnMetadata columnMetadata) {
         this.columnMetadata = columnMetadata;
     }

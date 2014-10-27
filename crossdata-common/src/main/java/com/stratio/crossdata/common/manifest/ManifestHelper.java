@@ -33,6 +33,7 @@ public final class ManifestHelper implements Serializable {
 
     }
 
+//TODO:javadoc
     public static String manifestToString(CrossdataManifest manifest) {
         String result = null;
         if (manifest instanceof DataStoreType) {
@@ -139,6 +140,7 @@ public final class ManifestHelper implements Serializable {
         return sb.toString();
     }
 
+//TODO:javadoc
     public static Set<PropertyType> convertManifestPropertiesToMetadataProperties(
             List<PropertyType> requiredProperties) {
         Set<PropertyType> metadataProperties = new HashSet<>();
@@ -148,6 +150,7 @@ public final class ManifestHelper implements Serializable {
         return metadataProperties;
     }
 
+//TODO:javadoc
     public static Set<DataStoreName> convertManifestDataStoreNamesToMetadataDataStoreNames(List<String> dataStoreRefs) {
         Set<DataStoreName> dataStoreNames = new HashSet<>();
         for (String name : dataStoreRefs) {
@@ -156,6 +159,7 @@ public final class ManifestHelper implements Serializable {
         return dataStoreNames;
     }
 
+//TODO:javadoc
     public static Set<String> convertManifestBehaviorsToMetadataBehaviors(List<String> behaviors) {
         Set<String> metadataBehaviors = new HashSet<>();
         for (String behavior : behaviors) {

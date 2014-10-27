@@ -50,6 +50,7 @@ public class ConnectorMetadata implements IMetadata {
     private Set<PropertyType> optionalProperties;
     private Set<Operations> supportedOperations;
 
+//TODO:javadoc
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
@@ -58,6 +59,7 @@ public class ConnectorMetadata implements IMetadata {
                 supportedOperations);
     }
 
+//TODO:javadoc
     public ConnectorMetadata(ConnectorName name, String version,
             Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties, ConnectorStatus connectorStatus, String actorRef,
@@ -76,6 +78,7 @@ public class ConnectorMetadata implements IMetadata {
         this.actorRef = actorRef;
     }
 
+//TODO:javadoc
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
             List<String> supportedOperations) {
@@ -98,58 +101,72 @@ public class ConnectorMetadata implements IMetadata {
 
     }
 
+//TODO:javadoc
     public ConnectorName getName() {
         return name;
     }
 
+//TODO:javadoc
     public String getVersion() {
         return version;
     }
 
+//TODO:javadoc
     public Set<DataStoreName> getDataStoreRefs() {
         return dataStoreRefs;
     }
 
+//TODO:javadoc
     public Set<PropertyType> getRequiredProperties() {
         return requiredProperties;
     }
 
+//TODO:javadoc
     public Set<PropertyType> getOptionalProperties() {
         return optionalProperties;
     }
 
+//TODO:javadoc
     public Set<Operations> getSupportedOperations() {
         return supportedOperations;
     }
 
+//TODO:javadoc
     public Set<ClusterName> getClusterRefs() {
         return clusterRefs;
     }
 
+//TODO:javadoc
     public void setClusterRefs(Set<ClusterName> clusterRefs) {
         this.clusterRefs = clusterRefs;
     }
 
+//TODO:javadoc
     public Map<ClusterName, Map<Selector, Selector>> getClusterProperties() {
         return clusterProperties;
     }
 
+//TODO:javadoc
     public void setClusterProperties(Map<ClusterName, Map<Selector, Selector>> clusterProperties) {
         this.clusterProperties = clusterProperties;
     }
 
+//TODO:javadoc
     public ConnectorStatus getConnectorStatus() {
         return connectorStatus;
     }
 
+//TODO:javadoc
     public void setConnectorStatus(ConnectorStatus connectorStatus) {
         this.connectorStatus = connectorStatus;
     }
 
+//TODO:javadoc
     public String getActorRef() {
         return actorRef;
     }
 
+//TODO:javadoc
     public void setActorRef(String actorRef) {
         this.connectorStatus = ConnectorStatus.ONLINE;
         this.actorRef = actorRef;
@@ -165,6 +182,7 @@ public class ConnectorMetadata implements IMetadata {
         return supportedOperations.contains(operation);
     }
 
+//TODO:javadoc
     public void addClusterProperties(ClusterName clusterName, Map<Selector, Selector> options) {
         if(clusterProperties == null){
             this.clusterProperties = new HashMap<>();
@@ -172,26 +190,32 @@ public class ConnectorMetadata implements IMetadata {
         clusterProperties.put(clusterName, options);
     }
 
+//TODO:javadoc
     public void setVersion(String version) {
         this.version = version;
     }
 
+//TODO:javadoc
     public void setDataStoreRefs(Set<DataStoreName> dataStoreRefs) {
         this.dataStoreRefs = dataStoreRefs;
     }
 
+//TODO:javadoc
     public void setRequiredProperties(Set<PropertyType> requiredProperties) {
         this.requiredProperties = requiredProperties;
     }
 
+//TODO:javadoc
     public void setOptionalProperties(Set<PropertyType> optionalProperties) {
         this.optionalProperties = optionalProperties;
     }
 
+//TODO:javadoc
     public void setSupportedOperations(Set<Operations> supportedOperations) {
         this.supportedOperations = supportedOperations;
     }
 
+//TODO:javadoc
     public void setSupportedOperations(List<String> supportedOperations) {
         this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
     }
@@ -205,6 +229,7 @@ public class ConnectorMetadata implements IMetadata {
         return operations;
     }
 
+//TODO:javadoc
     @Override public String toString() {
         StringBuilder sb = new StringBuilder("Connector: ");
         sb.append(name).append(" status: ").append(connectorStatus).append(" actorRef: ").append(actorRef);

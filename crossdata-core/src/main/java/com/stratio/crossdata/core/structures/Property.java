@@ -26,18 +26,22 @@ public abstract class Property {
 
     protected int type;
 
+//TODO:javadoc
     public Property(int type) {
         this.type = type;
     }
 
+//TODO:javadoc
     public int getType() {
         return type;
     }
 
+//TODO:javadoc
     public void setType(int type) {
         this.type = type;
     }
 
     @Override
+//TODO:javadoc
     public abstract String toString();
 }

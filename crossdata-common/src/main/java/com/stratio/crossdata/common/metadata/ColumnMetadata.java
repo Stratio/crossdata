@@ -25,6 +25,7 @@ public class ColumnMetadata implements IMetadata {
     private final Object[] parameters;
     private final ColumnType columnType;
 
+//TODO:javadoc
     public ColumnMetadata(ColumnName name, Object[] parameters,
             ColumnType columnType) {
         this.name = name;
@@ -36,16 +37,20 @@ public class ColumnMetadata implements IMetadata {
         this.columnType = columnType;
     }
 
+//TODO:javadoc
     public ColumnName getName() {
         return name;
     }
 
+//TODO:javadoc
     public Object[] getParameters() { return parameters.clone(); }
 
+//TODO:javadoc
     public ColumnType getColumnType() {
         return columnType;
     }
 
+//TODO:javadoc
     public String getIndex() {
         throw new UnsupportedOperationException();
     }
