@@ -15,16 +15,19 @@
   ~ KIND, either express or implied.  See the License for the
   ~ specific language governing permissions and limitations
   ~ under the License.
-  --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  -->
+
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.stratio.meta</groupId>
-    <artifactId>meta-parent</artifactId>
+    <groupId>com.stratio.crossdata</groupId>
+    <artifactId>crossdata-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.0.7</version>
-    <name>Stratio META parent</name>
-    <description>Stratio META</description>
-    <url>https://github.com/Stratio/stratio-meta/</url>
+    <version>0.1.0</version>
+    <name>Stratio Crossdata parent</name>
+    <description>Stratio Crossdata parent</description>
+    <url>http://stratio.github.io/com.stratio.crossdata/</url>
 
     <licenses>
         <license>
@@ -34,8 +37,8 @@
     </licenses>
 
     <scm>
-        <url>scm:git:git@github.com:Stratio/stratio-meta.git</url>
-        <connection>https://github.com/Stratio/stratio-meta/</connection>
+        <url>scm:git:git@github.com:Stratio/com.stratio.crossdata.git</url>
+        <connection>https://github.com/Stratio/com.stratio.crossdata/</connection>
     </scm>
 
     <developers>
@@ -70,26 +73,39 @@
             <email>dhiguero at stratio dot com</email>
         </developer>
         <developer>
-            <id>opuertas</id>
-            <name>Óscar Puertas</name>
-            <email>opuertas at stratio dot com</email>
+            <id>idiaz</id>
+            <name>Ivan Diaz</name>
+            <email>idiaz at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>jjlopez</id>
+            <name>Juanjo Lopez</name>
+            <email>jjlopez at stratio dot com</email>
         </developer>
     </developers>
 
+
     <modules>
-        <module>meta-common</module>
-        <module>meta-core</module>
-        <module>meta-driver</module>
-        <module>meta-server</module>
-        <module>meta-sh</module>
-        <module>meta-dist</module>
-    <module>meta-rest</module>
-  </modules>
+        <module>crossdata-common</module>
+        <module>crossdata-core</module>
+        <module>crossdata-driver</module>
+        <module>crossdata-server</module>
+        <module>crossdata-shell</module>
+        <module>crossdata-dist</module>
+        <module>crossdata-connector</module>
+        <module>crossdata-connector-maven-plugin</module>
+    </modules>
     <properties>
+        <scala.version>2.10.4</scala.version>
         <akka.version>2.2.4</akka.version>
-        <cassandra.driver>2.0.3</cassandra.driver>
-        <deep.version>0.4.0</deep.version>
+        <infinispan.version>6.0.2.Final</infinispan.version>
+        <scala.dep.version>2.10.4</scala.dep.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
+        <scala.version>2.10.4</scala.version>
+        <slf4j.version>1.7.7</slf4j.version>
+        <config.version>1.2.0</config.version>
+        <testng.version>6.8.8</testng.version>
+        <commons-lang3.version>3.2.1</commons-lang3.version>
     </properties>
 
     <build>
@@ -105,6 +121,7 @@
                         <format>xml</format>
                     </formats>
                     <aggregate>true</aggregate>
+                    <check/>
                 </configuration>
             </plugin>
 
