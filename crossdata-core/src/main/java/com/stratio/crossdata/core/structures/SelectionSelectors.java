@@ -30,20 +30,24 @@ public class SelectionSelectors extends Selection {
 
     private List<SelectionSelector> selectors;
 
+//TODO:javadoc
     public SelectionSelectors() {
         this.type = TYPE_SELECTOR;
         selectors = new ArrayList<>();
     }
 
+//TODO:javadoc
     public SelectionSelectors(List<SelectionSelector> selectors) {
         this();
         this.selectors = selectors;
     }
 
+//TODO:javadoc
     public List<SelectionSelector> getSelectors() {
         return selectors;
     }
 
+//TODO:javadoc
     public void addSelectionSelector(SelectionSelector ss) {
         boolean found = false;
         Iterator<SelectionSelector> it = selectors.iterator();
@@ -60,6 +64,7 @@ public class SelectionSelectors extends Selection {
     }
 
     @Override
+//TODO:javadoc
     public String toString() {
         return StringUtils.stringList(selectors, ", ");
     }

@@ -33,23 +33,30 @@ public abstract class SelectionClause {
 
     protected int type;
 
+//TODO:javadoc
     public int getType() {
         return type;
     }
 
+//TODO:javadoc
     public void setType(int type) {
         this.type = type;
     }
 
+//TODO:javadoc
     public abstract List<SelectorGroupBy> getSelectorsGroupBy();
 
+//TODO:javadoc
     public abstract void addTablename(TableName tablename);
 
+//TODO:javadoc
     public abstract List<String> getIds();
 
     @Override
+//TODO:javadoc
     public abstract String toString();
 
+//TODO:javadoc
     public List<String> getFields() {
         List<String> ids = new ArrayList<>();
         if (type == TYPE_COUNT) {

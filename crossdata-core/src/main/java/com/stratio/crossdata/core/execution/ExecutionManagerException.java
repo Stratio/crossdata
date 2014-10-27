@@ -19,14 +19,17 @@
 package com.stratio.crossdata.core.execution;
 
 public class ExecutionManagerException extends RuntimeException {
+//TODO:javadoc
     public ExecutionManagerException(String message) {
         super(message);
     }
 
+//TODO:javadoc
     public ExecutionManagerException(Exception e) {
         super(e.getMessage());
     }
 
+//TODO:javadoc
     public ExecutionManagerException(String message, Throwable cause) {
         super(message, cause);
     }

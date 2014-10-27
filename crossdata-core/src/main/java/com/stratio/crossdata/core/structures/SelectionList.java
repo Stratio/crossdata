@@ -34,37 +34,45 @@ public class SelectionList extends SelectionClause {
     private boolean distinct;
     private Selection selection;
 
+//TODO:javadoc
     public SelectionList(boolean distinct, Selection selection) {
         this.type = TYPE_SELECTION;
         this.distinct = distinct;
         this.selection = selection;
     }
 
+//TODO:javadoc
     public SelectionList(Selection selection) {
         this(false, selection);
     }
 
+//TODO:javadoc
     public boolean isDistinct() {
         return distinct;
     }
 
+//TODO:javadoc
     public void setDistinct(boolean distinct) {
         this.distinct = distinct;
     }
 
+//TODO:javadoc
     public Selection getSelection() {
         return selection;
     }
 
+//TODO:javadoc
     public void setSelection(Selection selection) {
         this.selection = selection;
     }
 
+//TODO:javadoc
     public int getTypeSelection() {
         return selection.getType();
     }
 
     @Override
+//TODO:javadoc
     public String toString() {
         StringBuilder sb = new StringBuilder();
         if (distinct) {
@@ -150,6 +158,7 @@ public class SelectionList extends SelectionClause {
     }
 
     @Override
+//TODO:javadoc
     public void addTablename(TableName tablename) {
         selection.addTablename(tablename);
     }

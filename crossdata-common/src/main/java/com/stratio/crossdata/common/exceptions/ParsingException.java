@@ -32,21 +32,25 @@ public class ParsingException extends RuntimeException {
 
     private final List<String> errors;
 
+//TODO:javadoc
     public ParsingException(String message) {
         super(message);
         this.errors = null;
     }
 
+//TODO:javadoc
     public ParsingException(Exception e) {
         super(e.getMessage());
         this.errors=null;
     }
 
+//TODO:javadoc
     public ParsingException(String message, List<String> errors) {
         super(message);
         this.errors = errors;
     }
 
+//TODO:javadoc
     public List<String> getErrors() {
         return this.errors;
     }

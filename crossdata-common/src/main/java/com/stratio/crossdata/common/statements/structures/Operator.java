@@ -21,6 +21,7 @@ package com.stratio.crossdata.common.statements.structures;
 /**
  * Operators supported in an {@link Relation}.
  */
+//TODO:javadoc for class methods
 public enum Operator {
 
     /**

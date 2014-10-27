@@ -45,6 +45,8 @@ public final class ParserUtils {
     private ParserUtils() {
     }
 
+//TODO:javadoc
+//TODO:javadoc
     public static String stringMap(Map<?, ?> ids, String conjunction, String separator) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<?, ?> entry : ids.entrySet()) {
@@ -56,6 +58,7 @@ public final class ParserUtils {
         return sb.substring(0, sb.length() - separator.length());
     }
 
+//TODO:javadoc
     public static String stringSet(Set<String> ids, String separator) {
         StringBuilder sb = new StringBuilder();
         for (String id : ids) {
@@ -64,6 +67,7 @@ public final class ParserUtils {
         return sb.substring(0, sb.length() - separator.length());
     }
 
+//TODO:javadoc
     public static Set<String> getBestMatches(String str, Set<String> words, int maxDistance) {
         int limit = maxDistance + 1;
         int currentLimit = 1;
@@ -81,6 +85,7 @@ public final class ParserUtils {
         return result;
     }
 
+//TODO:javadoc
     public static Integer getCharPosition(AntlrError antlrError) {
         Integer result = -1;
         if (antlrError.getHeader().contains(":")
@@ -90,6 +95,7 @@ public final class ParserUtils {
         return result;
     }
 
+//TODO:javadoc
     public static String getQueryWithSign(String query, AntlrError ae) {
         int marker = 0;
         String q=query;
@@ -106,6 +112,7 @@ public final class ParserUtils {
     }
 
 
+//TODO:javadoc
     public static String getSuggestion(String query, AntlrError antlrError) {
         // We initialize the errorWord with the first word of the query
         // We initialize the token words with the initial tokens
@@ -153,6 +160,7 @@ public final class ParserUtils {
         return "";
     }
 
+//TODO:javadoc
     public static String translateToken(String message) {
         if (message == null) {
             return "";
