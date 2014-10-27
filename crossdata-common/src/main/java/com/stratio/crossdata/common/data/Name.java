@@ -41,7 +41,7 @@ public abstract class Name implements Serializable {
     /**
      * returns NameType.
      *
-     * @return NameType {@see com.stratio.crossdata.common.data.NameType}.
+     * @return NameType.
      */
     public abstract NameType getType();
 
