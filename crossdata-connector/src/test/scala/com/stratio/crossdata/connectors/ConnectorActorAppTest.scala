@@ -18,27 +18,17 @@
 
 package com.stratio.crossdata.connectors
 
-import akka.pattern.ask
 import akka.util.Timeout
-import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IQueryEngine, IStorageEngine}
-import com.stratio.crossdata.common.data.{Row, TableName, CatalogName, ClusterName, IndexName, ColumnName}
-import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionWorkflow}
-import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, TransformationStep}
-import com.stratio.crossdata.common.metadata.{IndexMetadata, ColumnMetadata, Operations, TableMetadata}
-import com.stratio.crossdata.common.result.{MetadataResult, QueryResult, StorageResult}
+import com.stratio.crossdata.common.connector.IConnector
+import com.stratio.crossdata.common.data.{ClusterName, ColumnName, IndexName}
+import com.stratio.crossdata.common.metadata.{ColumnMetadata, IndexMetadata}
 import com.stratio.crossdata.common.statements.structures.Selector
-import com.stratio.crossdata.communication.{CreateTable, Execute, Insert}
-import com.stratio.crossdata.core.query.{BaseQuery, SelectParsedQuery, SelectPlannedQuery, SelectValidatedQuery}
-import com.stratio.crossdata.core.statements.SelectStatement
-import com.typesafe.config.ConfigFactory
 import org.apache.log4j.Logger
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
 import org.testng.Assert._
 
-import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import com.stratio.crossdata.common.utils.StringUtils
 
 
 class ConnectorActorAppTest extends FunSuite with MockFactory {
@@ -75,74 +65,6 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     assertNotNull(myReference, "Null reference returned")
     c.shutdown()
   }
-
-
-  test("Send SelectInProgressQuery to Connector") {
-    val m = mock[IConnector]
-    val qe = mock[IQueryEngine]
-    (m.getQueryEngine _).expects().returning(qe)
-    (qe.execute(_:LogicalWorkflow)).expects(*).returning(QueryResult.createSuccessQueryResult())
-    (m.init _).expects(*).returning(None)
-    (m.getConnectorName _).expects().returning(connector)
-
-    val queryId = "QID_test"
-
-    val c = new ConnectorApp()
-    val myReference = c.startup(m)
-    var steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
-    val step = new TransformationStep(Operations.SELECT_OPERATOR)
-    steps.add(step)
-    var workflow = new LogicalWorkflow(steps)
-
-    val future = ask(myReference, Execute(queryId, workflow))
-    val result = Await.result(future, 6 seconds)
-    assertTrue(result.isInstanceOf[QueryResult], "Invalid type of message")
-    logger.debug("receiving->" + result + " after sending select query")
-    c.stop()
-  }
-
-  test("Send MetadataInProgressQuery to Connector") {
-    val port = "2560"
-    val m = mock[IConnector]
-    val me = mock[IMetadataEngine]
-    (me.createTable _).expects(*,*).returning(QueryResult.createSuccessQueryResult())
-    (m.getMetadataEngine _).expects().returning(me)
-    (m.init _).expects(*).returning(None)
-    (m.getConnectorName _).expects().returning("My New Connector")
-    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
-    val c = new ConnectorApp()
-    val myReference = c.startup(m)
-
-    val message=CreateTable("queryId",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"),  a.get, b.get,d.get,e.get,f.get,f.get) )
-    val future=ask(myReference , message)
-    val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
-    logger.debug("receive->" + result + " after sending Metadata query")
-    c.shutdown()
-  }
-
-  test("Send StorageInProgressQuery to Connector") {
-    val port = "2561"
-    val m = mock[IConnector]
-    val ie = mock[IStorageEngine]
-    (ie.insert(_: ClusterName,_:TableMetadata,_:Row)).expects(*,*,*).returning()
-    (m.init _).expects(*).returning(None)
-    (m.getStorageEngine _).expects().returning(ie)
-    (m.getConnectorName _).expects().returning("My New Connector")
-    val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
-    val c = new ConnectorApp()
-    val myReference = c.startup(m)
-
-
-    val message=Insert("query",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"),
-      a.get, b.get,d.get,e.get,f.get,f.get),new Row())
-    //val future=myReference ? message
-    val future=ask(myReference,message)
-    val result = Await.result(future, 3 seconds).asInstanceOf[StorageResult]
-    logger.debug("receiv ing->" + result + " after sending insert query")
-    c.shutdown()
-  }
-
-  //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE
 
 }
 
