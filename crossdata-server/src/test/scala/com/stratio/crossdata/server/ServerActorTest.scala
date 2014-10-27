@@ -23,19 +23,16 @@ import java.util
 import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
 
+import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.testkit.ImplicitSender
-import com.stratio.crossdata.common.api.PropertyType
-import com.stratio.crossdata.common.connector.Operations
+import com.stratio.crossdata.common.manifest.PropertyType
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.executionplan._
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, Project, Select}
 import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.metadata.structures.TableType
-import com.stratio.crossdata.common.statements.structures.selectors.Selector
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
-import com.stratio.crossdata.core.connector.ConnectorManager
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.grid.Grid
@@ -47,25 +44,36 @@ import com.stratio.crossdata.server.actors.{ConnectorManagerActor, CoordinatorAc
 import com.stratio.crossdata.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.crossdata.server.mocks.MockConnectorActor
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.{FunSuiteLike, Suite}
+import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import com.stratio.crossdata.communication.replyConnectorName
+import com.stratio.crossdata.communication.getConnectorName
+import com.stratio.crossdata.common.statements.structures.Selector
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
-ImplicitSender {
+ImplicitSender with BeforeAndAfterAll{
   this: Suite =>
 
+  //lazy val system = ActorSystem(clusterName, config)
   val metadataManager=new MetadataManagerTestHelper()
   val plannertest= new PlannerExecutionWorkflowTest()
+
+  override def afterAll() {
+    println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> after all")
+    shutdown(system)
+  }
 
   def incQueryId(): String = {
     queryIdIncrement += 1; return queryId + queryIdIncrement
   }
 //Actors in this tests
-  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(new ConnectorManager() ),  "ConnectorManagerActor")
-  val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()), "CoordinatorActor")
+  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(),
+  "ConnectorManagerActor")
+  val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
+    "CoordinatorActor")
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
 
 //Variables
@@ -89,7 +97,8 @@ ImplicitSender {
 
 
   val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,tableName))
-  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM "+catalogName+"." +tableName,
+  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM "+catalogName + "." +
+    tableName,
     new CatalogName(catalogName)), selectStatement)
   //val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
   val selectValidatedQueryWrapper = new SelectValidatedQueryWrapper(selectStatement,selectParsedQuery)
@@ -97,7 +106,8 @@ ImplicitSender {
   val storageStatement: InsertIntoStatement = null
   //TODO
   //make the implementation of storageStatement.
-  val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno,dos) into "+tableName+";",
+  val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno," +
+    "dos) into " + tableName + ";",
     new CatalogName(catalogName)), storageStatement)
   val storageValidatedQuery = new StorageValidatedQuery(storageParsedQuery)
   val storagePlannedQuery = new StoragePlannedQuery(storageValidatedQuery, new StorageWorkflow(queryId + queryIdIncrement,
@@ -124,12 +134,11 @@ ImplicitSender {
       new TableName(catalogName,tableName1),
       new ClusterName(myClusterName),
 
-
       new util.HashMap[ColumnName, ColumnType](),
       new util.ArrayList[ColumnName](),
       new util.ArrayList[ColumnName]()
     )
-  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table "+tableName1+";",
+  val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table " + tableName1 + ";",
     new CatalogName(catalogName)),
     metadataStatement1)
   val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
@@ -148,7 +157,6 @@ ImplicitSender {
   myList.add(columnNme)
   metadataWorkflow1.setTableMetadata(
   new TableMetadata(
-    false,
     new TableName(catalogName, tableName1),
     new util.HashMap[Selector, Selector](),
     new util.HashMap[ColumnName, ColumnMetadata](),
@@ -161,19 +169,19 @@ ImplicitSender {
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
 
   def initialize() = {
-    var grid = Grid.initializer.withContactPoint("127.0.0.1").withPort(7800).withListenAddress("127.0.0.1")
+    Grid.initializer.withContactPoint("127.0.0.1").withPort(7800).withListenAddress("127.0.0.1")
       .withMinInitialMembers(1)
       .withJoinTimeoutInMs(5000)
       .withPersistencePath("/tmp/borrar").init()
-    val executionMap = grid.map("myExecutionData").asInstanceOf[util.Map[String, Serializable]]
-    val lockExecution: Lock = grid.lock("myExecutionData")
-    val tmExecution: TransactionManager = grid.transactionManager("myExecutionData")
+    val executionMap = Grid.INSTANCE.map("myExecutionData").asInstanceOf[util.Map[String, Serializable]]
+    val lockExecution: Lock = Grid.INSTANCE.lock("myExecutionData")
+    val tmExecution: TransactionManager = Grid.INSTANCE.transactionManager("myExecutionData")
     ExecutionManager.MANAGER.init(executionMap, lockExecution, tmExecution)
     ExecutionManager.MANAGER.clear()
 
-    val metadataMap = grid.map("myMetadata").asInstanceOf[util.Map[FirstLevelName, IMetadata]]
-    val lock: Lock = grid.lock("myMetadata")
-    val tm = grid.transactionManager("myMetadata")
+    val metadataMap = Grid.INSTANCE.map("myMetadata").asInstanceOf[util.Map[FirstLevelName, IMetadata]]
+    val lock: Lock = Grid.INSTANCE.lock("myMetadata")
+    val tm = Grid.INSTANCE.transactionManager("myMetadata")
     MetadataManager.MANAGER.init(metadataMap, lock, tm.asInstanceOf[TransactionManager])
     MetadataManager.MANAGER.clear()
 
@@ -187,6 +195,7 @@ ImplicitSender {
     val operations=new java.util.HashSet[Operations]()
     operations.add(Operations.PROJECT)
     operations.add(Operations.SELECT_OPERATOR)
+    operations.add(Operations.INSERT)
 
     //create metadatamanager
     val myDatastore = metadataManager.createTestDatastore()
@@ -198,7 +207,7 @@ ImplicitSender {
 
     val future = connectorActor ? getConnectorName()
     val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
-    println("creating connector "+connectorName.name)
+    logger.debug("creating connector " + connectorName.name)
 
 
     //Create connector
@@ -209,7 +218,7 @@ ImplicitSender {
 
     //create catalog
     metadataManager.createTestCatalog(catalogName)
-    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
+    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), ConnectorStatus.ONLINE)
 
     val clusterMetadata = MetadataManager.MANAGER.getCluster(testcluster)
     val connectorsMap = new java.util.HashMap[ConnectorName, ConnectorAttachedMetadata]()

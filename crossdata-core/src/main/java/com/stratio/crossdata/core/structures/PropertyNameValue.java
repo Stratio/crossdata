@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.core.structures;
 
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 public class PropertyNameValue extends Property {
 

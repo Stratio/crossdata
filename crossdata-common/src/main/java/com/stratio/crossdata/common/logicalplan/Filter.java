@@ -18,8 +18,8 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
-import com.stratio.crossdata.common.connector.Operations;
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
+import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.statements.structures.Relation;
 
 /**
  * Filter the results retrieved through a Project operation.
@@ -45,7 +45,7 @@ public class Filter extends TransformationStep {
     /**
      * Get the relationship.
      *
-     * @return A {@link com.stratio.crossdata.common.statements.structures.relationships.Relation}
+     * @return A {@link com.stratio.crossdata.common.statements.structures.Relation}
      */
     public Relation getRelation() {
         return relation;

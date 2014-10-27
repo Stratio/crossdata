@@ -27,11 +27,8 @@ import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.exceptions.ConnectionException;
-import com.stratio.crossdata.common.exceptions.ManifestException;
-import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.Result;
-import com.stratio.crossdata.common.api.datastore.DataStoreType;
 
 public class ConnectTest extends DriverParentTest {
 
@@ -54,26 +51,4 @@ public class ConnectTest extends DriverParentTest {
 
     }
 
-    @Test(dependsOnGroups = { "connect" })
-    public void sendManifest() {
-        Result metaResult = null;
-
-        // Create CrossdataManifest
-        DataStoreType manifest = new DataStoreType();
-
-
-        // API Call
-        try {
-            metaResult = driver.addManifest(manifest);
-        } catch (ManifestException e) {
-            logger.error("CrossdataManifest name doesn't match LETTER (LETTER | DIGIT | '_')*", e);
-            fail("CrossdataManifest name doesn't match LETTER (LETTER | DIGIT | '_')*", e);
-        }
-
-        // Process result
-        assertFalse(metaResult.hasError());
-        CommandResult r = CommandResult.class.cast(metaResult);
-        assertTrue(((String) r.getResult()).equalsIgnoreCase("OK"),
-                "sendManifest: " + System.lineSeparator() + " Cannot add manifest.");
-    }
 }

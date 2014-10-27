@@ -18,39 +18,9 @@
 
 package com.stratio.crossdata.core.engine;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-
-import org.apache.log4j.Logger;
 
 public class EngineConfig {
-
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(EngineConfig.class.getName());
-
-    /**
-     * Name of the Job in Spark.
-     */
-    private static final String JOBNAME = "stratioDeepWithMeta";
-
-    /**
-     * Jars to exclude. Prefixes.
-     */
-    private static final String[] FORBIDDEN_JARS = { "akka" };
-
-    /**
-     * Cassandra hosts.
-     */
-    private String[] cassandraHosts;
-
-    /**
-     * Cassandra port.
-     */
-    private int cassandraPort;
 
     /**
      * The Grid listen address.
@@ -82,202 +52,111 @@ public class EngineConfig {
      */
     private String gridPersistencePath;
 
-    /**
-     * Spark Master spark://HOST:PORT/.
-     */
-    private String sparkMaster;
 
     /**
-     * List of *.jar in the classpath.
+     * returns the address where infinispan is listening.
+     * @return A String representation of the address.
      */
-    private List<String> jars;
-
-    private String kafkaServer;
-    private int kafkaPort;
-    private String zookeeperServer;
-    private int zookeeperPort;
-
-    private int streamingDuration;
-    private String streamingGroupId;
-
     public String getGridListenAddress() {
         return gridListenAddress;
     }
 
+    /**
+     * sets the address where infinispan is listening.
+     * @param gridListenAddress The address.
+     */
     public void setGridListenAddress(String gridListenAddress) {
         this.gridListenAddress = gridListenAddress;
     }
 
+    /**
+     * returns the hosts where infinispan is working.
+     * @return An array of host addresses.
+     */
     public String[] getGridContactHosts() {
         return gridContactHosts.clone();
     }
 
+    /**
+     * sets the hosts where infinispan is working.
+     * @param gridContactHosts The array of contact hosts.
+     */
     public void setGridContactHosts(String[] gridContactHosts) {
         this.gridContactHosts = Arrays.copyOf(gridContactHosts, gridContactHosts.length);
     }
 
+    /**
+     * returns the port infinispan is listening to.
+     * @return The port.
+     */
     public int getGridPort() {
         return gridPort;
     }
 
+    /**
+     * returns the port infinispan is listening to.
+     * @param gridPort The port.
+     */
     public void setGridPort(int gridPort) {
         this.gridPort = gridPort;
     }
 
+    /**
+     * returns server-application.conf's crossdata-server.config.grid.min-initial-members value.
+     * @return The minimum number of initial members.
+     */
     public int getGridMinInitialMembers() {
         return gridMinInitialMembers;
     }
 
+    /**
+     * overrides server-application.conf's crossdata-server.config.grid.min-initial-members value.
+     * @param gridMinInitialMembers The minimum number of initial members.
+     */
     public void setGridMinInitialMembers(int gridMinInitialMembers) {
         this.gridMinInitialMembers = gridMinInitialMembers;
     }
 
+    /**
+     * returns server-application.conf's crossdata-server.config.grid.join-timeout value.
+     * @return The timeout.
+     */
     public long getGridJoinTimeout() {
         return gridJoinTimeout;
     }
 
+    /**
+     * Overrides server-application.conf's crossdata-server.config.grid.join-timeout value.
+     */
     public void setGridJoinTimeout(long gridJoinTimeout) {
         this.gridJoinTimeout = gridJoinTimeout;
     }
 
+    /**
+     * Returns the path where infinispan stores its data.
+     * @return The persistence path.
+     */
     public String getGridPersistencePath() {
         return gridPersistencePath;
     }
 
+    /**
+     * Sets the path where infinispan stores its data.
+     * @param gridPersistencePath The persistence path.
+     */
     public void setGridPersistencePath(String gridPersistencePath) {
         this.gridPersistencePath = gridPersistencePath;
-    }
-
-    /**
-     * Get Spark Master URL.
-     *
-     * @return Spark Master URL in a String.
-     */
-    public String getSparkMaster() {
-        return sparkMaster;
-    }
-
-    /**
-     * Set Spark Master URL.
-     *
-     * @param sparkMaster Spark Master URL spark://HOST:PORT/
-     */
-    public void setSparkMaster(String sparkMaster) {
-        this.sparkMaster = sparkMaster;
-    }
-
-    /**
-     * Get the default Job Name in Spark.
-     *
-     * @return the job name.
-     */
-    public String getJobName() {
-        return JOBNAME;
-    }
-
-    /**
-     * Set path which cointains spark classpath.
-     *
-     * @param path Path to classpath
-     */
-    public void setClasspathJars(String path) {
-        jars = new ArrayList<>();
-        File file = new File(path);
-        if (file.exists() && !sparkMaster.toLowerCase().startsWith("local")
-                && file.listFiles() != null) {
-            File[] files = file.listFiles();
-            for (File f : files) {
-                if (filterJars(f.getName())) {
-                    jars.add(path + f.getName());
-                }
-            }
-        } else if (!sparkMaster.toLowerCase().startsWith("local")) {
-            LOG.error("Spark classpath null or incorrect directory.");
-        }
-    }
-
-    /**
-     * Check if a .jar is forbidden or not depending on {@link EngineConfig#FORBIDDEN_JARS}.
-     *
-     * @param jar .jar to check
-     * @return {@code true} if is not forbidden.
-     */
-    private boolean filterJars(String jar) {
-        for (String forbiddenJar : FORBIDDEN_JARS) {
-            if (jar.startsWith(forbiddenJar)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public String getKafkaServer() {
-        return kafkaServer;
-    }
-
-    public void setKafkaServer(String kafkaServer) {
-        this.kafkaServer = kafkaServer;
-    }
-
-    public int getKafkaPort() {
-        return kafkaPort;
-    }
-
-    public void setKafkaPort(int kafkaPort) {
-        this.kafkaPort = kafkaPort;
-    }
-
-    public String getZookeeperServer() {
-        return zookeeperServer;
-    }
-
-    public void setZookeeperServer(String zookeeperServer) {
-        this.zookeeperServer = zookeeperServer;
-    }
-
-    public int getZookeeperPort() {
-        return zookeeperPort;
-    }
-
-    public void setZookeeperPort(int zookeeperPort) {
-        this.zookeeperPort = zookeeperPort;
-    }
-
-    public int getStreamingDuration() {
-        return streamingDuration;
-    }
-
-    public void setStreamingDuration(int streamingDuration) {
-        this.streamingDuration = streamingDuration;
-    }
-
-    public String getStreamingGroupId() {
-        return streamingGroupId;
-    }
-
-    public void setStreamingGroupId(String streamingGroupId) {
-        this.streamingGroupId = streamingGroupId;
     }
 
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("EngineConfig{");
-        sb.append("cassandraHosts=").append(Arrays.toString(cassandraHosts));
-        sb.append(", cassandraPort=").append(cassandraPort);
         sb.append(", gridListenAddress='").append(gridListenAddress).append('\'');
         sb.append(", gridContactHosts=").append(Arrays.toString(gridContactHosts));
         sb.append(", gridPort=").append(gridPort);
         sb.append(", gridMinInitialMembers=").append(gridMinInitialMembers);
         sb.append(", gridJoinTimeout=").append(gridJoinTimeout);
         sb.append(", gridPersistencePath='").append(gridPersistencePath).append('\'');
-        sb.append(", sparkMaster='").append(sparkMaster).append('\'');
-        sb.append(", jars=").append(jars);
-        sb.append(", kafkaServer='").append(kafkaServer).append('\'');
-        sb.append(", kafkaPort=").append(kafkaPort);
-        sb.append(", zookeeperServer='").append(zookeeperServer).append('\'');
-        sb.append(", zookeeperPort=").append(zookeeperPort);
-        sb.append(", streamingDuration=").append(streamingDuration);
-        sb.append(", streamingGroupId='").append(streamingGroupId).append('\'');
         sb.append('}');
         return sb.toString();
     }

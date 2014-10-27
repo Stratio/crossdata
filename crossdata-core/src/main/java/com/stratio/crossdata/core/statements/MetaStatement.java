@@ -23,12 +23,12 @@ import java.util.List;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
  * Class that models a generic Statement supported by the META language.
  */
-public abstract class MetaStatement implements IStatement{
+public abstract class MetaStatement{
 
     /**
      * Whether the query is an internal command or it returns a
@@ -51,11 +51,6 @@ public abstract class MetaStatement implements IStatement{
      * The current catalog in the user session.
      */
     protected CatalogName sessionCatalog = null;
-
-    /**
-     * The type of statement to be executed.
-     */
-    protected StatementType type = null;
 
     /**
      * Default class constructor.

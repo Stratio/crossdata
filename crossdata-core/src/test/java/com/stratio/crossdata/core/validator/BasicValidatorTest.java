@@ -34,7 +34,7 @@ import org.jgroups.util.UUID;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-import com.stratio.crossdata.common.api.PropertyType;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -54,7 +54,7 @@ import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.grammar.ParsingTest;
 import com.stratio.crossdata.core.grid.Grid;
 import com.stratio.crossdata.core.grid.GridInitializer;
@@ -159,9 +159,9 @@ public class BasicValidatorTest {
                 .withJoinTimeoutInMs(3000)
                 .withPersistencePath(path).init();
 
-        metadataMap = Grid.getInstance().map("metatest");
-        Lock lock = Grid.getInstance().lock("metatest");
-        TransactionManager tm = Grid.getInstance().transactionManager("metatest");
+        metadataMap = Grid.INSTANCE.map("metatest");
+        Lock lock = Grid.INSTANCE.lock("metatest");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("metatest");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
         MetadataManager.MANAGER.createDataStore(createDataStoreMetadata());
         MetadataManager.MANAGER.createConnector(createConnectorMetadata());
@@ -172,11 +172,11 @@ public class BasicValidatorTest {
 
     @AfterClass
     public void tearDown() throws Exception {
-        TransactionManager tm = Grid.getInstance().transactionManager("com.stratio.crossdata-test");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("com.stratio.crossdata-test");
         tm.begin();
         metadataMap.clear();
         tm.commit();
-        Grid.getInstance().close();
+        Grid.INSTANCE.close();
         FileUtils.deleteDirectory(new File(path));
     }
 }

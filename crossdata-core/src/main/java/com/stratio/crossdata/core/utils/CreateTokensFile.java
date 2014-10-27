@@ -30,7 +30,7 @@ import java.nio.charset.Charset;
 
 import org.apache.log4j.Logger;
 
-public class CreateTokensFile {
+public final class CreateTokensFile {
 
     /**
      * Class logger.
@@ -47,17 +47,17 @@ public class CreateTokensFile {
         String line = null;
         try {
             String workingDir = System.getProperty("user.dir");
-            if (workingDir.endsWith("stratio-com.stratio.crossdata")) {
-                workingDir = workingDir.concat("/com.stratio.crossdata-core/");
-            } else if (!workingDir.endsWith("com.stratio.crossdata-core")) {
-                workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
-                workingDir = workingDir.concat("/com.stratio.crossdata-core/");
+            if (workingDir.endsWith("crossdata")) {
+                workingDir = workingDir.concat("/crossdata-core/");
+            } else if (!workingDir.endsWith("crossdata-core")) {
+                workingDir = workingDir.substring(0, workingDir.lastIndexOf('/'));
+                workingDir = workingDir.concat("/crossdata-core/");
             } else {
                 workingDir = workingDir.concat("/");
             }
 
-            String metaGrammarPath = workingDir + "src/main/java/com/stratio/com.stratio.crossdata/core/grammar/Meta.g";
-            String metaTokens = workingDir + "src/main/resources/com/stratio/com.stratio.crossdata/parser/tokens.txt";
+            String metaGrammarPath = workingDir + "src/main/java/com/stratio/crossdata/core/grammar/Meta.g";
+            String metaTokens = workingDir + "src/main/resources/com/stratio/crossdata/parser/tokens.txt";
             File fileGrammar = new File(metaGrammarPath);
             File outFile = new File(metaTokens);
 
@@ -70,8 +70,8 @@ public class CreateTokensFile {
                 line = br.readLine();
                 while (line != null) {
                     if (line.startsWith("T_")) {
-                        String token = line.substring(2, line.indexOf(":") + 2);
-                        String replacement = line.substring(line.indexOf(":") + 1);
+                        String token = line.substring(2, line.indexOf(':') + 2);
+                        String replacement = line.substring(line.indexOf(':') + 1);
                         replacement = replacement.replace(";", "");
                         replacement = replacement.replace("'", "");
                         replacement = replacement.replace(" ", "");

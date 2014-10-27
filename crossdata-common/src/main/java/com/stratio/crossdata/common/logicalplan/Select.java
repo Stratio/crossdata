@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.logicalplan;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 
@@ -41,6 +41,8 @@ public class Select extends TransformationStep {
      */
     private final Map<String, ColumnType> typeMap;
 
+    private final Map<ColumnName, ColumnType> typeMapFromColumnName;
+
     /**
      * Class constructor.
      * 
@@ -52,10 +54,12 @@ public class Select extends TransformationStep {
      * @param typeMap
      *            The mapping of column types.
      */
-    public Select(Operations operation, Map<ColumnName, String> columnMap, Map<String, ColumnType> typeMap) {
+    public Select(Operations operation, Map<ColumnName, String> columnMap, Map<String, ColumnType> typeMap,
+            Map<ColumnName, ColumnType> typeMapFromColumnName) {
         super(operation);
         this.columnMap = columnMap;
         this.typeMap = typeMap;
+        this.typeMapFromColumnName = typeMapFromColumnName;
     }
 
     public Map<ColumnName, String> getColumnMap() {
@@ -66,11 +70,15 @@ public class Select extends TransformationStep {
         return typeMap;
     }
 
+    public Map<ColumnName, ColumnType> getTypeMapFromColumnName() {
+        return typeMapFromColumnName;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("SELECT (");
         Iterator<Map.Entry<ColumnName, String>> it = columnMap.entrySet().iterator();
-        Map.Entry<ColumnName, String> entry = null;
+        Map.Entry<ColumnName, String> entry;
         while (it.hasNext()) {
             entry = it.next();
             sb.append(entry.getKey().getQualifiedName()).append(" AS ").append(entry.getValue());

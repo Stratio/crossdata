@@ -29,12 +29,12 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.statements.structures.selectors.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.selectors.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.common.statements.structures.selectors.StringSelector;
+import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.query.BaseQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
@@ -68,7 +68,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
+        IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -104,7 +104,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
+        IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("TABLE must exist");
@@ -141,7 +141,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
+        IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("CATALOG must exist");
@@ -179,7 +179,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
+        IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("There is an error in the types");

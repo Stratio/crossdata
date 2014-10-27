@@ -23,14 +23,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.core.structures.GroupBy;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.structures.OrderBy;
 
@@ -38,9 +38,11 @@ public class NormalizedFields {
     private Set<ColumnName> columnNames = new HashSet<>();
     private Set<TableName> tableNames = new HashSet<>();
     private Set<CatalogName> catalogNames = new HashSet<>();
-    private List<Selector> selectors = new ArrayList<>(); // It can includes functions, column names, asterisks...
+    // It can includes functions, column names, asterisks...
+    private List<Selector> selectors = new ArrayList<>();
     private boolean distinctSelect = false;
-    private InnerJoin join ; // Join relations
+    // Join relations
+    private InnerJoin join ;
     private List<Relation> where = new ArrayList<>();
     private OrderBy orderBy = new OrderBy();
     private GroupBy groupBy = new GroupBy();

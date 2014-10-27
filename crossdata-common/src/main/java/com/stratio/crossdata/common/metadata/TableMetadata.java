@@ -26,13 +26,14 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * TableMetadata class.
+ */
 public class TableMetadata implements IMetadata {
 
     private static final long serialVersionUID = 937637791215246279L;
-
-    private final boolean ephemeral;
 
     private final TableName name;
 
@@ -47,11 +48,20 @@ public class TableMetadata implements IMetadata {
     private final List<ColumnName> partitionKey;
     private final List<ColumnName> clusterKey;
 
-    public TableMetadata(boolean ephemeral, TableName name, Map<Selector, Selector> options,
+    /**
+     * Class Constructor.
+     * @param name The name of the table.
+     * @param options The options of the table that was created.
+     * @param columns The list of columns metadata of the table.
+     * @param indexes The list of indexes of the columns of the table.
+     * @param clusterRef The cluster name.
+     * @param partitionKey The list of columns that conforms the partition key.
+     * @param clusterKey The list of columns tha conforms the cluster key.
+     */
+    public TableMetadata(TableName name, Map<Selector, Selector> options,
             Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
             ClusterName clusterRef,
             List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
-        this.ephemeral = ephemeral;
         this.name = name;
         this.options = options;
         this.columns = columns;
@@ -62,41 +72,60 @@ public class TableMetadata implements IMetadata {
         this.clusterKey = clusterKey;
     }
 
-    public TableMetadata(TableName name, Map<Selector, Selector> options,
-            Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
-            ClusterName clusterRef,
-            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
-        this(false, name, options, columns, indexes, clusterRef, partitionKey, clusterKey);
-    }
-
-    public boolean isEphemeral() {
-        return ephemeral;
-    }
-
+    /**
+     * Get the table name of the table metadata.
+     * @return {@link com.stratio.crossdata.common.data.TableName}
+     */
     public TableName getName() {
         return name;
     }
 
+    /**
+     * The options of the create table metadata.
+     * @return Map with {@link com.stratio.crossdata.common.statements.structures.Selector},
+     * {@link com.stratio.crossdata.common.statements.structures.Selector}.
+     */
     public Map<Selector, Selector> getOptions() {
         return options;
     }
 
+    /**
+     * Get the map that relation between ColumnName and ColumnMetadata.
+     * @return Map with {@link com.stratio.crossdata.common.data.ColumnName},
+     * {@link com.stratio.crossdata.common.metadata.ColumnMetadata}.
+     */
     public Map<ColumnName, ColumnMetadata> getColumns() {
         return columns;
     }
 
+    /**
+     * Get the cluster name.
+     * @return {@link com.stratio.crossdata.common.data.ClusterName}
+     */
     public ClusterName getClusterRef() {
         return clusterRef;
     }
 
+    /**
+     * Get the columns that conform the partition key.
+     * @return List with {@link com.stratio.crossdata.common.data.ColumnName}.
+     */
     public List<ColumnName> getPartitionKey() {
         return partitionKey;
     }
 
+    /**
+     * Get the cluster key.
+     * @return List with {@link com.stratio.crossdata.common.data.ColumnName}.
+     */
     public List<ColumnName> getClusterKey() {
         return clusterKey;
     }
 
+    /**
+     * Get the columns that are primary key.
+     * @return List with {@link com.stratio.crossdata.common.data.ColumnName}.
+     */
     public List<ColumnName> getPrimaryKey() {
         List<ColumnName> result = new ArrayList<>();
         result.addAll(partitionKey);
@@ -104,6 +133,11 @@ public class TableMetadata implements IMetadata {
         return result;
     }
 
+    /**
+     * Get the Indexes of the table.
+     * @return Map with {@link com.stratio.crossdata.common.data.IndexName},
+     * {@link com.stratio.crossdata.common.metadata.IndexMetadata}.
+     */
     public Map<IndexName, IndexMetadata> getIndexes() {
         return indexes;
     }
@@ -135,10 +169,19 @@ public class TableMetadata implements IMetadata {
         return false;
     }
 
+    /**
+     * Add an Index to a table.
+     * @param name The name of the index.
+     * @param data The metadata of the index.
+     */
     public void addIndex(IndexName name, IndexMetadata data) {
         indexes.put(name, data);
     }
 
+    /**
+     * Delete an Index of a table.
+     * @param name The name of the index to remove.
+     */
     public void deleteIndex(IndexName name) {
         indexes.remove(name);
     }

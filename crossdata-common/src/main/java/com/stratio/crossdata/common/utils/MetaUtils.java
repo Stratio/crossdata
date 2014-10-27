@@ -22,7 +22,10 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-public class MetaUtils {
+/**
+ * Utility class for error messages management.
+ */
+public final class MetaUtils {
 
     public static final Set<String> INITIALS = Sets.newHashSet(
             "CREATE",
@@ -136,11 +139,20 @@ public class MetaUtils {
 
     }
 
+    /**
+     * Get initial words of the grammar.
+     * @return list of initials words of the grammar.
+     */
     public static String getInitialsStatements() {
         String str = INITIALS.toString();
         return str.substring(1, str.length() - 1);
     }
 
+
+    /**
+     * Get non-initial words of the grammar.
+     * @return list of non-initials words of the grammar.
+     */
     public static String getNoInitialsStatements() {
         String str = NON_INITIALS.toString();
         return str.substring(1, str.length() - 1);

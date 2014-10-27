@@ -22,17 +22,37 @@ package com.stratio.crossdata.common.exceptions;
  * Exception thrown if the connection cannot be established with
  * a remote com.stratio.crossdata server.
  */
-public class ConnectionException extends Exception {
+public class ConnectionException extends ConnectorException {
 
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
      */
     private static final long serialVersionUID = 5733609562968522778L;
 
+    /**
+     * Constructs a new Exception with a specific cause.
+     *
+     * @param e The associated Exception.
+     */
+    public ConnectionException(Exception e){
+        super(e);
+    }
+
+    /**
+     * Constructs a new Exception with a given message.
+     *
+     * @param message The message.
+     */
     public ConnectionException(String message) {
         super(message);
     }
 
+    /**
+     * Constructs a new Exception with a specific message and cause.
+     *
+     * @param msg The associated message.
+     * @param cause   The associated cause.
+     */
     public ConnectionException(String msg, Throwable cause) {
         super(msg, cause);
     }

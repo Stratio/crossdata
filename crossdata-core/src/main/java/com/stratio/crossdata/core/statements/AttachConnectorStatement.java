@@ -18,14 +18,15 @@
 
 package com.stratio.crossdata.core.statements;
 
+import java.util.Iterator;
 import java.util.Map;
 
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 public class AttachConnectorStatement extends MetadataStatement {
 
@@ -33,7 +34,7 @@ public class AttachConnectorStatement extends MetadataStatement {
     private ClusterName clusterName;
 
     /**
-     * The map of options passed to the connectormanager during its attachment.
+     * The map of options passed to the connector during its attachment.
      */
     private Map<Selector, Selector> options = null;
 
@@ -43,17 +44,11 @@ public class AttachConnectorStatement extends MetadataStatement {
         this.options = StringUtils.convertJsonToOptions(json);
     }
 
-    @Override
-    public String toString() {
-        return "ATTACH CONNECTOR " + connectorName + " TO " + clusterName + " WITH OPTIONS " + StringUtils
-                .getStringFromOptions(options);
-    }
-
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_CLUSTER)
-                .add(Validation.MUST_EXIST_CONNECTOR)
-                .add(Validation.VALID_CONNECTOR_OPTIONS)
-                .add(Validation.MUST_BE_CONNECTED);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CLUSTER)
+                .add(ValidationTypes.MUST_EXIST_CONNECTOR)
+                .add(ValidationTypes.VALID_CONNECTOR_OPTIONS)
+                .add(ValidationTypes.MUST_BE_CONNECTED);
     }
 
     public ConnectorName getConnectorName() {
@@ -66,5 +61,25 @@ public class AttachConnectorStatement extends MetadataStatement {
 
     public Map<Selector, Selector> getOptions() {
         return options;
+    }
+
+    private String getStringFromOptions(Map<Selector, Selector> options) {
+        StringBuilder sb = new StringBuilder("{");
+        Iterator<Map.Entry<Selector, Selector>> entryIt = options.entrySet().iterator();
+        Map.Entry<Selector, Selector> e;
+        while (entryIt.hasNext()) {
+            e = entryIt.next();
+            sb.append(e.getKey()).append(": ").append(e.getValue());
+            if (entryIt.hasNext()) {
+                sb.append(", ");
+            }
+        }
+        sb.append("}");
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return "ATTACH CONNECTOR " + connectorName + " TO " + clusterName + " WITH OPTIONS " + getStringFromOptions(options);
     }
 }

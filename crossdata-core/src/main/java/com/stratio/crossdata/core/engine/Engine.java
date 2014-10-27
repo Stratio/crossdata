@@ -29,20 +29,19 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.core.api.APIManager;
-import com.stratio.crossdata.core.connector.ConnectorManager;
 import com.stratio.crossdata.core.coordinator.Coordinator;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
+import com.stratio.crossdata.core.grid.GridException;
 import com.stratio.crossdata.core.grid.GridInitializer;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.normalizer.Normalizer;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.validator.Validator;
 
 /**
  * Execution engine that creates all entities required for processing an executing a query:
- * {@link Parser}, {@link Validator} and {@link Planner}
+ * {@link Parser}, {@link Validator} and {@link Planner}.
  */
 public class Engine {
 
@@ -50,28 +49,31 @@ public class Engine {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Engine.class.getName());
+
     /**
-     * The {@link com.stratio.crossdata.core.parser.Parser} responsible for parse.
+     * The {@link com.stratio.crossdata.core.parser.Parser} responsible for parsing.
      */
     private final Parser parser;
+
     /**
      * The {@link Validator} responsible for validation.
      */
     private final Validator validator;
+
     /**
      * The {@link Planner} responsible for planning.
      */
     private final Planner planner;
+
     /**
      * The {@link com.stratio.crossdata.core.api.APIManager} responsible for API calls.
      */
     private final APIManager manager;
+
+    /**
+     * The {@link com.stratio.crossdata.core.coordinator.Coordinator} in charge of query coordination.
+     */
     private final Coordinator coordinator;
-
-    private final ConnectorManager connectorManager;
-
-    private final Grid grid;
-    private Normalizer normalizer;
 
     /**
      * Class constructor.
@@ -81,22 +83,22 @@ public class Engine {
     public Engine(EngineConfig config) {
 
         try {
-            this.grid = initializeGrid(config);
+            initializeGrid(config);
         } catch (Exception e) {
             LOG.error("Unable to start grid", e);
-            throw new RuntimeException("Unable to start grid: " + config, e);
+            throw new GridException("Unable to start grid: " + config, e);
         }
 
         // Initialize MetadataManager
-        Map<FirstLevelName, IMetadata> metadataMap = grid.map("metadata");
-        Lock lock = grid.lock("metadata");
-        TransactionManager tm = grid.transactionManager("metadata");
+        Map<FirstLevelName, IMetadata> metadataMap = Grid.INSTANCE.map("metadata");
+        Lock lock = Grid.INSTANCE.lock("metadata");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("metadata");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
 
         // Initialize ExecutionManager
-        Map<String, Serializable> executionMap = grid.map("executionData");
-        Lock lockExecution = grid.lock("executionData");
-        TransactionManager tmExecution = grid.transactionManager("executionData");
+        Map<String, Serializable> executionMap = Grid.INSTANCE.map("executionData");
+        Lock lockExecution = Grid.INSTANCE.lock("executionData");
+        TransactionManager tmExecution = Grid.INSTANCE.transactionManager("executionData");
         ExecutionManager.MANAGER.init(executionMap, lockExecution, tmExecution);
 
         parser = new Parser();
@@ -104,8 +106,6 @@ public class Engine {
         manager = new APIManager();
         planner = new Planner();
         coordinator = new Coordinator();
-        setNormalizer(new Normalizer());
-        connectorManager = new ConnectorManager();
     }
 
     /**
@@ -114,20 +114,16 @@ public class Engine {
      * @param config An {@link com.stratio.crossdata.core.engine.EngineConfig}.
      * @return a new {@link com.stratio.crossdata.core.grid.Grid}.
      */
-    private Grid initializeGrid(EngineConfig config) {
+    private void initializeGrid(EngineConfig config) {
         GridInitializer gridInitializer = Grid.initializer();
         for (String host : config.getGridContactHosts()) {
             gridInitializer = gridInitializer.withContactPoint(host);
         }
-        return gridInitializer.withPort(config.getGridPort())
+        gridInitializer.withPort(config.getGridPort())
                 .withListenAddress(config.getGridListenAddress())
                 .withMinInitialMembers(config.getGridMinInitialMembers())
                 .withJoinTimeoutInMs(config.getGridJoinTimeout())
                 .withPersistencePath(config.getGridPersistencePath()).init();
-    }
-
-    public Grid getGrid() {
-        return grid;
     }
 
     /**
@@ -161,10 +157,6 @@ public class Engine {
         return coordinator;
     }
 
-    public ConnectorManager getConnectorManager() {
-        return connectorManager;
-    }
-
     /**
      * Get the API manager.
      *
@@ -178,15 +170,7 @@ public class Engine {
      * Close open connections.
      */
     public void shutdown() {
-        grid.close();
-    }
-
-    public Normalizer getNormalizer() {
-        return normalizer;
-    }
-
-    public void setNormalizer(Normalizer normalizer) {
-        this.normalizer = normalizer;
+        Grid.INSTANCE.close();
     }
 
 }

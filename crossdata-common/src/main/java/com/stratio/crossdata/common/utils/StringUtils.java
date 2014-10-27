@@ -31,16 +31,20 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import com.stratio.crossdata.common.statements.structures.selectors.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.selectors.FloatingPointSelector;
-import com.stratio.crossdata.common.statements.structures.selectors.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.common.statements.structures.selectors.StringSelector;
+import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 
 /**
  * Utility class for String transformation operations.
  */
-public class StringUtils {
+public final class StringUtils {
+
+    private StringUtils(){
+
+    }
 
     /**
      * Class logger.
@@ -139,21 +143,6 @@ public class StringUtils {
             obj = jsonNode.getTextValue();
         }
         return obj;
-    }
-
-    public static String getStringFromOptions(Map<Selector, Selector> options) {
-        StringBuilder sb = new StringBuilder("{");
-        Iterator<Map.Entry<Selector, Selector>> entryIt = options.entrySet().iterator();
-        Map.Entry<Selector, Selector> e;
-        while (entryIt.hasNext()) {
-            e = entryIt.next();
-            sb.append(e.getKey()).append(": ").append(e.getValue());
-            if (entryIt.hasNext()) {
-                sb.append(", ");
-            }
-        }
-        sb.append("}");
-        return sb.toString();
     }
 
     public static String getAkkaActorRefUri(Object object){

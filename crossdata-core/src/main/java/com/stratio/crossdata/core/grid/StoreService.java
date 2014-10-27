@@ -52,7 +52,6 @@ public class StoreService implements Closeable {
     private final GlobalConfiguration gc;
     private final Configuration config;
     private final DefaultCacheManager manager;
-    private final JGroupsTransport transport;
 
     private Map<String, Cache<String, String>> caches = new HashMap<>();
 
@@ -65,12 +64,12 @@ public class StoreService implements Closeable {
      */
     StoreService(JChannel channel, String clusterName, String path) {
         this.channel = channel;
-        transport = new JGroupsTransport(channel);
+        JGroupsTransport transport = new JGroupsTransport(channel);
         gc = new GlobalConfigurationBuilder().transport()
                 .transport(transport)
                 .clusterName(clusterName)
                 .globalJmxStatistics()
-                .allowDuplicateDomains(true)//.disable()
+                .allowDuplicateDomains(true)
                 .build();
         config = new ConfigurationBuilder().transaction()
                 .transactionManagerLookup(new GenericTransactionManagerLookup())
@@ -136,5 +135,9 @@ public class StoreService implements Closeable {
             cache.stop();
         }
         gc.shutdown();
+    }
+
+    public JChannel getChannel() {
+        return channel;
     }
 }

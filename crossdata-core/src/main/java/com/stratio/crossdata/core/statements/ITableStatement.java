@@ -28,42 +28,22 @@ import com.stratio.crossdata.common.data.TableName;
 public interface ITableStatement {
 
     /**
-     * The target table.
-     */
-
-    /**
      * Get the table to be described.
      *
      * @return The name or null if not set.
      */
-    public TableName getTableName();
+    TableName getTableName();
 
-    public void setTableName(TableName tableName);
+    /**
+     * Set the table name.
+     * @param tableName The name.
+     */
+    void setTableName(TableName tableName);
 
-    public CatalogName getEffectiveCatalog();
-
-  /*
-  public TableName getTableName() {
-    return tableName;
-  }
-
-  public void setTableName(TableName tableName) {
-    this.tableName = tableName;
-  }
-
-  @Override
-  public String getEffectiveCatalog() {
-    String effective;
-    if(tableName != null){
-      effective = tableName.getCatalogName().getName();
-    }else{
-      effective = catalog;
-    }
-    if(sessionCatalog != null){
-      effective = sessionCatalog;
-    }
-    return effective;
-  }
-  */
+    /**
+     * Get the catalog associated with the table.
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName}.
+     */
+    CatalogName getEffectiveCatalog();
 
 }

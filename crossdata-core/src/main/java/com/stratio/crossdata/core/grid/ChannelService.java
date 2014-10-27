@@ -51,6 +51,16 @@ public class ChannelService implements Closeable {
     private final JChannel channel;
 
     /**
+     * Maximum number of threads in the pool.
+     */
+    private static final int MAX_THREADS = 30;
+
+    /**
+     * Communication timeout.
+     */
+    private static final int TIMEOUT = 12000;
+
+    /**
      * Builds a new {@link com.stratio.crossdata.core.grid.ChannelService} based on the specified JGroups
      * channel. All the created channels will be forked from the specified base channel.
      */
@@ -74,8 +84,8 @@ public class ChannelService implements Closeable {
         TCP tcp = new TCP();
         tcp.setBindAddress(listenAddress.getIpAddress());
         tcp.setBindPort(listenAddress.getPort());
-        tcp.setThreadPoolMaxThreads(30);
-        tcp.setOOBThreadPoolMaxThreads(30);
+        tcp.setThreadPoolMaxThreads(MAX_THREADS);
+        tcp.setOOBThreadPoolMaxThreads(MAX_THREADS);
 
         TCPPING tcpping = new TCPPING();
         tcpping.setInitialHosts(initialHosts);
@@ -93,7 +103,7 @@ public class ChannelService implements Closeable {
         // stack.addProtocol(new PING()); // Alternative to TCPPING
         stack.addProtocol(new MERGE2());
         stack.addProtocol(new FD_SOCK());
-        stack.addProtocol(new FD_ALL().setValue("timeout", 12000));
+        stack.addProtocol(new FD_ALL().setValue("timeout", TIMEOUT));
         stack.addProtocol(new VERIFY_SUSPECT());
         stack.addProtocol(new BARRIER());
         stack.addProtocol(new NAKACK());
@@ -106,7 +116,7 @@ public class ChannelService implements Closeable {
         try {
             stack.init();
         } catch (Exception e) {
-            throw new RuntimeException("Unable to create channel", e);
+            throw new GridException("Unable to create channel", e);
         }
     }
 
@@ -125,7 +135,7 @@ public class ChannelService implements Closeable {
             }
             return new ForkChannel(channel, name, name, true, ProtocolStack.ABOVE, FRAG2.class);
         } catch (Exception e) {
-            throw new RuntimeException("Unable to fork channel");
+            throw new GridException(e);
         }
     }
 

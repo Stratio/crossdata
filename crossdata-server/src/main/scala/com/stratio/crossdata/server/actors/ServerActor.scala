@@ -37,7 +37,7 @@ object ServerActor {
 class ServerActor(engine: Engine) extends Actor with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
-  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(engine.getConnectorManager()).withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
+  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props().withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
   val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).withRouter(RoundRobinRouter(nrOfInstances = num_coordinator_actor)), "CoordinatorActor")
   val plannerActorRef = context.actorOf(PlannerActor.props(coordinatorActorRef, engine.getPlanner).withRouter(RoundRobinRouter(nrOfInstances = num_planner_actor)), "PlannerActor")
   val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef, engine.getValidator).withRouter(RoundRobinRouter(nrOfInstances = num_validator_actor)), "ValidatorActor")

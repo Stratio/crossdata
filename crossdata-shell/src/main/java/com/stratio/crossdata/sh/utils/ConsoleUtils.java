@@ -49,7 +49,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.xml.sax.SAXException;
 
-import com.stratio.crossdata.common.api.CrossdataManifest;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
@@ -60,10 +60,10 @@ import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.StorageResult;
-import com.stratio.crossdata.common.api.connector.ConnectorFactory;
-import com.stratio.crossdata.common.api.connector.ConnectorType;
-import com.stratio.crossdata.common.api.datastore.DataStoreFactory;
-import com.stratio.crossdata.common.api.datastore.DataStoreType;
+import com.stratio.crossdata.common.manifest.ConnectorFactory;
+import com.stratio.crossdata.common.manifest.ConnectorType;
+import com.stratio.crossdata.common.manifest.DataStoreFactory;
+import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
 
@@ -71,7 +71,10 @@ import jline.console.ConsoleReader;
 import jline.console.history.History;
 import jline.console.history.MemoryHistory;
 
-public class ConsoleUtils {
+/**
+ * Utility class for console related operations.
+ */
+public final class ConsoleUtils {
 
     /**
      * Class logger.
@@ -90,7 +93,6 @@ public class ConsoleUtils {
      * Private class constructor as all methods are static.
      */
     private ConsoleUtils() {
-
     }
 
     /**
@@ -300,6 +302,14 @@ public class ConsoleUtils {
         }
     }
 
+    /**
+     * Parse an XML document into a {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
+     * @param manifestType The type of manifest.
+     * @param path The XML path.
+     * @return A {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
+     * @throws ManifestException If the XML is not valid.
+     * @throws FileNotFoundException If the XML file does not exists.
+     */
     public static CrossdataManifest parseFromXmlToManifest(int manifestType, String path) throws
             ManifestException, FileNotFoundException {
         if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
@@ -309,6 +319,13 @@ public class ConsoleUtils {
         }
     }
 
+    /**
+     * Parse an XML document into a {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
+     * @param manifestType The type of manifest.
+     * @param path The {@link java.io.InputStream} to retrieve the XML.
+     * @return A {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
+     * @throws ManifestException If the XML is not valid.
+     */
     public static CrossdataManifest parseFromXmlToManifest(int manifestType, InputStream path) throws
             ManifestException {
         if (manifestType == CrossdataManifest.TYPE_DATASTORE) {

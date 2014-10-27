@@ -22,12 +22,14 @@ import com.stratio.crossdata.common.exceptions.{ExecutionException, ParsingExcep
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.result.ErrorResult
 import com.stratio.crossdata.common.data.ResultSet
+import org.apache.log4j.Logger
 
 /**
  * Synchronous result handler.
  */
 class SyncResultHandler extends IResultHandler {
 
+  lazy val logger = Logger.getLogger(classOf[SyncResultHandler])
   var errorFound: Boolean = false
 
   var exception: Exception = null
@@ -42,11 +44,9 @@ class SyncResultHandler extends IResultHandler {
 
   override def processAck(queryId: String, status: QueryStatus): Unit = {
     lastStatus = status
-    //println("ACK: " + lastStatus)
   }
 
   override def processResult(result: Result): Unit = synchronized {
-    //println("Results received: " + result.getClass.toString)
     result match {
       case r: QueryResult =>
         if (queryResult == null) {
@@ -59,26 +59,15 @@ class SyncResultHandler extends IResultHandler {
         nonQueryResult = result
         allResults = true;
     }
-    allResults = true;
+    allResults = true
     notify()
   }
 
   override def processError(errorResult: Result): Unit = synchronized {
     val e = errorResult.asInstanceOf[ErrorResult]
-    println("processError: " + e)
-    if (ErrorType.PARSING.equals(e.getType)) {
-      exception = new ParsingException(e.getErrorMessage)
-    } else if (ErrorType.VALIDATION.equals(e.getType)) {
-      exception = new ValidationException(e.getErrorMessage)
-    } else if (ErrorType.EXECUTION.equals(e.getType)) {
-      exception = new ExecutionException(e.getErrorMessage)
-    } else if (ErrorType.NOT_SUPPORTED.equals(e.getType)) {
-      exception = new UnsupportedException(e.getErrorMessage)
-    } else {
-      exception = new UnsupportedException(e.getErrorMessage)
-    }
-
-    errorFound = true;
+    logger.debug("processError: " + e)
+    exception=e.getException
+    errorFound = true
     notify()
   }
 
@@ -88,7 +77,6 @@ class SyncResultHandler extends IResultHandler {
   @throws(classOf[UnsupportedException])
   def waitForResult(): Result = synchronized {
     while (!errorFound && !allResults) {
-      //println("Waiting for results, errorFound: " + errorFound + " allResults: " + allResults)
       wait()
     }
     if (errorFound) {
@@ -96,7 +84,6 @@ class SyncResultHandler extends IResultHandler {
     }
 
     if (queryResult != null) {
-      //println("QueryResult ksChanged: " + queryResult.isKsChanged)
       return queryResult
     }
 

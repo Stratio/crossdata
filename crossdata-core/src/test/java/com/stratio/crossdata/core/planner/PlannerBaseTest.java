@@ -30,7 +30,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.logicalplan.Filter;
@@ -39,15 +40,16 @@ import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
+import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.window.TimeUnit;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.core.grammar.ParsingTest;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
-import com.stratio.crossdata.core.query.ParsedQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
+import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 
 /**
@@ -64,9 +66,47 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
 
     Planner planner = new Planner();
 
+    /**
+     * Get the execution workflow from a statement.
+     * @param statement A valid statement.
+     * @param methodName The test name.
+     * @param shouldFail Whether the planning should succeed.
+     * @param tableMetadataList The list of table metadata.
+     * @return An {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow}.
+     */
+    public ExecutionWorkflow getPlannedQuery(String statement, String methodName,
+            boolean shouldFail, TableMetadata... tableMetadataList){
+
+        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+        SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+        SelectStatement ss = spq.getStatement();
+
+        SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+        for (TableMetadata tm : tableMetadataList) {
+            svqw.addTableMetadata(tm);
+        }
+
+        SelectPlannedQuery plannedQuery = null;
+        try {
+            plannedQuery = planner.planQuery(svqw);
+            if(shouldFail){
+                fail("Expecting planning to fail");
+            }
+        } catch (PlanningException e) {
+            if(!shouldFail){
+                fail("Expecting planning to succeed");
+            }else{
+                assertNotNull(e, "Exception should not be null");
+                assertEquals(e.getClass(), PlanningException.class, "Exception class does not match.");
+            }
+        }
+        LOG.info(plannedQuery.getExecutionWorkflow());
+        return plannedQuery.getExecutionWorkflow();
+    }
+
     public LogicalWorkflow getWorkflow(String statement, String methodName,
-            TableMetadata... tableMetadataList) {
-        ParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+            TableMetadata... tableMetadataList) throws PlanningException {
+        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
         SelectStatement ss = spq.getStatement();
 
@@ -136,7 +176,7 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
         //Find the workflow
 
         Iterator<LogicalStep> it = workflow.getInitialSteps().iterator();
-        LogicalStep step = null;
+        LogicalStep step;
         boolean found = false;
         //For each initial logical step try to find the join.
         while (it.hasNext() && !found) {

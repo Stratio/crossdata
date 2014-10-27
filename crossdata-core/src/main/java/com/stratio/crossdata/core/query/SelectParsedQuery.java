@@ -21,7 +21,7 @@ package com.stratio.crossdata.core.query;
 import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.core.statements.SelectStatement;
 
-public class SelectParsedQuery extends BaseQuery implements ParsedQuery {
+public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
 
     private SelectStatement statement;
 

@@ -25,11 +25,11 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.core.grammar.generated.MetaLexer;
 import com.stratio.crossdata.core.grammar.generated.MetaParser;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.utils.AntlrError;
 import com.stratio.crossdata.core.utils.ErrorsHelper;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.statements.MetaStatement;
@@ -37,6 +37,9 @@ import com.stratio.crossdata.core.statements.MetadataStatement;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
 
+/**
+ * Class that converts a String representing the user query into a {@link com.stratio.crossdata.core.query.IParsedQuery}.
+ */
 public class Parser {
 
     /**
@@ -44,8 +47,14 @@ public class Parser {
      */
     private static final Logger LOG = Logger.getLogger(Parser.class);
 
-    public ParsedQuery parse(BaseQuery baseQuery) throws ParsingException {
-        ParsedQuery result = null;
+    /**
+     * Parse incoming query.
+     * @param baseQuery Required information for parsing statement.
+     * @return Parsed Query.
+     * @throws ParsingException Couldn't be parsed.
+     */
+    public IParsedQuery parse(BaseQuery baseQuery) throws ParsingException {
+        IParsedQuery result = null;
         MetaStatement metaStatement = this
                 .parseStatement(baseQuery.getDefaultCatalog().toString(), baseQuery.getQuery());
         if (metaStatement instanceof SelectStatement) {
@@ -60,7 +69,7 @@ public class Parser {
 
     /**
      * Parse a input text and return the equivalent Statement.
-     *
+     * @param sessionCatalog Current catalog of the user.
      * @param query The input text.
      * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
      */
@@ -85,7 +94,7 @@ public class Parser {
             if (foundErrors.isEmpty()) {
                 foundErrors.addError(new AntlrError("Unknown parser error", e.getMessage()));
             } else if (foundErrors.getAntlrErrors().iterator().next().getMessage().contains("missing")) {
-                throw new ParsingException(e.getMessage());
+                throw new ParsingException(e);
             }
         }
         if (!foundErrors.isEmpty()) {

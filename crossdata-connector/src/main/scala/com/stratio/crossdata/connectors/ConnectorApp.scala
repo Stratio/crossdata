@@ -18,8 +18,9 @@
 
 package com.stratio.crossdata.connectors
 
-import akka.actor.{ActorRef, ActorSystem}
+import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import akka.routing.RoundRobinRouter
+import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.common.connector.{IConfiguration, IConnector}
 import com.stratio.crossdata.communication.Shutdown
@@ -35,20 +36,21 @@ class ConnectorApp extends ConnectConfig {
   lazy val system = ActorSystem(clusterName, config)
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
 
-  var actorClusterNode: ActorRef = null
+  var actorClusterNode: Option[ActorRef] = None
 
-  def shutdown() = {
+  def shutdown() :Unit= {
   }
 
-  def stop() = {
-    actorClusterNode ! Shutdown()
+  def stop():Unit = {
+    actorClusterNode.get ! Shutdown()
     system.shutdown()
   }
 
-  def startup(connector: IConnector): ActorRef = {
-    actorClusterNode = system.actorOf(ConnectorActor.props(connector.getConnectorName, connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor")
+  def startup(connector: IConnector): ActorSelection= {
+    actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
+      connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
     connector.init(new IConfiguration {})
-    actorClusterNode
+    system.actorSelection( StringUtils.getAkkaActorRefUri(actorClusterNode.toString()))
   }
 
 }

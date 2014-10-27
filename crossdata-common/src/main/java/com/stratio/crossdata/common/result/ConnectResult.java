@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.result;
 /**
  * Result of the connection with a remote META server.
  */
-public class ConnectResult extends Result {
+public final class ConnectResult extends Result {
 
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.

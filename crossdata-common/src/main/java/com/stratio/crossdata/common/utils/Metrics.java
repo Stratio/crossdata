@@ -24,7 +24,7 @@ import com.codahale.metrics.MetricRegistry;
 /**
  * Class that provides an interface for JMX metrics.
  */
-public class Metrics {
+public final class Metrics {
 
     /**
      * Metrics registry.

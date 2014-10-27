@@ -26,28 +26,40 @@ public class GridException extends RuntimeException {
     static final long serialVersionUID = -3562363467456756734L;
 
     /**
-     * @see RuntimeException#RuntimeException()
+     * Constructor without any additional information.
      */
     public GridException() {
         super();
     }
 
     /**
-     * @see RuntimeException#RuntimeException(String message)
+     * Constructor.
+     * @param e Exception.
+     */
+    public GridException(Exception e) {
+        super(e.getMessage());
+    }
+
+    /**
+     * Constructor.
+     * @param message String.
      */
     public GridException(String message) {
         super(message);
     }
 
     /**
-     * @see RuntimeException#RuntimeException(String message, Throwable cause)
+     * Constructor.
+     * @param message String.
+     * @param cause Exception.
      */
     public GridException(String message, Throwable cause) {
         super(message, cause);
     }
 
     /**
-     * @see RuntimeException#RuntimeException(Throwable cause)
+     * Constructor.
+     * @param cause Exception.
      */
     public GridException(Throwable cause) {
         super(cause);

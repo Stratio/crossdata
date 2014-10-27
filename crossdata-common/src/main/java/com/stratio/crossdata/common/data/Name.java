@@ -23,25 +23,52 @@ import java.io.Serializable;
 public abstract class Name implements Serializable {
 
     private static final long serialVersionUID = -3032254998929033117L;
-    final static String UNKNOWN_NAME = "<UNKNOWN_NAME>";
+    static final String UNKNOWN_NAME = "<UNKNOWN_NAME>";
 
+    /**
+     *
+     * @return boolean .
+     */
     public abstract boolean isCompletedName();
 
+    /**
+     * returns qualified name.
+     *
+     * @return String.
+     */
     public abstract String getQualifiedName();
 
+    /**
+     * returns NameType.
+     *
+     * @return NameType.
+     */
     public abstract NameType getType();
 
+    /**
+     *
+     * @return String representation of the object.
+     */
     @Override
     public String toString() {
         return this.getQualifiedName();
     }
 
+    /**
+     *
+     * @return object's hash code.
+     */
     @Override
     public int hashCode() {
         String code = getType() + getQualifiedName();
         return code.hashCode();
     }
 
+    /**
+     * Method equals
+     * @param o Object to be compared
+     * @return whether Object o is equal to this object
+     */
     @Override
     public boolean equals(Object o) {
         return (this == o) || ((o instanceof Name) && (this.hashCode() == o.hashCode()));

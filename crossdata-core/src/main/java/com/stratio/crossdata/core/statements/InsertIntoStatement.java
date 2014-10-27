@@ -20,16 +20,15 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import com.stratio.crossdata.common.utils.StringUtils;
-import com.stratio.crossdata.core.structures.Option;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.common.statements.structures.Selector;
+
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.common.utils.StringUtils;
+import com.stratio.crossdata.core.structures.Option;
 
 /**
  * Class that models an {@code INSERT INTO} statement from the META language.
@@ -46,10 +45,7 @@ public class InsertIntoStatement extends StorageStatement {
      * Constant to define an {@code INSERT INTO} that takes literal values as input.
      */
     public static final int TYPE_VALUES_CLAUSE = 2;
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(SelectStatement.class);
+
     /**
      * The name of the target table.
      */
@@ -64,7 +60,7 @@ public class InsertIntoStatement extends StorageStatement {
      */
     private SelectStatement selectStatement;
     /**
-     * A list of {@link com.stratio.crossdata.common.statements.structures.selectors.Selector} with the
+     * A list of {@link com.stratio.crossdata.common.statements.structures.Selector} with the
      * literal values to be assigned if the insert type matches {@code TYPE_VALUES_CLAUSE}.
      */
     private List<Selector> cellValues;
@@ -93,7 +89,7 @@ public class InsertIntoStatement extends StorageStatement {
      * @param ids             List of name of fields in the table.
      * @param selectStatement a {@link com.stratio.crossdata.core.statements.InsertIntoStatement}
      * @param cellValues      List of
-     *                        {@link com.stratio.crossdata.common.statements.structures.selectors.Selector} to insert.
+     *                        {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
      * @param ifNotExists     Boolean that indicates if IF NOT EXISTS clause is included in the query.
      * @param optsInc         Boolean that indicates if there is options in the query.
      * @param options         Query options.
@@ -133,7 +129,7 @@ public class InsertIntoStatement extends StorageStatement {
      * @param tableName   Tablename target.
      * @param ids         List of name of fields in the table.
      * @param cellValues  List of
-     *                    {@link com.stratio.crossdata.common.statements.structures.selectors.Selector} to insert.
+     *                    {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
      * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
      * @param options     Query options.
      */
@@ -161,7 +157,7 @@ public class InsertIntoStatement extends StorageStatement {
      * @param tableName   Tablename target.
      * @param ids         List of name of fields in the table.
      * @param cellValues  List of
-     *                    {@link com.stratio.crossdata.common.statements.structures.selectors.Selector} to insert.
+     *                    {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
      * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
      */
     public InsertIntoStatement(TableName tableName, List<ColumnName> ids, List<Selector> cellValues,
@@ -196,8 +192,8 @@ public class InsertIntoStatement extends StorageStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_CATALOG).add(Validation.MUST_EXIST_TABLE).add
-                (Validation.VALIDATE_TYPES);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG).add(ValidationTypes.MUST_EXIST_TABLE).add
+                (ValidationTypes.VALIDATE_TYPES);
     }
 
     public TableName getTableName() {

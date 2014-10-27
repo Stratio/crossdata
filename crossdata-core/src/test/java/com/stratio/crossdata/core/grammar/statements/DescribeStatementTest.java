@@ -89,7 +89,7 @@ public class DescribeStatementTest extends ParsingTest {
     @Test
     public void describeConnectorBasic() {
         String inputText = "DESCRIBE CONNECTOR myConnector;";
-        String expectedText = "DESCRIBE CONNECTOR connectormanager.myConnector;";
+        String expectedText = "DESCRIBE CONNECTOR connector.myConnector;";
         testRegularStatement(inputText, expectedText, "describeConnectorBasic");
     }
 

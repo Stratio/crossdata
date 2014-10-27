@@ -19,22 +19,47 @@
 package com.stratio.crossdata.common.data;
 
 public class ClusterName extends FirstLevelName {
+
+    /**
+     * Serial version UID.
+     */
+    private static final long serialVersionUID = -5998186945261214393L;
+
+    /**
+     * Name of the cluster.
+     */
     private final String name;
 
+    /**
+     * Constructor.
+     * @param clusterName Cluster Name.
+     */
     public ClusterName(String clusterName) {
         super();
         this.name = clusterName.toLowerCase();
     }
 
+    /**
+     * Get the Cluster Name.
+     * @return Cluster Name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Get the qualified name for the cluster.
+     * @return qualified name.
+     */
     public String getQualifiedName() {
         return QualifiedNames.getClusterQualifiedName(getName());
     }
 
-    @Override public NameType getType() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public NameType getType() {
         return NameType.CLUSTER;
     }
 

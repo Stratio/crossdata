@@ -28,8 +28,8 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.AlterTableStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -47,7 +47,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -69,7 +69,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -90,7 +90,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -112,7 +112,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -134,7 +134,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("TABLE specified must not exists");
@@ -156,7 +156,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Columns specified must not exists and then fail the test");

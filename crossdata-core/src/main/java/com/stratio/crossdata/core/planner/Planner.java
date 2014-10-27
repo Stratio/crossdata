@@ -30,9 +30,15 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.Cell;
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.ConnectorStatus;
+import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
@@ -53,17 +59,6 @@ import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.TransformationStep;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Window;
-import com.stratio.crossdata.common.statements.structures.relationships.Operator;
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
-import com.stratio.crossdata.common.utils.StringUtils;
-import com.stratio.crossdata.core.structures.InnerJoin;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.IndexName;
-import com.stratio.crossdata.common.data.Status;
-import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -71,19 +66,23 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.selectors.AsteriskSelector;
-import com.stratio.crossdata.common.statements.structures.selectors.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.common.statements.structures.selectors.SelectorType;
+import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.SelectorType;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
+import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
-import com.stratio.crossdata.core.query.ValidatedQuery;
 import com.stratio.crossdata.core.statements.AttachClusterStatement;
 import com.stratio.crossdata.core.statements.AttachConnectorStatement;
 import com.stratio.crossdata.core.statements.CreateCatalogStatement;
@@ -91,6 +90,8 @@ import com.stratio.crossdata.core.statements.CreateTableStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.structures.InnerJoin;
+import com.stratio.crossdata.core.utils.CoreUtils;
 
 /**
  * Class in charge of defining the set of {@link com.stratio.crossdata.common.logicalplan.LogicalStep}
@@ -119,8 +120,7 @@ public class Planner {
         //Plan the workflow execution into different connectors.
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query.getQueryId(), workflow);
         //Return the planned query.
-        SelectPlannedQuery pq = new SelectPlannedQuery(query, executionWorkflow);
-        return pq;
+        return new SelectPlannedQuery(query, executionWorkflow);
     }
 
     /**
@@ -148,20 +148,6 @@ public class Planner {
     }
 
     /**
-     * Build a Logical workflow for the incoming validated query.
-     *
-     * @param query A valid query.
-     * @return A {@link com.stratio.crossdata.common.logicalplan.LogicalWorkflow}
-     */
-    protected LogicalWorkflow buildWorkflow(ValidatedQuery query) {
-        LogicalWorkflow result = null;
-        if (query instanceof SelectValidatedQuery) {
-            result = buildWorkflow((SelectValidatedQuery) query);
-        }
-        return result;
-    }
-
-    /**
      * Build a execution workflow for a query analyzing the existing logical workflow.
      *
      * @param queryId  The query identifier.
@@ -175,14 +161,14 @@ public class Planner {
         //Get the list of tables accessed in this query
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
 
-        //Obtain the map of connectormanager that is able to access those tables.
+        //Obtain the map of connector that is able to access those tables.
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
-                .getAttachedConnectors(Status.ONLINE, tables);
+                .getAttachedConnectors(ConnectorStatus.ONLINE, tables);
 
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
         for(Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()){
             for(ConnectorMetadata cm : tableEntry.getValue()){
-                sb.append("table: ").append(tableEntry.getKey().toString())
+                sb.append("table: ").append(tableEntry.getKey().toString()).append(" ")
                         .append(cm.getName()).append(" ").append(cm.getActorRef()).append(System.lineSeparator());
             }
         }
@@ -219,8 +205,7 @@ public class Planner {
         }
 
         //Merge execution paths
-        ExecutionWorkflow executionWorkflow = mergeExecutionPaths(queryId, executionPaths, unionSteps);
-        return executionWorkflow;
+        return mergeExecutionPaths(queryId, executionPaths, unionSteps);
     }
 
     /**
@@ -465,7 +450,7 @@ public class Planner {
             //Remove invalid connectors
             if (toRemove.size() == availableConnectors.size()) {
                 throw new PlanningException(
-                        "Cannot determine execution path as no connectormanager supports " + current.toString());
+                        "Cannot determine execution path as no connector supports " + current.toString());
             } else {
                 availableConnectors.removeAll(toRemove);
 
@@ -498,13 +483,13 @@ public class Planner {
 
     /**
      * Build a workflow with the {@link com.stratio.crossdata.common.logicalplan.LogicalStep} required to
-     * execute a query. This method does not determine which connectormanager will execute which part of the
+     * execute a query. This method does not determine which connector will execute which part of the
      * workflow.
      *
      * @param query The query to be planned.
      * @return A Logical workflow.
      */
-    protected LogicalWorkflow buildWorkflow(SelectValidatedQuery query) {
+    protected LogicalWorkflow buildWorkflow(SelectValidatedQuery query) throws PlanningException {
         Map<String, TableMetadata> tableMetadataMap = new HashMap<>();
         for (TableMetadata tm : query.getTableMetadata()) {
             tableMetadataMap.put(tm.getName().getQualifiedName(), tm);
@@ -514,7 +499,7 @@ public class Planner {
         addProjectedColumns(processed, query);
 
         //TODO determine which is the correct target table if the order fails.
-        String selectTable = query.getTables().get(0).getQualifiedName();
+        String selectTable = ((SelectParsedQuery)query).getStatement().getTableName().getQualifiedName();
 
         //Add filters
         if (query.getRelationships() != null) {
@@ -626,7 +611,7 @@ public class Planner {
             CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
 
             // Recover ActorRef from ConnectorMetadata
-            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,
+            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(ConnectorStatus.ONLINE,
                     createTableStatement.getClusterName());
             ConnectorMetadata chosenConnectorMetadata = connectors.iterator().next();
             String actorRefUri = chosenConnectorMetadata.getActorRef();
@@ -779,7 +764,7 @@ public class Planner {
         return storageWorkflow;
     }
 
-    private Row getInsertRow(InsertIntoStatement statement) {
+    private Row getInsertRow(InsertIntoStatement statement) throws PlanningException {
         Row row = new Row();
 
         List<Selector> values = statement.getCellValues();
@@ -788,7 +773,9 @@ public class Planner {
         for (int i = 0; i < ids.size(); i++) {
             ColumnName columnName = ids.get(i);
             Selector value = values.get(i);
-            Cell cell = new Cell(value);
+            CoreUtils coreUtils = CoreUtils.create();
+            Object cellContent = coreUtils.convertSelectorToObject(value, columnName);
+            Cell cell = new Cell(cellContent);
             row.addCell(columnName.getName(), cell);
         }
         return row;
@@ -829,7 +816,7 @@ public class Planner {
      * @param tableName The table metadata.
      * @param selector  The relationship selector.
      * @param operator  The relationship operator.
-     * @return An {@link com.stratio.crossdata.common.connector.Operations} object.
+     * @return An {@link com.stratio.crossdata.common.metadata.Operations} object.
      */
     protected Operations getFilterOperation(final TableMetadata tableName,
             final Selector selector,
@@ -956,29 +943,43 @@ public class Planner {
      * @param tableMetadataMap A map with the table metadata indexed by table name.
      * @return A {@link com.stratio.crossdata.common.logicalplan.Select}.
      */
-    protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap) {
+    protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap)
+            throws PlanningException {
         Map<ColumnName, String> aliasMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
+        LinkedHashMap<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
         boolean addAll = false;
         for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
             if(AsteriskSelector.class.isInstance(s)){
                 addAll = true;
-            }else if (s.getAlias() != null) {
-                ColumnSelector cs = ColumnSelector.class.cast(s);
-                aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()), s.getAlias());
+            } else if (ColumnSelector.class.isInstance(s)){
+                if (s.getAlias() != null) {
+                    ColumnSelector cs = ColumnSelector.class.cast(s);
+                    aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()), s.getAlias());
 
-                typeMap.put(s.getAlias(),
-                        tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
-                                .get(ColumnSelector.class.cast(s).getName()).getColumnType()
-                );
+                    typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()),
+                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(ColumnSelector.class
+                                    .cast(s).getName()).getColumnType());
+
+                    typeMap.put(s.getAlias(),
+                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
+                                    .get(ColumnSelector.class.cast(s).getName()).getColumnType()
+                    );
+                } else {
+                    ColumnSelector cs = ColumnSelector.class.cast(s);
+                    aliasMap.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
+                            cs.getName().getName());
+
+                    typeMapFromColumnName.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
+                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
+
+                    typeMap.put(cs.getName().getName(),
+                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
+                                    .get(cs.getName()).getColumnType()
+                    );
+                }
             } else {
-                ColumnSelector cs = ColumnSelector.class.cast(s);
-                aliasMap.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
-                        cs.getName().getName());
-                typeMap.put(cs.getName().getName(),
-                        tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
-                                .get(cs.getName()).getColumnType()
-                );
+                throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
             }
         }
 
@@ -986,6 +987,10 @@ public class Planner {
             TableMetadata metadata = tableMetadataMap.get(selectStatement.getTableName().getQualifiedName());
             for(Map.Entry<ColumnName, ColumnMetadata> column : metadata.getColumns().entrySet()){
                 aliasMap.put(column.getKey(), column.getKey().getName());
+
+                typeMapFromColumnName.put(column.getKey(),
+                        column.getValue().getColumnType());
+
                 typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
             }
             if(selectStatement.getJoin() != null){
@@ -993,13 +998,16 @@ public class Planner {
                         .getQualifiedName());
                 for(Map.Entry<ColumnName, ColumnMetadata> column : metadataJoin.getColumns().entrySet()){
                     aliasMap.put(column.getKey(), column.getKey().getName());
+
+                    typeMapFromColumnName.put(column.getKey(),
+                            column.getValue().getColumnType());
+
                     typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
                 }
             }
         }
-        
-        Select result = new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap);
-        return result;
+
+        return new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap, typeMapFromColumnName);
     }
 
 }

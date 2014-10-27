@@ -27,8 +27,8 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.AttachConnectorStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -46,7 +46,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("system"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("The CONNECTOR must not exist");
@@ -68,7 +68,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("CONNECTOR must exists");
@@ -90,7 +90,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("CONNECTOR must exists");
@@ -112,7 +112,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("The options cannot be empty");

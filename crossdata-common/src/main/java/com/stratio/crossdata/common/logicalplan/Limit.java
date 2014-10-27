@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 
 /**
  * Limit the number of results in a query.

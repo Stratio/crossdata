@@ -27,7 +27,7 @@ object MockCoordinatorActor {
 class MockCoordinatorActor() extends Actor {
   val log = Logger.getLogger(classOf[MockCoordinatorActor])
 
-  def receive = {
+  def receive:Receive = {
     case _ => {
       log.error("Unknown message")
       sender ! "Unknown message"

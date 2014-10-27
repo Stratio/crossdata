@@ -40,7 +40,7 @@ public class GridInitializer {
     private static final Logger LOG = Logger.getLogger(GridInitializer.class);
 
     /**
-     * Package constructor
+     * Package constructor.
      */
     GridInitializer() {
         //TODO
@@ -111,12 +111,12 @@ public class GridInitializer {
 
     /**
      * Returns the new {@link Grid} defined by this.
-     *
-     * @return the new {@link Grid} defined by this.
      */
-    public Grid init() {
+    public void init() {
 
-        ChannelService channelService = new ChannelServiceBuilder()
+        if(!Grid.INSTANCE.isInit()) {
+
+            ChannelService channelService = new ChannelServiceBuilder()
                 .withPort(port)
                 .withListenAddress(listenAddress)
                 .withContactPoints(contactPoints)
@@ -124,13 +124,14 @@ public class GridInitializer {
                 .withJoinTimeoutInMs(timeout)
                 .build();
 
-        JChannel storeChannel = channelService.build("store");
-        JChannel lockChannel = channelService.build("lock");
+            JChannel storeChannel = channelService.build("store");
+            JChannel lockChannel = channelService.build("lock");
 
-        StoreService storeService = new StoreService(storeChannel, "store", path);
-        LockService lockService = new LockService(lockChannel);
+            StoreService storeService = new StoreService(storeChannel, "store", path);
+            LockService lockService = new LockService(lockChannel);
 
-        return Grid.init(channelService, lockService, storeService);
+            Grid.INSTANCE.init(channelService, lockService, storeService);
+        }
     }
 
 }

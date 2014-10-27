@@ -27,8 +27,8 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.AttachClusterStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -46,7 +46,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
 
         try {
             validator.validate(parsedQuery);
@@ -69,7 +69,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("Datastore must exists before ATTACH CLUSTER statement");
@@ -91,7 +91,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -114,7 +114,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);

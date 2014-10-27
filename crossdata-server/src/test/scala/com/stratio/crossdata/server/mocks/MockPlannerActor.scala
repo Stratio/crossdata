@@ -21,7 +21,7 @@ package com.stratio.crossdata.server.mocks
 import akka.actor.{Actor, Props}
 import com.stratio.crossdata.common.result.{Result, QueryStatus}
 import com.stratio.crossdata.communication.ACK
-import com.stratio.crossdata.core.query.{ValidatedQuery, MetadataValidatedQuery, SelectValidatedQuery}
+import com.stratio.crossdata.core.query.{IValidatedQuery, MetadataValidatedQuery, SelectValidatedQuery}
 import com.stratio.crossdata.server.actors.TimeTracker
 import org.apache.log4j.Logger
 
@@ -42,7 +42,7 @@ class MockPlannerActor() extends Actor with TimeTracker {
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack
     }
-    case query: ValidatedQuery => {
+    case query: IValidatedQuery => {
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack
     }

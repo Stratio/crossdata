@@ -20,14 +20,13 @@ package com.stratio.crossdata.common.connector;
 
 import java.util.Collection;
 
-import com.stratio.crossdata.common.data.Row;
-import com.stratio.crossdata.common.exceptions.ExecutionException;
-import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
 /**
- * Interface provided by a connectormanager to access storage related operations such as inserting new
+ * Interface provided by a connector to access storage related operations such as inserting new
  * data.
  */
 public interface IStorageEngine {
@@ -38,12 +37,11 @@ public interface IStorageEngine {
      * @param targetCluster Target cluster.
      * @param targetTable   Target table metadata including fully qualified including catalog.
      * @param row           The row to be inserted.
-     * @throws UnsupportedException If the operation is not supported.
-     * @throws ExecutionException   If the execution fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                            supported by the connector or ExecutionException if the execution fails.
      */
-    public void insert(ClusterName targetCluster, TableMetadata targetTable, Row row)
-            throws UnsupportedException,
-            ExecutionException;
+    void insert(ClusterName targetCluster, TableMetadata targetTable, Row row)
+            throws ConnectorException;
 
     /**
      * Insert a collection of rows in a table.
@@ -51,11 +49,10 @@ public interface IStorageEngine {
      * @param targetCluster Target cluster.
      * @param targetTable   Target table metadata including fully qualified including catalog.
      * @param rows          Collection of rows to be inserted.
-     * @throws UnsupportedException If the operation is not supported.
-     * @throws ExecutionException   If the execution fails.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                            supported by the connector or ExecutionException if the execution fails.
      */
-    public void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows)
-            throws UnsupportedException,
-            ExecutionException;
+    void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows)
+            throws ConnectorException;
 
 }

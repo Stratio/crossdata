@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.logicalplan;
 import java.io.Serializable;
 import java.util.List;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 
 /**
  * A step of a Logical plan.
@@ -51,7 +51,7 @@ public abstract class LogicalStep implements Serializable {
     /**
      * Get the type of operation associated with this filter.
      *
-     * @return A {@link com.stratio.crossdata.common.connector.Operations}.
+     * @return A {@link com.stratio.crossdata.common.metadata.Operations}.
      */
     public Operations getOperation() {
         return operation;

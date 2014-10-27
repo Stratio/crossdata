@@ -18,11 +18,35 @@
 
 package com.stratio.crossdata.core.execution;
 
+/**
+ * Exception thrown by the Execution Manager in case it is not initialized, an entry check fails, etc.
+ */
 public class ExecutionManagerException extends RuntimeException {
+
+    /**
+     * Constructs a new Exception with a given message.
+     *
+     * @param message The message.
+     */
     public ExecutionManagerException(String message) {
         super(message);
     }
 
+    /**
+     * Constructs a new Exception with a specific cause.
+     *
+     * @param e The associated Exception.
+     */
+    public ExecutionManagerException(Exception e) {
+        super(e.getMessage());
+    }
+
+    /**
+     * Constructs a new Exception with a specific message and cause.
+     *
+     * @param message The associated message.
+     * @param cause   The associated cause.
+     */
     public ExecutionManagerException(String message, Throwable cause) {
         super(message, cause);
     }

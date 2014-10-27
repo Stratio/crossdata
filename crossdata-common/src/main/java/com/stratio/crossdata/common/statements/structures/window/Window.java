@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.statements.structures.window;
 import java.io.Serializable;
 
 /**
- * Window
+ * Window clause in a Select operation.
  */
 public class Window implements Serializable {
 
@@ -46,6 +46,21 @@ public class Window implements Serializable {
     private TimeUnit timeUnit = null;
 
     /**
+     * Number of milliseconds in a second.
+     */
+    private static final int TO_MILLISECONDS = 1000;
+
+    /**
+     * Number of minutes in an hour.
+     */
+    private static final int TO_MINUTES = 60;
+
+    /**
+     * Number of hours in a day.
+     */
+    private static final int TO_HOURS = 24;
+
+    /**
      * Class constructor.
      *
      * @param type The {@link com.stratio.crossdata.common.statements.structures.window.WindowType}.
@@ -64,7 +79,7 @@ public class Window implements Serializable {
     }
 
     /**
-     * Set the number of time units and unit for WindowType.TEMPORAL
+     * Set the number of time units and unit for WindowType.TEMPORAL.
      *
      * @param numTimeUnits Number of time units.
      * @param unit         Time unit.
@@ -119,13 +134,13 @@ public class Window implements Serializable {
         if (WindowType.TEMPORAL.equals(this.type)) {
             int factor = 1;
             if (timeUnit.equals(TimeUnit.SECONDS)) {
-                factor = factor * 1000;
+                factor = factor * TO_MILLISECONDS;
             } else if (timeUnit.equals(TimeUnit.MINUTES)) {
-                factor = factor * 1000 * 60;
+                factor = factor * TO_MILLISECONDS * TO_MINUTES;
             } else if (timeUnit.equals(TimeUnit.HOURS)) {
-                factor = factor * 1000 * 60 * 60;
+                factor = factor * TO_MILLISECONDS * TO_MINUTES * TO_MINUTES;
             } else if (timeUnit.equals(TimeUnit.DAYS)) {
-                factor = factor * 1000 * 60 * 60 * 24;
+                factor = factor * TO_MILLISECONDS * TO_MINUTES * TO_MINUTES * TO_HOURS;
             }
             millis = numTimeUnits * factor;
         }

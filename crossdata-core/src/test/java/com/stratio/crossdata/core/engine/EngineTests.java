@@ -35,8 +35,6 @@ public class EngineTests {
 
         engineConfig = new EngineConfig();
 
-        engineConfig.setSparkMaster("local");
-        engineConfig.setClasspathJars("/");
         engineConfig.setGridListenAddress("localhost");
         engineConfig.setGridContactHosts(new String[] { });
         engineConfig.setGridMinInitialMembers(1);
@@ -48,8 +46,7 @@ public class EngineTests {
     @Test(enabled = false)
     public void testGrid() {
         Engine engine = new Engine(engineConfig);
-        Grid grid = engine.getGrid();
-        Map<Object, Object> store = grid.map("test");
+        Map<Object, Object> store = Grid.INSTANCE.map("test");
         store.put("k1", "v1");
         Assert.assertEquals("v1", store.get("k1"));
         store.remove("k1");

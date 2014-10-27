@@ -38,6 +38,11 @@ import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
 
 public class CoordinatorTest extends MetadataManagerTestHelper {
 
+    /**
+     * Testing an API operation (attaching a cluster to a datastore)
+     *
+     * @throws Exception
+     */
     @Test
     public void testAttachCluster() throws Exception {
 
@@ -82,9 +87,9 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterTest =
                 new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterTest, false);
+        MetadataManager.MANAGER.createClusterAndAttach(clusterTest, false);
 
-        // Create and add a test connectormanager metadata to the metadatamanager
+        // Create and add a test connector metadata to the metadatamanager
         ConnectorName connectorName = new ConnectorName("connectorTest");
         String connectorVersion = "0.1.0";
         Set<DataStoreName> dataStoreRefs = new HashSet<>();
@@ -98,7 +103,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
                         connectorRequiredProperties, connectorOptionalProperties, supportedOperations);
         MetadataManager.MANAGER.createConnector(connectorTest, false);
 
-        // Add information about the connectormanager attachment to the metadatamanager
+        // Add information about the connector attachment to the metadatamanager
         BaseQuery baseQuery =
                 new BaseQuery(UUID.randomUUID().toString(),
                         "ATTACH CONNECTOR cassandra_connector TO cassandra_prod WITH OPTIONS {}",
@@ -341,7 +346,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterTest =
                 new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterTest, false);
+        MetadataManager.MANAGER.createClusterAndAttach(clusterTest, false);
     }
 
     private void createTestsCatalogAndPersist(String catalog) {
@@ -411,15 +416,15 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
 //        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
 //        ClusterMetadata clusterTest =
 //                new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-//        MetadataManager.MANAGER.createCluster(clusterTest, false);
+//        MetadataManager.MANAGER.createClusterAndAttach(clusterTest, false);
 //
-//        // Create and add a test connectormanager metadata to the metadatamanager
+//        // Create and add a test connector metadata to the metadatamanager
 //        ConnectorName connectorName = new ConnectorName("connectorTest");
 //        String connectorVersion = "0.1.0";
 //        Set<DataStoreName> dataStoreRefs = new HashSet<>();
-//        com.stratio.com.stratio.crossdata.common.api.generated.connectormanager.RequiredPropertiesType connectorRequiredProperties =
+//        com.stratio.com.stratio.crossdata.common.api.generated.connector.RequiredPropertiesType connectorRequiredProperties =
 //                null;
-//        com.stratio.com.stratio.crossdata.common.api.generated.connectormanager.OptionalPropertiesType connectorOptionalProperties =
+//        com.stratio.com.stratio.crossdata.common.api.generated.connector.OptionalPropertiesType connectorOptionalProperties =
 //                null;
 //        SupportedOperationsType supportedOperations = null;
 //        ConnectorMetadata connectorTest =
@@ -427,7 +432,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
 //                        connectorRequiredProperties, connectorOptionalProperties, supportedOperations);
 //        MetadataManager.MANAGER.createConnector(connectorTest, false);
 //
-//        // Add information about the connectormanager attachment to the metadatamanager
+//        // Add information about the connector attachment to the metadatamanager
 //        BaseQuery baseQuery =
 //                new BaseQuery(UUID.randomUUID().toString(),
 //                        "ATTACH CONNECTOR cassandra_connector TO cassandra_prod WITH OPTIONS {}",
@@ -670,7 +675,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
 //        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
 //        ClusterMetadata clusterTest =
 //                new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-//        MetadataManager.MANAGER.createCluster(clusterTest, false);
+//        MetadataManager.MANAGER.createClusterAndAttach(clusterTest, false);
 //    }
 //
 //    private void createTestsCatalogAndPersist(String catalog) {

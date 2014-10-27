@@ -24,66 +24,132 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.crossdata.common.connector.Operations;
-import com.stratio.crossdata.common.api.ManifestHelper;
-import com.stratio.crossdata.common.api.PropertyType;
+import com.stratio.crossdata.common.data.ConnectorStatus;
+import com.stratio.crossdata.common.manifest.ManifestHelper;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.Status;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * Metadata information associated with a Connector.
+ */
 public class ConnectorMetadata implements IMetadata {
 
+    /**
+     * Connector name.
+     */
     private final ConnectorName name;
+
+    /**
+     * Connector version.
+     */
     private String version;
+
+    /**
+     * Set of {@link com.stratio.crossdata.common.data.DataStoreName} that the connector may access.
+     */
     private Set<DataStoreName> dataStoreRefs;
 
+    /**
+     * Set of {@link com.stratio.crossdata.common.data.ClusterName} the connector has access to.
+     */
     //TODO; We can get this info also from clusterProperties.entrySet()
     private Set<ClusterName> clusterRefs = new HashSet<>();
 
+    /**
+     * A map of cluster names with their map of properties.
+     */
     private Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
 
-    private Status status;
+    /**
+     * The connector status.
+     */
+    private ConnectorStatus connectorStatus;
+
+    /**
+     * The actor Akka reference.
+     */
     private String actorRef;
 
+    /**
+     * The set of required properties.
+     */
     private Set<PropertyType> requiredProperties;
+
+    /**
+     * The set of optional properties.
+     */
     private Set<PropertyType> optionalProperties;
+
+    /**
+     * The set of supported operations.
+     */
     private Set<Operations> supportedOperations;
 
+    /**
+     * Class constructor.
+     *
+     * @param name                The connector name.
+     * @param version             The connector version.
+     * @param dataStoreRefs       The set of datastores the connector may access.
+     * @param clusterProperties   The map of clusters associated with this connector and their associated properties.
+     * @param requiredProperties  The set of required properties.
+     * @param optionalProperties  The set of optional properties.
+     * @param supportedOperations The set of supported operations.
+     */
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
-            Set<ClusterName> clusterRefs, Map<ClusterName, Map<Selector, Selector>> clusterProperties,
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations) {
-        this.name = name;
-        this.version = version;
-        this.dataStoreRefs = dataStoreRefs;
-        this.clusterRefs = clusterRefs;
-        this.clusterProperties = clusterProperties;
-        this.requiredProperties = requiredProperties;
-        this.optionalProperties = optionalProperties;
-        this.supportedOperations = supportedOperations;
-        this.status = Status.OFFLINE;
+        this(name, version, dataStoreRefs, clusterProperties, ConnectorStatus.OFFLINE, null, requiredProperties,
+                optionalProperties,
+                supportedOperations);
     }
 
+    /**
+     * Class constructor.
+     *
+     * @param name                The connector name.
+     * @param version             The connector version.
+     * @param dataStoreRefs       The set of datastores the connector may access.
+     * @param clusterProperties   The map of clusters associated with this connector and their associated properties.
+     * @param connectorStatus     The connector status.
+     * @param actorRef            The actor Akka reference.
+     * @param requiredProperties  The set of required properties.
+     * @param optionalProperties  The set of optional properties.
+     * @param supportedOperations The set of supported operations.
+     */
     public ConnectorMetadata(ConnectorName name, String version,
-            Set<DataStoreName> dataStoreRefs, Set<ClusterName> clusterRefs,
-            Map<ClusterName, Map<Selector, Selector>> clusterProperties, Status status, String actorRef,
+            Set<DataStoreName> dataStoreRefs,
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties, ConnectorStatus connectorStatus,
+            String actorRef,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations) {
+
         this.name = name;
         this.version = version;
         this.dataStoreRefs = dataStoreRefs;
-        this.clusterRefs = clusterRefs;
         this.clusterProperties = clusterProperties;
-        this.status = status;
-        this.actorRef = actorRef;
         this.requiredProperties = requiredProperties;
         this.optionalProperties = optionalProperties;
         this.supportedOperations = supportedOperations;
+        this.connectorStatus = connectorStatus;
+        this.actorRef = actorRef;
     }
 
+    /**
+     * Class constructor.
+     *
+     * @param name                The connector name.
+     * @param version             The connector version.
+     * @param dataStoreRefs       The set of datastores the connector may access.
+     * @param requiredProperties  The set of required properties.
+     * @param optionalProperties  The set of optional properties.
+     * @param supportedOperations The set of supported operations.
+     */
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
             List<String> supportedOperations) {
@@ -100,69 +166,143 @@ public class ConnectorMetadata implements IMetadata {
         } else {
             this.optionalProperties = null;
         }
-        this.supportedOperations = ManifestHelper.convertManifestOperationsToMetadataOperations(supportedOperations);
-        this.status = Status.OFFLINE;
+
+        this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
+        this.connectorStatus = ConnectorStatus.OFFLINE;
+
     }
 
+    /**
+     * Get the connector name.
+     *
+     * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
+     */
     public ConnectorName getName() {
         return name;
     }
 
+    /**
+     * Get the connector version.
+     *
+     * @return A String with the version.
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * Get the set of datastores the connector may access.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.data.DataStoreName}.
+     */
     public Set<DataStoreName> getDataStoreRefs() {
         return dataStoreRefs;
     }
 
+    /**
+     * Get the set of required properties.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.manifest.PropertyType}.
+     */
     public Set<PropertyType> getRequiredProperties() {
         return requiredProperties;
     }
 
+    /**
+     * Get the set of optional properties.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.manifest.PropertyType}.
+     */
     public Set<PropertyType> getOptionalProperties() {
         return optionalProperties;
     }
 
+    /**
+     * Get the set of supported operations.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.metadata.Operations}.
+     */
     public Set<Operations> getSupportedOperations() {
         return supportedOperations;
     }
 
+    /**
+     * Get the set of clusters the connector has access to.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.data.ClusterName}.
+     */
     public Set<ClusterName> getClusterRefs() {
         return clusterRefs;
     }
 
+    /**
+     * Set the clusters the connector has access to.
+     *
+     * @param clusterRefs A set of {@link com.stratio.crossdata.common.data.ClusterName}.
+     */
     public void setClusterRefs(Set<ClusterName> clusterRefs) {
         this.clusterRefs = clusterRefs;
     }
 
+    /**
+     * Get the map of clusters associated with this connector and their associated properties.
+     *
+     * @return A map of {@link com.stratio.crossdata.common.data.ClusterName} associated with a map
+     * of {@link com.stratio.crossdata.common.statements.structures.Selector} tuples.
+     */
     public Map<ClusterName, Map<Selector, Selector>> getClusterProperties() {
         return clusterProperties;
     }
 
+    /**
+     * Set the map of clusters and their associated properties.
+     *
+     * @param clusterProperties A map of {@link com.stratio.crossdata.common.data.ClusterName} associated with a map
+     *                          of {@link com.stratio.crossdata.common.statements.structures.Selector} tuples.
+     */
     public void setClusterProperties(Map<ClusterName, Map<Selector, Selector>> clusterProperties) {
         this.clusterProperties = clusterProperties;
     }
 
-    public Status getStatus() {
-        return status;
+    /**
+     * Get the connector status.
+     *
+     * @return A {@link com.stratio.crossdata.common.data.ConnectorStatus}.
+     */
+    public ConnectorStatus getConnectorStatus() {
+        return connectorStatus;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    /**
+     * Set the connector status.
+     *
+     * @param connectorStatus A {@link com.stratio.crossdata.common.data.ConnectorStatus}.
+     */
+    public void setConnectorStatus(ConnectorStatus connectorStatus) {
+        this.connectorStatus = connectorStatus;
     }
 
+    /**
+     * Get the actor Akka reference.
+     *
+     * @return A String Akka reference.
+     */
     public String getActorRef() {
         return actorRef;
     }
 
+    /**
+     * Sets the actor Akka reference.
+     *
+     * @param actorRef String of the actor reference path.
+     */
     public void setActorRef(String actorRef) {
-        this.status = Status.ONLINE;
+        this.connectorStatus = ConnectorStatus.ONLINE;
         this.actorRef = actorRef;
     }
 
     /**
-     * Determine if the connectormanager supports a specific operation.
+     * Determine if the connector supports a specific operation.
      *
      * @param operation The required operation.
      * @return Whether it is supported.
@@ -171,30 +311,92 @@ public class ConnectorMetadata implements IMetadata {
         return supportedOperations.contains(operation);
     }
 
+    /**
+     * Adds a map of properties to a cluster.
+     *
+     * @param clusterName The cluster name.
+     * @param options     A map of {@link com.stratio.crossdata.common.statements.structures.Selector} tuples.
+     */
     public void addClusterProperties(ClusterName clusterName, Map<Selector, Selector> options) {
-        if(clusterProperties == null){
+        if (clusterProperties == null) {
             this.clusterProperties = new HashMap<>();
         }
         clusterProperties.put(clusterName, options);
     }
 
+    /**
+     * Sets the connector version.
+     *
+     * @param version The connector version.
+     */
     public void setVersion(String version) {
         this.version = version;
     }
 
+    /**
+     * Set the datastores the connector may access.
+     *
+     * @param dataStoreRefs A set of {@link com.stratio.crossdata.common.data.DataStoreName}.
+     */
     public void setDataStoreRefs(Set<DataStoreName> dataStoreRefs) {
         this.dataStoreRefs = dataStoreRefs;
     }
 
+    /**
+     * Set the required properties.
+     *
+     * @param requiredProperties A set of {@link com.stratio.crossdata.common.manifest.PropertyType}.
+     */
     public void setRequiredProperties(Set<PropertyType> requiredProperties) {
         this.requiredProperties = requiredProperties;
     }
 
+    /**
+     * Set the optional properties.
+     *
+     * @param optionalProperties A set of {@link com.stratio.crossdata.common.manifest.PropertyType}.
+     */
     public void setOptionalProperties(Set<PropertyType> optionalProperties) {
         this.optionalProperties = optionalProperties;
     }
 
+    /**
+     * Set the supported operations.
+     *
+     * @param supportedOperations A set of {@link com.stratio.crossdata.common.metadata.Operations}.
+     */
     public void setSupportedOperations(Set<Operations> supportedOperations) {
         this.supportedOperations = supportedOperations;
+    }
+
+    /**
+     * Set the supported operations.
+     *
+     * @param supportedOperations A list of supported operations.
+     */
+    public void setSupportedOperations(List<String> supportedOperations) {
+        this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
+    }
+
+    /**
+     * Convert a list of supported operations into a set of {@link com.stratio.crossdata.common.metadata.Operations}.
+     *
+     * @param supportedOperations The list of supported operations.
+     * @return A set of {@link com.stratio.crossdata.common.metadata.Operations}.
+     */
+    private Set<Operations> convertManifestOperationsToMetadataOperations(
+            List<String> supportedOperations) {
+        Set<Operations> operations = new HashSet<>();
+        for (String supportedOperation : supportedOperations) {
+            operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
+        }
+        return operations;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("Connector: ");
+        sb.append(name).append(" status: ").append(connectorStatus).append(" actorRef: ").append(actorRef);
+        return sb.toString();
     }
 }

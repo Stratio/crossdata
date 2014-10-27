@@ -22,7 +22,7 @@ import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.result.QueryResult;
 
 /**
- * Callback interface for connectormanager query results.
+ * Callback interface for connector query results.
  */
 public interface IResultHandler {
 
@@ -32,12 +32,12 @@ public interface IResultHandler {
      * @param queryId The query identifier.
      * @param exception The exception found.
      */
-    public void processException(String queryId, ExecutionException exception);
+    void processException(String queryId, ExecutionException exception);
 
     /**
      * Process a successful result.
      *
      * @param result The result.
      */
-    public void processResult(QueryResult result);
+    void processResult(QueryResult result);
 }

@@ -34,6 +34,12 @@ public class ExecutionPath {
 
     private final List<ConnectorMetadata> availableConnectors;
 
+    /**
+     * Main constructor to execution path.
+     * @param initial First logical step for the workflow.
+     * @param last Last logical step for the workflow.
+     * @param availableConnectors List of the connectors.
+     */
     public ExecutionPath(LogicalStep initial, LogicalStep last, List<ConnectorMetadata> availableConnectors){
         this.initial = initial;
         this.last = last;
@@ -65,7 +71,7 @@ public class ExecutionPath {
         sb.append("]");
         sb.append(initial).append(System.lineSeparator());
         LogicalStep pointer = initial;
-        while(pointer != last && pointer != null){
+        while(pointer != null && pointer.equals(last)){
             sb.append(pointer).append(System.lineSeparator());
             pointer = pointer.getNextStep();
         }

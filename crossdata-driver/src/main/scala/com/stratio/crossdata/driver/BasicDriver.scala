@@ -24,15 +24,17 @@ import akka.actor.{ActorSelection, ActorSystem}
 import akka.contrib.pattern.ClusterClient
 import akka.pattern.ask
 import com.stratio.crossdata.common.ask.{APICommand, Command, Query, Connect}
-import com.stratio.crossdata.common.exceptions._
-import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.exceptions.{ManifestException, UnsupportedException, ExecutionException,
+ValidationException, ParsingException, ConnectionException}
+import com.stratio.crossdata.common.result.{CommandResult, MetadataResult, DisconnectResult, ConnectResult,
+ErrorResult, Result, IResultHandler}
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.result.SyncResultHandler
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import org.apache.log4j.Logger
-import com.stratio.crossdata.common.api.CrossdataManifest
+import com.stratio.crossdata.common.manifest.CrossdataManifest
 
 import scala.concurrent.duration._
 
@@ -42,7 +44,7 @@ object BasicDriver extends DriverConfig {
    */
   override lazy val logger = Logger.getLogger(getClass)
 
-  def getBasicDriverConfigFromFile = {
+  def getBasicDriverConfigFromFile:BasicDriverConfig = {
     logger.debug("RetryTimes    --> " + retryTimes)
     logger.debug("RetryDuration --> " + retryDuration.duration.toMillis.toString)
     logger.debug("ClusterName   --> " + clusterName)
@@ -70,13 +72,16 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     new RetryPolitics(basicDriverConfig.driverSection.retryTimes, basicDriverConfig.driverSection.retryDuration.millis)
   }
   lazy val contactPoints: List[String] = {
-    basicDriverConfig.serverSection.clusterHosts.toList.map(host => "akka.tcp://" + basicDriverConfig.serverSection.clusterName + "@" + host + "/user/receptionist")
+    basicDriverConfig.serverSection.clusterHosts.toList.map(host => "akka.tcp://"
+      + basicDriverConfig.serverSection.clusterName + "@" + host + "/user/receptionist")
   }
   //For Futures
   implicit val context = system.dispatcher
   var userId: String = ""
   var userName: String = ""
   var currentCatalog: String = ""
+
+  val list:Option [java.util.List[AnyRef]]=None
 
   def this() {
     this(BasicDriver.getBasicDriverConfigFromFile)
@@ -114,7 +119,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
         throw new ConnectionException(errorResult.getErrorMessage)
       }
       case connectResult: DisconnectResult => {
-        userId = null
+        userId = ""
       }
     }
   }
@@ -126,7 +131,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    */
   @throws(classOf[ConnectionException])
   def asyncExecuteQuery(query: String, callback: IResultHandler): String = {
-    if (userId == null) {
+    if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
@@ -150,7 +155,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   @throws(classOf[ExecutionException])
   @throws(classOf[UnsupportedException])
   def executeQuery(query: String): Result = {
-    if (userId == null) {
+    if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
@@ -161,6 +166,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     queries.remove(queryId.toString)
     r
   }
+
 
   /**
    * List the existing catalogs in the underlying database.
@@ -248,17 +254,24 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     system.shutdown()
   }
 
+  /**
+   * @username is the user of this class
+   * */
   def getUserName: String = {
+
     return userName
   }
 
   def setUserName(userName: String) {
     this.userName = userName
-    if (userName == null) {
+    if (userName.isEmpty) {
       this.userName = DEFAULT_USER
     }
   }
 
+  /**
+   * @currentCatalog is the catalog of this class
+   * */
   def getCurrentCatalog: String = {
     return currentCatalog
   }

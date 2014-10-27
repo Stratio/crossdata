@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
@@ -81,7 +81,9 @@ public class Project extends TransformationStep {
      * @param column The column.
      */
     public void addColumn(ColumnName column) {
-        this.columnList.add(column);
+        if(!columnList.contains(column)) {
+            this.columnList.add(column);
+        }
     }
 
     /**

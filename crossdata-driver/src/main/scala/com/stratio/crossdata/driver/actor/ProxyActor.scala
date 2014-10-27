@@ -52,7 +52,7 @@ object ProxyActor {
    * @param remoteActor Remote actor's name.
    * @return Complete path.
    */
-  def remotePath(remoteActor: String) = INIT_PATH + remoteActor
+  def remotePath(remoteActor: String) : String= INIT_PATH + remoteActor
 }
 
 /**

@@ -26,8 +26,8 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.CreateIndexStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -47,7 +47,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -70,7 +70,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("TABLE must exists");
@@ -93,7 +93,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("COLUMN must exists");

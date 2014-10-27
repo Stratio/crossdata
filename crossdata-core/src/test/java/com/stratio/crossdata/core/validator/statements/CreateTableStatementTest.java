@@ -33,10 +33,10 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.statements.structures.selectors.StringSelector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.ParsedQuery;
 import com.stratio.crossdata.core.statements.CreateTableStatement;
 import com.stratio.crossdata.core.structures.Property;
 import com.stratio.crossdata.core.structures.PropertyNameValue;
@@ -68,7 +68,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -103,7 +103,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
@@ -138,7 +138,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("unknown"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("CATALOG must exists");
@@ -168,7 +168,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
 
-        ParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
         try {
             validator.validate(parsedQuery);
             Assert.fail("The new table must not exists");

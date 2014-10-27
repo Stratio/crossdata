@@ -64,7 +64,6 @@ with ImplicitSender with DefaultTimeout {
         val errorIt = errors.iterator
         while (errorIt.hasNext) {
           val e = errorIt.next().asInstanceOf[ErrorResult]
-          errorMsg.append(e.getType)
           errorMsg.append(" - ")
           errorMsg.append(e.getErrorMessage)
           errorMsg.append(System.lineSeparator())

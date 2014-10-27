@@ -32,7 +32,10 @@ import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.utils.MetaUtils;
 
-public class ParserUtils {
+/**
+ * Utility class for parser-related tasks.
+ */
+public final class ParserUtils {
 
     /**
      * Class logger.
@@ -45,6 +48,15 @@ public class ParserUtils {
     private ParserUtils() {
     }
 
+    /**
+     * Generate the String representation of a map using a conjunction between the key and the value and a separator
+     * between key-value tuples.
+     *
+     * @param ids         The map of ids.
+     * @param conjunction The conjunction between key and values.
+     * @param separator   The separator between key-value tuples.
+     * @return A string representation of the map.
+     */
     public static String stringMap(Map<?, ?> ids, String conjunction, String separator) {
         StringBuilder sb = new StringBuilder();
         for (Map.Entry<?, ?> entry : ids.entrySet()) {
@@ -56,6 +68,13 @@ public class ParserUtils {
         return sb.substring(0, sb.length() - separator.length());
     }
 
+    /**
+     * Generate the String representation of a set using a separator between elements.
+     *
+     * @param ids       The set of ids.
+     * @param separator The separator between elements.
+     * @return A string representation of the set.
+     */
     public static String stringSet(Set<String> ids, String separator) {
         StringBuilder sb = new StringBuilder();
         for (String id : ids) {
@@ -64,6 +83,15 @@ public class ParserUtils {
         return sb.substring(0, sb.length() - separator.length());
     }
 
+    /**
+     * Get the best matches for a string {@code str} given a set of words to compare against and a maximum Levenshtein
+     * distance.
+     *
+     * @param str         The word to get the matches for.
+     * @param words       The set of candidate words.
+     * @param maxDistance The maximum Levenshtein distance.
+     * @return A set of matching words within distance.
+     */
     public static Set<String> getBestMatches(String str, Set<String> words, int maxDistance) {
         int limit = maxDistance + 1;
         int currentLimit = 1;
@@ -81,6 +109,13 @@ public class ParserUtils {
         return result;
     }
 
+    /**
+     * Given an parsing error, obtain the position of the first character not being recognized by the underlying
+     * grammar.
+     *
+     * @param antlrError An {@link com.stratio.crossdata.core.utils.AntlrError}.
+     * @return An integer value or -1 if the position cannot be determined.
+     */
     public static Integer getCharPosition(AntlrError antlrError) {
         Integer result = -1;
         if (antlrError.getHeader().contains(":")
@@ -90,12 +125,20 @@ public class ParserUtils {
         return result;
     }
 
+    /**
+     * Mark in an parsing error message the point which the parser no longer recognizes the string.
+     *
+     * @param query The user provided query.
+     * @param ae    An {@link com.stratio.crossdata.core.utils.AntlrError}.
+     * @return A string with the character {@code ?} located in the point which the parser no longer recognizes the
+     * input string.
+     */
     public static String getQueryWithSign(String query, AntlrError ae) {
         int marker = 0;
-        String q=query;
+        String q = query;
         if (q.startsWith("[")) {
             marker = q.indexOf("], ") + 3;
-            q= q.substring(marker);
+            q = q.substring(marker);
         }
         StringBuilder sb = new StringBuilder(q);
         int pos = getCharPosition(ae) - marker;
@@ -105,30 +148,13 @@ public class ParserUtils {
         return sb.toString();
     }
 
-    private static String createSuggestion(Set<String> bestMatches,
-            AntlrError antlrError,
-            int charPosition,
-            String suggestionFromToken,
-            String errorWord) {
-        StringBuilder sb = new StringBuilder();
-        if ((bestMatches.isEmpty() || antlrError == null) && (charPosition < 1)) {
-            //Append all the initial tokens because we didn't find a good match for first token
-            sb.append(MetaUtils.getInitialsStatements()).append("?").append(System.lineSeparator());
-        } else if (!"".equalsIgnoreCase(suggestionFromToken)) {
-            //Antlr returned a T_... token which have a equivalence with the reserved tokens of Meta
-            sb.append("\"").append(suggestionFromToken).append("\"").append("?");
-            sb.append(System.lineSeparator());
-        } else if (errorWord.matches("[QWERTYUIOPASDFGHJKLZXCVBNM_]+")) {
-            // There is no a perfect equivalence with the reserved tokens of Meta but
-            // there might be a similar word
-            for (String match : bestMatches) {
-                sb.append("\"").append(match).append("\"").append(", ");
-            }
-            sb.append("?").append(System.lineSeparator());
-        }
-        return sb.toString();
-    }
-
+    /**
+     * Get suggestion for a given user query that cannot be successfully parsed.
+     *
+     * @param query      The user provided query.
+     * @param antlrError An {@link com.stratio.crossdata.core.utils.AntlrError}.
+     * @return A message with the suggested tokens.
+     */
     public static String getSuggestion(String query, AntlrError antlrError) {
         // We initialize the errorWord with the first word of the query
         // We initialize the token words with the initial tokens
@@ -138,7 +164,8 @@ public class ParserUtils {
         // We initialize the suggestion from exception messages containing "T_..."
         String suggestionFromToken = "";
 
-        if (antlrError != null) { // Antlr exception message provided information
+        if (antlrError != null) {
+            // Antlr exception message provided information
             // Update char position with the information provided by antlr
             charPosition = getCharPosition(antlrError);
             // It's not a initial token
@@ -175,6 +202,12 @@ public class ParserUtils {
         return "";
     }
 
+    /**
+     * Transform a parser token found in a message with a user-friendly replacement one.
+     *
+     * @param message The user query.
+     * @return A string containing the replacements.
+     */
     public static String translateToken(String message) {
         if (message == null) {
             return "";
@@ -190,31 +223,32 @@ public class ParserUtils {
         }
     }
 
+    /**
+     * Get a replacement token for a given one.
+     *
+     * @param target The parser token.
+     * @return A string with the replacement token.
+     */
     private static String getReplacement(String target) {
         String targetToken = target.substring(2);
         String replacement = "";
         BufferedReader bufferedReaderF = null;
         try {
-            String workingDir = System.getProperty("user.dir");
-            if (workingDir.endsWith("stratio-com.stratio.crossdata")) {
-                workingDir = workingDir.concat("/com.stratio.crossdata-core/");
-            } else if (!workingDir.endsWith("com.stratio.crossdata-core")) {
-                workingDir = workingDir.substring(0, workingDir.lastIndexOf("/"));
-                workingDir = workingDir.concat("/com.stratio.crossdata-core/");
-            } else {
-                workingDir = workingDir.concat("/");
-            }
 
-            String metaTokens = workingDir + "src/main/resources/com/stratio/com.stratio.crossdata/parser/tokens.txt";
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+
+            FileInputStream tokensFile = new FileInputStream(
+                    classLoader.getResource("com/stratio/crossdata/parser/tokens.txt").getFile());
 
             bufferedReaderF = new BufferedReader(
                     new InputStreamReader(
-                            new FileInputStream(metaTokens), Charset.forName("UTF-8")));
+                            tokensFile, Charset.forName("UTF-8"))
+            );
 
             String line = bufferedReaderF.readLine();
             while (line != null) {
                 if (line.startsWith(targetToken)) {
-                    replacement = line.substring(line.indexOf(":") + 1);
+                    replacement = line.substring(line.indexOf(':') + 1);
                     replacement = replacement.replace("[#", "\"");
                     replacement = replacement.replace("#]", "\"");
                     replacement = replacement.replace(" ", "");
@@ -234,63 +268,6 @@ public class ParserUtils {
             }
         }
         return replacement;
-    }
-
-    public static String translateLiteralsToCQL(String metaStr) {
-        StringBuilder sb = new StringBuilder();
-        int startSquareBracketPosition = metaStr.indexOf("{");
-        int endSquareBracketPosition = metaStr.indexOf("}");
-        String propsStr = metaStr.substring(startSquareBracketPosition + 1, endSquareBracketPosition).trim();
-        if (propsStr.length() < 3) {
-            return metaStr;
-        }
-        sb.append(metaStr.substring(0, startSquareBracketPosition + 1));
-        String[] props = propsStr.split(",");
-        for (String prop : props) {
-            String[] keyAndValue = prop.trim().split(":");
-            if (keyAndValue[0].contains("'")) {
-                sb.append(keyAndValue[0].trim()).append(": ");
-            } else {
-                sb.append("'").append(keyAndValue[0].trim()).append("'").append(": ");
-            }
-
-            if (keyAndValue[1].trim().matches("[0123456789.]+")) {
-                sb.append(keyAndValue[1].trim()).append(", ");
-            } else {
-                if (keyAndValue[1].contains("'")) {
-                    sb.append(keyAndValue[1].trim()).append(", ");
-                } else {
-                    sb.append("'").append(keyAndValue[1].trim()).append("'").append(", ");
-                }
-
-            }
-        }
-        sb = sb.delete(sb.length() - 2, sb.length());
-        sb.append(metaStr.substring(endSquareBracketPosition));
-        return sb.toString();
-    }
-
-    public static String addSingleQuotesToString(String strList, String separator) {
-        StringBuilder sb = new StringBuilder();
-        String[] eltos = strList.split(separator);
-        for (String elto : eltos) {
-            elto = elto.trim();
-            if (elto.matches("[0123456789.]+")) {
-                sb.append(elto).append(", ");
-            } else {
-                if (elto.contains("'")) {
-                    sb.append(elto).append(", ");
-                } else {
-                    sb.append("'").append(elto).append("'").append(", ");
-                }
-            }
-        }
-        if (sb.charAt(sb.length() - 2) == ',') {
-            return sb.substring(0, sb.length() - 2);
-        } else {
-            return sb.substring(0, sb.length());
-        }
-
     }
 
 }

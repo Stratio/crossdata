@@ -27,6 +27,12 @@ public class ErrorsHelper {
 
     private List<AntlrError> antlrErrors = new ArrayList<>();
 
+    /**
+     * Build a more friendly message for the user when a parsing exception arises.
+     * @param ae {@link com.stratio.crossdata.core.utils.AntlrError}.
+     * @param query Additional information about the exception.
+     * @return Additional information about the exception.
+     */
     public static String parseAntlrErrorToString(AntlrError ae, String query) {
         StringBuilder sb = new StringBuilder("Parser exception: ");
         sb.append(System.lineSeparator());
@@ -39,18 +45,35 @@ public class ErrorsHelper {
         return sb.toString();
     }
 
+    /**
+     * Add a new error coming from the parser.
+     * @param antlrError {@link com.stratio.crossdata.core.utils.AntlrError}.
+     */
     public void addError(AntlrError antlrError) {
         antlrErrors.add(antlrError);
     }
 
+    /**
+     * Find out if specific information about the parsing error is provided.
+     * @return whether specific information about the exception is provided.
+     */
     public boolean isEmpty() {
         return antlrErrors.isEmpty();
     }
 
+    /**
+     * Get list with parsing errors.
+     * @return List with {@link com.stratio.crossdata.core.utils.AntlrError} objects.
+     */
     public List<AntlrError> getAntlrErrors() {
         return antlrErrors;
     }
 
+    /**
+     * Convert information in this object into a String.
+     * @param query original query.
+     * @return String with all the information of this object.
+     */
     public String toString(String query) {
         String result = "Parser exception: ";
         if (!antlrErrors.isEmpty()) {
@@ -60,6 +83,11 @@ public class ErrorsHelper {
         return result;
     }
 
+    /**
+     * Get a List of messages with additional information about errors.
+     * @param query original query.
+     * @return List of errors information.
+     */
     public List<String> getListErrors(String query) {
         List<String> results = new ArrayList<>();
         if (antlrErrors != null && !antlrErrors.isEmpty()) {
@@ -70,10 +98,18 @@ public class ErrorsHelper {
         return results;
     }
 
+    /**
+     * Get the message with information about the parsing exception.
+     * @return String with error message.
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Set a message about the parsing exception.
+     * @param message information about the error.
+     */
     public void setMessage(String message) {
         this.message = message;
     }

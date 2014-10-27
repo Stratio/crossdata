@@ -32,16 +32,42 @@ public class ParsingException extends RuntimeException {
 
     private final List<String> errors;
 
+    /**
+     * Constructor.
+     *
+     * @param message String.
+     */
     public ParsingException(String message) {
         super(message);
         this.errors = null;
     }
 
+    /**
+     * Constructor. 
+     *
+     * @param e Exception.
+     */
+    public ParsingException(Exception e) {
+        super(e.getMessage());
+        this.errors=null;
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param message String with information about the exception.
+     * @param errors List of String containing information about several errors.
+     */
     public ParsingException(String message, List<String> errors) {
         super(message);
         this.errors = errors;
     }
 
+    /**
+     * Returns a list of errors.
+     *
+     * @return a list of Strings with information about errors.
+     */
     public List<String> getErrors() {
         return this.errors;
     }

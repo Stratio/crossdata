@@ -20,42 +20,74 @@ package com.stratio.crossdata.core.statements;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.core.validator.Validation;
-import com.stratio.crossdata.core.validator.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
+/**
+ * TruncateStatement class.
+ */
 public class TruncateStatement extends StorageStatement {
 
     private TableName tablename;
 
+    /**
+     * Class Constructor.
+     * @param tablename The table name of the truncate statement.
+     */
     public TruncateStatement(TableName tablename) {
         this.command = false;
         this.tablename = tablename;
     }
 
+    /**
+     * Specified if the catalog is included.
+     * @return boolean
+     */
     public boolean isCatalogInc() {
         return catalogInc;
     }
 
+    /**
+     * Set if the catalog is included.
+     * @param catalogInc
+     */
     public void setCatalogInc(boolean catalogInc) {
         this.catalogInc = catalogInc;
     }
 
+    /**
+     * Get the catalog of the truncate statement.
+     * @return com.stratio.crossdata.common.data.CatalogName
+     */
     public CatalogName getCatalog() {
         return catalog;
     }
 
+    /**
+     * Set the catalog name of the truncate statement.
+     * @param catalog The name.
+     */
     public void setCatalog(CatalogName catalog) {
         this.catalog = catalog;
     }
 
+    /**
+     * Get the table name of the truncate statement.
+     * @return com.stratio.crossdata.common.data.TableName
+     */
     public TableName getTablename() {
         return tablename;
     }
 
+    /**
+     * Set the table name of a truncate statement
+     * @param tablename
+     */
     public void setTablename(TableName tablename) {
         this.tablename = tablename;
     }
 
+  
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("TRUNCATE ");
@@ -68,7 +100,7 @@ public class TruncateStatement extends StorageStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(Validation.MUST_EXIST_TABLE).add(Validation.MUST_EXIST_CATALOG);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE).add(ValidationTypes.MUST_EXIST_CATALOG);
     }
 
 }

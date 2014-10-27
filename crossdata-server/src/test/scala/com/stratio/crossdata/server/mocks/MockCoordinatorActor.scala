@@ -22,6 +22,7 @@ import akka.actor.{Actor, Props}
 import com.stratio.crossdata.common.result.{Result, QueryStatus}
 import com.stratio.crossdata.communication.ACK
 import com.stratio.crossdata.core.query.{StoragePlannedQuery, MetadataPlannedQuery, SelectPlannedQuery}
+import org.apache.log4j.Logger
 
 object MockCoordinatorActor{
   def props(): Props = Props(new MockCoordinatorActor())
@@ -31,22 +32,22 @@ object MockCoordinatorActor{
  * Actor in charge of the validation of sentences.
  */
 class MockCoordinatorActor() extends Actor {
-
+  lazy val logger = Logger.getLogger(classOf[MockCoordinatorActor])
   override def receive: Receive = {
     case query:MetadataPlannedQuery=>{
-      println("MockCoordinator actor sending EXECUTED")
+      logger.debug("MockCoordinator actor sending EXECUTED")
       sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
     }
     case query:SelectPlannedQuery=>{
-      println("MockCoordinator actor sending EXECUTED")
+      logger.debug("MockCoordinator actor sending EXECUTED")
       sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
     }
     case query:StoragePlannedQuery=>{
-      println("MockCoordinator actor sending EXECUTED")
+      logger.debug("MockCoordinator actor sending EXECUTED")
       sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
     }
     case _ => {
-      println("Unknown message received by ValidatorActor");
+      logger.debug("Unknown message received by ValidatorActor");
       sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
   }

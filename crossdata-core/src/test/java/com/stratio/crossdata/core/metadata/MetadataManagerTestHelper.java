@@ -37,8 +37,6 @@ import org.apache.commons.io.FileUtils;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-import com.stratio.crossdata.common.connector.Operations;
-import com.stratio.crossdata.common.api.PropertyType;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -47,7 +45,9 @@ import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
+import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
@@ -56,15 +56,33 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
 import com.stratio.crossdata.core.grid.GridInitializer;
 
 public class MetadataManagerTestHelper {
 
     Map<FirstLevelName, Serializable> metadataMap = new HashMap<>();
+    Map<FirstLevelName, Serializable> executionMap = new HashMap<>();
     private String path = "";
+
+    @BeforeClass
+    public void setUp() {
+        initializeGrid();
+        //MetadataManager
+        Map<FirstLevelName, IMetadata> metadataMap = Grid.INSTANCE.map("crossdata-test");
+        Lock lock = Grid.INSTANCE.lock("crossdata-test");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("crossdata-test");
+        MetadataManager.MANAGER.init(metadataMap, lock, tm);
+        //ExecutionManager
+        Map<String, Serializable> executionMap = Grid.INSTANCE.map("crossdata.executionmanager.test");
+        Lock executionLock = Grid.INSTANCE.lock("crossdata.executionmanager.test");
+        TransactionManager executionTM = Grid.INSTANCE.transactionManager("crossdata.executionmanager.test");
+        ExecutionManager.MANAGER.init(executionMap, executionLock, executionTM);
+    }
 
     private void initializeGrid() {
         GridInitializer gridInitializer = Grid.initializer();
@@ -87,24 +105,14 @@ public class MetadataManagerTestHelper {
 
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
                 requiredPropertiesForDataStore, othersProperties, behaviors);
+
+        Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs = new HashMap<>();
+        clusterAttachedRefs.put(new ClusterName(cluster), new ClusterAttachedMetadata(new ClusterName(cluster),
+                new DataStoreName(dataStore), new HashMap<Selector, Selector>()));
+        dataStoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
+
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
         return dataStoreMetadata;
-    }
-
-    @BeforeClass
-    public void setUp() {
-        initializeGrid();
-        Map<FirstLevelName, IMetadata> metadataMap = Grid.getInstance().map("com.stratio.crossdata-test");
-        Lock lock = Grid.getInstance().lock("com.stratio.crossdata-test");
-        TransactionManager tm = Grid.getInstance().transactionManager("com.stratio.crossdata-test");
-        MetadataManager.MANAGER.init(metadataMap, lock, tm);
-    }
-
-    @AfterClass
-    public void tearDown() throws Exception {
-        metadataMap.clear();
-        Grid.getInstance().close();
-        FileUtils.deleteDirectory(new File(path));
     }
 
     /**
@@ -121,29 +129,30 @@ public class MetadataManagerTestHelper {
     }
 
     /**
-     * Create a test connectormanager.
+     * Create a test connector.
      *
-     * @param name          The connectormanager name.
-     * @param dataStoreName The dataStore associated with this connectormanager.
+     * @param name          The connector name.
+     * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName,
             String actorRef) {
         final String version = "0.1.0";
         ConnectorName connectorName = new ConnectorName(name);
-        Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, new ArrayList<String>(),
-                new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
+        ArrayList<String> dataStoreRefs = new ArrayList<>();
+        dataStoreRefs.add(dataStoreName.getName());
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version,
+                dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorName;
     }
 
     /**
-     * Create a test connectormanager.
+     * Create a test connector.
      *
-     * @param name          The connectormanager name.
-     * @param dataStoreName The dataStore associated with this connectormanager.
+     * @param name          The connector name.
+     * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
@@ -153,18 +162,18 @@ public class MetadataManagerTestHelper {
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterList, clusterProperties,
-                new HashSet<PropertyType>(), new HashSet<PropertyType>(), new HashSet<Operations>());
+                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), new HashSet<Operations>());
+        connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorName;
     }
 
     /**
-     * Create a test connectormanager.
+     * Create a test connector.
      *
-     * @param name          The connectormanager name.
-     * @param dataStoreName The dataStore associated with this connectormanager.
+     * @param name          The connector name.
+     * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
      */
     public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
@@ -175,8 +184,8 @@ public class MetadataManagerTestHelper {
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterList,clusterProperties,
-                new HashSet<PropertyType>(), new HashSet<PropertyType>(), options);
+                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options);
+        connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorMetadata;
@@ -196,7 +205,7 @@ public class MetadataManagerTestHelper {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterMetadata, false, true);
+        MetadataManager.MANAGER.createClusterAndAttach(clusterMetadata, false);
         return clusterName;
     }
 
@@ -206,16 +215,18 @@ public class MetadataManagerTestHelper {
      * @param name          The name of the cluster.
      * @param dataStoreName The backend dataStore.
      */
-    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName connectorName) {
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName ... connectorNames) {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-        connectorAttachedRefs.put(connectorName,
-                new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
+        for(ConnectorName connectorName : connectorNames) {
+            connectorAttachedRefs.put(connectorName,
+                    new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
+        }
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);
-        MetadataManager.MANAGER.createCluster(clusterMetadata, false, true);
+        MetadataManager.MANAGER.createClusterAndAttach(clusterMetadata, false);
         return clusterName;
     }
 
@@ -273,6 +284,14 @@ public class MetadataManagerTestHelper {
                 partitionKeys, clusteringKeys);
         MetadataManager.MANAGER.createTable(tableMetadata);
         return tableMetadata;
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        metadataMap.clear();
+        executionMap.clear();
+        Grid.INSTANCE.close();
+        FileUtils.deleteDirectory(new File(path));
     }
 
 }

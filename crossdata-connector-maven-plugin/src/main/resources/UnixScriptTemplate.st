@@ -7,7 +7,7 @@
 # Should-Stop: $all
 # Default-Start: 2 3 4 5
 # Default-Stop: 0 1 6
-# Short-Description: Crossdata connectormanager
+# Short-Description: Crossdata connector
 # Description: <desc>
 ### END INIT INFO
 # Developed by pmadrid@stratio.com
@@ -17,8 +17,6 @@
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 INIT_HOME=`cd "${DIR}/.." >/dev/null; pwd`
-
-echo "INIT_HOME=${INIT_HOME}"
 
 NAME="<name>"
 DESC="<desc>"
@@ -60,8 +58,8 @@ if [ -z "$JAVA_HOME" ]; then
 fi
 
 export JAVA_HOME
-[ -f "/etc/default/$NAME" ] && . /etc/default/$NAME
-CLASSPATH="$CONFDIR"
+[ -f "/etc/default/${NAME}" ] && . /etc/default/${NAME}
+CLASSPATH="${CONFDIR}"
 
 for file in $BASEDIR/*; do
 	CLASSPATH="$CLASSPATH:$file"
@@ -82,10 +80,10 @@ javaCommandLine="${JAVA_HOME}/bin/java $javaArgs"
 if [ ! -d "$pidDir" ]; then
 	mkdir -p "$pidDir"
 	if [ $? -ne 0 ]; then exit 1; fi
-    if [ -z "$serviceGroup" ]; then chgrp $serviceGroup "$pidDir"; fi
+    if [ -n "$serviceGroup" ]; then chown ${serviceUser}:${serviceGroup} "$pidDir"; fi
     if [ $? -ne 0 ]; then exit 1; fi
 fi
-pidFile="$pidDir/$NAME.pid"
+pidFile="${pidDir}/${NAME}.pid"
 
 # Returns 0 if the process with PID $1 is running.
 function checkProcessIsRunning {
@@ -118,13 +116,13 @@ function startServiceProcess {
 	rm -f $pidFile
 	local cmd="$javaCommandLine >>$LOGFILE 2>&1 & echo \$! >$pidFile"
 	#sudo -u $serviceUser $SHELL -c "$cmd" || return 1
-	echo "Launching service process: ${cmd}"
+	echo "\nLaunching service process: ${NAME}"
 	su - $serviceUser -c "$cmd" || return 1
 	sleep 0.1
 	servicePid="$(<$pidFile)"
 	echo "PID: ${pidFile} servicePid: ${servicePid}"
 	if checkProcessIsRunning $servicePid; then :; else
-		echo -e "\n$DESC start failed, see logfile."
+		echo -e "\n${NAME} start failed, see logfile."
 		rm -f $pidfile
 		return 1
 	fi
@@ -143,7 +141,7 @@ function stopServiceProcess {
 		fi
 		sleep 0.1
 	done
-	echo -e "\n$DESC did not terminate within 10 seconds, sending SIGKILL..."
+	echo -e "\n${NAME} did not terminate within 10 seconds, sending SIGKILL..."
 	kill -s KILL $servicePid || return 1
 	for ((i=0; i<$killWaitTime*10; i++)); do
 		checkProcessIsRunning $servicePid
@@ -153,32 +151,32 @@ function stopServiceProcess {
 		fi
 		sleep 0.1
 	done
-	echo "Error: $DESC could not be stopped within 20 seconds!"
+	echo "Error: ${NAME} could not be stopped within 20 seconds!"
 	return 1;
 }
 
 function startService {
 	# Add any service start conditions here
 	getServicePid
-	if [ $? -eq 0 ]; then echo "${DESC} is already running"; return 0; fi
-	echo -n "Starting ${DESC}"
+	if [ $? -eq 0 ]; then echo "${NAME} is already running"; return 0; fi
+	echo -n "Starting ${NAME}"
 	startServiceProcess
-	if [ $? -ne 0 ]; then echo "Error starting ${DESC}" ; return 1; fi
+	if [ $? -ne 0 ]; then echo "Error starting ${NAME}" ; return 1; fi
 	return 0;
 }
 
 function stopService {
 	getServicePid
-	if [ $? -ne 0 ]; then echo "${DESC} is not running"; return 0; fi
-	echo -n "Stopping $DESC "
+	if [ $? -ne 0 ]; then echo "${NAME} is not running"; return 0; fi
+	echo -n "Stopping ${NAME} "
 	stopServiceProcess
-	if [ $? -ne 0 ]; then echo "Error stopping ${DESC}"; return 1; fi
+	if [ $? -ne 0 ]; then echo "Error stopping ${NAME}"; return 1; fi
 	return 0;
 }
 
 function checkServiceStatus {
-	echo -n "Checking for $DESC: "
-	if [ ! -f "$CONFDIR/connector-application.conf" ]; then
+	echo -n "Checking for ${NAME}: "
+	if [ ! -f "${CONFDIR}/connector-application.conf" ]; then
 		echo "Error: Configuration file not found!"
 		return 1
 	fi	
@@ -187,7 +185,7 @@ function checkServiceStatus {
 		echo "$DESC seems to be running (pid $servicePid)"
 		return 0
 	else
-		echo "$DESC seems to be stopped"
+		echo "${NAME} seems to be stopped"
 		return 1
 	fi
 	return 0;

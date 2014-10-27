@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>crossdata-parent</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
+        <version>0.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -136,7 +136,7 @@
                                     </jvmSettings>
                                 </program>
                                 <program>
-                                    <mainClass>com.stratio.com.stratio.crossdata.sh.Metash</mainClass>
+                                    <mainClass>com.stratio.com.stratio.crossdata.sh.Shell</mainClass>
                                     <id>crossdata-sh</id>
                                     <platforms>
                                         <platform>unix</platform>

@@ -37,7 +37,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.connector.Operations;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
@@ -50,8 +50,8 @@ import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Window;
-import com.stratio.crossdata.common.statements.structures.relationships.Operator;
-import com.stratio.crossdata.common.statements.structures.relationships.Relation;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -61,11 +61,11 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.selectors.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.selectors.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.selectors.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.selectors.Selector;
-import com.stratio.crossdata.common.statements.structures.selectors.StringSelector;
+import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
@@ -121,12 +121,14 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Operations operation = Operations.SELECT_OPERATOR;
         Map<ColumnName, String> columnMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
+        Map<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
 
         for (int index = 0; index < columns.length; index++) {
             columnMap.put(columns[index], columns[index].getName());
+            typeMapFromColumnName.put(columns[index], types[index]);
             typeMap.put(columns[index].getName(), types[index]);
         }
-        Select select = new Select(operation, columnMap, typeMap);
+        Select select = new Select(operation, columnMap, typeMap, typeMapFromColumnName);
         return select;
     }
 
@@ -155,7 +157,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_INNER_JOIN);
         operationsC1.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
 
-        //Streaming connectormanager.
+        //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
         operationsC2.add(Operations.PROJECT);
         operationsC2.add(Operations.SELECT_OPERATOR);
@@ -285,7 +287,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         assertEquals(path.getLast(), select, "Invalid last step");
 
         assertEquals(path.getAvailableConnectors().size(), 1, "Invalid size");
-        assertEquals(path.getAvailableConnectors().get(0), connector1, "Invalid connectormanager selected");
+        assertEquals(path.getAvailableConnectors().get(0), connector1, "Invalid connector selected");
     }
 
     @Test
