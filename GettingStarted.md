@@ -1,4 +1,4 @@
-## Getting started ##
+# Getting started #
 Here is an example of Crossdata with a Cassandra Connector as an access to a Cassandra data store.
 
 First of all [Stratio Cassandra](https://github.com/Stratio/stratio-cassandra) is needed and must be installed and running.
