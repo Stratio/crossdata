@@ -127,7 +127,6 @@ public class EngineConfig {
 
     /**
      * Overrides server-application.conf's crossdata-server.config.grid.join-timeout value.
-     * @return The timeout.
      */
     public void setGridJoinTimeout(long gridJoinTimeout) {
         this.gridJoinTimeout = gridJoinTimeout;
