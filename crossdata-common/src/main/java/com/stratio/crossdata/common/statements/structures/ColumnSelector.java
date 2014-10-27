@@ -35,10 +35,20 @@ public class ColumnSelector extends Selector {
      */
     private ColumnName name;
 
+    /**
+     * Class constructor.
+     *
+     * @param name The column name.
+     */
     public ColumnSelector(ColumnName name) {
         this.name = name;
     }
 
+    /**
+     * Get the column name associated with this selector.
+     *
+     * @return A {@link com.stratio.crossdata.common.data.ColumnName}.
+     */
     public ColumnName getName() {
         return name;
     }
@@ -52,7 +62,8 @@ public class ColumnSelector extends Selector {
         return sb.toString();
     }
 
-    @Override public SelectorType getType() {
+    @Override
+    public SelectorType getType() {
         return SelectorType.COLUMN;
     }
 
@@ -85,7 +96,7 @@ public class ColumnSelector extends Selector {
     @Override
     public int hashCode() {
         int result = 1;
-        if (alias != null){
+        if (alias != null) {
             result = alias.hashCode();
         }
         result = 31 * result + name.hashCode();

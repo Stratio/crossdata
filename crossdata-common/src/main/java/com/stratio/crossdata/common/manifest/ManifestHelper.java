@@ -25,30 +25,44 @@ import java.util.Set;
 
 import com.stratio.crossdata.common.data.DataStoreName;
 
+/**
+ * Helper class that facilitates the processing of manifest files.
+ */
 public final class ManifestHelper implements Serializable {
 
+    /**
+     * Serial version UID in order to be Serializable.
+     */
     private static final long serialVersionUID = -6979108221035957858L;
 
-    private ManifestHelper(){
-
+    /**
+     * Private constructor as all methods are static.
+     */
+    private ManifestHelper() {
     }
 
     /**
-     * Converts manifest to String
+     * Convert a manifest file into an String.
      *
-     * @param manifest
-     * @return String
+     * @param manifest The {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
+     * @return A String representation.
      */
     public static String manifestToString(CrossdataManifest manifest) {
         String result = null;
         if (manifest instanceof DataStoreType) {
-            result= dataStoreManifestToString((DataStoreType) manifest);
+            result = dataStoreManifestToString((DataStoreType) manifest);
         } else if (manifest instanceof ConnectorType) {
             result = connectorManifestToString((ConnectorType) manifest);
         }
         return result;
     }
 
+    /**
+     * Transform a DataStoreType into an String.
+     *
+     * @param dataStoreType A {@link com.stratio.crossdata.common.manifest.DataStoreType}.
+     * @return A String representation.
+     */
     private static String dataStoreManifestToString(DataStoreType dataStoreType) {
         StringBuilder sb = new StringBuilder("DATASTORE");
         sb.append(System.lineSeparator());
@@ -84,7 +98,7 @@ public final class ManifestHelper implements Serializable {
         }
 
         // BEHAVIORS
-        if(dataStoreType.getBehaviors() != null){
+        if (dataStoreType.getBehaviors() != null) {
             sb.append("Behaviors: ").append(System.lineSeparator());
             for (String behavior : dataStoreType.getBehaviors().getBehavior()) {
                 sb.append("\t").append("Behavior: ").append(behavior).append(System.lineSeparator());
@@ -95,6 +109,12 @@ public final class ManifestHelper implements Serializable {
         return sb.toString();
     }
 
+    /**
+     * Transform a ConnectorType into an String.
+     *
+     * @param connectorType A {@link com.stratio.crossdata.common.manifest.ConnectorType}.
+     * @return An String representation.
+     */
     private static String connectorManifestToString(ConnectorType connectorType) {
         StringBuilder sb = new StringBuilder("CONNECTOR");
         sb.append(System.lineSeparator());
@@ -146,10 +166,10 @@ public final class ManifestHelper implements Serializable {
     }
 
     /**
-     * Conversion method (Manifest Properties to Metadata Properties)
+     * Conversion method (Manifest Properties to Metadata Properties).
      *
-     * @param requiredProperties
-     * @return Set<PropertyType>
+     * @param requiredProperties The list of required properties.
+     * @return Set<PropertyType> A set of {@link com.stratio.crossdata.common.manifest.PropertyType}.
      */
     public static Set<PropertyType> convertManifestPropertiesToMetadataProperties(
             List<PropertyType> requiredProperties) {
@@ -161,10 +181,10 @@ public final class ManifestHelper implements Serializable {
     }
 
     /**
-     * Conversion method (Manifest DataStore Names to Metadata Store Names)
+     * Conversion method (Manifest DataStore Names to Metadata Store Names).
      *
-     * @param dataStoreRefs
-     * @return Set<DataStoreName>
+     * @param dataStoreRefs The list of data store names.
+     * @return Set<DataStoreName> A set of {@link com.stratio.crossdata.common.data.DataStoreName}.
      */
     public static Set<DataStoreName> convertManifestDataStoreNamesToMetadataDataStoreNames(List<String> dataStoreRefs) {
         Set<DataStoreName> dataStoreNames = new HashSet<>();
@@ -175,9 +195,10 @@ public final class ManifestHelper implements Serializable {
     }
 
     /**
-     * Conversion method (Manifest Behaviors to Metadata Behaviors)
+     * Conversion method (Manifest Behaviors to Metadata Behaviors).
      *
-     * @param behaviors
+     * @param behaviors The list of behaviors.
+     * @return A set of behaviors.
      */
     public static Set<String> convertManifestBehaviorsToMetadataBehaviors(List<String> behaviors) {
         Set<String> metadataBehaviors = new HashSet<>();

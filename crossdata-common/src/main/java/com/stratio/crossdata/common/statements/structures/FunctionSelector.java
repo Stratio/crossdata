@@ -52,18 +52,41 @@ public class FunctionSelector extends Selector {
 
     /**
      * This function determines whether the target function could be used with a group by clause.
-     * Allowed functions are: SUM, MAX, MIN, AVG, COUNT
+     * Allowed functions are: SUM, MAX, MIN, AVG, COUNT.
      *
      * @return Whether it could be used or not.
      */
     public boolean isGroupByFunction() {
-        String[] funcs={"sum","max","min","avg","count"};
-        for(String funcname:funcs){
-            if(funcname.equalsIgnoreCase(functionName)){
+        String[] funcs = { "sum", "max", "min", "avg", "count" };
+        for (String funcname : funcs) {
+            if (funcname.equalsIgnoreCase(functionName)) {
                 return true;
             }
         }
         return false;
+    }
+
+    /**
+     * Get the list of columns required by the function.
+     *
+     * @return A list of {@link com.stratio.crossdata.common.statements.structures.Selector}.
+     */
+    public List<Selector> getFunctionColumns() {
+        return functionColumns;
+    }
+
+    @Override
+    public SelectorType getType() {
+        return SelectorType.FUNCTION;
+    }
+
+    @Override
+    public Set<TableName> getSelectorTables() {
+        Set<TableName> result = new HashSet<>();
+        for (Selector s : this.functionColumns) {
+            result.addAll(s.getSelectorTables());
+        }
+        return result;
     }
 
     @Override
@@ -82,23 +105,6 @@ public class FunctionSelector extends Selector {
             sb.append(" AS ").append(alias);
         }
         return sb.toString();
-    }
-
-    public List<Selector> getFunctionColumns() {
-        return functionColumns;
-    }
-
-    @Override public SelectorType getType() {
-        return SelectorType.FUNCTION;
-    }
-
-    @Override
-    public Set<TableName> getSelectorTables() {
-        Set<TableName> result = new HashSet<>();
-        for (Selector s : this.functionColumns) {
-            result.addAll(s.getSelectorTables());
-        }
-        return result;
     }
 
     @Override
@@ -128,7 +134,7 @@ public class FunctionSelector extends Selector {
     @Override
     public int hashCode() {
         int result = 1;
-        if (alias != null){
+        if (alias != null) {
             result = alias.hashCode();
         }
         result = 31 * result + functionName.hashCode();

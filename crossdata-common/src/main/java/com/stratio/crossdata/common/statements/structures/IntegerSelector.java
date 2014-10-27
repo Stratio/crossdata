@@ -37,6 +37,11 @@ public class IntegerSelector extends Selector {
         this.value = Long.parseLong(value);
     }
 
+    /**
+     * Class constructor.
+     *
+     * @param value An integer value.
+     */
     public IntegerSelector(int value) {
         this.value = value;
     }
@@ -84,7 +89,7 @@ public class IntegerSelector extends Selector {
     @Override
     public int hashCode() {
         int result = 1;
-        if (alias != null){
+        if (alias != null) {
             result = alias.hashCode();
         }
         result = 31 * result + (int) (value ^ (value >>> 32));
