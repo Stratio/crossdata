@@ -70,7 +70,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     (m.getConnectorName _).expects().returning(connector)
     val c = new ConnectorApp()
     val myReference = c.startup(m)
-    assert(true == true)
+    assert(true)
     c.shutdown()
   }
 
@@ -102,7 +102,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     val future = ask(myReference,Execute("idquery",workflow))
     val result = Await.result(future, 3 seconds).asInstanceOf[QueryResult]
     logger.debug("receiving->" + result + " after sending select query")
-    assert(true == true)
+    assert(true)
     c.stop()
   }
 
