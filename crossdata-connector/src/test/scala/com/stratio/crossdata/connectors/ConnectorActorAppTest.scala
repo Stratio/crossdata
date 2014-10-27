@@ -22,7 +22,7 @@ import akka.pattern.ask
 import akka.util.Timeout
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IQueryEngine, IStorageEngine}
 import com.stratio.crossdata.common.data.{Row, TableName, CatalogName, ClusterName, IndexName, ColumnName}
-import com.stratio.crossdata.common.executionplan.ExecutionWorkflow
+import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionWorkflow}
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, TransformationStep}
 import com.stratio.crossdata.common.metadata.{IndexMetadata, ColumnMetadata, Operations, TableMetadata}
 import com.stratio.crossdata.common.result.{MetadataResult, QueryResult, StorageResult}
@@ -34,9 +34,11 @@ import com.typesafe.config.ConfigFactory
 import org.apache.log4j.Logger
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.FunSuite
+import org.testng.Assert._
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import com.stratio.crossdata.common.utils.StringUtils
 
 
 class ConnectorActorAppTest extends FunSuite with MockFactory {
@@ -70,7 +72,7 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     (m.getConnectorName _).expects().returning(connector)
     val c = new ConnectorApp()
     val myReference = c.startup(m)
-    assert(true)
+    assertNotNull(myReference, "Null reference returned")
     c.shutdown()
   }
 
@@ -82,27 +84,20 @@ class ConnectorActorAppTest extends FunSuite with MockFactory {
     (qe.execute(_:LogicalWorkflow)).expects(*).returning(QueryResult.createSuccessQueryResult())
     (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning(connector)
+
+    val queryId = "QID_test"
+
     val c = new ConnectorApp()
     val myReference = c.startup(m)
     var steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
-    val a:Option[Operations]= None
-    val step= new TransformationStep(a.get)
+    val step = new TransformationStep(Operations.SELECT_OPERATOR)
     steps.add(step)
     var workflow = new LogicalWorkflow(steps)
-    val executionStep:Option[ExecutionWorkflow] = None//new ExecutionWorkflow(myReference, workflow, ResultType.RESULTS)
-    val pq = new SelectPlannedQuery(
-      new SelectValidatedQuery(
-        new SelectParsedQuery(
-          new BaseQuery("query_id-2384234-1341234-23434", "select * from myQuery;", new CatalogName("myCatalog"))
-          , new SelectStatement(new TableName("myCatalog", "myTable"))
-        )
-      ), executionStep.get
-    )
 
-    val future = ask(myReference,Execute("idquery",workflow))
-    val result = Await.result(future, 3 seconds).asInstanceOf[QueryResult]
+    val future = ask(myReference, Execute(queryId, workflow))
+    val result = Await.result(future, 6 seconds)
+    assertTrue(result.isInstanceOf[QueryResult], "Invalid type of message")
     logger.debug("receiving->" + result + " after sending select query")
-    assert(true)
     c.stop()
   }
 
