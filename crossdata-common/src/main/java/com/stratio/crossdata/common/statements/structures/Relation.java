@@ -56,22 +56,34 @@ public class Relation implements Serializable{
         this.rightTerm = rightTerm;
     }
 
-//TODO:javadoc
+    /**
+     * Get the left term of the relation.
+     * @return {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     */
     public Selector getLeftTerm() {
         return leftTerm;
     }
 
-//TODO:javadoc
+    /**
+     * Get the operator of the relation.
+     * @return {@link com.stratio.crossdata.common.statements.structures.Operator}.
+     */
     public Operator getOperator() {
         return operator;
     }
 
-//TODO:javadoc
+    /**
+     * Set a new operator for the relation.
+     * @param operator {@link com.stratio.crossdata.common.statements.structures.Operator}.
+     */
     public void setOperator(Operator operator) {
         this.operator = operator;
     }
 
-//TODO:javadoc
+    /**
+     * Get the right term of the relation.
+     * @return {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     */
     public Selector getRightTerm() {
         return rightTerm;
     }
