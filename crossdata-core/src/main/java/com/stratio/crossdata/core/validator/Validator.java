@@ -71,6 +71,9 @@ import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.MetaStatement;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
+/**
+ * Validator Class.
+ */
 public class Validator {
     /**
      * Class logger.
@@ -78,6 +81,13 @@ public class Validator {
     private static final Logger LOG = Logger.getLogger(Validator.class);
     private Normalizator normalizator = null;
 
+    /**
+     * validate a parsed query.
+     * @param parsedQuery The parsed query
+     * @return com.stratio.crossdata.core.query.IValidatedQuery;
+     * @throws ValidationException
+     * @throws IgnoreQueryException
+     */
     public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
         IValidatedQuery validatedQuery = null;
         LOG.info("Validating MetaStatements...");
@@ -474,7 +484,7 @@ public class Validator {
         }
     }
 
-    public void validateColumnType(ColumnMetadata columnMetadata, Selector right)
+    private void validateColumnType(ColumnMetadata columnMetadata, Selector right)
             throws BadFormatException, NotMatchDataTypeException {
         NotMatchDataTypeException notMatchDataTypeException = null;
         BadFormatException badFormatException = null;
