@@ -54,7 +54,7 @@ import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ManifestException;
-import com.stratio.crossdata.common.metadata.structures.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.MetadataResult;
@@ -152,8 +152,8 @@ public final class ConsoleUtils {
         sb.append("| ");
         for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
             sb.append(
-                    StringUtils.rightPad(columnMetadata.getColumnNameToShow(),
-                            colWidths.get(columnMetadata.getColumnAlias()) + 1)).append("| ");
+                    StringUtils.rightPad(columnMetadata.getName().getColumnNameToShow(),
+                            colWidths.get(columnMetadata.getName().getColumnNameToShow()) + 1)).append("| ");
         }
 
         sb.append(System.lineSeparator());
@@ -185,7 +185,8 @@ public final class ConsoleUtils {
 
         // Get column names or aliases width
         for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
-            colWidths.put(columnMetadata.getColumnAlias(), columnMetadata.getColumnNameToShow().length());
+            colWidths.put(columnMetadata.getName().getAlias(),
+                    columnMetadata.getName().getColumnNameToShow().length());
         }
 
         // Find widest cell content of every column
