@@ -103,8 +103,7 @@ public class APIManager {
         } else if (APICommand.LIST_COLUMNS().equals(cmd.commandType())) {
             LOG.info("Processing " + APICommand.LIST_COLUMNS().toString());
             List<ColumnMetadata> columns;
-            //TODO Remove this part when migrates to new ColumnMetadata
-            List<com.stratio.crossdata.common.metadata.structures.ColumnMetadata> columnsResult = new ArrayList<>();
+
             if (cmd.params() != null && !cmd.params().isEmpty()) {
                 String catalog = (String) cmd.params().get(0);
                 String table = (String) cmd.params().get(1);
@@ -113,12 +112,8 @@ public class APIManager {
                 columns = MetadataManager.MANAGER.getColumns();
             }
 
-            for (ColumnMetadata columnMetadata : columns) {
-                columnsResult.add(new com.stratio.crossdata.common.metadata.structures.ColumnMetadata(columnMetadata
-                        .getName().getTableName().getName(), columnMetadata.getName().getName()));
-            }
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_COLUMNS);
-            ((MetadataResult) result).setColumnList(columnsResult);
+            ((MetadataResult) result).setColumnList(columns);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.ADD_MANIFEST().toString());
             persistManifest((CrossdataManifest) cmd.params().get(0));
