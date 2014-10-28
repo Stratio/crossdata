@@ -69,7 +69,7 @@ class ParserActorIT extends ServerActorTest{
     initialize()
     initializeTablesInfinispan()
     within(6000 millis) {
-      parserActor3 ! Query(queryId + (1), catalogName, "SELECT "+ catalogName + "." + tableName + ".name FROM " +
+      parserActor3 ! Query(queryId + (1), catalogName, "SELECT " + catalogName + "." + tableName + ".name FROM " +
         catalogName + "." + tableName + ";", user0)
       fishForMessage(6 seconds){
         case msg:QueryResult =>{
