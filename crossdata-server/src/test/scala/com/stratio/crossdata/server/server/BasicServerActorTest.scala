@@ -20,14 +20,14 @@ package com.stratio.crossdata.server.server
 
 import akka.actor.Props
 import com.stratio.crossdata.common.ask.{Connect, Query}
-import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.result.{ErrorResult, ConnectResult}
 import com.stratio.crossdata.server.config.ActorReceiveUtils
-import com.stratio.crossdata.server.utilities._
+import com.stratio.crossdata.server.utilities.{createEngine}
 import com.stratio.crossdata.common.result.Result
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.actors.ServerActor
 import org.scalatest.FunSuiteLike
-import org.testng.Assert._
+import org.testng.Assert.{assertFalse, assertTrue, assertNotEquals}
 
 import scala.concurrent.duration._
 

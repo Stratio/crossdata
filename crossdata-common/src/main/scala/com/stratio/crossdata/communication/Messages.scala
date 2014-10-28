@@ -21,7 +21,8 @@ package com.stratio.crossdata.communication
 import java.util
 
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
-import com.stratio.crossdata.common.data._
+import com.stratio.crossdata.common.data.{ConnectorName, DataStoreName, TableName,
+CatalogName, Row, ClusterName}
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.QueryStatus

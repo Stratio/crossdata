@@ -1,5 +1,5 @@
-package com.stratio.crossdata.server.actors
 
+package com.stratio.crossdata.server.actors
 import com.stratio.crossdata.common.ask.{APICommand, Command}
 import com.stratio.crossdata.common.result.Result
 import com.stratio.crossdata.server.config.{ServerConfig, ActorReceiveUtils}

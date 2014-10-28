@@ -25,7 +25,7 @@ import com.stratio.crossdata.communication.ACK
 import com.stratio.crossdata.server.utilities.TestKitUsageSpec
 import com.stratio.crossdata.common.result.{ErrorResult, Result}
 import com.typesafe.config.ConfigFactory
-import org.testng.Assert._
+import org.testng.Assert.{assertTrue,assertEquals,fail,assertFalse}
 
 import scala.concurrent.duration._
 

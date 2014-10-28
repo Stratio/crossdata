@@ -23,6 +23,9 @@ import scala.annotation.tailrec
 object MetaApplication extends App {
   val metaServer: MetaServer = new MetaServer
 
+  /**
+   * @return  nothing
+   * */
   @tailrec
   private def commandLoop(): Unit = {
     Console.readLine() match {

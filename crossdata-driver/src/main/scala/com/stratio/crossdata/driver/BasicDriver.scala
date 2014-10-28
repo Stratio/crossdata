@@ -81,7 +81,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   var userName: String = ""
   var currentCatalog: String = ""
 
-  val list:Option [java.util.List[AnyRef]]=None
+  val list:Option[java.util.List[AnyRef]]=None
 
   def this() {
     this(BasicDriver.getBasicDriverConfigFromFile)
@@ -255,7 +255,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * @username is the user of this class
+   * @return  is the user of this class
    * */
   def getUserName: String = {
 
@@ -270,7 +270,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * @currentCatalog is the catalog of this class
+   * @return  is the Catalog we are using
    * */
   def getCurrentCatalog: String = {
     return currentCatalog

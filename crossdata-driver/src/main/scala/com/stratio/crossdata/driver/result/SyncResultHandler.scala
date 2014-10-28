@@ -70,7 +70,9 @@ class SyncResultHandler extends IResultHandler {
     errorFound = true
     notify()
   }
-
+  /**
+   * @return  queryResult
+   * */
   @throws(classOf[ParsingException])
   @throws(classOf[ValidationException])
   @throws(classOf[ExecutionException])

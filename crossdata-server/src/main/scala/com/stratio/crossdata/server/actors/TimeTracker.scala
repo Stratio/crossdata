@@ -46,7 +46,7 @@ trait TimeTracker {
    * @param context The timing context.
    * @return Whether it has stop.
    */
-  def finishTimer(context: Timer.Context) = {
+  def finishTimer(context: Timer.Context) : Unit= {
     context.stop()
   }
 }

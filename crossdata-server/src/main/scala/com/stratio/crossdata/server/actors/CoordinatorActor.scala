@@ -18,15 +18,17 @@
 
 package com.stratio.crossdata.server.actors
 
-import akka.actor._
+import akka.actor.{ActorSelection, ActorLogging, Actor, Props, ActorRef}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.ConnectorName
 import com.stratio.crossdata.common.exceptions.ExecutionException
-import com.stratio.crossdata.common.executionplan._
-import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.executionplan.{ResultType, QueryWorkflow, ManagementWorkflow,
+StorageWorkflow, ExecutionType, MetadataWorkflow}
+import com.stratio.crossdata.common.result.{QueryStatus,MetadataResult,ConnectResult,Result,QueryResult}
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{Connect, ConnectToConnector, DisconnectFromConnector, _}
+import com.stratio.crossdata.communication.{Connect, ConnectToConnector, DisconnectFromConnector,
+AttachConnector, Execute}
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, ExecutionManagerException}
 import com.stratio.crossdata.core.metadata.MetadataManager
@@ -49,7 +51,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
   log.info("Lifting coordinator actor")
 
-  def receive = {
+  def receive : Receive = {
 
     case plannedQuery: IPlannedQuery => {
       val workflow = plannedQuery.getExecutionWorkflow()

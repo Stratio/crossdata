@@ -22,35 +22,36 @@ import java.io.Serializable
 import java.util
 import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
-
-import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.testkit.ImplicitSender
-import com.stratio.crossdata.common.manifest.PropertyType
-import com.stratio.crossdata.common.data._
-import com.stratio.crossdata.common.executionplan._
+import com.stratio.crossdata.common.data.{CatalogName, ClusterName, ColumnName, ConnectorName, ConnectorStatus,
+DataStoreName, FirstLevelName, IndexName, TableName}
+import com.stratio.crossdata.common.executionplan.{StorageWorkflow, ExecutionType, ResultType, MetadataWorkflow,
+QueryWorkflow}
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, Project, Select}
-import com.stratio.crossdata.common.metadata._
+import com.stratio.crossdata.common.manifest.PropertyType
+import com.stratio.crossdata.common.metadata.{ColumnType, CatalogMetadata, TableMetadata, ColumnMetadata,
+IndexMetadata, IMetadata, Operations, ConnectorAttachedMetadata}
 import com.stratio.crossdata.common.metadata.structures.TableType
+import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.common.utils.StringUtils
+import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.grid.Grid
 import com.stratio.crossdata.core.metadata.{MetadataManager, MetadataManagerTestHelper}
 import com.stratio.crossdata.core.planner.{PlannerExecutionWorkflowTest, SelectValidatedQueryWrapper}
-import com.stratio.crossdata.core.query._
-import com.stratio.crossdata.core.statements.{CreateCatalogStatement, CreateTableStatement, InsertIntoStatement, MetadataStatement, SelectStatement}
+import com.stratio.crossdata.core.query.{SelectPlannedQuery, SelectParsedQuery, BaseQuery, StorageParsedQuery,
+StorageValidatedQuery, StoragePlannedQuery, MetadataParsedQuery, MetadataValidatedQuery, MetadataPlannedQuery}
+import com.stratio.crossdata.core.statements.{CreateCatalogStatement, CreateTableStatement, InsertIntoStatement,
+MetadataStatement, SelectStatement}
 import com.stratio.crossdata.server.actors.{ConnectorManagerActor, CoordinatorActor}
 import com.stratio.crossdata.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.crossdata.server.mocks.MockConnectorActor
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
-
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import com.stratio.crossdata.communication.replyConnectorName
-import com.stratio.crossdata.communication.getConnectorName
-import com.stratio.crossdata.common.statements.structures.Selector
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
@@ -62,9 +63,12 @@ ImplicitSender with BeforeAndAfterAll{
   val plannertest= new PlannerExecutionWorkflowTest()
 
   override def afterAll() {
-    println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> after all")
     shutdown(system)
   }
+
+  /** *
+    * @return queryId
+    */
 
   def incQueryId(): String = {
     queryIdIncrement += 1; return queryId + queryIdIncrement
@@ -83,21 +87,21 @@ ImplicitSender with BeforeAndAfterAll{
   val tableName1="myTable1"
   val tableName2="myTable2"
   val columnName="columnName"
-
+  val id="id"
   val catalogName = "myCatalog"
   val myClusterName ="myCluster"
-
-  val columnNames1: Array[String] = Array("id", "user")
+  val myExecutionData="myExecutionData"
+  val columnNames1: Array[String] = Array(id, "user")
   val columnTypes1: Array[ColumnType] = Array(ColumnType.INT, ColumnType.TEXT)
-  val partitionKeys1: Array[String] = Array("id")
-  val clusteringKeys1: Array[String] = Array("id")
+  val partitionKeys1: Array[String] = Array(id)
+  val clusteringKeys1: Array[String] = Array(id)
   val clusterName1: ClusterName = new ClusterName(myClusterName)
   var selectPlannedQuery: SelectPlannedQuery = null
-
-
+  val myMetadata="myMetadata"
+  val name="name"
 
   val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,tableName))
-  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM "+catalogName + "." +
+  val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM " + catalogName + "." +
     tableName,
     new CatalogName(catalogName)), selectStatement)
   //val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
@@ -168,20 +172,20 @@ ImplicitSender with BeforeAndAfterAll{
   )
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
 
-  def initialize() = {
+  def initialize() : Unit= {
     Grid.initializer.withContactPoint("127.0.0.1").withPort(7800).withListenAddress("127.0.0.1")
       .withMinInitialMembers(1)
       .withJoinTimeoutInMs(5000)
       .withPersistencePath("/tmp/borrar").init()
-    val executionMap = Grid.INSTANCE.map("myExecutionData").asInstanceOf[util.Map[String, Serializable]]
-    val lockExecution: Lock = Grid.INSTANCE.lock("myExecutionData")
-    val tmExecution: TransactionManager = Grid.INSTANCE.transactionManager("myExecutionData")
+    val executionMap = Grid.INSTANCE.map(myExecutionData).asInstanceOf[util.Map[String, Serializable]]
+    val lockExecution: Lock = Grid.INSTANCE.lock(myExecutionData)
+    val tmExecution: TransactionManager = Grid.INSTANCE.transactionManager(myExecutionData)
     ExecutionManager.MANAGER.init(executionMap, lockExecution, tmExecution)
     ExecutionManager.MANAGER.clear()
 
-    val metadataMap = Grid.INSTANCE.map("myMetadata").asInstanceOf[util.Map[FirstLevelName, IMetadata]]
-    val lock: Lock = Grid.INSTANCE.lock("myMetadata")
-    val tm = Grid.INSTANCE.transactionManager("myMetadata")
+    val metadataMap = Grid.INSTANCE.map(myMetadata).asInstanceOf[util.Map[FirstLevelName, IMetadata]]
+    val lock: Lock = Grid.INSTANCE.lock(myMetadata)
+    val tm = Grid.INSTANCE.transactionManager(myMetadata)
     MetadataManager.MANAGER.init(metadataMap, lock, tm.asInstanceOf[TransactionManager])
     MetadataManager.MANAGER.clear()
 
@@ -228,13 +232,13 @@ ImplicitSender with BeforeAndAfterAll{
     MetadataManager.MANAGER.createCluster(clusterMetadata, false)
 
     //create table
-    val table1= metadataManager.createTestTable(clusterName1, catalogName, tableName, Array("name", "age"),
+    val table1= metadataManager.createTestTable(clusterName1, catalogName, tableName, Array(name, "age"),
 
-      Array(ColumnType.TEXT, ColumnType.INT), Array("name"), Array("name"))
+      Array(ColumnType.TEXT, ColumnType.INT), Array(name), Array(name))
 
     val initialSteps: java.util.List[LogicalStep] = new java.util.LinkedList[LogicalStep]
     val project: Project = getProject(tableName2)
-    val columns: Array[ColumnName] = Array(new ColumnName(table1.getName, "id"), new ColumnName(table1.getName, "user"))
+    val columns: Array[ColumnName] = Array(new ColumnName(table1.getName, id), new ColumnName(table1.getName, "user"))
     val types: Array[ColumnType] = Array(ColumnType.INT, ColumnType.TEXT)
     val select: Select = plannertest.getSelect(columns, types)
     project.setNextStep(select)
