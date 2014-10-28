@@ -30,7 +30,7 @@
     <artifactId>crossdata-shell</artifactId>
     <name>Stratio Crossdata shell</name>
     <description>Stratio Crossdata Shell</description>
-    <url>http://stratio.github.io/com.stratio.crossdata/</url>
+    <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
         <license>
