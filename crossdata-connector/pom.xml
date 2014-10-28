@@ -28,7 +28,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>crossdata-connector</artifactId>
     <name>Stratio Crossdata connector</name>
-    <url>http://stratio.github.io/com.stratio.crossdata/</url>
+    <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
         <license>
@@ -39,7 +39,7 @@
 
     <scm>
         <url>scm:git:git@github.com:Stratio/com.stratio.crossdata.git</url>
-        <connection>https://github.com/Stratio/com.stratio.crossdata/</connection>
+        <connection>https://github.com/Stratio/crossdata/</connection>
     </scm>
 
     <developers>
