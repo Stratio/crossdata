@@ -38,7 +38,7 @@
     </licenses>
 
     <scm>
-        <url>scm:git:git@github.com:Stratio/com.stratio.crossdata.git</url>
+        <url>scm:git:git@github.com:Stratio/crossdata.git</url>
         <connection>https://github.com/Stratio/crossdata/</connection>
     </scm>
 
@@ -117,6 +117,7 @@
             <groupId>org.scalamock</groupId>
             <artifactId>scalamock-scalatest-support_2.10</artifactId>
             <version>3.0</version>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>scala-library</artifactId>
