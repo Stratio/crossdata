@@ -35,7 +35,7 @@ public interface IParsedQuery {
 
     /**
      * Get the queryId of a query.
-     * @return
+     * @return Query identification.
      */
     String getQueryId();
 
