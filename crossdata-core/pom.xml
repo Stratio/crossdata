@@ -22,14 +22,14 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>crossdata-parent</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
     <artifactId>crossdata-core</artifactId>
     <name>Stratio Crossdata core</name>
     <description>Stratio Crossdata Core</description>
-    <url>http://stratio.github.io/com.stratio.crossdata/</url>
+    <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
         <license>
@@ -39,8 +39,8 @@
     </licenses>
 
     <scm>
-        <url>scm:git:git@github.com:Stratio/com.stratio.crossdata.git</url>
-        <connection>https://github.com/Stratio/com.stratio.crossdata/</connection>
+        <url>scm:git:git@github.com:Stratio/crossdata.git</url>
+        <connection>https://github.com/Stratio/crossdata/</connection>
     </scm>
 
     <developers>
