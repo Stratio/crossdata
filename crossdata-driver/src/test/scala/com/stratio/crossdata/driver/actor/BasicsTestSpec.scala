@@ -25,7 +25,7 @@ import com.stratio.crossdata.common.result.ErrorResult
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike}
-import org.testng.Assert._
+import org.testng.Assert.{assertTrue}
 
 import scala.concurrent.duration._
 
