@@ -20,7 +20,7 @@ package com.stratio.crossdata.common.result;
 
 import java.util.List;
 
-import com.stratio.crossdata.common.metadata.structures.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
 /**

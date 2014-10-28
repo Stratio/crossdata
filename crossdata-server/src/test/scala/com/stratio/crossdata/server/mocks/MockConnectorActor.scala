@@ -21,8 +21,9 @@ package com.stratio.crossdata.server.mocks
 
 import akka.actor.{Actor, ActorLogging, Props}
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow
-import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.communication._
+import com.stratio.crossdata.common.result.{QueryResult,StorageResult,MetadataResult,ErrorResult}
+import com.stratio.crossdata.communication.{Execute,StorageOperation, MetadataOperation,CreateTable, CreateCatalog,
+CreateTableAndCatalog, CreateIndex, DropCatalog, DropIndex, DropTable, getConnectorName, replyConnectorName}
 import org.apache.log4j.Logger
 
 
@@ -49,7 +50,7 @@ class MockConnectorActor() extends Actor with ActorLogging {
     //cluster.subscribe(self, initialStateMode = InitialStateAsEvents, classOf[MemberEvent], classOf[UnreachableMember])
   }
 
-  override def receive = {
+  override def receive : Receive = {
     case (queryid:String,"updatemylastqueryId")=>{
       lastqueryid=queryid
     }

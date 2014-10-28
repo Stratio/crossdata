@@ -18,15 +18,16 @@
 
 package com.stratio.crossdata.server.actors
 
-import akka.actor._
+import akka.actor.{ReceiveTimeout, RootActorPath, ActorLogging, Actor, Props, Address}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent._
+import akka.cluster.ClusterEvent.{ClusterMetricsChanged, MemberEvent, MemberExited,
+MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEvent}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.ConnectorName
 import com.stratio.crossdata.common.result.{Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication._
+import com.stratio.crossdata.communication.{replyConnectorName, getConnectorName,Connect}
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
@@ -65,7 +66,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
     Cluster(context.system).unsubscribe(self)
   }
 
-  def receive = {
+  def receive : Receive= {
 
     /**
      * A new actor connects to the cluster. If the new actor is a connector, we requests its name.

@@ -33,7 +33,7 @@ class MockPlannerActor() extends Actor with TimeTracker {
   override lazy val timerName = this.getClass.getName
   val log = Logger.getLogger(classOf[MockPlannerActor])
 
-  def receive = {
+  def receive : Receive = {
     case query: MetadataValidatedQuery => {
       val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
       sender ! ack

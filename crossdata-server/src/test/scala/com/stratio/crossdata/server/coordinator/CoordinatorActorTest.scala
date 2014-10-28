@@ -31,7 +31,7 @@ class CoordinatorActorTest extends ServerActorTest{
 
   override lazy val logger = Logger.getLogger(classOf[CoordinatorActorTest])
   //lazy val system1 = ActorSystem(clusterName, config)
-
+  val testtext="updatemylastqueryId"
   test("Should return a KO message") {
     initialize()
     within(1000 millis) {
@@ -43,7 +43,7 @@ class CoordinatorActorTest extends ServerActorTest{
   test("Select query") {
     initialize()
     initializeTablesInfinispan()
-    connectorActor !(queryId + (1), "updatemylastqueryId")
+    connectorActor !(queryId + (1), testtext)
     coordinatorActor ! selectPlannedQuery
     expectMsgType[QueryResult]
   }
@@ -51,19 +51,19 @@ class CoordinatorActorTest extends ServerActorTest{
   test("Storage query") {
     initialize()
     initializeTablesInfinispan()
-    connectorActor !(queryId + (2), "updatemylastqueryId")
+    connectorActor !(queryId + (2), testtext)
     coordinatorActor ! storagePlannedQuery
     expectMsgType[StorageResult]
   }
 
   test("Metadata query") {
     initialize()
-    connectorActor !(queryId + (3), "updatemylastqueryId")
+    connectorActor !(queryId + (3), testtext)
     coordinatorActor ! metadataPlannedQuery0
     expectMsgType[MetadataResult]
 
     initializeTablesInfinispan()
-    connectorActor !(queryId + (4), "updatemylastqueryId")
+    connectorActor !(queryId + (4), testtext)
     coordinatorActor ! metadataPlannedQuery1
     expectMsgType[MetadataResult]
 

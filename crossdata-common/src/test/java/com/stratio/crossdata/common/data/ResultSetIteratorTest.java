@@ -26,7 +26,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.metadata.structures.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 
 public class ResultSetIteratorTest {
@@ -74,28 +74,21 @@ public class ResultSetIteratorTest {
 
         List<ColumnMetadata> columnMetadataList = new ArrayList<>();
 
-        ColumnMetadata cmStr = new ColumnMetadata("table", "str");
-        ColumnType str = ColumnType.VARCHAR;
-        str.setDBMapping("VARCHAR", String.class);
-        cmStr.setType(str);
+        ColumnMetadata cmStr = new ColumnMetadata(new ColumnName("catalogTest", "tableTest", "str"), null,
+                ColumnType.VARCHAR);
         columnMetadataList.add(cmStr);
 
-        ColumnMetadata cmInt = new ColumnMetadata("table", "int");
-        ColumnType integer = ColumnType.INT;
-        integer.setDBMapping("INT", Integer.class);
-        cmInt.setType(integer);
+        ColumnMetadata cmInt = new ColumnMetadata(new ColumnName("catalogTest", "tableTest", "int"), null,
+                ColumnType.INT);
         columnMetadataList.add(cmInt);
 
-        ColumnMetadata cmBool = new ColumnMetadata("table", "bool");
-        ColumnType bool = ColumnType.BOOLEAN;
-        bool.setDBMapping("BOOLEAN", Boolean.class);
-        cmBool.setType(bool);
+        ColumnMetadata cmBool = new ColumnMetadata(new ColumnName("catalogTest", "tableTest", "bool"), null,
+                ColumnType.BOOLEAN);
+
         columnMetadataList.add(cmBool);
 
-        ColumnMetadata cmLong = new ColumnMetadata("table", "long");
-        ColumnType longInteger = ColumnType.INT;
-        longInteger.setDBMapping("LONG", Long.class);
-        cmLong.setType(longInteger);
+        ColumnMetadata cmLong = new ColumnMetadata(new ColumnName("catalogTest", "tableTest", "long"), null,
+                ColumnType.BIGINT);
         columnMetadataList.add(cmLong);
 
         rSet.setColumnMetadata(columnMetadataList);

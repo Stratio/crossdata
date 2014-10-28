@@ -19,14 +19,18 @@
 package com.stratio.crossdata.connectors
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved,
+MemberUp, UnreachableMember}
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
 import com.stratio.crossdata.common.exceptions.ExecutionException
-import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, QueryResult, QueryStatus, Result, StorageResult}
-import com.stratio.crossdata.communication.{ Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation}
-import com.stratio.crossdata.communication.{ACK, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable}
+import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, QueryResult,
+QueryStatus, Result, StorageResult}
+import com.stratio.crossdata.communication.{ Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch,
+MetadataOperation, StorageOperation}
+import com.stratio.crossdata.communication.{ACK, AsyncExecute, CreateCatalog, CreateIndex,
+CreateTable, CreateTableAndCatalog, DropIndex, DropTable}
 import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
 import org.apache.log4j.Logger
 import scala.collection.mutable.{ListMap, Map}

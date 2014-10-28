@@ -21,7 +21,7 @@ package com.stratio.crossdata.server.planner
 import com.stratio.crossdata.common.result.ErrorResult
 import com.stratio.crossdata.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.crossdata.core.engine.Engine
-import com.stratio.crossdata.server.actors._
+import com.stratio.crossdata.server.actors.{ConnectorManagerActor, CoordinatorActor, PlannerActor}
 import com.stratio.crossdata.server.utilities.createEngine
 import org.apache.log4j.Logger
 import org.scalatest.{FunSuiteLike, Suite}

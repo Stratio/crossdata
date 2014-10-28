@@ -28,7 +28,7 @@ import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.actors.ServerActor
 import com.typesafe.config.ConfigFactory
 import org.scalatest.FunSuiteLike
-import org.testng.Assert._
+import org.testng.Assert.{assertFalse, assertTrue}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
