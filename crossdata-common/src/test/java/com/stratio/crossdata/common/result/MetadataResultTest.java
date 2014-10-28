@@ -62,9 +62,9 @@ public class MetadataResultTest {
     public void testMetadataResultIndex() throws Exception {
         MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_INDEX);
 
-        List<com.stratio.crossdata.common.metadata.structures.ColumnMetadata> columnList = new ArrayList<>();
-        com.stratio.crossdata.common.metadata.structures.ColumnMetadata columnMetadata = new com.stratio.crossdata
-                .common.metadata.structures.ColumnMetadata("tableTest", "columnTest");
+        List<ColumnMetadata> columnList = new ArrayList<>();
+        ColumnMetadata columnMetadata = new ColumnMetadata(new ColumnName("catalogTest","tableTest", "columnTest"),
+                null, ColumnType.VARCHAR);
 
         columnList.add(columnMetadata);
 
@@ -115,15 +115,15 @@ public class MetadataResultTest {
     @Test
     public void testMetadataResultListColumns() throws Exception {
         MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_COLUMNS);
-        List<com.stratio.crossdata.common.metadata.structures.ColumnMetadata> columnList = new ArrayList<>();
-        com.stratio.crossdata.common.metadata.structures.ColumnMetadata columnMetadata = new com.stratio.crossdata
-                .common.metadata.structures.ColumnMetadata("tableTest", "columnTest", ColumnType.BIGINT);
+        List<ColumnMetadata> columnList = new ArrayList<>();
+        ColumnMetadata columnMetadata = new ColumnMetadata(new ColumnName("catalogTest","tableTest", "columnTest"),
+                null, ColumnType.BIGINT);
 
         columnList.add(columnMetadata);
 
         result.setColumnList(columnList);
 
-        Assert.assertEquals(result.toString(), "[columnTest BIGINT]");
+        Assert.assertEquals(result.getColumnList().get(0).getColumnType().name(), "BIGINT");
     }
 
 
