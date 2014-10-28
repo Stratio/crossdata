@@ -30,7 +30,7 @@
     <artifactId>crossdata-server</artifactId>
     <name>Stratio Crossdata server</name>
     <description>Stratio Crossdata Server</description>
-    <url>http://stratio.github.io/com.stratio.crossdata/</url>
+    <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
         <license>
@@ -40,8 +40,8 @@
     </licenses>
 
     <scm>
-        <url>scm:git:git@github.com:Stratio/com.stratio.crossdata.git</url>
-        <connection>https://github.com/Stratio/com.stratio.crossdata/</connection>
+        <url>scm:git:git@github.com:Stratio/crossdata.git</url>
+        <connection>https://github.com/Stratio/crossdata/</connection>
     </scm>
 
     <developers>
