@@ -32,8 +32,13 @@ import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
+import com.stratio.crossdata.common.exceptions.ParsingException;
+import com.stratio.crossdata.common.exceptions.PlanningException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
@@ -53,8 +58,38 @@ import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
+import com.stratio.crossdata.core.parser.Parser;
+import com.stratio.crossdata.core.planner.Planner;
+import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
+import com.stratio.crossdata.core.query.IValidatedQuery;
+import com.stratio.crossdata.core.query.MetadataPlannedQuery;
+import com.stratio.crossdata.core.query.MetadataValidatedQuery;
+import com.stratio.crossdata.core.query.SelectPlannedQuery;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
+import com.stratio.crossdata.core.query.StoragePlannedQuery;
+import com.stratio.crossdata.core.query.StorageValidatedQuery;
+import com.stratio.crossdata.core.validator.Validator;
 
+/**
+ * Class that manages the Crossdata API requests.
+ */
 public class APIManager {
+
+    /**
+     * Crossdata parser.
+     */
+    private final Parser parser;
+
+    /**
+     * Crossdata validator.
+     */
+    private final Validator validator;
+
+    /**
+     * Crossdata planner.
+     */
+    private final Planner planner;
 
     /**
      * Class logger.
@@ -65,7 +100,10 @@ public class APIManager {
     /**
      * Class constructor.
      */
-    public APIManager() {
+    public APIManager(Parser parser, Validator validator, Planner planner) {
+        this.parser = parser;
+        this.validator = validator;
+        this.planner = planner;
     }
 
     /**
@@ -126,6 +164,9 @@ public class APIManager {
         } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.LIST_CONNECTORS().toString());
             result = listConnectors();
+        } else if (APICommand.EXPLAIN_PLAN().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.EXPLAIN_PLAN().toString());
+            result = explainPlan(cmd);
         } else {
             result =
                     Result.createUnsupportedOperationErrorResult("Command " + cmd.commandType() + " not supported");
@@ -271,6 +312,46 @@ public class APIManager {
 
         // Persist
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
+    }
+
+    /**
+     * Method that implements the explain logic. The method will follow the query processing stages: Parser,
+     * Validator, and Planner and will provide as result the execution workflow.
+     * @param cmd The command to be executed.
+     * @return A {@link com.stratio.crossdata.common.result.Result}.
+     */
+    private Result explainPlan(Command cmd) {
+        Result result = null;
+        if (cmd.params().size() == 2) {
+            String statement = (String) cmd.params().get(0);
+            String catalog = (String) cmd.params().get(1);
+
+            StringBuilder plan = new StringBuilder("Explain plan for: ");
+            plan.append(statement).append(System.lineSeparator());
+            BaseQuery query = new BaseQuery(cmd.queryId(), statement, new CatalogName(catalog));
+            try {
+                IParsedQuery parsedQuery = parser.parse(query);
+                IValidatedQuery validatedQuery = validator.validate(parsedQuery);
+                if(SelectValidatedQuery.class.isInstance(validatedQuery)){
+                    SelectPlannedQuery plannedQuery = planner.planQuery((SelectValidatedQuery) validatedQuery);
+                    plan.append(plannedQuery.getExecutionWorkflow().toString());
+                }else if(MetadataValidatedQuery.class.isInstance(validatedQuery)){
+                    MetadataPlannedQuery plannedQuery = planner.planQuery((MetadataValidatedQuery) validatedQuery);
+                    plan.append(plannedQuery.getExecutionWorkflow());
+                }else if(StorageValidatedQuery.class.isInstance(validatedQuery)){
+                    StoragePlannedQuery plannedQuery = planner.planQuery((StorageValidatedQuery) validatedQuery);
+                    plan.append(plannedQuery.getExecutionWorkflow());
+                }
+                result = CommandResult.createCommandResult(plan.toString());
+            }catch(ParsingException | IgnoreQueryException | ValidationException | PlanningException e){
+                result = Result.createErrorResult(e);
+            }
+        } else {
+            result = Result.createUnsupportedOperationErrorResult(
+                    "Invalid number of parameters invoking explain plan");
+        }
+        result.setQueryId(cmd.queryId());
+        return result;
     }
 
 }

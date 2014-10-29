@@ -21,6 +21,11 @@ package com.stratio.crossdata.common.data;
 public class ColumnName extends Name {
 
     /**
+     * Serial version UID in order to be Serializable.
+     */
+    private static final long serialVersionUID = -659653868246944302L;
+
+    /**
      * Name of the column.
      */
     private final String name;

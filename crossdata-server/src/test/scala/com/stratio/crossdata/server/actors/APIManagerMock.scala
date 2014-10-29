@@ -21,8 +21,11 @@ package com.stratio.crossdata.server.actors
 import com.stratio.crossdata.common.ask.Command
 import com.stratio.crossdata.common.result.{CommandResult, Result}
 import com.stratio.crossdata.core.api.APIManager
+import com.stratio.crossdata.core.planner.Planner
+import com.stratio.crossdata.core.validator.Validator
+import com.stratio.crossdata.core.parser.Parser
 
-class APIManagerMock extends APIManager {
+class APIManagerMock extends APIManager(new Parser(), new Validator(), new Planner()) {
   override def processRequest(cmd:Command):Result={
     CommandResult.createCommandResult("OK MOTHER FUCKER")
   }

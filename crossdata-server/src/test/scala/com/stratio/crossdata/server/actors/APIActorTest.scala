@@ -38,7 +38,7 @@ class APIActorTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig
 
 
   test("Send COMMAND must WORK"){
-    val cmd=new Command(APICommand.LIST_CONNECTORS,null);
+    val cmd=new Command("QID", APICommand.LIST_CONNECTORS,null);
     val future = (actorRef ? cmd).mapTo[Result]
     future.onSuccess {
       case r => {

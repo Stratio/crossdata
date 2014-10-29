@@ -30,4 +30,5 @@ object APICommand extends Enumeration {
   val LIST_CONNECTORS=Value("LIST_CONNECTORS")
   val ADD_MANIFEST = Value("ADD_MANIFEST")
   val RESET_METADATA = Value("RESET_METADATA")
+  val EXPLAIN_PLAN = Value("EXPLAIN_PLAN")
 }

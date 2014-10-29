@@ -174,7 +174,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    *         containing the error message.
    */
   def listCatalogs(): MetadataResult = {
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, null))
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_CATALOGS, null))
     result.asInstanceOf[MetadataResult]
   }
 
@@ -186,7 +187,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   def listTables(catalogName: String): MetadataResult = {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(catalogName)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_TABLES, params))
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_TABLES, params))
     result.asInstanceOf[MetadataResult]
   }
 
@@ -198,7 +200,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(catalogName)
     params.add(tableName)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_COLUMNS, params))
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_COLUMNS, params))
     result.asInstanceOf[MetadataResult]
   }
 
@@ -211,7 +214,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   def addManifest(manifest: CrossdataManifest): CommandResult = {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(manifest)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.ADD_MANIFEST, params))
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.ADD_MANIFEST, params))
     result.asInstanceOf[CommandResult]
   }
 
@@ -220,13 +224,33 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return A CommandResult with a string
    */
   def resetMetadata(): CommandResult = {
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.RESET_METADATA, null))
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_METADATA, null))
     result.asInstanceOf[CommandResult]
   }
 
+  /**
+   * List the connectors available.
+   * @return A {@link CommandResult} with the list.
+   */
   def listConnectors():CommandResult = {
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CONNECTORS, null))
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_CONNECTORS, null))
     result.asInstanceOf[CommandResult]
+  }
+
+  /**
+   * Return the explained execution workflow for a given query.
+   * @param query The user query.
+   * @return A Result.
+   */
+  def explainPlan(query: String): Result = {
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(query)
+    params.add(currentCatalog)
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.EXPLAIN_PLAN, params))
+    result
   }
 
   /**

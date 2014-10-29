@@ -103,6 +103,11 @@ public class Shell {
     private static final int MS_TO_SECONDS = 1000;
 
     /**
+     * Constant to define the prefix for explain plan operations.
+     */
+    private static final String EXPLAIN_PLAN_TOKEN = "explain plan for";
+
+    /**
      * Class constructor.
      *
      * @param useAsync Whether the queries will use the asynchronous interface.
@@ -391,7 +396,9 @@ public class Shell {
                         println("");
                     }else if(toExecute.toLowerCase().startsWith("list connectors")){
                         listConnectors();
-                    } else {
+                    }else if(toExecute.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
+                        explainPlan(toExecute);
+                    }  else {
                         executeQuery(toExecute);
                         println("");
                     }
@@ -414,6 +421,15 @@ public class Shell {
         } catch (Exception e) {
             LOG.error("Cannot read from console.", e);
         }
+    }
+
+    /**
+     * Trigger the explain plan operation using the driver.
+     * @param toExecute The user input.
+     */
+    private void explainPlan(String toExecute){
+        Result r = metaDriver.explainPlan(toExecute.substring(EXPLAIN_PLAN_TOKEN.length()));
+        println(ConsoleUtils.stringResult(r));
     }
 
     private void listConnectors() {
