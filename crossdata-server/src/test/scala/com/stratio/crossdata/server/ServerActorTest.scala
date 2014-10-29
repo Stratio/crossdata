@@ -171,11 +171,14 @@ ImplicitSender with BeforeAndAfterAll{
     )
   )
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
+  val port:Int=7800
+  val timeoutinMs:Int=5000
 
   def initialize() : Unit= {
-    Grid.initializer.withContactPoint("127.0.0.1").withPort(7800).withListenAddress("127.0.0.1")
+    
+    Grid.initializer.withContactPoint("127.0.0.1").withPort(port).withListenAddress("127.0.0.1")
       .withMinInitialMembers(1)
-      .withJoinTimeoutInMs(5000)
+      .withJoinTimeoutInMs(timeoutinMs)
       .withPersistencePath("/tmp/borrar").init()
     val executionMap = Grid.INSTANCE.map(myExecutionData).asInstanceOf[util.Map[String, Serializable]]
     val lockExecution: Lock = Grid.INSTANCE.lock(myExecutionData)

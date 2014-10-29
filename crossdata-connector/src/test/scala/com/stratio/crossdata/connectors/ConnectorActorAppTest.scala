@@ -35,7 +35,7 @@ import com.typesafe.config.ConfigFactory
 import org.apache.log4j.Logger
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{Suite, FunSuite}
-import org.testng.Assert._
+import org.testng.Assert.{assertNotNull}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
@@ -153,7 +153,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val message=Insert("query",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"),
       options.get, columns.get,indexes.get,clusterRef.get,partitionKey.get,partitionKey.get),new Row())
     //val future=myReference ? message
-    logger.info("\n\nsending insert message to" +myReference+ " \n\n")
+    logger.info("\n\nsending insert message to" + myReference + " \n\n")
     val future=myReference ? message
     val result = Await.result(future, 6 seconds).asInstanceOf[StorageResult]
     logger.info("receiving->" + result + " after sending insert query")
