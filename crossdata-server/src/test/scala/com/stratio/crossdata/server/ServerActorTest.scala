@@ -175,7 +175,6 @@ ImplicitSender with BeforeAndAfterAll{
   val timeoutinMs:Int=5000
 
   def initialize() : Unit= {
-    
     Grid.initializer.withContactPoint("127.0.0.1").withPort(port).withListenAddress("127.0.0.1")
       .withMinInitialMembers(1)
       .withJoinTimeoutInMs(timeoutinMs)
