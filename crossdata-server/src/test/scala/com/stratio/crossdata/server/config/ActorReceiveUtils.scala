@@ -126,7 +126,7 @@ with ImplicitSender with DefaultTimeout {
     if (classOf[ErrorResult].isInstance(metaResult)) {
       result = classOf[ErrorResult].cast(metaResult).getErrorMessage
     }
-    return result
+    result
   }
 
 }

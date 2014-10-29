@@ -67,11 +67,13 @@ ImplicitSender with BeforeAndAfterAll{
   }
 
   /** *
-    * @return queryId
+    * This method return the queryID + increment.
+    * @return queryId.
     */
 
   def incQueryId(): String = {
-    queryIdIncrement += 1; return queryId + queryIdIncrement
+    queryIdIncrement += 1;
+    queryId + queryIdIncrement
   }
 //Actors in this tests
   val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(),
@@ -270,7 +272,7 @@ ImplicitSender with BeforeAndAfterAll{
     for (cn <- columns) {
       project.addColumn (cn)
     }
-    return project
+    project
   }
 
 

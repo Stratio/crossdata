@@ -248,19 +248,18 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Shutdown actor system
+   * Shutdown actor system.
    */
   def close() {
     system.shutdown()
   }
 
   /**
-   * @return  is the user of this class
+   * This method get the UserName.
+   * @return the value of userName.
+   * @userName type String is the user of this class.
    * */
-  def getUserName: String = {
-
-    return userName
-  }
+  def getUserName: String = userName
 
   def setUserName(userName: String) {
     this.userName = userName
@@ -270,10 +269,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * @return  is the Catalog we are using
+   * This method get the Current catalog.
+   * @return  is the Catalog we are using.
    * */
   def getCurrentCatalog: String = {
-    return currentCatalog
+    currentCatalog
   }
 
   def setCurrentCatalog(catalog: String) {

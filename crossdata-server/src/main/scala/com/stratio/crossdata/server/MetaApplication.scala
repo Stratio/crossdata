@@ -24,12 +24,13 @@ object MetaApplication extends App {
   val metaServer: MetaServer = new MetaServer
 
   /**
-   * @return  nothing
+   * This method make a command loop.
+   * @return  nothing.
    * */
   @tailrec
   private def commandLoop(): Unit = {
     Console.readLine() match {
-      case "quit" | "exit" => return
+      case "quit" | "exit" => exit()
       case _ =>
     }
     commandLoop()
