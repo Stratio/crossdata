@@ -25,10 +25,8 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.core.grammar.generated.MetaLexer;
 import com.stratio.crossdata.core.grammar.generated.MetaParser;
-import com.stratio.crossdata.core.query.IParsedQuery;
-import com.stratio.crossdata.core.utils.AntlrError;
-import com.stratio.crossdata.core.utils.ErrorsHelper;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
@@ -36,6 +34,8 @@ import com.stratio.crossdata.core.statements.MetaStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
+import com.stratio.crossdata.core.utils.AntlrError;
+import com.stratio.crossdata.core.utils.ErrorsHelper;
 
 /**
  * Class that converts a String representing the user query into a {@link com.stratio.crossdata.core.query.IParsedQuery}.
@@ -82,6 +82,7 @@ public class Parser {
         }
 
         MetaLexer lexer = new MetaLexer(input);
+        lexer.setBacktrackingLevel(0);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         MetaParser parser = new MetaParser(tokens);
         ErrorsHelper foundErrors = new ErrorsHelper();

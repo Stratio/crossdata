@@ -206,13 +206,17 @@
                             <goal>antlr</goal>
                         </goals>
                         <configuration>
-                            <sourceDirectory>src/main/java/com/stratio/com.stratio.crossdata/core/grammar</sourceDirectory>
+                            <sourceDirectory>
+                                src/main/java/com/stratio/crossdata/core/grammar
+                            </sourceDirectory>
                             <listener>true</listener>
                             <visitor>true</visitor>
-                            <outputDirectory>src/main/java/com/stratio/com.stratio.crossdata/core/grammar/generated</outputDirectory>
+                            <outputDirectory>
+                                src/main/java/com/stratio/crossdata/core/grammar/generated
+                            </outputDirectory>
                             <arguments>
                                 <argument>-package</argument>
-                                <argument>com.stratio.com.stratio.crossdata.core.grammar.generated</argument>
+                                <argument>com.stratio.crossdata.core.grammar.generated</argument>
                             </arguments>
                         </configuration>
                     </execution>

@@ -20,14 +20,16 @@
 grammar Meta;
 
 options {
+    k = 0;
     language = Java;
+    backtrack = false;
+    memoize = true;
 }
  
 @header {
     package com.stratio.crossdata.core.grammar.generated;
     import com.stratio.crossdata.common.data.*;
-    import com.stratio.crossdata.common.statements.structures.selectors.*;
-    import com.stratio.crossdata.common.statements.structures.relationships.*;
+    import com.stratio.crossdata.common.statements.structures.*;
     import com.stratio.crossdata.common.statements.structures.window.*;
     import com.stratio.crossdata.core.statements.*;
     import com.stratio.crossdata.core.structures.*;
@@ -128,10 +130,15 @@ options {
 
 @lexer::header {
     package com.stratio.crossdata.core.grammar.generated;
+    import com.stratio.crossdata.common.exceptions.*;
 }
 
 @lexer::members {
-    
+    @Override
+    public void recover(RecognitionException re) {
+        throw new ParsingException("line " + input.getLine() + ":" + input.getCharPositionInLine()
+                    + ": no viable alternative");
+    }
 }
 
 // Case-insensitive alpha characters
@@ -614,9 +621,8 @@ createTableStatement returns [CreateTableStatement crtast]
         boolean ifNotExists = false;
     }:
     T_CREATE tableType=getTableType T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
-    tablename=getTableName
-    T_ON
-    T_CLUSTER clusterID=T_IDENT
+    tablename=getTableName { if(!tablename.isCompletedName()) throwParsingException("Catalog is missing") ; }
+    T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS
         id1=getColumnName[tablename] type1=getDataType (T_PRIMARY T_KEY { partitionKey.add(id1); } )? { columns.put(id1, type1);}
         (T_COMMA idN=getColumnName[tablename] typeN=getDataType { columns.put(idN, typeN); } )*
