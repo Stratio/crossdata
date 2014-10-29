@@ -32,6 +32,8 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
+import org.antlr.analysis.SemanticContext;
+
 import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.manifest.PropertyType;
@@ -247,7 +249,21 @@ public enum MetadataManager {
      * Remove the selected catalog. Not implemented yet.
      * @param catalogName Removed catalog name.
      */
-    public void deleteCatalog(CatalogName catalogName) {
+    public void deleteCatalog(CatalogName catalogName, boolean ifExist) {
+        shouldBeInit();
+        writeLock.lock();
+        if (!ifExist) {
+            shouldExist(catalogName);
+        }
+        try {
+            beginTransaction();
+            metadata.remove(catalogName);
+            commitTransaction();
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex);
+        } finally {
+            writeLock.unlock();
+        }
 
     }
 

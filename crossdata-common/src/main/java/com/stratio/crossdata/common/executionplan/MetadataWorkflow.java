@@ -18,7 +18,12 @@
 
 package com.stratio.crossdata.common.executionplan;
 
-
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.metadata.CatalogMetadata;
+import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.communication.CreateCatalog;
 import com.stratio.crossdata.communication.CreateIndex;
 import com.stratio.crossdata.communication.CreateTable;
@@ -27,12 +32,6 @@ import com.stratio.crossdata.communication.DropCatalog;
 import com.stratio.crossdata.communication.DropIndex;
 import com.stratio.crossdata.communication.DropTable;
 import com.stratio.crossdata.communication.MetadataOperation;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
-import com.stratio.crossdata.common.metadata.IndexMetadata;
-import com.stratio.crossdata.common.metadata.TableMetadata;
 
 /**
  * Execute a {@link com.stratio.crossdata.common.connector.IMetadataEngine} operation.
@@ -137,7 +136,8 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         case DROP_INDEX:
             result = new DropIndex(queryId, this.clusterName, this.indexMetadata);
             break;
-        default: break;
+        default:
+            break;
         }
 
         return result;

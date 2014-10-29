@@ -37,10 +37,15 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
+import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.Join;
@@ -50,29 +55,27 @@ import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Window;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.common.statements.structures.window.WindowType;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.statements.structures.window.WindowType;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.MetadataParsedQuery;
+import com.stratio.crossdata.core.query.MetadataValidatedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
+import com.stratio.crossdata.core.statements.DropCatalogStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
-
-
 
 /**
  * Planner test concerning Execution workflow creation.
@@ -136,9 +139,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         return table.getColumns().keySet().toArray(new ColumnName[table.getColumns().size()]);
     }
 
-    public Join getJoin(String joinId, Relation ... relations){
+    public Join getJoin(String joinId, Relation... relations) {
         Join j = new Join(Operations.SELECT_INNER_JOIN, joinId);
-        for(Relation r : relations) {
+        for (Relation r : relations) {
             j.addJoinRelation(r);
         }
         return j;
@@ -163,11 +166,14 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.SELECT_WINDOW);
 
-        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(),operationsC1, "actorRef1");
-        connector2 = createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(),operationsC2, "actorRef2");
+        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
+                "actorRef1");
+        connector2 = createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
+                "actorRef2");
 
         clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName());
-        CatalogName catalogName = createTestCatalog("demo");
+        createTestCatalog("demo");
+        createTestCatalog("demo2");
         createTestTables();
     }
 
@@ -185,6 +191,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         String[] clusteringKeys2 = { };
         table2 = createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes2, partitionKeys2,
                 clusteringKeys2);
+
     }
 
     /**
@@ -200,7 +207,6 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
         ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns, types);
-
 
         //Link the elements
         project.setNextStep(select);
@@ -319,12 +325,12 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
     }
 
     @Test
-    public void mergeExecutionPathsSimpleQuery(){
+    public void mergeExecutionPathsSimpleQuery() {
         List<LogicalStep> initialSteps = new LinkedList<>();
         Project project = getProject("table1");
 
-        ColumnName [] columns = {new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user")};
-        ColumnType [] types = {ColumnType.INT, ColumnType.TEXT};
+        ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
+        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ, new IntegerSelector(42));
@@ -349,20 +355,20 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         assertNotNull(executionWorkflow, "Null execution workflow received");
         assertExecutionWorkflow(executionWorkflow, 1,
-                new String [] {connector1.getActorRef().toString()});
+                new String[] { connector1.getActorRef().toString() });
 
     }
 
     @Test
-    public void mergeExecutionPathsJoin(){
+    public void mergeExecutionPathsJoin() {
 
-        ColumnName [] columns1 = getColumnNames(table1);
-        ColumnName [] columns2 = getColumnNames(table2);
+        ColumnName[] columns1 = getColumnNames(table1);
+        ColumnName[] columns2 = getColumnNames(table2);
 
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType [] types = {ColumnType.INT, ColumnType.TEXT};
+        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns1, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ, new IntegerSelector(42));
@@ -399,21 +405,20 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         assertNotNull(executionWorkflow, "Null execution workflow received");
         assertExecutionWorkflow(executionWorkflow, 1,
-                new String [] {connector1.getActorRef().toString()});
+                new String[] { connector1.getActorRef().toString() });
 
     }
 
-
     @Test
-    public void mergeExecutionPathsJoinException(){
+    public void mergeExecutionPathsJoinException() {
 
-        ColumnName [] columns1 = getColumnNames(table1);
-        ColumnName [] columns2 = getColumnNames(table2);
+        ColumnName[] columns1 = getColumnNames(table1);
+        ColumnName[] columns2 = getColumnNames(table2);
 
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType [] types = {ColumnType.INT, ColumnType.TEXT};
+        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns1, types);
 
         Join join = getJoin("joinId");
@@ -437,9 +442,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionWorkflow executionWorkflow = null;
         try {
-            executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    "qid", new ArrayList<>(paths),
-                    unions);
+            executionWorkflow = plannerWrapper.mergeExecutionPaths("qid", new ArrayList<>(paths), unions);
             fail("Expecting planning exception");
         } catch (PlanningException e) {
             assertNotNull(e, "Expecting Planning exception");
@@ -447,17 +450,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
-
     @Test
-    public void mergeExecutionPathsPartialJoin(){
+    public void mergeExecutionPathsPartialJoin() {
 
-        ColumnName [] columns1 = getColumnNames(table1);
-        ColumnName [] columns2 = getColumnNames(table2);
+        ColumnName[] columns1 = getColumnNames(table1);
+        ColumnName[] columns2 = getColumnNames(table2);
 
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType [] types = {ColumnType.INT, ColumnType.TEXT};
+        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns1, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ, new IntegerSelector(42));
@@ -499,20 +501,20 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         assertNotNull(executionWorkflow, "Null execution workflow received");
         assertExecutionWorkflow(executionWorkflow, 2,
-                new String [] {connector2.getActorRef().toString(), connector1.getActorRef().toString()});
+                new String[] { connector2.getActorRef().toString(), connector1.getActorRef().toString() });
 
     }
 
     @Test
-    public void mergeExecutionPathsPartialStreamingJoin(){
+    public void mergeExecutionPathsPartialStreamingJoin() {
 
-        ColumnName [] columns1 = getColumnNames(table1);
-        ColumnName [] columns2 = getColumnNames(table2);
+        ColumnName[] columns1 = getColumnNames(table1);
+        ColumnName[] columns2 = getColumnNames(table2);
 
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType [] types = {ColumnType.INT, ColumnType.TEXT};
+        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns1, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ, new IntegerSelector(42));
@@ -558,19 +560,17 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         assertNotNull(executionWorkflow, "Null execution workflow received");
         assertExecutionWorkflow(executionWorkflow, 2,
-                new String [] {connector2.getActorRef().toString(), connector1.getActorRef().toString()});
+                new String[] { connector2.getActorRef().toString(), connector1.getActorRef().toString() });
 
     }
-
-
 
     @Test
     public void storageWorkflowTest() {
         DataStoreName dataStoreName = createTestDatastore();
         Set<Operations> operations = new HashSet<>();
         operations.add(Operations.INSERT);
-        ConnectorMetadata connectorMetadata = createTestConnector("cassandraConnector", dataStoreName,new HashSet<ClusterName>(), operations,
-                "1");
+        ConnectorMetadata connectorMetadata = createTestConnector("cassandraConnector", dataStoreName,
+                new HashSet<ClusterName>(), operations, "1");
         createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
 
         String[] columnNames = { "name", "gender", "age", "bool", "phrase", "email" };
@@ -611,6 +611,25 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
             ExecutionWorkflow storageWorkflow = planner.buildExecutionWorkflow(storageValidatedQuery);
             Assert.assertEquals(((StorageWorkflow) storageWorkflow).getClusterName().getName(), "cluster");
             Assert.assertEquals(((StorageWorkflow) storageWorkflow).getTableMetadata().getName().getName(), "users");
+        } catch (PlanningException e) {
+            Assert.fail(e.getMessage());
+        }
+
+    }
+
+    @Test
+    public void dropCatalogWorkflowTest() {
+
+        DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("demo2"), true);
+        String query = "Drop Catalog demo2;";
+        BaseQuery baseQuery = new BaseQuery("dropId", query, new CatalogName("demo2"));
+        MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
+
+        Planner planner = new Planner();
+        try {
+            ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
+            Assert.assertFalse(MetadataManager.MANAGER.exists(new CatalogName("demo2")));
         } catch (PlanningException e) {
             Assert.fail(e.getMessage());
         }
