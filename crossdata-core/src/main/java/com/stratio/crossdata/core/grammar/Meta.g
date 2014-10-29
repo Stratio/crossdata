@@ -20,7 +20,10 @@
 grammar Meta;
 
 options {
+    k = 0;
     language = Java;
+    backtrack = false;
+    memoize = true;
 }
  
 @header {
@@ -127,10 +130,15 @@ options {
 
 @lexer::header {
     package com.stratio.crossdata.core.grammar.generated;
+    import com.stratio.crossdata.common.exceptions.*;
 }
 
 @lexer::members {
-
+    @Override
+    public void recover(RecognitionException re) {
+        throw new ParsingException("line " + input.getLine() + ":" + input.getCharPositionInLine()
+                    + ": no viable alternative");
+    }
 }
 
 // Case-insensitive alpha characters

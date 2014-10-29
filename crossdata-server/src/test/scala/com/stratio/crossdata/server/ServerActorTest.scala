@@ -172,7 +172,7 @@ ImplicitSender with BeforeAndAfterAll{
     Grid.initializer.withContactPoint("127.0.0.1").withPort(7800).withListenAddress("127.0.0.1")
       .withMinInitialMembers(1)
       .withJoinTimeoutInMs(5000)
-      .withPersistencePath("/tmp/borrar").init()
+      .withPersistencePath("/tmp/toBeRemoved").init()
     val executionMap = Grid.INSTANCE.map("myExecutionData").asInstanceOf[util.Map[String, Serializable]]
     val lockExecution: Lock = Grid.INSTANCE.lock("myExecutionData")
     val tmExecution: TransactionManager = Grid.INSTANCE.transactionManager("myExecutionData")
