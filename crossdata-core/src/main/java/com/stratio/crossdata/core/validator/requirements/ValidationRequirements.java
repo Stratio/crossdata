@@ -45,7 +45,7 @@ public class ValidationRequirements {
 
     /**
      * Get the validations of a query.
-     * @return {@link java.util.List<com.stratio.crossdata.core.validator.requirements.ValidationTypes>}
+     * @return A {@link java.util.List} with {@link com.stratio.crossdata.core.validator.requirements.ValidationTypes}
      */
     public List<ValidationTypes> getValidations() {
         return validations;

@@ -109,7 +109,7 @@ public class APIManager {
     /**
      * Process an incoming API request.
      *
-     * @param cmd The commnand to be executed.
+     * @param cmd The command to be executed.
      * @return A {@link com.stratio.crossdata.common.result.MetadataResult}.
      */
     public Result processRequest(Command cmd) {

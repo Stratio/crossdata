@@ -30,8 +30,10 @@ public class CreateTableStatementTest extends ParsingTest {
 
     @Test
     public void createTableBasic() {
-        String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, something2 int, something3 boolean);";
-        String expectedText = "CREATE TABLE <unknown_name>.myTable ON CLUSTER cluster.siliconvalley(<unknown_name>.myTable.something=text, <unknown_name>.myTable.something2=int, <unknown_name>.myTable.something3=boolean, PRIMARY KEY((<unknown_name>.myTable.something)));";
+        String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
+                "something2 int, something3 boolean);";
+        String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
+                ".something=text, mycatalog.myTable.something2=int, mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
         testRegularStatement(inputText, expectedText, "createTableBasic");
     }
 

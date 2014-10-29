@@ -72,7 +72,8 @@ class SyncResultHandler extends IResultHandler {
     notify()
   }
   /**
-   * @return  queryResult
+   * This method get the Result.
+   * @return  queryResult.
    * */
   @throws(classOf[ParsingException])
   @throws(classOf[ValidationException])
@@ -86,10 +87,12 @@ class SyncResultHandler extends IResultHandler {
       throw exception
     }
 
-    if (queryResult != null) {
-      return queryResult
-    }
 
-    return nonQueryResult
+    if (queryResult != null) {
+      queryResult
+    }
+    else {
+      nonQueryResult
+    }
   }
 }

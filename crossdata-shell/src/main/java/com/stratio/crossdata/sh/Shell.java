@@ -365,6 +365,22 @@ public class Shell {
         }
     }
 
+    public boolean executeApiCAll(String command){
+        boolean apiCallExecuted = false;
+        if(command.toLowerCase().startsWith("list connectors")){
+            listConnectors();
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("add connector")
+                   || command.toLowerCase().startsWith("add datastore")) {
+            sendManifest(command);
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("reset metadata")) {
+            resetMetadata();
+            apiCallExecuted = true;
+        }
+        return apiCallExecuted;
+    }
+
     /**
      * Shell loop that receives user commands until a {@code exit} or {@code quit} command is
      * introduced.
@@ -385,12 +401,6 @@ public class Shell {
                         println("");
                     } else if (toExecute.toLowerCase().startsWith("help")) {
                         showHelp(sb.toString());
-                    } else if (toExecute.toLowerCase().startsWith("add connector") || toExecute.toLowerCase()
-                            .startsWith("add datastore")) {
-                        sendManifest(toExecute);
-                        println("");
-                    } else if (toExecute.toLowerCase().startsWith("reset metadata")) {
-                        resetMetadata();
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);
                         println("");
@@ -398,7 +408,9 @@ public class Shell {
                         listConnectors();
                     }else if(toExecute.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
                         explainPlan(toExecute);
-                    }  else {
+                    } else if(executeApiCAll(toExecute)){
+                        println("");
+                    } else {
                         executeQuery(toExecute);
                         println("");
                     }

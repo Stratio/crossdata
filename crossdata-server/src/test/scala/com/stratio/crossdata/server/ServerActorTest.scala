@@ -67,11 +67,13 @@ ImplicitSender with BeforeAndAfterAll{
   }
 
   /** *
-    * @return queryId
+    * This method return the queryID + increment.
+    * @return queryId.
     */
 
   def incQueryId(): String = {
-    queryIdIncrement += 1; return queryId + queryIdIncrement
+    queryIdIncrement += 1;
+    queryId + queryIdIncrement
   }
 //Actors in this tests
   val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(),
@@ -178,7 +180,7 @@ ImplicitSender with BeforeAndAfterAll{
     Grid.initializer.withContactPoint("127.0.0.1").withPort(port).withListenAddress("127.0.0.1")
       .withMinInitialMembers(1)
       .withJoinTimeoutInMs(timeoutinMs)
-      .withPersistencePath("/tmp/borrar").init()
+      .withPersistencePath("/tmp/toBeRemoved").init()
     val executionMap = Grid.INSTANCE.map(myExecutionData).asInstanceOf[util.Map[String, Serializable]]
     val lockExecution: Lock = Grid.INSTANCE.lock(myExecutionData)
     val tmExecution: TransactionManager = Grid.INSTANCE.transactionManager(myExecutionData)
@@ -270,10 +272,7 @@ ImplicitSender with BeforeAndAfterAll{
     for (cn <- columns) {
       project.addColumn (cn)
     }
-    return project
+    project
   }
-
-
-
 
 }
