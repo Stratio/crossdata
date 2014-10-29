@@ -79,7 +79,7 @@ public class Coordinator implements Serializable {
             persistCreateTable(metadataWorkflow.getTableMetadata());
             break;
         case DROP_CATALOG:
-            persistDropCatalog(metadataWorkflow.getCatalogName());
+            persistDropCatalog(metadataWorkflow.getCatalogName(),true);
             break;
         case DROP_INDEX:
             persistDropIndex(metadataWorkflow.getIndexMetadata().getName());
@@ -209,8 +209,8 @@ public class Coordinator implements Serializable {
      *
      * @param catalog The catalog name.
      */
-    public void persistDropCatalog(CatalogName catalog) {
-        MetadataManager.MANAGER.deleteCatalog(catalog);
+    public void persistDropCatalog(CatalogName catalog, boolean ifExist) {
+        MetadataManager.MANAGER.deleteCatalog(catalog, ifExist);
     }
 
     /**

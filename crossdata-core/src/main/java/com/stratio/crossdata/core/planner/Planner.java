@@ -87,6 +87,7 @@ import com.stratio.crossdata.core.statements.AttachClusterStatement;
 import com.stratio.crossdata.core.statements.AttachConnectorStatement;
 import com.stratio.crossdata.core.statements.CreateCatalogStatement;
 import com.stratio.crossdata.core.statements.CreateTableStatement;
+import com.stratio.crossdata.core.statements.DropCatalogStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 import com.stratio.crossdata.core.statements.SelectStatement;
@@ -166,8 +167,8 @@ public class Planner {
                 .getAttachedConnectors(ConnectorStatus.ONLINE, tables);
 
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
-        for(Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()){
-            for(ConnectorMetadata cm : tableEntry.getValue()){
+        for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()) {
+            for (ConnectorMetadata cm : tableEntry.getValue()) {
                 sb.append("table: ").append(tableEntry.getKey().toString()).append(" ")
                         .append(cm.getName()).append(" ").append(cm.getActorRef()).append(System.lineSeparator());
             }
@@ -186,21 +187,21 @@ public class Planner {
                 Set<ExecutionPath> paths = unionSteps.get(ep.getLast());
                 if (paths == null) {
                     paths = new HashSet<>();
-                    unionSteps.put((UnionStep)ep.getLast(), paths);
+                    unionSteps.put((UnionStep) ep.getLast(), paths);
                 }
                 paths.add(ep);
-            }else if(ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())){
+            } else if (ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())) {
                 Set<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
                 if (paths == null) {
                     paths = new HashSet<>();
-                    unionSteps.put((UnionStep)(ep.getLast().getNextStep()), paths);
+                    unionSteps.put((UnionStep) (ep.getLast().getNextStep()), paths);
                 }
                 paths.add(ep);
             }
             executionPaths.add(ep);
         }
 
-        for(ExecutionPath ep : executionPaths){
+        for (ExecutionPath ep : executionPaths) {
             LOG.info("ExecutionPaths: " + ep);
         }
 
@@ -318,7 +319,7 @@ public class Planner {
                 Set<ExecutionPath> existingPaths = unionSteps.get(next.getLast());
                 if (executionPaths == null) {
                     existingPaths = new HashSet<>();
-                }else {
+                } else {
                     executionPaths.add(next);
                 }
                 unionSteps.put(UnionStep.class.cast(next.getLast()), existingPaths);
@@ -499,7 +500,7 @@ public class Planner {
         addProjectedColumns(processed, query);
 
         //TODO determine which is the correct target table if the order fails.
-        String selectTable = ((SelectParsedQuery)query).getStatement().getTableName().getQualifiedName();
+        String selectTable = ((SelectParsedQuery) query).getStatement().getTableName().getQualifiedName();
 
         //Add filters
         if (query.getRelationships() != null) {
@@ -507,7 +508,7 @@ public class Planner {
         }
 
         SelectStatement ss = SelectStatement.class.cast(query.getStatement());
-        if(ss.getWindow() != null){
+        if (ss.getWindow() != null) {
             processed = addWindow(processed, ss);
         }
 
@@ -566,6 +567,7 @@ public class Planner {
         Set<String> metadataStatements = new HashSet<>();
         metadataStatements.add(CreateCatalogStatement.class.toString());
         metadataStatements.add(CreateTableStatement.class.toString());
+        metadataStatements.add(DropCatalogStatement.class.toString());
 
         Set<String> managementStatements = new HashSet<>();
         managementStatements.add(AttachClusterStatement.class.toString());
@@ -656,6 +658,22 @@ public class Planner {
             metadataWorkflow.setTableName(name);
             metadataWorkflow.setTableMetadata(tableMetadata);
             metadataWorkflow.setClusterName(clusterName);
+        } else if (metadataStatement instanceof DropCatalogStatement) {
+            DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) metadataStatement;
+
+            // Recover ActorRef from ConnectorMetadata for all clusters where the catalog are in.
+            CatalogName catalog = dropCatalogStatement.getCatalogName();
+            CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalog);
+
+            if (catalogMetadata.getTables().isEmpty() || catalogMetadata.getTables()==null){
+                MetadataManager.MANAGER.deleteCatalog(catalog,true);
+                // Create MetadataWorkFlow
+                metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.DROP_CATALOG, ResultType.RESULTS);
+            }else {
+                throw new PlanningException( "This statement can't be planned: " + metadataStatement.toString() + ". " +
+                        "All tables of catalog must be removed before drop catalog.");
+            }
+
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
@@ -877,10 +895,10 @@ public class Planner {
      * Add a window operator for streaming queries.
      *
      * @param lastSteps The map associating table names to Project steps
-     * @param stmt The select statement.
+     * @param stmt      The select statement.
      * @return The resulting map of logical steps.
      */
-    private Map<String, LogicalStep> addWindow(Map<String, LogicalStep> lastSteps, SelectStatement stmt){
+    private Map<String, LogicalStep> addWindow(Map<String, LogicalStep> lastSteps, SelectStatement stmt) {
         Window w = new Window(Operations.SELECT_WINDOW, stmt.getWindow());
         LogicalStep previous = lastSteps.get(stmt.getTableName().getQualifiedName());
         previous.setNextStep(w);
@@ -939,7 +957,7 @@ public class Planner {
     /**
      * Generate a select operand.
      *
-     * @param selectStatement The source select statement.
+     * @param selectStatement  The source select statement.
      * @param tableMetadataMap A map with the table metadata indexed by table name.
      * @return A {@link com.stratio.crossdata.common.logicalplan.Select}.
      */
@@ -950,9 +968,9 @@ public class Planner {
         LinkedHashMap<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
         boolean addAll = false;
         for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
-            if(AsteriskSelector.class.isInstance(s)){
+            if (AsteriskSelector.class.isInstance(s)) {
                 addAll = true;
-            } else if (ColumnSelector.class.isInstance(s)){
+            } else if (ColumnSelector.class.isInstance(s)) {
                 if (s.getAlias() != null) {
                     ColumnSelector cs = ColumnSelector.class.cast(s);
                     aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()), s.getAlias());
@@ -971,7 +989,8 @@ public class Planner {
                             cs.getName().getName());
 
                     typeMapFromColumnName.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
-                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
+                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(cs.getName())
+                                    .getColumnType());
 
                     typeMap.put(cs.getName().getName(),
                             tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
@@ -983,9 +1002,9 @@ public class Planner {
             }
         }
 
-        if(addAll){
+        if (addAll) {
             TableMetadata metadata = tableMetadataMap.get(selectStatement.getTableName().getQualifiedName());
-            for(Map.Entry<ColumnName, ColumnMetadata> column : metadata.getColumns().entrySet()){
+            for (Map.Entry<ColumnName, ColumnMetadata> column : metadata.getColumns().entrySet()) {
                 aliasMap.put(column.getKey(), column.getKey().getName());
 
                 typeMapFromColumnName.put(column.getKey(),
@@ -993,10 +1012,10 @@ public class Planner {
 
                 typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
             }
-            if(selectStatement.getJoin() != null){
+            if (selectStatement.getJoin() != null) {
                 TableMetadata metadataJoin = tableMetadataMap.get(selectStatement.getJoin().getTablename()
                         .getQualifiedName());
-                for(Map.Entry<ColumnName, ColumnMetadata> column : metadataJoin.getColumns().entrySet()){
+                for (Map.Entry<ColumnName, ColumnMetadata> column : metadataJoin.getColumns().entrySet()) {
                     aliasMap.put(column.getKey(), column.getKey().getName());
 
                     typeMapFromColumnName.put(column.getKey(),

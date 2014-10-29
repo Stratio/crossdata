@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.executionplan;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
 
