@@ -91,6 +91,8 @@ class SyncResultHandler extends IResultHandler {
     if (queryResult != null) {
       queryResult
     }
-    else nonQueryResult
+    else {
+      nonQueryResult
+    }
   }
 }

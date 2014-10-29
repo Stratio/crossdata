@@ -41,7 +41,7 @@ class APIActorTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig
     val cmd=new Command(APICommand.LIST_CONNECTORS,null);
     val future = (actorRef ? cmd).mapTo[Result]
     future.onSuccess {
-      case r => {
+      case r :Any => {
         assert(!r.hasError)
       }
     }
@@ -51,7 +51,7 @@ class APIActorTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig
     val cmd=6
     val future = (actorRef ? cmd).mapTo[Result]
     future.onSuccess {
-      case r => {
+      case r : Any => {
         assert(r.hasError)
       }
     }
