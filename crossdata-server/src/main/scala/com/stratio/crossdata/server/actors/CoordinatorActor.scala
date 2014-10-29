@@ -35,6 +35,7 @@ import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.IPlannedQuery
 import com.stratio.crossdata.common.logicalplan.PartialResults
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
+import com.stratio.crossdata.common.exceptions.validation.CoordinationException
 
 object CoordinatorActor {
 
@@ -82,6 +83,24 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG)
             result.setQueryId(queryId)
             sender ! result
+          } else if (workflow1.getExecutionType == ExecutionType.DROP_TABLE){
+
+            // Drop table in the Crossdata servers through the MetadataManager
+            coordinator.persistDropTable(workflow1.getTableName)
+
+            // Send action to the connector
+            workflow1.getActorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+
+            // Prepare data for the reply of the connector
+            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+            executionInfo.setPersistOnSuccess(false)
+            executionInfo.setRemoveOnSuccess(true)
+            executionInfo.setSender(sender)
+            executionInfo.setWorkflow(workflow1)
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+
+          } else {
+            throw new CoordinationException("Operation not supported yet");
           }
         }
 

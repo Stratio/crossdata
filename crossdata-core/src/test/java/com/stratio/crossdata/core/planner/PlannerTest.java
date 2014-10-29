@@ -20,6 +20,8 @@ package com.stratio.crossdata.core.planner;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -31,13 +33,20 @@ import org.testng.annotations.Test;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
+import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.QueryWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.core.query.IParsedQuery;
+import com.stratio.crossdata.core.query.MetadataParsedQuery;
+import com.stratio.crossdata.core.query.MetadataPlannedQuery;
+import com.stratio.crossdata.core.query.MetadataValidatedQuery;
 
 /**
  * Planner tests considering an initial input, generating all intermediate steps,
@@ -114,7 +123,7 @@ public class PlannerTest extends PlannerBaseTest{
     public void selectSingleColumn(){
         String inputText = "SELECT demo.table1.id FROM demo.table1;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "selectSingleColumn", false, table1);
-        assertNotNull(queryWorkflow, "Null worfklow received.");
+        assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
         assertEquals(queryWorkflow.getActorRef(), connector1.getActorRef(), "Wrong target actor");
@@ -127,7 +136,7 @@ public class PlannerTest extends PlannerBaseTest{
                 + " INNER JOIN demo.table2 ON demo.table1.id = demo.table2.id;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "selectJoinMultipleColumns", false, table1, table2);
-        assertNotNull(queryWorkflow, "Null worfklow received.");
+        assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
         assertEquals(queryWorkflow.getActorRef(), connector2.getActorRef(), "Wrong target actor");
@@ -140,10 +149,34 @@ public class PlannerTest extends PlannerBaseTest{
                 + " INNER JOIN demo.table3 ON demo.table1.id = demo.table3.id_aux;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "selectJoinMultipleColumnsDiffOnNames", false, table1, table3);
-        assertNotNull(queryWorkflow, "Null worfklow received.");
+        assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
         assertEquals(queryWorkflow.getActorRef(), connector2.getActorRef(), "Wrong target actor");
+    }
+
+    @Test
+    public void dropTable(){
+        String inputText = "DROP TABLE demo.table1;";
+
+        IParsedQuery stmt = helperPT.testRegularStatement(inputText, "dropTable");
+
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) stmt);
+
+        MetadataPlannedQuery plan = null;
+        try {
+            plan = planner.planQuery(metadataValidatedQuery);
+        } catch (PlanningException e) {
+            fail("dropTable test failed");
+        }
+
+        MetadataWorkflow metadataWorkflow = (MetadataWorkflow) plan.getExecutionWorkflow();
+
+        assertNotNull(metadataWorkflow, "Null workflow received.");
+        assertEquals(metadataWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(metadataWorkflow.getExecutionType(), ExecutionType.DROP_TABLE, "Invalid execution type");
+        assertTrue("actorRef1".equalsIgnoreCase(metadataWorkflow.getActorRef()), "Actor reference is not correct");
+        assertEquals(metadataWorkflow.getTableName(), new TableName("demo", "table1"), "Table name is not correct");
     }
 
 }
