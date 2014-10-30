@@ -37,9 +37,9 @@ public class TableMetadata implements IMetadata {
 
     private final TableName name;
 
-    private final Map<Selector, Selector> options;
+    private Map<Selector, Selector> options;
 
-    private final Map<ColumnName, ColumnMetadata> columns;
+    private Map<ColumnName, ColumnMetadata> columns;
 
     private final Map<IndexName, IndexMetadata> indexes;
 
@@ -186,4 +186,11 @@ public class TableMetadata implements IMetadata {
         indexes.remove(name);
     }
 
+    public void setOptions(Map<Selector, Selector> options) {
+        this.options = options;
+    }
+
+    public void setColumns(Map<ColumnName, ColumnMetadata> columns) {
+        this.columns = columns;
+    }
 }

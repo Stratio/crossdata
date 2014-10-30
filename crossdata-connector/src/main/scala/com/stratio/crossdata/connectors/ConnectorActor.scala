@@ -27,11 +27,7 @@ import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IRes
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, QueryResult,
 QueryStatus, Result, StorageResult}
-import com.stratio.crossdata.communication.{ Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch,
-MetadataOperation, StorageOperation}
-import com.stratio.crossdata.communication.{ACK, AsyncExecute, CreateCatalog, CreateIndex,
-CreateTable, CreateTableAndCatalog, DropIndex, DropTable}
-import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
+import com.stratio.crossdata.communication._
 import org.apache.log4j.Logger
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
@@ -275,6 +271,11 @@ ActorLogging with IResultHandler{
       case "DropTable" => {
         eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
        (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE)
+      }
+      case "AlterTable" => {
+        eng.alterTable(metadataOp.asInstanceOf[AlterTable].targetCluster, metadataOp.asInstanceOf[AlterTable]
+          .tableName, metadataOp.asInstanceOf[AlterTable].alterOptions)
+        (metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_ALTER_TABLE)
       }
       case "CreateTableAndCatalog" => {
         eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,

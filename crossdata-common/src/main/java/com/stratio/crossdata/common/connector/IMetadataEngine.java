@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.connector;
 
+import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.TableName;
@@ -73,6 +74,17 @@ public interface IMetadataEngine {
      *                            supported by the connector or ExecutionException if the execution fails.
      */
     void dropTable(ClusterName targetCluster, TableName name) throws ConnectorException;
+
+    /**
+     * Alter an existing table.
+     *
+     * @param targetCluster Target cluster.
+     * @param name The table metadata.
+     * @throws ConnectorException Use UnsupportedException If the required set of operations are not
+     *                            supported by the connector or ExecutionException if the execution fails.
+     */
+    void alterTable(ClusterName targetCluster, TableName name, AlterOptions alterOptions) throws
+            ConnectorException;
 
     /**
      * Create an INDEX in the underlying datastore.

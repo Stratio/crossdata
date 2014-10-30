@@ -1,4 +1,4 @@
-// $ANTLR 3.5.2 Meta.g 2014-10-29 15:17:11
+// $ANTLR 3.5.2 Meta.g 2014-10-30 18:05:10
 
     package com.stratio.crossdata.core.grammar.generated;
     import com.stratio.crossdata.common.data.*;
@@ -2361,7 +2361,7 @@ public class MetaParser extends Parser {
 		String j =null;
 
 
-		        int option= 0;
+		        AlterOperation option= null;
 		    
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 26) ) { return altast; }
@@ -2418,7 +2418,7 @@ public class MetaParser extends Parser {
 					dataType=getDataType();
 					state._fsp--;
 
-					option=1;
+					option=AlterOperation.ALTER_COLUMN;
 					}
 					break;
 				case 2 :
@@ -2433,7 +2433,7 @@ public class MetaParser extends Parser {
 					dataType=getDataType();
 					state._fsp--;
 
-					option=2;
+					option=AlterOperation.ADD_COLUMN;
 					}
 					break;
 				case 3 :
@@ -2444,7 +2444,7 @@ public class MetaParser extends Parser {
 					column=getColumnName(tablename);
 					state._fsp--;
 
-					option=3;
+					option=AlterOperation.DROP_COLUMN;
 					}
 					break;
 				case 4 :
@@ -2461,7 +2461,7 @@ public class MetaParser extends Parser {
 							// Meta.g:665:11: T_WITH j= getJson
 							{
 							match(input,T_WITH,FOLLOW_T_WITH_in_alterTableStatement4505); 
-							option=4;
+							option=AlterOperation.ALTER_OPTIONS;
 							pushFollow(FOLLOW_getJson_in_alterTableStatement4511);
 							j=getJson();
 							state._fsp--;
