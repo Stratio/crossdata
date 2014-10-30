@@ -96,6 +96,20 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setWorkflow(workflow1)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
+          } else if (workflow1.getExecutionType == ExecutionType.ALTER_TABLE) {
+            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+            executionInfo.setPersistOnSuccess(true)
+            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+            executionInfo.setWorkflow(workflow1);
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+
+            val actorRef = context.actorSelection(workflow1.getActorRef)
+            log.info("ActorRef: " + actorRef.toString())
+            actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+
+            val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_TABLE)
+            result.setQueryId(queryId)
+            sender ! result
           } else if (workflow1.getActorRef != null && workflow1.getActorRef.length() > 0) {
 
             val actorRef = context.actorSelection(workflow1.getActorRef)

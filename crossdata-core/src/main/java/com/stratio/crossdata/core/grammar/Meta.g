@@ -656,13 +656,13 @@ getTableType returns [TableType tableType]
 
 alterTableStatement returns [AlterTableStatement altast]
     @init{
-        int option= 0;
+        AlterOperation option= null;
     }:
     T_ALTER T_TABLE tablename=getTableName
-    (T_ALTER column=getColumnName[tablename] T_TYPE dataType=getDataType {option=1;}
-        |T_ADD column=getColumnName[tablename] dataType=getDataType {option=2;}
-        |T_DROP column=getColumnName[tablename] {option=3;}
-        |(T_WITH {option=4;} j=getJson)?
+    (T_ALTER column=getColumnName[tablename] T_TYPE dataType=getDataType {option=AlterOperation.ALTER_COLUMN;}
+        |T_ADD column=getColumnName[tablename] dataType=getDataType {option=AlterOperation.ADD_COLUMN;}
+        |T_DROP column=getColumnName[tablename] {option=AlterOperation.DROP_COLUMN;}
+        |(T_WITH {option=AlterOperation.ALTER_OPTIONS;} j=getJson)?
     )
     {$altast = new AlterTableStatement(tablename, column, dataType, j, option);  }
 ;

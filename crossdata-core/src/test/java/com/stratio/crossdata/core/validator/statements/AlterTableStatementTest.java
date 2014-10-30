@@ -21,6 +21,7 @@ package com.stratio.crossdata.core.validator.statements;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.data.AlterOperation;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
@@ -42,7 +43,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
                 new ColumnName("demo", "users", "age"),
-                ColumnType.BIGINT, null, 1);
+                ColumnType.BIGINT, null, AlterOperation.ALTER_COLUMN);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
@@ -64,7 +65,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
                 new ColumnName("demo", "users", "new"),
-                ColumnType.VARCHAR, null, 2);
+                ColumnType.VARCHAR, null, AlterOperation.ADD_COLUMN);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
@@ -84,7 +85,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
     public void alterTableWithOptions() {
         String query = "ALTER TABLE demo.users WITH comment='Users table to maintain users';";
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"), null, null,
-                "{'comment': 'Users table to maintain users'}", 4);
+                "{'comment': 'Users table to maintain users'}", AlterOperation.ALTER_OPTIONS);
 
         Validator validator = new Validator();
 
@@ -107,7 +108,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
                 new ColumnName("demo", "users", "age"),
-                ColumnType.BIGINT, null, 3);
+                ColumnType.BIGINT, null, AlterOperation.DROP_COLUMN);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
@@ -129,7 +130,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "unknown"),
                 new ColumnName("demo", "unknown", "age"),
-                ColumnType.BIGINT, null, 3);
+                ColumnType.BIGINT, null, AlterOperation.DROP_COLUMN);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
@@ -151,7 +152,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
                 new ColumnName("demo", "users", "unknown"),
-                ColumnType.BIGINT, null, 3);
+                ColumnType.BIGINT, null, AlterOperation.DROP_COLUMN);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
