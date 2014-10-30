@@ -89,15 +89,15 @@ pidFile="${pidDir}/${NAME}.pid"
 function checkProcessIsRunning {
 	local pid="$1"
 	if [ -z "$pid" -o "$pid" == " " ]; then return 1; fi
-	ps -Af | grep ${pid} | grep java
-    if [ $? -ne 0 ]; then return 1; fi
+	ps -Af | grep ${pid} | grep java > /dev/null 2>&1
+        if [ $? -ne 0 ]; then return 1; fi
 	return 0;
 }
 
 # Returns 0 if the process with PID $1 is our Java service process.
 function checkProcessIsOurService {
 	local pid="$1"
-	ps -Af | grep ${pid} | grep java
+	ps -Af | grep ${pid} | grep java > /dev/null 2>&1
 	if [ $? -ne 0 ]; then return 1; fi
 	return 0;
 }
