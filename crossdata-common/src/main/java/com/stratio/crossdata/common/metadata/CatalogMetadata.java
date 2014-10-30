@@ -28,7 +28,7 @@ public class CatalogMetadata implements IMetadata {
 
     private final CatalogName name;
 
-    private final Map<Selector, Selector> options;
+    private Map<Selector, Selector> options;
 
     private final Map<TableName, TableMetadata> tables;
 
@@ -49,6 +49,10 @@ public class CatalogMetadata implements IMetadata {
 
     public Map<TableName, TableMetadata> getTables() {
         return tables;
+    }
+
+    public void setOptions(Map<Selector, Selector> options) {
+        this.options = options;
     }
 
     @Override

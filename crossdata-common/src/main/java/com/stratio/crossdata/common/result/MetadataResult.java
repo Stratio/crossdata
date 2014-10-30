@@ -74,6 +74,11 @@ public final class MetadataResult extends Result {
     public static final int OPERATION_LIST_COLUMNS = 9;
 
     /**
+     * Operation identifier to ALTER CATALOG.
+     */
+    public static final int OPERATION_ALTER_CATALOG = 10;
+
+    /**
      * Operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}.
      */
     private int operation = 0;

@@ -55,6 +55,7 @@ import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Window;
+import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
@@ -73,6 +74,7 @@ import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
+import com.stratio.crossdata.core.statements.AlterCatalogStatement;
 import com.stratio.crossdata.core.statements.DropCatalogStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
@@ -630,6 +632,28 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         try {
             ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
             Assert.assertFalse(MetadataManager.MANAGER.exists(new CatalogName("demo2")));
+        } catch (PlanningException e) {
+            Assert.fail(e.getMessage());
+        }
+
+    }
+
+
+    @Test
+    public void alterCatalogWorkflowTest() {
+        String options="{comment:'the new comment'}";
+        AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("demo2"), options);
+        String query = "ALTER CATALOG demo2 WITH {comment:'the new comment'};";
+        BaseQuery baseQuery = new BaseQuery("alterId", query, new CatalogName("demo2"));
+        MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
+
+        Planner planner = new Planner();
+        try {
+            ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
+            Assert.assertTrue(MetadataManager.MANAGER.exists(new CatalogName("demo2")));
+            CatalogMetadata catalogMetadata=MetadataManager.MANAGER.getCatalog(new CatalogName("demo2"));
+            Assert.assertEquals(catalogMetadata.getOptions(), alterCatalogStatement.getOptions());
         } catch (PlanningException e) {
             Assert.fail(e.getMessage());
         }

@@ -83,6 +83,7 @@ import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
+import com.stratio.crossdata.core.statements.AlterCatalogStatement;
 import com.stratio.crossdata.core.statements.AttachClusterStatement;
 import com.stratio.crossdata.core.statements.AttachConnectorStatement;
 import com.stratio.crossdata.core.statements.CreateCatalogStatement;
@@ -568,6 +569,7 @@ public class Planner {
         metadataStatements.add(CreateCatalogStatement.class.toString());
         metadataStatements.add(CreateTableStatement.class.toString());
         metadataStatements.add(DropCatalogStatement.class.toString());
+        metadataStatements.add(AlterCatalogStatement.class.toString());
 
         Set<String> managementStatements = new HashSet<>();
         managementStatements.add(AttachClusterStatement.class.toString());
@@ -661,17 +663,28 @@ public class Planner {
         } else if (metadataStatement instanceof DropCatalogStatement) {
             DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) metadataStatement;
 
-            // Recover ActorRef from ConnectorMetadata for all clusters where the catalog are in.
             CatalogName catalog = dropCatalogStatement.getCatalogName();
             CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalog);
 
-            if (catalogMetadata.getTables().isEmpty() || catalogMetadata.getTables()==null){
-                MetadataManager.MANAGER.deleteCatalog(catalog,true);
+            if (catalogMetadata.getTables().isEmpty() || catalogMetadata.getTables() == null) {
+                MetadataManager.MANAGER.deleteCatalog(catalog, true);
                 // Create MetadataWorkFlow
                 metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.DROP_CATALOG, ResultType.RESULTS);
-            }else {
-                throw new PlanningException( "This statement can't be planned: " + metadataStatement.toString() + ". " +
+            } else {
+                throw new PlanningException("This statement can't be planned: " + metadataStatement.toString() + ". " +
                         "All tables of catalog must be removed before drop catalog.");
+            }
+        } else if (metadataStatement instanceof AlterCatalogStatement) {
+            AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) metadataStatement;
+            CatalogName catalog = alterCatalogStatement.getCatalogName();
+            if (MetadataManager.MANAGER.exists(catalog)) {
+                CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalog);
+                catalogMetadata.setOptions(alterCatalogStatement.getOptions());
+                MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
+                metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.ALTER_CATALOG, ResultType.RESULTS);
+            }else{
+                throw new PlanningException("This statement can't be planned: " + metadataStatement.toString() + ". " +
+                        "The catalog not exists.");
             }
 
         } else {

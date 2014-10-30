@@ -26,6 +26,7 @@ public enum ExecutionType {
     //IMetadata
     CREATE_CATALOG,
     DROP_CATALOG,
+    ALTER_CATALOG,
     CREATE_TABLE,
     CREATE_TABLE_AND_CATALOG,
     DROP_TABLE,
