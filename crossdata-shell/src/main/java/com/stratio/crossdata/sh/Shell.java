@@ -377,6 +377,9 @@ public class Shell {
         } else if (command.toLowerCase().startsWith("reset metadata")) {
             resetMetadata();
             apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("clean metadata")){
+            cleanMetadata();
+            apiCallExecuted = true;
         }
         return apiCallExecuted;
     }
@@ -466,6 +469,13 @@ public class Shell {
         }
         setPrompt(currentCatalog);
         return currentCatalog;
+    }
+
+    /**
+     * Trigger the operation to reset only the metadata information related to catalogs.
+     */
+    private void cleanMetadata() {
+        metaDriver.cleanMetadata();
     }
 
     /**

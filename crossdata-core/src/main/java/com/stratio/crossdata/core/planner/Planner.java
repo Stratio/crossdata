@@ -914,8 +914,14 @@ public class Planner {
                     ResultType.RESULTS);
 
             storageWorkflow.setClusterName(clusterMetadata.getName());
-            storageWorkflow.setTableMetadata(tableMetadata);
-            storageWorkflow.setWhereClauses(deleteStatement.getWhereClauses());
+            storageWorkflow.setTableName(tableMetadata.getName());
+
+            List<Filter> filters = new ArrayList<>();
+            for(Relation relation: deleteStatement.getWhereClauses()){
+                Filter filter = new Filter(Operations.DELETE, relation);
+                filters.add(filter);
+            }
+            storageWorkflow.setWhereClauses(filters);
 
         } else {
             throw new PlanningException("Delete, Truncate and Update statements not supported yet");

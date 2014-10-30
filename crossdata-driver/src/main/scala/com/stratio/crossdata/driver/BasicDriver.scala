@@ -230,8 +230,18 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
+   * Clean metadata related to catalogs in server
+   * @return A CommandResult with a string
+   */
+  def cleanMetadata(): CommandResult = {
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.CLEAN_METADATA, null))
+    result.asInstanceOf[CommandResult]
+  }
+
+  /**
    * List the connectors available.
-   * @return A {@link CommandResult} with the list.
+   * @return A CommandResult with the list.
    */
   def listConnectors():CommandResult = {
     val queryId = UUID.randomUUID().toString

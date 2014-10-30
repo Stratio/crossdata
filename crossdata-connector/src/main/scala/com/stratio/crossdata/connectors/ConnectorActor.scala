@@ -31,6 +31,26 @@ import com.stratio.crossdata.communication._
 import org.apache.log4j.Logger
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
+import com.stratio.crossdata.communication.CreateCatalog
+import com.stratio.crossdata.communication.CreateIndex
+import com.stratio.crossdata.communication.replyConnectorName
+import akka.cluster.ClusterEvent.MemberRemoved
+import com.stratio.crossdata.communication.IAmAlive
+import com.stratio.crossdata.communication.Execute
+import akka.cluster.ClusterEvent.MemberUp
+import com.stratio.crossdata.communication.ACK
+import com.stratio.crossdata.communication.getConnectorName
+import com.stratio.crossdata.communication.CreateTableAndCatalog
+import scala.Some
+import com.stratio.crossdata.communication.DropIndex
+import com.stratio.crossdata.communication.CreateTable
+import com.stratio.crossdata.communication.InsertBatch
+import akka.cluster.ClusterEvent.CurrentClusterState
+import com.stratio.crossdata.communication.AsyncExecute
+import akka.cluster.ClusterEvent.UnreachableMember
+import com.stratio.crossdata.communication.HeartbeatSig
+import com.stratio.crossdata.communication.DropTable
+import com.stratio.crossdata.communication.Insert
 
 object State extends Enumeration {
   type state = Value
@@ -222,8 +242,11 @@ ActorLogging with IResultHandler{
         case InsertBatch(queryId, clustername, table, rows) => {
           eng.insert(clustername, table, rows)
         }
+        case DeleteRows(queryId, clustername, table, whereClauses) => {
+          eng.delete(clustername, table, whereClauses)
+        }
       }
-      val result = StorageResult.createSuccessFulStorageResult("INSERTED successfully");
+      val result = StorageResult.createSuccessFulStorageResult("STORAGED successfully");
       result.setQueryId(qId)
       s ! result
     } catch {
