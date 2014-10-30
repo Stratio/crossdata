@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.Map;
 
+import com.stratio.crossdata.common.data.AlterOperation;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -35,26 +36,6 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 public class AlterTableStatement extends MetadataStatement implements ITableStatement {
 
     /**
-     * Alter a new column data type using {@code ALTER}.
-     */
-    private static final int ALTER_COLUMN = 1;
-
-    /**
-     * Add a new column using {@code ADD}.
-     */
-    private static final int ADD_COLUMN = 2;
-
-    /**
-     * Drop a column using {@code DROP}.
-     */
-    private static final int DROP_COLUMN = 3;
-
-    /**
-     * Establish a set of options using {@code WITH}.
-     */
-    private static final int ALTER_OPTIONS = 4;
-
-    /**
      * The target table.
      */
     private TableName tableName;
@@ -62,7 +43,7 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
     /**
      * Type of alter.
      */
-    private int option;
+    private AlterOperation option;
 
     /**
      * Target column name.
@@ -89,7 +70,7 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
      * @param option     The map of options.
      */
     public AlterTableStatement(TableName tableName, ColumnName column, ColumnType type,
-            String properties, int option) {
+            String properties, AlterOperation option) {
         this.command = false;
         this.tableName = tableName;
         this.column = column;
@@ -131,19 +112,19 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
     public ValidationRequirements getValidationRequirements() {
         ValidationRequirements validationRequirements;
         switch (option) {
-        case 1:
+        case ALTER_COLUMN:
             validationRequirements = new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE)
                     .add(ValidationTypes.MUST_EXIST_COLUMN);
             break;
-        case 2:
+        case ADD_COLUMN:
             validationRequirements = new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE)
                     .add(ValidationTypes.MUST_NOT_EXIST_COLUMN);
             break;
-        case 3:
+        case DROP_COLUMN:
             validationRequirements = new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE)
                     .add(ValidationTypes.MUST_EXIST_COLUMN);
             break;
-        case 4:
+        case ALTER_OPTIONS:
             validationRequirements = new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE)
                     .add(ValidationTypes.MUST_EXIST_PROPERTIES);
             break;
@@ -181,5 +162,13 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
 
     public ColumnType getType() {
         return type;
+    }
+
+    public AlterOperation getOption() {
+        return option;
+    }
+
+    public Map<Selector, Selector> getProperties() {
+        return properties;
     }
 }

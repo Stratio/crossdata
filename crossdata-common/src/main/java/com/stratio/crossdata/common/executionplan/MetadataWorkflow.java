@@ -18,12 +18,14 @@
 
 package com.stratio.crossdata.common.executionplan;
 
+import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.communication.AlterTable;
 import com.stratio.crossdata.communication.CreateCatalog;
 import com.stratio.crossdata.communication.CreateIndex;
 import com.stratio.crossdata.communication.CreateTable;
@@ -49,6 +51,8 @@ public class MetadataWorkflow extends ExecutionWorkflow {
     private TableMetadata tableMetadata = null;
 
     private IndexMetadata indexMetadata = null;
+
+    private AlterOptions alterOptions = null;
 
     /**
      * Class constructor.
@@ -111,6 +115,14 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         return indexMetadata;
     }
 
+    public AlterOptions getAlterOptions() {
+        return alterOptions;
+    }
+
+    public void setAlterOptions(AlterOptions alterOptions) {
+        this.alterOptions = alterOptions;
+    }
+
     public MetadataOperation createMetadataOperationMessage() {
         MetadataOperation result = null;
 
@@ -129,6 +141,9 @@ public class MetadataWorkflow extends ExecutionWorkflow {
             break;
         case DROP_TABLE:
             result = new DropTable(queryId, this.clusterName, this.tableName);
+            break;
+        case ALTER_TABLE:
+            result= new AlterTable(queryId, this.clusterName, this.tableName, this.alterOptions);
             break;
         case CREATE_INDEX:
             result = new CreateIndex(queryId, this.clusterName, this.indexMetadata);
