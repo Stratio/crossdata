@@ -88,6 +88,7 @@ import com.stratio.crossdata.core.statements.AttachConnectorStatement;
 import com.stratio.crossdata.core.statements.CreateCatalogStatement;
 import com.stratio.crossdata.core.statements.CreateTableStatement;
 import com.stratio.crossdata.core.statements.DropCatalogStatement;
+import com.stratio.crossdata.core.statements.DropTableStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 import com.stratio.crossdata.core.statements.SelectStatement;
@@ -568,6 +569,7 @@ public class Planner {
         metadataStatements.add(CreateCatalogStatement.class.toString());
         metadataStatements.add(CreateTableStatement.class.toString());
         metadataStatements.add(DropCatalogStatement.class.toString());
+        metadataStatements.add(DropTableStatement.class.toString());
 
         Set<String> managementStatements = new HashSet<>();
         managementStatements.add(AttachClusterStatement.class.toString());
@@ -673,6 +675,36 @@ public class Planner {
                 throw new PlanningException( "This statement can't be planned: " + metadataStatement.toString() + ". " +
                         "All tables of catalog must be removed before drop catalog.");
             }
+
+        } else if (metadataStatement instanceof DropTableStatement){
+
+            DropTableStatement dropTableStatement = (DropTableStatement) metadataStatement;
+            String actorRefUri;
+            ExecutionType executionType = ExecutionType.DROP_TABLE;
+            ResultType type = ResultType.RESULTS;
+
+            TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(dropTableStatement.getTableName());
+
+            ClusterName clusterName = tableMetadata.getClusterRef();
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+            Map<ConnectorName, ConnectorAttachedMetadata> attachedRefs = clusterMetadata.getConnectorAttachedRefs();
+
+            if((attachedRefs != null) && (attachedRefs.keySet() != null) & (!attachedRefs.keySet().isEmpty())){
+                // TODO: Choose the best connector instead of the first one
+                ConnectorName connectorName = attachedRefs.keySet().iterator().next();
+                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+                actorRefUri = connectorMetadata.getActorRef();
+            } else {
+                PlanningException planningException = new PlanningException(
+                        "Cannot find a connector for " + dropTableStatement.toString());
+                throw planningException;
+            }
+
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
+
+            metadataWorkflow.setTableMetadata(tableMetadata);
+            metadataWorkflow.setTableName(tableMetadata.getName());
+            metadataWorkflow.setClusterName(attachedRefs.values().iterator().next().getClusterRef());
 
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());

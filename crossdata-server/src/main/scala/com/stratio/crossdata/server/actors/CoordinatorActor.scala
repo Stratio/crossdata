@@ -24,15 +24,16 @@ import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.ConnectorName
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.executionplan.{ExecutionType, ManagementWorkflow, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
-import com.stratio.crossdata.common.logicalplan.PartialResults
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{AttachConnector, Connect, ConnectToConnector, DisconnectFromConnector, Execute}
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionManagerException, ExecutionInfo, ExecutionManager}
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.IPlannedQuery
+import com.stratio.crossdata.common.logicalplan.PartialResults
+import com.stratio.crossdata.common.statements.structures.SelectorHelper
+import com.stratio.crossdata.common.exceptions.validation.CoordinationException
 
 object CoordinatorActor {
 
@@ -57,12 +58,42 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
       workflow match {
         case workflow1: MetadataWorkflow => {
+
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           val queryId = plannedQuery.getQueryId
           executionInfo.setWorkflow(workflow1)
-          if (workflow1.getActorRef() != null && workflow1.getActorRef().length() > 0) {
-            val actorRef = context.actorSelection(workflow1.getActorRef())
+
+          if (workflow1.getExecutionType == ExecutionType.DROP_CATALOG) {
+            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+            executionInfo.setPersistOnSuccess(false)
+            executionInfo.setRemoveOnSuccess(true)
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+            val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DROP_CATALOG)
+            result.setQueryId(queryId)
+            sender ! result
+
+
+          } else if (workflow1.getExecutionType == ExecutionType.DROP_TABLE){
+
+            // Drop table in the Crossdata servers through the MetadataManager
+            coordinator.persistDropTable(workflow1.getTableName)
+
+            // Send action to the connector
+            val actorRef = context.actorSelection(workflow1.getActorRef)
+            actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+
+            // Prepare data for the reply of the connector
+            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+            executionInfo.setPersistOnSuccess(false)
+            executionInfo.setRemoveOnSuccess(true)
+            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+            executionInfo.setWorkflow(workflow1)
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+
+          } else if (workflow1.getActorRef != null && workflow1.getActorRef.length() > 0) {
+
+            val actorRef = context.actorSelection(workflow1.getActorRef)
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
@@ -70,8 +101,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
 
-          } else if (workflow1.getExecutionType == ExecutionType.CREATE_CATALOG || workflow1
-            .getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG) {
+          } else if (workflow1.getExecutionType == ExecutionType.CREATE_CATALOG ||
+                workflow1.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG) {
+
             coordinator.persistCreateCatalog(workflow1.getCatalogMetadata)
 
             executionInfo.setQueryStatus(QueryStatus.PLANNED)
@@ -80,16 +112,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG)
             result.setQueryId(queryId)
             sender ! result
-          } else if (workflow1.getExecutionType == ExecutionType.DROP_CATALOG) {
-            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
-            executionInfo.setPersistOnSuccess(false)
-            executionInfo.setRemoveOnSuccess(true)
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-            val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DROP_CATALOG)
-            result.setQueryId(queryId)
-            sender ! result
-          }
 
+          } else {
+            throw new CoordinationException("Operation not supported yet");
+
+          }
 
         }
 
@@ -133,13 +160,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         }
 
         case workflow1: QueryWorkflow => {
-          log.info("\n\nCoordinatorActor: QueryWorkflow received")
+          log.info("\nCoordinatorActor: QueryWorkflow received")
           val queryId = plannedQuery.getQueryId
           val executionInfo = new ExecutionInfo
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           executionInfo.setWorkflow(workflow1)
 
-          log.info("\n\nCoordinate workflow: " + workflow1.toString)
+          log.info("\nCoordinate workflow: " + workflow1.toString)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if (ResultType.RESULTS.equals(workflow1.getResultType)) {
             val actorRef = StringUtils.getAkkaActorRefUri(workflow1.getActorRef())
