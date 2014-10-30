@@ -72,8 +72,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DROP_CATALOG)
             result.setQueryId(queryId)
             sender ! result
-
-
+          } else if (workflow1.getExecutionType == ExecutionType.ALTER_CATALOG) {
+            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+            executionInfo.setPersistOnSuccess(true)
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+            val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_CATALOG)
+            result.setQueryId(queryId)
+            sender ! result
           } else if (workflow1.getExecutionType == ExecutionType.DROP_TABLE){
 
             // Drop table in the Crossdata servers through the MetadataManager
