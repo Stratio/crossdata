@@ -303,11 +303,26 @@ public enum MetadataManager {
     }
 
     /**
-     * Remove the selected table. Not implemented yet.
+     * Remove the selected table.
      * @param tableName Removed table name.
      */
     public void deleteTable(TableName tableName) {
-
+        shouldBeInit();
+        writeLock.lock();
+        shouldExist(tableName);
+        shouldExist(tableName.getCatalogName());
+        try {
+            beginTransaction();
+            metadata.remove(tableName);
+            CatalogMetadata catalogMetadata = getCatalog(tableName.getCatalogName());
+            catalogMetadata.getTables().remove(tableName);
+            metadata.put(catalogMetadata.getName(), catalogMetadata);
+            commitTransaction();
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     /**

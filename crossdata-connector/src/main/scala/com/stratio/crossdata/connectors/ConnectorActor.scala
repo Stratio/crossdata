@@ -87,22 +87,22 @@ ActorLogging with IResultHandler{
     }
     case ex: Execute => {
       logger.info("Processing query: " + ex)
-      metodExecute(ex, sender)
+      methodExecute(ex, sender)
     }
     case aex: AsyncExecute => {
       logger.info("Processing asynchronous query: " + aex)
-      metodAsyncExecute(aex, sender)
+      methodAsyncExecute(aex, sender)
     }
     case metadataOp: MetadataOperation => {
 
-      metod1(metadataOp, sender)
+      method1(metadataOp, sender)
     }
     case result: Result =>
       logger.debug("connectorActor receives Result with ID=" + result.getQueryId())
       parentActorRef.get ! result
     //TODO:  ManagementWorkflow
     case storageOp: StorageOperation => {
-      metodStorageop(storageOp, sender)
+      methodStorageop(storageOp, sender)
     }
     case msg: getConnectorName => {
       logger.info(sender + " asked for my name")
@@ -152,7 +152,7 @@ ActorLogging with IResultHandler{
     }
   }
 
-  private def metodExecute(ex:Execute, s:ActorRef): Unit ={
+  private def methodExecute(ex:Execute, s:ActorRef): Unit ={
 
     try {
       runningJobs.put(ex.queryId, s)
@@ -172,7 +172,7 @@ ActorLogging with IResultHandler{
     }
   }
 
-  private def metodAsyncExecute(aex: AsyncExecute, sender:ActorRef) : Unit = {
+  private def methodAsyncExecute(aex: AsyncExecute, sender:ActorRef) : Unit = {
     val asyncSender = sender
     try {
       runningJobs.put(aex.queryId, asyncSender)
@@ -190,7 +190,7 @@ ActorLogging with IResultHandler{
     }
   }
 
-  private def metod1(metadataOp: MetadataOperation, s: ActorRef): Unit = {
+  private def method1(metadataOp: MetadataOperation, s: ActorRef): Unit = {
     var qId: String = metadataOp.queryId
     var metadataOperation: Int = 0
     logger.info("Received queryId = " + qId)
@@ -198,7 +198,7 @@ ActorLogging with IResultHandler{
       val opclass = metadataOp.getClass().toString().split('.')
       val eng = connector.getMetadataEngine()
 
-      val abc = metodOpc(opclass,  metadataOp, eng)
+      val abc = methodOpc(opclass,  metadataOp, eng)
       qId = abc._1
       metadataOperation = abc._2
     } catch {
@@ -215,7 +215,7 @@ ActorLogging with IResultHandler{
     s ! result
   }
 
-  private def metodStorageop(storageOp: StorageOperation, s: ActorRef): Unit = {
+  private def methodStorageop(storageOp: StorageOperation, s: ActorRef): Unit = {
     val qId: String = storageOp.queryId
     try {
       val eng = connector.getStorageEngine()
@@ -244,7 +244,7 @@ ActorLogging with IResultHandler{
     }
   }
 
-  private def metodOpc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
+  private def methodOpc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
 
     opclass(opclass.length - 1) match {
       case "CreateTable" => {
@@ -264,7 +264,6 @@ ActorLogging with IResultHandler{
         (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX)
       }
       case "DropCatalog" => {
-        val qId = metadataOp.asInstanceOf[DropIndex].queryId
         eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
         (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_CATALOG)
