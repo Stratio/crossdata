@@ -62,6 +62,10 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
         whereClauses.add(relation);
     }
 
+    public List<Relation> getWhereClauses() {
+        return whereClauses;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("DELETE FROM ");
