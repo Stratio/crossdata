@@ -36,6 +36,7 @@ public enum ExecutionType {
     //IStorage
     INSERT,
     INSERT_BATCH,
+    DELETE_ROWS,
 
     //IQuery
     SELECT,

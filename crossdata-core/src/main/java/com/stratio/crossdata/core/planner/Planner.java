@@ -88,6 +88,7 @@ import com.stratio.crossdata.core.statements.AttachClusterStatement;
 import com.stratio.crossdata.core.statements.AttachConnectorStatement;
 import com.stratio.crossdata.core.statements.CreateCatalogStatement;
 import com.stratio.crossdata.core.statements.CreateTableStatement;
+import com.stratio.crossdata.core.statements.DeleteStatement;
 import com.stratio.crossdata.core.statements.DropCatalogStatement;
 import com.stratio.crossdata.core.statements.DropTableStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
@@ -663,6 +664,7 @@ public class Planner {
             metadataWorkflow.setTableName(name);
             metadataWorkflow.setTableMetadata(tableMetadata);
             metadataWorkflow.setClusterName(clusterName);
+
         } else if (metadataStatement instanceof DropCatalogStatement) {
             DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) metadataStatement;
 
@@ -677,6 +679,7 @@ public class Planner {
                 throw new PlanningException("This statement can't be planned: " + metadataStatement.toString() + ". " +
                         "All tables of catalog must be removed before drop catalog.");
             }
+
         } else if (metadataStatement instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) metadataStatement;
             CatalogName catalog = alterCatalogStatement.getCatalogName();
@@ -789,41 +792,76 @@ public class Planner {
 
     protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) throws PlanningException {
 
+        StorageWorkflow storageWorkflow;
         String queryId = query.getQueryId();
-        String actorRef = null;
-        TableName tableName;
-        Row row;
+
         if (query.getStatement() instanceof InsertIntoStatement) {
-            tableName = ((InsertIntoStatement) (query.getStatement())).getTableName();
-            row = getInsertRow(((InsertIntoStatement) (query.getStatement())));
+
+            String actorRef = null;
+
+            TableName tableName = ((InsertIntoStatement) (query.getStatement())).getTableName();
+            Row row = getInsertRow(((InsertIntoStatement) (query.getStatement())));
+
+            TableMetadata tableMetadata = getTableMetadata(tableName);
+            ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
+            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
+                    .getConnectorAttachedRefs();
+
+            Iterator it = connectorAttachedRefs.keySet().iterator();
+            boolean found = false;
+            while (it.hasNext() && !found) {
+                ConnectorName connectorName = (ConnectorName) it.next();
+                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+                if (connectorMetadata.getSupportedOperations().contains(Operations.INSERT)) {
+                    actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+                    found = true;
+                }
+            }
+            if (!found) {
+                throw new PlanningException("There is not actorRef for Storage Operation");
+            }
+
+            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT,
+                    ResultType.RESULTS);
+            storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+            storageWorkflow.setTableMetadata(tableMetadata);
+            storageWorkflow.setRow(row);
+
+        } else if (query.getStatement() instanceof DeleteStatement) {
+
+            DeleteStatement deleteStatement = (DeleteStatement) query.getStatement();
+
+            // Find connector
+            String actorRef = null;
+            TableMetadata tableMetadata = getTableMetadata(deleteStatement.getTableName());
+            ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
+            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
+                    .getConnectorAttachedRefs();
+
+            Iterator it = connectorAttachedRefs.keySet().iterator();
+            boolean found = false;
+            while (it.hasNext() && !found) {
+                ConnectorName connectorName = (ConnectorName) it.next();
+                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+                if (connectorMetadata.getSupportedOperations().contains(Operations.DELETE)) {
+                    actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+                    found = true;
+                }
+            }
+            if (!found) {
+                throw new PlanningException("There is not actorRef for Storage Operation");
+            }
+
+            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.DELETE_ROWS,
+                    ResultType.RESULTS);
+
+            storageWorkflow.setClusterName(clusterMetadata.getName());
+            storageWorkflow.setTableMetadata(tableMetadata);
+            storageWorkflow.setWhereClauses(deleteStatement.getWhereClauses());
+
         } else {
             throw new PlanningException("Delete, Truncate and Update statements not supported yet");
         }
-
-        TableMetadata tableMetadata = getTableMetadata(tableName);
-        ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
-        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
-                .getConnectorAttachedRefs();
-
-        Iterator it = connectorAttachedRefs.keySet().iterator();
-        boolean found = false;
-        while (it.hasNext() && !found) {
-            ConnectorName connectorName = (ConnectorName) it.next();
-            ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-            if (connectorMetadata.getSupportedOperations().contains(Operations.INSERT)) {
-                actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
-                found = true;
-            }
-        }
-        if (!found) {
-            throw new PlanningException("There is not actorRef for Storage Operation");
-        }
-
-        StorageWorkflow storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT,
-                ResultType.RESULTS);
-        storageWorkflow.setClusterName(tableMetadata.getClusterRef());
-        storageWorkflow.setTableMetadata(tableMetadata);
-        storageWorkflow.setRow(row);
 
         return storageWorkflow;
     }

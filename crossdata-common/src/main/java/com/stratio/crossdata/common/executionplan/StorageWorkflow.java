@@ -19,13 +19,17 @@
 package com.stratio.crossdata.common.executionplan;
 
 import java.util.Collection;
+import java.util.List;
 
+import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.exceptions.validation.CoordinationException;
+import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.communication.DeleteRows;
 import com.stratio.crossdata.communication.Insert;
 import com.stratio.crossdata.communication.InsertBatch;
 import com.stratio.crossdata.communication.StorageOperation;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.metadata.TableMetadata;
 
 /**
  * Storage related operations.
@@ -39,6 +43,8 @@ public class StorageWorkflow extends ExecutionWorkflow{
     private Row row = null;
 
     private Collection<Row> rows = null;
+
+    private Collection<Relation> whereClauses = null;
 
     /**
      * Class constructor.
@@ -73,12 +79,16 @@ public class StorageWorkflow extends ExecutionWorkflow{
      * Get the storage operation to be execution.
      * @return A {@link com.stratio.crossdata.communication.StorageOperation}.
      */
-    public StorageOperation getStorageOperation(){
-        StorageOperation result = null;
+    public StorageOperation getStorageOperation() throws CoordinationException {
+        StorageOperation result;
         if(ExecutionType.INSERT.equals(this.executionType)){
             result = new Insert(queryId, this.clusterName, this.tableMetadata, this.row);
-        }else if(ExecutionType.INSERT_BATCH.equals(this.executionType)){
+        } else if(ExecutionType.INSERT_BATCH.equals(this.executionType)){
             result = new InsertBatch(queryId, this.clusterName, this.tableMetadata, this.rows);
+        } else if (ExecutionType.DELETE_ROWS.equals(this.executionType)){
+            result = new DeleteRows(queryId, this.clusterName, this.tableMetadata, this.whereClauses);
+        } else {
+            throw new CoordinationException("Operation " + this.executionType + " not supported yet.");
         }
         return result;
     }
@@ -97,5 +107,13 @@ public class StorageWorkflow extends ExecutionWorkflow{
 
     public Collection<Row> getRows() {
         return rows;
+    }
+
+    public void setWhereClauses(List<Relation> whereClauses) {
+        this.whereClauses = whereClauses;
+    }
+
+    public Collection<Relation> getWhereClauses() {
+        return whereClauses;
     }
 }
