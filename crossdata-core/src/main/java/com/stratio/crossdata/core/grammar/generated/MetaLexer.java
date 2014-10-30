@@ -1,4 +1,4 @@
-// $ANTLR 3.5.2 Meta.g 2014-10-30 18:05:10
+// $ANTLR 3.5.2 Meta.g 2014-10-30 19:01:07
 
     package com.stratio.crossdata.core.grammar.generated;
     import com.stratio.crossdata.common.exceptions.*;

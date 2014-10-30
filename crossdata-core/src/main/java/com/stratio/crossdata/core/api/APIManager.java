@@ -161,6 +161,9 @@ public class APIManager {
         } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.RESET_METADATA().toString());
             result = resetMetadata();
+        } else if (APICommand.CLEAN_METADATA().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.CLEAN_METADATA().toString());
+            result = cleanMetadata();
         } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.LIST_CONNECTORS().toString());
             result = listConnectors();
@@ -218,6 +221,19 @@ public class APIManager {
         Result result = CommandResult.createCommandResult("Metadata reset.");
         try {
             MetadataManager.MANAGER.clear();
+            ExecutionManager.MANAGER.clear();
+        } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException
+                e) {
+            result = CommandResult.createErrorResult(e);
+            LOG.error(e.getMessage());
+        }
+        return result;
+    }
+
+    private Result cleanMetadata() {
+        Result result = CommandResult.createCommandResult("Metadata cleaned.");
+        try {
+            MetadataManager.MANAGER.clearCatalogs();
             ExecutionManager.MANAGER.clear();
         } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException
                 e) {
