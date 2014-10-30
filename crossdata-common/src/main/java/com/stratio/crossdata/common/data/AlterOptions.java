@@ -25,4 +25,28 @@ public class AlterOptions implements Serializable {
         this.properties = properties;
         this.columnMetadata = columnMetadata;
     }
+
+    public AlterOperation getOption() {
+        return option;
+    }
+
+    public void setOption(AlterOperation option) {
+        this.option = option;
+    }
+
+    public ColumnMetadata getColumnMetadata() {
+        return columnMetadata;
+    }
+
+    public void setColumnMetadata(ColumnMetadata columnMetadata) {
+        this.columnMetadata = columnMetadata;
+    }
+
+    public Map<Selector, Selector> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Map<Selector, Selector> properties) {
+        this.properties = properties;
+    }
 }
