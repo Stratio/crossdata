@@ -22,9 +22,10 @@ import java.util.Collection;
 
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
+import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.Relation;
 
 /**
  * Interface provided by a connector to access storage related operations such as inserting new
@@ -60,11 +61,11 @@ public interface IStorageEngine {
      * Delete rows, on the indicated cluster, that meet the conditions of the where clauses.
      *
      * @param targetCluster Target cluster.
-     * @param targetTable Target table metadata including fully qualified including catalog.
+     * @param tableName Target table name including fully qualified including catalog.
      * @param whereClauses Where clauses.
      * @throws ConnectorException
      */
-    void delete(ClusterName targetCluster, TableMetadata targetTable, Collection<Relation> whereClauses) throws
+    void delete(ClusterName targetCluster, TableName tableName, Collection<Filter> whereClauses) throws
             ConnectorException;
 
 }
