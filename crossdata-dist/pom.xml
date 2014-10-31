@@ -124,7 +124,7 @@
                             <unixScriptTemplate>${project.basedir}/src/main/template/unix-script.sh</unixScriptTemplate>
                             <programs>
                                 <program>
-                                    <mainClass>com.stratio.com.stratio.crossdata.server.MetaApplication</mainClass>
+                                    <mainClass>com.stratio.crossdata.server.MetaApplication</mainClass>
                                     <id>crossdata-server</id>
                                     <platforms>
                                         <platform>unix</platform>
@@ -136,7 +136,7 @@
                                     </jvmSettings>
                                 </program>
                                 <program>
-                                    <mainClass>com.stratio.com.stratio.crossdata.sh.Shell</mainClass>
+                                    <mainClass>com.stratio.crossdata.sh.Shell</mainClass>
                                     <id>crossdata-sh</id>
                                     <platforms>
                                         <platform>unix</platform>
@@ -161,7 +161,7 @@
                             <unixScriptTemplate>${project.basedir}/src/main/template/unix-daemon.sh</unixScriptTemplate>
                             <programs>
                                 <program>
-                                    <mainClass>com.stratio.com.stratio.crossdata.server.MetaServer</mainClass>
+                                    <mainClass>com.stratio.crossdata.server.MetaServer</mainClass>
                                     <id>crossdata-server-daemon</id>
                                     <platforms>
                                         <platform>unix</platform>
