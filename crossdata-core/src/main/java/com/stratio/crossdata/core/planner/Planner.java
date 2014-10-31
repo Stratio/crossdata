@@ -709,7 +709,7 @@ public class Planner {
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
             Map<ConnectorName, ConnectorAttachedMetadata> attachedRefs = clusterMetadata.getConnectorAttachedRefs();
 
-            if ((attachedRefs != null) && (attachedRefs.keySet() != null) & (!attachedRefs.keySet().isEmpty())) {
+            if ((attachedRefs != null) && (attachedRefs.keySet() != null) && (!attachedRefs.keySet().isEmpty())) {
                 // TODO: Choose the best connector instead of the first one
                 ConnectorName connectorName = attachedRefs.keySet().iterator().next();
                 ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
