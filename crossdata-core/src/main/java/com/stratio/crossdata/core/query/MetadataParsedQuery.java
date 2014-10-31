@@ -19,12 +19,12 @@
 package com.stratio.crossdata.core.query;
 
 import com.stratio.crossdata.common.result.QueryStatus;
-import com.stratio.crossdata.core.statements.MetaStatement;
+import com.stratio.crossdata.core.statements.CrossdataStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 
 public class MetadataParsedQuery extends BaseQuery implements IParsedQuery {
 
-    private MetaStatement statement;
+    private CrossdataStatement statement;
 
     public MetadataParsedQuery(BaseQuery baseQuery,
             MetadataStatement statement) {

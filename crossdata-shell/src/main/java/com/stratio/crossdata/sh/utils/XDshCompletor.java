@@ -24,31 +24,31 @@ import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import com.stratio.crossdata.common.utils.MetaUtils;
+import com.stratio.crossdata.common.utils.XDshUtils;
 
 import jline.console.completer.Completer;
 
 /**
  * Implementation of the completor used to provide possible candidates when the user pressed tab in the console.
  */
-public class MetaCompletor implements Completer {
+public class XDshCompletor implements Completer {
 
     /**
-     * Set containing the words used in the Meta Completor.
+     * Set containing the words used in the XDsh Completor.
      */
     private final SortedSet<String> strings = new TreeSet<>();
 
     /**
-     * Constructor of the Meta Completor for the Meta Console.
+     * Constructor of the XDsh Completor for the XDsh Console.
      */
-    public MetaCompletor() {
+    public XDshCompletor() {
     }
 
     @Override
     public int complete(final String buffer, final int cursor, final List<CharSequence> candidates) {
         checkNotNull(candidates);
         if ((buffer == null) || (buffer.length() < 1)) {
-            candidates.addAll(MetaUtils.INITIALS);
+            candidates.addAll(XDshUtils.INITIALS);
         } else {
             // Last char is a space ==> NO completion implemented yet
             if (buffer.charAt(buffer.length() - 1) == ' ') {
@@ -59,10 +59,10 @@ public class MetaCompletor implements Completer {
             String partialQuery = buffer.trim().toUpperCase();
             if (partialTokens.length == 1) {
                 // First token
-                strings.addAll(MetaUtils.INITIALS);
+                strings.addAll(XDshUtils.INITIALS);
             } else {
                 // NO first token and new token initiated
-                strings.addAll(MetaUtils.NON_INITIALS);
+                strings.addAll(XDshUtils.NON_INITIALS);
                 partialQuery = partialTokens[partialTokens.length - 1].trim().toUpperCase();
             }
 

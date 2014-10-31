@@ -28,12 +28,12 @@ import jline.console.completer.CandidateListCompletionHandler;
 /**
  * Completion helper for the Crossdata console.
  */
-public class MetaCompletionHandler extends CandidateListCompletionHandler {
+public class XDshCompletionHandler extends CandidateListCompletionHandler {
 
     /**
      * Class constructor that calls the parent constructor.
      */
-    public MetaCompletionHandler() {
+    public XDshCompletionHandler() {
         super();
     }
 

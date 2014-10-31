@@ -23,14 +23,14 @@ import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.exceptions.ParsingException;
-import com.stratio.crossdata.core.grammar.generated.MetaLexer;
-import com.stratio.crossdata.core.grammar.generated.MetaParser;
+import com.stratio.crossdata.core.grammar.generated.XDshLexer;
+import com.stratio.crossdata.core.grammar.generated.XDshParser;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
-import com.stratio.crossdata.core.statements.MetaStatement;
+import com.stratio.crossdata.core.statements.CrossdataStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
@@ -55,14 +55,14 @@ public class Parser {
      */
     public IParsedQuery parse(BaseQuery baseQuery) throws ParsingException {
         IParsedQuery result = null;
-        MetaStatement metaStatement = this
+        CrossdataStatement crossdataStatement = this
                 .parseStatement(baseQuery.getDefaultCatalog().toString(), baseQuery.getQuery());
-        if (metaStatement instanceof SelectStatement) {
-            result = new SelectParsedQuery(baseQuery, (SelectStatement) metaStatement);
-        } else if (metaStatement instanceof StorageStatement) {
-            result = new StorageParsedQuery(baseQuery, (StorageStatement) metaStatement);
-        } else if (metaStatement instanceof MetadataStatement) {
-            result = new MetadataParsedQuery(baseQuery, (MetadataStatement) metaStatement);
+        if (crossdataStatement instanceof SelectStatement) {
+            result = new SelectParsedQuery(baseQuery, (SelectStatement) crossdataStatement);
+        } else if (crossdataStatement instanceof StorageStatement) {
+            result = new StorageParsedQuery(baseQuery, (StorageStatement) crossdataStatement);
+        } else if (crossdataStatement instanceof MetadataStatement) {
+            result = new MetadataParsedQuery(baseQuery, (MetadataStatement) crossdataStatement);
         }
         return result;
     }
@@ -73,7 +73,7 @@ public class Parser {
      * @param query The input text.
      * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
      */
-    public MetaStatement parseStatement(String sessionCatalog, String query) throws ParsingException {
+    public CrossdataStatement parseStatement(String sessionCatalog, String query) throws ParsingException {
         String modifiedQuery = "[" + sessionCatalog + "], " + query;
         ANTLRStringStream input = new ANTLRStringStream("[" + sessionCatalog + "], " + query);
         if (sessionCatalog == null || sessionCatalog.isEmpty()) {
@@ -81,12 +81,12 @@ public class Parser {
             input = new ANTLRStringStream(query);
         }
 
-        MetaLexer lexer = new MetaLexer(input);
+        XDshLexer lexer = new XDshLexer(input);
         lexer.setBacktrackingLevel(0);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        MetaParser parser = new MetaParser(tokens);
+        XDshParser parser = new XDshParser(tokens);
         ErrorsHelper foundErrors = new ErrorsHelper();
-        MetaStatement resultStatement = null;
+        CrossdataStatement resultStatement = null;
         try {
             resultStatement = parser.query();
             foundErrors = parser.getFoundErrors();

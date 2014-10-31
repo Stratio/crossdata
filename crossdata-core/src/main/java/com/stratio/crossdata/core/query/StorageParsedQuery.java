@@ -19,12 +19,12 @@
 package com.stratio.crossdata.core.query;
 
 import com.stratio.crossdata.common.result.QueryStatus;
-import com.stratio.crossdata.core.statements.MetaStatement;
+import com.stratio.crossdata.core.statements.CrossdataStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
 
 public class StorageParsedQuery extends BaseQuery implements IParsedQuery {
 
-    private MetaStatement statement;
+    private CrossdataStatement statement;
 
     public StorageParsedQuery(BaseQuery baseQuery,
             StorageStatement statement) {

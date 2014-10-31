@@ -26,28 +26,28 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 public class ExplainPlanStatement extends MetadataStatement {
 
     /**
-     * The {@link com.stratio.crossdata.core.statements.MetaStatement} to be analyzed.
+     * The {@link CrossdataStatement} to be analyzed.
      */
-    private MetaStatement metaStatement;
+    private CrossdataStatement crossdataStatement;
 
     /**
      * Class constructor.
      *
-     * @param metaStatement The {@link com.stratio.crossdata.core.statements.MetaStatement} to be analyzed.
+     * @param crossdataStatement The {@link CrossdataStatement} to be analyzed.
      */
-    public ExplainPlanStatement(MetaStatement metaStatement) {
+    public ExplainPlanStatement(CrossdataStatement crossdataStatement) {
         this.command = true;
-        this.metaStatement = metaStatement;
+        this.crossdataStatement = crossdataStatement;
     }
 
-    public MetaStatement getMetaStatement() {
-        return metaStatement;
+    public CrossdataStatement getCrossdataStatement() {
+        return crossdataStatement;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Explain plan for ");
-        sb.append(metaStatement.toString());
+        sb.append(crossdataStatement.toString());
         return sb.toString();
     }
 

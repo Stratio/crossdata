@@ -17,7 +17,7 @@
  * under the License.
  */
 
-grammar Meta;
+grammar XDsh;
 
 options {
     k = 0;
@@ -472,7 +472,7 @@ addStatement returns [AddStatement as]:
 ;
 
 //DROP (DATASTORE | CONNECTOR) \"name\";
-dropManifestStatement returns [MetaStatement dms]
+dropManifestStatement returns [CrossdataStatement dms]
     @init{
         boolean dataStore = true;
     }:
@@ -756,7 +756,7 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
 ;
 
 explainPlanStatement returns [ExplainPlanStatement xpplst]:
-    T_EXPLAIN T_PLAN T_FOR parsedStmnt=metaStatement
+    T_EXPLAIN T_PLAN T_FOR parsedStmnt=crossdataStatement
     {$xpplst = new ExplainPlanStatement(parsedStmnt);}
 ;
 
@@ -778,7 +778,7 @@ truncateStatement returns [TruncateStatement trst]:
 	}
 ;
 
-metaStatement returns [MetaStatement st]:
+crossdataStatement returns [CrossdataStatement st]:
     (T_START_BRACKET
         ( gID=getGenericID { sessionCatalog = gID;} )?
     T_END_BRACKET T_COMMA)?
@@ -811,8 +811,8 @@ metaStatement returns [MetaStatement st]:
     | st_drtr = dropTriggerStatement { $st = st_drtr; })
 ;
 
-query returns [MetaStatement st]:
-	mtst=metaStatement (T_SEMICOLON)+ EOF {
+query returns [CrossdataStatement st]:
+	mtst=crossdataStatement (T_SEMICOLON)+ EOF {
 		$st = mtst;
 	}
 ;
