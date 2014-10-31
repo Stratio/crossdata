@@ -65,6 +65,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setWorkflow(workflow1)
 
           if (workflow1.getExecutionType == ExecutionType.DROP_CATALOG) {
+
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(false)
             executionInfo.setRemoveOnSuccess(true)
@@ -72,13 +73,16 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DROP_CATALOG)
             result.setQueryId(queryId)
             sender ! result
+
           } else if (workflow1.getExecutionType == ExecutionType.ALTER_CATALOG) {
+
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
             val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_CATALOG)
             result.setQueryId(queryId)
             sender ! result
+
           } else if (workflow1.getExecutionType == ExecutionType.DROP_TABLE){
 
             // Drop table in the Crossdata servers through the MetadataManager
@@ -97,10 +101,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
           } else if (workflow1.getExecutionType == ExecutionType.ALTER_TABLE) {
+
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
-            executionInfo.setWorkflow(workflow1);
+            executionInfo.setWorkflow(workflow1)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
             val actorRef = context.actorSelection(workflow1.getActorRef)
@@ -110,27 +115,59 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_TABLE)
             result.setQueryId(queryId)
             sender ! result
-          } else if (workflow1.getActorRef != null && workflow1.getActorRef.length() > 0) {
 
-            val actorRef = context.actorSelection(workflow1.getActorRef)
+          } else if(workflow1.getExecutionType == ExecutionType.CREATE_INDEX) {
+
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
+            executionInfo.setRemoveOnSuccess(true)
+            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+            executionInfo.setWorkflow(workflow1)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-            log.info("ActorRef: " + actorRef.toString())
 
+            val actorRef = context.actorSelection(workflow1.getActorRef)
+            log.info("ActorRef: " + actorRef.toString())
+            actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+
+          } else if(workflow1.getExecutionType == ExecutionType.DROP_INDEX) {
+
+            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+            executionInfo.setPersistOnSuccess(true)
+            executionInfo.setRemoveOnSuccess(true)
+            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+            executionInfo.setWorkflow(workflow1)
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+
+            val actorRef = context.actorSelection(workflow1.getActorRef)
+            log.info("ActorRef: " + actorRef.toString())
             actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
 
           } else if (workflow1.getExecutionType == ExecutionType.CREATE_CATALOG ||
-                workflow1.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG) {
+                workflow1.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG ||
+                workflow1.getExecutionType == ExecutionType.CREATE_TABLE) {
 
-            coordinator.persistCreateCatalog(workflow1.getCatalogMetadata)
+            if(workflow1.getActorRef != null && workflow1.getActorRef.length() > 0){
 
-            executionInfo.setQueryStatus(QueryStatus.PLANNED)
-            ExecutionManager.MANAGER.createEntry(workflow1.getCatalogMetadata.getName.toString, queryId, true)
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-            val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG)
-            result.setQueryId(queryId)
-            sender ! result
+              val actorRef = context.actorSelection(workflow1.getActorRef)
+              executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+              executionInfo.setPersistOnSuccess(true)
+              ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+              log.info("ActorRef: " + actorRef.toString())
+
+              actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+
+            } else {
+
+              coordinator.persistCreateCatalog(workflow1.getCatalogMetadata)
+
+              executionInfo.setQueryStatus(QueryStatus.PLANNED)
+              ExecutionManager.MANAGER.createEntry(workflow1.getCatalogMetadata.getName.toString, queryId, true)
+              ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+              val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG)
+              result.setQueryId(queryId)
+              sender ! result
+
+            }
 
           } else {
             throw new CoordinationException("Operation not supported yet");
@@ -188,6 +225,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           log.info("\nCoordinate workflow: " + workflow1.toString)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
           if (ResultType.RESULTS.equals(workflow1.getResultType)) {
+
             val actorRef = StringUtils.getAkkaActorRefUri(workflow1.getActorRef())
             val actorSelection = context.actorSelection(actorRef)
             val operation = workflow1.getExecuteOperation(queryId)
@@ -196,6 +234,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             actorSelection.asInstanceOf[ActorSelection] ! operation
             log.info("\nmessage sent to" + actorRef.toString())
+
           } else if (ResultType.TRIGGER_EXECUTION.equals(workflow1.getResultType)) {
 
             val actorRef = StringUtils.getAkkaActorRefUri(workflow1.getActorRef())
@@ -236,7 +275,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
         //TODO Add two methods to StringUtils to retrieve AkkaActorRefUri tokening with # for connectors,
         // and $ for clients
-        val target = executionInfo.asInstanceOf[ExecutionInfo].getSender.toString
+        val target = executionInfo.asInstanceOf[ExecutionInfo].getSender
           .replace("Actor[", "").replace("]", "").split("#")(0)
         //val clientActor = context.actorSelection(StringUtils.getAkkaActorRefUri(executionInfo
         //  .asInstanceOf[ExecutionInfo].getSender))

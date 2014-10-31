@@ -1,4 +1,4 @@
-// $ANTLR 3.5.2 Meta.g 2014-10-30 19:01:06
+// $ANTLR 3.5.2 Meta.g 2014-10-31 12:26:23
 
     package com.stratio.crossdata.core.grammar.generated;
     import com.stratio.crossdata.common.data.*;
@@ -1253,7 +1253,7 @@ public class MetaParser extends Parser {
 			{
 			match(input,T_DROP,FOLLOW_T_DROP_in_dropIndexStatement3390); 
 			match(input,T_INDEX,FOLLOW_T_INDEX_in_dropIndexStatement3392); 
-			// Meta.g:510:2: ( T_IF T_EXISTS )?
+			// Meta.g:509:17: ( T_IF T_EXISTS )?
 			int alt10=2;
 			int LA10_0 = input.LA(1);
 			if ( (LA10_0==T_IF) ) {
@@ -1261,17 +1261,17 @@ public class MetaParser extends Parser {
 			}
 			switch (alt10) {
 				case 1 :
-					// Meta.g:510:3: T_IF T_EXISTS
+					// Meta.g:509:18: T_IF T_EXISTS
 					{
-					match(input,T_IF,FOLLOW_T_IF_in_dropIndexStatement3396); 
-					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropIndexStatement3398); 
+					match(input,T_IF,FOLLOW_T_IF_in_dropIndexStatement3395); 
+					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropIndexStatement3397); 
 					 dis.setDropIfExists(); 
 					}
 					break;
 
 			}
 
-			pushFollow(FOLLOW_getIndexName_in_dropIndexStatement3408);
+			pushFollow(FOLLOW_getIndexName_in_dropIndexStatement3406);
 			name=getIndexName();
 			state._fsp--;
 
@@ -1293,7 +1293,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "createIndexStatement"
-	// Meta.g:518:1: createIndexStatement returns [CreateIndexStatement cis] : T_CREATE (indexType= getIndexType )? T_INDEX ( T_IF T_NOT T_EXISTS )? (name= getColumnName[null] )? T_ON tablename= getTableName T_START_PARENTHESIS firstField= getColumnName[tablename] ( T_COMMA field= getColumnName[tablename] )* T_END_PARENTHESIS ( T_USING usingClass= QUOTED_LITERAL )? ( T_WITH j= getJson )? ;
+	// Meta.g:516:1: createIndexStatement returns [CreateIndexStatement cis] : T_CREATE (indexType= getIndexType )? T_INDEX ( T_IF T_NOT T_EXISTS )? (name= getColumnName[null] )? T_ON tablename= getTableName T_START_PARENTHESIS firstField= getColumnName[tablename] ( T_COMMA field= getColumnName[tablename] )* T_END_PARENTHESIS ( T_USING usingClass= QUOTED_LITERAL )? ( T_WITH j= getJson )? ;
 	public final CreateIndexStatement createIndexStatement() throws RecognitionException {
 		CreateIndexStatement cis = null;
 
@@ -1313,12 +1313,12 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 16) ) { return cis; }
 
-			// Meta.g:524:3: ( T_CREATE (indexType= getIndexType )? T_INDEX ( T_IF T_NOT T_EXISTS )? (name= getColumnName[null] )? T_ON tablename= getTableName T_START_PARENTHESIS firstField= getColumnName[tablename] ( T_COMMA field= getColumnName[tablename] )* T_END_PARENTHESIS ( T_USING usingClass= QUOTED_LITERAL )? ( T_WITH j= getJson )? )
-			// Meta.g:525:2: T_CREATE (indexType= getIndexType )? T_INDEX ( T_IF T_NOT T_EXISTS )? (name= getColumnName[null] )? T_ON tablename= getTableName T_START_PARENTHESIS firstField= getColumnName[tablename] ( T_COMMA field= getColumnName[tablename] )* T_END_PARENTHESIS ( T_USING usingClass= QUOTED_LITERAL )? ( T_WITH j= getJson )?
+			// Meta.g:522:3: ( T_CREATE (indexType= getIndexType )? T_INDEX ( T_IF T_NOT T_EXISTS )? (name= getColumnName[null] )? T_ON tablename= getTableName T_START_PARENTHESIS firstField= getColumnName[tablename] ( T_COMMA field= getColumnName[tablename] )* T_END_PARENTHESIS ( T_USING usingClass= QUOTED_LITERAL )? ( T_WITH j= getJson )? )
+			// Meta.g:523:2: T_CREATE (indexType= getIndexType )? T_INDEX ( T_IF T_NOT T_EXISTS )? (name= getColumnName[null] )? T_ON tablename= getTableName T_START_PARENTHESIS firstField= getColumnName[tablename] ( T_COMMA field= getColumnName[tablename] )* T_END_PARENTHESIS ( T_USING usingClass= QUOTED_LITERAL )? ( T_WITH j= getJson )?
 			{
-			match(input,T_CREATE,FOLLOW_T_CREATE_in_createIndexStatement3437); 
+			match(input,T_CREATE,FOLLOW_T_CREATE_in_createIndexStatement3435); 
 			cis.setIndexType("default");
-			// Meta.g:525:43: (indexType= getIndexType )?
+			// Meta.g:523:43: (indexType= getIndexType )?
 			int alt11=2;
 			int LA11_0 = input.LA(1);
 			if ( (LA11_0==T_CUSTOM||LA11_0==T_DEFAULT||LA11_0==T_FULL_TEXT) ) {
@@ -1326,9 +1326,9 @@ public class MetaParser extends Parser {
 			}
 			switch (alt11) {
 				case 1 :
-					// Meta.g:525:44: indexType= getIndexType
+					// Meta.g:523:44: indexType= getIndexType
 					{
-					pushFollow(FOLLOW_getIndexType_in_createIndexStatement3444);
+					pushFollow(FOLLOW_getIndexType_in_createIndexStatement3442);
 					indexType=getIndexType();
 					state._fsp--;
 
@@ -1338,8 +1338,8 @@ public class MetaParser extends Parser {
 
 			}
 
-			match(input,T_INDEX,FOLLOW_T_INDEX_in_createIndexStatement3450); 
-			// Meta.g:526:2: ( T_IF T_NOT T_EXISTS )?
+			match(input,T_INDEX,FOLLOW_T_INDEX_in_createIndexStatement3448); 
+			// Meta.g:524:2: ( T_IF T_NOT T_EXISTS )?
 			int alt12=2;
 			int LA12_0 = input.LA(1);
 			if ( (LA12_0==T_IF) ) {
@@ -1347,18 +1347,18 @@ public class MetaParser extends Parser {
 			}
 			switch (alt12) {
 				case 1 :
-					// Meta.g:526:3: T_IF T_NOT T_EXISTS
+					// Meta.g:524:3: T_IF T_NOT T_EXISTS
 					{
-					match(input,T_IF,FOLLOW_T_IF_in_createIndexStatement3454); 
-					match(input,T_NOT,FOLLOW_T_NOT_in_createIndexStatement3456); 
-					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_createIndexStatement3458); 
+					match(input,T_IF,FOLLOW_T_IF_in_createIndexStatement3452); 
+					match(input,T_NOT,FOLLOW_T_NOT_in_createIndexStatement3454); 
+					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_createIndexStatement3456); 
 					cis.setCreateIfNotExists();
 					}
 					break;
 
 			}
 
-			// Meta.g:527:2: (name= getColumnName[null] )?
+			// Meta.g:525:2: (name= getColumnName[null] )?
 			int alt13=2;
 			int LA13_0 = input.LA(1);
 			if ( (LA13_0==T_BOOLEAN||LA13_0==T_CATALOG||LA13_0==T_COUNT||LA13_0==T_CTLG_TBL_COL||(LA13_0 >= T_DAY && LA13_0 <= T_DAYS)||(LA13_0 >= T_HOUR && LA13_0 <= T_IDENT)||LA13_0==T_INT||LA13_0==T_KEY||LA13_0==T_KS_AND_TN||LA13_0==T_LIMIT||(LA13_0 >= T_LUCENE && LA13_0 <= T_MAP)||(LA13_0 >= T_MINS && LA13_0 <= T_MINUTES)||LA13_0==T_OPTIONS||LA13_0==T_PLAN||LA13_0==T_PROCESS||(LA13_0 >= T_SEC && LA13_0 <= T_SECS)||LA13_0==T_STORAGE||LA13_0==T_TEXT||LA13_0==T_TYPE) ) {
@@ -1366,9 +1366,9 @@ public class MetaParser extends Parser {
 			}
 			switch (alt13) {
 				case 1 :
-					// Meta.g:527:3: name= getColumnName[null]
+					// Meta.g:525:3: name= getColumnName[null]
 					{
-					pushFollow(FOLLOW_getColumnName_in_createIndexStatement3468);
+					pushFollow(FOLLOW_getColumnName_in_createIndexStatement3466);
 					name=getColumnName(null);
 					state._fsp--;
 
@@ -1378,19 +1378,19 @@ public class MetaParser extends Parser {
 
 			}
 
-			match(input,T_ON,FOLLOW_T_ON_in_createIndexStatement3477); 
-			pushFollow(FOLLOW_getTableName_in_createIndexStatement3481);
+			match(input,T_ON,FOLLOW_T_ON_in_createIndexStatement3475); 
+			pushFollow(FOLLOW_getTableName_in_createIndexStatement3479);
 			tablename=getTableName();
 			state._fsp--;
 
 			cis.setTableName(tablename);
-			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createIndexStatement3486); 
-			pushFollow(FOLLOW_getColumnName_in_createIndexStatement3498);
+			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createIndexStatement3484); 
+			pushFollow(FOLLOW_getColumnName_in_createIndexStatement3496);
 			firstField=getColumnName(tablename);
 			state._fsp--;
 
 			cis.addColumn(firstField);
-			// Meta.g:531:2: ( T_COMMA field= getColumnName[tablename] )*
+			// Meta.g:529:2: ( T_COMMA field= getColumnName[tablename] )*
 			loop14:
 			while (true) {
 				int alt14=2;
@@ -1401,10 +1401,10 @@ public class MetaParser extends Parser {
 
 				switch (alt14) {
 				case 1 :
-					// Meta.g:531:3: T_COMMA field= getColumnName[tablename]
+					// Meta.g:529:3: T_COMMA field= getColumnName[tablename]
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_createIndexStatement3505); 
-					pushFollow(FOLLOW_getColumnName_in_createIndexStatement3511);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_createIndexStatement3503); 
+					pushFollow(FOLLOW_getColumnName_in_createIndexStatement3509);
 					field=getColumnName(tablename);
 					state._fsp--;
 
@@ -1417,8 +1417,8 @@ public class MetaParser extends Parser {
 				}
 			}
 
-			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createIndexStatement3521); 
-			// Meta.g:535:2: ( T_USING usingClass= QUOTED_LITERAL )?
+			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createIndexStatement3519); 
+			// Meta.g:533:2: ( T_USING usingClass= QUOTED_LITERAL )?
 			int alt15=2;
 			int LA15_0 = input.LA(1);
 			if ( (LA15_0==T_USING) ) {
@@ -1426,17 +1426,17 @@ public class MetaParser extends Parser {
 			}
 			switch (alt15) {
 				case 1 :
-					// Meta.g:535:3: T_USING usingClass= QUOTED_LITERAL
+					// Meta.g:533:3: T_USING usingClass= QUOTED_LITERAL
 					{
-					match(input,T_USING,FOLLOW_T_USING_in_createIndexStatement3525); 
-					usingClass=(Token)match(input,QUOTED_LITERAL,FOLLOW_QUOTED_LITERAL_in_createIndexStatement3529); 
+					match(input,T_USING,FOLLOW_T_USING_in_createIndexStatement3523); 
+					usingClass=(Token)match(input,QUOTED_LITERAL,FOLLOW_QUOTED_LITERAL_in_createIndexStatement3527); 
 					cis.setUsingClass((usingClass!=null?usingClass.getText():null));
 					}
 					break;
 
 			}
 
-			// Meta.g:536:2: ( T_WITH j= getJson )?
+			// Meta.g:534:2: ( T_WITH j= getJson )?
 			int alt16=2;
 			int LA16_0 = input.LA(1);
 			if ( (LA16_0==T_WITH) ) {
@@ -1444,10 +1444,10 @@ public class MetaParser extends Parser {
 			}
 			switch (alt16) {
 				case 1 :
-					// Meta.g:536:3: T_WITH j= getJson
+					// Meta.g:534:3: T_WITH j= getJson
 					{
-					match(input,T_WITH,FOLLOW_T_WITH_in_createIndexStatement3537); 
-					pushFollow(FOLLOW_getJson_in_createIndexStatement3541);
+					match(input,T_WITH,FOLLOW_T_WITH_in_createIndexStatement3535); 
+					pushFollow(FOLLOW_getJson_in_createIndexStatement3539);
 					j=getJson();
 					state._fsp--;
 
@@ -1477,7 +1477,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getIndexType"
-	// Meta.g:540:1: getIndexType returns [String indexType] : (idxType= T_DEFAULT |idxType= T_FULL_TEXT |idxType= T_CUSTOM ) ;
+	// Meta.g:538:1: getIndexType returns [String indexType] : (idxType= T_DEFAULT |idxType= T_FULL_TEXT |idxType= T_CUSTOM ) ;
 	public final String getIndexType() throws RecognitionException {
 		String indexType = null;
 
@@ -1488,10 +1488,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 17) ) { return indexType; }
 
-			// Meta.g:540:40: ( (idxType= T_DEFAULT |idxType= T_FULL_TEXT |idxType= T_CUSTOM ) )
-			// Meta.g:541:5: (idxType= T_DEFAULT |idxType= T_FULL_TEXT |idxType= T_CUSTOM )
+			// Meta.g:538:40: ( (idxType= T_DEFAULT |idxType= T_FULL_TEXT |idxType= T_CUSTOM ) )
+			// Meta.g:539:5: (idxType= T_DEFAULT |idxType= T_FULL_TEXT |idxType= T_CUSTOM )
 			{
-			// Meta.g:541:5: (idxType= T_DEFAULT |idxType= T_FULL_TEXT |idxType= T_CUSTOM )
+			// Meta.g:539:5: (idxType= T_DEFAULT |idxType= T_FULL_TEXT |idxType= T_CUSTOM )
 			int alt17=3;
 			switch ( input.LA(1) ) {
 			case T_DEFAULT:
@@ -1516,21 +1516,21 @@ public class MetaParser extends Parser {
 			}
 			switch (alt17) {
 				case 1 :
-					// Meta.g:541:7: idxType= T_DEFAULT
+					// Meta.g:539:7: idxType= T_DEFAULT
 					{
-					idxType=(Token)match(input,T_DEFAULT,FOLLOW_T_DEFAULT_in_getIndexType3567); 
+					idxType=(Token)match(input,T_DEFAULT,FOLLOW_T_DEFAULT_in_getIndexType3565); 
 					}
 					break;
 				case 2 :
-					// Meta.g:542:7: idxType= T_FULL_TEXT
+					// Meta.g:540:7: idxType= T_FULL_TEXT
 					{
-					idxType=(Token)match(input,T_FULL_TEXT,FOLLOW_T_FULL_TEXT_in_getIndexType3577); 
+					idxType=(Token)match(input,T_FULL_TEXT,FOLLOW_T_FULL_TEXT_in_getIndexType3575); 
 					}
 					break;
 				case 3 :
-					// Meta.g:543:7: idxType= T_CUSTOM
+					// Meta.g:541:7: idxType= T_CUSTOM
 					{
-					idxType=(Token)match(input,T_CUSTOM,FOLLOW_T_CUSTOM_in_getIndexType3587); 
+					idxType=(Token)match(input,T_CUSTOM,FOLLOW_T_CUSTOM_in_getIndexType3585); 
 					}
 					break;
 
@@ -1554,7 +1554,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getField"
-	// Meta.g:547:1: getField returns [String newField] : (unitField= getUnits |fieldToken= ( T_IDENT | T_LUCENE | T_KEY ) ) ;
+	// Meta.g:545:1: getField returns [String newField] : (unitField= getUnits |fieldToken= ( T_IDENT | T_LUCENE | T_KEY ) ) ;
 	public final String getField() throws RecognitionException {
 		String newField = null;
 
@@ -1566,10 +1566,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 18) ) { return newField; }
 
-			// Meta.g:547:35: ( (unitField= getUnits |fieldToken= ( T_IDENT | T_LUCENE | T_KEY ) ) )
-			// Meta.g:548:5: (unitField= getUnits |fieldToken= ( T_IDENT | T_LUCENE | T_KEY ) )
+			// Meta.g:545:35: ( (unitField= getUnits |fieldToken= ( T_IDENT | T_LUCENE | T_KEY ) ) )
+			// Meta.g:546:5: (unitField= getUnits |fieldToken= ( T_IDENT | T_LUCENE | T_KEY ) )
 			{
-			// Meta.g:548:5: (unitField= getUnits |fieldToken= ( T_IDENT | T_LUCENE | T_KEY ) )
+			// Meta.g:546:5: (unitField= getUnits |fieldToken= ( T_IDENT | T_LUCENE | T_KEY ) )
 			int alt18=2;
 			int LA18_0 = input.LA(1);
 			if ( ((LA18_0 >= T_DAY && LA18_0 <= T_DAYS)||(LA18_0 >= T_HOUR && LA18_0 <= T_HOURS)||(LA18_0 >= T_MIN && LA18_0 <= T_MINS)||LA18_0==T_MINUTES||LA18_0==T_SEC||(LA18_0 >= T_SECONDS && LA18_0 <= T_SECS)) ) {
@@ -1587,9 +1587,9 @@ public class MetaParser extends Parser {
 
 			switch (alt18) {
 				case 1 :
-					// Meta.g:548:6: unitField= getUnits
+					// Meta.g:546:6: unitField= getUnits
 					{
-					pushFollow(FOLLOW_getUnits_in_getField3613);
+					pushFollow(FOLLOW_getUnits_in_getField3611);
 					unitField=getUnits();
 					state._fsp--;
 
@@ -1597,7 +1597,7 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:549:6: fieldToken= ( T_IDENT | T_LUCENE | T_KEY )
+					// Meta.g:547:6: fieldToken= ( T_IDENT | T_LUCENE | T_KEY )
 					{
 					fieldToken=input.LT(1);
 					if ( input.LA(1)==T_IDENT||input.LA(1)==T_KEY||input.LA(1)==T_LUCENE ) {
@@ -1631,7 +1631,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getUnits"
-	// Meta.g:552:1: getUnits returns [String newUnit] : unitToken= ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS ) ;
+	// Meta.g:550:1: getUnits returns [String newUnit] : unitToken= ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS ) ;
 	public final String getUnits() throws RecognitionException {
 		String newUnit = null;
 
@@ -1642,8 +1642,8 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 19) ) { return newUnit; }
 
-			// Meta.g:552:34: (unitToken= ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS ) )
-			// Meta.g:553:5: unitToken= ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS )
+			// Meta.g:550:34: (unitToken= ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS ) )
+			// Meta.g:551:5: unitToken= ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS )
 			{
 			unitToken=input.LT(1);
 			if ( (input.LA(1) >= T_DAY && input.LA(1) <= T_DAYS)||(input.LA(1) >= T_HOUR && input.LA(1) <= T_HOURS)||(input.LA(1) >= T_MIN && input.LA(1) <= T_MINS)||input.LA(1)==T_MINUTES||input.LA(1)==T_SEC||(input.LA(1) >= T_SECONDS && input.LA(1) <= T_SECS) ) {
@@ -1672,7 +1672,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "updateTableStatement"
-	// Meta.g:566:1: updateTableStatement returns [UpdateTableStatement pdtbst] : T_UPDATE tablename= getTableName ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )? T_SET assig1= getAssignment[tablename] ( T_COMMA assigN= getAssignment[tablename] )* ( T_WHERE whereClauses= getWhereClauses[tablename] )? ( T_IF id1= getSelector[tablename] T_EQUAL term1= getSelector[tablename] ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )* )? ;
+	// Meta.g:564:1: updateTableStatement returns [UpdateTableStatement pdtbst] : T_UPDATE tablename= getTableName ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )? T_SET assig1= getAssignment[tablename] ( T_COMMA assigN= getAssignment[tablename] )* ( T_WHERE whereClauses= getWhereClauses[tablename] )? ( T_IF id1= getSelector[tablename] T_EQUAL term1= getSelector[tablename] ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )* )? ;
 	public final UpdateTableStatement updateTableStatement() throws RecognitionException {
 		UpdateTableStatement pdtbst = null;
 
@@ -1699,15 +1699,15 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 20) ) { return pdtbst; }
 
-			// Meta.g:573:6: ( T_UPDATE tablename= getTableName ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )? T_SET assig1= getAssignment[tablename] ( T_COMMA assigN= getAssignment[tablename] )* ( T_WHERE whereClauses= getWhereClauses[tablename] )? ( T_IF id1= getSelector[tablename] T_EQUAL term1= getSelector[tablename] ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )* )? )
-			// Meta.g:574:5: T_UPDATE tablename= getTableName ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )? T_SET assig1= getAssignment[tablename] ( T_COMMA assigN= getAssignment[tablename] )* ( T_WHERE whereClauses= getWhereClauses[tablename] )? ( T_IF id1= getSelector[tablename] T_EQUAL term1= getSelector[tablename] ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )* )?
+			// Meta.g:571:6: ( T_UPDATE tablename= getTableName ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )? T_SET assig1= getAssignment[tablename] ( T_COMMA assigN= getAssignment[tablename] )* ( T_WHERE whereClauses= getWhereClauses[tablename] )? ( T_IF id1= getSelector[tablename] T_EQUAL term1= getSelector[tablename] ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )* )? )
+			// Meta.g:572:5: T_UPDATE tablename= getTableName ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )? T_SET assig1= getAssignment[tablename] ( T_COMMA assigN= getAssignment[tablename] )* ( T_WHERE whereClauses= getWhereClauses[tablename] )? ( T_IF id1= getSelector[tablename] T_EQUAL term1= getSelector[tablename] ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )* )?
 			{
-			match(input,T_UPDATE,FOLLOW_T_UPDATE_in_updateTableStatement3759); 
-			pushFollow(FOLLOW_getTableName_in_updateTableStatement3763);
+			match(input,T_UPDATE,FOLLOW_T_UPDATE_in_updateTableStatement3757); 
+			pushFollow(FOLLOW_getTableName_in_updateTableStatement3761);
 			tablename=getTableName();
 			state._fsp--;
 
-			// Meta.g:575:5: ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )?
+			// Meta.g:573:5: ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )?
 			int alt20=2;
 			int LA20_0 = input.LA(1);
 			if ( (LA20_0==T_USING) ) {
@@ -1715,15 +1715,15 @@ public class MetaParser extends Parser {
 			}
 			switch (alt20) {
 				case 1 :
-					// Meta.g:575:6: T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )*
+					// Meta.g:573:6: T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )*
 					{
-					match(input,T_USING,FOLLOW_T_USING_in_updateTableStatement3770); 
-					pushFollow(FOLLOW_getOption_in_updateTableStatement3774);
+					match(input,T_USING,FOLLOW_T_USING_in_updateTableStatement3768); 
+					pushFollow(FOLLOW_getOption_in_updateTableStatement3772);
 					opt1=getOption(tablename);
 					state._fsp--;
 
 					optsInc = true; options.add(opt1);
-					// Meta.g:575:77: ( T_AND optN= getOption[tablename] )*
+					// Meta.g:573:77: ( T_AND optN= getOption[tablename] )*
 					loop19:
 					while (true) {
 						int alt19=2;
@@ -1734,10 +1734,10 @@ public class MetaParser extends Parser {
 
 						switch (alt19) {
 						case 1 :
-							// Meta.g:575:78: T_AND optN= getOption[tablename]
+							// Meta.g:573:78: T_AND optN= getOption[tablename]
 							{
-							match(input,T_AND,FOLLOW_T_AND_in_updateTableStatement3780); 
-							pushFollow(FOLLOW_getOption_in_updateTableStatement3784);
+							match(input,T_AND,FOLLOW_T_AND_in_updateTableStatement3778); 
+							pushFollow(FOLLOW_getOption_in_updateTableStatement3782);
 							optN=getOption(tablename);
 							state._fsp--;
 
@@ -1755,13 +1755,13 @@ public class MetaParser extends Parser {
 
 			}
 
-			match(input,T_SET,FOLLOW_T_SET_in_updateTableStatement3797); 
-			pushFollow(FOLLOW_getAssignment_in_updateTableStatement3801);
+			match(input,T_SET,FOLLOW_T_SET_in_updateTableStatement3795); 
+			pushFollow(FOLLOW_getAssignment_in_updateTableStatement3799);
 			assig1=getAssignment(tablename);
 			state._fsp--;
 
 			assignations.add(assig1);
-			// Meta.g:576:71: ( T_COMMA assigN= getAssignment[tablename] )*
+			// Meta.g:574:71: ( T_COMMA assigN= getAssignment[tablename] )*
 			loop21:
 			while (true) {
 				int alt21=2;
@@ -1772,10 +1772,10 @@ public class MetaParser extends Parser {
 
 				switch (alt21) {
 				case 1 :
-					// Meta.g:576:72: T_COMMA assigN= getAssignment[tablename]
+					// Meta.g:574:72: T_COMMA assigN= getAssignment[tablename]
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_updateTableStatement3807); 
-					pushFollow(FOLLOW_getAssignment_in_updateTableStatement3811);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_updateTableStatement3805); 
+					pushFollow(FOLLOW_getAssignment_in_updateTableStatement3809);
 					assigN=getAssignment(tablename);
 					state._fsp--;
 
@@ -1788,7 +1788,7 @@ public class MetaParser extends Parser {
 				}
 			}
 
-			// Meta.g:577:5: ( T_WHERE whereClauses= getWhereClauses[tablename] )?
+			// Meta.g:575:5: ( T_WHERE whereClauses= getWhereClauses[tablename] )?
 			int alt22=2;
 			int LA22_0 = input.LA(1);
 			if ( (LA22_0==T_WHERE) ) {
@@ -1796,10 +1796,10 @@ public class MetaParser extends Parser {
 			}
 			switch (alt22) {
 				case 1 :
-					// Meta.g:577:6: T_WHERE whereClauses= getWhereClauses[tablename]
+					// Meta.g:575:6: T_WHERE whereClauses= getWhereClauses[tablename]
 					{
-					match(input,T_WHERE,FOLLOW_T_WHERE_in_updateTableStatement3823); 
-					pushFollow(FOLLOW_getWhereClauses_in_updateTableStatement3827);
+					match(input,T_WHERE,FOLLOW_T_WHERE_in_updateTableStatement3821); 
+					pushFollow(FOLLOW_getWhereClauses_in_updateTableStatement3825);
 					whereClauses=getWhereClauses(tablename);
 					state._fsp--;
 
@@ -1808,7 +1808,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:578:5: ( T_IF id1= getSelector[tablename] T_EQUAL term1= getSelector[tablename] ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )* )?
+			// Meta.g:576:5: ( T_IF id1= getSelector[tablename] T_EQUAL term1= getSelector[tablename] ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )* )?
 			int alt24=2;
 			int LA24_0 = input.LA(1);
 			if ( (LA24_0==T_IF) ) {
@@ -1816,20 +1816,20 @@ public class MetaParser extends Parser {
 			}
 			switch (alt24) {
 				case 1 :
-					// Meta.g:578:6: T_IF id1= getSelector[tablename] T_EQUAL term1= getSelector[tablename] ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )*
+					// Meta.g:576:6: T_IF id1= getSelector[tablename] T_EQUAL term1= getSelector[tablename] ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )*
 					{
-					match(input,T_IF,FOLLOW_T_IF_in_updateTableStatement3837); 
-					pushFollow(FOLLOW_getSelector_in_updateTableStatement3841);
+					match(input,T_IF,FOLLOW_T_IF_in_updateTableStatement3835); 
+					pushFollow(FOLLOW_getSelector_in_updateTableStatement3839);
 					id1=getSelector(tablename);
 					state._fsp--;
 
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_updateTableStatement3844); 
-					pushFollow(FOLLOW_getSelector_in_updateTableStatement3848);
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_updateTableStatement3842); 
+					pushFollow(FOLLOW_getSelector_in_updateTableStatement3846);
 					term1=getSelector(tablename);
 					state._fsp--;
 
 					condsInc = true; conditions.put(id1, term1);
-					// Meta.g:579:21: ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )*
+					// Meta.g:577:21: ( T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename] )*
 					loop23:
 					while (true) {
 						int alt23=2;
@@ -1840,15 +1840,15 @@ public class MetaParser extends Parser {
 
 						switch (alt23) {
 						case 1 :
-							// Meta.g:579:22: T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename]
+							// Meta.g:577:22: T_AND idN= getSelector[tablename] T_EQUAL termN= getSelector[tablename]
 							{
-							match(input,T_AND,FOLLOW_T_AND_in_updateTableStatement3874); 
-							pushFollow(FOLLOW_getSelector_in_updateTableStatement3878);
+							match(input,T_AND,FOLLOW_T_AND_in_updateTableStatement3872); 
+							pushFollow(FOLLOW_getSelector_in_updateTableStatement3876);
 							idN=getSelector(tablename);
 							state._fsp--;
 
-							match(input,T_EQUAL,FOLLOW_T_EQUAL_in_updateTableStatement3881); 
-							pushFollow(FOLLOW_getSelector_in_updateTableStatement3885);
+							match(input,T_EQUAL,FOLLOW_T_EQUAL_in_updateTableStatement3879); 
+							pushFollow(FOLLOW_getSelector_in_updateTableStatement3883);
 							termN=getSelector(tablename);
 							state._fsp--;
 
@@ -1896,7 +1896,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "stopProcessStatement"
-	// Meta.g:595:1: stopProcessStatement returns [StopProcessStatement stprst] : T_STOP T_PROCESS tablename= T_IDENT ;
+	// Meta.g:593:1: stopProcessStatement returns [StopProcessStatement stprst] : T_STOP T_PROCESS tablename= T_IDENT ;
 	public final StopProcessStatement stopProcessStatement() throws RecognitionException {
 		StopProcessStatement stprst = null;
 
@@ -1907,12 +1907,12 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 21) ) { return stprst; }
 
-			// Meta.g:595:59: ( T_STOP T_PROCESS tablename= T_IDENT )
-			// Meta.g:596:5: T_STOP T_PROCESS tablename= T_IDENT
+			// Meta.g:593:59: ( T_STOP T_PROCESS tablename= T_IDENT )
+			// Meta.g:594:5: T_STOP T_PROCESS tablename= T_IDENT
 			{
-			match(input,T_STOP,FOLLOW_T_STOP_in_stopProcessStatement3914); 
-			match(input,T_PROCESS,FOLLOW_T_PROCESS_in_stopProcessStatement3916); 
-			tablename=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_stopProcessStatement3920); 
+			match(input,T_STOP,FOLLOW_T_STOP_in_stopProcessStatement3912); 
+			match(input,T_PROCESS,FOLLOW_T_PROCESS_in_stopProcessStatement3914); 
+			tablename=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_stopProcessStatement3918); 
 			 stprst = new StopProcessStatement((tablename!=null?tablename.getText():null)); 
 			}
 
@@ -1931,7 +1931,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "dropTriggerStatement"
-	// Meta.g:599:1: dropTriggerStatement returns [DropTriggerStatement drtrst] : T_DROP T_TRIGGER tablename= T_IDENT T_ON ident2= T_IDENT ;
+	// Meta.g:597:1: dropTriggerStatement returns [DropTriggerStatement drtrst] : T_DROP T_TRIGGER tablename= T_IDENT T_ON ident2= T_IDENT ;
 	public final DropTriggerStatement dropTriggerStatement() throws RecognitionException {
 		DropTriggerStatement drtrst = null;
 
@@ -1943,14 +1943,14 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 22) ) { return drtrst; }
 
-			// Meta.g:599:59: ( T_DROP T_TRIGGER tablename= T_IDENT T_ON ident2= T_IDENT )
-			// Meta.g:600:5: T_DROP T_TRIGGER tablename= T_IDENT T_ON ident2= T_IDENT
+			// Meta.g:597:59: ( T_DROP T_TRIGGER tablename= T_IDENT T_ON ident2= T_IDENT )
+			// Meta.g:598:5: T_DROP T_TRIGGER tablename= T_IDENT T_ON ident2= T_IDENT
 			{
-			match(input,T_DROP,FOLLOW_T_DROP_in_dropTriggerStatement3938); 
-			match(input,T_TRIGGER,FOLLOW_T_TRIGGER_in_dropTriggerStatement3944); 
-			tablename=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_dropTriggerStatement3948); 
-			match(input,T_ON,FOLLOW_T_ON_in_dropTriggerStatement3954); 
-			ident2=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_dropTriggerStatement3962); 
+			match(input,T_DROP,FOLLOW_T_DROP_in_dropTriggerStatement3936); 
+			match(input,T_TRIGGER,FOLLOW_T_TRIGGER_in_dropTriggerStatement3942); 
+			tablename=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_dropTriggerStatement3946); 
+			match(input,T_ON,FOLLOW_T_ON_in_dropTriggerStatement3952); 
+			ident2=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_dropTriggerStatement3960); 
 			drtrst = new DropTriggerStatement((tablename!=null?tablename.getText():null),(ident2!=null?ident2.getText():null));
 			}
 
@@ -1969,7 +1969,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "createTriggerStatement"
-	// Meta.g:607:1: createTriggerStatement returns [CreateTriggerStatement crtrst] : T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT ;
+	// Meta.g:605:1: createTriggerStatement returns [CreateTriggerStatement crtrst] : T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT ;
 	public final CreateTriggerStatement createTriggerStatement() throws RecognitionException {
 		CreateTriggerStatement crtrst = null;
 
@@ -1982,16 +1982,16 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 23) ) { return crtrst; }
 
-			// Meta.g:607:63: ( T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT )
-			// Meta.g:608:5: T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT
+			// Meta.g:605:63: ( T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT )
+			// Meta.g:606:5: T_CREATE T_TRIGGER trigger_name= T_IDENT T_ON table_name= T_IDENT T_USING class_name= T_IDENT
 			{
-			match(input,T_CREATE,FOLLOW_T_CREATE_in_createTriggerStatement3988); 
-			match(input,T_TRIGGER,FOLLOW_T_TRIGGER_in_createTriggerStatement3994); 
-			trigger_name=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTriggerStatement3998); 
-			match(input,T_ON,FOLLOW_T_ON_in_createTriggerStatement4004); 
-			table_name=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTriggerStatement4012); 
-			match(input,T_USING,FOLLOW_T_USING_in_createTriggerStatement4018); 
-			class_name=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTriggerStatement4022); 
+			match(input,T_CREATE,FOLLOW_T_CREATE_in_createTriggerStatement3986); 
+			match(input,T_TRIGGER,FOLLOW_T_TRIGGER_in_createTriggerStatement3992); 
+			trigger_name=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTriggerStatement3996); 
+			match(input,T_ON,FOLLOW_T_ON_in_createTriggerStatement4002); 
+			table_name=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTriggerStatement4010); 
+			match(input,T_USING,FOLLOW_T_USING_in_createTriggerStatement4016); 
+			class_name=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTriggerStatement4020); 
 			crtrst = new CreateTriggerStatement((trigger_name!=null?trigger_name.getText():null),(table_name!=null?table_name.getText():null),(class_name!=null?class_name.getText():null));
 			}
 
@@ -2010,7 +2010,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "createTableStatement"
-	// Meta.g:616:1: createTableStatement returns [CreateTableStatement crtast] : T_CREATE tableType= getTableType T_TABLE ( T_IF T_NOT T_EXISTS )? tablename= getTableName T_ON T_CLUSTER clusterID= T_IDENT T_START_PARENTHESIS id1= getColumnName[tablename] type1= getDataType ( T_PRIMARY T_KEY )? ( T_COMMA idN= getColumnName[tablename] typeN= getDataType )* ( T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS ) ( T_COMMA idPkN= getColumnName[tablename] )* T_END_PARENTHESIS )? T_END_PARENTHESIS ( T_WITH j= getJson )? ;
+	// Meta.g:614:1: createTableStatement returns [CreateTableStatement crtast] : T_CREATE tableType= getTableType T_TABLE ( T_IF T_NOT T_EXISTS )? tablename= getTableName T_ON T_CLUSTER clusterID= T_IDENT T_START_PARENTHESIS id1= getColumnName[tablename] type1= getDataType ( T_PRIMARY T_KEY )? ( T_COMMA idN= getColumnName[tablename] typeN= getDataType )* ( T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS ) ( T_COMMA idPkN= getColumnName[tablename] )* T_END_PARENTHESIS )? T_END_PARENTHESIS ( T_WITH j= getJson )? ;
 	public final CreateTableStatement createTableStatement() throws RecognitionException {
 		CreateTableStatement crtast = null;
 
@@ -2038,16 +2038,16 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 24) ) { return crtast; }
 
-			// Meta.g:622:6: ( T_CREATE tableType= getTableType T_TABLE ( T_IF T_NOT T_EXISTS )? tablename= getTableName T_ON T_CLUSTER clusterID= T_IDENT T_START_PARENTHESIS id1= getColumnName[tablename] type1= getDataType ( T_PRIMARY T_KEY )? ( T_COMMA idN= getColumnName[tablename] typeN= getDataType )* ( T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS ) ( T_COMMA idPkN= getColumnName[tablename] )* T_END_PARENTHESIS )? T_END_PARENTHESIS ( T_WITH j= getJson )? )
-			// Meta.g:623:5: T_CREATE tableType= getTableType T_TABLE ( T_IF T_NOT T_EXISTS )? tablename= getTableName T_ON T_CLUSTER clusterID= T_IDENT T_START_PARENTHESIS id1= getColumnName[tablename] type1= getDataType ( T_PRIMARY T_KEY )? ( T_COMMA idN= getColumnName[tablename] typeN= getDataType )* ( T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS ) ( T_COMMA idPkN= getColumnName[tablename] )* T_END_PARENTHESIS )? T_END_PARENTHESIS ( T_WITH j= getJson )?
+			// Meta.g:620:6: ( T_CREATE tableType= getTableType T_TABLE ( T_IF T_NOT T_EXISTS )? tablename= getTableName T_ON T_CLUSTER clusterID= T_IDENT T_START_PARENTHESIS id1= getColumnName[tablename] type1= getDataType ( T_PRIMARY T_KEY )? ( T_COMMA idN= getColumnName[tablename] typeN= getDataType )* ( T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS ) ( T_COMMA idPkN= getColumnName[tablename] )* T_END_PARENTHESIS )? T_END_PARENTHESIS ( T_WITH j= getJson )? )
+			// Meta.g:621:5: T_CREATE tableType= getTableType T_TABLE ( T_IF T_NOT T_EXISTS )? tablename= getTableName T_ON T_CLUSTER clusterID= T_IDENT T_START_PARENTHESIS id1= getColumnName[tablename] type1= getDataType ( T_PRIMARY T_KEY )? ( T_COMMA idN= getColumnName[tablename] typeN= getDataType )* ( T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS ) ( T_COMMA idPkN= getColumnName[tablename] )* T_END_PARENTHESIS )? T_END_PARENTHESIS ( T_WITH j= getJson )?
 			{
-			match(input,T_CREATE,FOLLOW_T_CREATE_in_createTableStatement4052); 
-			pushFollow(FOLLOW_getTableType_in_createTableStatement4056);
+			match(input,T_CREATE,FOLLOW_T_CREATE_in_createTableStatement4050); 
+			pushFollow(FOLLOW_getTableType_in_createTableStatement4054);
 			tableType=getTableType();
 			state._fsp--;
 
-			match(input,T_TABLE,FOLLOW_T_TABLE_in_createTableStatement4058); 
-			// Meta.g:623:45: ( T_IF T_NOT T_EXISTS )?
+			match(input,T_TABLE,FOLLOW_T_TABLE_in_createTableStatement4056); 
+			// Meta.g:621:45: ( T_IF T_NOT T_EXISTS )?
 			int alt25=2;
 			int LA25_0 = input.LA(1);
 			if ( (LA25_0==T_IF) ) {
@@ -2055,35 +2055,35 @@ public class MetaParser extends Parser {
 			}
 			switch (alt25) {
 				case 1 :
-					// Meta.g:623:46: T_IF T_NOT T_EXISTS
+					// Meta.g:621:46: T_IF T_NOT T_EXISTS
 					{
-					match(input,T_IF,FOLLOW_T_IF_in_createTableStatement4061); 
-					match(input,T_NOT,FOLLOW_T_NOT_in_createTableStatement4063); 
-					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_createTableStatement4065); 
+					match(input,T_IF,FOLLOW_T_IF_in_createTableStatement4059); 
+					match(input,T_NOT,FOLLOW_T_NOT_in_createTableStatement4061); 
+					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_createTableStatement4063); 
 					ifNotExists = true;
 					}
 					break;
 
 			}
 
-			pushFollow(FOLLOW_getTableName_in_createTableStatement4077);
+			pushFollow(FOLLOW_getTableName_in_createTableStatement4075);
 			tablename=getTableName();
 			state._fsp--;
 
 			 if(!tablename.isCompletedName()) throwParsingException("Catalog is missing") ; 
-			match(input,T_ON,FOLLOW_T_ON_in_createTableStatement4085); 
-			match(input,T_CLUSTER,FOLLOW_T_CLUSTER_in_createTableStatement4087); 
-			clusterID=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement4091); 
-			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createTableStatement4097); 
-			pushFollow(FOLLOW_getColumnName_in_createTableStatement4109);
+			match(input,T_ON,FOLLOW_T_ON_in_createTableStatement4083); 
+			match(input,T_CLUSTER,FOLLOW_T_CLUSTER_in_createTableStatement4085); 
+			clusterID=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_createTableStatement4089); 
+			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createTableStatement4095); 
+			pushFollow(FOLLOW_getColumnName_in_createTableStatement4107);
 			id1=getColumnName(tablename);
 			state._fsp--;
 
-			pushFollow(FOLLOW_getDataType_in_createTableStatement4114);
+			pushFollow(FOLLOW_getDataType_in_createTableStatement4112);
 			type1=getDataType();
 			state._fsp--;
 
-			// Meta.g:627:56: ( T_PRIMARY T_KEY )?
+			// Meta.g:625:56: ( T_PRIMARY T_KEY )?
 			int alt26=2;
 			int LA26_0 = input.LA(1);
 			if ( (LA26_0==T_PRIMARY) ) {
@@ -2091,10 +2091,10 @@ public class MetaParser extends Parser {
 			}
 			switch (alt26) {
 				case 1 :
-					// Meta.g:627:57: T_PRIMARY T_KEY
+					// Meta.g:625:57: T_PRIMARY T_KEY
 					{
-					match(input,T_PRIMARY,FOLLOW_T_PRIMARY_in_createTableStatement4117); 
-					match(input,T_KEY,FOLLOW_T_KEY_in_createTableStatement4119); 
+					match(input,T_PRIMARY,FOLLOW_T_PRIMARY_in_createTableStatement4115); 
+					match(input,T_KEY,FOLLOW_T_KEY_in_createTableStatement4117); 
 					 partitionKey.add(id1); 
 					}
 					break;
@@ -2102,7 +2102,7 @@ public class MetaParser extends Parser {
 			}
 
 			 columns.put(id1, type1);
-			// Meta.g:628:9: ( T_COMMA idN= getColumnName[tablename] typeN= getDataType )*
+			// Meta.g:626:9: ( T_COMMA idN= getColumnName[tablename] typeN= getDataType )*
 			loop27:
 			while (true) {
 				int alt27=2;
@@ -2117,14 +2117,14 @@ public class MetaParser extends Parser {
 
 				switch (alt27) {
 				case 1 :
-					// Meta.g:628:10: T_COMMA idN= getColumnName[tablename] typeN= getDataType
+					// Meta.g:626:10: T_COMMA idN= getColumnName[tablename] typeN= getDataType
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement4137); 
-					pushFollow(FOLLOW_getColumnName_in_createTableStatement4141);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement4135); 
+					pushFollow(FOLLOW_getColumnName_in_createTableStatement4139);
 					idN=getColumnName(tablename);
 					state._fsp--;
 
-					pushFollow(FOLLOW_getDataType_in_createTableStatement4146);
+					pushFollow(FOLLOW_getDataType_in_createTableStatement4144);
 					typeN=getDataType();
 					state._fsp--;
 
@@ -2137,7 +2137,7 @@ public class MetaParser extends Parser {
 				}
 			}
 
-			// Meta.g:629:9: ( T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS ) ( T_COMMA idPkN= getColumnName[tablename] )* T_END_PARENTHESIS )?
+			// Meta.g:627:9: ( T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS ) ( T_COMMA idPkN= getColumnName[tablename] )* T_END_PARENTHESIS )?
 			int alt31=2;
 			int LA31_0 = input.LA(1);
 			if ( (LA31_0==T_COMMA) ) {
@@ -2145,13 +2145,13 @@ public class MetaParser extends Parser {
 			}
 			switch (alt31) {
 				case 1 :
-					// Meta.g:629:10: T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS ) ( T_COMMA idPkN= getColumnName[tablename] )* T_END_PARENTHESIS
+					// Meta.g:627:10: T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS ) ( T_COMMA idPkN= getColumnName[tablename] )* T_END_PARENTHESIS
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement4162); 
-					match(input,T_PRIMARY,FOLLOW_T_PRIMARY_in_createTableStatement4164); 
-					match(input,T_KEY,FOLLOW_T_KEY_in_createTableStatement4166); 
-					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createTableStatement4168); 
-					// Meta.g:630:17: (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS )
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement4160); 
+					match(input,T_PRIMARY,FOLLOW_T_PRIMARY_in_createTableStatement4162); 
+					match(input,T_KEY,FOLLOW_T_KEY_in_createTableStatement4164); 
+					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createTableStatement4166); 
+					// Meta.g:628:17: (idPk1= getColumnName[tablename] | T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS )
 					int alt29=2;
 					int LA29_0 = input.LA(1);
 					if ( (LA29_0==T_BOOLEAN||LA29_0==T_CATALOG||LA29_0==T_COUNT||LA29_0==T_CTLG_TBL_COL||(LA29_0 >= T_DAY && LA29_0 <= T_DAYS)||(LA29_0 >= T_HOUR && LA29_0 <= T_IDENT)||LA29_0==T_INT||LA29_0==T_KEY||LA29_0==T_KS_AND_TN||LA29_0==T_LIMIT||(LA29_0 >= T_LUCENE && LA29_0 <= T_MAP)||(LA29_0 >= T_MINS && LA29_0 <= T_MINUTES)||LA29_0==T_OPTIONS||LA29_0==T_PLAN||LA29_0==T_PROCESS||(LA29_0 >= T_SEC && LA29_0 <= T_SECS)||LA29_0==T_STORAGE||LA29_0==T_TEXT||LA29_0==T_TYPE) ) {
@@ -2169,9 +2169,9 @@ public class MetaParser extends Parser {
 
 					switch (alt29) {
 						case 1 :
-							// Meta.g:630:18: idPk1= getColumnName[tablename]
+							// Meta.g:628:18: idPk1= getColumnName[tablename]
 							{
-							pushFollow(FOLLOW_getColumnName_in_createTableStatement4189);
+							pushFollow(FOLLOW_getColumnName_in_createTableStatement4187);
 							idPk1=getColumnName(tablename);
 							state._fsp--;
 
@@ -2180,16 +2180,16 @@ public class MetaParser extends Parser {
 							}
 							break;
 						case 2 :
-							// Meta.g:632:19: T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS
+							// Meta.g:630:19: T_START_PARENTHESIS idParK1= getColumnName[tablename] ( T_COMMA idParKN= getColumnName[tablename] )* T_END_PARENTHESIS
 							{
-							match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createTableStatement4212); 
-							pushFollow(FOLLOW_getColumnName_in_createTableStatement4236);
+							match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_createTableStatement4210); 
+							pushFollow(FOLLOW_getColumnName_in_createTableStatement4234);
 							idParK1=getColumnName(tablename);
 							state._fsp--;
 
 							 if(!partitionKey.isEmpty()) throwParsingException("Partition key was previously defined");
 							                                                       partitionKey.add(idParK1); 
-							// Meta.g:635:21: ( T_COMMA idParKN= getColumnName[tablename] )*
+							// Meta.g:633:21: ( T_COMMA idParKN= getColumnName[tablename] )*
 							loop28:
 							while (true) {
 								int alt28=2;
@@ -2200,10 +2200,10 @@ public class MetaParser extends Parser {
 
 								switch (alt28) {
 								case 1 :
-									// Meta.g:635:22: T_COMMA idParKN= getColumnName[tablename]
+									// Meta.g:633:22: T_COMMA idParKN= getColumnName[tablename]
 									{
-									match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement4262); 
-									pushFollow(FOLLOW_getColumnName_in_createTableStatement4266);
+									match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement4260); 
+									pushFollow(FOLLOW_getColumnName_in_createTableStatement4264);
 									idParKN=getColumnName(tablename);
 									state._fsp--;
 
@@ -2216,13 +2216,13 @@ public class MetaParser extends Parser {
 								}
 							}
 
-							match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createTableStatement4310); 
+							match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createTableStatement4308); 
 							}
 							break;
 
 					}
 
-					// Meta.g:638:17: ( T_COMMA idPkN= getColumnName[tablename] )*
+					// Meta.g:636:17: ( T_COMMA idPkN= getColumnName[tablename] )*
 					loop30:
 					while (true) {
 						int alt30=2;
@@ -2233,10 +2233,10 @@ public class MetaParser extends Parser {
 
 						switch (alt30) {
 						case 1 :
-							// Meta.g:638:18: T_COMMA idPkN= getColumnName[tablename]
+							// Meta.g:636:18: T_COMMA idPkN= getColumnName[tablename]
 							{
-							match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement4330); 
-							pushFollow(FOLLOW_getColumnName_in_createTableStatement4334);
+							match(input,T_COMMA,FOLLOW_T_COMMA_in_createTableStatement4328); 
+							pushFollow(FOLLOW_getColumnName_in_createTableStatement4332);
 							idPkN=getColumnName(tablename);
 							state._fsp--;
 
@@ -2249,14 +2249,14 @@ public class MetaParser extends Parser {
 						}
 					}
 
-					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createTableStatement4349); 
+					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createTableStatement4347); 
 					}
 					break;
 
 			}
 
-			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createTableStatement4357); 
-			// Meta.g:640:23: ( T_WITH j= getJson )?
+			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_createTableStatement4355); 
+			// Meta.g:638:23: ( T_WITH j= getJson )?
 			int alt32=2;
 			int LA32_0 = input.LA(1);
 			if ( (LA32_0==T_WITH) ) {
@@ -2264,10 +2264,10 @@ public class MetaParser extends Parser {
 			}
 			switch (alt32) {
 				case 1 :
-					// Meta.g:640:24: T_WITH j= getJson
+					// Meta.g:638:24: T_WITH j= getJson
 					{
-					match(input,T_WITH,FOLLOW_T_WITH_in_createTableStatement4360); 
-					pushFollow(FOLLOW_getJson_in_createTableStatement4364);
+					match(input,T_WITH,FOLLOW_T_WITH_in_createTableStatement4358); 
+					pushFollow(FOLLOW_getJson_in_createTableStatement4362);
 					j=getJson();
 					state._fsp--;
 
@@ -2300,7 +2300,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTableType"
-	// Meta.g:650:1: getTableType returns [TableType tableType] : ( T_EPHEMERAL )? ;
+	// Meta.g:648:1: getTableType returns [TableType tableType] : ( T_EPHEMERAL )? ;
 	public final TableType getTableType() throws RecognitionException {
 		TableType tableType = null;
 
@@ -2312,10 +2312,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 25) ) { return tableType; }
 
-			// Meta.g:653:6: ( ( T_EPHEMERAL )? )
-			// Meta.g:654:5: ( T_EPHEMERAL )?
+			// Meta.g:651:6: ( ( T_EPHEMERAL )? )
+			// Meta.g:652:5: ( T_EPHEMERAL )?
 			{
-			// Meta.g:654:5: ( T_EPHEMERAL )?
+			// Meta.g:652:5: ( T_EPHEMERAL )?
 			int alt33=2;
 			int LA33_0 = input.LA(1);
 			if ( (LA33_0==T_EPHEMERAL) ) {
@@ -2323,9 +2323,9 @@ public class MetaParser extends Parser {
 			}
 			switch (alt33) {
 				case 1 :
-					// Meta.g:654:7: T_EPHEMERAL
+					// Meta.g:652:7: T_EPHEMERAL
 					{
-					match(input,T_EPHEMERAL,FOLLOW_T_EPHEMERAL_in_getTableType4398); 
+					match(input,T_EPHEMERAL,FOLLOW_T_EPHEMERAL_in_getTableType4396); 
 					 tableType = TableType.EPHEMERAL; 
 					}
 					break;
@@ -2349,7 +2349,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "alterTableStatement"
-	// Meta.g:657:1: alterTableStatement returns [AlterTableStatement altast] : T_ALTER T_TABLE tablename= getTableName ( T_ALTER column= getColumnName[tablename] T_TYPE dataType= getDataType | T_ADD column= getColumnName[tablename] dataType= getDataType | T_DROP column= getColumnName[tablename] | ( T_WITH j= getJson )? ) ;
+	// Meta.g:655:1: alterTableStatement returns [AlterTableStatement altast] : T_ALTER T_TABLE tablename= getTableName ( T_ALTER column= getColumnName[tablename] T_TYPE dataType= getDataType | T_ADD column= getColumnName[tablename] dataType= getDataType | T_DROP column= getColumnName[tablename] | ( T_WITH j= getJson )? ) ;
 	public final AlterTableStatement alterTableStatement() throws RecognitionException {
 		AlterTableStatement altast = null;
 
@@ -2366,16 +2366,16 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 26) ) { return altast; }
 
-			// Meta.g:660:6: ( T_ALTER T_TABLE tablename= getTableName ( T_ALTER column= getColumnName[tablename] T_TYPE dataType= getDataType | T_ADD column= getColumnName[tablename] dataType= getDataType | T_DROP column= getColumnName[tablename] | ( T_WITH j= getJson )? ) )
-			// Meta.g:661:5: T_ALTER T_TABLE tablename= getTableName ( T_ALTER column= getColumnName[tablename] T_TYPE dataType= getDataType | T_ADD column= getColumnName[tablename] dataType= getDataType | T_DROP column= getColumnName[tablename] | ( T_WITH j= getJson )? )
+			// Meta.g:658:6: ( T_ALTER T_TABLE tablename= getTableName ( T_ALTER column= getColumnName[tablename] T_TYPE dataType= getDataType | T_ADD column= getColumnName[tablename] dataType= getDataType | T_DROP column= getColumnName[tablename] | ( T_WITH j= getJson )? ) )
+			// Meta.g:659:5: T_ALTER T_TABLE tablename= getTableName ( T_ALTER column= getColumnName[tablename] T_TYPE dataType= getDataType | T_ADD column= getColumnName[tablename] dataType= getDataType | T_DROP column= getColumnName[tablename] | ( T_WITH j= getJson )? )
 			{
-			match(input,T_ALTER,FOLLOW_T_ALTER_in_alterTableStatement4427); 
-			match(input,T_TABLE,FOLLOW_T_TABLE_in_alterTableStatement4429); 
-			pushFollow(FOLLOW_getTableName_in_alterTableStatement4433);
+			match(input,T_ALTER,FOLLOW_T_ALTER_in_alterTableStatement4425); 
+			match(input,T_TABLE,FOLLOW_T_TABLE_in_alterTableStatement4427); 
+			pushFollow(FOLLOW_getTableName_in_alterTableStatement4431);
 			tablename=getTableName();
 			state._fsp--;
 
-			// Meta.g:662:5: ( T_ALTER column= getColumnName[tablename] T_TYPE dataType= getDataType | T_ADD column= getColumnName[tablename] dataType= getDataType | T_DROP column= getColumnName[tablename] | ( T_WITH j= getJson )? )
+			// Meta.g:660:5: ( T_ALTER column= getColumnName[tablename] T_TYPE dataType= getDataType | T_ADD column= getColumnName[tablename] dataType= getDataType | T_DROP column= getColumnName[tablename] | ( T_WITH j= getJson )? )
 			int alt35=4;
 			switch ( input.LA(1) ) {
 			case T_ALTER:
@@ -2406,15 +2406,15 @@ public class MetaParser extends Parser {
 			}
 			switch (alt35) {
 				case 1 :
-					// Meta.g:662:6: T_ALTER column= getColumnName[tablename] T_TYPE dataType= getDataType
+					// Meta.g:660:6: T_ALTER column= getColumnName[tablename] T_TYPE dataType= getDataType
 					{
-					match(input,T_ALTER,FOLLOW_T_ALTER_in_alterTableStatement4440); 
-					pushFollow(FOLLOW_getColumnName_in_alterTableStatement4444);
+					match(input,T_ALTER,FOLLOW_T_ALTER_in_alterTableStatement4438); 
+					pushFollow(FOLLOW_getColumnName_in_alterTableStatement4442);
 					column=getColumnName(tablename);
 					state._fsp--;
 
-					match(input,T_TYPE,FOLLOW_T_TYPE_in_alterTableStatement4447); 
-					pushFollow(FOLLOW_getDataType_in_alterTableStatement4451);
+					match(input,T_TYPE,FOLLOW_T_TYPE_in_alterTableStatement4445); 
+					pushFollow(FOLLOW_getDataType_in_alterTableStatement4449);
 					dataType=getDataType();
 					state._fsp--;
 
@@ -2422,14 +2422,14 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:663:10: T_ADD column= getColumnName[tablename] dataType= getDataType
+					// Meta.g:661:10: T_ADD column= getColumnName[tablename] dataType= getDataType
 					{
-					match(input,T_ADD,FOLLOW_T_ADD_in_alterTableStatement4464); 
-					pushFollow(FOLLOW_getColumnName_in_alterTableStatement4468);
+					match(input,T_ADD,FOLLOW_T_ADD_in_alterTableStatement4462); 
+					pushFollow(FOLLOW_getColumnName_in_alterTableStatement4466);
 					column=getColumnName(tablename);
 					state._fsp--;
 
-					pushFollow(FOLLOW_getDataType_in_alterTableStatement4473);
+					pushFollow(FOLLOW_getDataType_in_alterTableStatement4471);
 					dataType=getDataType();
 					state._fsp--;
 
@@ -2437,10 +2437,10 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 3 :
-					// Meta.g:664:10: T_DROP column= getColumnName[tablename]
+					// Meta.g:662:10: T_DROP column= getColumnName[tablename]
 					{
-					match(input,T_DROP,FOLLOW_T_DROP_in_alterTableStatement4486); 
-					pushFollow(FOLLOW_getColumnName_in_alterTableStatement4490);
+					match(input,T_DROP,FOLLOW_T_DROP_in_alterTableStatement4484); 
+					pushFollow(FOLLOW_getColumnName_in_alterTableStatement4488);
 					column=getColumnName(tablename);
 					state._fsp--;
 
@@ -2448,9 +2448,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 4 :
-					// Meta.g:665:10: ( T_WITH j= getJson )?
+					// Meta.g:663:10: ( T_WITH j= getJson )?
 					{
-					// Meta.g:665:10: ( T_WITH j= getJson )?
+					// Meta.g:663:10: ( T_WITH j= getJson )?
 					int alt34=2;
 					int LA34_0 = input.LA(1);
 					if ( (LA34_0==T_WITH) ) {
@@ -2458,11 +2458,11 @@ public class MetaParser extends Parser {
 					}
 					switch (alt34) {
 						case 1 :
-							// Meta.g:665:11: T_WITH j= getJson
+							// Meta.g:663:11: T_WITH j= getJson
 							{
-							match(input,T_WITH,FOLLOW_T_WITH_in_alterTableStatement4505); 
+							match(input,T_WITH,FOLLOW_T_WITH_in_alterTableStatement4503); 
 							option=AlterOperation.ALTER_OPTIONS;
-							pushFollow(FOLLOW_getJson_in_alterTableStatement4511);
+							pushFollow(FOLLOW_getJson_in_alterTableStatement4509);
 							j=getJson();
 							state._fsp--;
 
@@ -2494,7 +2494,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "selectStatement"
-	// Meta.g:670:1: selectStatement returns [SelectStatement slctst] : T_SELECT selClause= getSelectExpression[fieldsAliasesMap] T_FROM tablename= getAliasedTableID[tablesAliasesMap] ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getAliasedTableID[tablesAliasesMap] T_ON joinRelations= getWhereClauses[null] )? ( T_WHERE whereClauses= getWhereClauses[null] )? ( T_ORDER T_BY orderBy= getOrdering[null] )? ( T_GROUP T_BY groupBy= getGroupBy[null] )? ( T_LIMIT constant= T_CONSTANT )? ;
+	// Meta.g:668:1: selectStatement returns [SelectStatement slctst] : T_SELECT selClause= getSelectExpression[fieldsAliasesMap] T_FROM tablename= getAliasedTableID[tablesAliasesMap] ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getAliasedTableID[tablesAliasesMap] T_ON joinRelations= getWhereClauses[null] )? ( T_WHERE whereClauses= getWhereClauses[null] )? ( T_ORDER T_BY orderBy= getOrdering[null] )? ( T_GROUP T_BY groupBy= getGroupBy[null] )? ( T_LIMIT constant= T_CONSTANT )? ;
 	public final SelectStatement selectStatement() throws RecognitionException {
 		SelectStatement slctst = null;
 
@@ -2524,20 +2524,20 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 27) ) { return slctst; }
 
-			// Meta.g:685:6: ( T_SELECT selClause= getSelectExpression[fieldsAliasesMap] T_FROM tablename= getAliasedTableID[tablesAliasesMap] ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getAliasedTableID[tablesAliasesMap] T_ON joinRelations= getWhereClauses[null] )? ( T_WHERE whereClauses= getWhereClauses[null] )? ( T_ORDER T_BY orderBy= getOrdering[null] )? ( T_GROUP T_BY groupBy= getGroupBy[null] )? ( T_LIMIT constant= T_CONSTANT )? )
-			// Meta.g:686:5: T_SELECT selClause= getSelectExpression[fieldsAliasesMap] T_FROM tablename= getAliasedTableID[tablesAliasesMap] ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getAliasedTableID[tablesAliasesMap] T_ON joinRelations= getWhereClauses[null] )? ( T_WHERE whereClauses= getWhereClauses[null] )? ( T_ORDER T_BY orderBy= getOrdering[null] )? ( T_GROUP T_BY groupBy= getGroupBy[null] )? ( T_LIMIT constant= T_CONSTANT )?
+			// Meta.g:683:6: ( T_SELECT selClause= getSelectExpression[fieldsAliasesMap] T_FROM tablename= getAliasedTableID[tablesAliasesMap] ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getAliasedTableID[tablesAliasesMap] T_ON joinRelations= getWhereClauses[null] )? ( T_WHERE whereClauses= getWhereClauses[null] )? ( T_ORDER T_BY orderBy= getOrdering[null] )? ( T_GROUP T_BY groupBy= getGroupBy[null] )? ( T_LIMIT constant= T_CONSTANT )? )
+			// Meta.g:684:5: T_SELECT selClause= getSelectExpression[fieldsAliasesMap] T_FROM tablename= getAliasedTableID[tablesAliasesMap] ( T_WITH T_WINDOW window= getWindow )? ( T_INNER T_JOIN identJoin= getAliasedTableID[tablesAliasesMap] T_ON joinRelations= getWhereClauses[null] )? ( T_WHERE whereClauses= getWhereClauses[null] )? ( T_ORDER T_BY orderBy= getOrdering[null] )? ( T_GROUP T_BY groupBy= getGroupBy[null] )? ( T_LIMIT constant= T_CONSTANT )?
 			{
-			match(input,T_SELECT,FOLLOW_T_SELECT_in_selectStatement4557); 
-			pushFollow(FOLLOW_getSelectExpression_in_selectStatement4561);
+			match(input,T_SELECT,FOLLOW_T_SELECT_in_selectStatement4555); 
+			pushFollow(FOLLOW_getSelectExpression_in_selectStatement4559);
 			selClause=getSelectExpression(fieldsAliasesMap);
 			state._fsp--;
 
-			match(input,T_FROM,FOLLOW_T_FROM_in_selectStatement4564); 
-			pushFollow(FOLLOW_getAliasedTableID_in_selectStatement4568);
+			match(input,T_FROM,FOLLOW_T_FROM_in_selectStatement4562); 
+			pushFollow(FOLLOW_getAliasedTableID_in_selectStatement4566);
 			tablename=getAliasedTableID(tablesAliasesMap);
 			state._fsp--;
 
-			// Meta.g:687:5: ( T_WITH T_WINDOW window= getWindow )?
+			// Meta.g:685:5: ( T_WITH T_WINDOW window= getWindow )?
 			int alt36=2;
 			int LA36_0 = input.LA(1);
 			if ( (LA36_0==T_WITH) ) {
@@ -2545,12 +2545,12 @@ public class MetaParser extends Parser {
 			}
 			switch (alt36) {
 				case 1 :
-					// Meta.g:687:6: T_WITH T_WINDOW window= getWindow
+					// Meta.g:685:6: T_WITH T_WINDOW window= getWindow
 					{
-					match(input,T_WITH,FOLLOW_T_WITH_in_selectStatement4576); 
-					match(input,T_WINDOW,FOLLOW_T_WINDOW_in_selectStatement4578); 
+					match(input,T_WITH,FOLLOW_T_WITH_in_selectStatement4574); 
+					match(input,T_WINDOW,FOLLOW_T_WINDOW_in_selectStatement4576); 
 					windowInc = true;
-					pushFollow(FOLLOW_getWindow_in_selectStatement4584);
+					pushFollow(FOLLOW_getWindow_in_selectStatement4582);
 					window=getWindow();
 					state._fsp--;
 
@@ -2559,7 +2559,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:688:5: ( T_INNER T_JOIN identJoin= getAliasedTableID[tablesAliasesMap] T_ON joinRelations= getWhereClauses[null] )?
+			// Meta.g:686:5: ( T_INNER T_JOIN identJoin= getAliasedTableID[tablesAliasesMap] T_ON joinRelations= getWhereClauses[null] )?
 			int alt37=2;
 			int LA37_0 = input.LA(1);
 			if ( (LA37_0==T_INNER) ) {
@@ -2567,17 +2567,17 @@ public class MetaParser extends Parser {
 			}
 			switch (alt37) {
 				case 1 :
-					// Meta.g:688:6: T_INNER T_JOIN identJoin= getAliasedTableID[tablesAliasesMap] T_ON joinRelations= getWhereClauses[null]
+					// Meta.g:686:6: T_INNER T_JOIN identJoin= getAliasedTableID[tablesAliasesMap] T_ON joinRelations= getWhereClauses[null]
 					{
-					match(input,T_INNER,FOLLOW_T_INNER_in_selectStatement4593); 
-					match(input,T_JOIN,FOLLOW_T_JOIN_in_selectStatement4595); 
+					match(input,T_INNER,FOLLOW_T_INNER_in_selectStatement4591); 
+					match(input,T_JOIN,FOLLOW_T_JOIN_in_selectStatement4593); 
 					 joinInc = true;
-					pushFollow(FOLLOW_getAliasedTableID_in_selectStatement4601);
+					pushFollow(FOLLOW_getAliasedTableID_in_selectStatement4599);
 					identJoin=getAliasedTableID(tablesAliasesMap);
 					state._fsp--;
 
-					match(input,T_ON,FOLLOW_T_ON_in_selectStatement4604); 
-					pushFollow(FOLLOW_getWhereClauses_in_selectStatement4608);
+					match(input,T_ON,FOLLOW_T_ON_in_selectStatement4602); 
+					pushFollow(FOLLOW_getWhereClauses_in_selectStatement4606);
 					joinRelations=getWhereClauses(null);
 					state._fsp--;
 
@@ -2586,7 +2586,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:689:5: ( T_WHERE whereClauses= getWhereClauses[null] )?
+			// Meta.g:687:5: ( T_WHERE whereClauses= getWhereClauses[null] )?
 			int alt38=2;
 			int LA38_0 = input.LA(1);
 			if ( (LA38_0==T_WHERE) ) {
@@ -2594,11 +2594,11 @@ public class MetaParser extends Parser {
 			}
 			switch (alt38) {
 				case 1 :
-					// Meta.g:689:6: T_WHERE whereClauses= getWhereClauses[null]
+					// Meta.g:687:6: T_WHERE whereClauses= getWhereClauses[null]
 					{
-					match(input,T_WHERE,FOLLOW_T_WHERE_in_selectStatement4618); 
+					match(input,T_WHERE,FOLLOW_T_WHERE_in_selectStatement4616); 
 					whereInc = true;
-					pushFollow(FOLLOW_getWhereClauses_in_selectStatement4624);
+					pushFollow(FOLLOW_getWhereClauses_in_selectStatement4622);
 					whereClauses=getWhereClauses(null);
 					state._fsp--;
 
@@ -2607,7 +2607,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:690:5: ( T_ORDER T_BY orderBy= getOrdering[null] )?
+			// Meta.g:688:5: ( T_ORDER T_BY orderBy= getOrdering[null] )?
 			int alt39=2;
 			int LA39_0 = input.LA(1);
 			if ( (LA39_0==T_ORDER) ) {
@@ -2615,12 +2615,12 @@ public class MetaParser extends Parser {
 			}
 			switch (alt39) {
 				case 1 :
-					// Meta.g:690:6: T_ORDER T_BY orderBy= getOrdering[null]
+					// Meta.g:688:6: T_ORDER T_BY orderBy= getOrdering[null]
 					{
-					match(input,T_ORDER,FOLLOW_T_ORDER_in_selectStatement4634); 
-					match(input,T_BY,FOLLOW_T_BY_in_selectStatement4636); 
+					match(input,T_ORDER,FOLLOW_T_ORDER_in_selectStatement4632); 
+					match(input,T_BY,FOLLOW_T_BY_in_selectStatement4634); 
 					orderInc = true;
-					pushFollow(FOLLOW_getOrdering_in_selectStatement4642);
+					pushFollow(FOLLOW_getOrdering_in_selectStatement4640);
 					orderBy=getOrdering(null);
 					state._fsp--;
 
@@ -2629,7 +2629,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:691:5: ( T_GROUP T_BY groupBy= getGroupBy[null] )?
+			// Meta.g:689:5: ( T_GROUP T_BY groupBy= getGroupBy[null] )?
 			int alt40=2;
 			int LA40_0 = input.LA(1);
 			if ( (LA40_0==T_GROUP) ) {
@@ -2637,12 +2637,12 @@ public class MetaParser extends Parser {
 			}
 			switch (alt40) {
 				case 1 :
-					// Meta.g:691:6: T_GROUP T_BY groupBy= getGroupBy[null]
+					// Meta.g:689:6: T_GROUP T_BY groupBy= getGroupBy[null]
 					{
-					match(input,T_GROUP,FOLLOW_T_GROUP_in_selectStatement4652); 
-					match(input,T_BY,FOLLOW_T_BY_in_selectStatement4654); 
+					match(input,T_GROUP,FOLLOW_T_GROUP_in_selectStatement4650); 
+					match(input,T_BY,FOLLOW_T_BY_in_selectStatement4652); 
 					groupInc = true;
-					pushFollow(FOLLOW_getGroupBy_in_selectStatement4660);
+					pushFollow(FOLLOW_getGroupBy_in_selectStatement4658);
 					groupBy=getGroupBy(null);
 					state._fsp--;
 
@@ -2651,7 +2651,7 @@ public class MetaParser extends Parser {
 
 			}
 
-			// Meta.g:692:5: ( T_LIMIT constant= T_CONSTANT )?
+			// Meta.g:690:5: ( T_LIMIT constant= T_CONSTANT )?
 			int alt41=2;
 			int LA41_0 = input.LA(1);
 			if ( (LA41_0==T_LIMIT) ) {
@@ -2659,11 +2659,11 @@ public class MetaParser extends Parser {
 			}
 			switch (alt41) {
 				case 1 :
-					// Meta.g:692:6: T_LIMIT constant= T_CONSTANT
+					// Meta.g:690:6: T_LIMIT constant= T_CONSTANT
 					{
-					match(input,T_LIMIT,FOLLOW_T_LIMIT_in_selectStatement4670); 
+					match(input,T_LIMIT,FOLLOW_T_LIMIT_in_selectStatement4668); 
 					limitInc = true;
-					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_selectStatement4676); 
+					constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_selectStatement4674); 
 					}
 					break;
 
@@ -2709,7 +2709,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "insertIntoStatement"
-	// Meta.g:714:1: insertIntoStatement returns [InsertIntoStatement nsntst] : T_INSERT T_INTO tablename= getTableName T_START_PARENTHESIS ident1= getColumnName[tablename] ( T_COMMA identN= getColumnName[tablename] )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )? ;
+	// Meta.g:712:1: insertIntoStatement returns [InsertIntoStatement nsntst] : T_INSERT T_INTO tablename= getTableName T_START_PARENTHESIS ident1= getColumnName[tablename] ( T_COMMA identN= getColumnName[tablename] )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )? ;
 	public final InsertIntoStatement insertIntoStatement() throws RecognitionException {
 		InsertIntoStatement nsntst = null;
 
@@ -2735,22 +2735,22 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 28) ) { return nsntst; }
 
-			// Meta.g:722:6: ( T_INSERT T_INTO tablename= getTableName T_START_PARENTHESIS ident1= getColumnName[tablename] ( T_COMMA identN= getColumnName[tablename] )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )? )
-			// Meta.g:723:5: T_INSERT T_INTO tablename= getTableName T_START_PARENTHESIS ident1= getColumnName[tablename] ( T_COMMA identN= getColumnName[tablename] )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )?
+			// Meta.g:720:6: ( T_INSERT T_INTO tablename= getTableName T_START_PARENTHESIS ident1= getColumnName[tablename] ( T_COMMA identN= getColumnName[tablename] )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )? )
+			// Meta.g:721:5: T_INSERT T_INTO tablename= getTableName T_START_PARENTHESIS ident1= getColumnName[tablename] ( T_COMMA identN= getColumnName[tablename] )* T_END_PARENTHESIS (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* T_END_PARENTHESIS ) ( T_IF T_NOT T_EXISTS )? ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )?
 			{
-			match(input,T_INSERT,FOLLOW_T_INSERT_in_insertIntoStatement4708); 
-			match(input,T_INTO,FOLLOW_T_INTO_in_insertIntoStatement4710); 
-			pushFollow(FOLLOW_getTableName_in_insertIntoStatement4714);
+			match(input,T_INSERT,FOLLOW_T_INSERT_in_insertIntoStatement4706); 
+			match(input,T_INTO,FOLLOW_T_INTO_in_insertIntoStatement4708); 
+			pushFollow(FOLLOW_getTableName_in_insertIntoStatement4712);
 			tablename=getTableName();
 			state._fsp--;
 
-			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_insertIntoStatement4720); 
-			pushFollow(FOLLOW_getColumnName_in_insertIntoStatement4732);
+			match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_insertIntoStatement4718); 
+			pushFollow(FOLLOW_getColumnName_in_insertIntoStatement4730);
 			ident1=getColumnName(tablename);
 			state._fsp--;
 
 			ids.add(ident1);
-			// Meta.g:725:60: ( T_COMMA identN= getColumnName[tablename] )*
+			// Meta.g:723:60: ( T_COMMA identN= getColumnName[tablename] )*
 			loop42:
 			while (true) {
 				int alt42=2;
@@ -2761,10 +2761,10 @@ public class MetaParser extends Parser {
 
 				switch (alt42) {
 				case 1 :
-					// Meta.g:725:61: T_COMMA identN= getColumnName[tablename]
+					// Meta.g:723:61: T_COMMA identN= getColumnName[tablename]
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_insertIntoStatement4738); 
-					pushFollow(FOLLOW_getColumnName_in_insertIntoStatement4742);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_insertIntoStatement4736); 
+					pushFollow(FOLLOW_getColumnName_in_insertIntoStatement4740);
 					identN=getColumnName(tablename);
 					state._fsp--;
 
@@ -2777,8 +2777,8 @@ public class MetaParser extends Parser {
 				}
 			}
 
-			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_insertIntoStatement4753); 
-			// Meta.g:727:5: (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* T_END_PARENTHESIS )
+			match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_insertIntoStatement4751); 
+			// Meta.g:725:5: (selectStmnt= selectStatement | T_VALUES T_START_PARENTHESIS term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* T_END_PARENTHESIS )
 			int alt44=2;
 			int LA44_0 = input.LA(1);
 			if ( (LA44_0==T_SELECT) ) {
@@ -2796,9 +2796,9 @@ public class MetaParser extends Parser {
 
 			switch (alt44) {
 				case 1 :
-					// Meta.g:728:9: selectStmnt= selectStatement
+					// Meta.g:726:9: selectStmnt= selectStatement
 					{
-					pushFollow(FOLLOW_selectStatement_in_insertIntoStatement4771);
+					pushFollow(FOLLOW_selectStatement_in_insertIntoStatement4769);
 					selectStmnt=selectStatement();
 					state._fsp--;
 
@@ -2806,16 +2806,16 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:730:9: T_VALUES T_START_PARENTHESIS term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* T_END_PARENTHESIS
+					// Meta.g:728:9: T_VALUES T_START_PARENTHESIS term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* T_END_PARENTHESIS
 					{
-					match(input,T_VALUES,FOLLOW_T_VALUES_in_insertIntoStatement4793); 
-					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_insertIntoStatement4803); 
-					pushFollow(FOLLOW_getSelector_in_insertIntoStatement4819);
+					match(input,T_VALUES,FOLLOW_T_VALUES_in_insertIntoStatement4791); 
+					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_insertIntoStatement4801); 
+					pushFollow(FOLLOW_getSelector_in_insertIntoStatement4817);
 					term1=getSelector(tablename);
 					state._fsp--;
 
 					cellValues.add(term1);
-					// Meta.g:733:13: ( T_COMMA termN= getSelector[tablename] )*
+					// Meta.g:731:13: ( T_COMMA termN= getSelector[tablename] )*
 					loop43:
 					while (true) {
 						int alt43=2;
@@ -2826,10 +2826,10 @@ public class MetaParser extends Parser {
 
 						switch (alt43) {
 						case 1 :
-							// Meta.g:733:14: T_COMMA termN= getSelector[tablename]
+							// Meta.g:731:14: T_COMMA termN= getSelector[tablename]
 							{
-							match(input,T_COMMA,FOLLOW_T_COMMA_in_insertIntoStatement4837); 
-							pushFollow(FOLLOW_getSelector_in_insertIntoStatement4841);
+							match(input,T_COMMA,FOLLOW_T_COMMA_in_insertIntoStatement4835); 
+							pushFollow(FOLLOW_getSelector_in_insertIntoStatement4839);
 							termN=getSelector(tablename);
 							state._fsp--;
 
@@ -2842,13 +2842,13 @@ public class MetaParser extends Parser {
 						}
 					}
 
-					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_insertIntoStatement4856); 
+					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_insertIntoStatement4854); 
 					}
 					break;
 
 			}
 
-			// Meta.g:736:5: ( T_IF T_NOT T_EXISTS )?
+			// Meta.g:734:5: ( T_IF T_NOT T_EXISTS )?
 			int alt45=2;
 			int LA45_0 = input.LA(1);
 			if ( (LA45_0==T_IF) ) {
@@ -2856,18 +2856,18 @@ public class MetaParser extends Parser {
 			}
 			switch (alt45) {
 				case 1 :
-					// Meta.g:736:6: T_IF T_NOT T_EXISTS
+					// Meta.g:734:6: T_IF T_NOT T_EXISTS
 					{
-					match(input,T_IF,FOLLOW_T_IF_in_insertIntoStatement4869); 
-					match(input,T_NOT,FOLLOW_T_NOT_in_insertIntoStatement4871); 
-					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_insertIntoStatement4873); 
+					match(input,T_IF,FOLLOW_T_IF_in_insertIntoStatement4867); 
+					match(input,T_NOT,FOLLOW_T_NOT_in_insertIntoStatement4869); 
+					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_insertIntoStatement4871); 
 					ifNotExists=true;
 					}
 					break;
 
 			}
 
-			// Meta.g:737:5: ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )?
+			// Meta.g:735:5: ( T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )* )?
 			int alt47=2;
 			int LA47_0 = input.LA(1);
 			if ( (LA47_0==T_USING) ) {
@@ -2875,18 +2875,18 @@ public class MetaParser extends Parser {
 			}
 			switch (alt47) {
 				case 1 :
-					// Meta.g:738:9: T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )*
+					// Meta.g:736:9: T_USING opt1= getOption[tablename] ( T_AND optN= getOption[tablename] )*
 					{
-					match(input,T_USING,FOLLOW_T_USING_in_insertIntoStatement4894); 
+					match(input,T_USING,FOLLOW_T_USING_in_insertIntoStatement4892); 
 					optsInc=true;
-					pushFollow(FOLLOW_getOption_in_insertIntoStatement4908);
+					pushFollow(FOLLOW_getOption_in_insertIntoStatement4906);
 					opt1=getOption(tablename);
 					state._fsp--;
 
 
 					            options.add(opt1);
 					        
-					// Meta.g:742:9: ( T_AND optN= getOption[tablename] )*
+					// Meta.g:740:9: ( T_AND optN= getOption[tablename] )*
 					loop46:
 					while (true) {
 						int alt46=2;
@@ -2897,10 +2897,10 @@ public class MetaParser extends Parser {
 
 						switch (alt46) {
 						case 1 :
-							// Meta.g:742:10: T_AND optN= getOption[tablename]
+							// Meta.g:740:10: T_AND optN= getOption[tablename]
 							{
-							match(input,T_AND,FOLLOW_T_AND_in_insertIntoStatement4922); 
-							pushFollow(FOLLOW_getOption_in_insertIntoStatement4926);
+							match(input,T_AND,FOLLOW_T_AND_in_insertIntoStatement4920); 
+							pushFollow(FOLLOW_getOption_in_insertIntoStatement4924);
 							optN=getOption(tablename);
 							state._fsp--;
 
@@ -2949,7 +2949,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "explainPlanStatement"
-	// Meta.g:760:1: explainPlanStatement returns [ExplainPlanStatement xpplst] : T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement ;
+	// Meta.g:758:1: explainPlanStatement returns [ExplainPlanStatement xpplst] : T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement ;
 	public final ExplainPlanStatement explainPlanStatement() throws RecognitionException {
 		ExplainPlanStatement xpplst = null;
 
@@ -2960,13 +2960,13 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 29) ) { return xpplst; }
 
-			// Meta.g:760:59: ( T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement )
-			// Meta.g:761:5: T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement
+			// Meta.g:758:59: ( T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement )
+			// Meta.g:759:5: T_EXPLAIN T_PLAN T_FOR parsedStmnt= metaStatement
 			{
-			match(input,T_EXPLAIN,FOLLOW_T_EXPLAIN_in_explainPlanStatement4960); 
-			match(input,T_PLAN,FOLLOW_T_PLAN_in_explainPlanStatement4962); 
-			match(input,T_FOR,FOLLOW_T_FOR_in_explainPlanStatement4964); 
-			pushFollow(FOLLOW_metaStatement_in_explainPlanStatement4968);
+			match(input,T_EXPLAIN,FOLLOW_T_EXPLAIN_in_explainPlanStatement4958); 
+			match(input,T_PLAN,FOLLOW_T_PLAN_in_explainPlanStatement4960); 
+			match(input,T_FOR,FOLLOW_T_FOR_in_explainPlanStatement4962); 
+			pushFollow(FOLLOW_metaStatement_in_explainPlanStatement4966);
 			parsedStmnt=metaStatement();
 			state._fsp--;
 
@@ -2988,7 +2988,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "dropTableStatement"
-	// Meta.g:766:1: dropTableStatement returns [DropTableStatement drtbst] : T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableName ;
+	// Meta.g:764:1: dropTableStatement returns [DropTableStatement drtbst] : T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableName ;
 	public final DropTableStatement dropTableStatement() throws RecognitionException {
 		DropTableStatement drtbst = null;
 
@@ -3002,12 +3002,12 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 30) ) { return drtbst; }
 
-			// Meta.g:769:6: ( T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableName )
-			// Meta.g:770:5: T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableName
+			// Meta.g:767:6: ( T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableName )
+			// Meta.g:768:5: T_DROP T_TABLE ( T_IF T_EXISTS )? identID= getTableName
 			{
-			match(input,T_DROP,FOLLOW_T_DROP_in_dropTableStatement4999); 
-			match(input,T_TABLE,FOLLOW_T_TABLE_in_dropTableStatement5001); 
-			// Meta.g:770:20: ( T_IF T_EXISTS )?
+			match(input,T_DROP,FOLLOW_T_DROP_in_dropTableStatement4997); 
+			match(input,T_TABLE,FOLLOW_T_TABLE_in_dropTableStatement4999); 
+			// Meta.g:768:20: ( T_IF T_EXISTS )?
 			int alt48=2;
 			int LA48_0 = input.LA(1);
 			if ( (LA48_0==T_IF) ) {
@@ -3015,17 +3015,17 @@ public class MetaParser extends Parser {
 			}
 			switch (alt48) {
 				case 1 :
-					// Meta.g:770:21: T_IF T_EXISTS
+					// Meta.g:768:21: T_IF T_EXISTS
 					{
-					match(input,T_IF,FOLLOW_T_IF_in_dropTableStatement5004); 
-					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropTableStatement5006); 
+					match(input,T_IF,FOLLOW_T_IF_in_dropTableStatement5002); 
+					match(input,T_EXISTS,FOLLOW_T_EXISTS_in_dropTableStatement5004); 
 					 ifExists = true; 
 					}
 					break;
 
 			}
 
-			pushFollow(FOLLOW_getTableName_in_dropTableStatement5018);
+			pushFollow(FOLLOW_getTableName_in_dropTableStatement5016);
 			identID=getTableName();
 			state._fsp--;
 
@@ -3049,7 +3049,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "truncateStatement"
-	// Meta.g:776:1: truncateStatement returns [TruncateStatement trst] : T_TRUNCATE tablename= getTableName ;
+	// Meta.g:774:1: truncateStatement returns [TruncateStatement trst] : T_TRUNCATE tablename= getTableName ;
 	public final TruncateStatement truncateStatement() throws RecognitionException {
 		TruncateStatement trst = null;
 
@@ -3060,11 +3060,11 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 31) ) { return trst; }
 
-			// Meta.g:776:51: ( T_TRUNCATE tablename= getTableName )
-			// Meta.g:777:2: T_TRUNCATE tablename= getTableName
+			// Meta.g:774:51: ( T_TRUNCATE tablename= getTableName )
+			// Meta.g:775:2: T_TRUNCATE tablename= getTableName
 			{
-			match(input,T_TRUNCATE,FOLLOW_T_TRUNCATE_in_truncateStatement5033); 
-			pushFollow(FOLLOW_getTableName_in_truncateStatement5045);
+			match(input,T_TRUNCATE,FOLLOW_T_TRUNCATE_in_truncateStatement5031); 
+			pushFollow(FOLLOW_getTableName_in_truncateStatement5043);
 			tablename=getTableName();
 			state._fsp--;
 
@@ -3088,7 +3088,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "metaStatement"
-	// Meta.g:783:1: metaStatement returns [MetaStatement st] : ( T_START_BRACKET (gID= getGenericID )? T_END_BRACKET T_COMMA )? (st_nsnt= insertIntoStatement |st_slct= selectStatement |st_crta= createTableStatement |st_altt= alterTableStatement |st_pdtb= updateTableStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |st_lsst= listStatement |st_stpr= stopProcessStatement |st_xppl= explainPlanStatement |st_adds= addStatement |st_drmn= dropManifestStatement |st_rust= removeUDFStatement |st_dlst= deleteStatement |st_desc= describeStatement |st_crks= createCatalogStatement |st_alks= alterCatalogStatement |st_drks= dropCatalogStatement |st_atcs= attachClusterStatement |st_dtcs= detachClusterStatement |st_alcs= alterClusterStatement |st_atcn= attachConnectorStatement |st_decn= detachConnectorStatement |st_cixs= createIndexStatement |st_dixs= dropIndexStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement ) ;
+	// Meta.g:781:1: metaStatement returns [MetaStatement st] : ( T_START_BRACKET (gID= getGenericID )? T_END_BRACKET T_COMMA )? (st_nsnt= insertIntoStatement |st_slct= selectStatement |st_crta= createTableStatement |st_altt= alterTableStatement |st_pdtb= updateTableStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |st_lsst= listStatement |st_stpr= stopProcessStatement |st_xppl= explainPlanStatement |st_adds= addStatement |st_drmn= dropManifestStatement |st_rust= removeUDFStatement |st_dlst= deleteStatement |st_desc= describeStatement |st_crks= createCatalogStatement |st_alks= alterCatalogStatement |st_drks= dropCatalogStatement |st_atcs= attachClusterStatement |st_dtcs= detachClusterStatement |st_alcs= alterClusterStatement |st_atcn= attachConnectorStatement |st_decn= detachConnectorStatement |st_cixs= createIndexStatement |st_dixs= dropIndexStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement ) ;
 	public final MetaStatement metaStatement() throws RecognitionException {
 		MetaStatement st = null;
 
@@ -3126,10 +3126,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 32) ) { return st; }
 
-			// Meta.g:783:41: ( ( T_START_BRACKET (gID= getGenericID )? T_END_BRACKET T_COMMA )? (st_nsnt= insertIntoStatement |st_slct= selectStatement |st_crta= createTableStatement |st_altt= alterTableStatement |st_pdtb= updateTableStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |st_lsst= listStatement |st_stpr= stopProcessStatement |st_xppl= explainPlanStatement |st_adds= addStatement |st_drmn= dropManifestStatement |st_rust= removeUDFStatement |st_dlst= deleteStatement |st_desc= describeStatement |st_crks= createCatalogStatement |st_alks= alterCatalogStatement |st_drks= dropCatalogStatement |st_atcs= attachClusterStatement |st_dtcs= detachClusterStatement |st_alcs= alterClusterStatement |st_atcn= attachConnectorStatement |st_decn= detachConnectorStatement |st_cixs= createIndexStatement |st_dixs= dropIndexStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement ) )
-			// Meta.g:784:5: ( T_START_BRACKET (gID= getGenericID )? T_END_BRACKET T_COMMA )? (st_nsnt= insertIntoStatement |st_slct= selectStatement |st_crta= createTableStatement |st_altt= alterTableStatement |st_pdtb= updateTableStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |st_lsst= listStatement |st_stpr= stopProcessStatement |st_xppl= explainPlanStatement |st_adds= addStatement |st_drmn= dropManifestStatement |st_rust= removeUDFStatement |st_dlst= deleteStatement |st_desc= describeStatement |st_crks= createCatalogStatement |st_alks= alterCatalogStatement |st_drks= dropCatalogStatement |st_atcs= attachClusterStatement |st_dtcs= detachClusterStatement |st_alcs= alterClusterStatement |st_atcn= attachConnectorStatement |st_decn= detachConnectorStatement |st_cixs= createIndexStatement |st_dixs= dropIndexStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement )
+			// Meta.g:781:41: ( ( T_START_BRACKET (gID= getGenericID )? T_END_BRACKET T_COMMA )? (st_nsnt= insertIntoStatement |st_slct= selectStatement |st_crta= createTableStatement |st_altt= alterTableStatement |st_pdtb= updateTableStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |st_lsst= listStatement |st_stpr= stopProcessStatement |st_xppl= explainPlanStatement |st_adds= addStatement |st_drmn= dropManifestStatement |st_rust= removeUDFStatement |st_dlst= deleteStatement |st_desc= describeStatement |st_crks= createCatalogStatement |st_alks= alterCatalogStatement |st_drks= dropCatalogStatement |st_atcs= attachClusterStatement |st_dtcs= detachClusterStatement |st_alcs= alterClusterStatement |st_atcn= attachConnectorStatement |st_decn= detachConnectorStatement |st_cixs= createIndexStatement |st_dixs= dropIndexStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement ) )
+			// Meta.g:782:5: ( T_START_BRACKET (gID= getGenericID )? T_END_BRACKET T_COMMA )? (st_nsnt= insertIntoStatement |st_slct= selectStatement |st_crta= createTableStatement |st_altt= alterTableStatement |st_pdtb= updateTableStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |st_lsst= listStatement |st_stpr= stopProcessStatement |st_xppl= explainPlanStatement |st_adds= addStatement |st_drmn= dropManifestStatement |st_rust= removeUDFStatement |st_dlst= deleteStatement |st_desc= describeStatement |st_crks= createCatalogStatement |st_alks= alterCatalogStatement |st_drks= dropCatalogStatement |st_atcs= attachClusterStatement |st_dtcs= detachClusterStatement |st_alcs= alterClusterStatement |st_atcn= attachConnectorStatement |st_decn= detachConnectorStatement |st_cixs= createIndexStatement |st_dixs= dropIndexStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement )
 			{
-			// Meta.g:784:5: ( T_START_BRACKET (gID= getGenericID )? T_END_BRACKET T_COMMA )?
+			// Meta.g:782:5: ( T_START_BRACKET (gID= getGenericID )? T_END_BRACKET T_COMMA )?
 			int alt50=2;
 			int LA50_0 = input.LA(1);
 			if ( (LA50_0==T_START_BRACKET) ) {
@@ -3137,10 +3137,10 @@ public class MetaParser extends Parser {
 			}
 			switch (alt50) {
 				case 1 :
-					// Meta.g:784:6: T_START_BRACKET (gID= getGenericID )? T_END_BRACKET T_COMMA
+					// Meta.g:782:6: T_START_BRACKET (gID= getGenericID )? T_END_BRACKET T_COMMA
 					{
-					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_metaStatement5064); 
-					// Meta.g:785:9: (gID= getGenericID )?
+					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_metaStatement5062); 
+					// Meta.g:783:9: (gID= getGenericID )?
 					int alt49=2;
 					int LA49_0 = input.LA(1);
 					if ( (LA49_0==T_BOOLEAN||LA49_0==T_CATALOG||LA49_0==T_COUNT||(LA49_0 >= T_DAY && LA49_0 <= T_DAYS)||(LA49_0 >= T_HOUR && LA49_0 <= T_IDENT)||LA49_0==T_INT||LA49_0==T_KEY||LA49_0==T_LIMIT||(LA49_0 >= T_LUCENE && LA49_0 <= T_MAP)||(LA49_0 >= T_MINS && LA49_0 <= T_MINUTES)||LA49_0==T_OPTIONS||LA49_0==T_PLAN||LA49_0==T_PROCESS||(LA49_0 >= T_SEC && LA49_0 <= T_SECS)||LA49_0==T_STORAGE||LA49_0==T_TEXT||LA49_0==T_TYPE) ) {
@@ -3148,9 +3148,9 @@ public class MetaParser extends Parser {
 					}
 					switch (alt49) {
 						case 1 :
-							// Meta.g:785:11: gID= getGenericID
+							// Meta.g:783:11: gID= getGenericID
 							{
-							pushFollow(FOLLOW_getGenericID_in_metaStatement5078);
+							pushFollow(FOLLOW_getGenericID_in_metaStatement5076);
 							gID=getGenericID();
 							state._fsp--;
 
@@ -3160,14 +3160,14 @@ public class MetaParser extends Parser {
 
 					}
 
-					match(input,T_END_BRACKET,FOLLOW_T_END_BRACKET_in_metaStatement5089); 
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_metaStatement5091); 
+					match(input,T_END_BRACKET,FOLLOW_T_END_BRACKET_in_metaStatement5087); 
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_metaStatement5089); 
 					}
 					break;
 
 			}
 
-			// Meta.g:787:5: (st_nsnt= insertIntoStatement |st_slct= selectStatement |st_crta= createTableStatement |st_altt= alterTableStatement |st_pdtb= updateTableStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |st_lsst= listStatement |st_stpr= stopProcessStatement |st_xppl= explainPlanStatement |st_adds= addStatement |st_drmn= dropManifestStatement |st_rust= removeUDFStatement |st_dlst= deleteStatement |st_desc= describeStatement |st_crks= createCatalogStatement |st_alks= alterCatalogStatement |st_drks= dropCatalogStatement |st_atcs= attachClusterStatement |st_dtcs= detachClusterStatement |st_alcs= alterClusterStatement |st_atcn= attachConnectorStatement |st_decn= detachConnectorStatement |st_cixs= createIndexStatement |st_dixs= dropIndexStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement )
+			// Meta.g:785:5: (st_nsnt= insertIntoStatement |st_slct= selectStatement |st_crta= createTableStatement |st_altt= alterTableStatement |st_pdtb= updateTableStatement |st_tbdr= dropTableStatement |st_trst= truncateStatement |st_lsst= listStatement |st_stpr= stopProcessStatement |st_xppl= explainPlanStatement |st_adds= addStatement |st_drmn= dropManifestStatement |st_rust= removeUDFStatement |st_dlst= deleteStatement |st_desc= describeStatement |st_crks= createCatalogStatement |st_alks= alterCatalogStatement |st_drks= dropCatalogStatement |st_atcs= attachClusterStatement |st_dtcs= detachClusterStatement |st_alcs= alterClusterStatement |st_atcn= attachConnectorStatement |st_decn= detachConnectorStatement |st_cixs= createIndexStatement |st_dixs= dropIndexStatement |st_crtr= createTriggerStatement |st_drtr= dropTriggerStatement )
 			int alt51=27;
 			switch ( input.LA(1) ) {
 			case T_INSERT:
@@ -3393,9 +3393,9 @@ public class MetaParser extends Parser {
 			}
 			switch (alt51) {
 				case 1 :
-					// Meta.g:787:6: st_nsnt= insertIntoStatement
+					// Meta.g:785:6: st_nsnt= insertIntoStatement
 					{
-					pushFollow(FOLLOW_insertIntoStatement_in_metaStatement5105);
+					pushFollow(FOLLOW_insertIntoStatement_in_metaStatement5103);
 					st_nsnt=insertIntoStatement();
 					state._fsp--;
 
@@ -3403,9 +3403,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:788:7: st_slct= selectStatement
+					// Meta.g:786:7: st_slct= selectStatement
 					{
-					pushFollow(FOLLOW_selectStatement_in_metaStatement5119);
+					pushFollow(FOLLOW_selectStatement_in_metaStatement5117);
 					st_slct=selectStatement();
 					state._fsp--;
 
@@ -3413,9 +3413,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 3 :
-					// Meta.g:789:7: st_crta= createTableStatement
+					// Meta.g:787:7: st_crta= createTableStatement
 					{
-					pushFollow(FOLLOW_createTableStatement_in_metaStatement5133);
+					pushFollow(FOLLOW_createTableStatement_in_metaStatement5131);
 					st_crta=createTableStatement();
 					state._fsp--;
 
@@ -3423,9 +3423,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 4 :
-					// Meta.g:790:7: st_altt= alterTableStatement
+					// Meta.g:788:7: st_altt= alterTableStatement
 					{
-					pushFollow(FOLLOW_alterTableStatement_in_metaStatement5147);
+					pushFollow(FOLLOW_alterTableStatement_in_metaStatement5145);
 					st_altt=alterTableStatement();
 					state._fsp--;
 
@@ -3433,9 +3433,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 5 :
-					// Meta.g:791:7: st_pdtb= updateTableStatement
+					// Meta.g:789:7: st_pdtb= updateTableStatement
 					{
-					pushFollow(FOLLOW_updateTableStatement_in_metaStatement5161);
+					pushFollow(FOLLOW_updateTableStatement_in_metaStatement5159);
 					st_pdtb=updateTableStatement();
 					state._fsp--;
 
@@ -3443,9 +3443,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 6 :
-					// Meta.g:792:7: st_tbdr= dropTableStatement
+					// Meta.g:790:7: st_tbdr= dropTableStatement
 					{
-					pushFollow(FOLLOW_dropTableStatement_in_metaStatement5175);
+					pushFollow(FOLLOW_dropTableStatement_in_metaStatement5173);
 					st_tbdr=dropTableStatement();
 					state._fsp--;
 
@@ -3453,9 +3453,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 7 :
-					// Meta.g:793:7: st_trst= truncateStatement
+					// Meta.g:791:7: st_trst= truncateStatement
 					{
-					pushFollow(FOLLOW_truncateStatement_in_metaStatement5189);
+					pushFollow(FOLLOW_truncateStatement_in_metaStatement5187);
 					st_trst=truncateStatement();
 					state._fsp--;
 
@@ -3463,9 +3463,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 8 :
-					// Meta.g:794:7: st_lsst= listStatement
+					// Meta.g:792:7: st_lsst= listStatement
 					{
-					pushFollow(FOLLOW_listStatement_in_metaStatement5203);
+					pushFollow(FOLLOW_listStatement_in_metaStatement5201);
 					st_lsst=listStatement();
 					state._fsp--;
 
@@ -3473,9 +3473,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 9 :
-					// Meta.g:795:7: st_stpr= stopProcessStatement
+					// Meta.g:793:7: st_stpr= stopProcessStatement
 					{
-					pushFollow(FOLLOW_stopProcessStatement_in_metaStatement5217);
+					pushFollow(FOLLOW_stopProcessStatement_in_metaStatement5215);
 					st_stpr=stopProcessStatement();
 					state._fsp--;
 
@@ -3483,9 +3483,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 10 :
-					// Meta.g:796:7: st_xppl= explainPlanStatement
+					// Meta.g:794:7: st_xppl= explainPlanStatement
 					{
-					pushFollow(FOLLOW_explainPlanStatement_in_metaStatement5231);
+					pushFollow(FOLLOW_explainPlanStatement_in_metaStatement5229);
 					st_xppl=explainPlanStatement();
 					state._fsp--;
 
@@ -3493,9 +3493,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 11 :
-					// Meta.g:797:7: st_adds= addStatement
+					// Meta.g:795:7: st_adds= addStatement
 					{
-					pushFollow(FOLLOW_addStatement_in_metaStatement5245);
+					pushFollow(FOLLOW_addStatement_in_metaStatement5243);
 					st_adds=addStatement();
 					state._fsp--;
 
@@ -3503,9 +3503,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 12 :
-					// Meta.g:798:7: st_drmn= dropManifestStatement
+					// Meta.g:796:7: st_drmn= dropManifestStatement
 					{
-					pushFollow(FOLLOW_dropManifestStatement_in_metaStatement5259);
+					pushFollow(FOLLOW_dropManifestStatement_in_metaStatement5257);
 					st_drmn=dropManifestStatement();
 					state._fsp--;
 
@@ -3513,9 +3513,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 13 :
-					// Meta.g:799:7: st_rust= removeUDFStatement
+					// Meta.g:797:7: st_rust= removeUDFStatement
 					{
-					pushFollow(FOLLOW_removeUDFStatement_in_metaStatement5273);
+					pushFollow(FOLLOW_removeUDFStatement_in_metaStatement5271);
 					st_rust=removeUDFStatement();
 					state._fsp--;
 
@@ -3523,9 +3523,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 14 :
-					// Meta.g:800:7: st_dlst= deleteStatement
+					// Meta.g:798:7: st_dlst= deleteStatement
 					{
-					pushFollow(FOLLOW_deleteStatement_in_metaStatement5287);
+					pushFollow(FOLLOW_deleteStatement_in_metaStatement5285);
 					st_dlst=deleteStatement();
 					state._fsp--;
 
@@ -3533,9 +3533,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 15 :
-					// Meta.g:801:7: st_desc= describeStatement
+					// Meta.g:799:7: st_desc= describeStatement
 					{
-					pushFollow(FOLLOW_describeStatement_in_metaStatement5301);
+					pushFollow(FOLLOW_describeStatement_in_metaStatement5299);
 					st_desc=describeStatement();
 					state._fsp--;
 
@@ -3543,9 +3543,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 16 :
-					// Meta.g:802:7: st_crks= createCatalogStatement
+					// Meta.g:800:7: st_crks= createCatalogStatement
 					{
-					pushFollow(FOLLOW_createCatalogStatement_in_metaStatement5315);
+					pushFollow(FOLLOW_createCatalogStatement_in_metaStatement5313);
 					st_crks=createCatalogStatement();
 					state._fsp--;
 
@@ -3553,9 +3553,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 17 :
-					// Meta.g:803:7: st_alks= alterCatalogStatement
+					// Meta.g:801:7: st_alks= alterCatalogStatement
 					{
-					pushFollow(FOLLOW_alterCatalogStatement_in_metaStatement5329);
+					pushFollow(FOLLOW_alterCatalogStatement_in_metaStatement5327);
 					st_alks=alterCatalogStatement();
 					state._fsp--;
 
@@ -3563,9 +3563,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 18 :
-					// Meta.g:804:7: st_drks= dropCatalogStatement
+					// Meta.g:802:7: st_drks= dropCatalogStatement
 					{
-					pushFollow(FOLLOW_dropCatalogStatement_in_metaStatement5343);
+					pushFollow(FOLLOW_dropCatalogStatement_in_metaStatement5341);
 					st_drks=dropCatalogStatement();
 					state._fsp--;
 
@@ -3573,9 +3573,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 19 :
-					// Meta.g:805:7: st_atcs= attachClusterStatement
+					// Meta.g:803:7: st_atcs= attachClusterStatement
 					{
-					pushFollow(FOLLOW_attachClusterStatement_in_metaStatement5357);
+					pushFollow(FOLLOW_attachClusterStatement_in_metaStatement5355);
 					st_atcs=attachClusterStatement();
 					state._fsp--;
 
@@ -3583,9 +3583,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 20 :
-					// Meta.g:806:7: st_dtcs= detachClusterStatement
+					// Meta.g:804:7: st_dtcs= detachClusterStatement
 					{
-					pushFollow(FOLLOW_detachClusterStatement_in_metaStatement5371);
+					pushFollow(FOLLOW_detachClusterStatement_in_metaStatement5369);
 					st_dtcs=detachClusterStatement();
 					state._fsp--;
 
@@ -3593,9 +3593,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 21 :
-					// Meta.g:807:7: st_alcs= alterClusterStatement
+					// Meta.g:805:7: st_alcs= alterClusterStatement
 					{
-					pushFollow(FOLLOW_alterClusterStatement_in_metaStatement5385);
+					pushFollow(FOLLOW_alterClusterStatement_in_metaStatement5383);
 					st_alcs=alterClusterStatement();
 					state._fsp--;
 
@@ -3603,9 +3603,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 22 :
-					// Meta.g:808:7: st_atcn= attachConnectorStatement
+					// Meta.g:806:7: st_atcn= attachConnectorStatement
 					{
-					pushFollow(FOLLOW_attachConnectorStatement_in_metaStatement5399);
+					pushFollow(FOLLOW_attachConnectorStatement_in_metaStatement5397);
 					st_atcn=attachConnectorStatement();
 					state._fsp--;
 
@@ -3613,9 +3613,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 23 :
-					// Meta.g:809:7: st_decn= detachConnectorStatement
+					// Meta.g:807:7: st_decn= detachConnectorStatement
 					{
-					pushFollow(FOLLOW_detachConnectorStatement_in_metaStatement5413);
+					pushFollow(FOLLOW_detachConnectorStatement_in_metaStatement5411);
 					st_decn=detachConnectorStatement();
 					state._fsp--;
 
@@ -3623,9 +3623,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 24 :
-					// Meta.g:810:7: st_cixs= createIndexStatement
+					// Meta.g:808:7: st_cixs= createIndexStatement
 					{
-					pushFollow(FOLLOW_createIndexStatement_in_metaStatement5427);
+					pushFollow(FOLLOW_createIndexStatement_in_metaStatement5425);
 					st_cixs=createIndexStatement();
 					state._fsp--;
 
@@ -3633,9 +3633,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 25 :
-					// Meta.g:811:7: st_dixs= dropIndexStatement
+					// Meta.g:809:7: st_dixs= dropIndexStatement
 					{
-					pushFollow(FOLLOW_dropIndexStatement_in_metaStatement5441);
+					pushFollow(FOLLOW_dropIndexStatement_in_metaStatement5439);
 					st_dixs=dropIndexStatement();
 					state._fsp--;
 
@@ -3643,9 +3643,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 26 :
-					// Meta.g:812:7: st_crtr= createTriggerStatement
+					// Meta.g:810:7: st_crtr= createTriggerStatement
 					{
-					pushFollow(FOLLOW_createTriggerStatement_in_metaStatement5455);
+					pushFollow(FOLLOW_createTriggerStatement_in_metaStatement5453);
 					st_crtr=createTriggerStatement();
 					state._fsp--;
 
@@ -3653,9 +3653,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 27 :
-					// Meta.g:813:7: st_drtr= dropTriggerStatement
+					// Meta.g:811:7: st_drtr= dropTriggerStatement
 					{
-					pushFollow(FOLLOW_dropTriggerStatement_in_metaStatement5469);
+					pushFollow(FOLLOW_dropTriggerStatement_in_metaStatement5467);
 					st_drtr=dropTriggerStatement();
 					state._fsp--;
 
@@ -3682,7 +3682,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "query"
-	// Meta.g:816:1: query returns [MetaStatement st] : mtst= metaStatement ( T_SEMICOLON )+ EOF ;
+	// Meta.g:814:1: query returns [MetaStatement st] : mtst= metaStatement ( T_SEMICOLON )+ EOF ;
 	public final MetaStatement query() throws RecognitionException {
 		MetaStatement st = null;
 
@@ -3693,14 +3693,14 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 33) ) { return st; }
 
-			// Meta.g:816:33: (mtst= metaStatement ( T_SEMICOLON )+ EOF )
-			// Meta.g:817:2: mtst= metaStatement ( T_SEMICOLON )+ EOF
+			// Meta.g:814:33: (mtst= metaStatement ( T_SEMICOLON )+ EOF )
+			// Meta.g:815:2: mtst= metaStatement ( T_SEMICOLON )+ EOF
 			{
-			pushFollow(FOLLOW_metaStatement_in_query5487);
+			pushFollow(FOLLOW_metaStatement_in_query5485);
 			mtst=metaStatement();
 			state._fsp--;
 
-			// Meta.g:817:21: ( T_SEMICOLON )+
+			// Meta.g:815:21: ( T_SEMICOLON )+
 			int cnt52=0;
 			loop52:
 			while (true) {
@@ -3712,9 +3712,9 @@ public class MetaParser extends Parser {
 
 				switch (alt52) {
 				case 1 :
-					// Meta.g:817:22: T_SEMICOLON
+					// Meta.g:815:22: T_SEMICOLON
 					{
-					match(input,T_SEMICOLON,FOLLOW_T_SEMICOLON_in_query5490); 
+					match(input,T_SEMICOLON,FOLLOW_T_SEMICOLON_in_query5488); 
 					}
 					break;
 
@@ -3726,7 +3726,7 @@ public class MetaParser extends Parser {
 				cnt52++;
 			}
 
-			match(input,EOF,FOLLOW_EOF_in_query5494); 
+			match(input,EOF,FOLLOW_EOF_in_query5492); 
 
 					st = mtst;
 				
@@ -3747,7 +3747,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getDataType"
-	// Meta.g:822:1: getDataType returns [ColumnType dataType] : (ident1= getBasicType |ident1= getCollectionType T_LT ident2= getBasicType T_GT |ident1= getMapType T_LT ident2= getBasicType T_COMMA ident3= getBasicType T_GT ) ;
+	// Meta.g:820:1: getDataType returns [ColumnType dataType] : (ident1= getBasicType |ident1= getCollectionType T_LT ident2= getBasicType T_GT |ident1= getMapType T_LT ident2= getBasicType T_COMMA ident3= getBasicType T_GT ) ;
 	public final ColumnType getDataType() throws RecognitionException {
 		ColumnType dataType = null;
 
@@ -3760,10 +3760,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 34) ) { return dataType; }
 
-			// Meta.g:822:42: ( (ident1= getBasicType |ident1= getCollectionType T_LT ident2= getBasicType T_GT |ident1= getMapType T_LT ident2= getBasicType T_COMMA ident3= getBasicType T_GT ) )
-			// Meta.g:823:5: (ident1= getBasicType |ident1= getCollectionType T_LT ident2= getBasicType T_GT |ident1= getMapType T_LT ident2= getBasicType T_COMMA ident3= getBasicType T_GT )
+			// Meta.g:820:42: ( (ident1= getBasicType |ident1= getCollectionType T_LT ident2= getBasicType T_GT |ident1= getMapType T_LT ident2= getBasicType T_COMMA ident3= getBasicType T_GT ) )
+			// Meta.g:821:5: (ident1= getBasicType |ident1= getCollectionType T_LT ident2= getBasicType T_GT |ident1= getMapType T_LT ident2= getBasicType T_COMMA ident3= getBasicType T_GT )
 			{
-			// Meta.g:823:5: (ident1= getBasicType |ident1= getCollectionType T_LT ident2= getBasicType T_GT |ident1= getMapType T_LT ident2= getBasicType T_COMMA ident3= getBasicType T_GT )
+			// Meta.g:821:5: (ident1= getBasicType |ident1= getCollectionType T_LT ident2= getBasicType T_GT |ident1= getMapType T_LT ident2= getBasicType T_COMMA ident3= getBasicType T_GT )
 			int alt53=3;
 			switch ( input.LA(1) ) {
 			case T_BIGINT:
@@ -3796,48 +3796,48 @@ public class MetaParser extends Parser {
 			}
 			switch (alt53) {
 				case 1 :
-					// Meta.g:823:7: ident1= getBasicType
+					// Meta.g:821:7: ident1= getBasicType
 					{
-					pushFollow(FOLLOW_getBasicType_in_getDataType5516);
+					pushFollow(FOLLOW_getBasicType_in_getDataType5514);
 					ident1=getBasicType();
 					state._fsp--;
 
 					}
 					break;
 				case 2 :
-					// Meta.g:824:7: ident1= getCollectionType T_LT ident2= getBasicType T_GT
+					// Meta.g:822:7: ident1= getCollectionType T_LT ident2= getBasicType T_GT
 					{
-					pushFollow(FOLLOW_getCollectionType_in_getDataType5526);
+					pushFollow(FOLLOW_getCollectionType_in_getDataType5524);
 					ident1=getCollectionType();
 					state._fsp--;
 
-					match(input,T_LT,FOLLOW_T_LT_in_getDataType5528); 
-					pushFollow(FOLLOW_getBasicType_in_getDataType5532);
+					match(input,T_LT,FOLLOW_T_LT_in_getDataType5526); 
+					pushFollow(FOLLOW_getBasicType_in_getDataType5530);
 					ident2=getBasicType();
 					state._fsp--;
 
-					match(input,T_GT,FOLLOW_T_GT_in_getDataType5534); 
+					match(input,T_GT,FOLLOW_T_GT_in_getDataType5532); 
 					 ident1.setDBCollectionType(ident2); 
 					}
 					break;
 				case 3 :
-					// Meta.g:825:7: ident1= getMapType T_LT ident2= getBasicType T_COMMA ident3= getBasicType T_GT
+					// Meta.g:823:7: ident1= getMapType T_LT ident2= getBasicType T_COMMA ident3= getBasicType T_GT
 					{
-					pushFollow(FOLLOW_getMapType_in_getDataType5546);
+					pushFollow(FOLLOW_getMapType_in_getDataType5544);
 					ident1=getMapType();
 					state._fsp--;
 
-					match(input,T_LT,FOLLOW_T_LT_in_getDataType5548); 
-					pushFollow(FOLLOW_getBasicType_in_getDataType5552);
+					match(input,T_LT,FOLLOW_T_LT_in_getDataType5546); 
+					pushFollow(FOLLOW_getBasicType_in_getDataType5550);
 					ident2=getBasicType();
 					state._fsp--;
 
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_getDataType5554); 
-					pushFollow(FOLLOW_getBasicType_in_getDataType5558);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_getDataType5552); 
+					pushFollow(FOLLOW_getBasicType_in_getDataType5556);
 					ident3=getBasicType();
 					state._fsp--;
 
-					match(input,T_GT,FOLLOW_T_GT_in_getDataType5560); 
+					match(input,T_GT,FOLLOW_T_GT_in_getDataType5558); 
 					 ident1.setDBMapType(ident2, ident3); 
 					}
 					break;
@@ -3862,7 +3862,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getBasicType"
-	// Meta.g:829:1: getBasicType returns [ColumnType dataType] : ( T_BIGINT | T_BOOLEAN | T_DOUBLE | T_FLOAT | T_INT | T_INTEGER | T_TEXT | T_VARCHAR );
+	// Meta.g:827:1: getBasicType returns [ColumnType dataType] : ( T_BIGINT | T_BOOLEAN | T_DOUBLE | T_FLOAT | T_INT | T_INTEGER | T_TEXT | T_VARCHAR );
 	public final ColumnType getBasicType() throws RecognitionException {
 		ColumnType dataType = null;
 
@@ -3871,7 +3871,7 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 35) ) { return dataType; }
 
-			// Meta.g:829:43: ( T_BIGINT | T_BOOLEAN | T_DOUBLE | T_FLOAT | T_INT | T_INTEGER | T_TEXT | T_VARCHAR )
+			// Meta.g:827:43: ( T_BIGINT | T_BOOLEAN | T_DOUBLE | T_FLOAT | T_INT | T_INTEGER | T_TEXT | T_VARCHAR )
 			int alt54=8;
 			switch ( input.LA(1) ) {
 			case T_BIGINT:
@@ -3921,58 +3921,58 @@ public class MetaParser extends Parser {
 			}
 			switch (alt54) {
 				case 1 :
-					// Meta.g:830:5: T_BIGINT
+					// Meta.g:828:5: T_BIGINT
 					{
-					match(input,T_BIGINT,FOLLOW_T_BIGINT_in_getBasicType5586); 
+					match(input,T_BIGINT,FOLLOW_T_BIGINT_in_getBasicType5584); 
 					 dataType =ColumnType.BIGINT; 
 					}
 					break;
 				case 2 :
-					// Meta.g:831:7: T_BOOLEAN
+					// Meta.g:829:7: T_BOOLEAN
 					{
-					match(input,T_BOOLEAN,FOLLOW_T_BOOLEAN_in_getBasicType5596); 
+					match(input,T_BOOLEAN,FOLLOW_T_BOOLEAN_in_getBasicType5594); 
 					 dataType =ColumnType.BOOLEAN; 
 					}
 					break;
 				case 3 :
-					// Meta.g:832:7: T_DOUBLE
+					// Meta.g:830:7: T_DOUBLE
 					{
-					match(input,T_DOUBLE,FOLLOW_T_DOUBLE_in_getBasicType5606); 
+					match(input,T_DOUBLE,FOLLOW_T_DOUBLE_in_getBasicType5604); 
 					 dataType =ColumnType.DOUBLE; 
 					}
 					break;
 				case 4 :
-					// Meta.g:833:7: T_FLOAT
+					// Meta.g:831:7: T_FLOAT
 					{
-					match(input,T_FLOAT,FOLLOW_T_FLOAT_in_getBasicType5616); 
+					match(input,T_FLOAT,FOLLOW_T_FLOAT_in_getBasicType5614); 
 					 dataType =ColumnType.FLOAT; 
 					}
 					break;
 				case 5 :
-					// Meta.g:834:7: T_INT
+					// Meta.g:832:7: T_INT
 					{
-					match(input,T_INT,FOLLOW_T_INT_in_getBasicType5626); 
+					match(input,T_INT,FOLLOW_T_INT_in_getBasicType5624); 
 					 dataType =ColumnType.INT; 
 					}
 					break;
 				case 6 :
-					// Meta.g:835:7: T_INTEGER
+					// Meta.g:833:7: T_INTEGER
 					{
-					match(input,T_INTEGER,FOLLOW_T_INTEGER_in_getBasicType5636); 
+					match(input,T_INTEGER,FOLLOW_T_INTEGER_in_getBasicType5634); 
 					 dataType =ColumnType.INT; 
 					}
 					break;
 				case 7 :
-					// Meta.g:836:7: T_TEXT
+					// Meta.g:834:7: T_TEXT
 					{
-					match(input,T_TEXT,FOLLOW_T_TEXT_in_getBasicType5646); 
+					match(input,T_TEXT,FOLLOW_T_TEXT_in_getBasicType5644); 
 					 dataType =ColumnType.TEXT; 
 					}
 					break;
 				case 8 :
-					// Meta.g:837:7: T_VARCHAR
+					// Meta.g:835:7: T_VARCHAR
 					{
-					match(input,T_VARCHAR,FOLLOW_T_VARCHAR_in_getBasicType5656); 
+					match(input,T_VARCHAR,FOLLOW_T_VARCHAR_in_getBasicType5654); 
 					 dataType =ColumnType.VARCHAR; 
 					}
 					break;
@@ -3993,7 +3993,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getCollectionType"
-	// Meta.g:840:1: getCollectionType returns [ColumnType dataType] : ( T_SET | T_LIST );
+	// Meta.g:838:1: getCollectionType returns [ColumnType dataType] : ( T_SET | T_LIST );
 	public final ColumnType getCollectionType() throws RecognitionException {
 		ColumnType dataType = null;
 
@@ -4002,7 +4002,7 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 36) ) { return dataType; }
 
-			// Meta.g:840:48: ( T_SET | T_LIST )
+			// Meta.g:838:48: ( T_SET | T_LIST )
 			int alt55=2;
 			int LA55_0 = input.LA(1);
 			if ( (LA55_0==T_SET) ) {
@@ -4020,16 +4020,16 @@ public class MetaParser extends Parser {
 
 			switch (alt55) {
 				case 1 :
-					// Meta.g:841:5: T_SET
+					// Meta.g:839:5: T_SET
 					{
-					match(input,T_SET,FOLLOW_T_SET_in_getCollectionType5674); 
+					match(input,T_SET,FOLLOW_T_SET_in_getCollectionType5672); 
 					 dataType = ColumnType.SET; 
 					}
 					break;
 				case 2 :
-					// Meta.g:842:7: T_LIST
+					// Meta.g:840:7: T_LIST
 					{
-					match(input,T_LIST,FOLLOW_T_LIST_in_getCollectionType5684); 
+					match(input,T_LIST,FOLLOW_T_LIST_in_getCollectionType5682); 
 					 dataType = ColumnType.LIST; 
 					}
 					break;
@@ -4050,7 +4050,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getMapType"
-	// Meta.g:845:1: getMapType returns [ColumnType dataType] : T_MAP ;
+	// Meta.g:843:1: getMapType returns [ColumnType dataType] : T_MAP ;
 	public final ColumnType getMapType() throws RecognitionException {
 		ColumnType dataType = null;
 
@@ -4059,10 +4059,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 37) ) { return dataType; }
 
-			// Meta.g:845:41: ( T_MAP )
-			// Meta.g:846:5: T_MAP
+			// Meta.g:843:41: ( T_MAP )
+			// Meta.g:844:5: T_MAP
 			{
-			match(input,T_MAP,FOLLOW_T_MAP_in_getMapType5702); 
+			match(input,T_MAP,FOLLOW_T_MAP_in_getMapType5700); 
 			 dataType = ColumnType.MAP; 
 			}
 
@@ -4081,7 +4081,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getOrdering"
-	// Meta.g:849:1: getOrdering[TableName tablename] returns [OrderBy orderBy] : ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )* ( T_ASC | T_DESC )? ;
+	// Meta.g:847:1: getOrdering[TableName tablename] returns [OrderBy orderBy] : ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )* ( T_ASC | T_DESC )? ;
 	public final OrderBy getOrdering(TableName tablename) throws RecognitionException {
 		OrderBy orderBy = null;
 
@@ -4097,15 +4097,15 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 38) ) { return orderBy; }
 
-			// Meta.g:856:6: (ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )* ( T_ASC | T_DESC )? )
-			// Meta.g:857:5: ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )* ( T_ASC | T_DESC )?
+			// Meta.g:854:6: (ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )* ( T_ASC | T_DESC )? )
+			// Meta.g:855:5: ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )* ( T_ASC | T_DESC )?
 			{
-			pushFollow(FOLLOW_getSelector_in_getOrdering5739);
+			pushFollow(FOLLOW_getSelector_in_getOrdering5737);
 			ident1=getSelector(tablename);
 			state._fsp--;
 
 			selectorListOrder.add(ident1);
-			// Meta.g:858:5: ( T_COMMA identN= getSelector[tablename] )*
+			// Meta.g:856:5: ( T_COMMA identN= getSelector[tablename] )*
 			loop56:
 			while (true) {
 				int alt56=2;
@@ -4116,10 +4116,10 @@ public class MetaParser extends Parser {
 
 				switch (alt56) {
 				case 1 :
-					// Meta.g:858:6: T_COMMA identN= getSelector[tablename]
+					// Meta.g:856:6: T_COMMA identN= getSelector[tablename]
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_getOrdering5749); 
-					pushFollow(FOLLOW_getSelector_in_getOrdering5753);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_getOrdering5747); 
+					pushFollow(FOLLOW_getSelector_in_getOrdering5751);
 					identN=getSelector(tablename);
 					state._fsp--;
 
@@ -4132,7 +4132,7 @@ public class MetaParser extends Parser {
 				}
 			}
 
-			// Meta.g:859:5: ( T_ASC | T_DESC )?
+			// Meta.g:857:5: ( T_ASC | T_DESC )?
 			int alt57=3;
 			int LA57_0 = input.LA(1);
 			if ( (LA57_0==T_ASC) ) {
@@ -4143,15 +4143,15 @@ public class MetaParser extends Parser {
 			}
 			switch (alt57) {
 				case 1 :
-					// Meta.g:859:6: T_ASC
+					// Meta.g:857:6: T_ASC
 					{
-					match(input,T_ASC,FOLLOW_T_ASC_in_getOrdering5765); 
+					match(input,T_ASC,FOLLOW_T_ASC_in_getOrdering5763); 
 					}
 					break;
 				case 2 :
-					// Meta.g:859:14: T_DESC
+					// Meta.g:857:14: T_DESC
 					{
-					match(input,T_DESC,FOLLOW_T_DESC_in_getOrdering5769); 
+					match(input,T_DESC,FOLLOW_T_DESC_in_getOrdering5767); 
 					 direction = OrderDirection.DESC; 
 					}
 					break;
@@ -4178,7 +4178,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getGroupBy"
-	// Meta.g:862:1: getGroupBy[TableName tablename] returns [ArrayList<Selector> groups] : ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )* ;
+	// Meta.g:860:1: getGroupBy[TableName tablename] returns [ArrayList<Selector> groups] : ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )* ;
 	public final ArrayList<Selector> getGroupBy(TableName tablename) throws RecognitionException {
 		ArrayList<Selector> groups = null;
 
@@ -4193,15 +4193,15 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 39) ) { return groups; }
 
-			// Meta.g:865:6: (ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )* )
-			// Meta.g:866:5: ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )*
+			// Meta.g:863:6: (ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )* )
+			// Meta.g:864:5: ident1= getSelector[tablename] ( T_COMMA identN= getSelector[tablename] )*
 			{
-			pushFollow(FOLLOW_getSelector_in_getGroupBy5801);
+			pushFollow(FOLLOW_getSelector_in_getGroupBy5799);
 			ident1=getSelector(tablename);
 			state._fsp--;
 
 			groups.add(ident1);
-			// Meta.g:867:5: ( T_COMMA identN= getSelector[tablename] )*
+			// Meta.g:865:5: ( T_COMMA identN= getSelector[tablename] )*
 			loop58:
 			while (true) {
 				int alt58=2;
@@ -4212,10 +4212,10 @@ public class MetaParser extends Parser {
 
 				switch (alt58) {
 				case 1 :
-					// Meta.g:867:6: T_COMMA identN= getSelector[tablename]
+					// Meta.g:865:6: T_COMMA identN= getSelector[tablename]
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_getGroupBy5811); 
-					pushFollow(FOLLOW_getSelector_in_getGroupBy5815);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_getGroupBy5809); 
+					pushFollow(FOLLOW_getSelector_in_getGroupBy5813);
 					identN=getSelector(tablename);
 					state._fsp--;
 
@@ -4245,7 +4245,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getWhereClauses"
-	// Meta.g:870:1: getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses] : ( T_START_PARENTHESIS rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )* T_END_PARENTHESIS ( T_AND wcs= getWhereClauses[tablename] )* |rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )* );
+	// Meta.g:868:1: getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses] : ( T_START_PARENTHESIS rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )* T_END_PARENTHESIS ( T_AND wcs= getWhereClauses[tablename] )* |rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )* );
 	public final ArrayList<Relation> getWhereClauses(TableName tablename) throws RecognitionException {
 		ArrayList<Relation> clauses = null;
 
@@ -4260,7 +4260,7 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 40) ) { return clauses; }
 
-			// Meta.g:873:6: ( T_START_PARENTHESIS rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )* T_END_PARENTHESIS ( T_AND wcs= getWhereClauses[tablename] )* |rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )* )
+			// Meta.g:871:6: ( T_START_PARENTHESIS rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )* T_END_PARENTHESIS ( T_AND wcs= getWhereClauses[tablename] )* |rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )* )
 			int alt62=2;
 			int LA62_0 = input.LA(1);
 			if ( (LA62_0==T_START_PARENTHESIS) ) {
@@ -4278,15 +4278,15 @@ public class MetaParser extends Parser {
 
 			switch (alt62) {
 				case 1 :
-					// Meta.g:874:5: T_START_PARENTHESIS rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )* T_END_PARENTHESIS ( T_AND wcs= getWhereClauses[tablename] )*
+					// Meta.g:872:5: T_START_PARENTHESIS rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )* T_END_PARENTHESIS ( T_AND wcs= getWhereClauses[tablename] )*
 					{
-					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getWhereClauses5845); 
-					pushFollow(FOLLOW_getRelation_in_getWhereClauses5849);
+					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getWhereClauses5843); 
+					pushFollow(FOLLOW_getRelation_in_getWhereClauses5847);
 					rel1=getRelation(tablename);
 					state._fsp--;
 
 					clauses.add(rel1);
-					// Meta.g:874:74: ( T_AND wcs= getWhereClauses[tablename] )*
+					// Meta.g:872:74: ( T_AND wcs= getWhereClauses[tablename] )*
 					loop59:
 					while (true) {
 						int alt59=2;
@@ -4297,10 +4297,10 @@ public class MetaParser extends Parser {
 
 						switch (alt59) {
 						case 1 :
-							// Meta.g:874:75: T_AND wcs= getWhereClauses[tablename]
+							// Meta.g:872:75: T_AND wcs= getWhereClauses[tablename]
 							{
-							match(input,T_AND,FOLLOW_T_AND_in_getWhereClauses5855); 
-							pushFollow(FOLLOW_getWhereClauses_in_getWhereClauses5859);
+							match(input,T_AND,FOLLOW_T_AND_in_getWhereClauses5853); 
+							pushFollow(FOLLOW_getWhereClauses_in_getWhereClauses5857);
 							wcs=getWhereClauses(tablename);
 							state._fsp--;
 
@@ -4313,8 +4313,8 @@ public class MetaParser extends Parser {
 						}
 					}
 
-					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getWhereClauses5866); 
-					// Meta.g:874:155: ( T_AND wcs= getWhereClauses[tablename] )*
+					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getWhereClauses5864); 
+					// Meta.g:872:155: ( T_AND wcs= getWhereClauses[tablename] )*
 					loop60:
 					while (true) {
 						int alt60=2;
@@ -4325,10 +4325,10 @@ public class MetaParser extends Parser {
 
 						switch (alt60) {
 						case 1 :
-							// Meta.g:874:156: T_AND wcs= getWhereClauses[tablename]
+							// Meta.g:872:156: T_AND wcs= getWhereClauses[tablename]
 							{
-							match(input,T_AND,FOLLOW_T_AND_in_getWhereClauses5869); 
-							pushFollow(FOLLOW_getWhereClauses_in_getWhereClauses5873);
+							match(input,T_AND,FOLLOW_T_AND_in_getWhereClauses5867); 
+							pushFollow(FOLLOW_getWhereClauses_in_getWhereClauses5871);
 							wcs=getWhereClauses(tablename);
 							state._fsp--;
 
@@ -4344,14 +4344,14 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:875:7: rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )*
+					// Meta.g:873:7: rel1= getRelation[tablename] ( T_AND wcs= getWhereClauses[tablename] )*
 					{
-					pushFollow(FOLLOW_getRelation_in_getWhereClauses5888);
+					pushFollow(FOLLOW_getRelation_in_getWhereClauses5886);
 					rel1=getRelation(tablename);
 					state._fsp--;
 
 					clauses.add(rel1);
-					// Meta.g:875:56: ( T_AND wcs= getWhereClauses[tablename] )*
+					// Meta.g:873:56: ( T_AND wcs= getWhereClauses[tablename] )*
 					loop61:
 					while (true) {
 						int alt61=2;
@@ -4362,10 +4362,10 @@ public class MetaParser extends Parser {
 
 						switch (alt61) {
 						case 1 :
-							// Meta.g:875:57: T_AND wcs= getWhereClauses[tablename]
+							// Meta.g:873:57: T_AND wcs= getWhereClauses[tablename]
 							{
-							match(input,T_AND,FOLLOW_T_AND_in_getWhereClauses5894); 
-							pushFollow(FOLLOW_getWhereClauses_in_getWhereClauses5898);
+							match(input,T_AND,FOLLOW_T_AND_in_getWhereClauses5892); 
+							pushFollow(FOLLOW_getWhereClauses_in_getWhereClauses5896);
 							wcs=getWhereClauses(tablename);
 							state._fsp--;
 
@@ -4397,7 +4397,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getRelation"
-	// Meta.g:878:1: getRelation[TableName tablename] returns [Relation mrel] : s= getSelector[tablename] operator= getComparator rs= getSelector[tablename] ;
+	// Meta.g:876:1: getRelation[TableName tablename] returns [Relation mrel] : s= getSelector[tablename] operator= getComparator rs= getSelector[tablename] ;
 	public final Relation getRelation(TableName tablename) throws RecognitionException {
 		Relation mrel = null;
 
@@ -4410,18 +4410,18 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 41) ) { return mrel; }
 
-			// Meta.g:881:6: (s= getSelector[tablename] operator= getComparator rs= getSelector[tablename] )
-			// Meta.g:882:5: s= getSelector[tablename] operator= getComparator rs= getSelector[tablename]
+			// Meta.g:879:6: (s= getSelector[tablename] operator= getComparator rs= getSelector[tablename] )
+			// Meta.g:880:5: s= getSelector[tablename] operator= getComparator rs= getSelector[tablename]
 			{
-			pushFollow(FOLLOW_getSelector_in_getRelation5930);
+			pushFollow(FOLLOW_getSelector_in_getRelation5928);
 			s=getSelector(tablename);
 			state._fsp--;
 
-			pushFollow(FOLLOW_getComparator_in_getRelation5935);
+			pushFollow(FOLLOW_getComparator_in_getRelation5933);
 			operator=getComparator();
 			state._fsp--;
 
-			pushFollow(FOLLOW_getSelector_in_getRelation5939);
+			pushFollow(FOLLOW_getSelector_in_getRelation5937);
 			rs=getSelector(tablename);
 			state._fsp--;
 
@@ -4445,7 +4445,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getFields"
-	// Meta.g:885:1: getFields[MutablePair pair] : (ident1L= getTableName T_EQUAL ident1R= getTableName | T_START_PARENTHESIS ident1L= getTableName T_EQUAL ident1R= getTableName T_END_PARENTHESIS );
+	// Meta.g:883:1: getFields[MutablePair pair] : (ident1L= getTableName T_EQUAL ident1R= getTableName | T_START_PARENTHESIS ident1L= getTableName T_EQUAL ident1R= getTableName T_END_PARENTHESIS );
 	public final void getFields(MutablePair pair) throws RecognitionException {
 		int getFields_StartIndex = input.index();
 
@@ -4455,7 +4455,7 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 42) ) { return; }
 
-			// Meta.g:885:28: (ident1L= getTableName T_EQUAL ident1R= getTableName | T_START_PARENTHESIS ident1L= getTableName T_EQUAL ident1R= getTableName T_END_PARENTHESIS )
+			// Meta.g:883:28: (ident1L= getTableName T_EQUAL ident1R= getTableName | T_START_PARENTHESIS ident1L= getTableName T_EQUAL ident1R= getTableName T_END_PARENTHESIS )
 			int alt63=2;
 			int LA63_0 = input.LA(1);
 			if ( (LA63_0==T_BOOLEAN||LA63_0==T_CATALOG||LA63_0==T_COUNT||(LA63_0 >= T_DAY && LA63_0 <= T_DAYS)||(LA63_0 >= T_HOUR && LA63_0 <= T_IDENT)||LA63_0==T_INT||LA63_0==T_KEY||LA63_0==T_KS_AND_TN||LA63_0==T_LIMIT||(LA63_0 >= T_LUCENE && LA63_0 <= T_MAP)||(LA63_0 >= T_MINS && LA63_0 <= T_MINUTES)||LA63_0==T_OPTIONS||LA63_0==T_PLAN||LA63_0==T_PROCESS||(LA63_0 >= T_SEC && LA63_0 <= T_SECS)||LA63_0==T_STORAGE||LA63_0==T_TEXT||LA63_0==T_TYPE) ) {
@@ -4473,15 +4473,15 @@ public class MetaParser extends Parser {
 
 			switch (alt63) {
 				case 1 :
-					// Meta.g:886:5: ident1L= getTableName T_EQUAL ident1R= getTableName
+					// Meta.g:884:5: ident1L= getTableName T_EQUAL ident1R= getTableName
 					{
-					pushFollow(FOLLOW_getTableName_in_getFields5955);
+					pushFollow(FOLLOW_getTableName_in_getFields5953);
 					ident1L=getTableName();
 					state._fsp--;
 
 					 pair.setLeft(ident1L); 
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getFields5959); 
-					pushFollow(FOLLOW_getTableName_in_getFields5963);
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getFields5957); 
+					pushFollow(FOLLOW_getTableName_in_getFields5961);
 					ident1R=getTableName();
 					state._fsp--;
 
@@ -4489,21 +4489,21 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:887:7: T_START_PARENTHESIS ident1L= getTableName T_EQUAL ident1R= getTableName T_END_PARENTHESIS
+					// Meta.g:885:7: T_START_PARENTHESIS ident1L= getTableName T_EQUAL ident1R= getTableName T_END_PARENTHESIS
 					{
-					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getFields5973); 
-					pushFollow(FOLLOW_getTableName_in_getFields5977);
+					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getFields5971); 
+					pushFollow(FOLLOW_getTableName_in_getFields5975);
 					ident1L=getTableName();
 					state._fsp--;
 
 					 pair.setLeft(ident1L); 
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getFields5981); 
-					pushFollow(FOLLOW_getTableName_in_getFields5985);
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getFields5979); 
+					pushFollow(FOLLOW_getTableName_in_getFields5983);
 					ident1R=getTableName();
 					state._fsp--;
 
 					 pair.setRight(ident1R); 
-					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getFields5989); 
+					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getFields5987); 
 					}
 					break;
 
@@ -4522,7 +4522,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getWindow"
-	// Meta.g:890:1: getWindow returns [Window ws] : ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) ) ;
+	// Meta.g:888:1: getWindow returns [Window ws] : ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) ) ;
 	public final Window getWindow() throws RecognitionException {
 		Window ws = null;
 
@@ -4534,10 +4534,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 43) ) { return ws; }
 
-			// Meta.g:890:30: ( ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) ) )
-			// Meta.g:891:5: ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) )
+			// Meta.g:888:30: ( ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) ) )
+			// Meta.g:889:5: ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) )
 			{
-			// Meta.g:891:5: ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) )
+			// Meta.g:889:5: ( T_LAST |cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit ) )
 			int alt65=2;
 			int LA65_0 = input.LA(1);
 			if ( (LA65_0==T_LAST) ) {
@@ -4555,17 +4555,17 @@ public class MetaParser extends Parser {
 
 			switch (alt65) {
 				case 1 :
-					// Meta.g:891:6: T_LAST
+					// Meta.g:889:6: T_LAST
 					{
-					match(input,T_LAST,FOLLOW_T_LAST_in_getWindow6006); 
+					match(input,T_LAST,FOLLOW_T_LAST_in_getWindow6004); 
 					ws = new Window(WindowType.LAST);
 					}
 					break;
 				case 2 :
-					// Meta.g:892:7: cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit )
+					// Meta.g:890:7: cnstnt= T_CONSTANT ( T_ROWS |unit= getTimeUnit )
 					{
-					cnstnt=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getWindow6018); 
-					// Meta.g:892:25: ( T_ROWS |unit= getTimeUnit )
+					cnstnt=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getWindow6016); 
+					// Meta.g:890:25: ( T_ROWS |unit= getTimeUnit )
 					int alt64=2;
 					int LA64_0 = input.LA(1);
 					if ( (LA64_0==T_ROWS) ) {
@@ -4583,16 +4583,16 @@ public class MetaParser extends Parser {
 
 					switch (alt64) {
 						case 1 :
-							// Meta.g:892:26: T_ROWS
+							// Meta.g:890:26: T_ROWS
 							{
-							match(input,T_ROWS,FOLLOW_T_ROWS_in_getWindow6021); 
+							match(input,T_ROWS,FOLLOW_T_ROWS_in_getWindow6019); 
 							ws = new Window(WindowType.NUM_ROWS); ws.setNumRows(Integer.parseInt((cnstnt!=null?cnstnt.getText():null)));
 							}
 							break;
 						case 2 :
-							// Meta.g:893:26: unit= getTimeUnit
+							// Meta.g:891:26: unit= getTimeUnit
 							{
-							pushFollow(FOLLOW_getTimeUnit_in_getWindow6052);
+							pushFollow(FOLLOW_getTimeUnit_in_getWindow6050);
 							unit=getTimeUnit();
 							state._fsp--;
 
@@ -4624,7 +4624,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTimeUnit"
-	// Meta.g:898:1: getTimeUnit returns [TimeUnit unit] : ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS ) ;
+	// Meta.g:896:1: getTimeUnit returns [TimeUnit unit] : ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS ) ;
 	public final TimeUnit getTimeUnit() throws RecognitionException {
 		TimeUnit unit = null;
 
@@ -4633,10 +4633,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 44) ) { return unit; }
 
-			// Meta.g:898:36: ( ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS ) )
-			// Meta.g:899:5: ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS )
+			// Meta.g:896:36: ( ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS ) )
+			// Meta.g:897:5: ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS )
 			{
-			// Meta.g:899:5: ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS )
+			// Meta.g:897:5: ( T_SEC | T_SECS | T_SECONDS | T_MIN | T_MINS | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS )
 			int alt66=10;
 			switch ( input.LA(1) ) {
 			case T_SEC:
@@ -4696,72 +4696,72 @@ public class MetaParser extends Parser {
 			}
 			switch (alt66) {
 				case 1 :
-					// Meta.g:899:7: T_SEC
+					// Meta.g:897:7: T_SEC
 					{
-					match(input,T_SEC,FOLLOW_T_SEC_in_getTimeUnit6103); 
+					match(input,T_SEC,FOLLOW_T_SEC_in_getTimeUnit6101); 
 					unit =TimeUnit.SECONDS;
 					}
 					break;
 				case 2 :
-					// Meta.g:900:7: T_SECS
+					// Meta.g:898:7: T_SECS
 					{
-					match(input,T_SECS,FOLLOW_T_SECS_in_getTimeUnit6113); 
+					match(input,T_SECS,FOLLOW_T_SECS_in_getTimeUnit6111); 
 					unit =TimeUnit.SECONDS;
 					}
 					break;
 				case 3 :
-					// Meta.g:901:7: T_SECONDS
+					// Meta.g:899:7: T_SECONDS
 					{
-					match(input,T_SECONDS,FOLLOW_T_SECONDS_in_getTimeUnit6123); 
+					match(input,T_SECONDS,FOLLOW_T_SECONDS_in_getTimeUnit6121); 
 					unit =TimeUnit.SECONDS;
 					}
 					break;
 				case 4 :
-					// Meta.g:902:7: T_MIN
+					// Meta.g:900:7: T_MIN
 					{
-					match(input,T_MIN,FOLLOW_T_MIN_in_getTimeUnit6133); 
+					match(input,T_MIN,FOLLOW_T_MIN_in_getTimeUnit6131); 
 					unit =TimeUnit.MINUTES;
 					}
 					break;
 				case 5 :
-					// Meta.g:903:7: T_MINS
+					// Meta.g:901:7: T_MINS
 					{
-					match(input,T_MINS,FOLLOW_T_MINS_in_getTimeUnit6143); 
+					match(input,T_MINS,FOLLOW_T_MINS_in_getTimeUnit6141); 
 					unit =TimeUnit.MINUTES;
 					}
 					break;
 				case 6 :
-					// Meta.g:904:7: T_MINUTES
+					// Meta.g:902:7: T_MINUTES
 					{
-					match(input,T_MINUTES,FOLLOW_T_MINUTES_in_getTimeUnit6153); 
+					match(input,T_MINUTES,FOLLOW_T_MINUTES_in_getTimeUnit6151); 
 					unit =TimeUnit.MINUTES;
 					}
 					break;
 				case 7 :
-					// Meta.g:905:7: T_HOUR
+					// Meta.g:903:7: T_HOUR
 					{
-					match(input,T_HOUR,FOLLOW_T_HOUR_in_getTimeUnit6163); 
+					match(input,T_HOUR,FOLLOW_T_HOUR_in_getTimeUnit6161); 
 					unit =TimeUnit.HOURS;
 					}
 					break;
 				case 8 :
-					// Meta.g:906:7: T_HOURS
+					// Meta.g:904:7: T_HOURS
 					{
-					match(input,T_HOURS,FOLLOW_T_HOURS_in_getTimeUnit6173); 
+					match(input,T_HOURS,FOLLOW_T_HOURS_in_getTimeUnit6171); 
 					unit =TimeUnit.HOURS;
 					}
 					break;
 				case 9 :
-					// Meta.g:907:7: T_DAY
+					// Meta.g:905:7: T_DAY
 					{
-					match(input,T_DAY,FOLLOW_T_DAY_in_getTimeUnit6183); 
+					match(input,T_DAY,FOLLOW_T_DAY_in_getTimeUnit6181); 
 					unit =TimeUnit.DAYS;
 					}
 					break;
 				case 10 :
-					// Meta.g:908:7: T_DAYS
+					// Meta.g:906:7: T_DAYS
 					{
-					match(input,T_DAYS,FOLLOW_T_DAYS_in_getTimeUnit6193); 
+					match(input,T_DAYS,FOLLOW_T_DAYS_in_getTimeUnit6191); 
 					unit =TimeUnit.DAYS;
 					}
 					break;
@@ -4785,7 +4785,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelectExpression"
-	// Meta.g:911:1: getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se] : ( T_DISTINCT )? ( T_ASTERISK |s= getSelector[null] ( T_AS alias1= getGenericID )? ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )* ) ;
+	// Meta.g:909:1: getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se] : ( T_DISTINCT )? ( T_ASTERISK |s= getSelector[null] ( T_AS alias1= getGenericID )? ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )* ) ;
 	public final SelectExpression getSelectExpression(Map fieldsAliasesMap) throws RecognitionException {
 		SelectExpression se = null;
 
@@ -4802,10 +4802,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 45) ) { return se; }
 
-			// Meta.g:919:6: ( ( T_DISTINCT )? ( T_ASTERISK |s= getSelector[null] ( T_AS alias1= getGenericID )? ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )* ) )
-			// Meta.g:920:5: ( T_DISTINCT )? ( T_ASTERISK |s= getSelector[null] ( T_AS alias1= getGenericID )? ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )* )
+			// Meta.g:917:6: ( ( T_DISTINCT )? ( T_ASTERISK |s= getSelector[null] ( T_AS alias1= getGenericID )? ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )* ) )
+			// Meta.g:918:5: ( T_DISTINCT )? ( T_ASTERISK |s= getSelector[null] ( T_AS alias1= getGenericID )? ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )* )
 			{
-			// Meta.g:920:5: ( T_DISTINCT )?
+			// Meta.g:918:5: ( T_DISTINCT )?
 			int alt67=2;
 			int LA67_0 = input.LA(1);
 			if ( (LA67_0==T_DISTINCT) ) {
@@ -4813,16 +4813,16 @@ public class MetaParser extends Parser {
 			}
 			switch (alt67) {
 				case 1 :
-					// Meta.g:920:6: T_DISTINCT
+					// Meta.g:918:6: T_DISTINCT
 					{
-					match(input,T_DISTINCT,FOLLOW_T_DISTINCT_in_getSelectExpression6230); 
+					match(input,T_DISTINCT,FOLLOW_T_DISTINCT_in_getSelectExpression6228); 
 					distinct = true;
 					}
 					break;
 
 			}
 
-			// Meta.g:921:5: ( T_ASTERISK |s= getSelector[null] ( T_AS alias1= getGenericID )? ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )* )
+			// Meta.g:919:5: ( T_ASTERISK |s= getSelector[null] ( T_AS alias1= getGenericID )? ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )* )
 			int alt71=2;
 			int LA71_0 = input.LA(1);
 			if ( (LA71_0==T_ASTERISK) ) {
@@ -4840,22 +4840,22 @@ public class MetaParser extends Parser {
 
 			switch (alt71) {
 				case 1 :
-					// Meta.g:922:9: T_ASTERISK
+					// Meta.g:920:9: T_ASTERISK
 					{
-					match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getSelectExpression6250); 
+					match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getSelectExpression6248); 
 					 if(distinct) throwParsingException("Selector DISTINCT doesn't accept '*'");
 					                     s = new AsteriskSelector(); selectors.add(s);
 					}
 					break;
 				case 2 :
-					// Meta.g:924:11: s= getSelector[null] ( T_AS alias1= getGenericID )? ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )*
+					// Meta.g:922:11: s= getSelector[null] ( T_AS alias1= getGenericID )? ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )*
 					{
-					pushFollow(FOLLOW_getSelector_in_getSelectExpression6266);
+					pushFollow(FOLLOW_getSelector_in_getSelectExpression6264);
 					s=getSelector(null);
 					state._fsp--;
 
 					 if(s == null) throwParsingException("Column name not found");
-					// Meta.g:925:17: ( T_AS alias1= getGenericID )?
+					// Meta.g:923:17: ( T_AS alias1= getGenericID )?
 					int alt68=2;
 					int LA68_0 = input.LA(1);
 					if ( (LA68_0==T_AS) ) {
@@ -4863,10 +4863,10 @@ public class MetaParser extends Parser {
 					}
 					switch (alt68) {
 						case 1 :
-							// Meta.g:925:18: T_AS alias1= getGenericID
+							// Meta.g:923:18: T_AS alias1= getGenericID
 							{
-							match(input,T_AS,FOLLOW_T_AS_in_getSelectExpression6288); 
-							pushFollow(FOLLOW_getGenericID_in_getSelectExpression6292);
+							match(input,T_AS,FOLLOW_T_AS_in_getSelectExpression6286); 
+							pushFollow(FOLLOW_getGenericID_in_getSelectExpression6290);
 							alias1=getGenericID();
 							state._fsp--;
 
@@ -4879,7 +4879,7 @@ public class MetaParser extends Parser {
 					}
 
 					selectors.add(s);
-					// Meta.g:929:13: ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )*
+					// Meta.g:927:13: ( T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )? )*
 					loop70:
 					while (true) {
 						int alt70=2;
@@ -4890,15 +4890,15 @@ public class MetaParser extends Parser {
 
 						switch (alt70) {
 						case 1 :
-							// Meta.g:929:14: T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )?
+							// Meta.g:927:14: T_COMMA s= getSelector[null] ( T_AS aliasN= getGenericID )?
 							{
-							match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelectExpression6330); 
-							pushFollow(FOLLOW_getSelector_in_getSelectExpression6334);
+							match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelectExpression6328); 
+							pushFollow(FOLLOW_getSelector_in_getSelectExpression6332);
 							s=getSelector(null);
 							state._fsp--;
 
 							 if(s == null) throwParsingException("Column name not found");
-							// Meta.g:930:21: ( T_AS aliasN= getGenericID )?
+							// Meta.g:928:21: ( T_AS aliasN= getGenericID )?
 							int alt69=2;
 							int LA69_0 = input.LA(1);
 							if ( (LA69_0==T_AS) ) {
@@ -4906,10 +4906,10 @@ public class MetaParser extends Parser {
 							}
 							switch (alt69) {
 								case 1 :
-									// Meta.g:930:22: T_AS aliasN= getGenericID
+									// Meta.g:928:22: T_AS aliasN= getGenericID
 									{
-									match(input,T_AS,FOLLOW_T_AS_in_getSelectExpression6360); 
-									pushFollow(FOLLOW_getGenericID_in_getSelectExpression6364);
+									match(input,T_AS,FOLLOW_T_AS_in_getSelectExpression6358); 
+									pushFollow(FOLLOW_getGenericID_in_getSelectExpression6362);
 									aliasN=getGenericID();
 									state._fsp--;
 
@@ -4956,7 +4956,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelector"
-	// Meta.g:937:1: getSelector[TableName tablename] returns [Selector s] : ( (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT ) T_START_PARENTHESIS (select1= getSelector[tablename] | T_ASTERISK )? T_END_PARENTHESIS | (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL ) ) ;
+	// Meta.g:935:1: getSelector[TableName tablename] returns [Selector s] : ( (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT ) T_START_PARENTHESIS (select1= getSelector[tablename] | T_ASTERISK )? T_END_PARENTHESIS | (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL ) ) ;
 	public final Selector getSelector(TableName tablename) throws RecognitionException {
 		Selector s = null;
 
@@ -4976,10 +4976,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 46) ) { return s; }
 
-			// Meta.g:941:6: ( ( (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT ) T_START_PARENTHESIS (select1= getSelector[tablename] | T_ASTERISK )? T_END_PARENTHESIS | (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL ) ) )
-			// Meta.g:942:5: ( (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT ) T_START_PARENTHESIS (select1= getSelector[tablename] | T_ASTERISK )? T_END_PARENTHESIS | (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL ) )
+			// Meta.g:939:6: ( ( (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT ) T_START_PARENTHESIS (select1= getSelector[tablename] | T_ASTERISK )? T_END_PARENTHESIS | (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL ) ) )
+			// Meta.g:940:5: ( (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT ) T_START_PARENTHESIS (select1= getSelector[tablename] | T_ASTERISK )? T_END_PARENTHESIS | (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL ) )
 			{
-			// Meta.g:942:5: ( (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT ) T_START_PARENTHESIS (select1= getSelector[tablename] | T_ASTERISK )? T_END_PARENTHESIS | (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL ) )
+			// Meta.g:940:5: ( (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT ) T_START_PARENTHESIS (select1= getSelector[tablename] | T_ASTERISK )? T_END_PARENTHESIS | (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL ) )
 			int alt75=2;
 			switch ( input.LA(1) ) {
 			case T_AVG:
@@ -5080,9 +5080,9 @@ public class MetaParser extends Parser {
 			}
 			switch (alt75) {
 				case 1 :
-					// Meta.g:943:9: (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT ) T_START_PARENTHESIS (select1= getSelector[tablename] | T_ASTERISK )? T_END_PARENTHESIS
+					// Meta.g:941:9: (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT ) T_START_PARENTHESIS (select1= getSelector[tablename] | T_ASTERISK )? T_END_PARENTHESIS
 					{
-					// Meta.g:943:9: (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT )
+					// Meta.g:941:9: (functionName= T_SUM |functionName= T_MAX |functionName= T_MIN |functionName= T_AVG |functionName= T_COUNT |functionName= T_IDENT )
 					int alt72=6;
 					switch ( input.LA(1) ) {
 					case T_SUM:
@@ -5122,46 +5122,46 @@ public class MetaParser extends Parser {
 					}
 					switch (alt72) {
 						case 1 :
-							// Meta.g:943:10: functionName= T_SUM
+							// Meta.g:941:10: functionName= T_SUM
 							{
-							functionName=(Token)match(input,T_SUM,FOLLOW_T_SUM_in_getSelector6437); 
+							functionName=(Token)match(input,T_SUM,FOLLOW_T_SUM_in_getSelector6435); 
 							}
 							break;
 						case 2 :
-							// Meta.g:944:15: functionName= T_MAX
+							// Meta.g:942:15: functionName= T_MAX
 							{
-							functionName=(Token)match(input,T_MAX,FOLLOW_T_MAX_in_getSelector6455); 
+							functionName=(Token)match(input,T_MAX,FOLLOW_T_MAX_in_getSelector6453); 
 							}
 							break;
 						case 3 :
-							// Meta.g:945:15: functionName= T_MIN
+							// Meta.g:943:15: functionName= T_MIN
 							{
-							functionName=(Token)match(input,T_MIN,FOLLOW_T_MIN_in_getSelector6473); 
+							functionName=(Token)match(input,T_MIN,FOLLOW_T_MIN_in_getSelector6471); 
 							}
 							break;
 						case 4 :
-							// Meta.g:946:15: functionName= T_AVG
+							// Meta.g:944:15: functionName= T_AVG
 							{
-							functionName=(Token)match(input,T_AVG,FOLLOW_T_AVG_in_getSelector6491); 
+							functionName=(Token)match(input,T_AVG,FOLLOW_T_AVG_in_getSelector6489); 
 							}
 							break;
 						case 5 :
-							// Meta.g:947:15: functionName= T_COUNT
+							// Meta.g:945:15: functionName= T_COUNT
 							{
-							functionName=(Token)match(input,T_COUNT,FOLLOW_T_COUNT_in_getSelector6509); 
+							functionName=(Token)match(input,T_COUNT,FOLLOW_T_COUNT_in_getSelector6507); 
 							}
 							break;
 						case 6 :
-							// Meta.g:948:15: functionName= T_IDENT
+							// Meta.g:946:15: functionName= T_IDENT
 							{
-							functionName=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelector6527); 
+							functionName=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getSelector6525); 
 							}
 							break;
 
 					}
 
-					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelector6547); 
-					// Meta.g:951:13: (select1= getSelector[tablename] | T_ASTERISK )?
+					match(input,T_START_PARENTHESIS,FOLLOW_T_START_PARENTHESIS_in_getSelector6545); 
+					// Meta.g:949:13: (select1= getSelector[tablename] | T_ASTERISK )?
 					int alt73=3;
 					int LA73_0 = input.LA(1);
 					if ( (LA73_0==QUOTED_LITERAL||LA73_0==T_AVG||LA73_0==T_BOOLEAN||LA73_0==T_CATALOG||(LA73_0 >= T_CONSTANT && LA73_0 <= T_COUNT)||LA73_0==T_CTLG_TBL_COL||(LA73_0 >= T_DAY && LA73_0 <= T_DAYS)||(LA73_0 >= T_FALSE && LA73_0 <= T_FLOAT)||(LA73_0 >= T_HOUR && LA73_0 <= T_IDENT)||LA73_0==T_INT||LA73_0==T_KEY||LA73_0==T_KS_AND_TN||LA73_0==T_LIMIT||(LA73_0 >= T_LUCENE && LA73_0 <= T_MAP)||(LA73_0 >= T_MAX && LA73_0 <= T_MINUTES)||LA73_0==T_OPTIONS||LA73_0==T_PLAN||LA73_0==T_PROCESS||(LA73_0 >= T_SEC && LA73_0 <= T_SECS)||LA73_0==T_STORAGE||LA73_0==T_SUM||LA73_0==T_TEXT||LA73_0==T_TRUE||LA73_0==T_TYPE) ) {
@@ -5172,9 +5172,9 @@ public class MetaParser extends Parser {
 					}
 					switch (alt73) {
 						case 1 :
-							// Meta.g:951:14: select1= getSelector[tablename]
+							// Meta.g:949:14: select1= getSelector[tablename]
 							{
-							pushFollow(FOLLOW_getSelector_in_getSelector6564);
+							pushFollow(FOLLOW_getSelector_in_getSelector6562);
 							select1=getSelector(tablename);
 							state._fsp--;
 
@@ -5182,25 +5182,25 @@ public class MetaParser extends Parser {
 							}
 							break;
 						case 2 :
-							// Meta.g:952:15: T_ASTERISK
+							// Meta.g:950:15: T_ASTERISK
 							{
-							match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getSelector6583); 
+							match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getSelector6581); 
 							params.add(new AsteriskSelector());
 							}
 							break;
 
 					}
 
-					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getSelector6610); 
+					match(input,T_END_PARENTHESIS,FOLLOW_T_END_PARENTHESIS_in_getSelector6608); 
 					 String functionStr = (functionName!=null?functionName.getText():null);
 					                            if(functionStr.equalsIgnoreCase("count") && (!params.toString().equalsIgnoreCase("[*]")) && (!params.toString().equalsIgnoreCase("[1]"))) throwParsingException("COUNT function only accepts '*' or '1'");
 					                            s = new FunctionSelector(functionStr, params);
 					}
 					break;
 				case 2 :
-					// Meta.g:958:9: (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL )
+					// Meta.g:956:9: (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL )
 					{
-					// Meta.g:958:9: (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL )
+					// Meta.g:956:9: (columnName= getColumnName[tablename] |floatingNumber= T_FLOAT |constant= T_CONSTANT | T_FALSE | T_TRUE |qLiteral= QUOTED_LITERAL )
 					int alt74=6;
 					switch ( input.LA(1) ) {
 					case T_BOOLEAN:
@@ -5267,9 +5267,9 @@ public class MetaParser extends Parser {
 					}
 					switch (alt74) {
 						case 1 :
-							// Meta.g:959:13: columnName= getColumnName[tablename]
+							// Meta.g:957:13: columnName= getColumnName[tablename]
 							{
-							pushFollow(FOLLOW_getColumnName_in_getSelector6648);
+							pushFollow(FOLLOW_getColumnName_in_getSelector6646);
 							columnName=getColumnName(tablename);
 							state._fsp--;
 
@@ -5277,37 +5277,37 @@ public class MetaParser extends Parser {
 							}
 							break;
 						case 2 :
-							// Meta.g:960:15: floatingNumber= T_FLOAT
+							// Meta.g:958:15: floatingNumber= T_FLOAT
 							{
-							floatingNumber=(Token)match(input,T_FLOAT,FOLLOW_T_FLOAT_in_getSelector6669); 
+							floatingNumber=(Token)match(input,T_FLOAT,FOLLOW_T_FLOAT_in_getSelector6667); 
 							s = new FloatingPointSelector((floatingNumber!=null?floatingNumber.getText():null));
 							}
 							break;
 						case 3 :
-							// Meta.g:961:15: constant= T_CONSTANT
+							// Meta.g:959:15: constant= T_CONSTANT
 							{
-							constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getSelector6689); 
+							constant=(Token)match(input,T_CONSTANT,FOLLOW_T_CONSTANT_in_getSelector6687); 
 							s = new IntegerSelector((constant!=null?constant.getText():null));
 							}
 							break;
 						case 4 :
-							// Meta.g:962:15: T_FALSE
+							// Meta.g:960:15: T_FALSE
 							{
-							match(input,T_FALSE,FOLLOW_T_FALSE_in_getSelector6707); 
+							match(input,T_FALSE,FOLLOW_T_FALSE_in_getSelector6705); 
 							s = new BooleanSelector(false);
 							}
 							break;
 						case 5 :
-							// Meta.g:963:15: T_TRUE
+							// Meta.g:961:15: T_TRUE
 							{
-							match(input,T_TRUE,FOLLOW_T_TRUE_in_getSelector6725); 
+							match(input,T_TRUE,FOLLOW_T_TRUE_in_getSelector6723); 
 							s = new BooleanSelector(true);
 							}
 							break;
 						case 6 :
-							// Meta.g:964:15: qLiteral= QUOTED_LITERAL
+							// Meta.g:962:15: qLiteral= QUOTED_LITERAL
 							{
-							qLiteral=(Token)match(input,QUOTED_LITERAL,FOLLOW_QUOTED_LITERAL_in_getSelector6745); 
+							qLiteral=(Token)match(input,QUOTED_LITERAL,FOLLOW_QUOTED_LITERAL_in_getSelector6743); 
 							s = new StringSelector((qLiteral!=null?qLiteral.getText():null));
 							}
 							break;
@@ -5340,7 +5340,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getListTypes"
-	// Meta.g:969:1: getListTypes returns [String listType] : tablename= ( T_PROCESS | T_UDF | T_TRIGGER ) ;
+	// Meta.g:967:1: getListTypes returns [String listType] : tablename= ( T_PROCESS | T_UDF | T_TRIGGER ) ;
 	public final MetaParser.getListTypes_return getListTypes() throws RecognitionException {
 		MetaParser.getListTypes_return retval = new MetaParser.getListTypes_return();
 		retval.start = input.LT(1);
@@ -5351,8 +5351,8 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 47) ) { return retval; }
 
-			// Meta.g:969:39: (tablename= ( T_PROCESS | T_UDF | T_TRIGGER ) )
-			// Meta.g:970:2: tablename= ( T_PROCESS | T_UDF | T_TRIGGER )
+			// Meta.g:967:39: (tablename= ( T_PROCESS | T_UDF | T_TRIGGER ) )
+			// Meta.g:968:2: tablename= ( T_PROCESS | T_UDF | T_TRIGGER )
 			{
 			tablename=input.LT(1);
 			if ( input.LA(1)==T_PROCESS||input.LA(1)==T_TRIGGER||input.LA(1)==T_UDF ) {
@@ -5383,7 +5383,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getAssignment"
-	// Meta.g:973:1: getAssignment[TableName tablename] returns [Relation assign] : leftTerm= getSelector[tablename] T_EQUAL rightTerm= getRightTermInAssignment[tablename] ;
+	// Meta.g:971:1: getAssignment[TableName tablename] returns [Relation assign] : leftTerm= getSelector[tablename] T_EQUAL rightTerm= getRightTermInAssignment[tablename] ;
 	public final Relation getAssignment(TableName tablename) throws RecognitionException {
 		Relation assign = null;
 
@@ -5395,15 +5395,15 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 48) ) { return assign; }
 
-			// Meta.g:976:6: (leftTerm= getSelector[tablename] T_EQUAL rightTerm= getRightTermInAssignment[tablename] )
-			// Meta.g:977:5: leftTerm= getSelector[tablename] T_EQUAL rightTerm= getRightTermInAssignment[tablename]
+			// Meta.g:974:6: (leftTerm= getSelector[tablename] T_EQUAL rightTerm= getRightTermInAssignment[tablename] )
+			// Meta.g:975:5: leftTerm= getSelector[tablename] T_EQUAL rightTerm= getRightTermInAssignment[tablename]
 			{
-			pushFollow(FOLLOW_getSelector_in_getAssignment6817);
+			pushFollow(FOLLOW_getSelector_in_getAssignment6815);
 			leftTerm=getSelector(tablename);
 			state._fsp--;
 
-			match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getAssignment6820); 
-			pushFollow(FOLLOW_getRightTermInAssignment_in_getAssignment6824);
+			match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getAssignment6818); 
+			pushFollow(FOLLOW_getRightTermInAssignment_in_getAssignment6822);
 			rightTerm=getRightTermInAssignment(tablename);
 			state._fsp--;
 
@@ -5427,7 +5427,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getRightTermInAssignment"
-	// Meta.g:981:1: getRightTermInAssignment[TableName tablename] returns [Selector leftSelector] : firstSel= getSelector[tablename] (operator= getOperator secondSel= getRightTermInAssignment[tablename] )? ;
+	// Meta.g:979:1: getRightTermInAssignment[TableName tablename] returns [Selector leftSelector] : firstSel= getSelector[tablename] (operator= getOperator secondSel= getRightTermInAssignment[tablename] )? ;
 	public final Selector getRightTermInAssignment(TableName tablename) throws RecognitionException {
 		Selector leftSelector = null;
 
@@ -5443,14 +5443,14 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 49) ) { return leftSelector; }
 
-			// Meta.g:990:6: (firstSel= getSelector[tablename] (operator= getOperator secondSel= getRightTermInAssignment[tablename] )? )
-			// Meta.g:991:5: firstSel= getSelector[tablename] (operator= getOperator secondSel= getRightTermInAssignment[tablename] )?
+			// Meta.g:988:6: (firstSel= getSelector[tablename] (operator= getOperator secondSel= getRightTermInAssignment[tablename] )? )
+			// Meta.g:989:5: firstSel= getSelector[tablename] (operator= getOperator secondSel= getRightTermInAssignment[tablename] )?
 			{
-			pushFollow(FOLLOW_getSelector_in_getRightTermInAssignment6861);
+			pushFollow(FOLLOW_getSelector_in_getRightTermInAssignment6859);
 			firstSel=getSelector(tablename);
 			state._fsp--;
 
-			// Meta.g:991:37: (operator= getOperator secondSel= getRightTermInAssignment[tablename] )?
+			// Meta.g:989:37: (operator= getOperator secondSel= getRightTermInAssignment[tablename] )?
 			int alt76=2;
 			int LA76_0 = input.LA(1);
 			if ( (LA76_0==T_ASTERISK||LA76_0==T_PLUS||LA76_0==T_SLASH||LA76_0==T_SUBTRACT) ) {
@@ -5458,13 +5458,13 @@ public class MetaParser extends Parser {
 			}
 			switch (alt76) {
 				case 1 :
-					// Meta.g:991:38: operator= getOperator secondSel= getRightTermInAssignment[tablename]
+					// Meta.g:989:38: operator= getOperator secondSel= getRightTermInAssignment[tablename]
 					{
-					pushFollow(FOLLOW_getOperator_in_getRightTermInAssignment6867);
+					pushFollow(FOLLOW_getOperator_in_getRightTermInAssignment6865);
 					operator=getOperator();
 					state._fsp--;
 
-					pushFollow(FOLLOW_getRightTermInAssignment_in_getRightTermInAssignment6871);
+					pushFollow(FOLLOW_getRightTermInAssignment_in_getRightTermInAssignment6869);
 					secondSel=getRightTermInAssignment(tablename);
 					state._fsp--;
 
@@ -5497,7 +5497,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getOperator"
-	// Meta.g:995:1: getOperator returns [Operator op] : ( T_PLUS | T_SUBTRACT | T_ASTERISK | T_SLASH );
+	// Meta.g:993:1: getOperator returns [Operator op] : ( T_PLUS | T_SUBTRACT | T_ASTERISK | T_SLASH );
 	public final Operator getOperator() throws RecognitionException {
 		Operator op = null;
 
@@ -5506,7 +5506,7 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 50) ) { return op; }
 
-			// Meta.g:995:34: ( T_PLUS | T_SUBTRACT | T_ASTERISK | T_SLASH )
+			// Meta.g:993:34: ( T_PLUS | T_SUBTRACT | T_ASTERISK | T_SLASH )
 			int alt77=4;
 			switch ( input.LA(1) ) {
 			case T_PLUS:
@@ -5536,30 +5536,30 @@ public class MetaParser extends Parser {
 			}
 			switch (alt77) {
 				case 1 :
-					// Meta.g:996:5: T_PLUS
+					// Meta.g:994:5: T_PLUS
 					{
-					match(input,T_PLUS,FOLLOW_T_PLUS_in_getOperator6897); 
+					match(input,T_PLUS,FOLLOW_T_PLUS_in_getOperator6895); 
 					op = Operator.ADD;
 					}
 					break;
 				case 2 :
-					// Meta.g:997:7: T_SUBTRACT
+					// Meta.g:995:7: T_SUBTRACT
 					{
-					match(input,T_SUBTRACT,FOLLOW_T_SUBTRACT_in_getOperator6907); 
+					match(input,T_SUBTRACT,FOLLOW_T_SUBTRACT_in_getOperator6905); 
 					op = Operator.SUBTRACT;
 					}
 					break;
 				case 3 :
-					// Meta.g:998:7: T_ASTERISK
+					// Meta.g:996:7: T_ASTERISK
 					{
-					match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getOperator6917); 
+					match(input,T_ASTERISK,FOLLOW_T_ASTERISK_in_getOperator6915); 
 					op = Operator.MULTIPLICATION;
 					}
 					break;
 				case 4 :
-					// Meta.g:999:7: T_SLASH
+					// Meta.g:997:7: T_SLASH
 					{
-					match(input,T_SLASH,FOLLOW_T_SLASH_in_getOperator6927); 
+					match(input,T_SLASH,FOLLOW_T_SLASH_in_getOperator6925); 
 					op = Operator.DIVISION;
 					}
 					break;
@@ -5580,7 +5580,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getComparator"
-	// Meta.g:1002:1: getComparator returns [Operator op] : ( T_EQUAL | T_GT | T_LT | T_GTE | T_LTE | T_NOT_EQUAL | T_LIKE | T_MATCH );
+	// Meta.g:1000:1: getComparator returns [Operator op] : ( T_EQUAL | T_GT | T_LT | T_GTE | T_LTE | T_NOT_EQUAL | T_LIKE | T_MATCH );
 	public final Operator getComparator() throws RecognitionException {
 		Operator op = null;
 
@@ -5589,7 +5589,7 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 51) ) { return op; }
 
-			// Meta.g:1002:36: ( T_EQUAL | T_GT | T_LT | T_GTE | T_LTE | T_NOT_EQUAL | T_LIKE | T_MATCH )
+			// Meta.g:1000:36: ( T_EQUAL | T_GT | T_LT | T_GTE | T_LTE | T_NOT_EQUAL | T_LIKE | T_MATCH )
 			int alt78=8;
 			switch ( input.LA(1) ) {
 			case T_EQUAL:
@@ -5639,58 +5639,58 @@ public class MetaParser extends Parser {
 			}
 			switch (alt78) {
 				case 1 :
-					// Meta.g:1003:5: T_EQUAL
+					// Meta.g:1001:5: T_EQUAL
 					{
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getComparator6945); 
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getComparator6943); 
 					op = Operator.EQ;
 					}
 					break;
 				case 2 :
-					// Meta.g:1004:7: T_GT
+					// Meta.g:1002:7: T_GT
 					{
-					match(input,T_GT,FOLLOW_T_GT_in_getComparator6955); 
+					match(input,T_GT,FOLLOW_T_GT_in_getComparator6953); 
 					op = Operator.GT;
 					}
 					break;
 				case 3 :
-					// Meta.g:1005:7: T_LT
+					// Meta.g:1003:7: T_LT
 					{
-					match(input,T_LT,FOLLOW_T_LT_in_getComparator6965); 
+					match(input,T_LT,FOLLOW_T_LT_in_getComparator6963); 
 					op = Operator.LT;
 					}
 					break;
 				case 4 :
-					// Meta.g:1006:7: T_GTE
+					// Meta.g:1004:7: T_GTE
 					{
-					match(input,T_GTE,FOLLOW_T_GTE_in_getComparator6975); 
+					match(input,T_GTE,FOLLOW_T_GTE_in_getComparator6973); 
 					op = Operator.GET;
 					}
 					break;
 				case 5 :
-					// Meta.g:1007:7: T_LTE
+					// Meta.g:1005:7: T_LTE
 					{
-					match(input,T_LTE,FOLLOW_T_LTE_in_getComparator6985); 
+					match(input,T_LTE,FOLLOW_T_LTE_in_getComparator6983); 
 					op = Operator.LET;
 					}
 					break;
 				case 6 :
-					// Meta.g:1008:7: T_NOT_EQUAL
+					// Meta.g:1006:7: T_NOT_EQUAL
 					{
-					match(input,T_NOT_EQUAL,FOLLOW_T_NOT_EQUAL_in_getComparator6995); 
+					match(input,T_NOT_EQUAL,FOLLOW_T_NOT_EQUAL_in_getComparator6993); 
 					op = Operator.DISTINCT;
 					}
 					break;
 				case 7 :
-					// Meta.g:1009:7: T_LIKE
+					// Meta.g:1007:7: T_LIKE
 					{
-					match(input,T_LIKE,FOLLOW_T_LIKE_in_getComparator7005); 
+					match(input,T_LIKE,FOLLOW_T_LIKE_in_getComparator7003); 
 					op = Operator.LIKE;
 					}
 					break;
 				case 8 :
-					// Meta.g:1010:7: T_MATCH
+					// Meta.g:1008:7: T_MATCH
 					{
-					match(input,T_MATCH,FOLLOW_T_MATCH_in_getComparator7015); 
+					match(input,T_MATCH,FOLLOW_T_MATCH_in_getComparator7013); 
 					op = Operator.MATCH;
 					}
 					break;
@@ -5711,7 +5711,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getIds"
-	// Meta.g:1013:1: getIds returns [ArrayList<String> listStrs] : ident1= T_IDENT ( T_COMMA identN= T_IDENT )* ;
+	// Meta.g:1011:1: getIds returns [ArrayList<String> listStrs] : ident1= T_IDENT ( T_COMMA identN= T_IDENT )* ;
 	public final ArrayList<String> getIds() throws RecognitionException {
 		ArrayList<String> listStrs = null;
 
@@ -5726,12 +5726,12 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 52) ) { return listStrs; }
 
-			// Meta.g:1016:6: (ident1= T_IDENT ( T_COMMA identN= T_IDENT )* )
-			// Meta.g:1017:5: ident1= T_IDENT ( T_COMMA identN= T_IDENT )*
+			// Meta.g:1014:6: (ident1= T_IDENT ( T_COMMA identN= T_IDENT )* )
+			// Meta.g:1015:5: ident1= T_IDENT ( T_COMMA identN= T_IDENT )*
 			{
-			ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getIds7043); 
+			ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getIds7041); 
 			listStrs.add((ident1!=null?ident1.getText():null));
-			// Meta.g:1017:50: ( T_COMMA identN= T_IDENT )*
+			// Meta.g:1015:50: ( T_COMMA identN= T_IDENT )*
 			loop79:
 			while (true) {
 				int alt79=2;
@@ -5742,10 +5742,10 @@ public class MetaParser extends Parser {
 
 				switch (alt79) {
 				case 1 :
-					// Meta.g:1017:51: T_COMMA identN= T_IDENT
+					// Meta.g:1015:51: T_COMMA identN= T_IDENT
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_getIds7048); 
-					identN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getIds7052); 
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_getIds7046); 
+					identN=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getIds7050); 
 					listStrs.add((identN!=null?identN.getText():null));
 					}
 					break;
@@ -5772,7 +5772,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getOptions"
-	// Meta.g:1020:1: getOptions[TableName tablename] returns [ArrayList<Option> opts] : opt1= getOption[tablename] (optN= getOption[tablename] )* ;
+	// Meta.g:1018:1: getOptions[TableName tablename] returns [ArrayList<Option> opts] : opt1= getOption[tablename] (optN= getOption[tablename] )* ;
 	public final ArrayList<Option> getOptions(TableName tablename) throws RecognitionException {
 		ArrayList<Option> opts = null;
 
@@ -5787,15 +5787,15 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 53) ) { return opts; }
 
-			// Meta.g:1022:6: (opt1= getOption[tablename] (optN= getOption[tablename] )* )
-			// Meta.g:1023:5: opt1= getOption[tablename] (optN= getOption[tablename] )*
+			// Meta.g:1020:6: (opt1= getOption[tablename] (optN= getOption[tablename] )* )
+			// Meta.g:1021:5: opt1= getOption[tablename] (optN= getOption[tablename] )*
 			{
-			pushFollow(FOLLOW_getOption_in_getOptions7078);
+			pushFollow(FOLLOW_getOption_in_getOptions7076);
 			opt1=getOption(tablename);
 			state._fsp--;
 
 			opts.add(opt1);
-			// Meta.g:1023:49: (optN= getOption[tablename] )*
+			// Meta.g:1021:49: (optN= getOption[tablename] )*
 			loop80:
 			while (true) {
 				int alt80=2;
@@ -5806,9 +5806,9 @@ public class MetaParser extends Parser {
 
 				switch (alt80) {
 				case 1 :
-					// Meta.g:1023:50: optN= getOption[tablename]
+					// Meta.g:1021:50: optN= getOption[tablename]
 					{
-					pushFollow(FOLLOW_getOption_in_getOptions7086);
+					pushFollow(FOLLOW_getOption_in_getOptions7084);
 					optN=getOption(tablename);
 					state._fsp--;
 
@@ -5838,7 +5838,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getOption"
-	// Meta.g:1026:1: getOption[TableName tablename] returns [Option opt] : ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= getSelector[tablename] T_EQUAL valueProp= getSelector[tablename] );
+	// Meta.g:1024:1: getOption[TableName tablename] returns [Option opt] : ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= getSelector[tablename] T_EQUAL valueProp= getSelector[tablename] );
 	public final Option getOption(TableName tablename) throws RecognitionException {
 		Option opt = null;
 
@@ -5850,7 +5850,7 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 54) ) { return opt; }
 
-			// Meta.g:1026:52: ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= getSelector[tablename] T_EQUAL valueProp= getSelector[tablename] )
+			// Meta.g:1024:52: ( T_COMPACT T_STORAGE | T_CLUSTERING T_ORDER |identProp= getSelector[tablename] T_EQUAL valueProp= getSelector[tablename] )
 			int alt81=3;
 			switch ( input.LA(1) ) {
 			case T_COMPACT:
@@ -5911,30 +5911,30 @@ public class MetaParser extends Parser {
 			}
 			switch (alt81) {
 				case 1 :
-					// Meta.g:1027:5: T_COMPACT T_STORAGE
+					// Meta.g:1025:5: T_COMPACT T_STORAGE
 					{
-					match(input,T_COMPACT,FOLLOW_T_COMPACT_in_getOption7108); 
-					match(input,T_STORAGE,FOLLOW_T_STORAGE_in_getOption7110); 
+					match(input,T_COMPACT,FOLLOW_T_COMPACT_in_getOption7106); 
+					match(input,T_STORAGE,FOLLOW_T_STORAGE_in_getOption7108); 
 					opt =new Option(Option.OPTION_COMPACT);
 					}
 					break;
 				case 2 :
-					// Meta.g:1028:7: T_CLUSTERING T_ORDER
+					// Meta.g:1026:7: T_CLUSTERING T_ORDER
 					{
-					match(input,T_CLUSTERING,FOLLOW_T_CLUSTERING_in_getOption7120); 
-					match(input,T_ORDER,FOLLOW_T_ORDER_in_getOption7122); 
+					match(input,T_CLUSTERING,FOLLOW_T_CLUSTERING_in_getOption7118); 
+					match(input,T_ORDER,FOLLOW_T_ORDER_in_getOption7120); 
 					opt =new Option(Option.OPTION_CLUSTERING);
 					}
 					break;
 				case 3 :
-					// Meta.g:1029:7: identProp= getSelector[tablename] T_EQUAL valueProp= getSelector[tablename]
+					// Meta.g:1027:7: identProp= getSelector[tablename] T_EQUAL valueProp= getSelector[tablename]
 					{
-					pushFollow(FOLLOW_getSelector_in_getOption7134);
+					pushFollow(FOLLOW_getSelector_in_getOption7132);
 					identProp=getSelector(tablename);
 					state._fsp--;
 
-					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getOption7137); 
-					pushFollow(FOLLOW_getSelector_in_getOption7141);
+					match(input,T_EQUAL,FOLLOW_T_EQUAL_in_getOption7135); 
+					pushFollow(FOLLOW_getSelector_in_getOption7139);
 					valueProp=getSelector(tablename);
 					state._fsp--;
 
@@ -5958,7 +5958,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getSelectors"
-	// Meta.g:1032:1: getSelectors[TableName tablename] returns [ArrayList list] : term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* ;
+	// Meta.g:1030:1: getSelectors[TableName tablename] returns [ArrayList list] : term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* ;
 	public final ArrayList getSelectors(TableName tablename) throws RecognitionException {
 		ArrayList list = null;
 
@@ -5973,15 +5973,15 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 55) ) { return list; }
 
-			// Meta.g:1035:6: (term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* )
-			// Meta.g:1036:5: term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )*
+			// Meta.g:1033:6: (term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )* )
+			// Meta.g:1034:5: term1= getSelector[tablename] ( T_COMMA termN= getSelector[tablename] )*
 			{
-			pushFollow(FOLLOW_getSelector_in_getSelectors7171);
+			pushFollow(FOLLOW_getSelector_in_getSelectors7169);
 			term1=getSelector(tablename);
 			state._fsp--;
 
 			list.add(term1);
-			// Meta.g:1037:5: ( T_COMMA termN= getSelector[tablename] )*
+			// Meta.g:1035:5: ( T_COMMA termN= getSelector[tablename] )*
 			loop82:
 			while (true) {
 				int alt82=2;
@@ -5992,10 +5992,10 @@ public class MetaParser extends Parser {
 
 				switch (alt82) {
 				case 1 :
-					// Meta.g:1037:6: T_COMMA termN= getSelector[tablename]
+					// Meta.g:1035:6: T_COMMA termN= getSelector[tablename]
 					{
-					match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelectors7181); 
-					pushFollow(FOLLOW_getSelector_in_getSelectors7185);
+					match(input,T_COMMA,FOLLOW_T_COMMA_in_getSelectors7179); 
+					pushFollow(FOLLOW_getSelector_in_getSelectors7183);
 					termN=getSelector(tablename);
 					state._fsp--;
 
@@ -6025,7 +6025,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getAliasedTableID"
-	// Meta.g:1040:1: getAliasedTableID[Map tablesAliasesMap] returns [TableName result] : tableN= getTableName ( T_AS alias= T_IDENT )? ;
+	// Meta.g:1038:1: getAliasedTableID[Map tablesAliasesMap] returns [TableName result] : tableN= getTableName ( T_AS alias= T_IDENT )? ;
 	public final TableName getAliasedTableID(Map tablesAliasesMap) throws RecognitionException {
 		TableName result = null;
 
@@ -6037,14 +6037,14 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 56) ) { return result; }
 
-			// Meta.g:1040:67: (tableN= getTableName ( T_AS alias= T_IDENT )? )
-			// Meta.g:1041:2: tableN= getTableName ( T_AS alias= T_IDENT )?
+			// Meta.g:1038:67: (tableN= getTableName ( T_AS alias= T_IDENT )? )
+			// Meta.g:1039:2: tableN= getTableName ( T_AS alias= T_IDENT )?
 			{
-			pushFollow(FOLLOW_getTableName_in_getAliasedTableID7206);
+			pushFollow(FOLLOW_getTableName_in_getAliasedTableID7204);
 			tableN=getTableName();
 			state._fsp--;
 
-			// Meta.g:1041:22: ( T_AS alias= T_IDENT )?
+			// Meta.g:1039:22: ( T_AS alias= T_IDENT )?
 			int alt83=2;
 			int LA83_0 = input.LA(1);
 			if ( (LA83_0==T_AS) ) {
@@ -6052,10 +6052,10 @@ public class MetaParser extends Parser {
 			}
 			switch (alt83) {
 				case 1 :
-					// Meta.g:1041:23: T_AS alias= T_IDENT
+					// Meta.g:1039:23: T_AS alias= T_IDENT
 					{
-					match(input,T_AS,FOLLOW_T_AS_in_getAliasedTableID7209); 
-					alias=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getAliasedTableID7213); 
+					match(input,T_AS,FOLLOW_T_AS_in_getAliasedTableID7207); 
+					alias=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getAliasedTableID7211); 
 					tablesAliasesMap.put((alias!=null?alias.getText():null), tableN.toString()); tableN.setAlias((alias!=null?alias.getText():null)); 
 					}
 					break;
@@ -6080,7 +6080,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getColumnName"
-	// Meta.g:1045:1: getColumnName[TableName tablename] returns [ColumnName columnName] : (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL |allowedReservedWord= getAllowedReservedWord ) ;
+	// Meta.g:1043:1: getColumnName[TableName tablename] returns [ColumnName columnName] : (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL |allowedReservedWord= getAllowedReservedWord ) ;
 	public final ColumnName getColumnName(TableName tablename) throws RecognitionException {
 		ColumnName columnName = null;
 
@@ -6094,10 +6094,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 57) ) { return columnName; }
 
-			// Meta.g:1045:67: ( (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL |allowedReservedWord= getAllowedReservedWord ) )
-			// Meta.g:1046:5: (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL |allowedReservedWord= getAllowedReservedWord )
+			// Meta.g:1043:67: ( (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL |allowedReservedWord= getAllowedReservedWord ) )
+			// Meta.g:1044:5: (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL |allowedReservedWord= getAllowedReservedWord )
 			{
-			// Meta.g:1046:5: (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL |allowedReservedWord= getAllowedReservedWord )
+			// Meta.g:1044:5: (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL |allowedReservedWord= getAllowedReservedWord )
 			int alt84=4;
 			switch ( input.LA(1) ) {
 			case T_IDENT:
@@ -6151,30 +6151,30 @@ public class MetaParser extends Parser {
 			}
 			switch (alt84) {
 				case 1 :
-					// Meta.g:1046:7: ident1= T_IDENT
+					// Meta.g:1044:7: ident1= T_IDENT
 					{
-					ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getColumnName7241); 
+					ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getColumnName7239); 
 					columnName = normalizeColumnName(tablename, (ident1!=null?ident1.getText():null));
 					}
 					break;
 				case 2 :
-					// Meta.g:1047:7: ident2= T_KS_AND_TN
+					// Meta.g:1045:7: ident2= T_KS_AND_TN
 					{
-					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getColumnName7253); 
+					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getColumnName7251); 
 					columnName = normalizeColumnName(tablename, (ident2!=null?ident2.getText():null));
 					}
 					break;
 				case 3 :
-					// Meta.g:1048:7: ident3= T_CTLG_TBL_COL
+					// Meta.g:1046:7: ident3= T_CTLG_TBL_COL
 					{
-					ident3=(Token)match(input,T_CTLG_TBL_COL,FOLLOW_T_CTLG_TBL_COL_in_getColumnName7265); 
+					ident3=(Token)match(input,T_CTLG_TBL_COL,FOLLOW_T_CTLG_TBL_COL_in_getColumnName7263); 
 					columnName = normalizeColumnName(tablename, (ident3!=null?ident3.getText():null));
 					}
 					break;
 				case 4 :
-					// Meta.g:1049:7: allowedReservedWord= getAllowedReservedWord
+					// Meta.g:1047:7: allowedReservedWord= getAllowedReservedWord
 					{
-					pushFollow(FOLLOW_getAllowedReservedWord_in_getColumnName7277);
+					pushFollow(FOLLOW_getAllowedReservedWord_in_getColumnName7275);
 					allowedReservedWord=getAllowedReservedWord();
 					state._fsp--;
 
@@ -6201,7 +6201,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getIndexName"
-	// Meta.g:1052:1: getIndexName returns [IndexName indexName] : ident= ( T_KS_AND_TN | T_CTLG_TBL_COL ) ;
+	// Meta.g:1050:1: getIndexName returns [IndexName indexName] : ident= ( T_KS_AND_TN | T_CTLG_TBL_COL ) ;
 	public final IndexName getIndexName() throws RecognitionException {
 		IndexName indexName = null;
 
@@ -6212,8 +6212,8 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 58) ) { return indexName; }
 
-			// Meta.g:1052:43: (ident= ( T_KS_AND_TN | T_CTLG_TBL_COL ) )
-			// Meta.g:1053:5: ident= ( T_KS_AND_TN | T_CTLG_TBL_COL )
+			// Meta.g:1050:43: (ident= ( T_KS_AND_TN | T_CTLG_TBL_COL ) )
+			// Meta.g:1051:5: ident= ( T_KS_AND_TN | T_CTLG_TBL_COL )
 			{
 			ident=input.LT(1);
 			if ( input.LA(1)==T_CTLG_TBL_COL||input.LA(1)==T_KS_AND_TN ) {
@@ -6242,7 +6242,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getAllowedReservedWord"
-	// Meta.g:1058:1: getAllowedReservedWord returns [String str] : ident= ( T_SEC | T_SECS | T_SECOND | T_SECONDS | T_MINS | T_MINUTE | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS | T_COUNT | T_PLAN | T_TYPE | T_LIMIT | T_PROCESS | T_STORAGE | T_OPTIONS | T_CATALOG | T_MAP | T_INT | T_BOOLEAN | T_TEXT | T_LUCENE | T_KEY ) ;
+	// Meta.g:1056:1: getAllowedReservedWord returns [String str] : ident= ( T_SEC | T_SECS | T_SECOND | T_SECONDS | T_MINS | T_MINUTE | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS | T_COUNT | T_PLAN | T_TYPE | T_LIMIT | T_PROCESS | T_STORAGE | T_OPTIONS | T_CATALOG | T_MAP | T_INT | T_BOOLEAN | T_TEXT | T_LUCENE | T_KEY ) ;
 	public final String getAllowedReservedWord() throws RecognitionException {
 		String str = null;
 
@@ -6253,8 +6253,8 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 59) ) { return str; }
 
-			// Meta.g:1058:44: (ident= ( T_SEC | T_SECS | T_SECOND | T_SECONDS | T_MINS | T_MINUTE | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS | T_COUNT | T_PLAN | T_TYPE | T_LIMIT | T_PROCESS | T_STORAGE | T_OPTIONS | T_CATALOG | T_MAP | T_INT | T_BOOLEAN | T_TEXT | T_LUCENE | T_KEY ) )
-			// Meta.g:1059:5: ident= ( T_SEC | T_SECS | T_SECOND | T_SECONDS | T_MINS | T_MINUTE | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS | T_COUNT | T_PLAN | T_TYPE | T_LIMIT | T_PROCESS | T_STORAGE | T_OPTIONS | T_CATALOG | T_MAP | T_INT | T_BOOLEAN | T_TEXT | T_LUCENE | T_KEY )
+			// Meta.g:1056:44: (ident= ( T_SEC | T_SECS | T_SECOND | T_SECONDS | T_MINS | T_MINUTE | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS | T_COUNT | T_PLAN | T_TYPE | T_LIMIT | T_PROCESS | T_STORAGE | T_OPTIONS | T_CATALOG | T_MAP | T_INT | T_BOOLEAN | T_TEXT | T_LUCENE | T_KEY ) )
+			// Meta.g:1057:5: ident= ( T_SEC | T_SECS | T_SECOND | T_SECONDS | T_MINS | T_MINUTE | T_MINUTES | T_HOUR | T_HOURS | T_DAY | T_DAYS | T_COUNT | T_PLAN | T_TYPE | T_LIMIT | T_PROCESS | T_STORAGE | T_OPTIONS | T_CATALOG | T_MAP | T_INT | T_BOOLEAN | T_TEXT | T_LUCENE | T_KEY )
 			{
 			ident=input.LT(1);
 			if ( input.LA(1)==T_BOOLEAN||input.LA(1)==T_CATALOG||input.LA(1)==T_COUNT||(input.LA(1) >= T_DAY && input.LA(1) <= T_DAYS)||(input.LA(1) >= T_HOUR && input.LA(1) <= T_HOURS)||input.LA(1)==T_INT||input.LA(1)==T_KEY||input.LA(1)==T_LIMIT||(input.LA(1) >= T_LUCENE && input.LA(1) <= T_MAP)||(input.LA(1) >= T_MINS && input.LA(1) <= T_MINUTES)||input.LA(1)==T_OPTIONS||input.LA(1)==T_PLAN||input.LA(1)==T_PROCESS||(input.LA(1) >= T_SEC && input.LA(1) <= T_SECS)||input.LA(1)==T_STORAGE||input.LA(1)==T_TEXT||input.LA(1)==T_TYPE ) {
@@ -6283,7 +6283,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getGenericID"
-	// Meta.g:1087:1: getGenericID returns [String str] : (arw= getAllowedReservedWord |ident= T_IDENT );
+	// Meta.g:1085:1: getGenericID returns [String str] : (arw= getAllowedReservedWord |ident= T_IDENT );
 	public final String getGenericID() throws RecognitionException {
 		String str = null;
 
@@ -6295,7 +6295,7 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 60) ) { return str; }
 
-			// Meta.g:1087:34: (arw= getAllowedReservedWord |ident= T_IDENT )
+			// Meta.g:1085:34: (arw= getAllowedReservedWord |ident= T_IDENT )
 			int alt85=2;
 			int LA85_0 = input.LA(1);
 			if ( (LA85_0==T_BOOLEAN||LA85_0==T_CATALOG||LA85_0==T_COUNT||(LA85_0 >= T_DAY && LA85_0 <= T_DAYS)||(LA85_0 >= T_HOUR && LA85_0 <= T_HOURS)||LA85_0==T_INT||LA85_0==T_KEY||LA85_0==T_LIMIT||(LA85_0 >= T_LUCENE && LA85_0 <= T_MAP)||(LA85_0 >= T_MINS && LA85_0 <= T_MINUTES)||LA85_0==T_OPTIONS||LA85_0==T_PLAN||LA85_0==T_PROCESS||(LA85_0 >= T_SEC && LA85_0 <= T_SECS)||LA85_0==T_STORAGE||LA85_0==T_TEXT||LA85_0==T_TYPE) ) {
@@ -6313,9 +6313,9 @@ public class MetaParser extends Parser {
 
 			switch (alt85) {
 				case 1 :
-					// Meta.g:1088:5: arw= getAllowedReservedWord
+					// Meta.g:1086:5: arw= getAllowedReservedWord
 					{
-					pushFollow(FOLLOW_getAllowedReservedWord_in_getGenericID7563);
+					pushFollow(FOLLOW_getAllowedReservedWord_in_getGenericID7561);
 					arw=getAllowedReservedWord();
 					state._fsp--;
 
@@ -6323,9 +6323,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:1089:7: ident= T_IDENT
+					// Meta.g:1087:7: ident= T_IDENT
 					{
-					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getGenericID7575); 
+					ident=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getGenericID7573); 
 					 str = (ident!=null?ident.getText():null); 
 					}
 					break;
@@ -6346,7 +6346,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTableName"
-	// Meta.g:1092:1: getTableName returns [TableName tablename] : (ident1= getGenericID |ident2= T_KS_AND_TN ) ;
+	// Meta.g:1090:1: getTableName returns [TableName tablename] : (ident1= getGenericID |ident2= T_KS_AND_TN ) ;
 	public final TableName getTableName() throws RecognitionException {
 		TableName tablename = null;
 
@@ -6358,10 +6358,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 61) ) { return tablename; }
 
-			// Meta.g:1092:43: ( (ident1= getGenericID |ident2= T_KS_AND_TN ) )
-			// Meta.g:1093:5: (ident1= getGenericID |ident2= T_KS_AND_TN )
+			// Meta.g:1090:43: ( (ident1= getGenericID |ident2= T_KS_AND_TN ) )
+			// Meta.g:1091:5: (ident1= getGenericID |ident2= T_KS_AND_TN )
 			{
-			// Meta.g:1093:5: (ident1= getGenericID |ident2= T_KS_AND_TN )
+			// Meta.g:1091:5: (ident1= getGenericID |ident2= T_KS_AND_TN )
 			int alt86=2;
 			int LA86_0 = input.LA(1);
 			if ( (LA86_0==T_BOOLEAN||LA86_0==T_CATALOG||LA86_0==T_COUNT||(LA86_0 >= T_DAY && LA86_0 <= T_DAYS)||(LA86_0 >= T_HOUR && LA86_0 <= T_IDENT)||LA86_0==T_INT||LA86_0==T_KEY||LA86_0==T_LIMIT||(LA86_0 >= T_LUCENE && LA86_0 <= T_MAP)||(LA86_0 >= T_MINS && LA86_0 <= T_MINUTES)||LA86_0==T_OPTIONS||LA86_0==T_PLAN||LA86_0==T_PROCESS||(LA86_0 >= T_SEC && LA86_0 <= T_SECS)||LA86_0==T_STORAGE||LA86_0==T_TEXT||LA86_0==T_TYPE) ) {
@@ -6379,9 +6379,9 @@ public class MetaParser extends Parser {
 
 			switch (alt86) {
 				case 1 :
-					// Meta.g:1093:6: ident1= getGenericID
+					// Meta.g:1091:6: ident1= getGenericID
 					{
-					pushFollow(FOLLOW_getGenericID_in_getTableName7596);
+					pushFollow(FOLLOW_getGenericID_in_getTableName7594);
 					ident1=getGenericID();
 					state._fsp--;
 
@@ -6389,9 +6389,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:1094:7: ident2= T_KS_AND_TN
+					// Meta.g:1092:7: ident2= T_KS_AND_TN
 					{
-					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTableName7608); 
+					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTableName7606); 
 					tablename = normalizeTableName((ident2!=null?ident2.getText():null));
 					}
 					break;
@@ -6415,7 +6415,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getFloat"
-	// Meta.g:1102:1: getFloat returns [String floating] : (termToken= T_TERM |floatToken= T_FLOAT );
+	// Meta.g:1100:1: getFloat returns [String floating] : (termToken= T_TERM |floatToken= T_FLOAT );
 	public final String getFloat() throws RecognitionException {
 		String floating = null;
 
@@ -6427,7 +6427,7 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 62) ) { return floating; }
 
-			// Meta.g:1102:35: (termToken= T_TERM |floatToken= T_FLOAT )
+			// Meta.g:1100:35: (termToken= T_TERM |floatToken= T_FLOAT )
 			int alt87=2;
 			int LA87_0 = input.LA(1);
 			if ( (LA87_0==T_TERM) ) {
@@ -6445,16 +6445,16 @@ public class MetaParser extends Parser {
 
 			switch (alt87) {
 				case 1 :
-					// Meta.g:1103:5: termToken= T_TERM
+					// Meta.g:1101:5: termToken= T_TERM
 					{
-					termToken=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getFloat7632); 
+					termToken=(Token)match(input,T_TERM,FOLLOW_T_TERM_in_getFloat7630); 
 					floating =(termToken!=null?termToken.getText():null);
 					}
 					break;
 				case 2 :
-					// Meta.g:1104:7: floatToken= T_FLOAT
+					// Meta.g:1102:7: floatToken= T_FLOAT
 					{
-					floatToken=(Token)match(input,T_FLOAT,FOLLOW_T_FLOAT_in_getFloat7646); 
+					floatToken=(Token)match(input,T_FLOAT,FOLLOW_T_FLOAT_in_getFloat7644); 
 					floating =(floatToken!=null?floatToken.getText():null);
 					}
 					break;
@@ -6475,7 +6475,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getJson"
-	// Meta.g:1107:1: getJson returns [String strJson] : (objectJson= getObjectJson |arrayJson= getArrayJson ) ;
+	// Meta.g:1105:1: getJson returns [String strJson] : (objectJson= getObjectJson |arrayJson= getArrayJson ) ;
 	public final String getJson() throws RecognitionException {
 		String strJson = null;
 
@@ -6487,10 +6487,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 63) ) { return strJson; }
 
-			// Meta.g:1107:33: ( (objectJson= getObjectJson |arrayJson= getArrayJson ) )
-			// Meta.g:1108:5: (objectJson= getObjectJson |arrayJson= getArrayJson )
+			// Meta.g:1105:33: ( (objectJson= getObjectJson |arrayJson= getArrayJson ) )
+			// Meta.g:1106:5: (objectJson= getObjectJson |arrayJson= getArrayJson )
 			{
-			// Meta.g:1108:5: (objectJson= getObjectJson |arrayJson= getArrayJson )
+			// Meta.g:1106:5: (objectJson= getObjectJson |arrayJson= getArrayJson )
 			int alt88=2;
 			int LA88_0 = input.LA(1);
 			if ( (LA88_0==T_START_SBRACKET) ) {
@@ -6508,9 +6508,9 @@ public class MetaParser extends Parser {
 
 			switch (alt88) {
 				case 1 :
-					// Meta.g:1108:6: objectJson= getObjectJson
+					// Meta.g:1106:6: objectJson= getObjectJson
 					{
-					pushFollow(FOLLOW_getObjectJson_in_getJson7667);
+					pushFollow(FOLLOW_getObjectJson_in_getJson7665);
 					objectJson=getObjectJson();
 					state._fsp--;
 
@@ -6518,9 +6518,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:1109:7: arrayJson= getArrayJson
+					// Meta.g:1107:7: arrayJson= getArrayJson
 					{
-					pushFollow(FOLLOW_getArrayJson_in_getJson7679);
+					pushFollow(FOLLOW_getArrayJson_in_getJson7677);
 					arrayJson=getArrayJson();
 					state._fsp--;
 
@@ -6547,7 +6547,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getObjectJson"
-	// Meta.g:1112:1: getObjectJson returns [String strJson] : ( T_START_SBRACKET pairJson= getPairJson ( T_COMMA pairJsonN= getPairJson )* T_END_SBRACKET | T_START_SBRACKET T_END_SBRACKET ) ;
+	// Meta.g:1110:1: getObjectJson returns [String strJson] : ( T_START_SBRACKET pairJson= getPairJson ( T_COMMA pairJsonN= getPairJson )* T_END_SBRACKET | T_START_SBRACKET T_END_SBRACKET ) ;
 	public final String getObjectJson() throws RecognitionException {
 		String strJson = null;
 
@@ -6562,10 +6562,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 64) ) { return strJson; }
 
-			// Meta.g:1118:6: ( ( T_START_SBRACKET pairJson= getPairJson ( T_COMMA pairJsonN= getPairJson )* T_END_SBRACKET | T_START_SBRACKET T_END_SBRACKET ) )
-			// Meta.g:1119:5: ( T_START_SBRACKET pairJson= getPairJson ( T_COMMA pairJsonN= getPairJson )* T_END_SBRACKET | T_START_SBRACKET T_END_SBRACKET )
+			// Meta.g:1116:6: ( ( T_START_SBRACKET pairJson= getPairJson ( T_COMMA pairJsonN= getPairJson )* T_END_SBRACKET | T_START_SBRACKET T_END_SBRACKET ) )
+			// Meta.g:1117:5: ( T_START_SBRACKET pairJson= getPairJson ( T_COMMA pairJsonN= getPairJson )* T_END_SBRACKET | T_START_SBRACKET T_END_SBRACKET )
 			{
-			// Meta.g:1119:5: ( T_START_SBRACKET pairJson= getPairJson ( T_COMMA pairJsonN= getPairJson )* T_END_SBRACKET | T_START_SBRACKET T_END_SBRACKET )
+			// Meta.g:1117:5: ( T_START_SBRACKET pairJson= getPairJson ( T_COMMA pairJsonN= getPairJson )* T_END_SBRACKET | T_START_SBRACKET T_END_SBRACKET )
 			int alt90=2;
 			int LA90_0 = input.LA(1);
 			if ( (LA90_0==T_START_SBRACKET) ) {
@@ -6599,16 +6599,16 @@ public class MetaParser extends Parser {
 
 			switch (alt90) {
 				case 1 :
-					// Meta.g:1119:6: T_START_SBRACKET pairJson= getPairJson ( T_COMMA pairJsonN= getPairJson )* T_END_SBRACKET
+					// Meta.g:1117:6: T_START_SBRACKET pairJson= getPairJson ( T_COMMA pairJsonN= getPairJson )* T_END_SBRACKET
 					{
-					match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getObjectJson7715); 
+					match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getObjectJson7713); 
 					sb.append("{");
-					pushFollow(FOLLOW_getPairJson_in_getObjectJson7721);
+					pushFollow(FOLLOW_getPairJson_in_getObjectJson7719);
 					pairJson=getPairJson();
 					state._fsp--;
 
 					sb.append(pairJson);
-					// Meta.g:1119:85: ( T_COMMA pairJsonN= getPairJson )*
+					// Meta.g:1117:85: ( T_COMMA pairJsonN= getPairJson )*
 					loop89:
 					while (true) {
 						int alt89=2;
@@ -6619,11 +6619,11 @@ public class MetaParser extends Parser {
 
 						switch (alt89) {
 						case 1 :
-							// Meta.g:1119:86: T_COMMA pairJsonN= getPairJson
+							// Meta.g:1117:86: T_COMMA pairJsonN= getPairJson
 							{
-							match(input,T_COMMA,FOLLOW_T_COMMA_in_getObjectJson7726); 
+							match(input,T_COMMA,FOLLOW_T_COMMA_in_getObjectJson7724); 
 							sb.append(", ");
-							pushFollow(FOLLOW_getPairJson_in_getObjectJson7732);
+							pushFollow(FOLLOW_getPairJson_in_getObjectJson7730);
 							pairJsonN=getPairJson();
 							state._fsp--;
 
@@ -6636,16 +6636,16 @@ public class MetaParser extends Parser {
 						}
 					}
 
-					match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getObjectJson7738); 
+					match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getObjectJson7736); 
 					sb.append("}");
 					}
 					break;
 				case 2 :
-					// Meta.g:1120:7: T_START_SBRACKET T_END_SBRACKET
+					// Meta.g:1118:7: T_START_SBRACKET T_END_SBRACKET
 					{
-					match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getObjectJson7748); 
+					match(input,T_START_SBRACKET,FOLLOW_T_START_SBRACKET_in_getObjectJson7746); 
 					sb.append("{");
-					match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getObjectJson7752); 
+					match(input,T_END_SBRACKET,FOLLOW_T_END_SBRACKET_in_getObjectJson7750); 
 					sb.append("}");
 					}
 					break;
@@ -6672,7 +6672,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getPairJson"
-	// Meta.g:1123:1: getPairJson returns [String strJson] : keyTerm= getSelector[null] T_COLON valueJson= getValueJson ;
+	// Meta.g:1121:1: getPairJson returns [String strJson] : keyTerm= getSelector[null] T_COLON valueJson= getValueJson ;
 	public final String getPairJson() throws RecognitionException {
 		String strJson = null;
 
@@ -6687,17 +6687,17 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 65) ) { return strJson; }
 
-			// Meta.g:1129:6: (keyTerm= getSelector[null] T_COLON valueJson= getValueJson )
-			// Meta.g:1130:5: keyTerm= getSelector[null] T_COLON valueJson= getValueJson
+			// Meta.g:1127:6: (keyTerm= getSelector[null] T_COLON valueJson= getValueJson )
+			// Meta.g:1128:5: keyTerm= getSelector[null] T_COLON valueJson= getValueJson
 			{
-			pushFollow(FOLLOW_getSelector_in_getPairJson7789);
+			pushFollow(FOLLOW_getSelector_in_getPairJson7787);
 			keyTerm=getSelector(null);
 			state._fsp--;
 
 			sb.append(keyTerm.toString());
-			match(input,T_COLON,FOLLOW_T_COLON_in_getPairJson7798); 
+			match(input,T_COLON,FOLLOW_T_COLON_in_getPairJson7796); 
 			sb.append(": ");
-			pushFollow(FOLLOW_getValueJson_in_getPairJson7808);
+			pushFollow(FOLLOW_getValueJson_in_getPairJson7806);
 			valueJson=getValueJson();
 			state._fsp--;
 
@@ -6722,7 +6722,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getArrayJson"
-	// Meta.g:1135:1: getArrayJson returns [String strJson] : ( T_START_BRACKET valueJson= getValueJson ( T_COMMA valueJsonN= getValueJson )* T_END_BRACKET | T_START_BRACKET T_END_BRACKET ) ;
+	// Meta.g:1133:1: getArrayJson returns [String strJson] : ( T_START_BRACKET valueJson= getValueJson ( T_COMMA valueJsonN= getValueJson )* T_END_BRACKET | T_START_BRACKET T_END_BRACKET ) ;
 	public final String getArrayJson() throws RecognitionException {
 		String strJson = null;
 
@@ -6737,10 +6737,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 66) ) { return strJson; }
 
-			// Meta.g:1141:6: ( ( T_START_BRACKET valueJson= getValueJson ( T_COMMA valueJsonN= getValueJson )* T_END_BRACKET | T_START_BRACKET T_END_BRACKET ) )
-			// Meta.g:1142:5: ( T_START_BRACKET valueJson= getValueJson ( T_COMMA valueJsonN= getValueJson )* T_END_BRACKET | T_START_BRACKET T_END_BRACKET )
+			// Meta.g:1139:6: ( ( T_START_BRACKET valueJson= getValueJson ( T_COMMA valueJsonN= getValueJson )* T_END_BRACKET | T_START_BRACKET T_END_BRACKET ) )
+			// Meta.g:1140:5: ( T_START_BRACKET valueJson= getValueJson ( T_COMMA valueJsonN= getValueJson )* T_END_BRACKET | T_START_BRACKET T_END_BRACKET )
 			{
-			// Meta.g:1142:5: ( T_START_BRACKET valueJson= getValueJson ( T_COMMA valueJsonN= getValueJson )* T_END_BRACKET | T_START_BRACKET T_END_BRACKET )
+			// Meta.g:1140:5: ( T_START_BRACKET valueJson= getValueJson ( T_COMMA valueJsonN= getValueJson )* T_END_BRACKET | T_START_BRACKET T_END_BRACKET )
 			int alt92=2;
 			int LA92_0 = input.LA(1);
 			if ( (LA92_0==T_START_BRACKET) ) {
@@ -6774,16 +6774,16 @@ public class MetaParser extends Parser {
 
 			switch (alt92) {
 				case 1 :
-					// Meta.g:1142:6: T_START_BRACKET valueJson= getValueJson ( T_COMMA valueJsonN= getValueJson )* T_END_BRACKET
+					// Meta.g:1140:6: T_START_BRACKET valueJson= getValueJson ( T_COMMA valueJsonN= getValueJson )* T_END_BRACKET
 					{
-					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_getArrayJson7843); 
+					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_getArrayJson7841); 
 					sb.append("[");
-					pushFollow(FOLLOW_getValueJson_in_getArrayJson7849);
+					pushFollow(FOLLOW_getValueJson_in_getArrayJson7847);
 					valueJson=getValueJson();
 					state._fsp--;
 
 					sb.append(valueJson);
-					// Meta.g:1143:9: ( T_COMMA valueJsonN= getValueJson )*
+					// Meta.g:1141:9: ( T_COMMA valueJsonN= getValueJson )*
 					loop91:
 					while (true) {
 						int alt91=2;
@@ -6794,11 +6794,11 @@ public class MetaParser extends Parser {
 
 						switch (alt91) {
 						case 1 :
-							// Meta.g:1143:10: T_COMMA valueJsonN= getValueJson
+							// Meta.g:1141:10: T_COMMA valueJsonN= getValueJson
 							{
-							match(input,T_COMMA,FOLLOW_T_COMMA_in_getArrayJson7862); 
+							match(input,T_COMMA,FOLLOW_T_COMMA_in_getArrayJson7860); 
 							sb.append(", ");
-							pushFollow(FOLLOW_getValueJson_in_getArrayJson7868);
+							pushFollow(FOLLOW_getValueJson_in_getArrayJson7866);
 							valueJsonN=getValueJson();
 							state._fsp--;
 
@@ -6811,16 +6811,16 @@ public class MetaParser extends Parser {
 						}
 					}
 
-					match(input,T_END_BRACKET,FOLLOW_T_END_BRACKET_in_getArrayJson7874); 
+					match(input,T_END_BRACKET,FOLLOW_T_END_BRACKET_in_getArrayJson7872); 
 					sb.append("]");
 					}
 					break;
 				case 2 :
-					// Meta.g:1144:7: T_START_BRACKET T_END_BRACKET
+					// Meta.g:1142:7: T_START_BRACKET T_END_BRACKET
 					{
-					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_getArrayJson7884); 
+					match(input,T_START_BRACKET,FOLLOW_T_START_BRACKET_in_getArrayJson7882); 
 					sb.append("[");
-					match(input,T_END_BRACKET,FOLLOW_T_END_BRACKET_in_getArrayJson7888); 
+					match(input,T_END_BRACKET,FOLLOW_T_END_BRACKET_in_getArrayJson7886); 
 					sb.append("]");
 					}
 					break;
@@ -6847,7 +6847,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getValueJson"
-	// Meta.g:1147:1: getValueJson returns [String strJson] : (tokenTerm= getSelector[null] |objectJson= getObjectJson |arrayJson= getArrayJson ) ;
+	// Meta.g:1145:1: getValueJson returns [String strJson] : (tokenTerm= getSelector[null] |objectJson= getObjectJson |arrayJson= getArrayJson ) ;
 	public final String getValueJson() throws RecognitionException {
 		String strJson = null;
 
@@ -6863,10 +6863,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 67) ) { return strJson; }
 
-			// Meta.g:1153:6: ( (tokenTerm= getSelector[null] |objectJson= getObjectJson |arrayJson= getArrayJson ) )
-			// Meta.g:1154:5: (tokenTerm= getSelector[null] |objectJson= getObjectJson |arrayJson= getArrayJson )
+			// Meta.g:1151:6: ( (tokenTerm= getSelector[null] |objectJson= getObjectJson |arrayJson= getArrayJson ) )
+			// Meta.g:1152:5: (tokenTerm= getSelector[null] |objectJson= getObjectJson |arrayJson= getArrayJson )
 			{
-			// Meta.g:1154:5: (tokenTerm= getSelector[null] |objectJson= getObjectJson |arrayJson= getArrayJson )
+			// Meta.g:1152:5: (tokenTerm= getSelector[null] |objectJson= getObjectJson |arrayJson= getArrayJson )
 			int alt93=3;
 			switch ( input.LA(1) ) {
 			case QUOTED_LITERAL:
@@ -6927,9 +6927,9 @@ public class MetaParser extends Parser {
 			}
 			switch (alt93) {
 				case 1 :
-					// Meta.g:1154:6: tokenTerm= getSelector[null]
+					// Meta.g:1152:6: tokenTerm= getSelector[null]
 					{
-					pushFollow(FOLLOW_getSelector_in_getValueJson7926);
+					pushFollow(FOLLOW_getSelector_in_getValueJson7924);
 					tokenTerm=getSelector(null);
 					state._fsp--;
 
@@ -6937,9 +6937,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 2 :
-					// Meta.g:1155:7: objectJson= getObjectJson
+					// Meta.g:1153:7: objectJson= getObjectJson
 					{
-					pushFollow(FOLLOW_getObjectJson_in_getValueJson7939);
+					pushFollow(FOLLOW_getObjectJson_in_getValueJson7937);
 					objectJson=getObjectJson();
 					state._fsp--;
 
@@ -6947,9 +6947,9 @@ public class MetaParser extends Parser {
 					}
 					break;
 				case 3 :
-					// Meta.g:1156:7: arrayJson= getArrayJson
+					// Meta.g:1154:7: arrayJson= getArrayJson
 					{
-					pushFollow(FOLLOW_getArrayJson_in_getValueJson7951);
+					pushFollow(FOLLOW_getArrayJson_in_getValueJson7949);
 					arrayJson=getArrayJson();
 					state._fsp--;
 
@@ -6979,7 +6979,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getColumn"
-	// Meta.g:1159:1: getColumn returns [ColumnName column] : (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL ) ;
+	// Meta.g:1157:1: getColumn returns [ColumnName column] : (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL ) ;
 	public final ColumnName getColumn() throws RecognitionException {
 		ColumnName column = null;
 
@@ -6997,10 +6997,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 68) ) { return column; }
 
-			// Meta.g:1180:6: ( (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL ) )
-			// Meta.g:1181:5: (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL )
+			// Meta.g:1178:6: ( (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL ) )
+			// Meta.g:1179:5: (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL )
 			{
-			// Meta.g:1181:5: (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL )
+			// Meta.g:1179:5: (ident1= T_IDENT |ident2= T_KS_AND_TN |ident3= T_CTLG_TBL_COL )
 			int alt94=3;
 			switch ( input.LA(1) ) {
 			case T_IDENT:
@@ -7025,23 +7025,23 @@ public class MetaParser extends Parser {
 			}
 			switch (alt94) {
 				case 1 :
-					// Meta.g:1181:6: ident1= T_IDENT
+					// Meta.g:1179:6: ident1= T_IDENT
 					{
-					ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getColumn7989); 
+					ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getColumn7987); 
 					t1 = (ident1!=null?ident1.getText():null);
 					}
 					break;
 				case 2 :
-					// Meta.g:1182:7: ident2= T_KS_AND_TN
+					// Meta.g:1180:7: ident2= T_KS_AND_TN
 					{
-					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getColumn8001); 
+					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getColumn7999); 
 					t2 = (ident2!=null?ident2.getText():null);
 					}
 					break;
 				case 3 :
-					// Meta.g:1183:7: ident3= T_CTLG_TBL_COL
+					// Meta.g:1181:7: ident3= T_CTLG_TBL_COL
 					{
-					ident3=(Token)match(input,T_CTLG_TBL_COL,FOLLOW_T_CTLG_TBL_COL_in_getColumn8013); 
+					ident3=(Token)match(input,T_CTLG_TBL_COL,FOLLOW_T_CTLG_TBL_COL_in_getColumn8011); 
 					t3 = (ident3!=null?ident3.getText():null);
 					}
 					break;
@@ -7081,7 +7081,7 @@ public class MetaParser extends Parser {
 
 
 	// $ANTLR start "getTable"
-	// Meta.g:1186:1: getTable returns [TableName table] : (ident1= T_IDENT |ident2= T_KS_AND_TN ) ;
+	// Meta.g:1184:1: getTable returns [TableName table] : (ident1= T_IDENT |ident2= T_KS_AND_TN ) ;
 	public final TableName getTable() throws RecognitionException {
 		TableName table = null;
 
@@ -7097,10 +7097,10 @@ public class MetaParser extends Parser {
 		try {
 			if ( state.backtracking>0 && alreadyParsedRule(input, 69) ) { return table; }
 
-			// Meta.g:1204:6: ( (ident1= T_IDENT |ident2= T_KS_AND_TN ) )
-			// Meta.g:1205:5: (ident1= T_IDENT |ident2= T_KS_AND_TN )
+			// Meta.g:1202:6: ( (ident1= T_IDENT |ident2= T_KS_AND_TN ) )
+			// Meta.g:1203:5: (ident1= T_IDENT |ident2= T_KS_AND_TN )
 			{
-			// Meta.g:1205:5: (ident1= T_IDENT |ident2= T_KS_AND_TN )
+			// Meta.g:1203:5: (ident1= T_IDENT |ident2= T_KS_AND_TN )
 			int alt95=2;
 			int LA95_0 = input.LA(1);
 			if ( (LA95_0==T_IDENT) ) {
@@ -7118,16 +7118,16 @@ public class MetaParser extends Parser {
 
 			switch (alt95) {
 				case 1 :
-					// Meta.g:1205:6: ident1= T_IDENT
+					// Meta.g:1203:6: ident1= T_IDENT
 					{
-					ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTable8051); 
+					ident1=(Token)match(input,T_IDENT,FOLLOW_T_IDENT_in_getTable8049); 
 					t1 = (ident1!=null?ident1.getText():null);
 					}
 					break;
 				case 2 :
-					// Meta.g:1206:7: ident2= T_KS_AND_TN
+					// Meta.g:1204:7: ident2= T_KS_AND_TN
 					{
-					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTable8063); 
+					ident2=(Token)match(input,T_KS_AND_TN,FOLLOW_T_KS_AND_TN_in_getTable8061); 
 					t2 = (ident2!=null?ident2.getText():null);
 					}
 					break;
@@ -7254,370 +7254,370 @@ public class MetaParser extends Parser {
 	public static final BitSet FOLLOW_QUOTED_LITERAL_in_removeUDFStatement3369 = new BitSet(new long[]{0x0000000000000002L});
 	public static final BitSet FOLLOW_T_DROP_in_dropIndexStatement3390 = new BitSet(new long[]{0x0000000000000000L,0x0000000100000000L});
 	public static final BitSet FOLLOW_T_INDEX_in_dropIndexStatement3392 = new BitSet(new long[]{0x1000000000000000L,0x0000080040000000L});
-	public static final BitSet FOLLOW_T_IF_in_dropIndexStatement3396 = new BitSet(new long[]{0x0000000000000000L,0x0000000000020000L});
-	public static final BitSet FOLLOW_T_EXISTS_in_dropIndexStatement3398 = new BitSet(new long[]{0x1000000000000000L,0x0000080000000000L});
-	public static final BitSet FOLLOW_getIndexName_in_dropIndexStatement3408 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CREATE_in_createIndexStatement3437 = new BitSet(new long[]{0x2000000000000000L,0x0000000100800004L});
-	public static final BitSet FOLLOW_getIndexType_in_createIndexStatement3444 = new BitSet(new long[]{0x0000000000000000L,0x0000000100000000L});
-	public static final BitSet FOLLOW_T_INDEX_in_createIndexStatement3450 = new BitSet(new long[]{0x1400500000000000L,0x8E30490878000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_T_IF_in_createIndexStatement3454 = new BitSet(new long[]{0x0000000000000000L,0x1000000000000000L});
-	public static final BitSet FOLLOW_T_NOT_in_createIndexStatement3456 = new BitSet(new long[]{0x0000000000000000L,0x0000000000020000L});
-	public static final BitSet FOLLOW_T_EXISTS_in_createIndexStatement3458 = new BitSet(new long[]{0x1400500000000000L,0x8E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_createIndexStatement3468 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
-	public static final BitSet FOLLOW_T_ON_in_createIndexStatement3477 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getTableName_in_createIndexStatement3481 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_createIndexStatement3486 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_createIndexStatement3498 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_COMMA_in_createIndexStatement3505 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_createIndexStatement3511 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_createIndexStatement3521 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000000L,0x0000840000000000L});
-	public static final BitSet FOLLOW_T_USING_in_createIndexStatement3525 = new BitSet(new long[]{0x0000000002000000L});
-	public static final BitSet FOLLOW_QUOTED_LITERAL_in_createIndexStatement3529 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000000L,0x0000800000000000L});
-	public static final BitSet FOLLOW_T_WITH_in_createIndexStatement3537 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000500000L});
-	public static final BitSet FOLLOW_getJson_in_createIndexStatement3541 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DEFAULT_in_getIndexType3567 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FULL_TEXT_in_getIndexType3577 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CUSTOM_in_getIndexType3587 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getUnits_in_getField3613 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_getField3624 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_getUnits3655 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_UPDATE_in_updateTableStatement3759 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getTableName_in_updateTableStatement3763 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000040000020000L});
-	public static final BitSet FOLLOW_T_USING_in_updateTableStatement3770 = new BitSet(new long[]{0x1622520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getOption_in_updateTableStatement3774 = new BitSet(new long[]{0x0000000400000000L,0x0000000000000000L,0x0000000000020000L});
-	public static final BitSet FOLLOW_T_AND_in_updateTableStatement3780 = new BitSet(new long[]{0x1622520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getOption_in_updateTableStatement3784 = new BitSet(new long[]{0x0000000400000000L,0x0000000000000000L,0x0000000000020000L});
-	public static final BitSet FOLLOW_T_SET_in_updateTableStatement3797 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getAssignment_in_updateTableStatement3801 = new BitSet(new long[]{0x0010000000000002L,0x0000000040000000L,0x0000200000000000L});
-	public static final BitSet FOLLOW_T_COMMA_in_updateTableStatement3807 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getAssignment_in_updateTableStatement3811 = new BitSet(new long[]{0x0010000000000002L,0x0000000040000000L,0x0000200000000000L});
-	public static final BitSet FOLLOW_T_WHERE_in_updateTableStatement3823 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
-	public static final BitSet FOLLOW_getWhereClauses_in_updateTableStatement3827 = new BitSet(new long[]{0x0000000000000002L,0x0000000040000000L});
-	public static final BitSet FOLLOW_T_IF_in_updateTableStatement3837 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_updateTableStatement3841 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_updateTableStatement3844 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_updateTableStatement3848 = new BitSet(new long[]{0x0000000400000002L});
-	public static final BitSet FOLLOW_T_AND_in_updateTableStatement3874 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_updateTableStatement3878 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_updateTableStatement3881 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_updateTableStatement3885 = new BitSet(new long[]{0x0000000400000002L});
-	public static final BitSet FOLLOW_T_STOP_in_stopProcessStatement3914 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000040L});
-	public static final BitSet FOLLOW_T_PROCESS_in_stopProcessStatement3916 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_stopProcessStatement3920 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DROP_in_dropTriggerStatement3938 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000400000000L});
-	public static final BitSet FOLLOW_T_TRIGGER_in_dropTriggerStatement3944 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_dropTriggerStatement3948 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
-	public static final BitSet FOLLOW_T_ON_in_dropTriggerStatement3954 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_dropTriggerStatement3962 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CREATE_in_createTriggerStatement3988 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000400000000L});
-	public static final BitSet FOLLOW_T_TRIGGER_in_createTriggerStatement3994 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_createTriggerStatement3998 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
-	public static final BitSet FOLLOW_T_ON_in_createTriggerStatement4004 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_createTriggerStatement4012 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000040000000000L});
-	public static final BitSet FOLLOW_T_USING_in_createTriggerStatement4018 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_createTriggerStatement4022 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CREATE_in_createTableStatement4052 = new BitSet(new long[]{0x0000000000000000L,0x0000000000008000L,0x0000000008000000L});
-	public static final BitSet FOLLOW_getTableType_in_createTableStatement4056 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000008000000L});
-	public static final BitSet FOLLOW_T_TABLE_in_createTableStatement4058 = new BitSet(new long[]{0x0400500000000000L,0x0E30490878000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_T_IF_in_createTableStatement4061 = new BitSet(new long[]{0x0000000000000000L,0x1000000000000000L});
-	public static final BitSet FOLLOW_T_NOT_in_createTableStatement4063 = new BitSet(new long[]{0x0000000000000000L,0x0000000000020000L});
-	public static final BitSet FOLLOW_T_EXISTS_in_createTableStatement4065 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getTableName_in_createTableStatement4077 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
-	public static final BitSet FOLLOW_T_ON_in_createTableStatement4085 = new BitSet(new long[]{0x0001000000000000L});
-	public static final BitSet FOLLOW_T_CLUSTER_in_createTableStatement4087 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_createTableStatement4091 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_createTableStatement4097 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4109 = new BitSet(new long[]{0x0000180000000000L,0x0020801800100200L,0x0000100040020000L});
-	public static final BitSet FOLLOW_getDataType_in_createTableStatement4114 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L,0x0000000000000020L});
-	public static final BitSet FOLLOW_T_PRIMARY_in_createTableStatement4117 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
-	public static final BitSet FOLLOW_T_KEY_in_createTableStatement4119 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_COMMA_in_createTableStatement4137 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4141 = new BitSet(new long[]{0x0000180000000000L,0x0020801800100200L,0x0000100040020000L});
-	public static final BitSet FOLLOW_getDataType_in_createTableStatement4146 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_COMMA_in_createTableStatement4162 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000020L});
-	public static final BitSet FOLLOW_T_PRIMARY_in_createTableStatement4164 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
-	public static final BitSet FOLLOW_T_KEY_in_createTableStatement4166 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_createTableStatement4168 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404120784AL});
-	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4189 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_createTableStatement4212 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4236 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_COMMA_in_createTableStatement4262 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4266 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_createTableStatement4310 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_COMMA_in_createTableStatement4330 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4334 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_createTableStatement4349 = new BitSet(new long[]{0x0000000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_createTableStatement4357 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000000L,0x0000800000000000L});
-	public static final BitSet FOLLOW_T_WITH_in_createTableStatement4360 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000500000L});
-	public static final BitSet FOLLOW_getJson_in_createTableStatement4364 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_EPHEMERAL_in_getTableType4398 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_ALTER_in_alterTableStatement4427 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000008000000L});
-	public static final BitSet FOLLOW_T_TABLE_in_alterTableStatement4429 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getTableName_in_alterTableStatement4433 = new BitSet(new long[]{0x0000000120000002L,0x0000000000000400L,0x0000800000000000L});
-	public static final BitSet FOLLOW_T_ALTER_in_alterTableStatement4440 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_alterTableStatement4444 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000004000000000L});
-	public static final BitSet FOLLOW_T_TYPE_in_alterTableStatement4447 = new BitSet(new long[]{0x0000180000000000L,0x0020801800100200L,0x0000100040020000L});
-	public static final BitSet FOLLOW_getDataType_in_alterTableStatement4451 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_ADD_in_alterTableStatement4464 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_alterTableStatement4468 = new BitSet(new long[]{0x0000180000000000L,0x0020801800100200L,0x0000100040020000L});
-	public static final BitSet FOLLOW_getDataType_in_alterTableStatement4473 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DROP_in_alterTableStatement4486 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_alterTableStatement4490 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_WITH_in_alterTableStatement4505 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000500000L});
-	public static final BitSet FOLLOW_getJson_in_alterTableStatement4511 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_SELECT_in_selectStatement4557 = new BitSet(new long[]{0x1600524002000000L,0x0FB0490838180103L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelectExpression_in_selectStatement4561 = new BitSet(new long[]{0x0000000000000000L,0x0000000000400000L});
-	public static final BitSet FOLLOW_T_FROM_in_selectStatement4564 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getAliasedTableID_in_selectStatement4568 = new BitSet(new long[]{0x0000000000000002L,0x0000400201000000L,0x0000A00000000004L});
-	public static final BitSet FOLLOW_T_WITH_in_selectStatement4576 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_WINDOW_in_selectStatement4578 = new BitSet(new long[]{0x0200000000000000L,0x0000100000000000L});
-	public static final BitSet FOLLOW_getWindow_in_selectStatement4584 = new BitSet(new long[]{0x0000000000000002L,0x0000400201000000L,0x0000200000000004L});
-	public static final BitSet FOLLOW_T_INNER_in_selectStatement4593 = new BitSet(new long[]{0x0000000000000000L,0x0000008000000000L});
-	public static final BitSet FOLLOW_T_JOIN_in_selectStatement4595 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getAliasedTableID_in_selectStatement4601 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
-	public static final BitSet FOLLOW_T_ON_in_selectStatement4604 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
-	public static final BitSet FOLLOW_getWhereClauses_in_selectStatement4608 = new BitSet(new long[]{0x0000000000000002L,0x0000400001000000L,0x0000200000000004L});
-	public static final BitSet FOLLOW_T_WHERE_in_selectStatement4618 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
-	public static final BitSet FOLLOW_getWhereClauses_in_selectStatement4624 = new BitSet(new long[]{0x0000000000000002L,0x0000400001000000L,0x0000000000000004L});
-	public static final BitSet FOLLOW_T_ORDER_in_selectStatement4634 = new BitSet(new long[]{0x0000200000000000L});
-	public static final BitSet FOLLOW_T_BY_in_selectStatement4636 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getOrdering_in_selectStatement4642 = new BitSet(new long[]{0x0000000000000002L,0x0000400001000000L});
-	public static final BitSet FOLLOW_T_GROUP_in_selectStatement4652 = new BitSet(new long[]{0x0000200000000000L});
-	public static final BitSet FOLLOW_T_BY_in_selectStatement4654 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getGroupBy_in_selectStatement4660 = new BitSet(new long[]{0x0000000000000002L,0x0000400000000000L});
-	public static final BitSet FOLLOW_T_LIMIT_in_selectStatement4670 = new BitSet(new long[]{0x0200000000000000L});
-	public static final BitSet FOLLOW_T_CONSTANT_in_selectStatement4676 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_INSERT_in_insertIntoStatement4708 = new BitSet(new long[]{0x0000000000000000L,0x0000004000000000L});
-	public static final BitSet FOLLOW_T_INTO_in_insertIntoStatement4710 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getTableName_in_insertIntoStatement4714 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_insertIntoStatement4720 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_insertIntoStatement4732 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_COMMA_in_insertIntoStatement4738 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getColumnName_in_insertIntoStatement4742 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_insertIntoStatement4753 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000080000008000L});
-	public static final BitSet FOLLOW_selectStatement_in_insertIntoStatement4771 = new BitSet(new long[]{0x0000000000000002L,0x0000000040000000L,0x0000040000000000L});
-	public static final BitSet FOLLOW_T_VALUES_in_insertIntoStatement4793 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_insertIntoStatement4803 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_insertIntoStatement4819 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_COMMA_in_insertIntoStatement4837 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_insertIntoStatement4841 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_insertIntoStatement4856 = new BitSet(new long[]{0x0000000000000002L,0x0000000040000000L,0x0000040000000000L});
-	public static final BitSet FOLLOW_T_IF_in_insertIntoStatement4869 = new BitSet(new long[]{0x0000000000000000L,0x1000000000000000L});
-	public static final BitSet FOLLOW_T_NOT_in_insertIntoStatement4871 = new BitSet(new long[]{0x0000000000000000L,0x0000000000020000L});
-	public static final BitSet FOLLOW_T_EXISTS_in_insertIntoStatement4873 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000000L,0x0000040000000000L});
-	public static final BitSet FOLLOW_T_USING_in_insertIntoStatement4894 = new BitSet(new long[]{0x1622520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getOption_in_insertIntoStatement4908 = new BitSet(new long[]{0x0000000400000002L});
-	public static final BitSet FOLLOW_T_AND_in_insertIntoStatement4922 = new BitSet(new long[]{0x1622520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getOption_in_insertIntoStatement4926 = new BitSet(new long[]{0x0000000400000002L});
-	public static final BitSet FOLLOW_T_EXPLAIN_in_explainPlanStatement4960 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000008L});
-	public static final BitSet FOLLOW_T_PLAN_in_explainPlanStatement4962 = new BitSet(new long[]{0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_FOR_in_explainPlanStatement4964 = new BitSet(new long[]{0x0800010120000000L,0x0000800400040468L,0x0000011000908200L});
-	public static final BitSet FOLLOW_metaStatement_in_explainPlanStatement4968 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DROP_in_dropTableStatement4999 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000008000000L});
-	public static final BitSet FOLLOW_T_TABLE_in_dropTableStatement5001 = new BitSet(new long[]{0x0400500000000000L,0x0E30490878000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_T_IF_in_dropTableStatement5004 = new BitSet(new long[]{0x0000000000000000L,0x0000000000020000L});
-	public static final BitSet FOLLOW_T_EXISTS_in_dropTableStatement5006 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getTableName_in_dropTableStatement5018 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TRUNCATE_in_truncateStatement5033 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getTableName_in_truncateStatement5045 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_BRACKET_in_metaStatement5064 = new BitSet(new long[]{0x0400500000000000L,0x0E30410838001003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getGenericID_in_metaStatement5078 = new BitSet(new long[]{0x0000000000000000L,0x0000000000001000L});
-	public static final BitSet FOLLOW_T_END_BRACKET_in_metaStatement5089 = new BitSet(new long[]{0x0010000000000000L});
-	public static final BitSet FOLLOW_T_COMMA_in_metaStatement5091 = new BitSet(new long[]{0x0800010120000000L,0x0000800400040468L,0x0000011000808200L});
-	public static final BitSet FOLLOW_insertIntoStatement_in_metaStatement5105 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_selectStatement_in_metaStatement5119 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_createTableStatement_in_metaStatement5133 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_alterTableStatement_in_metaStatement5147 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_updateTableStatement_in_metaStatement5161 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_dropTableStatement_in_metaStatement5175 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_truncateStatement_in_metaStatement5189 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_listStatement_in_metaStatement5203 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_stopProcessStatement_in_metaStatement5217 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_explainPlanStatement_in_metaStatement5231 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_addStatement_in_metaStatement5245 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_dropManifestStatement_in_metaStatement5259 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_removeUDFStatement_in_metaStatement5273 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_deleteStatement_in_metaStatement5287 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_describeStatement_in_metaStatement5301 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_createCatalogStatement_in_metaStatement5315 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_alterCatalogStatement_in_metaStatement5329 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_dropCatalogStatement_in_metaStatement5343 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_attachClusterStatement_in_metaStatement5357 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_detachClusterStatement_in_metaStatement5371 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_alterClusterStatement_in_metaStatement5385 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_attachConnectorStatement_in_metaStatement5399 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_detachConnectorStatement_in_metaStatement5413 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_createIndexStatement_in_metaStatement5427 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_dropIndexStatement_in_metaStatement5441 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_createTriggerStatement_in_metaStatement5455 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_dropTriggerStatement_in_metaStatement5469 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_metaStatement_in_query5487 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_T_SEMICOLON_in_query5490 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_EOF_in_query5494 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getBasicType_in_getDataType5516 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getCollectionType_in_getDataType5526 = new BitSet(new long[]{0x0000000000000000L,0x0004000000000000L});
-	public static final BitSet FOLLOW_T_LT_in_getDataType5528 = new BitSet(new long[]{0x0000180000000000L,0x0000001800100200L,0x0000100040000000L});
-	public static final BitSet FOLLOW_getBasicType_in_getDataType5532 = new BitSet(new long[]{0x0000000000000000L,0x0000000002000000L});
-	public static final BitSet FOLLOW_T_GT_in_getDataType5534 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getMapType_in_getDataType5546 = new BitSet(new long[]{0x0000000000000000L,0x0004000000000000L});
-	public static final BitSet FOLLOW_T_LT_in_getDataType5548 = new BitSet(new long[]{0x0000180000000000L,0x0000001800100200L,0x0000100040000000L});
-	public static final BitSet FOLLOW_getBasicType_in_getDataType5552 = new BitSet(new long[]{0x0010000000000000L});
-	public static final BitSet FOLLOW_T_COMMA_in_getDataType5554 = new BitSet(new long[]{0x0000180000000000L,0x0000001800100200L,0x0000100040000000L});
-	public static final BitSet FOLLOW_getBasicType_in_getDataType5558 = new BitSet(new long[]{0x0000000000000000L,0x0000000002000000L});
-	public static final BitSet FOLLOW_T_GT_in_getDataType5560 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_BIGINT_in_getBasicType5586 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_BOOLEAN_in_getBasicType5596 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DOUBLE_in_getBasicType5606 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FLOAT_in_getBasicType5616 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_INT_in_getBasicType5626 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_INTEGER_in_getBasicType5636 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TEXT_in_getBasicType5646 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_VARCHAR_in_getBasicType5656 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_SET_in_getCollectionType5674 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LIST_in_getCollectionType5684 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_MAP_in_getMapType5702 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelector_in_getOrdering5739 = new BitSet(new long[]{0x0010002000000002L,0x0000000000000010L});
-	public static final BitSet FOLLOW_T_COMMA_in_getOrdering5749 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_getOrdering5753 = new BitSet(new long[]{0x0010002000000002L,0x0000000000000010L});
-	public static final BitSet FOLLOW_T_ASC_in_getOrdering5765 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DESC_in_getOrdering5769 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelector_in_getGroupBy5801 = new BitSet(new long[]{0x0010000000000002L});
-	public static final BitSet FOLLOW_T_COMMA_in_getGroupBy5811 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_getGroupBy5815 = new BitSet(new long[]{0x0010000000000002L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getWhereClauses5845 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getRelation_in_getWhereClauses5849 = new BitSet(new long[]{0x0000000400000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_AND_in_getWhereClauses5855 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
-	public static final BitSet FOLLOW_getWhereClauses_in_getWhereClauses5859 = new BitSet(new long[]{0x0000000400000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getWhereClauses5866 = new BitSet(new long[]{0x0000000400000002L});
-	public static final BitSet FOLLOW_T_AND_in_getWhereClauses5869 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
-	public static final BitSet FOLLOW_getWhereClauses_in_getWhereClauses5873 = new BitSet(new long[]{0x0000000400000002L});
-	public static final BitSet FOLLOW_getRelation_in_getWhereClauses5888 = new BitSet(new long[]{0x0000000400000002L});
-	public static final BitSet FOLLOW_T_AND_in_getWhereClauses5894 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
-	public static final BitSet FOLLOW_getWhereClauses_in_getWhereClauses5898 = new BitSet(new long[]{0x0000000400000002L});
-	public static final BitSet FOLLOW_getSelector_in_getRelation5930 = new BitSet(new long[]{0x0000000000000000L,0x204C200006010000L});
-	public static final BitSet FOLLOW_getComparator_in_getRelation5935 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_getRelation5939 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getTableName_in_getFields5955 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_getFields5959 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getTableName_in_getFields5963 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getFields5973 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getTableName_in_getFields5977 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_getFields5981 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getTableName_in_getFields5985 = new BitSet(new long[]{0x0000000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getFields5989 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LAST_in_getWindow6006 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CONSTANT_in_getWindow6018 = new BitSet(new long[]{0x0000000000000000L,0x0B00000018000003L,0x0000000000006C00L});
-	public static final BitSet FOLLOW_T_ROWS_in_getWindow6021 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getTimeUnit_in_getWindow6052 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_SEC_in_getTimeUnit6103 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_SECS_in_getTimeUnit6113 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_SECONDS_in_getTimeUnit6123 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_MIN_in_getTimeUnit6133 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_MINS_in_getTimeUnit6143 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_MINUTES_in_getTimeUnit6153 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_HOUR_in_getTimeUnit6163 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_HOURS_in_getTimeUnit6173 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DAY_in_getTimeUnit6183 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DAYS_in_getTimeUnit6193 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_DISTINCT_in_getSelectExpression6230 = new BitSet(new long[]{0x1600524002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_T_ASTERISK_in_getSelectExpression6250 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelector_in_getSelectExpression6266 = new BitSet(new long[]{0x0010001000000002L});
-	public static final BitSet FOLLOW_T_AS_in_getSelectExpression6288 = new BitSet(new long[]{0x0400500000000000L,0x0E30410838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getGenericID_in_getSelectExpression6292 = new BitSet(new long[]{0x0010000000000002L});
-	public static final BitSet FOLLOW_T_COMMA_in_getSelectExpression6330 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_getSelectExpression6334 = new BitSet(new long[]{0x0010001000000002L});
-	public static final BitSet FOLLOW_T_AS_in_getSelectExpression6360 = new BitSet(new long[]{0x0400500000000000L,0x0E30410838000003L,0x000000404100784AL});
-	public static final BitSet FOLLOW_getGenericID_in_getSelectExpression6364 = new BitSet(new long[]{0x0010000000000002L});
-	public static final BitSet FOLLOW_T_SUM_in_getSelector6437 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_MAX_in_getSelector6455 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_MIN_in_getSelector6473 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_AVG_in_getSelector6491 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_COUNT_in_getSelector6509 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_IDENT_in_getSelector6527 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
-	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getSelector6547 = new BitSet(new long[]{0x1600524002000000L,0x0FB0490838182003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_getSelector6564 = new BitSet(new long[]{0x0000000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_ASTERISK_in_getSelector6583 = new BitSet(new long[]{0x0000000000000000L,0x0000000000002000L});
-	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getSelector6610 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getColumnName_in_getSelector6648 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FLOAT_in_getSelector6669 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CONSTANT_in_getSelector6689 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FALSE_in_getSelector6707 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TRUE_in_getSelector6725 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_QUOTED_LITERAL_in_getSelector6745 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_getListTypes6778 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelector_in_getAssignment6817 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_getAssignment6820 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getRightTermInAssignment_in_getAssignment6824 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelector_in_getRightTermInAssignment6861 = new BitSet(new long[]{0x0000004000000002L,0x0000000000000000L,0x0000000002080010L});
-	public static final BitSet FOLLOW_getOperator_in_getRightTermInAssignment6867 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getRightTermInAssignment_in_getRightTermInAssignment6871 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_PLUS_in_getOperator6897 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_SUBTRACT_in_getOperator6907 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_ASTERISK_in_getOperator6917 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_SLASH_in_getOperator6927 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_EQUAL_in_getComparator6945 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_GT_in_getComparator6955 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LT_in_getComparator6965 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_GTE_in_getComparator6975 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LTE_in_getComparator6985 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_NOT_EQUAL_in_getComparator6995 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_LIKE_in_getComparator7005 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_MATCH_in_getComparator7015 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getIds7043 = new BitSet(new long[]{0x0010000000000002L});
-	public static final BitSet FOLLOW_T_COMMA_in_getIds7048 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_getIds7052 = new BitSet(new long[]{0x0010000000000002L});
-	public static final BitSet FOLLOW_getOption_in_getOptions7078 = new BitSet(new long[]{0x1622520002000002L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getOption_in_getOptions7086 = new BitSet(new long[]{0x1622520002000002L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_T_COMPACT_in_getOption7108 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000001000000L});
-	public static final BitSet FOLLOW_T_STORAGE_in_getOption7110 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CLUSTERING_in_getOption7120 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000004L});
-	public static final BitSet FOLLOW_T_ORDER_in_getOption7122 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelector_in_getOption7134 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
-	public static final BitSet FOLLOW_T_EQUAL_in_getOption7137 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_getOption7141 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelector_in_getSelectors7171 = new BitSet(new long[]{0x0010000000000002L});
-	public static final BitSet FOLLOW_T_COMMA_in_getSelectors7181 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getSelector_in_getSelectors7185 = new BitSet(new long[]{0x0010000000000002L});
-	public static final BitSet FOLLOW_getTableName_in_getAliasedTableID7206 = new BitSet(new long[]{0x0000001000000002L});
-	public static final BitSet FOLLOW_T_AS_in_getAliasedTableID7209 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
-	public static final BitSet FOLLOW_T_IDENT_in_getAliasedTableID7213 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getColumnName7241 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_KS_AND_TN_in_getColumnName7253 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CTLG_TBL_COL_in_getColumnName7265 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getAllowedReservedWord_in_getColumnName7277 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_getIndexName7298 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_set_in_getAllowedReservedWord7345 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getAllowedReservedWord_in_getGenericID7563 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getGenericID7575 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getGenericID_in_getTableName7596 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTableName7608 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_TERM_in_getFloat7632 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_FLOAT_in_getFloat7646 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getObjectJson_in_getJson7667 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getArrayJson_in_getJson7679 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_SBRACKET_in_getObjectJson7715 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getPairJson_in_getObjectJson7721 = new BitSet(new long[]{0x0010000000000000L,0x0000000000004000L});
-	public static final BitSet FOLLOW_T_COMMA_in_getObjectJson7726 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
-	public static final BitSet FOLLOW_getPairJson_in_getObjectJson7732 = new BitSet(new long[]{0x0010000000000000L,0x0000000000004000L});
-	public static final BitSet FOLLOW_T_END_SBRACKET_in_getObjectJson7738 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_SBRACKET_in_getObjectJson7748 = new BitSet(new long[]{0x0000000000000000L,0x0000000000004000L});
-	public static final BitSet FOLLOW_T_END_SBRACKET_in_getObjectJson7752 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelector_in_getPairJson7789 = new BitSet(new long[]{0x0008000000000000L});
-	public static final BitSet FOLLOW_T_COLON_in_getPairJson7798 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484550784AL});
-	public static final BitSet FOLLOW_getValueJson_in_getPairJson7808 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_BRACKET_in_getArrayJson7843 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484550784AL});
-	public static final BitSet FOLLOW_getValueJson_in_getArrayJson7849 = new BitSet(new long[]{0x0010000000000000L,0x0000000000001000L});
-	public static final BitSet FOLLOW_T_COMMA_in_getArrayJson7862 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484550784AL});
-	public static final BitSet FOLLOW_getValueJson_in_getArrayJson7868 = new BitSet(new long[]{0x0010000000000000L,0x0000000000001000L});
-	public static final BitSet FOLLOW_T_END_BRACKET_in_getArrayJson7874 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_START_BRACKET_in_getArrayJson7884 = new BitSet(new long[]{0x0000000000000000L,0x0000000000001000L});
-	public static final BitSet FOLLOW_T_END_BRACKET_in_getArrayJson7888 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getSelector_in_getValueJson7926 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getObjectJson_in_getValueJson7939 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_getArrayJson_in_getValueJson7951 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getColumn7989 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_KS_AND_TN_in_getColumn8001 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_CTLG_TBL_COL_in_getColumn8013 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_IDENT_in_getTable8051 = new BitSet(new long[]{0x0000000000000002L});
-	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTable8063 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IF_in_dropIndexStatement3395 = new BitSet(new long[]{0x0000000000000000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_T_EXISTS_in_dropIndexStatement3397 = new BitSet(new long[]{0x1000000000000000L,0x0000080000000000L});
+	public static final BitSet FOLLOW_getIndexName_in_dropIndexStatement3406 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CREATE_in_createIndexStatement3435 = new BitSet(new long[]{0x2000000000000000L,0x0000000100800004L});
+	public static final BitSet FOLLOW_getIndexType_in_createIndexStatement3442 = new BitSet(new long[]{0x0000000000000000L,0x0000000100000000L});
+	public static final BitSet FOLLOW_T_INDEX_in_createIndexStatement3448 = new BitSet(new long[]{0x1400500000000000L,0x8E30490878000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_T_IF_in_createIndexStatement3452 = new BitSet(new long[]{0x0000000000000000L,0x1000000000000000L});
+	public static final BitSet FOLLOW_T_NOT_in_createIndexStatement3454 = new BitSet(new long[]{0x0000000000000000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_T_EXISTS_in_createIndexStatement3456 = new BitSet(new long[]{0x1400500000000000L,0x8E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_createIndexStatement3466 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
+	public static final BitSet FOLLOW_T_ON_in_createIndexStatement3475 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getTableName_in_createIndexStatement3479 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_createIndexStatement3484 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_createIndexStatement3496 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_COMMA_in_createIndexStatement3503 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_createIndexStatement3509 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_createIndexStatement3519 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000000L,0x0000840000000000L});
+	public static final BitSet FOLLOW_T_USING_in_createIndexStatement3523 = new BitSet(new long[]{0x0000000002000000L});
+	public static final BitSet FOLLOW_QUOTED_LITERAL_in_createIndexStatement3527 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000000L,0x0000800000000000L});
+	public static final BitSet FOLLOW_T_WITH_in_createIndexStatement3535 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000500000L});
+	public static final BitSet FOLLOW_getJson_in_createIndexStatement3539 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DEFAULT_in_getIndexType3565 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FULL_TEXT_in_getIndexType3575 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CUSTOM_in_getIndexType3585 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getUnits_in_getField3611 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_getField3622 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_getUnits3653 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_UPDATE_in_updateTableStatement3757 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getTableName_in_updateTableStatement3761 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000040000020000L});
+	public static final BitSet FOLLOW_T_USING_in_updateTableStatement3768 = new BitSet(new long[]{0x1622520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getOption_in_updateTableStatement3772 = new BitSet(new long[]{0x0000000400000000L,0x0000000000000000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_T_AND_in_updateTableStatement3778 = new BitSet(new long[]{0x1622520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getOption_in_updateTableStatement3782 = new BitSet(new long[]{0x0000000400000000L,0x0000000000000000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_T_SET_in_updateTableStatement3795 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getAssignment_in_updateTableStatement3799 = new BitSet(new long[]{0x0010000000000002L,0x0000000040000000L,0x0000200000000000L});
+	public static final BitSet FOLLOW_T_COMMA_in_updateTableStatement3805 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getAssignment_in_updateTableStatement3809 = new BitSet(new long[]{0x0010000000000002L,0x0000000040000000L,0x0000200000000000L});
+	public static final BitSet FOLLOW_T_WHERE_in_updateTableStatement3821 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
+	public static final BitSet FOLLOW_getWhereClauses_in_updateTableStatement3825 = new BitSet(new long[]{0x0000000000000002L,0x0000000040000000L});
+	public static final BitSet FOLLOW_T_IF_in_updateTableStatement3835 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_updateTableStatement3839 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_updateTableStatement3842 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_updateTableStatement3846 = new BitSet(new long[]{0x0000000400000002L});
+	public static final BitSet FOLLOW_T_AND_in_updateTableStatement3872 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_updateTableStatement3876 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_updateTableStatement3879 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_updateTableStatement3883 = new BitSet(new long[]{0x0000000400000002L});
+	public static final BitSet FOLLOW_T_STOP_in_stopProcessStatement3912 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000040L});
+	public static final BitSet FOLLOW_T_PROCESS_in_stopProcessStatement3914 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_stopProcessStatement3918 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DROP_in_dropTriggerStatement3936 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000400000000L});
+	public static final BitSet FOLLOW_T_TRIGGER_in_dropTriggerStatement3942 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_dropTriggerStatement3946 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
+	public static final BitSet FOLLOW_T_ON_in_dropTriggerStatement3952 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_dropTriggerStatement3960 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CREATE_in_createTriggerStatement3986 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000400000000L});
+	public static final BitSet FOLLOW_T_TRIGGER_in_createTriggerStatement3992 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_createTriggerStatement3996 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
+	public static final BitSet FOLLOW_T_ON_in_createTriggerStatement4002 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_createTriggerStatement4010 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000040000000000L});
+	public static final BitSet FOLLOW_T_USING_in_createTriggerStatement4016 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_createTriggerStatement4020 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CREATE_in_createTableStatement4050 = new BitSet(new long[]{0x0000000000000000L,0x0000000000008000L,0x0000000008000000L});
+	public static final BitSet FOLLOW_getTableType_in_createTableStatement4054 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000008000000L});
+	public static final BitSet FOLLOW_T_TABLE_in_createTableStatement4056 = new BitSet(new long[]{0x0400500000000000L,0x0E30490878000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_T_IF_in_createTableStatement4059 = new BitSet(new long[]{0x0000000000000000L,0x1000000000000000L});
+	public static final BitSet FOLLOW_T_NOT_in_createTableStatement4061 = new BitSet(new long[]{0x0000000000000000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_T_EXISTS_in_createTableStatement4063 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getTableName_in_createTableStatement4075 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
+	public static final BitSet FOLLOW_T_ON_in_createTableStatement4083 = new BitSet(new long[]{0x0001000000000000L});
+	public static final BitSet FOLLOW_T_CLUSTER_in_createTableStatement4085 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_createTableStatement4089 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_createTableStatement4095 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4107 = new BitSet(new long[]{0x0000180000000000L,0x0020801800100200L,0x0000100040020000L});
+	public static final BitSet FOLLOW_getDataType_in_createTableStatement4112 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L,0x0000000000000020L});
+	public static final BitSet FOLLOW_T_PRIMARY_in_createTableStatement4115 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
+	public static final BitSet FOLLOW_T_KEY_in_createTableStatement4117 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_COMMA_in_createTableStatement4135 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4139 = new BitSet(new long[]{0x0000180000000000L,0x0020801800100200L,0x0000100040020000L});
+	public static final BitSet FOLLOW_getDataType_in_createTableStatement4144 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_COMMA_in_createTableStatement4160 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000020L});
+	public static final BitSet FOLLOW_T_PRIMARY_in_createTableStatement4162 = new BitSet(new long[]{0x0000000000000000L,0x0000010000000000L});
+	public static final BitSet FOLLOW_T_KEY_in_createTableStatement4164 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_createTableStatement4166 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404120784AL});
+	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4187 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_createTableStatement4210 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4234 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_COMMA_in_createTableStatement4260 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4264 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_createTableStatement4308 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_COMMA_in_createTableStatement4328 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_createTableStatement4332 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_createTableStatement4347 = new BitSet(new long[]{0x0000000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_createTableStatement4355 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000000L,0x0000800000000000L});
+	public static final BitSet FOLLOW_T_WITH_in_createTableStatement4358 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000500000L});
+	public static final BitSet FOLLOW_getJson_in_createTableStatement4362 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_EPHEMERAL_in_getTableType4396 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_ALTER_in_alterTableStatement4425 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000008000000L});
+	public static final BitSet FOLLOW_T_TABLE_in_alterTableStatement4427 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getTableName_in_alterTableStatement4431 = new BitSet(new long[]{0x0000000120000002L,0x0000000000000400L,0x0000800000000000L});
+	public static final BitSet FOLLOW_T_ALTER_in_alterTableStatement4438 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_alterTableStatement4442 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000004000000000L});
+	public static final BitSet FOLLOW_T_TYPE_in_alterTableStatement4445 = new BitSet(new long[]{0x0000180000000000L,0x0020801800100200L,0x0000100040020000L});
+	public static final BitSet FOLLOW_getDataType_in_alterTableStatement4449 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_ADD_in_alterTableStatement4462 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_alterTableStatement4466 = new BitSet(new long[]{0x0000180000000000L,0x0020801800100200L,0x0000100040020000L});
+	public static final BitSet FOLLOW_getDataType_in_alterTableStatement4471 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DROP_in_alterTableStatement4484 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_alterTableStatement4488 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_WITH_in_alterTableStatement4503 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000500000L});
+	public static final BitSet FOLLOW_getJson_in_alterTableStatement4509 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_SELECT_in_selectStatement4555 = new BitSet(new long[]{0x1600524002000000L,0x0FB0490838180103L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelectExpression_in_selectStatement4559 = new BitSet(new long[]{0x0000000000000000L,0x0000000000400000L});
+	public static final BitSet FOLLOW_T_FROM_in_selectStatement4562 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getAliasedTableID_in_selectStatement4566 = new BitSet(new long[]{0x0000000000000002L,0x0000400201000000L,0x0000A00000000004L});
+	public static final BitSet FOLLOW_T_WITH_in_selectStatement4574 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_WINDOW_in_selectStatement4576 = new BitSet(new long[]{0x0200000000000000L,0x0000100000000000L});
+	public static final BitSet FOLLOW_getWindow_in_selectStatement4582 = new BitSet(new long[]{0x0000000000000002L,0x0000400201000000L,0x0000200000000004L});
+	public static final BitSet FOLLOW_T_INNER_in_selectStatement4591 = new BitSet(new long[]{0x0000000000000000L,0x0000008000000000L});
+	public static final BitSet FOLLOW_T_JOIN_in_selectStatement4593 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getAliasedTableID_in_selectStatement4599 = new BitSet(new long[]{0x0000000000000000L,0x8000000000000000L});
+	public static final BitSet FOLLOW_T_ON_in_selectStatement4602 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
+	public static final BitSet FOLLOW_getWhereClauses_in_selectStatement4606 = new BitSet(new long[]{0x0000000000000002L,0x0000400001000000L,0x0000200000000004L});
+	public static final BitSet FOLLOW_T_WHERE_in_selectStatement4616 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
+	public static final BitSet FOLLOW_getWhereClauses_in_selectStatement4622 = new BitSet(new long[]{0x0000000000000002L,0x0000400001000000L,0x0000000000000004L});
+	public static final BitSet FOLLOW_T_ORDER_in_selectStatement4632 = new BitSet(new long[]{0x0000200000000000L});
+	public static final BitSet FOLLOW_T_BY_in_selectStatement4634 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getOrdering_in_selectStatement4640 = new BitSet(new long[]{0x0000000000000002L,0x0000400001000000L});
+	public static final BitSet FOLLOW_T_GROUP_in_selectStatement4650 = new BitSet(new long[]{0x0000200000000000L});
+	public static final BitSet FOLLOW_T_BY_in_selectStatement4652 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getGroupBy_in_selectStatement4658 = new BitSet(new long[]{0x0000000000000002L,0x0000400000000000L});
+	public static final BitSet FOLLOW_T_LIMIT_in_selectStatement4668 = new BitSet(new long[]{0x0200000000000000L});
+	public static final BitSet FOLLOW_T_CONSTANT_in_selectStatement4674 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_INSERT_in_insertIntoStatement4706 = new BitSet(new long[]{0x0000000000000000L,0x0000004000000000L});
+	public static final BitSet FOLLOW_T_INTO_in_insertIntoStatement4708 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getTableName_in_insertIntoStatement4712 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_insertIntoStatement4718 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_insertIntoStatement4730 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_COMMA_in_insertIntoStatement4736 = new BitSet(new long[]{0x1400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getColumnName_in_insertIntoStatement4740 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_insertIntoStatement4751 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000080000008000L});
+	public static final BitSet FOLLOW_selectStatement_in_insertIntoStatement4769 = new BitSet(new long[]{0x0000000000000002L,0x0000000040000000L,0x0000040000000000L});
+	public static final BitSet FOLLOW_T_VALUES_in_insertIntoStatement4791 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_insertIntoStatement4801 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_insertIntoStatement4817 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_COMMA_in_insertIntoStatement4835 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_insertIntoStatement4839 = new BitSet(new long[]{0x0010000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_insertIntoStatement4854 = new BitSet(new long[]{0x0000000000000002L,0x0000000040000000L,0x0000040000000000L});
+	public static final BitSet FOLLOW_T_IF_in_insertIntoStatement4867 = new BitSet(new long[]{0x0000000000000000L,0x1000000000000000L});
+	public static final BitSet FOLLOW_T_NOT_in_insertIntoStatement4869 = new BitSet(new long[]{0x0000000000000000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_T_EXISTS_in_insertIntoStatement4871 = new BitSet(new long[]{0x0000000000000002L,0x0000000000000000L,0x0000040000000000L});
+	public static final BitSet FOLLOW_T_USING_in_insertIntoStatement4892 = new BitSet(new long[]{0x1622520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getOption_in_insertIntoStatement4906 = new BitSet(new long[]{0x0000000400000002L});
+	public static final BitSet FOLLOW_T_AND_in_insertIntoStatement4920 = new BitSet(new long[]{0x1622520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getOption_in_insertIntoStatement4924 = new BitSet(new long[]{0x0000000400000002L});
+	public static final BitSet FOLLOW_T_EXPLAIN_in_explainPlanStatement4958 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000008L});
+	public static final BitSet FOLLOW_T_PLAN_in_explainPlanStatement4960 = new BitSet(new long[]{0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_FOR_in_explainPlanStatement4962 = new BitSet(new long[]{0x0800010120000000L,0x0000800400040468L,0x0000011000908200L});
+	public static final BitSet FOLLOW_metaStatement_in_explainPlanStatement4966 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DROP_in_dropTableStatement4997 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000008000000L});
+	public static final BitSet FOLLOW_T_TABLE_in_dropTableStatement4999 = new BitSet(new long[]{0x0400500000000000L,0x0E30490878000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_T_IF_in_dropTableStatement5002 = new BitSet(new long[]{0x0000000000000000L,0x0000000000020000L});
+	public static final BitSet FOLLOW_T_EXISTS_in_dropTableStatement5004 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getTableName_in_dropTableStatement5016 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TRUNCATE_in_truncateStatement5031 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getTableName_in_truncateStatement5043 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_BRACKET_in_metaStatement5062 = new BitSet(new long[]{0x0400500000000000L,0x0E30410838001003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getGenericID_in_metaStatement5076 = new BitSet(new long[]{0x0000000000000000L,0x0000000000001000L});
+	public static final BitSet FOLLOW_T_END_BRACKET_in_metaStatement5087 = new BitSet(new long[]{0x0010000000000000L});
+	public static final BitSet FOLLOW_T_COMMA_in_metaStatement5089 = new BitSet(new long[]{0x0800010120000000L,0x0000800400040468L,0x0000011000808200L});
+	public static final BitSet FOLLOW_insertIntoStatement_in_metaStatement5103 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_selectStatement_in_metaStatement5117 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_createTableStatement_in_metaStatement5131 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_alterTableStatement_in_metaStatement5145 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_updateTableStatement_in_metaStatement5159 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_dropTableStatement_in_metaStatement5173 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_truncateStatement_in_metaStatement5187 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_listStatement_in_metaStatement5201 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_stopProcessStatement_in_metaStatement5215 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_explainPlanStatement_in_metaStatement5229 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_addStatement_in_metaStatement5243 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_dropManifestStatement_in_metaStatement5257 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_removeUDFStatement_in_metaStatement5271 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_deleteStatement_in_metaStatement5285 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_describeStatement_in_metaStatement5299 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_createCatalogStatement_in_metaStatement5313 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_alterCatalogStatement_in_metaStatement5327 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_dropCatalogStatement_in_metaStatement5341 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_attachClusterStatement_in_metaStatement5355 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_detachClusterStatement_in_metaStatement5369 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_alterClusterStatement_in_metaStatement5383 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_attachConnectorStatement_in_metaStatement5397 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_detachConnectorStatement_in_metaStatement5411 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_createIndexStatement_in_metaStatement5425 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_dropIndexStatement_in_metaStatement5439 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_createTriggerStatement_in_metaStatement5453 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_dropTriggerStatement_in_metaStatement5467 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_metaStatement_in_query5485 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_T_SEMICOLON_in_query5488 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_EOF_in_query5492 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getBasicType_in_getDataType5514 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getCollectionType_in_getDataType5524 = new BitSet(new long[]{0x0000000000000000L,0x0004000000000000L});
+	public static final BitSet FOLLOW_T_LT_in_getDataType5526 = new BitSet(new long[]{0x0000180000000000L,0x0000001800100200L,0x0000100040000000L});
+	public static final BitSet FOLLOW_getBasicType_in_getDataType5530 = new BitSet(new long[]{0x0000000000000000L,0x0000000002000000L});
+	public static final BitSet FOLLOW_T_GT_in_getDataType5532 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getMapType_in_getDataType5544 = new BitSet(new long[]{0x0000000000000000L,0x0004000000000000L});
+	public static final BitSet FOLLOW_T_LT_in_getDataType5546 = new BitSet(new long[]{0x0000180000000000L,0x0000001800100200L,0x0000100040000000L});
+	public static final BitSet FOLLOW_getBasicType_in_getDataType5550 = new BitSet(new long[]{0x0010000000000000L});
+	public static final BitSet FOLLOW_T_COMMA_in_getDataType5552 = new BitSet(new long[]{0x0000180000000000L,0x0000001800100200L,0x0000100040000000L});
+	public static final BitSet FOLLOW_getBasicType_in_getDataType5556 = new BitSet(new long[]{0x0000000000000000L,0x0000000002000000L});
+	public static final BitSet FOLLOW_T_GT_in_getDataType5558 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_BIGINT_in_getBasicType5584 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_BOOLEAN_in_getBasicType5594 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DOUBLE_in_getBasicType5604 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FLOAT_in_getBasicType5614 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_INT_in_getBasicType5624 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_INTEGER_in_getBasicType5634 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TEXT_in_getBasicType5644 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_VARCHAR_in_getBasicType5654 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_SET_in_getCollectionType5672 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_LIST_in_getCollectionType5682 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_MAP_in_getMapType5700 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelector_in_getOrdering5737 = new BitSet(new long[]{0x0010002000000002L,0x0000000000000010L});
+	public static final BitSet FOLLOW_T_COMMA_in_getOrdering5747 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_getOrdering5751 = new BitSet(new long[]{0x0010002000000002L,0x0000000000000010L});
+	public static final BitSet FOLLOW_T_ASC_in_getOrdering5763 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DESC_in_getOrdering5767 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelector_in_getGroupBy5799 = new BitSet(new long[]{0x0010000000000002L});
+	public static final BitSet FOLLOW_T_COMMA_in_getGroupBy5809 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_getGroupBy5813 = new BitSet(new long[]{0x0010000000000002L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getWhereClauses5843 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getRelation_in_getWhereClauses5847 = new BitSet(new long[]{0x0000000400000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_AND_in_getWhereClauses5853 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
+	public static final BitSet FOLLOW_getWhereClauses_in_getWhereClauses5857 = new BitSet(new long[]{0x0000000400000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getWhereClauses5864 = new BitSet(new long[]{0x0000000400000002L});
+	public static final BitSet FOLLOW_T_AND_in_getWhereClauses5867 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
+	public static final BitSet FOLLOW_getWhereClauses_in_getWhereClauses5871 = new BitSet(new long[]{0x0000000400000002L});
+	public static final BitSet FOLLOW_getRelation_in_getWhereClauses5886 = new BitSet(new long[]{0x0000000400000002L});
+	public static final BitSet FOLLOW_T_AND_in_getWhereClauses5892 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484520784AL});
+	public static final BitSet FOLLOW_getWhereClauses_in_getWhereClauses5896 = new BitSet(new long[]{0x0000000400000002L});
+	public static final BitSet FOLLOW_getSelector_in_getRelation5928 = new BitSet(new long[]{0x0000000000000000L,0x204C200006010000L});
+	public static final BitSet FOLLOW_getComparator_in_getRelation5933 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_getRelation5937 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getTableName_in_getFields5953 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_getFields5957 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getTableName_in_getFields5961 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getFields5971 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getTableName_in_getFields5975 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_getFields5979 = new BitSet(new long[]{0x0400500000000000L,0x0E30490838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getTableName_in_getFields5983 = new BitSet(new long[]{0x0000000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getFields5987 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_LAST_in_getWindow6004 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CONSTANT_in_getWindow6016 = new BitSet(new long[]{0x0000000000000000L,0x0B00000018000003L,0x0000000000006C00L});
+	public static final BitSet FOLLOW_T_ROWS_in_getWindow6019 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getTimeUnit_in_getWindow6050 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_SEC_in_getTimeUnit6101 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_SECS_in_getTimeUnit6111 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_SECONDS_in_getTimeUnit6121 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_MIN_in_getTimeUnit6131 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_MINS_in_getTimeUnit6141 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_MINUTES_in_getTimeUnit6151 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_HOUR_in_getTimeUnit6161 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_HOURS_in_getTimeUnit6171 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DAY_in_getTimeUnit6181 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DAYS_in_getTimeUnit6191 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_DISTINCT_in_getSelectExpression6228 = new BitSet(new long[]{0x1600524002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_T_ASTERISK_in_getSelectExpression6248 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelector_in_getSelectExpression6264 = new BitSet(new long[]{0x0010001000000002L});
+	public static final BitSet FOLLOW_T_AS_in_getSelectExpression6286 = new BitSet(new long[]{0x0400500000000000L,0x0E30410838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getGenericID_in_getSelectExpression6290 = new BitSet(new long[]{0x0010000000000002L});
+	public static final BitSet FOLLOW_T_COMMA_in_getSelectExpression6328 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_getSelectExpression6332 = new BitSet(new long[]{0x0010001000000002L});
+	public static final BitSet FOLLOW_T_AS_in_getSelectExpression6358 = new BitSet(new long[]{0x0400500000000000L,0x0E30410838000003L,0x000000404100784AL});
+	public static final BitSet FOLLOW_getGenericID_in_getSelectExpression6362 = new BitSet(new long[]{0x0010000000000002L});
+	public static final BitSet FOLLOW_T_SUM_in_getSelector6435 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_MAX_in_getSelector6453 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_MIN_in_getSelector6471 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_AVG_in_getSelector6489 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_COUNT_in_getSelector6507 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_IDENT_in_getSelector6525 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000200000L});
+	public static final BitSet FOLLOW_T_START_PARENTHESIS_in_getSelector6545 = new BitSet(new long[]{0x1600524002000000L,0x0FB0490838182003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_getSelector6562 = new BitSet(new long[]{0x0000000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_ASTERISK_in_getSelector6581 = new BitSet(new long[]{0x0000000000000000L,0x0000000000002000L});
+	public static final BitSet FOLLOW_T_END_PARENTHESIS_in_getSelector6608 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getColumnName_in_getSelector6646 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FLOAT_in_getSelector6667 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CONSTANT_in_getSelector6687 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FALSE_in_getSelector6705 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TRUE_in_getSelector6723 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_QUOTED_LITERAL_in_getSelector6743 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_getListTypes6776 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelector_in_getAssignment6815 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_getAssignment6818 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getRightTermInAssignment_in_getAssignment6822 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelector_in_getRightTermInAssignment6859 = new BitSet(new long[]{0x0000004000000002L,0x0000000000000000L,0x0000000002080010L});
+	public static final BitSet FOLLOW_getOperator_in_getRightTermInAssignment6865 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getRightTermInAssignment_in_getRightTermInAssignment6869 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_PLUS_in_getOperator6895 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_SUBTRACT_in_getOperator6905 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_ASTERISK_in_getOperator6915 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_SLASH_in_getOperator6925 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_EQUAL_in_getComparator6943 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_GT_in_getComparator6953 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_LT_in_getComparator6963 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_GTE_in_getComparator6973 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_LTE_in_getComparator6983 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_NOT_EQUAL_in_getComparator6993 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_LIKE_in_getComparator7003 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_MATCH_in_getComparator7013 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getIds7041 = new BitSet(new long[]{0x0010000000000002L});
+	public static final BitSet FOLLOW_T_COMMA_in_getIds7046 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_getIds7050 = new BitSet(new long[]{0x0010000000000002L});
+	public static final BitSet FOLLOW_getOption_in_getOptions7076 = new BitSet(new long[]{0x1622520002000002L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getOption_in_getOptions7084 = new BitSet(new long[]{0x1622520002000002L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_T_COMPACT_in_getOption7106 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000001000000L});
+	public static final BitSet FOLLOW_T_STORAGE_in_getOption7108 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CLUSTERING_in_getOption7118 = new BitSet(new long[]{0x0000000000000000L,0x0000000000000000L,0x0000000000000004L});
+	public static final BitSet FOLLOW_T_ORDER_in_getOption7120 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelector_in_getOption7132 = new BitSet(new long[]{0x0000000000000000L,0x0000000000010000L});
+	public static final BitSet FOLLOW_T_EQUAL_in_getOption7135 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_getOption7139 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelector_in_getSelectors7169 = new BitSet(new long[]{0x0010000000000002L});
+	public static final BitSet FOLLOW_T_COMMA_in_getSelectors7179 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getSelector_in_getSelectors7183 = new BitSet(new long[]{0x0010000000000002L});
+	public static final BitSet FOLLOW_getTableName_in_getAliasedTableID7204 = new BitSet(new long[]{0x0000001000000002L});
+	public static final BitSet FOLLOW_T_AS_in_getAliasedTableID7207 = new BitSet(new long[]{0x0000000000000000L,0x0000000020000000L});
+	public static final BitSet FOLLOW_T_IDENT_in_getAliasedTableID7211 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getColumnName7239 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_KS_AND_TN_in_getColumnName7251 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CTLG_TBL_COL_in_getColumnName7263 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getAllowedReservedWord_in_getColumnName7275 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_getIndexName7296 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_set_in_getAllowedReservedWord7343 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getAllowedReservedWord_in_getGenericID7561 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getGenericID7573 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getGenericID_in_getTableName7594 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTableName7606 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_TERM_in_getFloat7630 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_FLOAT_in_getFloat7644 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getObjectJson_in_getJson7665 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getArrayJson_in_getJson7677 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_SBRACKET_in_getObjectJson7713 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getPairJson_in_getObjectJson7719 = new BitSet(new long[]{0x0010000000000000L,0x0000000000004000L});
+	public static final BitSet FOLLOW_T_COMMA_in_getObjectJson7724 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484500784AL});
+	public static final BitSet FOLLOW_getPairJson_in_getObjectJson7730 = new BitSet(new long[]{0x0010000000000000L,0x0000000000004000L});
+	public static final BitSet FOLLOW_T_END_SBRACKET_in_getObjectJson7736 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_SBRACKET_in_getObjectJson7746 = new BitSet(new long[]{0x0000000000000000L,0x0000000000004000L});
+	public static final BitSet FOLLOW_T_END_SBRACKET_in_getObjectJson7750 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelector_in_getPairJson7787 = new BitSet(new long[]{0x0008000000000000L});
+	public static final BitSet FOLLOW_T_COLON_in_getPairJson7796 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484550784AL});
+	public static final BitSet FOLLOW_getValueJson_in_getPairJson7806 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_BRACKET_in_getArrayJson7841 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484550784AL});
+	public static final BitSet FOLLOW_getValueJson_in_getArrayJson7847 = new BitSet(new long[]{0x0010000000000000L,0x0000000000001000L});
+	public static final BitSet FOLLOW_T_COMMA_in_getArrayJson7860 = new BitSet(new long[]{0x1600520002000000L,0x0FB0490838180003L,0x000000484550784AL});
+	public static final BitSet FOLLOW_getValueJson_in_getArrayJson7866 = new BitSet(new long[]{0x0010000000000000L,0x0000000000001000L});
+	public static final BitSet FOLLOW_T_END_BRACKET_in_getArrayJson7872 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_START_BRACKET_in_getArrayJson7882 = new BitSet(new long[]{0x0000000000000000L,0x0000000000001000L});
+	public static final BitSet FOLLOW_T_END_BRACKET_in_getArrayJson7886 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getSelector_in_getValueJson7924 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getObjectJson_in_getValueJson7937 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_getArrayJson_in_getValueJson7949 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getColumn7987 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_KS_AND_TN_in_getColumn7999 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_CTLG_TBL_COL_in_getColumn8011 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_IDENT_in_getTable8049 = new BitSet(new long[]{0x0000000000000002L});
+	public static final BitSet FOLLOW_T_KS_AND_TN_in_getTable8061 = new BitSet(new long[]{0x0000000000000002L});
 }

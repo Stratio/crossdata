@@ -1,4 +1,4 @@
-// $ANTLR 3.5.2 Meta.g 2014-10-30 19:01:07
+// $ANTLR 3.5.2 Meta.g 2014-10-31 12:26:24
 
     package com.stratio.crossdata.core.grammar.generated;
     import com.stratio.crossdata.common.exceptions.*;
@@ -5592,10 +5592,10 @@ public class MetaLexer extends Lexer {
 		try {
 			int _type = WS;
 			int _channel = DEFAULT_TOKEN_CHANNEL;
-			// Meta.g:1211:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
-			// Meta.g:1211:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
+			// Meta.g:1209:3: ( ( ' ' | '\\t' | '\\n' | '\\r' )+ )
+			// Meta.g:1209:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
 			{
-			// Meta.g:1211:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
+			// Meta.g:1209:5: ( ' ' | '\\t' | '\\n' | '\\r' )+
 			int cnt21=0;
 			loop21:
 			while (true) {

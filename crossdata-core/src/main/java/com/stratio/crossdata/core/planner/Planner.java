@@ -68,6 +68,7 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
@@ -90,9 +91,11 @@ import com.stratio.crossdata.core.statements.AlterTableStatement;
 import com.stratio.crossdata.core.statements.AttachClusterStatement;
 import com.stratio.crossdata.core.statements.AttachConnectorStatement;
 import com.stratio.crossdata.core.statements.CreateCatalogStatement;
+import com.stratio.crossdata.core.statements.CreateIndexStatement;
 import com.stratio.crossdata.core.statements.CreateTableStatement;
 import com.stratio.crossdata.core.statements.DeleteStatement;
 import com.stratio.crossdata.core.statements.DropCatalogStatement;
+import com.stratio.crossdata.core.statements.DropIndexStatement;
 import com.stratio.crossdata.core.statements.DropTableStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
@@ -577,6 +580,8 @@ public class Planner {
         metadataStatements.add(DropTableStatement.class.toString());
         metadataStatements.add(AlterCatalogStatement.class.toString());
         metadataStatements.add(AlterTableStatement.class.toString());
+        metadataStatements.add(CreateIndexStatement.class.toString());
+        metadataStatements.add(DropIndexStatement.class.toString());
 
         Set<String> managementStatements = new HashSet<>();
         managementStatements.add(AttachClusterStatement.class.toString());
@@ -669,6 +674,7 @@ public class Planner {
             metadataWorkflow.setClusterName(clusterName);
 
         } else if (metadataStatement instanceof DropCatalogStatement) {
+
             DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) metadataStatement;
 
             CatalogName catalog = dropCatalogStatement.getCatalogName();
@@ -684,17 +690,85 @@ public class Planner {
             }
 
         } else if (metadataStatement instanceof AlterCatalogStatement) {
+
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) metadataStatement;
             CatalogName catalog = alterCatalogStatement.getCatalogName();
-            if (MetadataManager.MANAGER.exists(catalog)) {
-                CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalog);
-                catalogMetadata.setOptions(alterCatalogStatement.getOptions());
-                MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
-                metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.ALTER_CATALOG, ResultType.RESULTS);
+            CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalog);
+            catalogMetadata.setOptions(alterCatalogStatement.getOptions());
+            MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
+            metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.ALTER_CATALOG, ResultType.RESULTS);
+
+        } else if (metadataStatement instanceof CreateIndexStatement) {
+
+            CreateIndexStatement createIndexStatement = (CreateIndexStatement) metadataStatement;
+
+            String actorRefUri;
+
+            TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(createIndexStatement.getTableName());
+
+            ClusterName clusterName = tableMetadata.getClusterRef();
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+            Map<ConnectorName, ConnectorAttachedMetadata> attachedRefs = clusterMetadata.getConnectorAttachedRefs();
+
+            if ((attachedRefs != null) && (attachedRefs.keySet() != null) && (!attachedRefs.keySet().isEmpty())) {
+                // TODO: Choose the best connector instead of the first one
+                ConnectorName connectorName = attachedRefs.keySet().iterator().next();
+                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+                actorRefUri = connectorMetadata.getActorRef();
             } else {
-                throw new PlanningException("This statement can't be planned: " + metadataStatement.toString() + ". " +
-                        "The catalog not exists.");
+                PlanningException planningException = new PlanningException(
+                        "Cannot find a connector for " + createIndexStatement.toString());
+                throw planningException;
             }
+
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.CREATE_INDEX,
+                    ResultType.RESULTS);
+
+            metadataWorkflow.setClusterName(clusterMetadata.getName());
+            IndexName name = createIndexStatement.getName();
+
+            Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+            List<ColumnName> targetColumns = createIndexStatement.getTargetColumns();
+            for(ColumnName columnName: targetColumns){
+                ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+                columns.put(columnName, columnMetadata);
+            }
+            IndexType type = createIndexStatement.getType();
+            Map<Selector, Selector> options = createIndexStatement.getOptions();
+            IndexMetadata indexMetadata = new IndexMetadata(name, columns, type, options);
+            metadataWorkflow.setIndexMetadata(indexMetadata);
+
+        } else if (metadataStatement instanceof DropIndexStatement) {
+
+            DropIndexStatement dropIndexStatement = (DropIndexStatement) metadataStatement;
+
+            String actorRefUri;
+
+            IndexName indexName = dropIndexStatement.getName();
+
+            TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(indexName.getTableName());
+
+            ClusterName clusterName = tableMetadata.getClusterRef();
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+            Map<ConnectorName, ConnectorAttachedMetadata> attachedRefs = clusterMetadata.getConnectorAttachedRefs();
+
+            if ((attachedRefs != null) && (attachedRefs.keySet() != null) && (!attachedRefs.keySet().isEmpty())) {
+                // TODO: Choose the best connector instead of the first one
+                ConnectorName connectorName = attachedRefs.keySet().iterator().next();
+                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+                actorRefUri = connectorMetadata.getActorRef();
+            } else {
+                PlanningException planningException = new PlanningException(
+                        "Cannot find a connector for " + dropIndexStatement.toString());
+                throw planningException;
+            }
+
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.CREATE_INDEX,
+                    ResultType.RESULTS);
+
+            metadataWorkflow.setClusterName(clusterMetadata.getName());
+
+            metadataWorkflow.setIndexMetadata(tableMetadata.getIndexes().get(indexName));
 
         } else if (metadataStatement instanceof DropTableStatement) {
 

@@ -506,9 +506,7 @@ dropIndexStatement returns [DropIndexStatement dis]
 	@init{
 		$dis = new DropIndexStatement();
 	}:
-	T_DROP T_INDEX
-	(T_IF T_EXISTS { $dis.setDropIfExists(); } )?
-	name=getIndexName { $dis.setName(name); }
+	T_DROP T_INDEX (T_IF T_EXISTS { $dis.setDropIfExists(); } )? name=getIndexName { $dis.setName(name); }
 ;
 
 //CREATE INDEX myIdx ON table1 (field1, field2);
