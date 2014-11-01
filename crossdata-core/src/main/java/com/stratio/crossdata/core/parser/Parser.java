@@ -23,8 +23,8 @@ import org.antlr.runtime.CommonTokenStream;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.exceptions.ParsingException;
-import com.stratio.crossdata.core.grammar.generated.XDshLexer;
-import com.stratio.crossdata.core.grammar.generated.XDshParser;
+import com.stratio.crossdata.core.grammar.generated.XDqlLexer;
+import com.stratio.crossdata.core.grammar.generated.XDqlParser;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
@@ -81,10 +81,10 @@ public class Parser {
             input = new ANTLRStringStream(query);
         }
 
-        XDshLexer lexer = new XDshLexer(input);
+        XDqlLexer lexer = new XDqlLexer(input);
         lexer.setBacktrackingLevel(0);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        XDshParser parser = new XDshParser(tokens);
+        XDqlParser parser = new XDqlParser(tokens);
         ErrorsHelper foundErrors = new ErrorsHelper();
         CrossdataStatement resultStatement = null;
         try {

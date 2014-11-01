@@ -17,7 +17,7 @@
  * under the License.
  */
 
-grammar XDsh;
+grammar XDql;
 
 options {
     k = 0;
