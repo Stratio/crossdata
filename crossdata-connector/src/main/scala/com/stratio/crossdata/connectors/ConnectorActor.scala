@@ -252,7 +252,7 @@ ActorLogging with IResultHandler{
           eng.truncate(clustername, table)
         }
       }
-      val result = StorageResult.createSuccessFulStorageResult("STORAGED successfully");
+      val result = StorageResult.createSuccessFulStorageResult("STORED successfully");
       result.setQueryId(qId)
       s ! result
     } catch {
@@ -262,8 +262,8 @@ ActorLogging with IResultHandler{
         s ! result
       }
       case err: Error => {
-        logger.error("error in ConnectorActor( receiving StorageOperation)")
-        val result = crossdata.common.result.Result.createExecutionErrorResult("error in ConnectorActor")
+        logger.error("Error in ConnectorActor(Receiving StorageOperation)")
+        val result = crossdata.common.result.Result.createExecutionErrorResult("Error in ConnectorActor")
         s ! result
       }
     }

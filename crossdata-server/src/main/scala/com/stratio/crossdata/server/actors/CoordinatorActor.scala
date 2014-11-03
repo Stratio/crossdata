@@ -168,7 +168,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
           } else {
             throw new CoordinationException("Operation not supported yet");
-
           }
 
         }

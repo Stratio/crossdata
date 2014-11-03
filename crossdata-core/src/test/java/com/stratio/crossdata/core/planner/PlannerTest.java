@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,6 +60,7 @@ import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
@@ -100,6 +102,8 @@ public class PlannerTest extends PlannerBaseTest{
         operationsC1.add(Operations.DELETE);
         operationsC1.add(Operations.CREATE_INDEX);
         operationsC1.add(Operations.DROP_INDEX);
+        operationsC1.add(Operations.UPDATE_TABLE);
+        operationsC1.add(Operations.TRUNCATE_TABLE);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -265,6 +269,8 @@ public class PlannerTest extends PlannerBaseTest{
 
         IndexMetadata indexMetadata = metadataWorkflow.getIndexMetadata();
 
+        assertNotNull(metadataWorkflow, "Null workflow received.");
+        assertTrue("actorRef1".equalsIgnoreCase(metadataWorkflow.getActorRef()), "Actor reference is not correct");
         assertEquals(indexMetadata.getType(), IndexType.DEFAULT, "Index types differ");
         assertEquals(indexMetadata.getName(), new IndexName("demo", "table1", "indexTest"), "Index names differ");
 
@@ -314,6 +320,8 @@ public class PlannerTest extends PlannerBaseTest{
         MetadataWorkflow metadataWorkflow = (MetadataWorkflow) plan.getExecutionWorkflow();
 
         assertNotNull(metadataWorkflow, "Null workflow received.");
+        assertTrue("actorRef1".equalsIgnoreCase(metadataWorkflow.getActorRef()), "Actor reference is not correct");
+        assertNotNull(metadataWorkflow, "Null workflow received.");
         assertEquals(metadataWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(metadataWorkflow.getExecutionType(), ExecutionType.DROP_INDEX, "Invalid execution type");
         assertTrue("actorRef1".equalsIgnoreCase(metadataWorkflow.getActorRef()), "Actor reference is not correct");
@@ -333,6 +341,76 @@ public class PlannerTest extends PlannerBaseTest{
 
         assertEquals(columnMetadata.getColumnType(), staticColumnMetadata.getColumnType(), "Column types differs");
         assertEquals(columnMetadata.getName(), staticColumnMetadata.getName(), "Column names differ");
+    }
+
+    @Test
+    public void updateTable(){
+        String inputText = "UPDATE demo.table1 SET user = 'DataHub' WHERE id = 1;";
+
+        String expectedText = "UPDATE demo.table1 SET demo.table1.user = 'DataHub' WHERE demo.table1.id = 1;";
+
+        IParsedQuery stmt = helperPT.testRegularStatement(inputText, expectedText, "updateTable");
+
+        StorageValidatedQuery storageValidatedQuery = new StorageValidatedQuery((StorageParsedQuery) stmt);
+
+        StoragePlannedQuery plan = null;
+        try {
+            plan = planner.planQuery(storageValidatedQuery);
+        } catch (PlanningException e) {
+            fail("updateTable test failed");
+        }
+
+        StorageWorkflow storageWorkflow = (StorageWorkflow) plan.getExecutionWorkflow();
+
+        assertNotNull(storageWorkflow, "Null workflow received.");
+        assertTrue("actorRef1".equalsIgnoreCase(storageWorkflow.getActorRef()), "Actor reference is not correct");
+
+        assertEquals(storageWorkflow.getTableName(), new TableName("demo", "table1"), "Table names differ");
+
+        List<Relation> relations = new ArrayList<>();
+        Selector leftSelector = new ColumnSelector(new ColumnName("demo", "table1", "user"));
+        Selector rightTerm = new StringSelector("DataHub");
+        relations.add(new Relation(leftSelector, Operator.ASSIGN, rightTerm));
+        assertEquals(storageWorkflow.getAssignments().size(), 1, "Wrong assignments size");
+        assertEquals(storageWorkflow.getAssignments().size(), relations.size(), "Assignments sizes differ");
+        assertTrue(storageWorkflow.getAssignments().iterator().next().toString().equalsIgnoreCase(
+                relations.iterator().next().toString()),
+                "Assignments differ");
+
+        List<Filter> filters = new ArrayList<>();
+        ColumnSelector firstSelector = new ColumnSelector(new ColumnName("demo", "table1", "id"));
+        IntegerSelector secondSelector = new IntegerSelector(1);
+        Relation relation = new Relation(firstSelector, Operator.EQ, secondSelector);
+        filters.add(new Filter(Operations.UPDATE_TABLE, relation));
+        assertEquals(storageWorkflow.getWhereClauses().size(), 1, "Wrong where clauses size");
+        assertEquals(storageWorkflow.getWhereClauses().size(), filters.size(), "Where clauses sizes differ");
+        assertTrue(storageWorkflow.getWhereClauses().iterator().next().toString().equalsIgnoreCase(
+                filters.iterator().next().toString()),
+                "Where clauses differ");
+    }
+
+    @Test
+    public void truncateTable(){
+        String inputText = "TRUNCATE demo.table1;";
+
+        IParsedQuery stmt = helperPT.testRegularStatement(inputText, "truncateTable");
+
+        StorageValidatedQuery storageValidatedQuery = new StorageValidatedQuery((StorageParsedQuery) stmt);
+
+        StoragePlannedQuery plan = null;
+        try {
+            plan = planner.planQuery(storageValidatedQuery);
+        } catch (PlanningException e) {
+            fail("truncateTable test failed");
+        }
+
+        StorageWorkflow storageWorkflow = (StorageWorkflow) plan.getExecutionWorkflow();
+
+        assertNotNull(storageWorkflow, "Null workflow received.");
+        assertTrue("actorRef1".equalsIgnoreCase(storageWorkflow.getActorRef()), "Actor reference is not correct");
+
+        assertEquals(storageWorkflow.getTableName(), new TableName("demo", "table1"), "Table names differ");
+
     }
 
 }
