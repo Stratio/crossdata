@@ -28,7 +28,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 /**
  * Class that models a generic Statement supported by the META language.
  */
-public abstract class MetaStatement{
+public abstract class CrossdataStatement {
 
     /**
      * Whether the query is an internal command or it returns a
@@ -56,7 +56,7 @@ public abstract class MetaStatement{
      * Default class constructor.
      */
 
-    public MetaStatement() {
+    public CrossdataStatement() {
     }
 
     /**
@@ -65,7 +65,7 @@ public abstract class MetaStatement{
      * @param command Whether the query is a command or a query returning a
      *                {@link com.stratio.crossdata.common.data.ResultSet}.
      */
-    public MetaStatement(boolean command) {
+    public CrossdataStatement(boolean command) {
         this.command = command;
     }
 

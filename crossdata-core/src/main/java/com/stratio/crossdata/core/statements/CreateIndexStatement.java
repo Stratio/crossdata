@@ -43,7 +43,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 public class CreateIndexStatement extends IndexStatement {
 
     /**
-     * The {@link com.stratio.crossdata.core.structures.IndexType} to be created.
+     * The {@link IndexType} to be created.
      */
     private IndexType type = null;
 
@@ -90,7 +90,7 @@ public class CreateIndexStatement extends IndexStatement {
     /**
      * Set the type of index.
      *
-     * @param type The type from {@link com.stratio.crossdata.core.structures.IndexType}.
+     * @param type The type from {@link IndexType}.
      */
     public void setIndexType(String type) {
         this.type = IndexType.valueOf(type.toUpperCase());
@@ -147,7 +147,7 @@ public class CreateIndexStatement extends IndexStatement {
     /**
      * Set the type of index.
      *
-     * @param type A {@link com.stratio.crossdata.core.structures.IndexType}.
+     * @param type A {@link IndexType}.
      */
     public void setType(IndexType type) {
         this.type = type;
@@ -253,7 +253,7 @@ public class CreateIndexStatement extends IndexStatement {
             sb.append(catalog).append(".");
         }
         sb.append(tableName);
-        sb.append(" (").append(StringUtils.stringList(targetColumns, ", ")).append(")");
+        sb.append("(").append(StringUtils.stringList(targetColumns, ", ")).append(")");
         if (usingClass != null) {
             sb.append(" USING ");
             sb.append("'").append(usingClass).append("'");

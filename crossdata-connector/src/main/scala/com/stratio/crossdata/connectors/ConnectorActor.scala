@@ -19,8 +19,7 @@
 package com.stratio.crossdata.connectors
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved,
-MemberUp, UnreachableMember}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
@@ -219,7 +218,8 @@ ActorLogging with IResultHandler{
       metadataOperation = abc._2
     } catch {
       case ex: Exception => {
-        val result = Result.createExecutionErrorResult(ex.getStackTraceString)
+        val result = Result.createExecutionErrorResult("Connector exception: " + ex.getMessage)
+        result.setQueryId(qId)
         s ! result
       }
       case err: Error =>
@@ -245,8 +245,14 @@ ActorLogging with IResultHandler{
         case DeleteRows(queryId, clustername, table, whereClauses) => {
           eng.delete(clustername, table, whereClauses)
         }
+        case Update(queryId, clustername, table, assignments, whereClauses) => {
+          eng.update(clustername, table, assignments, whereClauses)
+        }
+        case Truncate(queryId, clustername, table) => {
+          eng.truncate(clustername, table)
+        }
       }
-      val result = StorageResult.createSuccessFulStorageResult("STORAGED successfully");
+      val result = StorageResult.createSuccessFulStorageResult("STORED successfully");
       result.setQueryId(qId)
       s ! result
     } catch {
@@ -256,8 +262,8 @@ ActorLogging with IResultHandler{
         s ! result
       }
       case err: Error => {
-        logger.error("error in ConnectorActor( receiving StorageOperation)")
-        val result = crossdata.common.result.Result.createExecutionErrorResult("error in ConnectorActor")
+        logger.error("Error in ConnectorActor(Receiving StorageOperation)")
+        val result = crossdata.common.result.Result.createExecutionErrorResult("Error in ConnectorActor")
         s ! result
       }
     }

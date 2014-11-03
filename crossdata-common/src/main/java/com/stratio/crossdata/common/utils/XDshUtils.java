@@ -25,7 +25,7 @@ import com.google.common.collect.Sets;
 /**
  * Utility class for error messages management.
  */
-public final class MetaUtils {
+public final class XDshUtils {
 
     public static final Set<String> INITIALS = Sets.newHashSet(
             "CREATE",
@@ -135,7 +135,7 @@ public final class MetaUtils {
     /**
      * Private class constructor as all methods are static.
      */
-    private MetaUtils() {
+    private XDshUtils() {
 
     }
 

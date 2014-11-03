@@ -42,11 +42,6 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
     private TableName tableName;
 
     /**
-     * Whether options are included.
-     */
-    private boolean optsInc;
-
-    /**
      * The list of options.
      */
     private List<Option> options;
@@ -62,41 +57,9 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
     private List<Relation> whereClauses;
 
     /**
-     * Whether conditions are included.
-     */
-    private boolean condsInc;
-
-    /**
      * Map of conditions.
      */
     private Map<Selector, Selector> conditions;
-
-    /**
-     * Class constructor.
-     *
-     * @param tableName    The name of the table.
-     * @param optsInc      Whether options are included.
-     * @param options      The list of options.
-     * @param assignations The list of assignations.
-     * @param whereClauses The list of relations.
-     * @param condsInc     Whether conditions are included.
-     * @param conditions   The map of conditions.
-     */
-    public UpdateTableStatement(TableName tableName, boolean optsInc, List<Option> options,
-            List<Relation> assignations, List<Relation> whereClauses, boolean condsInc,
-            Map<Selector, Selector> conditions) {
-        this.command = false;
-        this.tableName = tableName;
-
-        this.optsInc = optsInc;
-
-        this.options = options;
-
-        this.assignations = assignations;
-        this.whereClauses = whereClauses;
-        this.condsInc = condsInc;
-        this.conditions = conditions;
-    }
 
     /**
      * Class constructor.
@@ -108,8 +71,14 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
      * @param conditions   The map of conditions.
      */
     public UpdateTableStatement(TableName tableName, List<Option> options,
-            List<Relation> assignations, List<Relation> whereClauses, Map<Selector, Selector> conditions) {
-        this(tableName, true, options, assignations, whereClauses, true, conditions);
+            List<Relation> assignations, List<Relation> whereClauses,
+            Map<Selector, Selector> conditions) {
+        this.command = false;
+        this.tableName = tableName;
+        this.options = options;
+        this.assignations = assignations;
+        this.whereClauses = whereClauses;
+        this.conditions = conditions;
     }
 
     /**
@@ -122,7 +91,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
      */
     public UpdateTableStatement(TableName tableName, List<Relation> assignations,
             List<Relation> whereClauses, Map<Selector, Selector> conditions) {
-        this(tableName, false, null, assignations, whereClauses, true, conditions);
+        this(tableName, null, assignations, whereClauses, conditions);
     }
 
     /**
@@ -135,7 +104,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
      */
     public UpdateTableStatement(TableName tableName, List<Option> options,
             List<Relation> assignations, List<Relation> whereClauses) {
-        this(tableName, true, options, assignations, whereClauses, false, null);
+        this(tableName, options, assignations, whereClauses, null);
     }
 
     /**
@@ -147,14 +116,22 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
      */
     public UpdateTableStatement(TableName tableName, List<Relation> assignations,
             List<Relation> whereClauses) {
-        this(tableName, false, null, assignations, whereClauses, false, null);
+        this(tableName, null, assignations, whereClauses, null);
+    }
+
+    public List<Relation> getAssignations() {
+        return assignations;
+    }
+
+    public List<Relation> getWhereClauses() {
+        return whereClauses;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("UPDATE ");
         sb.append(tableName.getQualifiedName());
-        if (optsInc) {
+        if ((options != null) && (!options.isEmpty())) {
             sb.append(" ").append("USING ");
             sb.append(StringUtils.stringList(options, " AND "));
         }
@@ -164,7 +141,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
             sb.append(" ").append("WHERE ");
             sb.append(StringUtils.stringList(whereClauses, " AND "));
         }
-        if (condsInc) {
+        if ((conditions != null) && (!conditions.isEmpty())) {
             sb.append(" ").append("IF ");
             sb.append(ParserUtils.stringMap(conditions, " = ", " AND "));
         }

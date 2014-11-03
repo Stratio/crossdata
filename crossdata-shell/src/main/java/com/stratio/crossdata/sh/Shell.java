@@ -46,8 +46,8 @@ import com.stratio.crossdata.sh.help.HelpStatement;
 import com.stratio.crossdata.sh.help.generated.MetaHelpLexer;
 import com.stratio.crossdata.sh.help.generated.MetaHelpParser;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
-import com.stratio.crossdata.sh.utils.MetaCompletionHandler;
-import com.stratio.crossdata.sh.utils.MetaCompletor;
+import com.stratio.crossdata.sh.utils.XDshCompletionHandler;
+import com.stratio.crossdata.sh.utils.XDshCompletor;
 import com.stratio.crossdata.common.result.Result;
 
 import jline.console.ConsoleReader;
@@ -171,8 +171,8 @@ public class Shell {
             setPrompt(null);
             historyFile = ConsoleUtils.retrieveHistory(console, dateFormat);
 
-            console.setCompletionHandler(new MetaCompletionHandler());
-            console.addCompleter(new MetaCompletor());
+            console.setCompletionHandler(new XDshCompletionHandler());
+            console.addCompleter(new XDshCompletor());
         } catch (IOException e) {
             LOG.error("Cannot create a console.", e);
         }

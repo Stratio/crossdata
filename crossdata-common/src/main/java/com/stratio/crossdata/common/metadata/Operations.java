@@ -29,6 +29,11 @@ public enum Operations {
     CREATE_CATALOG("CREATE_CATALOG"),
 
     /**
+     * The engine supports catalog alteration given an existing catalog.
+     */
+    ALTER_CATALOG("ALTER_CATALOG"),
+
+    /**
      * The engine supports creating deleting existing catalogs.
      */
     DROP_CATALOG("DROP_CATALOG"),
@@ -39,9 +44,24 @@ public enum Operations {
     CREATE_TABLE("CREATE_TABLE"),
 
     /**
+     * The engine supports table alteration given an existing table.
+     */
+    ALTER_TABLE("ALTER_TABLE"),
+
+    /**
      * The engine supports deleting new tables given an existing catalog.
      */
     DROP_TABLE("DROP_TABLE"),
+
+    /**
+     * The engine supports updating the data of a table according to some conditions.
+     */
+    UPDATE_TABLE("UPDATE_TABLE"),
+
+    /**
+     * The engine supports deleting all the data from a table without removing its metadata.
+     */
+    TRUNCATE_TABLE("TRUNCATE_TABLE"),
 
     /**
      * The engine supports inserting data in existing tables.
@@ -52,6 +72,17 @@ public enum Operations {
      * The engine supports deleting elements from existing tables.
      */
     DELETE("DELETE"),
+
+    /**
+     * The engine supports index creation from existing tables.
+     */
+    CREATE_INDEX("CREATE_INDEX"),
+
+    /**
+     * The engine supports index deletion from existing tables.
+     */
+    DROP_INDEX("DROP_INDEX"),
+
 
     /**
      * The engine supports retrieving a set of columns from a specific table.

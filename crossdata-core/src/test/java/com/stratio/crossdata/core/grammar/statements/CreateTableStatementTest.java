@@ -38,6 +38,16 @@ public class CreateTableStatementTest extends ParsingTest {
     }
 
     @Test
+    public void createTableBasicWithFloat() {
+        String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
+                "something2 int, something3 float, something4 boolean);";
+        String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
+                ".something=text, mycatalog.myTable.something2=int, mycatalog.myTable.something3=float, " +
+                "mycatalog.myTable.something4=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+        testRegularStatement(inputText, expectedText, "createTableBasic");
+    }
+
+    @Test
     public void createTableBasic2() {
         String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text, something2 int PRIMARY KEY, something3 boolean);";
         testParserFails("demo", inputText, "createTableBasic2");
