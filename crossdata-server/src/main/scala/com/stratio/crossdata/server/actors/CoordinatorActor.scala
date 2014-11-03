@@ -104,6 +104,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
+            executionInfo.setRemoveOnSuccess(true)
             executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
             executionInfo.setWorkflow(workflow1)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
@@ -111,10 +112,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val actorRef = context.actorSelection(workflow1.getActorRef)
             log.info("ActorRef: " + actorRef.toString())
             actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
-
-            val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_TABLE)
-            result.setQueryId(queryId)
-            sender ! result
 
           } else if(workflow1.getExecutionType == ExecutionType.CREATE_INDEX) {
 

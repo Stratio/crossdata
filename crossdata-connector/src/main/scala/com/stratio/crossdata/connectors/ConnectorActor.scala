@@ -219,7 +219,8 @@ ActorLogging with IResultHandler{
       metadataOperation = abc._2
     } catch {
       case ex: Exception => {
-        val result = Result.createExecutionErrorResult(ex.getStackTraceString)
+        val result = Result.createExecutionErrorResult("Connector exception: " + ex.getMessage)
+        result.setQueryId(qId)
         s ! result
       }
       case err: Error =>

@@ -680,7 +680,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         AlterTableStatement alterTableStatement =new AlterTableStatement(columnMetadata.getName().getTableName(),
                 columnMetadata.getName(), ColumnType.VARCHAR, null, AlterOperation.ALTER_COLUMN);
-        String query = "ALTER TABLE demo.table3 ALTER COLUMN table3.email TYPE varchar;";
+        String query = "ALTER TABLE demo.table3 ALTER table3.email TYPE varchar;";
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
@@ -691,7 +691,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
             Assert.assertTrue(MetadataManager.MANAGER.exists(new ColumnName("demo","table3","email")));
             ColumnMetadata columnMetadataModified=MetadataManager.MANAGER.getColumn(new ColumnName("demo","table3",
                     "email"));
-            Assert.assertEquals(columnMetadataModified.getColumnType(), ColumnType.TEXT);
+            Assert.assertEquals(columnMetadataModified.getColumnType(), ColumnType.VARCHAR);
         } catch (PlanningException e) {
             Assert.fail(e.getMessage());
         }

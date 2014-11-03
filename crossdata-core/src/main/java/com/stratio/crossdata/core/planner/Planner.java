@@ -811,13 +811,19 @@ public class Planner {
 
             ColumnName columnName=new ColumnName(alterTableStatement.getEffectiveCatalog().getName(),
                     alterTableStatement.getTableName().getName(), alterTableStatement.getColumn().getName());
-            ColumnMetadata alterColumnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+            //ColumnMetadata alterColumnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+
+            ColumnMetadata alterColumnMetadata = alterTableStatement.getColumnMetadata();
+
             AlterOptions alterOptions;
             switch (alterTableStatement.getOption()) {
             case ADD_COLUMN:
-            case ALTER_COLUMN:
                 tableMetadata.getColumns().put(columnName,alterColumnMetadata);
                 alterOptions=new AlterOptions(AlterOperation.ADD_COLUMN,null,alterColumnMetadata);
+                break;
+            case ALTER_COLUMN:
+                tableMetadata.getColumns().put(columnName,alterColumnMetadata);
+                alterOptions=new AlterOptions(AlterOperation.ALTER_COLUMN,null,alterColumnMetadata);
                 break;
             case DROP_COLUMN:
                 tableMetadata.getColumns().remove(columnName);
