@@ -161,7 +161,7 @@ public class Validator {
         return validatedQuery;
     }
 
-    private void validateConnectorConnected(MetaStatement statement) throws ValidationException {
+    private void validateConnectorConnected(CrossdataStatement statement) throws ValidationException {
         if (statement instanceof AttachConnectorStatement) {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) statement;
             ConnectorName connectorName = attachConnectorStatement.getConnectorName();
@@ -189,7 +189,7 @@ public class Validator {
         normalizator.execute();
     }
 
-    private void validateConnector(MetaStatement stmt, boolean exist) throws IgnoreQueryException,
+    private void validateConnector(CrossdataStatement stmt, boolean exist) throws IgnoreQueryException,
             ExistNameException, NotExistNameException {
         Name name = null;
         boolean hasIfExist = false;
@@ -211,7 +211,7 @@ public class Validator {
         validateName(exist, name, hasIfExist);
     }
 
-    private void validateCluster(MetaStatement stmt, boolean exist) throws IgnoreQueryException,
+    private void validateCluster(CrossdataStatement stmt, boolean exist) throws IgnoreQueryException,
             NotExistNameException, ExistNameException {
         Name name = null;
         boolean hasIfExists = false;
@@ -269,7 +269,7 @@ public class Validator {
         }
     }
 
-    private void validateDatastore(MetaStatement statement, boolean exist) throws IgnoreQueryException,
+    private void validateDatastore(CrossdataStatement statement, boolean exist) throws IgnoreQueryException,
             NotExistNameException, ExistNameException {
         Name name = null;
         boolean hasIfExists = false;
@@ -283,7 +283,7 @@ public class Validator {
         validateName(exist, name, hasIfExists);
     }
 
-    private void validateColumn(MetaStatement stmt, boolean exist)
+    private void validateColumn(CrossdataStatement stmt, boolean exist)
             throws NotExistNameException, IgnoreQueryException, ExistNameException {
         ColumnName columnName = null;
         if (stmt instanceof AlterTableStatement) {
@@ -299,7 +299,7 @@ public class Validator {
         }
     }
 
-    private void validateExistsProperties(MetaStatement stmt) throws ValidationException {
+    private void validateExistsProperties(CrossdataStatement stmt) throws ValidationException {
 
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
@@ -317,7 +317,7 @@ public class Validator {
 
     }
 
-    private void validateTable(MetaStatement stmt, boolean exist)
+    private void validateTable(CrossdataStatement stmt, boolean exist)
             throws NotExistNameException, IgnoreQueryException, ExistNameException {
         Name name;
         boolean hasIfExists = false;
@@ -362,7 +362,7 @@ public class Validator {
         validateName(exist, name, hasIfExists);
     }
 
-    private void validateCatalog(MetaStatement stmt, boolean exist)
+    private void validateCatalog(CrossdataStatement stmt, boolean exist)
             throws IgnoreQueryException, ExistNameException, NotExistNameException {
         Name name = null;
         boolean validate = true;
@@ -404,7 +404,7 @@ public class Validator {
         }
     }
 
-    private void validateOptions(MetaStatement stmt) throws ValidationException {
+    private void validateOptions(CrossdataStatement stmt) throws ValidationException {
 
         if (stmt instanceof AttachClusterStatement) {
             AttachClusterStatement myStmt = (AttachClusterStatement) stmt;
@@ -422,7 +422,7 @@ public class Validator {
 
     }
 
-    private void validateIndex(MetaStatement stmt, boolean exist)
+    private void validateIndex(CrossdataStatement stmt, boolean exist)
             throws IgnoreQueryException, ExistNameException, NotExistNameException {
         Name name = null;
         boolean hasIfExist = false;
@@ -440,7 +440,7 @@ public class Validator {
         validateName(exist, name, hasIfExist);
     }
 
-    private void validateInsertTypes(MetaStatement stmt)
+    private void validateInsertTypes(CrossdataStatement stmt)
             throws BadFormatException, NotMatchDataTypeException {
         if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;

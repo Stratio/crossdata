@@ -34,7 +34,7 @@ import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 
 /**
- * MetaParser tests that recognize the different options of each Statement.
+ * XDqlParser tests that recognize the different options of each Statement.
  */
 public class ParsingTest {
 

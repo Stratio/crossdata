@@ -109,7 +109,10 @@ case class AsyncExecute(override val queryId: String, workflow: LogicalWorkflow)
 sealed abstract class MetadataOperation(queryId: String) extends Operation(queryId)
 
 case class CreateCatalog(override val queryId: String, targetCluster: ClusterName, catalogMetadata: CatalogMetadata) extends
-MetadataOperation(queryId)
+  MetadataOperation(queryId)
+
+case class AlterCatalog(override val queryId: String, targetCluster: ClusterName, catalogMetadata: CatalogMetadata)
+  extends MetadataOperation(queryId)
 
 case class DropCatalog(override val queryId: String, targetCluster: ClusterName, catalogName: CatalogName) extends MetadataOperation(queryId)
 

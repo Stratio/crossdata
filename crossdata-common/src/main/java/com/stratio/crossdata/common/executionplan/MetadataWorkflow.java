@@ -25,6 +25,7 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.communication.AlterCatalog;
 import com.stratio.crossdata.communication.AlterTable;
 import com.stratio.crossdata.communication.CreateCatalog;
 import com.stratio.crossdata.communication.CreateIndex;
@@ -129,6 +130,9 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         switch (this.executionType) {
         case CREATE_CATALOG:
             result = new CreateCatalog(queryId, this.clusterName, this.catalogMetadata);
+            break;
+        case ALTER_CATALOG:
+            result = new AlterCatalog(queryId, this.clusterName, this.catalogMetadata);
             break;
         case DROP_CATALOG:
             result = new DropCatalog(queryId, this.clusterName, this.catalogName);

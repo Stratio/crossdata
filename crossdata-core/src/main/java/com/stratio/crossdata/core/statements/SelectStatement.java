@@ -38,7 +38,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 /**
  * Class that models a {@code SELECT} statement from the META language.
  */
-public class SelectStatement extends MetaStatement implements Serializable {
+public class SelectStatement extends CrossdataStatement implements Serializable {
 
     /**
      * Maximum limit of rows to be retreived in a query.

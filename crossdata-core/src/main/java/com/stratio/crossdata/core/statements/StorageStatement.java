@@ -18,5 +18,5 @@
 
 package com.stratio.crossdata.core.statements;
 
-public abstract class StorageStatement extends MetaStatement {
+public abstract class StorageStatement extends CrossdataStatement {
 }

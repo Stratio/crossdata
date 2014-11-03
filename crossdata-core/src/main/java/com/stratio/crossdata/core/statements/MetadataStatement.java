@@ -27,7 +27,7 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 /**
  * Metadata Statement Class.
  */
-public abstract class MetadataStatement extends MetaStatement {
+public abstract class MetadataStatement extends CrossdataStatement {
 
     protected ClusterMetadata clusterMetadata = null;
 
