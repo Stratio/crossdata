@@ -58,6 +58,7 @@ import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
@@ -277,6 +278,61 @@ public class PlannerTest extends PlannerBaseTest{
         assertEquals(indexMetadata.getColumns().values().iterator().next().getColumnType(),
                 columns.values().iterator().next().getColumnType(),
                 "Column types differs");
+    }
+
+    @Test
+    public void dropIndex(){
+        String inputText = "DROP INDEX demo.table1.indexTest;";
+
+        String expectedText = "DROP INDEX demo.table1.index[indexTest];";
+
+        IParsedQuery stmt = helperPT.testRegularStatement(inputText, expectedText, "dropIndex");
+
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) stmt);
+
+        IndexName indexName = new IndexName("demo", "table1", "indexTest");
+        Map<ColumnName, ColumnMetadata> cols = new HashMap<>();
+        ColumnMetadata colMetadata = new ColumnMetadata(
+                new ColumnName("demo", "table1", "user"),
+                null,
+                ColumnType.TEXT);
+        cols.put(colMetadata.getName(), colMetadata);
+        IndexMetadata indexMetadata = new IndexMetadata(
+                indexName,
+                cols,
+                IndexType.CUSTOM,
+                new HashMap<Selector, Selector>());
+        table1.addIndex(indexMetadata.getName(), indexMetadata);
+
+        MetadataPlannedQuery plan = null;
+        try {
+            plan = planner.planQuery(metadataValidatedQuery);
+        } catch (PlanningException e) {
+            fail("dropIndex test failed");
+        }
+
+        MetadataWorkflow metadataWorkflow = (MetadataWorkflow) plan.getExecutionWorkflow();
+
+        assertNotNull(metadataWorkflow, "Null workflow received.");
+        assertEquals(metadataWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(metadataWorkflow.getExecutionType(), ExecutionType.DROP_INDEX, "Invalid execution type");
+        assertTrue("actorRef1".equalsIgnoreCase(metadataWorkflow.getActorRef()), "Actor reference is not correct");
+
+        indexMetadata = metadataWorkflow.getIndexMetadata();
+
+        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        ColumnName columnName = new ColumnName("demo", "table1", "user");
+        columns.put(columnName, new ColumnMetadata(
+                columnName,
+                null,
+                ColumnType.TEXT));
+        assertEquals(indexMetadata.getColumns().size(), columns.size(), "Column sizes differ");
+
+        ColumnMetadata columnMetadata = indexMetadata.getColumns().values().iterator().next();
+        ColumnMetadata staticColumnMetadata = columns.values().iterator().next();
+
+        assertEquals(columnMetadata.getColumnType(), staticColumnMetadata.getColumnType(), "Column types differs");
+        assertEquals(columnMetadata.getName(), staticColumnMetadata.getName(), "Column names differ");
     }
 
 }
