@@ -36,7 +36,7 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
   def receive : Receive= {
     //case query: ValidatedQuery => {
     case query: MetadataValidatedQuery => {
-      log.info("\n \nGetting MetadataValidatedQuery; sending ack to " + sender + "\n\n ")
+      log.info("\nGetting MetadataValidatedQuery; sending ack to " + sender + "\n")
       val timer = initTimer()
       try {
         val planned = planner.planQuery(query)
@@ -57,10 +57,10 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
       sender ! ack*/
     }
     case query: SelectValidatedQuery => {
-      log.info("\n\n Getting SelectValidatedQuery; sending ack to " + sender + " \n\n")
+      log.info("\nGetting SelectValidatedQuery; sending ack to " + sender + "\n")
       try {
         val planned = planner.planQuery(query)
-        log.info(" \n\nplanner actor Sending " + planned.getClass + " to " + coordinator + "\n \n")
+        log.info("\nplanner actor Sending " + planned.getClass + " to " + coordinator + "\n")
         coordinator forward planned
       } catch {
         case pe:PlanningException => {
@@ -75,7 +75,7 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
     }
 
     case query: StorageValidatedQuery => {
-      log.info("\n \nGetting StorageValidatedQuery; sending ack to " + sender + "\n \n")
+      log.info("\nGetting StorageValidatedQuery; sending ack to " + sender + "\n")
       val timer = initTimer()
       try {
         val planned = planner.planQuery(query)

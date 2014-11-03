@@ -23,7 +23,11 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -32,21 +36,36 @@ import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.QueryWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
+import com.stratio.crossdata.common.executionplan.StorageWorkflow;
+import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
+import com.stratio.crossdata.core.query.StorageParsedQuery;
+import com.stratio.crossdata.core.query.StoragePlannedQuery;
+import com.stratio.crossdata.core.query.StorageValidatedQuery;
 
 /**
  * Planner tests considering an initial input, generating all intermediate steps,
@@ -78,6 +97,9 @@ public class PlannerTest extends PlannerBaseTest{
         operationsC1.add(Operations.PROJECT);
         operationsC1.add(Operations.SELECT_OPERATOR);
         operationsC1.add(Operations.SELECT_WINDOW);
+        operationsC1.add(Operations.DELETE);
+        operationsC1.add(Operations.CREATE_INDEX);
+        operationsC1.add(Operations.DROP_INDEX);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -177,6 +199,140 @@ public class PlannerTest extends PlannerBaseTest{
         assertEquals(metadataWorkflow.getExecutionType(), ExecutionType.DROP_TABLE, "Invalid execution type");
         assertTrue("actorRef1".equalsIgnoreCase(metadataWorkflow.getActorRef()), "Actor reference is not correct");
         assertEquals(metadataWorkflow.getTableName(), new TableName("demo", "table1"), "Table name is not correct");
+    }
+
+    @Test
+    public void deleteRows(){
+        String inputText = "DELETE FROM demo.table1 WHERE id = 3;";
+
+        String expectedText = "DELETE FROM demo.table1 WHERE demo.table1.id = 3;";
+
+        IParsedQuery stmt = helperPT.testRegularStatement(inputText, expectedText, "deleteRows");
+
+        StorageValidatedQuery storageValidatedQuery = new StorageValidatedQuery((StorageParsedQuery) stmt);
+
+        StoragePlannedQuery plan = null;
+        try {
+            plan = planner.planQuery(storageValidatedQuery);
+        } catch (PlanningException e) {
+            fail("deleteRows test failed");
+        }
+
+        StorageWorkflow storageWorkflow = (StorageWorkflow) plan.getExecutionWorkflow();
+
+        assertNotNull(storageWorkflow, "Null workflow received.");
+        assertEquals(storageWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(storageWorkflow.getExecutionType(), ExecutionType.DELETE_ROWS, "Invalid execution type");
+        assertTrue("actorRef1".equalsIgnoreCase(storageWorkflow.getActorRef()), "Actor reference is not correct");
+        assertEquals(storageWorkflow.getTableName(), new TableName("demo", "table1"), "Table name is not correct");
+
+        Collection<Filter> whereClauses = new ArrayList<>();
+        whereClauses.add(new Filter(Operations.DELETE, new Relation(
+                new ColumnSelector(new ColumnName("demo", "table1", "id")),
+                Operator.EQ,
+                new IntegerSelector(3))));
+
+        assertEquals(storageWorkflow.getWhereClauses().size(), whereClauses.size(), "Where clauses size differs");
+
+        assertTrue(storageWorkflow.getWhereClauses().iterator().next().toString().equalsIgnoreCase(
+                whereClauses.iterator().next().toString()),
+                "Where clauses are not equal");
+    }
+
+    @Test
+    public void createIndex(){
+        String inputText = "CREATE INDEX indexTest ON demo.table1(user);";
+
+        String expectedText = "CREATE DEFAULT INDEX indexTest ON demo.table1(demo.table1.user);";
+
+        IParsedQuery stmt = helperPT.testRegularStatement(inputText, expectedText, "createIndex");
+
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) stmt);
+
+        MetadataPlannedQuery plan = null;
+        try {
+            plan = planner.planQuery(metadataValidatedQuery);
+        } catch (PlanningException e) {
+            fail("createIndex test failed");
+        }
+
+        MetadataWorkflow metadataWorkflow = (MetadataWorkflow) plan.getExecutionWorkflow();
+
+        assertNotNull(metadataWorkflow, "Null workflow received.");
+        assertEquals(metadataWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(metadataWorkflow.getExecutionType(), ExecutionType.CREATE_INDEX, "Invalid execution type");
+        assertTrue("actorRef1".equalsIgnoreCase(metadataWorkflow.getActorRef()), "Actor reference is not correct");
+
+        IndexMetadata indexMetadata = metadataWorkflow.getIndexMetadata();
+
+        assertEquals(indexMetadata.getType(), IndexType.DEFAULT, "Index types differ");
+        assertEquals(indexMetadata.getName(), new IndexName("demo", "table1", "indexTest"), "Index names differ");
+
+        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        ColumnName columnName = new ColumnName("demo", "table1", "user");
+        columns.put(columnName, new ColumnMetadata(
+                                        columnName,
+                                        null,
+                                        ColumnType.TEXT));
+        assertEquals(indexMetadata.getColumns().size(), columns.size(), "Column sizes differ");
+        assertEquals(indexMetadata.getColumns().values().iterator().next().getColumnType(),
+                columns.values().iterator().next().getColumnType(),
+                "Column types differs");
+    }
+
+    @Test
+    public void dropIndex(){
+        String inputText = "DROP INDEX demo.table1.indexTest;";
+
+        String expectedText = "DROP INDEX demo.table1.index[indexTest];";
+
+        IParsedQuery stmt = helperPT.testRegularStatement(inputText, expectedText, "dropIndex");
+
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) stmt);
+
+        IndexName indexName = new IndexName("demo", "table1", "indexTest");
+        Map<ColumnName, ColumnMetadata> cols = new HashMap<>();
+        ColumnMetadata colMetadata = new ColumnMetadata(
+                new ColumnName("demo", "table1", "user"),
+                null,
+                ColumnType.TEXT);
+        cols.put(colMetadata.getName(), colMetadata);
+        IndexMetadata indexMetadata = new IndexMetadata(
+                indexName,
+                cols,
+                IndexType.CUSTOM,
+                new HashMap<Selector, Selector>());
+        table1.addIndex(indexMetadata.getName(), indexMetadata);
+
+        MetadataPlannedQuery plan = null;
+        try {
+            plan = planner.planQuery(metadataValidatedQuery);
+        } catch (PlanningException e) {
+            fail("dropIndex test failed");
+        }
+
+        MetadataWorkflow metadataWorkflow = (MetadataWorkflow) plan.getExecutionWorkflow();
+
+        assertNotNull(metadataWorkflow, "Null workflow received.");
+        assertEquals(metadataWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(metadataWorkflow.getExecutionType(), ExecutionType.DROP_INDEX, "Invalid execution type");
+        assertTrue("actorRef1".equalsIgnoreCase(metadataWorkflow.getActorRef()), "Actor reference is not correct");
+
+        indexMetadata = metadataWorkflow.getIndexMetadata();
+
+        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        ColumnName columnName = new ColumnName("demo", "table1", "user");
+        columns.put(columnName, new ColumnMetadata(
+                columnName,
+                null,
+                ColumnType.TEXT));
+        assertEquals(indexMetadata.getColumns().size(), columns.size(), "Column sizes differ");
+
+        ColumnMetadata columnMetadata = indexMetadata.getColumns().values().iterator().next();
+        ColumnMetadata staticColumnMetadata = columns.values().iterator().next();
+
+        assertEquals(columnMetadata.getColumnType(), staticColumnMetadata.getColumnType(), "Column types differs");
+        assertEquals(columnMetadata.getName(), staticColumnMetadata.getName(), "Column names differ");
     }
 
 }
