@@ -120,6 +120,29 @@ public class BasicValidatorTest {
         return tableMetadata;
     }
 
+    private static TableMetadata createJoinTable() {
+        TableMetadata tableMetadata;
+        TableName targetTable = new TableName("demo", "users_info");
+        Map<Selector, Selector> options = new HashMap<>();
+        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        ClusterName clusterRef = new ClusterName("cluster");
+        List<ColumnName> partitionKey = new ArrayList<>();
+        List<ColumnName> clusterKey = new ArrayList<>();
+        Object[] parameters = null;
+        columns.put(new ColumnName(new TableName("demo", "users_info"), "name"),
+                new ColumnMetadata(new ColumnName(new TableName("demo", "users_info"), "name"), parameters,
+                        ColumnType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users_info"), "info"),
+                new ColumnMetadata(new ColumnName(new TableName("demo", "users_info"), "info"), parameters,
+                        ColumnType.TEXT));
+
+        Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+        tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);
+
+        return tableMetadata;
+    }
+
+
     private static ConnectorMetadata createConnectorMetadata() {
         DataStoreName dataStoreName = new DataStoreName("Cassandra");
         List<String> dataStoreRefs = Arrays.asList(dataStoreName.getName());
@@ -168,6 +191,7 @@ public class BasicValidatorTest {
         MetadataManager.MANAGER.createCluster(createClusterMetadata());
         MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata());
         MetadataManager.MANAGER.createTable(createTable());
+        MetadataManager.MANAGER.createTable(createJoinTable());
     }
 
     @AfterClass
