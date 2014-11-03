@@ -307,6 +307,7 @@ T_ATTACH: A T T A C H;
 T_DETACH: D E T A C H;
 T_TO: T O;
 T_DOUBLE: D O U B L E;
+T_FLOAT: F L O A T;
 T_MAP: M A P;
 T_INT: I N T;
 T_INTEGER: I N T E G E R;
@@ -337,7 +338,7 @@ T_KS_AND_TN: T_IDENT (POINT T_IDENT)?;
 
 T_CTLG_TBL_COL: T_IDENT (POINT T_IDENT (POINT T_IDENT)?)?;
 
-T_FLOAT: '-'? (('0'..'9')+ POINT ('0'..'9')+ EXPONENT? | POINT ('0'..'9')+ EXPONENT? | ('0'..'9')+ EXPONENT);
+T_FLOATING: '-'? (('0'..'9')+ POINT ('0'..'9')+ EXPONENT? | POINT ('0'..'9')+ EXPONENT? | ('0'..'9')+ EXPONENT);
 
 T_TERM: (LETTER | DIGIT | '_' | POINT)+;
 
@@ -955,7 +956,7 @@ getSelector[TableName tablename] returns [Selector s]
         |
         (
             columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);}
-            | floatingNumber=T_FLOAT {s = new FloatingPointSelector($floatingNumber.text);}
+            | floatingNumber=T_FLOATING {s = new FloatingPointSelector($floatingNumber.text);}
             | constant=T_CONSTANT {s = new IntegerSelector($constant.text);}
             | T_FALSE {s = new BooleanSelector(false);}
             | T_TRUE {s = new BooleanSelector(true);}
@@ -1090,16 +1091,6 @@ getGenericID returns [String str]:
 getTableName returns [TableName tablename]:
     (ident1=getGenericID {tablename = normalizeTableName(ident1);}
     | ident2=T_KS_AND_TN {tablename = normalizeTableName($ident2.text);})
-;
-
-/*getPartialTableName returns [String str]:
-    allowedReservedWord=getAllowedReservedWord { $str = allowedReservedWord; }
-    | ident=T_IDENT { $str = $ident.text; }
-;*/
-
-getFloat returns [String floating]:
-    termToken=T_TERM {$floating=$termToken.text;}
-    | floatToken = T_FLOAT {$floating=$floatToken.text;}
 ;
 
 getJson returns [String strJson]:
