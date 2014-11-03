@@ -81,7 +81,6 @@ import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
-import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
@@ -509,7 +508,7 @@ public class Planner {
         addProjectedColumns(processed, query);
 
         //TODO determine which is the correct target table if the order fails.
-        String selectTable = ((SelectParsedQuery) query).getStatement().getTableName().getQualifiedName();
+        String selectTable = query.getStatement().getTableName().getQualifiedName();
 
         //Add filters
         if (query.getRelationships() != null) {
@@ -763,7 +762,7 @@ public class Planner {
                 throw planningException;
             }
 
-            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.CREATE_INDEX,
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.DROP_INDEX,
                     ResultType.RESULTS);
 
             metadataWorkflow.setClusterName(clusterMetadata.getName());
