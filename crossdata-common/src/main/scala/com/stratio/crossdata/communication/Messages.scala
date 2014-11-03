@@ -96,7 +96,8 @@ case class Update(override val queryId: String, targetCluster: ClusterName, targ
                   assignments: util.Collection[Relation], whereClauses: util.Collection[Filter])
     extends StorageOperation(queryId)
 
-case class truncate(override val queryId: String, targetCluster: ClusterName, targetTable: TableName) extends StorageOperation(queryId)
+case class Truncate(override val queryId: String, targetCluster: ClusterName, targetTable: TableName) extends
+    StorageOperation(queryId)
 
 // ============================================================================
 //                                IQueryEngine
