@@ -23,6 +23,8 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,6 +34,7 @@ import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
@@ -39,14 +42,23 @@ import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.QueryWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
+import com.stratio.crossdata.common.executionplan.StorageWorkflow;
+import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
+import com.stratio.crossdata.core.query.StorageParsedQuery;
+import com.stratio.crossdata.core.query.StoragePlannedQuery;
+import com.stratio.crossdata.core.query.StorageValidatedQuery;
 
 /**
  * Planner tests considering an initial input, generating all intermediate steps,
@@ -78,6 +90,7 @@ public class PlannerTest extends PlannerBaseTest{
         operationsC1.add(Operations.PROJECT);
         operationsC1.add(Operations.SELECT_OPERATOR);
         operationsC1.add(Operations.SELECT_WINDOW);
+        operationsC1.add(Operations.DELETE);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -177,6 +190,44 @@ public class PlannerTest extends PlannerBaseTest{
         assertEquals(metadataWorkflow.getExecutionType(), ExecutionType.DROP_TABLE, "Invalid execution type");
         assertTrue("actorRef1".equalsIgnoreCase(metadataWorkflow.getActorRef()), "Actor reference is not correct");
         assertEquals(metadataWorkflow.getTableName(), new TableName("demo", "table1"), "Table name is not correct");
+    }
+
+    @Test
+    public void deleteRows(){
+        String inputText = "DELETE FROM demo.table1 WHERE id = 3;";
+
+        String expectedText = "DELETE FROM demo.table1 WHERE demo.table1.id = 3;";
+
+        IParsedQuery stmt = helperPT.testRegularStatement(inputText, expectedText, "deleteRows");
+
+        StorageValidatedQuery storageValidatedQuery = new StorageValidatedQuery((StorageParsedQuery) stmt);
+
+        StoragePlannedQuery plan = null;
+        try {
+            plan = planner.planQuery(storageValidatedQuery);
+        } catch (PlanningException e) {
+            fail("deleteRows test failed");
+        }
+
+        StorageWorkflow storageWorkflow = (StorageWorkflow) plan.getExecutionWorkflow();
+
+        assertNotNull(storageWorkflow, "Null workflow received.");
+        assertEquals(storageWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(storageWorkflow.getExecutionType(), ExecutionType.DELETE_ROWS, "Invalid execution type");
+        assertTrue("actorRef1".equalsIgnoreCase(storageWorkflow.getActorRef()), "Actor reference is not correct");
+        assertEquals(storageWorkflow.getTableName(), new TableName("demo", "table1"), "Table name is not correct");
+
+        Collection<Filter> whereClauses = new ArrayList<>();
+        whereClauses.add(new Filter(Operations.DELETE, new Relation(
+                new ColumnSelector(new ColumnName("demo", "table1", "id")),
+                Operator.EQ,
+                new IntegerSelector(3))));
+
+        assertEquals(storageWorkflow.getWhereClauses().size(), whereClauses.size(), "Where clauses size differs");
+
+        assertTrue(storageWorkflow.getWhereClauses().iterator().next().toString().equalsIgnoreCase(
+                whereClauses.iterator().next().toString()),
+                "Where clauses are not equal");
     }
 
 }
