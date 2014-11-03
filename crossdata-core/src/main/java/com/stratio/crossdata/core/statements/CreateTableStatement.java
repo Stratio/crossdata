@@ -35,7 +35,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code CREATE TABLE} statement of the META language.
+ * Class that models a {@code CREATE TABLE} statement of the CROSSDATA language.
  */
 public class CreateTableStatement extends MetadataStatement implements ITableStatement {
 

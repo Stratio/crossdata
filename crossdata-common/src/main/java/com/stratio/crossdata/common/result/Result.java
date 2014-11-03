@@ -28,7 +28,7 @@ import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 
 /**
- * Class that models a generic result of an action executed in META.
+ * Class that models a generic result of an action executed in CROSSDATA.
  */
 public abstract class Result implements Serializable {
 

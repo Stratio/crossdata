@@ -26,7 +26,7 @@ import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.common.data.ClusterName;
 
 /**
- * Common interface for META connectors. A connector provides implementations for storage and query
+ * Common interface for CROSSDATA connectors. A connector provides implementations for storage and query
  * engines. Notice that connectors do not need to provide both functionalities at the same time.
  */
 public interface IConnector {

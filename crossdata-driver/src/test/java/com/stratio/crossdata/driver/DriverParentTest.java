@@ -24,7 +24,7 @@ import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
-import com.stratio.crossdata.server.MetaServer;
+import com.stratio.crossdata.server.CrossDataServer;
 
 public class DriverParentTest {
 
@@ -34,12 +34,12 @@ public class DriverParentTest {
 
     protected static BasicDriver driver = null;
 
-    protected static MetaServer metaServer = null;
+    protected static CrossDataServer crossDataServer = null;
 
-    public static String getErrorMessage(Result metaResult) {
-        String result = "Invalid class: " + metaResult.getClass();
-        if (ErrorResult.class.isInstance(metaResult)) {
-            result = ErrorResult.class.cast(metaResult).getErrorMessage();
+    public static String getErrorMessage(Result crossDataResult) {
+        String result = "Invalid class: " + crossDataResult.getClass();
+        if (ErrorResult.class.isInstance(crossDataResult)) {
+            result = ErrorResult.class.cast(crossDataResult).getErrorMessage();
         }
         return result;
     }
@@ -47,10 +47,10 @@ public class DriverParentTest {
     @BeforeClass
     public void init() {
         logger.info("INIT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        if (metaServer == null) {
-            metaServer = new MetaServer();
-            metaServer.init(null);
-            metaServer.start();
+        if (crossDataServer == null) {
+            crossDataServer = new CrossDataServer();
+            crossDataServer.init(null);
+            crossDataServer.start();
 
             try {
                 Thread.sleep(SLEEP_TIME);
@@ -74,8 +74,8 @@ public class DriverParentTest {
     public void finish() {
         logger.info("FINISHING ------------------------------");
         driver.close();
-        metaServer.stop();
-        metaServer.destroy();
+        crossDataServer.stop();
+        crossDataServer.destroy();
         logger.info("FINISH <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 

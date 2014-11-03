@@ -182,9 +182,9 @@ public class BasicValidatorTest {
                 .withJoinTimeoutInMs(3000)
                 .withPersistencePath(path).init();
 
-        metadataMap = Grid.INSTANCE.map("metatest");
-        Lock lock = Grid.INSTANCE.lock("metatest");
-        TransactionManager tm = Grid.INSTANCE.transactionManager("metatest");
+        metadataMap = Grid.INSTANCE.map("crossDatatest");
+        Lock lock = Grid.INSTANCE.lock("crossDatatest");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("crossDatatest");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
         MetadataManager.MANAGER.createDataStore(createDataStoreMetadata());
         MetadataManager.MANAGER.createConnector(createConnectorMetadata());

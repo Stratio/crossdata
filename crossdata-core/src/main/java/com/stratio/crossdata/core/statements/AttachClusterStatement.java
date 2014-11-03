@@ -29,7 +29,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code ATTACH CLUSTER} statement from the META language. A cluster represents
+ * Class that models a {@code ATTACH CLUSTER} statement from the CROSSDATA language. A cluster represents
  * a logical cluster of storage machines that target the same datastore technology. To create a
  * storage, the user must specify the hosts and ports where the datastore is available in the JSON
  * options.

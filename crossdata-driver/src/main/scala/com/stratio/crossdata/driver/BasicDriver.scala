@@ -60,10 +60,10 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   /**
    * Default user to connect to the com.stratio.crossdata server.
    */
-  private final val DEFAULT_USER: String = "META_USER"
+  private final val DEFAULT_USER: String = "CROSSDATA_USER"
   lazy val logger = BasicDriver.logger
   lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
-  lazy val system = ActorSystem("MetaDriverSystem", BasicDriver.config)
+  lazy val system = ActorSystem("CrossDataDriverSystem", BasicDriver.config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
   lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, basicDriverConfig.serverSection.clusterActor, this), "proxy-actor")
@@ -88,7 +88,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Release connection to MetaServer.
+   * Release connection to CrossDataServer.
    * @param user Login to the user (Audit only)
    * @return ConnectResult
    */
@@ -108,7 +108,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Finnish connection to MetaServer.
+   * Finnish connection to CrossDataServer.
    */
   @throws(classOf[ConnectionException])
   def disconnect(): Unit = {
@@ -125,7 +125,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Execute a query in the Meta server asynchronously.
+   * Execute a query in the CrossData server asynchronously.
    * @param query The query.
    * @param callback The callback object.
    */
@@ -145,7 +145,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Launch query in Meta Server
+   * Launch query in CrossData Server
    * @param query Launched query
    * @return QueryResult
    */
@@ -225,7 +225,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    */
   def resetMetadata(): CommandResult = {
     val queryId = UUID.randomUUID().toString
-    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_METADATA, null))
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_CROSSDATADATA, null))
     result.asInstanceOf[CommandResult]
   }
 
@@ -235,7 +235,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    */
   def cleanMetadata(): CommandResult = {
     val queryId = UUID.randomUUID().toString
-    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.CLEAN_METADATA, null))
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.CLEAN_CROSSDATADATA, null))
     result.asInstanceOf[CommandResult]
   }
 

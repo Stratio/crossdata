@@ -31,7 +31,7 @@ import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.Option;
 
 /**
- * Class that models an {@code INSERT INTO} statement from the META language.
+ * Class that models an {@code INSERT INTO} statement from the CROSSDATA language.
  */
 public class InsertIntoStatement extends StorageStatement {
 

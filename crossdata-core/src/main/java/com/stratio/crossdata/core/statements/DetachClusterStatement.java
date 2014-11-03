@@ -22,7 +22,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code DROP CLUSTER} statement from the META language. In order to remove
+ * Class that models a {@code DROP CLUSTER} statement from the CROSSDATA language. In order to remove
  * an active cluster from the system, the user is required to delete first the existing tables.
  */
 public class DetachClusterStatement extends MetadataStatement {

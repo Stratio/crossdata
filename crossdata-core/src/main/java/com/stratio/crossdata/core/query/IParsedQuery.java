@@ -53,7 +53,7 @@ public interface IParsedQuery {
 
     /**
      * Get the statement of a query.
-     * @return com.stratio.crossdata.core.statements.MetaStatement
+     * @return com.stratio.crossdata.core.statements.CrossDataStatement
      */
     CrossdataStatement getStatement();
 

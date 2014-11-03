@@ -24,7 +24,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code DROP TABLE} statement from the META language.
+ * Class that models a {@code DROP TABLE} statement from the CROSSDATA language.
  */
 public class DropTableStatement extends MetadataStatement {
 

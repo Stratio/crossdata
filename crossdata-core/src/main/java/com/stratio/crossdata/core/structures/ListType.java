@@ -19,7 +19,7 @@
 package com.stratio.crossdata.core.structures;
 
 /**
- * Types of list processes supported by META.
+ * Types of list processes supported by CROSSDATA.
  * <ul>
  * <li> PROCESS: List the existing running queries.
  * <li> UDF: List the existing UDF in the system.

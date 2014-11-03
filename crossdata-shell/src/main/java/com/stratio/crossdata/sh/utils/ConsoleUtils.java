@@ -219,9 +219,9 @@ public final class ConsoleUtils {
     }
 
     /**
-     * Get previous history of the Meta console from a file.
+     * Get previous history of the CrossData console from a file.
      *
-     * @param console Meta console created from a JLine console
+     * @param console CrossData console created from a JLine console
      * @param sdf     Simple Date Format to read dates from history file
      * @return File inserted in the JLine console with the previous history
      * @throws IOException
@@ -272,9 +272,9 @@ public final class ConsoleUtils {
     }
 
     /**
-     * This method save history extracted from the Meta console to be persisted in the disk.
+     * This method save history extracted from the CrossData console to be persisted in the disk.
      *
-     * @param console Meta console created from a JLine console
+     * @param console CrossData console created from a JLine console
      * @param file    represents the file to be created of updated with the statements from the current
      *                session
      * @param sdf     Simple Date Format to create dates for the history file

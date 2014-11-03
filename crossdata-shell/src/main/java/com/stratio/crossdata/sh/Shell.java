@@ -43,8 +43,8 @@ import com.stratio.crossdata.driver.BasicDriver;
 import com.stratio.crossdata.sh.help.HelpContent;
 import com.stratio.crossdata.sh.help.HelpManager;
 import com.stratio.crossdata.sh.help.HelpStatement;
-import com.stratio.crossdata.sh.help.generated.MetaHelpLexer;
-import com.stratio.crossdata.sh.help.generated.MetaHelpParser;
+import com.stratio.crossdata.sh.help.generated.CrossDataHelpLexer;
+import com.stratio.crossdata.sh.help.generated.CrossDataHelpParser;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
 import com.stratio.crossdata.sh.utils.XDshCompletionHandler;
 import com.stratio.crossdata.sh.utils.XDshCompletor;
@@ -83,9 +83,9 @@ public class Shell {
     private File historyFile = null;
 
     /**
-     * Driver that connects to the META servers.
+     * Driver that connects to the CROSSDATA servers.
      */
-    private BasicDriver metaDriver = null;
+    private BasicDriver crossDataDriver = null;
 
     /**
      * History date format.
@@ -121,7 +121,7 @@ public class Shell {
     }
 
     /**
-     * Launch the META server shell.
+     * Launch the CROSSDATA server shell.
      *
      * @param args The list of arguments. Not supported at the moment.
      */
@@ -160,10 +160,10 @@ public class Shell {
      * Initialize the console settings.
      */
     private void initialize() {
-        metaDriver = new BasicDriver();
+        crossDataDriver = new BasicDriver();
         // Take the username from the system.
-        metaDriver.setUserName(System.getProperty("user.name"));
-        LOG.debug("Connecting with user: " + metaDriver.getUserName());
+        crossDataDriver.setUserName(System.getProperty("user.name"));
+        LOG.debug("Connecting with user: " + crossDataDriver.getUserName());
 
         try {
             console = new ConsoleReader();
@@ -211,7 +211,7 @@ public class Shell {
      */
     private void setPrompt(String currentCatalog) {
         StringBuilder sb = new StringBuilder("xdsh:");
-        sb.append(metaDriver.getUserName());
+        sb.append(crossDataDriver.getUserName());
         if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
             sb.append(":");
             sb.append(currentCatalog);
@@ -229,9 +229,9 @@ public class Shell {
     private HelpStatement parseHelp(String inputText) {
         HelpStatement result = null;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
-        MetaHelpLexer lexer = new MetaHelpLexer(input);
+        CrossDataHelpLexer lexer = new CrossDataHelpLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        MetaHelpParser parser = new MetaHelpParser(tokens);
+        CrossDataHelpParser parser = new CrossDataHelpParser(tokens);
         try {
             result = parser.query();
         } catch (RecognitionException e) {
@@ -251,7 +251,7 @@ public class Shell {
     }
 
     /**
-     * Execute a query on the remote META servers.
+     * Execute a query on the remote CROSSDATA servers.
      *
      * @param cmd The query.
      */
@@ -272,12 +272,12 @@ public class Shell {
         LOG.debug("Command: " + cmd);
         long queryStart = System.currentTimeMillis();
         long queryEnd = queryStart;
-        Result metaResult;
+        Result crossDataResult;
         try {
-            metaResult = metaDriver.executeQuery(cmd);
+            crossDataResult = crossDataDriver.executeQuery(cmd);
             queryEnd = System.currentTimeMillis();
-            updatePrompt(metaResult);
-            println("Result: " + ConsoleUtils.stringResult(metaResult));
+            updatePrompt(crossDataResult);
+            println("Result: " + ConsoleUtils.stringResult(crossDataResult));
             println("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
         } catch (Exception e) {
             println("Error: " + e.getMessage());
@@ -290,7 +290,7 @@ public class Shell {
      * @param queryId The query identifier.
      */
     protected void removeResultsHandler(String queryId) {
-        metaDriver.removeResultHandler(queryId);
+        crossDataDriver.removeResultHandler(queryId);
     }
 
     /**
@@ -301,7 +301,7 @@ public class Shell {
     private void executeAsyncQuery(String cmd) {
         String queryId;
         try {
-            queryId = metaDriver.asyncExecuteQuery(cmd, resultHandler);
+            queryId = crossDataDriver.asyncExecuteQuery(cmd, resultHandler);
             LOG.debug("Async command: " + cmd + " id: " + queryId);
             println("QID: " + queryId);
             println("");
@@ -324,7 +324,7 @@ public class Shell {
             if (qr.isCatalogChanged()) {
                 String currentCatalog = qr.getCurrentCatalog();
                 if (!currentCatalog.isEmpty()) {
-                    metaDriver.setCurrentCatalog(currentCatalog);
+                    crossDataDriver.setCurrentCatalog(currentCatalog);
                     setPrompt(currentCatalog);
                 }
             }
@@ -332,14 +332,14 @@ public class Shell {
     }
 
     /**
-     * Establish the connection with the META servers.
+     * Establish the connection with the CROSSDATA servers.
      *
      * @return Whether the connection has been successfully established.
      */
     public boolean connect() {
         boolean result = true;
         try {
-            Result connectionResult = metaDriver.connect(metaDriver.getUserName());
+            Result connectionResult = crossDataDriver.connect(crossDataDriver.getUserName());
             LOG.info("Driver connections established");
             LOG.info(ConsoleUtils.stringResult(connectionResult));
         } catch (ConnectionException ce) {
@@ -357,7 +357,7 @@ public class Shell {
             ConsoleUtils.saveHistory(console, historyFile, dateFormat);
             LOG.debug("History saved");
 
-            metaDriver.close();
+            crossDataDriver.close();
             LOG.info("Driver connections closed");
 
         } catch (IOException ex) {
@@ -443,25 +443,25 @@ public class Shell {
      * @param toExecute The user input.
      */
     private void explainPlan(String toExecute){
-        Result r = metaDriver.explainPlan(toExecute.substring(EXPLAIN_PLAN_TOKEN.length()));
+        Result r = crossDataDriver.explainPlan(toExecute.substring(EXPLAIN_PLAN_TOKEN.length()));
         println(ConsoleUtils.stringResult(r));
     }
 
     private void listConnectors() {
-        CommandResult commandResult= metaDriver.listConnectors();
+        CommandResult commandResult= crossDataDriver.listConnectors();
         LOG.info(commandResult.getResult());
     }
 
     private String updateCatalog(String toExecute) {
         String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();
-        String currentCatalog = metaDriver.getCurrentCatalog();
+        String currentCatalog = crossDataDriver.getCurrentCatalog();
         if(newCatalog.isEmpty()){
-            metaDriver.setCurrentCatalog(newCatalog);
+            crossDataDriver.setCurrentCatalog(newCatalog);
             currentCatalog = newCatalog;
         } else {
-            List<String> catalogs = metaDriver.listCatalogs().getCatalogList();
+            List<String> catalogs = crossDataDriver.listCatalogs().getCatalogList();
             if (catalogs.contains(newCatalog.toLowerCase())) {
-                metaDriver.setCurrentCatalog(newCatalog);
+                crossDataDriver.setCurrentCatalog(newCatalog);
                 currentCatalog = newCatalog;
             } else {
                 LOG.error("Catalog " + newCatalog + " doesn't exist.");
@@ -475,14 +475,14 @@ public class Shell {
      * Trigger the operation to reset only the metadata information related to catalogs.
      */
     private void cleanMetadata() {
-        metaDriver.cleanMetadata();
+        crossDataDriver.cleanMetadata();
     }
 
     /**
      * Trigger the operation to reset the metadata information.
      */
     private void resetMetadata() {
-        metaDriver.resetMetadata();
+        crossDataDriver.resetMetadata();
     }
 
     /**
@@ -521,17 +521,17 @@ public class Shell {
 
         long queryStart = System.currentTimeMillis();
         long queryEnd = queryStart;
-        Result metaResult;
+        Result crossDataResult;
 
         try {
-            metaResult = metaDriver.addManifest(manifest);
+            crossDataResult = crossDataDriver.addManifest(manifest);
         } catch (ManifestException e) {
             LOG.error("CrossdataManifest couldn't be parsed", e);
             return null;
         }
         queryEnd = System.currentTimeMillis();
-        updatePrompt(metaResult);
-        println("Result: " + ConsoleUtils.stringResult(metaResult));
+        updatePrompt(crossDataResult);
+        println("Result: " + ConsoleUtils.stringResult(crossDataResult));
         println("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
 
         return "OK";

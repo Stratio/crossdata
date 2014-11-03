@@ -27,10 +27,10 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.sh.help.generated.MetaHelpLexer;
-import com.stratio.crossdata.sh.help.generated.MetaHelpParser;
+import com.stratio.crossdata.sh.help.generated.CrossDataHelpLexer;
+import com.stratio.crossdata.sh.help.generated.CrossDataHelpParser;
 
-public class MetaHelpParserTest {
+public class CrossDataHelpParserTest {
 
     protected static String[][] supportedHelpCommands = { { "exit", "EXIT" }, { "quit", "EXIT" },
             { "datatypes", "DATATYPES" }, { "create", "CREATE" }, { "create keyspace", "CREATE_KEYSPACE" },
@@ -48,7 +48,7 @@ public class MetaHelpParserTest {
     /**
      * Class logger.
      */
-    private final Logger logger = Logger.getLogger(MetaHelpParserTest.class);
+    private final Logger logger = Logger.getLogger(CrossDataHelpParserTest.class);
 
     /**
      * Parse a input text and return the equivalent HelpStatement.
@@ -59,9 +59,9 @@ public class MetaHelpParserTest {
     private HelpStatement parseStatement(String inputText) {
         HelpStatement result = null;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
-        MetaHelpLexer lexer = new MetaHelpLexer(input);
+        CrossDataHelpLexer lexer = new CrossDataHelpLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        MetaHelpParser parser = new MetaHelpParser(tokens);
+        CrossDataHelpParser parser = new CrossDataHelpParser(tokens);
         try {
             result = parser.query();
         } catch (RecognitionException e) {

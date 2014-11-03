@@ -23,14 +23,14 @@ import static org.testng.Assert.fail;
 
 import org.testng.annotations.Test;
 
-public class MetashTestIT {
+public class CrossDatashTestIT {
 
     @Test
     public void testSendManifest() throws Exception {
-        Shell metash = new Shell(false);
+        Shell crossDatash = new Shell(false);
         //TODO Generate a temp file with the manifest
         fail("Not implemented");
-        String result = metash.sendManifest("ADD DATASTORE " +
+        String result = crossDatash.sendManifest("ADD DATASTORE " +
                 "'crossdata-common/src/main/resources/com/stratio/crossdata/connector/DataStoreDefinition.xml'");
         assertNotNull(result, "testSendManifest returns a empty String");
     }
