@@ -36,7 +36,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code SELECT} statement from the META language.
+ * Class that models a {@code SELECT} statement from the CROSSDATA language.
  */
 public class SelectStatement extends CrossdataStatement implements Serializable {
 
@@ -301,7 +301,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     }
 
     /**
-     * Creates a String representing the Statement with META syntax.
+     * Creates a String representing the Statement with CROSSDATA syntax.
      *
      * @return String
      */

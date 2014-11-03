@@ -19,7 +19,7 @@
 package com.stratio.crossdata.common.result;
 
 /**
- * Result of the execution of a command in META.
+ * Result of the execution of a command in CROSSDATA.
  */
 public final class CommandResult extends Result {
 

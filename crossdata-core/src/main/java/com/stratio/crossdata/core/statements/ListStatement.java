@@ -22,7 +22,7 @@ import com.stratio.crossdata.core.structures.ListType;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code LIST} statement from the META language.
+ * Class that models a {@code LIST} statement from the CROSSDATA language.
  */
 public class ListStatement extends MetadataStatement {
 

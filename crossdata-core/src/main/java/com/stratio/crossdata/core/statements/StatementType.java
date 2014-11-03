@@ -29,7 +29,7 @@ public enum StatementType {
     QUERY,
 
     /**
-     * Statements that are executed as internal META commands.
+     * Statements that are executed as internal CROSSDATA commands.
      */
     COMMAND,
 
@@ -41,5 +41,5 @@ public enum StatementType {
     /**
      * Statements that are executed by IMetadataProviders.
      */
-    METADATA
+    CROSSDATADATA
 }

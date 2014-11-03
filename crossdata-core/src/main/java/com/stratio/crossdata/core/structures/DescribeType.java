@@ -19,7 +19,7 @@
 package com.stratio.crossdata.core.structures;
 
 /**
- * Types of elements that could be described in META.
+ * Types of elements that could be described in CROSSDATA.
  */
 public enum DescribeType {
 

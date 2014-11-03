@@ -27,7 +27,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code CREATE CATALOG} statement from the META language. CATALOG
+ * Class that models a {@code CREATE CATALOG} statement from the CROSSDATA language. CATALOG
  * information will be stored internally as part of the existing metadata. CATALOG creation
  * in the underlying datastore is done when a table is created in a catalog.
  */

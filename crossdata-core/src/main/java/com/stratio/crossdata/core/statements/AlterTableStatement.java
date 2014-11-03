@@ -32,7 +32,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models an {@code ALTER TABLE} statement from the META language.
+ * Class that models an {@code ALTER TABLE} statement from the CROSSDATA language.
  */
 public class AlterTableStatement extends MetadataStatement implements ITableStatement {
 

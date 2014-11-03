@@ -19,7 +19,7 @@
 package com.stratio.crossdata.sh.help;
 
 /**
- * Type of help requested by the user through the META shell.
+ * Type of help requested by the user through the CROSSDATA shell.
  */
 public enum HelpType {
     /**
