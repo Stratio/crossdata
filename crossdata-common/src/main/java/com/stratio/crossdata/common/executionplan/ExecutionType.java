@@ -38,6 +38,8 @@ public enum ExecutionType {
     INSERT,
     INSERT_BATCH,
     DELETE_ROWS,
+    UPDATE_TABLE,
+    TRUNCATE_TABLE,
 
     //IQuery
     SELECT,
