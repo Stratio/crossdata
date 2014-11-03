@@ -21,7 +21,7 @@ package com.stratio.crossdata.core.statements;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code DROP TRIGGER} statement from the META language.
+ * Class that models a {@code DROP TRIGGER} statement from the CROSSDATA language.
  */
 public class DropTriggerStatement extends MetadataStatement {
 

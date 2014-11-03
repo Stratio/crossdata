@@ -20,8 +20,8 @@ package com.stratio.crossdata.server
 
 import scala.annotation.tailrec
 
-object MetaApplication extends App {
-  val metaServer: MetaServer = new MetaServer
+object CrossDataApplication extends App {
+  val crossDataServer: CrossDataServer = new CrossDataServer
 
   /**
    * This method make a command loop.
@@ -36,9 +36,9 @@ object MetaApplication extends App {
     commandLoop()
   }
 
-  metaServer.init(null)
-  metaServer.start()
+  crossDataServer.init(null)
+  crossDataServer.start()
   commandLoop()
-  metaServer.stop()
-  metaServer.destroy()
+  crossDataServer.stop()
+  crossDataServer.destroy()
 }

@@ -33,7 +33,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes
+ * Class that models a {@code CREATE INDEX} statement of the CROSSDATA language. This class recognizes
  * the following syntax:
  * <p/>
  * CREATE {@link IndexType} INDEX (IF NOT EXISTS)? {@literal <index_name>} <br>

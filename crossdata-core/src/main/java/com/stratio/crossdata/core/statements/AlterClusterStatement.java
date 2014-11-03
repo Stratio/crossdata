@@ -22,7 +22,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code ALTER CLUSTER} statement from the META language.
+ * Class that models a {@code ALTER CLUSTER} statement from the CROSSDATA language.
  */
 public class AlterClusterStatement extends MetadataStatement {
 

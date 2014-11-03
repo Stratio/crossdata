@@ -158,11 +158,11 @@ public class APIManager {
             result = CommandResult.createCommandResult("CrossdataManifest added "
                     + System.lineSeparator()
                     + cmd.params().get(0).toString());
-        } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.RESET_METADATA().toString());
+        } else if (APICommand.RESET_CROSSDATADATA().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.RESET_CROSSDATADATA().toString());
             result = resetMetadata();
-        } else if (APICommand.CLEAN_METADATA().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.CLEAN_METADATA().toString());
+        } else if (APICommand.CLEAN_CROSSDATADATA().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.CLEAN_CROSSDATADATA().toString());
             result = cleanMetadata();
         } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.LIST_CONNECTORS().toString());

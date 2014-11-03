@@ -118,13 +118,13 @@ with ImplicitSender with DefaultTimeout {
 
   /**
    * Get the error message if a {@link ErrorResult} is received.
-   * @param metaResult The result.
+   * @param crossDataResult The result.
    * @return The Error message.
    */
-  def getErrorMMessage(metaResult: Result): String = {
-    var result: String = "Invalid class: " + metaResult.getClass
-    if (classOf[ErrorResult].isInstance(metaResult)) {
-      result = classOf[ErrorResult].cast(metaResult).getErrorMessage
+  def getErrorMMessage(crossDataResult: Result): String = {
+    var result: String = "Invalid class: " + crossDataResult.getClass
+    if (classOf[ErrorResult].isInstance(crossDataResult)) {
+      result = classOf[ErrorResult].cast(crossDataResult).getErrorMessage
     }
     result
   }

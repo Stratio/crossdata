@@ -19,7 +19,7 @@
 package com.stratio.crossdata.common.metadata;
 
 /**
- * Types of columns supported by META with their equivalence in ODBC data types. Notice that a
+ * Types of columns supported by CROSSDATA with their equivalence in ODBC data types. Notice that a
  * NATIVE type has been added to map those types that are not generic and database dependant.
  */
 public enum ColumnType {
@@ -108,7 +108,7 @@ public enum ColumnType {
     }
 
     /**
-     * Get the ODBC SQL type associated with the META data type. For NATIVE types, use the appropriate
+     * Get the ODBC SQL type associated with the CROSSDATA data type. For NATIVE types, use the appropriate
      * AbstractMetadataHelper to retrieve the ODBC equivalent.
      *
      * @return The ODBC equivalence or null if NATIVE type is being used.

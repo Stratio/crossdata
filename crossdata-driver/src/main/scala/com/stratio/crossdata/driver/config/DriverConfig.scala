@@ -48,7 +48,7 @@ object DriverConfig {
   val DRIVER_CONFIG_RESOURCE = "external.config.resource"
 }
 
-trait DriverConfig extends MetaServerConfig {
+trait DriverConfig extends CrossDataServerConfig {
   lazy val logger: Logger = ???
   lazy val retryTimes: Int = config.getInt(DriverConfig.DRIVER_RETRY_TIMES_KEY)
   lazy val retryDuration: Timeout = new Timeout(config.getMilliseconds(DriverConfig.DRIVER_RETRY_SECONDS_KEY))
