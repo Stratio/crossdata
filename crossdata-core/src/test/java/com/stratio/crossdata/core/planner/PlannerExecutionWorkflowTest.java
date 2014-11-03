@@ -37,6 +37,8 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.data.AlterOperation;
+import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -56,6 +58,7 @@ import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Window;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
@@ -75,6 +78,7 @@ import com.stratio.crossdata.core.query.MetadataValidatedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.AlterCatalogStatement;
+import com.stratio.crossdata.core.statements.AlterTableStatement;
 import com.stratio.crossdata.core.statements.DropCatalogStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
@@ -194,6 +198,12 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         table2 = createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes2, partitionKeys2,
                 clusteringKeys2);
 
+        String[] columnNames3 = { "id", "email" };
+        ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
+        String[] partitionKeys3 = { "id" };
+        String[] clusteringKeys3 = { };
+        table2 = createTestTable(clusterName, "demo", "table3", columnNames3, columnTypes3, partitionKeys3,
+                clusteringKeys3);
     }
 
     /**
@@ -660,6 +670,33 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
+
+    @Test
+    public void alterTableWorkflowTest() {
+        Object[] parameters = { };
+        ColumnMetadata columnMetadata=new ColumnMetadata(new ColumnName(new TableName("demo", "table3"),
+                "email"), parameters, ColumnType.VARCHAR);
+        AlterOptions alterOptions=new AlterOptions(AlterOperation.ALTER_COLUMN,null,columnMetadata);
+
+        AlterTableStatement alterTableStatement =new AlterTableStatement(columnMetadata.getName().getTableName(),
+                columnMetadata.getName(), ColumnType.VARCHAR, null, AlterOperation.ALTER_COLUMN);
+        String query = "ALTER TABLE demo.table3 ALTER COLUMN table3.email TYPE varchar;";
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
+
+        Planner planner = new Planner();
+        try {
+            ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
+            Assert.assertTrue(MetadataManager.MANAGER.exists(new ColumnName("demo","table3","email")));
+            ColumnMetadata columnMetadataModified=MetadataManager.MANAGER.getColumn(new ColumnName("demo","table3",
+                    "email"));
+            Assert.assertEquals(columnMetadataModified.getColumnType(), ColumnType.TEXT);
+        } catch (PlanningException e) {
+            Assert.fail(e.getMessage());
+        }
+
+    }
 
 
 }

@@ -54,6 +54,16 @@ public enum Operations {
     DELETE("DELETE"),
 
     /**
+     * The engine supports to alter catalog properties.
+     */
+    ALTER_CATALOG("ALTER_CATALOG"),
+
+    /**
+     * The engine supports alter the properties of tables.
+     */
+    ALTER_TABLE("ALTER_TABLE"),
+
+    /**
      * The engine supports retrieving a set of columns from a specific table.
      */
     PROJECT("PROJECT"),
