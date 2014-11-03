@@ -25,7 +25,9 @@ import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -36,6 +38,7 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
@@ -44,8 +47,11 @@ import com.stratio.crossdata.common.executionplan.QueryWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
@@ -91,6 +97,8 @@ public class PlannerTest extends PlannerBaseTest{
         operationsC1.add(Operations.SELECT_OPERATOR);
         operationsC1.add(Operations.SELECT_WINDOW);
         operationsC1.add(Operations.DELETE);
+        operationsC1.add(Operations.CREATE_INDEX);
+        operationsC1.add(Operations.DROP_INDEX);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -228,6 +236,47 @@ public class PlannerTest extends PlannerBaseTest{
         assertTrue(storageWorkflow.getWhereClauses().iterator().next().toString().equalsIgnoreCase(
                 whereClauses.iterator().next().toString()),
                 "Where clauses are not equal");
+    }
+
+    @Test
+    public void createIndex(){
+        String inputText = "CREATE INDEX indexTest ON demo.table1(user);";
+
+        String expectedText = "CREATE DEFAULT INDEX indexTest ON demo.table1(demo.table1.user);";
+
+        IParsedQuery stmt = helperPT.testRegularStatement(inputText, expectedText, "createIndex");
+
+        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) stmt);
+
+        MetadataPlannedQuery plan = null;
+        try {
+            plan = planner.planQuery(metadataValidatedQuery);
+        } catch (PlanningException e) {
+            fail("createIndex test failed");
+        }
+
+        MetadataWorkflow metadataWorkflow = (MetadataWorkflow) plan.getExecutionWorkflow();
+
+        assertNotNull(metadataWorkflow, "Null workflow received.");
+        assertEquals(metadataWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(metadataWorkflow.getExecutionType(), ExecutionType.CREATE_INDEX, "Invalid execution type");
+        assertTrue("actorRef1".equalsIgnoreCase(metadataWorkflow.getActorRef()), "Actor reference is not correct");
+
+        IndexMetadata indexMetadata = metadataWorkflow.getIndexMetadata();
+
+        assertEquals(indexMetadata.getType(), IndexType.DEFAULT, "Index types differ");
+        assertEquals(indexMetadata.getName(), new IndexName("demo", "table1", "indexTest"), "Index names differ");
+
+        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        ColumnName columnName = new ColumnName("demo", "table1", "user");
+        columns.put(columnName, new ColumnMetadata(
+                                        columnName,
+                                        null,
+                                        ColumnType.TEXT));
+        assertEquals(indexMetadata.getColumns().size(), columns.size(), "Column sizes differ");
+        assertEquals(indexMetadata.getColumns().values().iterator().next().getColumnType(),
+                columns.values().iterator().next().getColumnType(),
+                "Column types differs");
     }
 
 }
