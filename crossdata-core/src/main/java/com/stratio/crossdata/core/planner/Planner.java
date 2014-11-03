@@ -1043,7 +1043,36 @@ public class Planner {
             storageWorkflow.setWhereClauses(filters);
 
         } else if (query.getStatement() instanceof TruncateStatement) {
-            throw new PlanningException("Truncate Statements are not supported in the planner yet.");
+
+            TruncateStatement truncateStatement = (TruncateStatement) query.getStatement();
+
+            // Find connector
+            String actorRef = null;
+            TableMetadata tableMetadata = getTableMetadata(truncateStatement.getTableName());
+            ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
+            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
+                    .getConnectorAttachedRefs();
+
+            Iterator it = connectorAttachedRefs.keySet().iterator();
+            boolean found = false;
+            while (it.hasNext() && !found) {
+                ConnectorName connectorName = (ConnectorName) it.next();
+                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+                if (connectorMetadata.getSupportedOperations().contains(Operations.TRUNCATE_TABLE)) {
+                    actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+                    found = true;
+                }
+            }
+            if (!found) {
+                throw new PlanningException("There is not actorRef for Storage Operation");
+            }
+
+            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.UPDATE_TABLE,
+                    ResultType.RESULTS);
+
+            storageWorkflow.setClusterName(clusterMetadata.getName());
+            storageWorkflow.setTableName(tableMetadata.getName());
+
         } else {
             throw new PlanningException("Delete, Truncate and Update statements not supported yet");
         }

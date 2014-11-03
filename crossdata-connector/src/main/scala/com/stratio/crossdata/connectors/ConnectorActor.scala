@@ -246,10 +246,10 @@ ActorLogging with IResultHandler{
           eng.delete(clustername, table, whereClauses)
         }
         case Update(queryId, clustername, table, assignments, whereClauses) => {
-          eng.update(queryId, clustername, table, assignments, whereClauses)
+          eng.update(clustername, table, assignments, whereClauses)
         }
         case Truncate(queryId, clustername, table) => {
-          eng.truncate(queryId, clustername, table)
+          eng.truncate(clustername, table)
         }
       }
       val result = StorageResult.createSuccessFulStorageResult("STORAGED successfully");
