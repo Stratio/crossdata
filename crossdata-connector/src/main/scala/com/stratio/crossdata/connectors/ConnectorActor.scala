@@ -19,8 +19,7 @@
 package com.stratio.crossdata.connectors
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved,
-MemberUp, UnreachableMember}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
@@ -245,6 +244,12 @@ ActorLogging with IResultHandler{
         }
         case DeleteRows(queryId, clustername, table, whereClauses) => {
           eng.delete(clustername, table, whereClauses)
+        }
+        case Update(queryId, clustername, table, assignments, whereClauses) => {
+          eng.update(queryId, clustername, table, assignments, whereClauses)
+        }
+        case Truncate(queryId, clustername, table) => {
+          eng.truncate(queryId, clustername, table)
         }
       }
       val result = StorageResult.createSuccessFulStorageResult("STORAGED successfully");

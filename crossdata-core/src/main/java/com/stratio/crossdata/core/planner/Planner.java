@@ -99,6 +99,8 @@ import com.stratio.crossdata.core.statements.DropTableStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.statements.TruncateStatement;
+import com.stratio.crossdata.core.statements.UpdateTableStatement;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.utils.CoreUtils;
 
@@ -859,7 +861,6 @@ public class Planner {
             metadataWorkflow.setClusterName(attachedRefs.values().iterator().next().getClusterRef());
             metadataWorkflow.setAlterOptions(alterOptions);
 
-
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
@@ -1002,6 +1003,47 @@ public class Planner {
             }
             storageWorkflow.setWhereClauses(filters);
 
+        } else if (query.getStatement() instanceof UpdateTableStatement){
+
+            UpdateTableStatement updateTableStatement = (UpdateTableStatement) query.getStatement();
+
+            // Find connector
+            String actorRef = null;
+            TableMetadata tableMetadata = getTableMetadata(updateTableStatement.getTableName());
+            ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
+            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
+                    .getConnectorAttachedRefs();
+
+            Iterator it = connectorAttachedRefs.keySet().iterator();
+            boolean found = false;
+            while (it.hasNext() && !found) {
+                ConnectorName connectorName = (ConnectorName) it.next();
+                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+                if (connectorMetadata.getSupportedOperations().contains(Operations.UPDATE_TABLE)) {
+                    actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+                    found = true;
+                }
+            }
+            if (!found) {
+                throw new PlanningException("There is not actorRef for Storage Operation");
+            }
+
+            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.UPDATE_TABLE,
+                    ResultType.RESULTS);
+
+            storageWorkflow.setClusterName(clusterMetadata.getName());
+            storageWorkflow.setTableName(tableMetadata.getName());
+            storageWorkflow.setAssignments(updateTableStatement.getAssignations());
+
+            List<Filter> filters = new ArrayList<>();
+            for(Relation relation: updateTableStatement.getWhereClauses()){
+                Filter filter = new Filter(Operations.UPDATE_TABLE, relation);
+                filters.add(filter);
+            }
+            storageWorkflow.setWhereClauses(filters);
+
+        } else if (query.getStatement() instanceof TruncateStatement) {
+            throw new PlanningException("Truncate Statements are not supported in the planner yet.");
         } else {
             throw new PlanningException("Delete, Truncate and Update statements not supported yet");
         }

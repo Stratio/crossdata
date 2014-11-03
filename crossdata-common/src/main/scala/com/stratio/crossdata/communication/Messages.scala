@@ -27,7 +27,7 @@ import com.stratio.crossdata.common.logicalplan.LogicalWorkflow
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.QueryStatus
 import com.stratio.crossdata.common.security.ICredentials
-import com.stratio.crossdata.common.statements.structures.Selector
+import com.stratio.crossdata.common.statements.structures.{Relation, Selector}
 
 @SerialVersionUID(-4155622367894752659L)
 case class ACK(queryId: String, status: QueryStatus) extends Serializable
@@ -91,6 +91,13 @@ case class InsertBatch(override val queryId: String, targetCluster: ClusterName,
 
 case class DeleteRows(override val queryId: String, targetCluster: ClusterName, targetTable: TableName,
                       whereClauses: util.Collection[Filter]) extends StorageOperation(queryId)
+
+case class Update(override val queryId: String, targetCluster: ClusterName, targetTable: TableName,
+                  assignments: util.Collection[Relation], whereClauses: util.Collection[Filter])
+    extends StorageOperation(queryId)
+
+case class Truncate(override val queryId: String, targetCluster: ClusterName, targetTable: TableName) extends
+    StorageOperation(queryId)
 
 // ============================================================================
 //                                IQueryEngine

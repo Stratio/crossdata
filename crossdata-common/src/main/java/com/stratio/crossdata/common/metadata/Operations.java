@@ -54,6 +54,16 @@ public enum Operations {
     DROP_TABLE("DROP_TABLE"),
 
     /**
+     * The engine supports updating the data of a table according to some conditions.
+     */
+    UPDATE_TABLE("UPDATE_TABLE"),
+
+    /**
+     * The engine supports deleting all the data from a table without removing its metadata.
+     */
+    TRUNCATE_TABLE("TRUNCATE_TABLE"),
+
+    /**
      * The engine supports inserting data in existing tables.
      */
     INSERT("INSERT"),
