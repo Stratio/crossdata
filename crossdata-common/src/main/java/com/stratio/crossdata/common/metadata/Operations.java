@@ -73,6 +73,7 @@ public enum Operations {
      */
     DROP_INDEX("DROP_INDEX"),
 
+
     /**
      * The engine supports retrieving a set of columns from a specific table.
      */
