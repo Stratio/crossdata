@@ -18,6 +18,10 @@
 
 package com.stratio.crossdata.core.validator.statements;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +33,7 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.core.query.IParsedQuery;
+import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -48,15 +53,6 @@ import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
 
 public class SelectStatementTest extends BasicValidatorTest {
-    private String validateOk(String inputText, String result) {
-        String res = "";
-        return res;
-    }
-
-    private String validateFail(String inputText, String result) {
-        String res = "";
-        return res;
-    }
 
     @Test
     public void validateBasicColumnOk() {
@@ -79,9 +75,9 @@ public class SelectStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
 
     }
@@ -138,9 +134,9 @@ public class SelectStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -167,11 +163,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("users.unknown is not a valid column name");
+            fail("users.unknown is not a valid column name");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
 
     }
@@ -207,9 +203,9 @@ public class SelectStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -251,9 +247,9 @@ public class SelectStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -293,11 +289,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Invalid columnName in where not checked");
+            fail("Invalid columnName in where not checked");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -337,11 +333,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Invalid columnName in where not checked");
+            fail("Invalid columnName in where not checked");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -382,11 +378,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Invalid columnName in where not checked");
+            fail("Invalid columnName in where not checked");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -442,11 +438,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
             try {
                 validator.validate(parsedQuery);
-                Assert.fail("Strings operator must be only '=' ");
+                fail("Strings operator must be only '=' ");
             } catch (ValidationException e) {
                 Assert.assertTrue(true);
             } catch (IgnoreQueryException e) {
-                Assert.fail(e.getMessage());
+                fail(e.getMessage());
             }
         }
     }
@@ -501,11 +497,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
             try {
                 validator.validate(parsedQuery);
-                Assert.fail("Strings operator must be only '=' ");
+                fail("Strings operator must be only '=' ");
             } catch (ValidationException e) {
                 Assert.assertTrue(true);
             } catch (IgnoreQueryException e) {
-                Assert.fail(e.getMessage());
+                fail(e.getMessage());
             }
 
         }
@@ -545,9 +541,9 @@ public class SelectStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -592,9 +588,9 @@ public class SelectStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
 
     }
@@ -634,11 +630,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Not valid catalog in FROM");
+            fail("Not valid catalog in FROM");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -677,11 +673,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Not valid catalog in INNER JOIN");
+            fail("Not valid catalog in INNER JOIN");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -720,11 +716,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Not valid catalog in INNER JOIN");
+            fail("Not valid catalog in INNER JOIN");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -763,11 +759,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Not valid catalog in parameter ON of an InnerJoin ");
+            fail("Not valid catalog in parameter ON of an InnerJoin ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -806,11 +802,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Not valid catalog in parameter ON of an InnerJoin ");
+            fail("Not valid catalog in parameter ON of an InnerJoin ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -849,11 +845,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Not valid columnName in parameter ON of an InnerJoin ");
+            fail("Not valid columnName in parameter ON of an InnerJoin ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -892,11 +888,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Not valid columnName in parameter ON of an InnerJoin ");
+            fail("Not valid columnName in parameter ON of an InnerJoin ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -944,11 +940,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Not valid columnName in parameter ON of an InnerJoin ");
+            fail("Not valid columnName in parameter ON of an InnerJoin ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -1000,9 +996,9 @@ public class SelectStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             Assert.assertTrue(true);
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -1176,11 +1172,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Not supported yet");
+            fail("Not supported yet");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
 
 
@@ -1218,11 +1214,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Not supported yet");
+            fail("Not supported yet");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
@@ -1259,28 +1255,163 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("ColumnName not exist for ORDER BY");
+            fail("ColumnName not exist for ORDER BY");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
+    @Test
+    public void simpleFromAlias(){
+        String inputText = "SELECT t.name, t.age FROM demo.users t";
+        String expectedText = "SELECT demo.users.name, demo.users.age FROM demo.users AS t";
+        Selector selector1 = new ColumnSelector(new ColumnName("demo", "t", "name"));
+        Selector selector2 = new ColumnSelector(new ColumnName("demo", "t", "age"));
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
 
-/*
-  @Test
-  public void testComplexQueryWithAliasesOk() {
+        TableName tablename = new TableName("demo", "users");
+        tablename.setAlias("t");
 
-    String inputText =
-        "SELECT users.age AS edad, users.gender AS genero, sum(users.age) AS suma, min(gender) AS minimo, count(*) AS contador FROM demo.users "
-            + "WHERE edad > 13 AND genero IN ('male', 'female') ORDER BY edad DESC GROUP BY genero;";
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
-    String expectedText =
-        "SELECT users.age AS edad, users.gender AS genero, SUM(users.age) AS suma, MIN(users.gender) AS minimo, COUNT(*) AS contador FROM demo.users "
-            + "WHERE users.age > 13 AND users.gender IN ('male', 'female') ORDER BY users.age DESC GROUP BY users.gender;";
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
 
-    validateOk(inputText, expectedText, "testComplexQueryWithAliasesOk");
-  }
-  */
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+
+    }
+
+    @Test
+    public void simpleSelectAlias(){
+        String inputText = "SELECT demo.users.name AS n, demo.users.age FROM demo.users WHERE n = 'name_1'";
+        String expectedText = "SELECT demo.users.name AS n, demo.users.age FROM demo.users " +
+                "WHERE demo.users.name = 'name_1'";
+
+        ColumnName n1 = new ColumnName("demo", "users", "name");
+        //n1.setAlias("n");
+        Selector selector1 = new ColumnSelector(n1);
+        selector1.setAlias("n");
+        Selector selector2 = new ColumnSelector(new ColumnName("demo", "users", "age"));
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        TableName tablename = new TableName("demo", "users");
+
+        List<Relation> where = new ArrayList<>();
+        Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
+        Selector rightWh = new StringSelector("name_1");
+        Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
+        where.add(relationWh);
+
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+        selectStatement.setWhere(where);
+
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+
+    }
+
+    @Test
+    public void simpleJoinAlias(){
+        String inputText =
+                "SELECT u.name AS n, u.age, ui.info FROM demo.users u "
+                        + "INNER JOIN demo.users_info ui ON n=ui.name "
+                        + "WHERE n = 'name_1'";
+        String expectedText =
+                "SELECT demo.users.name AS n, demo.users.age, demo.users_info.info FROM demo.users AS u "
+                        + "INNER JOIN demo.users_info AS ui ON demo.users.name = demo.users_info.name "
+                        + "WHERE demo.users.name = 'name_1'";
+
+        Selector selector1 = new ColumnSelector(new ColumnName("", "u", "name"));
+        selector1.setAlias("n");
+        Selector selector2 = new ColumnSelector(new ColumnName("", "u", "age"));
+        Selector selector3 = new ColumnSelector(new ColumnName("", "ui", "info"));
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        selectorList.add(selector3);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        TableName tablename = new TableName("demo", "users");
+        tablename.setAlias("u");
+
+        TableName joinTable = new TableName("demo", "users_info");
+        joinTable.setAlias("ui");
+
+        List<Relation> joinRelations = new ArrayList<>();
+        Selector left = new ColumnSelector(new ColumnName("", "", "n"));
+        Selector right = new ColumnSelector(new ColumnName("", "ui", "name"));
+
+        Relation relation = new Relation(left, Operator.EQ, right);
+        joinRelations.add(relation);
+        InnerJoin join = new InnerJoin(joinTable, joinRelations);
+
+        List<Relation> where = new ArrayList<>();
+        Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
+        Selector rightWh = new StringSelector("name_1");
+        Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
+        where.add(relationWh);
+
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+        selectStatement.setJoin(join);
+        selectStatement.setWhere(where);
+
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+
+    }
+
+
+
+    /*
+    @Test
+    public void testComplexQueryWithAliasesOk() {
+
+        String inputText =
+                "SELECT users.age AS edad, users.gender AS genero, sum(users.age) AS suma, min(gender) AS minimo, count(*) AS contador FROM demo.users "
+                        + "WHERE edad > 13 AND genero IN ('male', 'female') ORDER BY edad DESC GROUP BY genero;";
+
+        String expectedText =
+                "SELECT users.age AS edad, users.gender AS genero, SUM(users.age) AS suma, MIN(users.gender) AS minimo, COUNT(*) AS contador FROM demo.users "
+                        + "WHERE users.age > 13 AND users.gender IN ('male', 'female') ORDER BY users.age DESC GROUP BY users.gender;";
+
+        assertEquals(inputText, expectedText, "Invalid alias result");
+
+    }*/
+
 }

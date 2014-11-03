@@ -160,8 +160,8 @@ public enum MetadataManager {
     public boolean exists(ColumnName name) {
         boolean result = false;
         if (exists(name.getTableName())) {
-            TableMetadata catalogMetadata = this.getTable(name.getTableName());
-            result = catalogMetadata.getColumns().containsKey(name);
+            TableMetadata tableMetadata = this.getTable(name.getTableName());
+            result = tableMetadata.getColumns().containsKey(name);
         }
         return result;
     }

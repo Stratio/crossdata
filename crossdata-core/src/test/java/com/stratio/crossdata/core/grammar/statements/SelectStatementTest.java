@@ -282,7 +282,8 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatement(inputText, expectedText, "selectStatementJoinComplex");
     }
 
-  /*
+
+    /*
   @Test
   public void selectStatementJoinWithParenthesis() {
 
@@ -293,58 +294,47 @@ public class SelectStatementTest extends ParsingTest {
         "SELECT c.a, c.b FROM c INNER JOIN tablename ON field1=field2 WHERE c.x = y;";
 
     testRegularStatement(inputText, expectedText, "selectStatementJoins");
-  }
-  */
+  }*/
 
-  /*
   @Test
   public void selectStatementAliasedColumnsJoin() {
-
     String inputText =
-        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON c.field1=tablename.field2 WHERE c.x = y;";
-
+        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON c.field1=tablename.field2 WHERE c.x = 5;";
     String expectedText =
-        "SELECT c.a, c.b FROM c INNER JOIN tablename ON c.field1=tablename.field2 WHERE c.x = y;";
-
-    testRegularStatement(inputText, expectedText, "selectStatementJoins");
+        "SELECT <unknown_name>.c.a, <unknown_name>.c.b FROM <unknown_name>.c " +
+                "INNER JOIN <unknown_name>.tablename AS t " +
+                "ON <unknown_name>.c.field1 = <unknown_name>.tablename.field2 " +
+                "WHERE <unknown_name>.c.x = 5;";
+    testRegularStatement(inputText, expectedText, "selectStatementAliasedColumnsJoin");
   }
+
 
   @Test
   public void selectStatementAliasedInversedColumnsJoins() {
-
     String inputText =
-        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON tablename.field2=c.field1 WHERE c.x = y;";
-
+        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON tablename.field2=c.field1 WHERE c.x = 5;";
     String expectedText =
-        "SELECT c.a, c.b FROM c INNER JOIN tablename ON tablename.field2=c.field1 WHERE c.x = y;";
+        "SELECT <unknown_name>.c.a, <unknown_name>.c.b FROM <unknown_name>.c " +
+                "INNER JOIN <unknown_name>.tablename AS t " +
+                "ON <unknown_name>.tablename.field2 = <unknown_name>.c.field1 " +
+                "WHERE <unknown_name>.c.x = 5;";
 
     testRegularStatement(inputText, expectedText, "selectStatementJoins");
-
   }
 
   @Test
   public void selectStatementAliasedTableJoins() {
-
     String inputText =
-        "SELECT c.a, c.b FROM table_c c INNER JOIN tablename t ON t.field2=c.field1 WHERE c.x = y;";
-
+        "SELECT c.a, c.b FROM table_c c INNER JOIN tablename t ON t.field2=c.field1 WHERE c.x = 5;";
     String expectedText =
-        "SELECT table_c.a, table_c.b FROM table_c INNER JOIN tablename ON tablename.field2=table_c.field1 WHERE table_c.x = y;";
+        "SELECT <unknown_name>.c.a, <unknown_name>.c.b FROM <unknown_name>.table_c AS c " +
+                "INNER JOIN <unknown_name>.tablename AS t " +
+                "ON <unknown_name>.t.field2 = <unknown_name>.c.field1 " +
+                "WHERE <unknown_name>.c.x = 5;";
 
-    testRegularStatement(inputText, expectedText, "selectStatementJoins");
+    testRegularStatement(inputText, expectedText, "selectStatementAliasedTableJoins");
   }
 
-  @Test
-  public void selectStatementAliasedTableAndInversedColumnsJoins() {
-
-    String inputText =
-        "SELECT c.a, c.b FROM table_c c INNER JOIN tablename t ON c.field2=t.field1 WHERE c.x = y;";
-    String expectedText =
-        "SELECT table_c.a, table_c.b FROM table_c INNER JOIN tablename ON table_c.field2=tablename.field1 WHERE table_c.x = y;";
-    testRegularStatement(inputText, expectedText, "selectStatementJoins");
-
-  }
-*/
     //
     // Select with order by
     //
@@ -429,13 +419,16 @@ public class SelectStatementTest extends ParsingTest {
         "SELECT users.name FROM demo.users WHERE users.email BETWEEN 'aaaa_00@domain.com';";
     testParserFails(inputText, "selectWithInClauseOneValueOk");
   }
+*/
 
-  /*
   @Test
   public void selectGroupedWithCountOk() {
     String inputText = "SELECT users.gender, COUNT(*) FROM demo.users GROUP BY users.gender;";
-    testRegularStatement(inputText, "selectGroupedWithCountOk");
+    String expectedText = "SELECT <unknown_name>.users.gender, COUNT(*) FROM demo.users " +
+            "GROUP BY <unknown_name>.users.gender;";
+    testRegularStatement(inputText, expectedText, "selectGroupedWithCountOk");
   }
+  /*
 
   @Test
   public void selectAliasGroupedWithCountOk() {
@@ -498,26 +491,19 @@ public class SelectStatementTest extends ParsingTest {
     String inputText = "SELECT users.gender FROM demo.users ORDER BY users.age DESC;";
     testRegularStatement(inputText, "selectSimpleOrderByWithDescDirectionOk");
   }
-
+*/
+    /*
   @Test
   public void selectSimpleOrderByFail() {
-
     String inputText = "SELECT users.gender FROM demo.users ORDER BY sum(users.age);";
-    testParserFails(inputText, "selectGroupedWithSumOk");
+      testRegularStatement(inputText, "selectSimpleOrderByFail");
   }
 */
 
-  /*
-  @Test
-  public void testSimpleGroupQueryWithAliasesOk() {
-
-    String inputText =
-        "SELECT users.gender, min(users.age) as minimo FROM demo.users GROUP BY users.gender;";
-
-    testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
-  }
 
 
+
+/*
   @Test
   public void testComplexQueryWithAliasesOk() {
 
@@ -527,7 +513,17 @@ public class SelectStatementTest extends ParsingTest {
 
     testRegularStatement(inputText, "testComplexQueryWithAliasesOk");
   }
-  */
+*/
+
+    @Test
+    public void testSimpleGroupQueryWithAliasesOk() {
+        String inputText =
+                "SELECT users.gender, min(users.age) as minimo FROM demo.users GROUP BY users.gender;";
+        String expectedText =
+                "SELECT <unknown_name>.users.gender, min(<unknown_name>.users.age) as minimo "
+                        + "FROM demo.users GROUP BY <unknown_name>.users.gender;";
+        testRegularStatement(inputText, expectedText, "testSimpleGroupQueryWithAliasesOk");
+    }
 
     //
     // Complex cases
@@ -543,6 +539,8 @@ public class SelectStatementTest extends ParsingTest {
     testRegularStatement(inputText, "complexSelect");
   }
   */
+
+
 
     @Test
     public void selectComplex() {

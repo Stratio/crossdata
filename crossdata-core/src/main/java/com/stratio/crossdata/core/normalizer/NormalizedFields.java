@@ -19,8 +19,10 @@
 package com.stratio.crossdata.core.normalizer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.stratio.crossdata.common.statements.structures.Relation;
@@ -49,9 +51,26 @@ public class NormalizedFields {
 
     private List<TableMetadata> tablesMetadata = new ArrayList<>();
 
+    /**
+     * Map of tables alias associating alias with TableNames.
+     */
+    private Map<String, TableName> tableAlias = new HashMap<>();
+
+    /**
+     * Map of column alias associating alias with ColumnNames.
+     */
+    private Map<String, ColumnName> columnNameAlias = new HashMap<>();
+
 
     public NormalizedFields() {
 
+    }
+
+    public void addColumnName(ColumnName columnName, String alias){
+        this.columnNames.add(columnName);
+        if(alias != null){
+            this.columnNameAlias.put(alias, columnName);
+        }
     }
 
     public Set<ColumnName> getColumnNames() {
@@ -60,6 +79,17 @@ public class NormalizedFields {
 
     public void setColumnNames(Set<ColumnName> columnNames) {
         this.columnNames = columnNames;
+    }
+
+    /**
+     * Add a table name to the list. If an alias is found the alias mapping is also stored.
+     * @param tableName A {@link com.stratio.crossdata.common.data.TableName}.
+     */
+    public void addTableName(TableName tableName){
+        this.tableNames.add(tableName);
+        if(tableName.getAlias() != null){
+            tableAlias.put(tableName.getAlias(), tableName);
+        }
     }
 
     public Set<TableName> getTableNames() {
@@ -134,5 +164,40 @@ public class NormalizedFields {
         return tablesMetadata;
     }
 
+    /**
+     * Get whether an alias for a given table name exists.
+     * @param name The alias name.
+     * @return Whether it exists or not.
+     */
+    public boolean existTableAlias(final String name){
+        return tableAlias.containsKey(name);
+    }
+
+    /**
+     * Get whether an alias for a given column name exists.
+     * @param name The alias name.
+     * @return Whether it exists or not.
+     */
+    public boolean existColumnAlias(final String name){
+        return columnNameAlias.containsKey(name);
+    }
+
+    /**
+     * Get the table name associated with an alias.
+     * @param alias The alias.
+     * @return A {@link com.stratio.crossdata.common.data.TableName} or null if not exists.
+     */
+    public TableName getTableName(final String alias){
+        return tableAlias.get(alias);
+    }
+
+    /**
+     * Get the column name associated with an alias.
+     * @param alias The alias.
+     * @return A {@link com.stratio.crossdata.common.data.ColumnName} or null if not exists.
+     */
+    public ColumnName getColumnName(final String alias){
+        return columnNameAlias.get(alias);
+    }
 
 }
