@@ -37,14 +37,15 @@ import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.IResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.driver.BasicDriver;
 import com.stratio.crossdata.sh.help.HelpContent;
 import com.stratio.crossdata.sh.help.HelpManager;
 import com.stratio.crossdata.sh.help.HelpStatement;
-import com.stratio.crossdata.sh.help.generated.CrossDataHelpLexer;
-import com.stratio.crossdata.sh.help.generated.CrossDataHelpParser;
+import com.stratio.crossdata.sh.help.generated.CrossdataHelpLexer;
+import com.stratio.crossdata.sh.help.generated.CrossdataHelpParser;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
 import com.stratio.crossdata.sh.utils.XDshCompletionHandler;
 import com.stratio.crossdata.sh.utils.XDshCompletor;
@@ -229,9 +230,9 @@ public class Shell {
     private HelpStatement parseHelp(String inputText) {
         HelpStatement result = null;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
-        CrossDataHelpLexer lexer = new CrossDataHelpLexer(input);
+        CrossdataHelpLexer lexer = new CrossdataHelpLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        CrossDataHelpParser parser = new CrossDataHelpParser(tokens);
+        CrossdataHelpParser parser = new CrossdataHelpParser(tokens);
         try {
             result = parser.query();
         } catch (RecognitionException e) {
@@ -367,19 +368,33 @@ public class Shell {
 
     public boolean executeApiCAll(String command){
         boolean apiCallExecuted = false;
+        String result = "OK";
         if(command.toLowerCase().startsWith("list connectors")){
-            listConnectors();
+            result = listConnectors();
             apiCallExecuted = true;
         } else if (command.toLowerCase().startsWith("add connector")
                    || command.toLowerCase().startsWith("add datastore")) {
-            sendManifest(command);
+            result = sendManifest(command);
             apiCallExecuted = true;
         } else if (command.toLowerCase().startsWith("reset metadata")) {
-            resetMetadata();
+            result = resetMetadata();
             apiCallExecuted = true;
         } else if (command.toLowerCase().startsWith("clean metadata")){
-            cleanMetadata();
+            result = cleanMetadata();
             apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("drop datastore")){
+            result = dropManifest(
+                    CrossdataManifest.TYPE_DATASTORE,
+                    command.toLowerCase().replace("drop datastore ", "").replace(";", "").trim());
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("drop connector")){
+            result = dropManifest(
+                    CrossdataManifest.TYPE_CONNECTOR,
+                    command.toLowerCase().replace("drop connector ", "").replace(";", "").trim());
+            apiCallExecuted = true;
+        }
+        if(apiCallExecuted){
+            LOG.info(result);
         }
         return apiCallExecuted;
     }
@@ -447,9 +462,8 @@ public class Shell {
         println(ConsoleUtils.stringResult(r));
     }
 
-    private void listConnectors() {
-        CommandResult commandResult= crossDataDriver.listConnectors();
-        LOG.info(commandResult.getResult());
+    private String listConnectors() {
+        return crossDataDriver.listConnectors().getResult().toString();
     }
 
     private String updateCatalog(String toExecute) {
@@ -474,15 +488,15 @@ public class Shell {
     /**
      * Trigger the operation to reset only the metadata information related to catalogs.
      */
-    private void cleanMetadata() {
-        crossDataDriver.cleanMetadata();
+    private String cleanMetadata() {
+        return crossDataDriver.cleanMetadata().getResult().toString();
     }
 
     /**
      * Trigger the operation to reset the metadata information.
      */
-    private void resetMetadata() {
-        crossDataDriver.resetMetadata();
+    private String resetMetadata() {
+        return crossDataDriver.resetMetadata().getResult().toString();
     }
 
     /**
@@ -531,10 +545,26 @@ public class Shell {
         }
         queryEnd = System.currentTimeMillis();
         updatePrompt(crossDataResult);
-        println("Result: " + ConsoleUtils.stringResult(crossDataResult));
-        println("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
-
+        LOG.info("Result: " + ConsoleUtils.stringResult(crossDataResult));
+        LOG.info("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
         return "OK";
+    }
+
+    private String dropManifest(int manifestType, String manifestName) {
+        try {
+            Result result = crossDataDriver.dropManifest(manifestType, manifestName);
+            String message;
+            if(result.hasError()){
+                ErrorResult errorResult = (ErrorResult) result;
+                message = errorResult.getErrorMessage();
+            } else {
+                CommandResult commandResult = (CommandResult) result;
+                message = commandResult.getResult().toString();
+            }
+            return message;
+        } catch (ManifestException e) {
+            return "ERROR";
+        }
     }
 
     /**

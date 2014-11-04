@@ -823,4 +823,60 @@ public enum MetadataManager {
             writeLock.unlock();
         }
     }
+
+    public void deleteConnector(ConnectorName connectorName)
+            throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
+            RollbackException, MetadataManagerException {
+        shouldBeInit();
+        try {
+            writeLock.lock();
+
+            for(FirstLevelName firstLevelName: metadata.keySet()){
+                if(firstLevelName instanceof ClusterName) {
+                    ClusterMetadata clusterMetadata = (ClusterMetadata) metadata.get(firstLevelName);
+                    Map<ConnectorName, ConnectorAttachedMetadata> attachedConnectors =
+                            clusterMetadata.getConnectorAttachedRefs();
+                    if(attachedConnectors.containsKey(connectorName)){
+                        StringBuilder sb = new StringBuilder("Connector ");
+                        sb.append(connectorName).append(" couldn't be deleted").append(System.lineSeparator());
+                        sb.append("It's attached to cluster ").append(clusterMetadata.getName());
+                        throw new MetadataManagerException(sb.toString());
+                    }
+                }
+            }
+
+            beginTransaction();
+            metadata.remove(connectorName);
+            commitTransaction();
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public void deleteDatastore(DataStoreName dataStoreName)
+            throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
+            RollbackException, MetadataManagerException {
+        shouldBeInit();
+        try {
+            writeLock.lock();
+
+            DataStoreMetadata dataStoreMetadata = getDataStore(dataStoreName);
+            Map<ClusterName, ClusterAttachedMetadata> attachedClusters = dataStoreMetadata.getClusterAttachedRefs();
+            if((attachedClusters != null) && (!attachedClusters.isEmpty())){
+                StringBuilder sb = new StringBuilder("Datastore ");
+                sb.append(dataStoreName).append(" couldn't be deleted").append(System.lineSeparator());
+                sb.append("It has attachments: ").append(System.lineSeparator());
+                for(ClusterName clusterName: attachedClusters.keySet()){
+                    sb.append(" - ").append(clusterName).append(System.lineSeparator());
+                }
+                throw new MetadataManagerException(sb.toString());
+            }
+
+            beginTransaction();
+            metadata.remove(dataStoreName);
+            commitTransaction();
+        } finally {
+            writeLock.unlock();
+        }
+    }
 }

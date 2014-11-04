@@ -35,6 +35,7 @@ import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.exceptions.ApiException;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
@@ -58,6 +59,7 @@ import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
+import com.stratio.crossdata.core.metadata.MetadataManagerException;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.query.BaseQuery;
@@ -158,11 +160,19 @@ public class APIManager {
             result = CommandResult.createCommandResult("CrossdataManifest added "
                     + System.lineSeparator()
                     + cmd.params().get(0).toString());
-        } else if (APICommand.RESET_CROSSDATADATA().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.RESET_CROSSDATADATA().toString());
+        } else if (APICommand.DROP_MANIFEST().equals(cmd.commandType())){
+            LOG.info(PROCESSING + APICommand.DROP_MANIFEST().toString());
+            result = CommandResult.createCommandResult("Manifest dropped");
+            try {
+                dropManifest(Integer.parseInt(String.valueOf(cmd.params().get(0))), cmd.params().get(1).toString());
+            } catch (ApiException e) {
+                result = CommandResult.createExecutionErrorResult(e.getMessage());
+            }
+        } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.RESET_METADATA().toString());
             result = resetMetadata();
-        } else if (APICommand.CLEAN_CROSSDATADATA().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.CLEAN_CROSSDATADATA().toString());
+        } else if (APICommand.CLEAN_METADATA().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.CLEAN_METADATA().toString());
             result = cleanMetadata();
         } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.LIST_CONNECTORS().toString());
@@ -175,6 +185,7 @@ public class APIManager {
                     Result.createUnsupportedOperationErrorResult("Command " + cmd.commandType() + " not supported");
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
+        result.setQueryId(cmd.queryId());
         return result;
     }
 
@@ -331,13 +342,45 @@ public class APIManager {
     }
 
     /**
+     * Remove all the information related to a Datastore or Connector.
+     *
+     * @param manifestType Datastore or Connector.
+     * @param manifestName Name of the manifest.
+     */
+    private void dropManifest(int manifestType, String manifestName) throws ApiException {
+        if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
+            dropDataStore(new DataStoreName(manifestName));
+        } else {
+            dropConnector(new ConnectorName(manifestName));
+        }
+    }
+
+    private void dropDataStore(DataStoreName dataStoreName) throws ApiException {
+        try {
+            MetadataManager.MANAGER.deleteDatastore(dataStoreName);
+        } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
+                RollbackException | MetadataManagerException e) {
+            throw new ApiException(e);
+        }
+    }
+
+    private void dropConnector(ConnectorName connectorName) throws ApiException {
+        try {
+            MetadataManager.MANAGER.deleteConnector(connectorName);
+        } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
+                RollbackException | MetadataManagerException e) {
+            throw new ApiException(e);
+        }
+    }
+
+    /**
      * Method that implements the explain logic. The method will follow the query processing stages: Parser,
      * Validator, and Planner and will provide as result the execution workflow.
      * @param cmd The command to be executed.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     private Result explainPlan(Command cmd) {
-        Result result = null;
+        Result result;
         if (cmd.params().size() == 2) {
             String statement = (String) cmd.params().get(0);
             String catalog = (String) cmd.params().get(1);
@@ -366,7 +409,6 @@ public class APIManager {
             result = Result.createUnsupportedOperationErrorResult(
                     "Invalid number of parameters invoking explain plan");
         }
-        result.setQueryId(cmd.queryId());
         return result;
     }
 

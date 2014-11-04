@@ -27,8 +27,8 @@ import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 
-class CrossDataServer extends Daemon with ServerConfig {
-  override lazy val logger = Logger.getLogger(classOf[CrossDataServer])
+class CrossdataServer extends Daemon with ServerConfig {
+  override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
   lazy val engine = new Engine(engineConfig)
   // Create an Akka system

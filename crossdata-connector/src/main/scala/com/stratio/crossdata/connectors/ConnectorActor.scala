@@ -223,7 +223,7 @@ ActorLogging with IResultHandler{
         s ! result
       }
       case err: Error =>
-        logger.error("error in ConnectorActor( receiving CrossDataOperation)")
+        logger.error("error in ConnectorActor( receiving CrossdataOperation)")
     }
     val result = MetadataResult.createSuccessMetadataResult(metadataOperation)
     result.setQueryId(qId)

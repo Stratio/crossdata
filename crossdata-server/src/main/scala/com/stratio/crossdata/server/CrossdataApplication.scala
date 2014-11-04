@@ -16,34 +16,29 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.statements;
+package com.stratio.crossdata.server
 
+import scala.annotation.tailrec
 
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.TableName;
+object CrossdataApplication extends App {
+  val crossdataServer: CrossdataServer = new CrossdataServer
 
-/**
- * Crossdata statement that are executed over a table.
- */
-public interface ITableStatement {
+  /**
+   * This method make a command loop.
+   * @return  nothing.
+   * */
+  @tailrec
+  private def commandLoop(): Unit = {
+    Console.readLine() match {
+      case "quit" | "exit" => exit()
+      case _ =>
+    }
+    commandLoop()
+  }
 
-    /**
-     * Get the table to be described.
-     *
-     * @return The name or null if not set.
-     */
-    TableName getTableName();
-
-    /**
-     * Set the table name.
-     * @param tableName The name.
-     */
-    void setTableName(TableName tableName);
-
-    /**
-     * Get the catalog associated with the table.
-     * @return A {@link com.stratio.crossdata.common.data.CatalogName}.
-     */
-    CatalogName getEffectiveCatalog();
-
+  crossdataServer.init(null)
+  crossdataServer.start()
+  commandLoop()
+  crossdataServer.stop()
+  crossdataServer.destroy()
 }

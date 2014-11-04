@@ -93,6 +93,7 @@ import com.stratio.crossdata.core.statements.CreateCatalogStatement;
 import com.stratio.crossdata.core.statements.CreateIndexStatement;
 import com.stratio.crossdata.core.statements.CreateTableStatement;
 import com.stratio.crossdata.core.statements.DeleteStatement;
+import com.stratio.crossdata.core.statements.DetachConnectorStatement;
 import com.stratio.crossdata.core.statements.DropCatalogStatement;
 import com.stratio.crossdata.core.statements.DropIndexStatement;
 import com.stratio.crossdata.core.statements.DropTableStatement;
@@ -907,6 +908,18 @@ public class Planner {
                     .getConnector(attachConnectorStatement.getConnectorName());
             managementWorkflow.setActorRef(connector.getActorRef());
 
+        } else if (metadataStatement instanceof DetachConnectorStatement) {
+            DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) metadataStatement;
+            String actorRef = null;
+            ExecutionType executionType = ExecutionType.DETACH_CONNECTOR;
+            ResultType type = ResultType.RESULTS;
+            managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
+            managementWorkflow.setConnectorName(detachConnectorStatement.getConnectorName());
+            managementWorkflow.setClusterName(detachConnectorStatement.getClusterName());
+            ConnectorMetadata connector = MetadataManager.MANAGER
+                    .getConnector(detachConnectorStatement.getConnectorName());
+            managementWorkflow.setActorRef(connector.getActorRef());
+            //TODO:
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }

@@ -129,7 +129,7 @@ public final class XDshUtils {
             "CONNECTOR",
             "CONNECTORS",
             "CLUSTER",
-            "CROSSDATADATA",
+            "METADATA",
             "CATALOG");
 
     /**

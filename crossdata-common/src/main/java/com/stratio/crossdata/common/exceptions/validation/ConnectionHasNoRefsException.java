@@ -16,23 +16,12 @@
  * under the License.
  */
 
-package com.stratio.crossdata.sh;
+package com.stratio.crossdata.common.exceptions.validation;
 
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.fail;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 
-import org.testng.annotations.Test;
-
-public class CrossDatashTestIT {
-
-    @Test
-    public void testSendManifest() throws Exception {
-        Shell crossDatash = new Shell(false);
-        //TODO Generate a temp file with the manifest
-        fail("Not implemented");
-        String result = crossDatash.sendManifest("ADD DATASTORE " +
-                "'crossdata-common/src/main/resources/com/stratio/crossdata/connector/DataStoreDefinition.xml'");
-        assertNotNull(result, "testSendManifest returns a empty String");
+public class ConnectionHasNoRefsException extends ValidationException {
+    public ConnectionHasNoRefsException(String msg) {
+        super(msg);
     }
-
 }
