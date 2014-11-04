@@ -93,6 +93,11 @@ public class ChannelService implements Closeable {
         tcpping.setNumInitialMembers(minInitialMembers);
         tcpping.setTimeout(timeout);
 
+
+        NAKACK nakack = new NAKACK();
+        nakack.setUseMcastXmit(false);
+        nakack.setDiscardDeliveredMsgs(false);
+
         channel = new JChannel(false);
         ProtocolStack stack = new ProtocolStack();
         channel.setProtocolStack(stack);
@@ -106,7 +111,7 @@ public class ChannelService implements Closeable {
         stack.addProtocol(new FD_ALL().setValue("timeout", TIMEOUT));
         stack.addProtocol(new VERIFY_SUSPECT());
         stack.addProtocol(new BARRIER());
-        stack.addProtocol(new NAKACK());
+        stack.addProtocol(nakack);
         stack.addProtocol(new UNICAST2());
         stack.addProtocol(new STABLE());
         stack.addProtocol(new GMS());
