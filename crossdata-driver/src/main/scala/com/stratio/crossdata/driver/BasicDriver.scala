@@ -63,7 +63,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   private final val DEFAULT_USER: String = "CROSSDATA_USER"
   lazy val logger = BasicDriver.logger
   lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
-  lazy val system = ActorSystem("CrossDataDriverSystem", BasicDriver.config)
+  lazy val system = ActorSystem("CrossdataDriverSystem", BasicDriver.config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
   lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, basicDriverConfig.serverSection.clusterActor, this), "proxy-actor")
@@ -88,9 +88,9 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Release connection to CrossDataServer.
-   * @param user Login to the user (Audit only)
-   * @return ConnectResult
+   * Release connection to MetaServer.
+   * @param user Login to the user (Audit only).
+   * @return ConnectResult.
    */
   @throws(classOf[ConnectionException])
   def connect(user: String): Result = {
@@ -108,7 +108,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Finnish connection to CrossDataServer.
+   * Finnish connection to CrossdataServer.
    */
   @throws(classOf[ConnectionException])
   def disconnect(): Unit = {
@@ -125,7 +125,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Execute a query in the CrossData server asynchronously.
+   * Execute a query in the Crossdata server asynchronously.
    * @param query The query.
    * @param callback The callback object.
    */
@@ -145,7 +145,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Launch query in CrossData Server
+   * Launch query in Crossdata Server
    * @param query Launched query
    * @return QueryResult
    */
@@ -206,9 +206,9 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Send manifest to the server
-   * @param manifest The manifest to be sent
-   * @return A CommandResult with a string
+   * Send manifest to the server.
+   * @param manifest The manifest to be sent.
+   * @return A CommandResult with a string.
    */
   @throws(classOf[ManifestException])
   def addManifest(manifest: CrossdataManifest): CommandResult = {
@@ -220,22 +220,38 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Reset metadata in server
-   * @return A CommandResult with a string
+   * Drop manifest in the server.
+   * @param manifestType The type of the manifest.
+   * @param manifestName The name of the manifest.
+   * @return A CommandResult with a string.
+   */
+  @throws(classOf[ManifestException])
+  def dropManifest(manifestType: Int, manifestName: String): Result = {
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(manifestType.toString);
+    params.add(manifestName)
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DROP_MANIFEST, params))
+    result.asInstanceOf[Result]
+  }
+
+  /**
+   * Reset metadata in server.
+   * @return A CommandResult with a string.
    */
   def resetMetadata(): CommandResult = {
     val queryId = UUID.randomUUID().toString
-    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_CROSSDATADATA, null))
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_METADATA, null))
     result.asInstanceOf[CommandResult]
   }
 
   /**
-   * Clean metadata related to catalogs in server
-   * @return A CommandResult with a string
+   * Clean metadata related to catalogs in server.
+   * @return A CommandResult with a string.
    */
   def cleanMetadata(): CommandResult = {
     val queryId = UUID.randomUUID().toString
-    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.CLEAN_CROSSDATADATA, null))
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.CLEAN_METADATA, null))
     result.asInstanceOf[CommandResult]
   }
 
@@ -291,7 +307,6 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   /**
    * This method get the UserName.
    * @return the value of userName.
-   * @userName type String is the user of this class.
    * */
   def getUserName: String = userName
 

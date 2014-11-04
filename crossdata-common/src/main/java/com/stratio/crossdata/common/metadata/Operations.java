@@ -69,9 +69,19 @@ public enum Operations {
     INSERT("INSERT"),
 
     /**
-     * The engine supports deleting elements from existing tables.
+     * The engine supports deleting elements from existing tables, filtering by a primary key column.
      */
-    DELETE("DELETE"),
+    DELETE_BY_PK("DELETE_BY_PK"),
+
+    /**
+     * The engine supports deleting elements from existing tables, filtering by a indexed column.
+     */
+    DELETE_BY_INDEXED("DELETE_BY_INDEXED"),
+
+    /**
+     * The engine supports deleting elements from existing tables, filtering by a non indexed column.
+     */
+    DELETE_BY_NON_INDEXED("DELETE_BY_NON_INDEXED"),
 
     /**
      * The engine supports index creation from existing tables.

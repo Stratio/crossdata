@@ -17,7 +17,7 @@
  * under the License.
  */
 
-grammar CrossDataHelp;
+grammar CrossdataHelp;
 
 options {
 	language = Java;

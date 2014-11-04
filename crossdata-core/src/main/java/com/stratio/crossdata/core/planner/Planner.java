@@ -998,12 +998,23 @@ public class Planner {
             Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
                     .getConnectorAttachedRefs();
 
+            List<Filter> filters = new ArrayList<>();
+            Set<Operations> requiredOperations = new HashSet<>();
+
+            for(Relation relation: deleteStatement.getWhereClauses()){
+                Operations operation = getDeleteOperation(tableMetadata, relation.getLeftTerm());
+                Filter filter = new Filter(operation, relation);
+                filters.add(filter);
+                requiredOperations.add(filter.getOperation());
+            }
+
             Iterator it = connectorAttachedRefs.keySet().iterator();
             boolean found = false;
             while (it.hasNext() && !found) {
                 ConnectorName connectorName = (ConnectorName) it.next();
                 ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-                if (connectorMetadata.getSupportedOperations().contains(Operations.DELETE)) {
+
+                if (connectorMetadata.getSupportedOperations().containsAll(requiredOperations)) {
                     actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
                     found = true;
                 }
@@ -1018,11 +1029,6 @@ public class Planner {
             storageWorkflow.setClusterName(clusterMetadata.getName());
             storageWorkflow.setTableName(tableMetadata.getName());
 
-            List<Filter> filters = new ArrayList<>();
-            for(Relation relation: deleteStatement.getWhereClauses()){
-                Filter filter = new Filter(Operations.DELETE, relation);
-                filters.add(filter);
-            }
             storageWorkflow.setWhereClauses(filters);
 
         } else if (query.getStatement() instanceof UpdateTableStatement){
@@ -1151,12 +1157,12 @@ public class Planner {
     /**
      * Get the filter operation depending on the type of column and the selector.
      *
-     * @param tableName The table metadata.
+     * @param tableMetadata The table metadata.
      * @param selector  The relationship selector.
      * @param operator  The relationship operator.
      * @return An {@link com.stratio.crossdata.common.metadata.Operations} object.
      */
-    protected Operations getFilterOperation(final TableMetadata tableName,
+    protected Operations getFilterOperation(final TableMetadata tableMetadata,
             final Selector selector,
             final Operator operator) {
         StringBuilder sb = new StringBuilder("FILTER_");
@@ -1164,15 +1170,36 @@ public class Planner {
             sb.append("FUNCTION_");
         } else {
             ColumnSelector cs = ColumnSelector.class.cast(selector);
-            if (tableName.isPK(cs.getName())) {
+            if (tableMetadata.isPK(cs.getName())) {
                 sb.append("PK_");
-            } else if (tableName.isIndexed(cs.getName())) {
+            } else if (tableMetadata.isIndexed(cs.getName())) {
                 sb.append("INDEXED_");
             } else {
                 sb.append("NON_INDEXED_");
             }
         }
         sb.append(operator.name());
+        return Operations.valueOf(sb.toString());
+    }
+
+    /**
+     * Get the filter operation depending on the type of column and the selector.
+     *
+     * @param tableMetadata The table metadata.
+     * @param selector  The relationship selector.
+     * @return An {@link com.stratio.crossdata.common.metadata.Operations} object.
+     */
+    protected Operations getDeleteOperation(final TableMetadata tableMetadata,
+            final Selector selector) {
+        StringBuilder sb = new StringBuilder("DELETE_BY_");
+        ColumnSelector cs = ColumnSelector.class.cast(selector);
+        if (tableMetadata.isPK(cs.getName())) {
+            sb.append("PK");
+        } else if (tableMetadata.isIndexed(cs.getName())) {
+            sb.append("INDEXED");
+        } else {
+            sb.append("NON_INDEXED");
+        }
         return Operations.valueOf(sb.toString());
     }
 
@@ -1188,9 +1215,9 @@ public class Planner {
     private Map<String, LogicalStep> addFilter(Map<String, LogicalStep> lastSteps,
             Map<String, TableMetadata> tableMetadataMap,
             SelectValidatedQuery query) {
-        LogicalStep previous = null;
-        TableMetadata tm = null;
-        Selector s = null;
+        LogicalStep previous;
+        TableMetadata tm;
+        Selector s;
         for (Relation r : query.getRelationships()) {
             s = r.getLeftTerm();
             //TODO Support left-side functions that contain columns of several tables.
