@@ -37,7 +37,7 @@ Add the connector manifest. The XML with the manifest can be found in the path o
 target/stratio-connector-cassandra-0.1.0/conf/CassandraConnector.xml
 
 ```
-    xdsh:user>  ADD CONNECTOR <Path to Cassandra Connector Manifest>
+    xdsh:user>  ADD CONNECTOR <Path to Cassandra Connector Manifest>;
 ```
 
 Attach the connector to the previously defined cluster. The connector name must match the one defined in the
