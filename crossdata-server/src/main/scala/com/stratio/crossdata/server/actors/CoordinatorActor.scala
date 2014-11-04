@@ -208,6 +208,12 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
           }
+          else if (workflow1.getExecutionType == ExecutionType.DETACH_CONNECTOR) {
+            //TODO:
+            //Send shutdown signal to connector
+            //Delete connector's info from metadata manager
+
+          }
           sender ! coordinator.executeManagementOperation(workflow1.createManagementOperationMessage())
         }
 

@@ -113,6 +113,7 @@ public class Validator {
                 validateOptions(parsedQuery.getStatement());
                 break;
             case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
+                //TODO: do this validation
                 break;
             case MUST_EXIST_PROPERTIES:
                 validateExistsProperties(parsedQuery.getStatement());
