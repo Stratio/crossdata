@@ -26,7 +26,7 @@ import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.executionplan.{ExecutionType, ManagementWorkflow, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{AttachConnector, Connect, ConnectToConnector, DisconnectFromConnector, Execute}
+import com.stratio.crossdata.communication._
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionManagerException, ExecutionInfo, ExecutionManager}
 import com.stratio.crossdata.core.metadata.MetadataManager
@@ -209,10 +209,17 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
           }
           else if (workflow1.getExecutionType == ExecutionType.DETACH_CONNECTOR) {
-            //TODO:
             //Send shutdown signal to connector
+            val credentials = null
+            val managementOperation = workflow1.createManagementOperationMessage()
+            val detachConnectorOperation = managementOperation.asInstanceOf[DetachConnector]
+            val connectorClusterConfig = new ConnectorClusterConfig(
+              detachConnectorOperation.targetCluster, SelectorHelper.convertSelectorMapToStringMap
+                (MetadataManager.MANAGER.getCluster(detachConnectorOperation.targetCluster).getOptions))
+            val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(workflow1.getActorRef()))
+            connectorSelection ! new Connect(credentials, connectorClusterConfig)
             //Delete connector's info from metadata manager
-
+            ExecutionManager.MANAGER.deleteEntry(queryId)
           }
           sender ! coordinator.executeManagementOperation(workflow1.createManagementOperationMessage())
         }

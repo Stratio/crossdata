@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.coordinator;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertFalse;
 
 import java.util.Map;
 
@@ -33,6 +34,7 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.communication.ManagementOperation;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
 
@@ -55,7 +57,8 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         workflow.setConnectorName(new ConnectorName("myConnector"));
         workflow.setDatastoreName(new DataStoreName("dataStoreTest"));
         Coordinator coordinator = new Coordinator();
-        coordinator.executeManagementOperation(workflow.createManagementOperationMessage());
+        ManagementOperation op = workflow.createManagementOperationMessage();
+        coordinator.executeManagementOperation(op);
         // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
         datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
@@ -73,6 +76,43 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         }
         assertTrue(found, "Attachment not found");
     }
+
+    /* *
+     * Testing an API operation (detaching a cluster to a datastore)
+     *
+     * @throws Exception
+    @Test
+    public void testDetachCluster() throws Exception {
+
+        // Create and add a test datastore metadata to the metadatamanager
+        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "production");
+
+        ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.DETACH_CLUSTER,
+                ResultType.RESULTS);
+        workflow.setClusterName(new ClusterName("clusterTest"));
+        workflow.setConnectorName(new ConnectorName("myConnector"));
+        workflow.setDatastoreName(new DataStoreName("dataStoreTest"));
+        Coordinator coordinator = new Coordinator();
+        ManagementOperation op= workflow.createManagementOperationMessage();
+        coordinator.executeManagementOperation(op);
+        // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
+        datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
+        Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
+                datastoreTest.getClusterAttachedRefs();
+        boolean found = false;
+        for (ClusterName clusterNameTest : clusterAttachedRefsTest.keySet()) {
+            ClusterAttachedMetadata clusterAttachedMetadata =
+                    clusterAttachedRefsTest.get(clusterNameTest);
+            if (clusterAttachedMetadata.getClusterRef().equals(new ClusterName("clusterTest"))) {
+                assertEquals(clusterAttachedMetadata.getDataStoreRef(), new DataStoreName("datastoreTest"),
+                        "Wrong attachment for clusterTest");
+                found = true;
+                break;
+            }
+        }
+        assertFalse(found);
+    }
+    */
 
     /*@Test
     public void testAttachConnector() throws Exception {
@@ -373,36 +413,8 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         }
         MetadataManager.MANAGER.createTable(table);
     }*/
-}
-//
-//    @Test
-//    public void testDetachCluster() throws Exception {
-//
-//        // Create and add a test datastore metadata to the metadatamanager
-//        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "production");
-//
-//        ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.ATTACH_CLUSTER,
-//                ResultType.RESULTS);
-//        Coordinator coordinator = new Coordinator();
-//        coordinator.executeManagementOperation(workflow.createManagementOperationMessage(""));
-//        // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
-//        datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
-//        Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
-//                datastoreTest.getClusterAttachedRefs();
-//        boolean found = false;
-//        for (ClusterName clusterNameTest : clusterAttachedRefsTest.keySet()) {
-//            ClusterAttachedMetadata clusterAttachedMetadata =
-//                    clusterAttachedRefsTest.get(clusterNameTest);
-//            if (clusterAttachedMetadata.getClusterRef().equals(new ClusterName("clusterTest"))) {
-//                assertEquals(clusterAttachedMetadata.getDataStoreRef(), new DataStoreName("datastoreTest"),
-//                        "Wrong attachment for clusterTest");
-//                found = true;
-//                break;
-//            }
-//        }
-//        assertFalse(found);
-//    }
-//
+
+
 //    @Test
 //    public void testAttachConnector() throws Exception {
 //
@@ -703,4 +715,4 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
 //        MetadataManager.MANAGER.createTable(table);
 //    }
 //
-//}
+}

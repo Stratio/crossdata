@@ -87,6 +87,9 @@ public class Coordinator implements Serializable {
         case DROP_TABLE:
             persistDropTable(metadataWorkflow.getTableName());
             break;
+        case DETACH_CONNECTOR:
+            //TODO:
+            break;
         default:
             LOG.info("unknown statement detected");
             break;

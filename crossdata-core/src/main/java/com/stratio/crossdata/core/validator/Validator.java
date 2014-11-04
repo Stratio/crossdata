@@ -18,7 +18,9 @@
 
 package com.stratio.crossdata.core.validator;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -26,6 +28,7 @@ import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
+import com.stratio.crossdata.common.exceptions.validation.ConnectionHasNoRefsException;
 import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotConnectionException;
 import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
@@ -35,8 +38,11 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
@@ -113,7 +119,7 @@ public class Validator {
                 validateOptions(parsedQuery.getStatement());
                 break;
             case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
-                //TODO: do this validation
+                validateConnectorAttachedRefs(parsedQuery.getStatement());
                 break;
             case MUST_EXIST_PROPERTIES:
                 validateExistsProperties(parsedQuery.getStatement());
@@ -160,6 +166,32 @@ public class Validator {
         }
 
         return validatedQuery;
+    }
+
+    private void validateConnectorAttachedRefs(CrossdataStatement statement) throws ValidationException {
+        if (statement instanceof DetachConnectorStatement) {
+            DetachConnectorStatement detachConnectorStatement= (DetachConnectorStatement) statement;
+            ConnectorName connectorName = detachConnectorStatement.getConnectorName();
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER
+                    .getCluster(detachConnectorStatement.getClusterName());
+            Map<ConnectorName, ConnectorAttachedMetadata> refs = clusterMetadata
+                    .getConnectorAttachedRefs();
+            Iterator it=refs.entrySet().iterator();
+            boolean found=false;
+            while(it.hasNext()){
+                Map.Entry<ConnectorName, ConnectorMetadata>pairs=(Map.Entry)it.next();
+                if (connectorName.equals(pairs.getKey())){
+                   found=true;
+                   break;
+                }
+            }
+            if(!found){
+                throw new ConnectionHasNoRefsException("Invalid validation [MUST_EXIST_ATTACH_CONNECTOR_CLUSTER] for " +
+                        statement);
+            }
+        } else {
+            throw new ConnectionHasNoRefsException("Invalid validation [MUST_EXIST_ATTACH_CONNECTOR_CLUSTER] for " + statement);
+        }
     }
 
     private void validateConnectorConnected(CrossdataStatement statement) throws ValidationException {

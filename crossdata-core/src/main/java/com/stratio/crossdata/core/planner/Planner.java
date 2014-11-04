@@ -909,11 +909,17 @@ public class Planner {
             managementWorkflow.setActorRef(connector.getActorRef());
 
         } else if (metadataStatement instanceof DetachConnectorStatement) {
+            DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) metadataStatement;
+            String actorRef = null;
+            ExecutionType executionType = ExecutionType.DETACH_CONNECTOR;
+            ResultType type = ResultType.RESULTS;
+            managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
+            managementWorkflow.setConnectorName(detachConnectorStatement.getConnectorName());
+            managementWorkflow.setClusterName(detachConnectorStatement.getClusterName());
+            ConnectorMetadata connector = MetadataManager.MANAGER
+                    .getConnector(detachConnectorStatement.getConnectorName());
+            managementWorkflow.setActorRef(connector.getActorRef());
             //TODO:
-            //managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
-            //managementWorkflow.setConnectorName(attachConnectorStatement.getConnectorName());
-            //managementWorkflow.setClusterName(attachConnectorStatement.getClusterName());
-            //managementWorkflow.setActorRef(connector.getActorRef());
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
