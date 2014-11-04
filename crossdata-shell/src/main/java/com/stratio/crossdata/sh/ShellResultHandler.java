@@ -25,12 +25,12 @@ import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
 
 /**
- * Results handler for the CrossData shell when the asynchronous interface is used.
+ * Results handler for the Crossdata shell when the asynchronous interface is used.
  */
 public class ShellResultHandler implements IResultHandler {
 
     /**
-     * Parent CrossData shell.
+     * Parent Crossdata shell.
      */
     private final Shell parent;
 
