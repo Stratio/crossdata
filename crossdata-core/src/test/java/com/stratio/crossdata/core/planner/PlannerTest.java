@@ -410,6 +410,7 @@ public class PlannerTest extends PlannerBaseTest{
         assertTrue("actorRef1".equalsIgnoreCase(storageWorkflow.getActorRef()), "Actor reference is not correct");
 
         assertEquals(storageWorkflow.getTableName(), new TableName("demo", "table1"), "Table names differ");
+        assertEquals(storageWorkflow.getExecutionType(), ExecutionType.TRUNCATE_TABLE, "Execution types differ");
 
     }
 

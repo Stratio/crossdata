@@ -32,6 +32,7 @@ import com.stratio.crossdata.communication.DeleteRows;
 import com.stratio.crossdata.communication.Insert;
 import com.stratio.crossdata.communication.InsertBatch;
 import com.stratio.crossdata.communication.StorageOperation;
+import com.stratio.crossdata.communication.Truncate;
 import com.stratio.crossdata.communication.Update;
 
 /**
@@ -97,7 +98,7 @@ public class StorageWorkflow extends ExecutionWorkflow{
         } else if(ExecutionType.UPDATE_TABLE.equals(this.executionType)){
             result = new Update(queryId, this.clusterName, tableName, this.assignments, this.whereClauses);
         } else if(ExecutionType.TRUNCATE_TABLE.equals(this.executionType)){
-            throw new CoordinationException(executionType + " not supported yet in the Coordinator.");
+            result = new Truncate(queryId, this.clusterName, tableName);
         } else {
             throw new CoordinationException("Operation " + this.executionType + " not supported yet.");
         }

@@ -113,9 +113,10 @@ public class Normalizator {
      */
     public void normalizeTables(List<TableName> fromTables) throws ValidationException {
         for (TableName tableName : fromTables) {
+            System.out.println("Checking: " + tableName.toString());
             checkTable(tableName);
             fields.getCatalogNames().add(tableName.getCatalogName());
-            fields.getTableNames().add(tableName);
+            fields.addTableName(tableName);
         }
     }
 
@@ -139,9 +140,6 @@ public class Normalizator {
      */
     public void normalizeJoins(InnerJoin innerJoin)
             throws ValidationException {
-        TableName joinTable = innerJoin.getTablename();
-        checkTable(joinTable);
-        fields.getTableNames().add(joinTable);
         checkJoinRelations(innerJoin.getRelations());
     }
 
@@ -391,7 +389,7 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void checkColumnSelector(ColumnSelector selector) throws ValidationException {
-        ColumnName columnName = selector.getName();
+        ColumnName columnName = applyAlias(selector.getName());
         if (columnName.isCompletedName()) {
             if (!MetadataManager.MANAGER.exists(columnName)) {
                 throw new NotValidColumnException(columnName);
@@ -400,8 +398,21 @@ public class Normalizator {
             TableName searched = this.searchTableNameByColumn(columnName);
             columnName.setTableName(searched);
         }
-        fields.getColumnNames().add(columnName);
+        fields.addColumnName(columnName, selector.getAlias());
+        selector.setName(columnName);
 
+    }
+
+    private ColumnName applyAlias(ColumnName columnName){
+        ColumnName result = columnName;
+        if(columnName.getTableName() != null && fields.existTableAlias(columnName.getTableName().getName())){
+            columnName.setTableName(fields.getTableName(columnName.getTableName().getName()));
+        }
+
+        if(fields.existColumnAlias(columnName.getName())){
+            result = fields.getColumnName(columnName.getName());
+        }
+        return result;
     }
 
     /**
@@ -518,6 +529,8 @@ public class Normalizator {
 
         if (rightTerm.getType() == SelectorType.COLUMN) {
             ColumnSelector columnSelector = (ColumnSelector) rightTerm;
+            ColumnName columnName = applyAlias(columnSelector.getName());
+            columnSelector.setName(columnName);
 
             TableName foundTableName = this.searchTableNameByColumn(columnSelector.getName());
             columnSelector.getName().setTableName(foundTableName);

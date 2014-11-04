@@ -74,9 +74,6 @@ public class TableName extends Name {
         } else {
             result = QualifiedNames.getTableQualifiedName(UNKNOWN_NAME, getName());
         }
-        if (alias != null) {
-            result = result + " AS " + alias;
-        }
         return result;
     }
 
@@ -84,4 +81,12 @@ public class TableName extends Name {
         return NameType.TABLE;
     }
 
+    @Override public String toString() {
+        if(alias == null){
+            return this.getQualifiedName();
+        }
+        StringBuilder sb = new StringBuilder(this.getQualifiedName());
+        sb.append(" AS ").append(alias);
+        return sb.toString();
+    }
 }

@@ -1037,7 +1037,8 @@ getSelectors[TableName tablename] returns [ArrayList list]
 ;
 
 getAliasedTableID[Map tablesAliasesMap] returns [TableName result]:
-	tableN=getTableName (T_AS alias=T_IDENT {tablesAliasesMap.put($alias.text, tableN.toString()); tableN.setAlias($alias.text); })?
+	tableN=getTableName ((T_AS)? alias=T_IDENT {tablesAliasesMap.put($alias.text, tableN.toString()); tableN.setAlias
+	($alias.text); })?
 	{result = tableN;}
 ;
 

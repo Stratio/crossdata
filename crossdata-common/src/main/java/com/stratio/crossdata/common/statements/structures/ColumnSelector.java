@@ -53,6 +53,14 @@ public class ColumnSelector extends Selector {
         return name;
     }
 
+    /**
+     * Set the column name.
+     * @param name A {@link com.stratio.crossdata.common.data.ColumnName}.
+     */
+    public void setName(ColumnName name) {
+        this.name = name;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(name.toString());

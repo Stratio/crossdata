@@ -356,6 +356,9 @@ public class Validator {
         } else if (stmt instanceof UpdateTableStatement) {
             UpdateTableStatement updateTableStatement = (UpdateTableStatement) stmt;
             name = updateTableStatement.getTableName();
+        } else if (stmt instanceof TruncateStatement) {
+            TruncateStatement truncateStatement = (TruncateStatement) stmt;
+            name = truncateStatement.getTableName();
         } else {
             throw new IgnoreQueryException(stmt.getClass().getCanonicalName() + " not supported yet.");
         }

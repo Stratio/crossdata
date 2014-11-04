@@ -1074,7 +1074,7 @@ public class Planner {
                 throw new PlanningException("There is not actorRef for Storage Operation");
             }
 
-            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.UPDATE_TABLE,
+            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.TRUNCATE_TABLE,
                     ResultType.RESULTS);
 
             storageWorkflow.setClusterName(clusterMetadata.getName());
