@@ -16,29 +16,23 @@
  * under the License.
  */
 
-package com.stratio.crossdata.server
+package com.stratio.crossdata.sh;
 
-import scala.annotation.tailrec
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.fail;
 
-object CrossDataApplication extends App {
-  val crossDataServer: CrossDataServer = new CrossDataServer
+import org.testng.annotations.Test;
 
-  /**
-   * This method make a command loop.
-   * @return  nothing.
-   * */
-  @tailrec
-  private def commandLoop(): Unit = {
-    Console.readLine() match {
-      case "quit" | "exit" => exit()
-      case _ =>
+public class CrossdatashTestIT {
+
+    @Test
+    public void testSendManifest() throws Exception {
+        Shell crossDatash = new Shell(false);
+        //TODO Generate a temp file with the manifest
+        fail("Not implemented");
+        String result = crossDatash.sendManifest("ADD DATASTORE " +
+                "'crossdata-common/src/main/resources/com/stratio/crossdata/connector/DataStoreDefinition.xml'");
+        assertNotNull(result, "testSendManifest returns a empty String");
     }
-    commandLoop()
-  }
 
-  crossDataServer.init(null)
-  crossDataServer.start()
-  commandLoop()
-  crossDataServer.stop()
-  crossDataServer.destroy()
 }

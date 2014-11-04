@@ -41,5 +41,5 @@ public enum StatementType {
     /**
      * Statements that are executed by IMetadataProviders.
      */
-    CROSSDATADATA
+    METADATA
 }

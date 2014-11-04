@@ -189,7 +189,7 @@ public final class ParserUtils {
                 suggestionFromToken = errorMessage.substring(positionToken + 2);
                 suggestionFromToken = suggestionFromToken.trim().split(" ")[0].toUpperCase();
 
-                // We check if there is a reserved word of CrossData grammar equivalent to the expecting token
+                // We check if there is a reserved word of Crossdata grammar equivalent to the expecting token
                 if (!statementTokens.contains(suggestionFromToken)) {
                     suggestionFromToken = "";
                 }

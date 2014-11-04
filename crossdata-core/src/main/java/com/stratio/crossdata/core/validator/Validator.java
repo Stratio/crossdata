@@ -72,7 +72,7 @@ public class Validator {
      */
     public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
         IValidatedQuery validatedQuery = null;
-        LOG.info("Validating CrossDataStatements...");
+        LOG.info("Validating CrossdataStatements...");
         for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
 
             switch (val) {

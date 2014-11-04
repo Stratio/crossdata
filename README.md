@@ -19,7 +19,8 @@ Compiling Crossdata involves generating a set of files (.tokens, Lexers, and Par
 ## Running the com.stratio.crossdata-server##
 
 ```
-   > mvn exec:java -DskipTests -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.MetaApplication"
+   > mvn exec:java -DskipTests -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server
+   .CrossdataApplication"
 ```
 
 ## Running the crosdata-shell ##
@@ -47,7 +48,7 @@ Additionally, you can execute an script upon launching the shell. The script wil
 
 ```
    > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec
-   .args="--script /path/script.metaql"
+   .args="--script /path/script.xdql"
 ```
 
 
