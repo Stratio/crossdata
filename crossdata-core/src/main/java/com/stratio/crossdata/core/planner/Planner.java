@@ -93,6 +93,7 @@ import com.stratio.crossdata.core.statements.CreateCatalogStatement;
 import com.stratio.crossdata.core.statements.CreateIndexStatement;
 import com.stratio.crossdata.core.statements.CreateTableStatement;
 import com.stratio.crossdata.core.statements.DeleteStatement;
+import com.stratio.crossdata.core.statements.DetachClusterStatement;
 import com.stratio.crossdata.core.statements.DetachConnectorStatement;
 import com.stratio.crossdata.core.statements.DropCatalogStatement;
 import com.stratio.crossdata.core.statements.DropIndexStatement;
@@ -889,8 +890,17 @@ public class Planner {
             managementWorkflow.setDatastoreName(attachClusterStatement.getDatastoreName());
             managementWorkflow.setOptions(attachClusterStatement.getOptions());
 
-        } else if (metadataStatement instanceof AttachConnectorStatement) {
+        } else if (metadataStatement instanceof DetachClusterStatement) {
+            DetachClusterStatement detachClusterStatement = (DetachClusterStatement) metadataStatement;
+            String actorRefUri = null;
+            ExecutionType executionType = ExecutionType.DETACH_CLUSTER;
+            ResultType type = ResultType.RESULTS;
 
+            managementWorkflow = new ManagementWorkflow(queryId, actorRefUri, executionType, type);
+            String clusterName = detachClusterStatement.getClusterName();
+            managementWorkflow.setClusterName(new ClusterName(clusterName));
+
+        } else if (metadataStatement instanceof AttachConnectorStatement) {
             // Create parameters for metadata workflow
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) metadataStatement;
             String actorRef = null;
@@ -919,7 +929,6 @@ public class Planner {
             ConnectorMetadata connector = MetadataManager.MANAGER
                     .getConnector(detachConnectorStatement.getConnectorName());
             managementWorkflow.setActorRef(connector.getActorRef());
-            //TODO:
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }

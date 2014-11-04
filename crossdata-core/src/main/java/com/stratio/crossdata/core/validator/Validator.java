@@ -213,7 +213,6 @@ public class Validator {
         } else {
             validateNotExist(name, hasIfExist);
         }
-
     }
 
     private void validateSelect(IParsedQuery parsedQuery) throws ValidationException {

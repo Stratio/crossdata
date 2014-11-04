@@ -87,9 +87,6 @@ public class Coordinator implements Serializable {
         case DROP_TABLE:
             persistDropTable(metadataWorkflow.getTableName());
             break;
-        case DETACH_CONNECTOR:
-            //TODO:
-            break;
         default:
             LOG.info("unknown statement detected");
             break;
@@ -109,7 +106,8 @@ public class Coordinator implements Serializable {
             AttachCluster ac = AttachCluster.class.cast(workflow);
             result = persistAttachCluster(ac.targetCluster(), ac.datastoreName(), ac.options());
         } else if (DetachCluster.class.isInstance(workflow)) {
-            result = Result.createUnsupportedOperationErrorResult("Detach cluster not supported yet.");
+            DetachCluster dc = DetachCluster.class.cast(workflow);
+            result =persistDetachCluster(dc.targetCluster(),dc.datastoreName());
         } else if (AttachConnector.class.isInstance(workflow)) {
             AttachConnector ac = AttachConnector.class.cast(workflow);
             result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
@@ -163,18 +161,16 @@ public class Coordinator implements Serializable {
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistDetachCluster(ClusterName clusterName, DataStoreName datastoreName) {
-        //TODO Move this type of operations to MetadataManager in order to use a single lock
-        DataStoreMetadata datastoreMetadata =
-                MetadataManager.MANAGER.getDataStore(datastoreName);
+        //TODO: Move this type of operations to MetadataManager in order to use a single lock
+        DataStoreMetadata datastoreMetadata = MetadataManager.MANAGER.getDataStore(datastoreName);
 
-        Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs =
-                datastoreMetadata.getClusterAttachedRefs();
+        Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs = datastoreMetadata.getClusterAttachedRefs();
 
         clusterAttachedRefs.remove(clusterName);
         datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
 
         MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
-        return CommandResult.createCommandResult("CLUSTER attached successfully");
+        return CommandResult.createCommandResult("CLUSTER detached successfully");
     }
 
     /**
