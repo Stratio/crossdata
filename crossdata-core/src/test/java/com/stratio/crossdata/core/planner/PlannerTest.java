@@ -99,7 +99,7 @@ public class PlannerTest extends PlannerBaseTest{
         operationsC1.add(Operations.PROJECT);
         operationsC1.add(Operations.SELECT_OPERATOR);
         operationsC1.add(Operations.SELECT_WINDOW);
-        operationsC1.add(Operations.DELETE);
+        operationsC1.add(Operations.DELETE_BY_PK);
         operationsC1.add(Operations.CREATE_INDEX);
         operationsC1.add(Operations.DROP_INDEX);
         operationsC1.add(Operations.UPDATE_TABLE);
@@ -231,7 +231,7 @@ public class PlannerTest extends PlannerBaseTest{
         assertEquals(storageWorkflow.getTableName(), new TableName("demo", "table1"), "Table name is not correct");
 
         Collection<Filter> whereClauses = new ArrayList<>();
-        whereClauses.add(new Filter(Operations.DELETE, new Relation(
+        whereClauses.add(new Filter(Operations.DELETE_BY_PK, new Relation(
                 new ColumnSelector(new ColumnName("demo", "table1", "id")),
                 Operator.EQ,
                 new IntegerSelector(3))));
