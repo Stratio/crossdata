@@ -445,6 +445,7 @@ public class Shell {
                 } else if (toExecute.toLowerCase().startsWith("help")) {
                     showHelp(sb.toString());
                     sb = new StringBuilder();
+                    println("");
                 } else if (toExecute.toLowerCase().startsWith("script")) {
                     String[] params = toExecute.split(" ");
                     if (params.length == 2) {
@@ -453,6 +454,7 @@ public class Shell {
                         showHelp(sb.toString());
                     }
                     sb = new StringBuilder();
+                    println("");
                 } else {
                     if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
                         currentPrompt = console.getPrompt();

@@ -78,7 +78,6 @@ import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.SelectorType;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
@@ -1012,7 +1011,11 @@ public class Planner {
             Set<Operations> requiredOperations = new HashSet<>();
 
             for(Relation relation: deleteStatement.getWhereClauses()){
-                Operations operation = getDeleteOperation(tableMetadata, relation.getLeftTerm());
+                Operations operation = getFilterOperation(
+                        tableMetadata,
+                        "DELETE",
+                        relation.getLeftTerm(),
+                        relation.getOperator());
                 Filter filter = new Filter(operation, relation);
                 filters.add(filter);
                 requiredOperations.add(filter.getOperation());
@@ -1049,15 +1052,30 @@ public class Planner {
             String actorRef = null;
             TableMetadata tableMetadata = getTableMetadata(updateTableStatement.getTableName());
             ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
-            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
-                    .getConnectorAttachedRefs();
+            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
+                    clusterMetadata.getConnectorAttachedRefs();
+
+            List<Filter> filters = new ArrayList<>();
+            Set<Operations> requiredOperations = new HashSet<>();
+
+            for(Relation relation: updateTableStatement.getWhereClauses()){
+                Operations operation = getFilterOperation(
+                        tableMetadata,
+                        "UPDATE",
+                        relation.getLeftTerm(),
+                        relation.getOperator());
+                Filter filter = new Filter(operation, relation);
+                filters.add(filter);
+                requiredOperations.add(filter.getOperation());
+            }
 
             Iterator it = connectorAttachedRefs.keySet().iterator();
             boolean found = false;
             while (it.hasNext() && !found) {
                 ConnectorName connectorName = (ConnectorName) it.next();
                 ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-                if (connectorMetadata.getSupportedOperations().contains(Operations.UPDATE_TABLE)) {
+
+                if (connectorMetadata.getSupportedOperations().containsAll(requiredOperations)) {
                     actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
                     found = true;
                 }
@@ -1073,11 +1091,6 @@ public class Planner {
             storageWorkflow.setTableName(tableMetadata.getName());
             storageWorkflow.setAssignments(updateTableStatement.getAssignations());
 
-            List<Filter> filters = new ArrayList<>();
-            for(Relation relation: updateTableStatement.getWhereClauses()){
-                Filter filter = new Filter(Operations.UPDATE_TABLE, relation);
-                filters.add(filter);
-            }
             storageWorkflow.setWhereClauses(filters);
 
         } else if (query.getStatement() instanceof TruncateStatement) {
@@ -1165,51 +1178,30 @@ public class Planner {
     }
 
     /**
-     * Get the filter operation depending on the type of column and the selector.
+     * Get the filter operation depending on the type of column and the selector of the where clauses.
      *
      * @param tableMetadata The table metadata.
+     * @param statement Statement type.
      * @param selector  The relationship selector.
      * @param operator  The relationship operator.
      * @return An {@link com.stratio.crossdata.common.metadata.Operations} object.
      */
-    protected Operations getFilterOperation(final TableMetadata tableMetadata,
+    protected Operations getFilterOperation(
+            final TableMetadata tableMetadata,
+            final String statement,
             final Selector selector,
-            final Operator operator) {
-        StringBuilder sb = new StringBuilder("FILTER_");
-        if (SelectorType.FUNCTION.equals(selector.getType())) {
-            sb.append("FUNCTION_");
-        } else {
-            ColumnSelector cs = ColumnSelector.class.cast(selector);
-            if (tableMetadata.isPK(cs.getName())) {
-                sb.append("PK_");
-            } else if (tableMetadata.isIndexed(cs.getName())) {
-                sb.append("INDEXED_");
-            } else {
-                sb.append("NON_INDEXED_");
-            }
-        }
-        sb.append(operator.name());
-        return Operations.valueOf(sb.toString());
-    }
-
-    /**
-     * Get the filter operation depending on the type of column and the selector.
-     *
-     * @param tableMetadata The table metadata.
-     * @param selector  The relationship selector.
-     * @return An {@link com.stratio.crossdata.common.metadata.Operations} object.
-     */
-    protected Operations getDeleteOperation(final TableMetadata tableMetadata,
-            final Selector selector) {
-        StringBuilder sb = new StringBuilder("DELETE_BY_");
+            final Operator operator){
+        StringBuilder sb = new StringBuilder(statement.toUpperCase());
+        sb.append("_");
         ColumnSelector cs = ColumnSelector.class.cast(selector);
         if (tableMetadata.isPK(cs.getName())) {
-            sb.append("PK");
+            sb.append("PK_");
         } else if (tableMetadata.isIndexed(cs.getName())) {
-            sb.append("INDEXED");
+            sb.append("INDEXED_");
         } else {
-            sb.append("NON_INDEXED");
+            sb.append("NON_INDEXED_");
         }
+        sb.append(operator.name());
         return Operations.valueOf(sb.toString());
     }
 
@@ -1233,7 +1225,7 @@ public class Planner {
             //TODO Support left-side functions that contain columns of several tables.
             tm = tableMetadataMap.get(s.getSelectorTablesAsString());
             if (tm != null) {
-                Operations op = getFilterOperation(tm, s, r.getOperator());
+                Operations op = getFilterOperation(tm, "FILTER", s, r.getOperator());
                 Filter f = new Filter(op, r);
                 previous = lastSteps.get(s.getSelectorTablesAsString());
                 previous.setNextStep(f);
