@@ -599,6 +599,9 @@ public class Planner {
         Set<String> managementStatements = new HashSet<>();
         managementStatements.add(AttachClusterStatement.class.toString());
         managementStatements.add(AttachConnectorStatement.class.toString());
+        managementStatements.add(DetachConnectorStatement.class.toString());
+        managementStatements.add(DetachClusterStatement.class.toString());
+
 
         if (metadataStatements.contains(metadataStatement.getClass().toString())) {
             executionWorkflow = buildMetadataWorkflow(query);

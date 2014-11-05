@@ -20,7 +20,10 @@ package com.stratio.crossdata.core.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -33,7 +36,9 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.exceptions.ApiException;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
@@ -57,6 +62,7 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
+import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerException;
@@ -177,6 +183,9 @@ public class APIManager {
         } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.LIST_CONNECTORS().toString());
             result = listConnectors();
+        } else if (APICommand.DESCRIBE_CONNECTOR().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTOR().toString());
+            result = describeConnector((ConnectorName) cmd.params().get(0));
         } else if (APICommand.EXPLAIN_PLAN().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.EXPLAIN_PLAN().toString());
             result = explainPlan(cmd);
@@ -186,6 +195,47 @@ public class APIManager {
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
         result.setQueryId(cmd.queryId());
+        return result;
+    }
+
+    private Result describeConnector(ConnectorName name) {
+        Result result=null;
+        ConnectorMetadata connector = MetadataManager.MANAGER.getConnector(name);
+        StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
+        Set<DataStoreName> datastores = connector.getDataStoreRefs();
+        Set<ClusterName> clusters = connector.getClusterRefs();
+        Map<ClusterName, Map<Selector, Selector>> properties = connector.getClusterProperties();
+
+        stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
+                .append("\t").append(System.getProperty("line.separator"));
+
+        stringBuilder.append("\t").append("Status: ").append(connector.getConnectorStatus()).append(System.getProperty(
+                "line.separator"));
+
+        stringBuilder.append("\t").append("Properties: ").append(System.getProperty("line.separator"));
+
+        Iterator<Map.Entry<ClusterName, Map<Selector, Selector>>> propIt = properties.entrySet().iterator();
+        while(propIt.hasNext()){
+            Map.Entry<ClusterName, Map<Selector, Selector>> e = propIt.next();
+            stringBuilder.append("\t\t").append(e.getKey().toString()).append(": ")
+                    .append(e.getValue().toString())
+                    .append(System .getProperty("line.separator"));
+        }
+
+        stringBuilder.append("\t").append("Datastores: ").append(System.getProperty("line.separator"));
+        for(DataStoreName datastore:datastores){
+            stringBuilder.append("\t\t").append(datastore.getName().toString())
+                    .append(System .getProperty("line.separator"));
+        }
+
+        stringBuilder.append("\t").append("Clusters: ").append(System.getProperty("line.separator"));
+        for(ClusterName cluster:clusters){
+            stringBuilder.append("\t\t").append(cluster.getName().toString())
+                .append(System .getProperty("line.separator"));
+        }
+
+        stringBuilder = stringBuilder.append("\t").append("-------");
+        result = CommandResult.createCommandResult(stringBuilder.toString());
         return result;
     }
 
