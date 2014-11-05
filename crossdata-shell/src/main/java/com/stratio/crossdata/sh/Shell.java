@@ -31,15 +31,17 @@ import java.util.List;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.IResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
+import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.driver.BasicDriver;
 import com.stratio.crossdata.sh.help.HelpContent;
 import com.stratio.crossdata.sh.help.HelpManager;
@@ -49,7 +51,6 @@ import com.stratio.crossdata.sh.help.generated.CrossdataHelpParser;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
 import com.stratio.crossdata.sh.utils.XDshCompletionHandler;
 import com.stratio.crossdata.sh.utils.XDshCompletor;
-import com.stratio.crossdata.common.result.Result;
 
 import jline.console.ConsoleReader;
 
@@ -107,6 +108,13 @@ public class Shell {
      * Constant to define the prefix for explain plan operations.
      */
     private static final String EXPLAIN_PLAN_TOKEN = "explain plan for";
+
+    /**
+     * Default String for the Crossdata prompt
+     */
+    private static final String DEFAULT_PROMPT = "xdsh:";
+
+    private static final char DEFAULT_TEMP_PROMPT = '»';
 
     /**
      * Class constructor.
@@ -211,7 +219,7 @@ public class Shell {
      * @param currentCatalog The currentCatalog.
      */
     private void setPrompt(String currentCatalog) {
-        StringBuilder sb = new StringBuilder("xdsh:");
+        StringBuilder sb = new StringBuilder(DEFAULT_PROMPT);
         sb.append(crossDataDriver.getUserName());
         if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
             sb.append(":");
@@ -408,6 +416,7 @@ public class Shell {
             String cmd = "";
             StringBuilder sb = new StringBuilder(cmd);
             String toExecute;
+            String currentPrompt = "";
             while (!cmd.trim().toLowerCase().startsWith("exit")
                     && !cmd.trim().toLowerCase().startsWith("quit")) {
                 cmd = console.readLine();
@@ -416,23 +425,23 @@ public class Shell {
                 if (toExecute.endsWith(";")) {
                     if (" ".equalsIgnoreCase(sb.toString())
                             || System.lineSeparator().equalsIgnoreCase(sb.toString())) {
-                        println("");
                     } else if (toExecute.toLowerCase().startsWith("help")) {
                         showHelp(sb.toString());
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);
-                        println("");
                     }else if(toExecute.toLowerCase().startsWith("list connectors")){
                         listConnectors();
                     }else if(toExecute.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
                         explainPlan(toExecute);
                     } else if(executeApiCAll(toExecute)){
-                        println("");
                     } else {
                         executeQuery(toExecute);
-                        println("");
                     }
                     sb = new StringBuilder();
+                    if(!console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                        console.setPrompt(currentPrompt);
+                    }
+                    println("");
                 } else if (toExecute.toLowerCase().startsWith("help")) {
                     showHelp(sb.toString());
                     sb = new StringBuilder();
@@ -444,6 +453,13 @@ public class Shell {
                         showHelp(sb.toString());
                     }
                     sb = new StringBuilder();
+                } else {
+                    if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                        currentPrompt = console.getPrompt();
+                        String tempPrompt =
+                                StringUtils.repeat(" ", DEFAULT_PROMPT.length()-1) + DEFAULT_TEMP_PROMPT + " ";
+                        console.setPrompt(tempPrompt);
+                    }
                 }
             }
         } catch (IOException ex) {
