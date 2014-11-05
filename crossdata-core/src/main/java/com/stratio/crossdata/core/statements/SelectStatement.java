@@ -41,7 +41,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 public class SelectStatement extends CrossdataStatement implements Serializable {
 
     /**
-     * Maximum limit of rows to be retreived in a query.
+     * Maximum limit of rows to be retrieved in a query.
      */
     private static final int MAX_LIMIT = 10000;
 
@@ -50,7 +50,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     private final TableName tableName;
     /**
-     * The list of selectors to be retreived.
+     * The list of selectors to be retrieved.
      */
     private SelectExpression selectExpression = null;
     /**

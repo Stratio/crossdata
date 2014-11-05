@@ -80,8 +80,11 @@ public enum MetadataManager {
      * @param name It is the object to check.
      * @return True if it exists.
      */
-    public boolean exists(Name name) {
+    public boolean exists(Name name) throws MetadataManagerException {
         boolean result = false;
+        if(name == null){
+            throw new MetadataManagerException("Name is null");
+        }
         switch (name.getType()) {
         case CATALOG:
             result = exists((CatalogName) name);

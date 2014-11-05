@@ -414,4 +414,9 @@ public class PlannerTest extends PlannerBaseTest{
 
     }
 
+    @Test
+    public void groupBy(){
+        String inputText = "SELECT id, name, FUNCTION(description) FROM tableTest GROUP BY id, name;";
+    }
+
 }

@@ -58,7 +58,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         dataStoreType.setName("dataStoreTest");
 
-        dataStoreType.setVersion("0.1.0");
+        dataStoreType.setVersion("0.1.1");
 
         PropertiesType requiredProperties = new PropertiesType();
         List<PropertyType> property = new ArrayList<>();
@@ -91,7 +91,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
                 "Name: dataStoreTest" + System.lineSeparator()
-                + "Version: 0.1.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                 "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                 System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
                 System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
@@ -114,7 +114,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         connectorType.setConnectorName("connectorTest");
 
-        connectorType.setVersion("0.1.0");
+        connectorType.setVersion("0.1.1");
 
         connectorType.setDataStores(new DataStoreRefsType());
 
@@ -150,7 +150,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "CONNECTOR" +
                 System.lineSeparator() + "ConnectorName: connectorTest" + System.lineSeparator()
                 + "DataStores: " + System.lineSeparator()
-                + "Version: 0.1.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                 "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                 System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
                 System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
