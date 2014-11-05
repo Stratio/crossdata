@@ -99,6 +99,7 @@ public class PlannerTest extends PlannerBaseTest{
         operationsC1.add(Operations.PROJECT);
         operationsC1.add(Operations.SELECT_OPERATOR);
         operationsC1.add(Operations.SELECT_WINDOW);
+        operationsC1.add(Operations.SELECT_GROUP_BY);
         operationsC1.add(Operations.DELETE_BY_PK);
         operationsC1.add(Operations.CREATE_INDEX);
         operationsC1.add(Operations.DROP_INDEX);
@@ -415,8 +416,17 @@ public class PlannerTest extends PlannerBaseTest{
     }
 
     @Test
-    public void groupBy(){
-        String inputText = "SELECT id, name, FUNCTION(description) FROM tableTest GROUP BY id, name;";
+    public void selectGroupBy(){
+        String inputText =
+                "SELECT demo.table1.id, FUNCTION(demo.table1.user) FROM demo.table1 GROUP BY demo.table1.id;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "selectGroupBy", false, table1);
+
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        assertEquals(queryWorkflow.getActorRef(), connector1.getActorRef(), "Wrong target actor");
     }
 
 }
