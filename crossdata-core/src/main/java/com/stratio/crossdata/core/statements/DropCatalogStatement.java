@@ -23,7 +23,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code DROP KEYSPACE} statement from the CROSSDATA language.
+ * Class that models a {@code DROP CATALOG} statement from the CROSSDATA language.
  */
 public class DropCatalogStatement extends MetadataStatement {
 

@@ -33,18 +33,18 @@ import com.stratio.crossdata.sh.help.generated.CrossdataHelpParser;
 public class CrossdataHelpParserTest {
 
     protected static String[][] supportedHelpCommands = { { "exit", "EXIT" }, { "quit", "EXIT" },
-            { "datatypes", "DATATYPES" }, { "create", "CREATE" }, { "create keyspace", "CREATE_KEYSPACE" },
+            { "datatypes", "DATATYPES" }, { "create", "CREATE" }, { "create catalog", "CREATE_CATALOG" },
             { "create table", "CREATE_TABLE" }, { "create index", "CREATE_INDEX" },
             { "create default index", "CREATE_INDEX" }, { "create lucene index", "CREATE_LUCENE_INDEX" },
             { "update", "UPDATE" }, { "insert", "INSERT_INTO" }, { "insert into", "INSERT_INTO" },
             { "truncate", "TRUNCATE" }, { "drop", "DROP" }, { "drop index", "DROP_INDEX" },
-            { "drop table", "DROP_TABLE" }, { "drop keyspace", "DROP_KEYSPACE" },
+            { "drop table", "DROP_TABLE" }, { "drop catalog", "DROP_CATALOG" },
             { "drop trigger", "DROP_TRIGGER" }, { "select", "SELECT" }, { "add", "ADD" }, { "list", "LIST" },
             { "list process", "LIST_PROCESS" }, { "list udf", "LIST_UDF" }, { "list trigger", "LIST_TRIGGER" },
             { "remove udf", "REMOVE_UDF" }, { "delete", "DELETE" }, { "set options", "SET_OPTIONS" },
-            { "explain plan", "EXPLAIN_PLAN" }, { "alter", "ALTER" }, { "alter keyspace", "ALTER_KEYSPACE" },
+            { "explain plan", "EXPLAIN_PLAN" }, { "alter", "ALTER" }, { "alter catalog", "ALTER_CATALOG" },
             { "alter table", "ALTER_TABLE" }, { "stop", "STOP" }, { "describe", "DESCRIBE" },
-            { "describe keyspace", "DESCRIBE_KEYSPACE" }, { "describe table", "DESCRIBE_TABLE" }, };
+            { "describe catalog", "DESCRIBE_CATALOG" }, { "describe table", "DESCRIBE_TABLE" }, };
     /**
      * Class logger.
      */
