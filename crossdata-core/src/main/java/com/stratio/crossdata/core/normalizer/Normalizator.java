@@ -164,7 +164,7 @@ public class Normalizator {
     public void normalizeOrderBy()
             throws ValidationException {
 
-        //TODO: NOT SUPORTED YET. REVIEW IN FUTURES RELEASES
+        //TODO: NOT SUPPORTED YET. REVIEW IN FUTURES RELEASES
         OrderBy orderBy = ((SelectStatement) parsedQuery.getStatement()).getOrderBy();
 
         if (orderBy != null) {
@@ -181,7 +181,7 @@ public class Normalizator {
      */
     public void normalizeOrderBy(OrderBy orderBy)
             throws ValidationException {
-        for (Selector selector : orderBy.getSelectorList()) {
+        for (Selector selector: orderBy.getSelectorList()) {
             switch (selector.getType()) {
             case COLUMN:
                 checkColumnSelector((ColumnSelector) selector);
@@ -206,7 +206,7 @@ public class Normalizator {
             throws ValidationException {
         SelectExpression selectExpression = ((SelectStatement) parsedQuery.getStatement()).getSelectExpression();
         if (selectExpression != null) {
-            normalizeSelectExpresion(selectExpression);
+            normalizeSelectExpression(selectExpression);
         }
     }
 
@@ -215,7 +215,7 @@ public class Normalizator {
      * @param selectExpression The select expression
      * @throws ValidationException
      */
-    public void normalizeSelectExpresion(SelectExpression selectExpression)
+    public void normalizeSelectExpression(SelectExpression selectExpression)
             throws ValidationException {
         fields.setDistinctSelect(selectExpression.isDistinct());
         List<Selector> normalizeSelectors = checkListSelector(selectExpression.getSelectorList());
@@ -228,11 +228,9 @@ public class Normalizator {
      */
     public void normalizeGroupBy() throws ValidationException {
         GroupBy groupBy = ((SelectStatement) parsedQuery.getStatement()).getGroupBy();
-        //TODO: NOT SUPORTED YET. REVIEW IN FUTURES RELEASES
         if (groupBy != null) {
             normalizeGroupBy(groupBy);
             fields.setGroupBy(groupBy);
-            throw new BadFormatException("GROUP BY not supported yet.");
         }
     }
 
@@ -509,15 +507,19 @@ public class Normalizator {
     }
 
     /**
-     * Validate the Funtions Selectors of a parsed query.
+     * Validate the Functions Selectors of a parsed query.
      * @param functionSelector The function Selector to validate.
      * @throws ValidationException
      */
     public void checkFunctionSelector(FunctionSelector functionSelector)
             throws ValidationException {
+        // Check columns
         List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());
         functionSelector.getFunctionColumns().clear();
         functionSelector.getFunctionColumns().addAll(normalizeSelector);
+        // Check returning type
+        //TODO: This should be updated with information from the MetadataManager
+        functionSelector.setReturningType(ColumnType.INT);
     }
 
     private void checkRightSelector(ColumnName name, Operator operator, Selector rightTerm)

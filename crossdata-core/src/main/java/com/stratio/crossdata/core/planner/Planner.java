@@ -51,6 +51,7 @@ import com.stratio.crossdata.common.executionplan.QueryWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.logicalplan.GroupBy;
 import com.stratio.crossdata.common.logicalplan.Join;
 import com.stratio.crossdata.common.logicalplan.Limit;
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
@@ -73,6 +74,7 @@ import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -549,6 +551,14 @@ public class Planner {
         LogicalStep last = initial;
         while (last.getNextStep() != null) {
             last = last.getNextStep();
+        }
+
+        // GROUP BY clause
+        if(ss.isGroupInc()){
+            GroupBy groupBy = new GroupBy(Operations.SELECT_GROUP_BY, ss.getGroupBy().getSelectorIdentifier());
+            last.setNextStep(groupBy);
+            groupBy.setPrevious(last);
+            last = groupBy;
         }
 
         //Add LIMIT clause
@@ -1318,31 +1328,49 @@ public class Planner {
             if (AsteriskSelector.class.isInstance(s)) {
                 addAll = true;
             } else if (ColumnSelector.class.isInstance(s)) {
-                if (s.getAlias() != null) {
-                    ColumnSelector cs = ColumnSelector.class.cast(s);
-                    aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()), s.getAlias());
+                ColumnSelector cs = ColumnSelector.class.cast(s);
+                if (cs.getAlias() != null) {
+                    aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()),
+                            cs.getAlias());
 
                     typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()),
-                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(ColumnSelector.class
-                                    .cast(s).getName()).getColumnType());
+                            tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
 
-                    typeMap.put(s.getAlias(),
-                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
-                                    .get(ColumnSelector.class.cast(s).getName()).getColumnType()
+                    typeMap.put(cs.getAlias(),
+                            tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(
+                                    cs.getName()).getColumnType()
                     );
                 } else {
-                    ColumnSelector cs = ColumnSelector.class.cast(s);
                     aliasMap.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
                             cs.getName().getName());
 
                     typeMapFromColumnName.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
-                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns().get(cs.getName())
-                                    .getColumnType());
+                            tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
 
                     typeMap.put(cs.getName().getName(),
-                            tableMetadataMap.get(s.getSelectorTablesAsString()).getColumns()
-                                    .get(cs.getName()).getColumnType()
+                            tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType()
                     );
+                }
+            } else if(FunctionSelector.class.isInstance(s)) {
+                FunctionSelector fs = FunctionSelector.class.cast(s);
+                if (s.getAlias() != null) {
+                    aliasMap.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
+                            fs.getAlias());
+
+                    typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
+                            fs.getReturningType());
+
+                    typeMap.put(fs.getAlias(),
+                            fs.getReturningType());
+                } else {
+                    aliasMap.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
+                            fs.getFunctionName());
+
+                    typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
+                            fs.getReturningType());
+
+                    typeMap.put(fs.getFunctionName(),
+                            fs.getReturningType());
                 }
             } else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
