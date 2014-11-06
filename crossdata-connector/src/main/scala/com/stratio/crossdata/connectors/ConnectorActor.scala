@@ -24,8 +24,7 @@ import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
 import com.stratio.crossdata.common.exceptions.ExecutionException
-import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, QueryResult,
-QueryStatus, Result, StorageResult}
+import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication._
 import org.apache.log4j.Logger
 import scala.collection.mutable.{ListMap, Map}
@@ -46,6 +45,30 @@ import com.stratio.crossdata.communication.CreateTable
 import com.stratio.crossdata.communication.InsertBatch
 import akka.cluster.ClusterEvent.CurrentClusterState
 import com.stratio.crossdata.communication.AsyncExecute
+import akka.cluster.ClusterEvent.UnreachableMember
+import com.stratio.crossdata.communication.HeartbeatSig
+import com.stratio.crossdata.communication.DropTable
+import com.stratio.crossdata.communication.Insert
+import com.stratio.crossdata.communication.CreateCatalog
+import com.stratio.crossdata.communication.CreateIndex
+import com.stratio.crossdata.communication.replyConnectorName
+import com.stratio.crossdata.communication.Update
+import akka.cluster.ClusterEvent.MemberRemoved
+import com.stratio.crossdata.communication.IAmAlive
+import com.stratio.crossdata.communication.Execute
+import akka.cluster.ClusterEvent.MemberUp
+import com.stratio.crossdata.communication.ACK
+import com.stratio.crossdata.communication.getConnectorName
+import com.stratio.crossdata.communication.CreateTableAndCatalog
+import com.stratio.crossdata.communication.AlterTable
+import scala.Some
+import com.stratio.crossdata.communication.Truncate
+import com.stratio.crossdata.communication.DropIndex
+import com.stratio.crossdata.communication.CreateTable
+import com.stratio.crossdata.communication.InsertBatch
+import akka.cluster.ClusterEvent.CurrentClusterState
+import com.stratio.crossdata.communication.AsyncExecute
+import com.stratio.crossdata.communication.DeleteRows
 import akka.cluster.ClusterEvent.UnreachableMember
 import com.stratio.crossdata.communication.HeartbeatSig
 import com.stratio.crossdata.communication.DropTable
@@ -181,7 +204,10 @@ ActorLogging with IResultHandler{
         s ! result
       }
       case err: Error =>
-        logger.error("error in ConnectorActor( receiving LogicalWorkflow )")
+        logger.error("Error in ConnectorActor (Receiving LogicalWorkflow)")
+        val result = new ErrorResult(err.getCause.asInstanceOf[Exception])
+        result.setQueryId(ex.queryId)
+        s ! result
     } finally {
       runningJobs.remove(ex.queryId)
     }

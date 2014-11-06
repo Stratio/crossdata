@@ -641,32 +641,42 @@ public class Planner {
             // Create parameters for metadata workflow
             CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
 
-            // Recover ActorRef from ConnectorMetadata
-            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getAttachedConnectors(ConnectorStatus.ONLINE,
-                    createTableStatement.getClusterName());
-            ConnectorMetadata chosenConnectorMetadata = connectors.iterator().next();
-            String actorRefUri = chosenConnectorMetadata.getActorRef();
-            Set<Operations> supportedOperations = chosenConnectorMetadata.getSupportedOperations();
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
+
+            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.CREATE_TABLE);
+
+            if(actorRefUri == null){
+               throw new PlanningException("Cannot determine any connector for the operation: "
+                       + Operations.CREATE_TABLE);
+            }
 
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
             ResultType type = ResultType.RESULTS;
 
-            if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
-                    createTableStatement.getClusterName()) && supportedOperations.contains(Operations.CREATE_CATALOG)) {
-                executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
-                // Create MetadataWorkFlow
-                metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
+            if (!existsCatalogInCluster(
+                    createTableStatement.getTableName().getCatalogName(),
+                    createTableStatement.getClusterName())) {
 
-                // Add CatalogMetadata to the WorkFlow
+                try {
+                    actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.CREATE_CATALOG);
 
-                metadataWorkflow.setCatalogName(
-                        createTableStatement.getTableName().getCatalogName());
-                metadataWorkflow
-                        .setCatalogMetadata(MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName()
-                                .getCatalogName()));
-            } else {
-                metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
+                    executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
+
+                    // Create MetadataWorkFlow
+                    metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
+
+                    // Add CatalogMetadata to the WorkFlow
+                    metadataWorkflow.setCatalogName(
+                            createTableStatement.getTableName().getCatalogName());
+
+                    metadataWorkflow.setCatalogMetadata(
+                            MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName().getCatalogName()));
+                } catch (PlanningException pe) {
+                    LOG.debug("Cannot determine any connector for the operation: "
+                            + Operations.CREATE_CATALOG);
+                }
             }
 
             // Create & add TableMetadata to the MetadataWorkflow
@@ -717,24 +727,12 @@ public class Planner {
 
             CreateIndexStatement createIndexStatement = (CreateIndexStatement) metadataStatement;
 
-            String actorRefUri;
-
             TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(createIndexStatement.getTableName());
 
             ClusterName clusterName = tableMetadata.getClusterRef();
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
-            Map<ConnectorName, ConnectorAttachedMetadata> attachedRefs = clusterMetadata.getConnectorAttachedRefs();
 
-            if ((attachedRefs != null) && (attachedRefs.keySet() != null) && (!attachedRefs.keySet().isEmpty())) {
-                // TODO: Choose the best connector instead of the first one
-                ConnectorName connectorName = attachedRefs.keySet().iterator().next();
-                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-                actorRefUri = connectorMetadata.getActorRef();
-            } else {
-                PlanningException planningException = new PlanningException(
-                        "Cannot find a connector for " + createIndexStatement.toString());
-                throw planningException;
-            }
+            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.CREATE_INDEX);
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.CREATE_INDEX,
                     ResultType.RESULTS);
@@ -757,26 +755,14 @@ public class Planner {
 
             DropIndexStatement dropIndexStatement = (DropIndexStatement) metadataStatement;
 
-            String actorRefUri;
-
             IndexName indexName = dropIndexStatement.getName();
 
             TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(indexName.getTableName());
 
             ClusterName clusterName = tableMetadata.getClusterRef();
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
-            Map<ConnectorName, ConnectorAttachedMetadata> attachedRefs = clusterMetadata.getConnectorAttachedRefs();
 
-            if ((attachedRefs != null) && (attachedRefs.keySet() != null) && (!attachedRefs.keySet().isEmpty())) {
-                // TODO: Choose the best connector instead of the first one
-                ConnectorName connectorName = attachedRefs.keySet().iterator().next();
-                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-                actorRefUri = connectorMetadata.getActorRef();
-            } else {
-                PlanningException planningException = new PlanningException(
-                        "Cannot find a connector for " + dropIndexStatement.toString());
-                throw planningException;
-            }
+            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.DROP_INDEX);
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.DROP_INDEX,
                     ResultType.RESULTS);
@@ -788,7 +774,6 @@ public class Planner {
         } else if (metadataStatement instanceof DropTableStatement) {
 
             DropTableStatement dropTableStatement = (DropTableStatement) metadataStatement;
-            String actorRefUri;
             ExecutionType executionType = ExecutionType.DROP_TABLE;
             ResultType type = ResultType.RESULTS;
 
@@ -796,29 +781,19 @@ public class Planner {
 
             ClusterName clusterName = tableMetadata.getClusterRef();
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
-            Map<ConnectorName, ConnectorAttachedMetadata> attachedRefs = clusterMetadata.getConnectorAttachedRefs();
 
-            if ((attachedRefs != null) && (attachedRefs.keySet() != null) && (!attachedRefs.keySet().isEmpty())) {
-                // TODO: Choose the best connector instead of the first one
-                ConnectorName connectorName = attachedRefs.keySet().iterator().next();
-                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-                actorRefUri = connectorMetadata.getActorRef();
-            } else {
-                PlanningException planningException = new PlanningException(
-                        "Cannot find a connector for " + dropTableStatement.toString());
-                throw planningException;
-            }
+            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.DROP_TABLE);
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
             metadataWorkflow.setTableMetadata(tableMetadata);
             metadataWorkflow.setTableName(tableMetadata.getName());
-            metadataWorkflow.setClusterName(attachedRefs.values().iterator().next().getClusterRef());
+            metadataWorkflow.setClusterName(clusterMetadata.getName());
 
         } else if (metadataStatement instanceof AlterTableStatement) {
 
             AlterTableStatement alterTableStatement = (AlterTableStatement) metadataStatement;
-            String actorRefUri;
+
             ExecutionType executionType = ExecutionType.ALTER_TABLE;
             ResultType type = ResultType.RESULTS;
 
@@ -826,7 +801,6 @@ public class Planner {
 
             ColumnName columnName=new ColumnName(alterTableStatement.getEffectiveCatalog().getName(),
                     alterTableStatement.getTableName().getName(), alterTableStatement.getColumn().getName());
-            //ColumnMetadata alterColumnMetadata = MetadataManager.MANAGER.getColumn(columnName);
 
             ColumnMetadata alterColumnMetadata = alterTableStatement.getColumnMetadata();
 
@@ -855,25 +829,15 @@ public class Planner {
 
             ClusterName clusterName = tableMetadata.getClusterRef();
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
-            Map<ConnectorName, ConnectorAttachedMetadata> attachedRefs = clusterMetadata.getConnectorAttachedRefs();
 
-            if ((attachedRefs != null) && (attachedRefs.keySet() != null) & (!attachedRefs.keySet().isEmpty())) {
-                // TODO: Choose the best connector instead of the first one
-                ConnectorName connectorName = attachedRefs.keySet().iterator().next();
-                ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-                actorRefUri = connectorMetadata.getActorRef();
-            } else {
-                PlanningException planningException = new PlanningException(
-                        "Cannot find a connector for " + alterTableStatement.toString());
-                throw planningException;
-            }
+            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.ALTER_TABLE);
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
             metadataWorkflow.setTableMetadata(tableMetadata);
             metadataWorkflow.setTableName(tableMetadata.getName());
-            metadataWorkflow.setClusterName(attachedRefs.values().iterator().next().getClusterRef());
             metadataWorkflow.setAlterOptions(alterOptions);
+            metadataWorkflow.setClusterName(clusterMetadata.getName());
 
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
@@ -891,11 +855,10 @@ public class Planner {
 
             // Create parameters for metadata workflow
             AttachClusterStatement attachClusterStatement = (AttachClusterStatement) metadataStatement;
-            String actorRefUri = null;
             ExecutionType executionType = ExecutionType.ATTACH_CLUSTER;
             ResultType type = ResultType.RESULTS;
 
-            managementWorkflow = new ManagementWorkflow(queryId, actorRefUri, executionType, type);
+            managementWorkflow = new ManagementWorkflow(queryId, null, executionType, type);
 
             // Add required information
             managementWorkflow.setClusterName(attachClusterStatement.getClusterName());
@@ -904,43 +867,41 @@ public class Planner {
 
         } else if (metadataStatement instanceof DetachClusterStatement) {
             DetachClusterStatement detachClusterStatement = (DetachClusterStatement) metadataStatement;
-            String actorRefUri = null;
             ExecutionType executionType = ExecutionType.DETACH_CLUSTER;
             ResultType type = ResultType.RESULTS;
 
-            managementWorkflow = new ManagementWorkflow(queryId, actorRefUri, executionType, type);
+            managementWorkflow = new ManagementWorkflow(queryId, null, executionType, type);
             String clusterName = detachClusterStatement.getClusterName();
             managementWorkflow.setClusterName(new ClusterName(clusterName));
 
         } else if (metadataStatement instanceof AttachConnectorStatement) {
             // Create parameters for metadata workflow
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) metadataStatement;
-            String actorRef = null;
             ExecutionType executionType = ExecutionType.ATTACH_CONNECTOR;
             ResultType type = ResultType.RESULTS;
 
-            managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
+            ConnectorMetadata connector = MetadataManager.MANAGER
+                    .getConnector(attachConnectorStatement.getConnectorName());
+
+            managementWorkflow = new ManagementWorkflow(queryId, connector.getActorRef(), executionType, type);
 
             // Add required information
             managementWorkflow.setConnectorName(attachConnectorStatement.getConnectorName());
             managementWorkflow.setClusterName(attachConnectorStatement.getClusterName());
             managementWorkflow.setOptions(attachConnectorStatement.getOptions());
 
-            ConnectorMetadata connector = MetadataManager.MANAGER
-                    .getConnector(attachConnectorStatement.getConnectorName());
-            managementWorkflow.setActorRef(connector.getActorRef());
-
         } else if (metadataStatement instanceof DetachConnectorStatement) {
             DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) metadataStatement;
-            String actorRef = null;
             ExecutionType executionType = ExecutionType.DETACH_CONNECTOR;
             ResultType type = ResultType.RESULTS;
-            managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
-            managementWorkflow.setConnectorName(detachConnectorStatement.getConnectorName());
-            managementWorkflow.setClusterName(detachConnectorStatement.getClusterName());
+
             ConnectorMetadata connector = MetadataManager.MANAGER
                     .getConnector(detachConnectorStatement.getConnectorName());
-            managementWorkflow.setActorRef(connector.getActorRef());
+
+            managementWorkflow = new ManagementWorkflow(queryId, connector.getActorRef(), executionType, type);
+            managementWorkflow.setConnectorName(detachConnectorStatement.getConnectorName());
+            managementWorkflow.setClusterName(detachConnectorStatement.getClusterName());
+
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
@@ -1397,6 +1358,35 @@ public class Planner {
         }
 
         return new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap, typeMapFromColumnName);
+    }
+
+    private String findAnyActorRef(
+            ClusterMetadata clusterMetadata,
+            ConnectorStatus status,
+            Operations... requiredOperations) throws
+            PlanningException {
+        String actorRef = null;
+
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
+                clusterMetadata.getConnectorAttachedRefs();
+
+        Iterator it = connectorAttachedRefs.keySet().iterator();
+        boolean found = false;
+        while (it.hasNext() && !found) {
+            ConnectorName connectorName = (ConnectorName) it.next();
+            ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+            if ((connectorMetadata.getConnectorStatus() == status) &&
+                    connectorMetadata.getSupportedOperations().containsAll(Arrays.asList(requiredOperations))) {
+                actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+                found = true;
+            }
+        }
+        if (!found) {
+            throw new PlanningException("There is no actorRef for Operations: " + System.lineSeparator() +
+                    requiredOperations.toString());
+        }
+
+        return actorRef;
     }
 
 }
