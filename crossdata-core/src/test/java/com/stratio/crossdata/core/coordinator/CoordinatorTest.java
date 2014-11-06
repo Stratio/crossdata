@@ -76,10 +76,11 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         assertTrue(found, "Attachment not found");
     }
 
-    /* *
+    /**
      * Testing an API operation (detaching a cluster to a datastore)
      *
      * @throws Exception
+     */
     @Test
     public void testDetachCluster() throws Exception {
 
@@ -109,9 +110,8 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
                 break;
             }
         }
-        assertFalse(found);
+        assertTrue(!found);
     }
-    */
 
     /*@Test
     public void testAttachConnector() throws Exception {
