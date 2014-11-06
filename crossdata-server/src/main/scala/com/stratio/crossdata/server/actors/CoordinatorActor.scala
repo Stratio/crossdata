@@ -207,8 +207,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setWorkflow(workflow1)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
-          }
-          else if (workflow1.getExecutionType == ExecutionType.DETACH_CONNECTOR) {
+          } else if (workflow1.getExecutionType == ExecutionType.DETACH_CONNECTOR) {
             //Send shutdown signal to connector
             val credentials = null
             val managementOperation = workflow1.createManagementOperationMessage()
@@ -242,7 +241,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
 
             actorSelection.asInstanceOf[ActorSelection] ! operation
-            log.info("\nmessage sent to" + actorRef.toString())
+            log.info("\nMessage sent to" + actorRef.toString())
 
           } else if (ResultType.TRIGGER_EXECUTION.equals(workflow1.getResultType)) {
 
@@ -263,12 +262,12 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo)
 
             actorSelection.asInstanceOf[ActorSelection] ! operation
-            log.info("\nmessage sent to" + actorRef.toString())
+            log.info("\nMessage sent to" + actorRef.toString())
 
           }
         }
         case _ => {
-          log.error("non recognized workflow")
+          log.error("Non recognized workflow")
         }
       }
     }
@@ -313,7 +312,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         }
       } catch {
         case ex: ExecutionManagerException => {
-          log.error(ex.getStackTraceString + "cannot access queryId actorRef associated value")
+          log.error("Cannot access queryId actorRef associated value:" + System.lineSeparator() + ex.getMessage)
         }
       }
     }

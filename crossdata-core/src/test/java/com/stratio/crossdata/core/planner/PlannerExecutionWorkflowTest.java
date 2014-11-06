@@ -47,7 +47,6 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
-import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.Join;
@@ -165,6 +164,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_PK_EQ);
         operationsC1.add(Operations.SELECT_INNER_JOIN);
         operationsC1.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
+        operationsC1.add(Operations.ALTER_TABLE);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
