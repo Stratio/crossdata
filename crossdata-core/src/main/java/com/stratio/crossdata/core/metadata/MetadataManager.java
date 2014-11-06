@@ -831,6 +831,7 @@ public enum MetadataManager {
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
             RollbackException, MetadataManagerException {
         shouldBeInit();
+        exists(connectorName);
         try {
             writeLock.lock();
 
@@ -860,6 +861,7 @@ public enum MetadataManager {
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
             RollbackException, MetadataManagerException {
         shouldBeInit();
+        exists(dataStoreName);
         try {
             writeLock.lock();
 

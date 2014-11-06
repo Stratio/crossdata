@@ -22,5 +22,5 @@ public enum ConnectorStatus {
     OFFLINE,
     ONLINE,
     SHUTTING_DOWN,
-    INITIALIZING
+    status, INITIALIZING
 }

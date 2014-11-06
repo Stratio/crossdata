@@ -100,11 +100,12 @@ public class PlannerTest extends PlannerBaseTest{
         operationsC1.add(Operations.SELECT_OPERATOR);
         operationsC1.add(Operations.SELECT_WINDOW);
         operationsC1.add(Operations.SELECT_GROUP_BY);
-        operationsC1.add(Operations.DELETE_BY_PK);
+        operationsC1.add(Operations.DELETE_PK_EQ);
         operationsC1.add(Operations.CREATE_INDEX);
         operationsC1.add(Operations.DROP_INDEX);
-        operationsC1.add(Operations.UPDATE_TABLE);
+        operationsC1.add(Operations.UPDATE_PK_EQ);
         operationsC1.add(Operations.TRUNCATE_TABLE);
+        operationsC1.add(Operations.DROP_TABLE);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -232,7 +233,7 @@ public class PlannerTest extends PlannerBaseTest{
         assertEquals(storageWorkflow.getTableName(), new TableName("demo", "table1"), "Table name is not correct");
 
         Collection<Filter> whereClauses = new ArrayList<>();
-        whereClauses.add(new Filter(Operations.DELETE_BY_PK, new Relation(
+        whereClauses.add(new Filter(Operations.DELETE_PK_EQ, new Relation(
                 new ColumnSelector(new ColumnName("demo", "table1", "id")),
                 Operator.EQ,
                 new IntegerSelector(3))));
@@ -382,7 +383,7 @@ public class PlannerTest extends PlannerBaseTest{
         ColumnSelector firstSelector = new ColumnSelector(new ColumnName("demo", "table1", "id"));
         IntegerSelector secondSelector = new IntegerSelector(1);
         Relation relation = new Relation(firstSelector, Operator.EQ, secondSelector);
-        filters.add(new Filter(Operations.UPDATE_TABLE, relation));
+        filters.add(new Filter(Operations.UPDATE_PK_EQ, relation));
         assertEquals(storageWorkflow.getWhereClauses().size(), 1, "Wrong where clauses size");
         assertEquals(storageWorkflow.getWhereClauses().size(), filters.size(), "Where clauses sizes differ");
         assertTrue(storageWorkflow.getWhereClauses().iterator().next().toString().equalsIgnoreCase(

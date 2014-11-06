@@ -81,8 +81,8 @@ fragment POINT: '.';
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_ALTER: A L T E R;
-T_KEYSPACE: K E Y S P A C E;
-T_KEYSPACES: K E Y S P A C E S;
+T_CATALOG: C A T A L O G;
+T_CATALOGS: C A T A L O G S;
 T_DROP: D R O P;
 T_TABLE: T A B L E;
 T_TABLES: T A B L E S;
@@ -139,8 +139,8 @@ T_SEMICOLON: ';';
 describeHelpStatement returns [HelpType type]:
 	T_DESCRIBE {$type = HelpType.DESCRIBE;}
 	(
-		T_KEYSPACES {$type = HelpType.DESCRIBE_KEYSPACES;}
-		| T_KEYSPACE {$type = HelpType.DESCRIBE_KEYSPACE;}
+		T_CATALOGS {$type = HelpType.DESCRIBE_CATALOGS;}
+		| T_CATALOG {$type = HelpType.DESCRIBE_CATALOG;}
 		| T_TABLES {$type = HelpType.DESCRIBE_TABLES;}
 		| T_TABLE {$type = HelpType.DESCRIBE_TABLE;}
 	)?
@@ -149,7 +149,7 @@ describeHelpStatement returns [HelpType type]:
 alterHelpStatement returns [HelpType type]:
 	T_ALTER {$type = HelpType.ALTER;}
 	(
-		T_KEYSPACE {$type = HelpType.ALTER_KEYSPACE;}
+		T_CATALOG {$type = HelpType.ALTER_CATALOG;}
 		| T_TABLE {$type = HelpType.ALTER_TABLE;}
 	)?
 	;
@@ -166,7 +166,7 @@ listHelpStatement returns [HelpType type]:
 dropHelpStatement returns [HelpType type]:
 	T_DROP {$type = HelpType.DROP;}
 	(
-		T_KEYSPACE {$type = HelpType.DROP_KEYSPACE;}
+		T_CATALOG {$type = HelpType.DROP_CATALOG;}
 		| T_TABLE {$type = HelpType.DROP_TABLE;}
 		| T_INDEX {$type = HelpType.DROP_INDEX;}
 		| T_TRIGGER {$type = HelpType.DROP_TRIGGER;}
@@ -183,7 +183,7 @@ insertHelpStatement returns [HelpType type]:
 createHelpStatement returns [HelpType type]:
 	T_CREATE {$type = HelpType.CREATE;}
 	(
-		T_KEYSPACE {$type = HelpType.CREATE_KEYSPACE;}
+		T_CATALOG {$type = HelpType.CREATE_CATALOG;}
 		| T_TABLE {$type = HelpType.CREATE_TABLE;}
 		| T_INDEX {$type = HelpType.CREATE_INDEX;}
 		| (T_DEFAULT T_INDEX) {$type = HelpType.CREATE_INDEX;}
