@@ -107,7 +107,7 @@ public class Coordinator implements Serializable {
             result = persistAttachCluster(ac.targetCluster(), ac.datastoreName(), ac.options());
         } else if (DetachCluster.class.isInstance(workflow)) {
             DetachCluster dc = DetachCluster.class.cast(workflow);
-            result =persistDetachCluster(dc.targetCluster(),dc.datastoreName());
+            result =persistDetachCluster(dc.targetCluster());
         } else if (AttachConnector.class.isInstance(workflow)) {
             AttachConnector ac = AttachConnector.class.cast(workflow);
             result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
@@ -157,11 +157,13 @@ public class Coordinator implements Serializable {
      * Detaches cluster from infinispan.
      *
      * @param clusterName   The cluster name.
-     * @param datastoreName The datastore name.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
-    public Result persistDetachCluster(ClusterName clusterName, DataStoreName datastoreName) {
+    public Result persistDetachCluster(ClusterName clusterName) {
         //TODO: Move this type of operations to MetadataManager in order to use a single lock
+        //find the datastore first, to which the cluster is connected
+        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+        DataStoreName datastoreName = clusterMetadata.getDataStoreRef();
         DataStoreMetadata datastoreMetadata = MetadataManager.MANAGER.getDataStore(datastoreName);
 
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs = datastoreMetadata.getClusterAttachedRefs();

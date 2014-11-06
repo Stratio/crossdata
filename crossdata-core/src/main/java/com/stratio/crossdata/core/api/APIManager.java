@@ -234,7 +234,7 @@ public class APIManager {
                 .append(System .getProperty("line.separator"));
         }
 
-        stringBuilder = stringBuilder.append("\t").append("-------");
+        stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
         result = CommandResult.createCommandResult(stringBuilder.toString());
         return result;
     }
