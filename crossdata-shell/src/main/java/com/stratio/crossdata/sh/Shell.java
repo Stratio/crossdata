@@ -429,9 +429,7 @@ public class Shell {
                         showHelp(sb.toString());
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);
-                    }else if(toExecute.toLowerCase().startsWith("list connectors")){
-                        listConnectors();
-                    }else if(toExecute.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
+                    } else if(toExecute.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
                         explainPlan(toExecute);
                     } else if(executeApiCAll(toExecute)){
                     } else {
