@@ -38,7 +38,6 @@ import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.exceptions.ApiException;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
@@ -162,10 +161,15 @@ public class APIManager {
             ((MetadataResult) result).setColumnList(columns);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.ADD_MANIFEST().toString());
-            persistManifest((CrossdataManifest) cmd.params().get(0));
             result = CommandResult.createCommandResult("CrossdataManifest added "
                     + System.lineSeparator()
                     + cmd.params().get(0).toString());
+            try {
+                persistManifest((CrossdataManifest) cmd.params().get(0));
+            } catch (ApiException e) {
+                result = new ErrorResult(e);
+            }
+
         } else if (APICommand.DROP_MANIFEST().equals(cmd.commandType())){
             LOG.info(PROCESSING + APICommand.DROP_MANIFEST().toString());
             result = CommandResult.createCommandResult("Manifest dropped");
@@ -304,11 +308,15 @@ public class APIManager {
         return result;
     }
 
-    private void persistManifest(CrossdataManifest manifest) {
-        if (manifest.getManifestType() == CrossdataManifest.TYPE_DATASTORE) {
-            persistDataStore((DataStoreType) manifest);
-        } else {
-            persistConnector((ConnectorType) manifest);
+    private void persistManifest(CrossdataManifest manifest) throws ApiException {
+        try {
+            if (manifest.getManifestType() == CrossdataManifest.TYPE_DATASTORE) {
+                persistDataStore((DataStoreType) manifest);
+            } else {
+                persistConnector((ConnectorType) manifest);
+            }
+        } catch (NullPointerException npe){
+            throw new ApiException("Manifest couldn't be added", npe);
         }
     }
 
@@ -348,8 +356,7 @@ public class APIManager {
         ConnectorName name = new ConnectorName(connectorType.getConnectorName());
 
         // DATASTORES
-        DataStoreRefsType dataStoreRefs = connectorType
-                .getDataStores();
+        DataStoreRefsType dataStoreRefs = connectorType.getDataStores();
 
         // VERSION
         String version = connectorType.getVersion();

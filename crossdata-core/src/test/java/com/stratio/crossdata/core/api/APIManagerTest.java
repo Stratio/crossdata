@@ -37,6 +37,7 @@ import com.stratio.crossdata.common.manifest.PropertiesType;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
@@ -152,12 +153,9 @@ public class APIManagerTest extends MetadataManagerTestHelper {
                 "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
                 "Behaviors: " + System.lineSeparator() + "\tBehavior: Test" + System.lineSeparator();
 
-        CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
+        Result result = ApiManager.processRequest(cmd);
 
-        String str = String.valueOf(result.getResult());
-
-        assertTrue(str.equalsIgnoreCase(expectedResult), "- Expected: " + System.lineSeparator() +
-                expectedResult + System.lineSeparator() + "-    Found: " + System.lineSeparator() + str);
+        assertTrue(result instanceof ErrorResult);
     }
 
     @Test
@@ -268,12 +266,9 @@ public class APIManagerTest extends MetadataManagerTestHelper {
                 "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
                 "Supported operations: " + System.lineSeparator() + "\tOperation: PROJECT" + System.lineSeparator();
 
-        CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
+        Result result = ApiManager.processRequest(cmd);
 
-        String str = String.valueOf(result.getResult());
-
-        assertTrue(str.equalsIgnoreCase(expectedResult), "- Expected: " + System.lineSeparator() +
-                expectedResult + System.lineSeparator() + "-    Found: " + System.lineSeparator() + str);
+        assertTrue(result instanceof ErrorResult);
     }
 
     @Test
