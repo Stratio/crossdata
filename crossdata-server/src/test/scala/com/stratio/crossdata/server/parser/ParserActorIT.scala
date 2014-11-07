@@ -131,7 +131,7 @@ class ParserActorIT extends ServerActorTest{
       parserActor3 ! Query(queryId + (1), mynewcatalog, "create catalog mynewCatalog;", user0)
       fishForMessage(6 seconds){
         case msg:MetadataResult =>{
-          logger.info("receiving   message of type " + msg.getClass() + "from " + lastSender)
+          logger.info("receiving message of type " + msg.getClass() + "from " + lastSender)
           assert(msg.getQueryId==queryId + (1))
           true
         }
