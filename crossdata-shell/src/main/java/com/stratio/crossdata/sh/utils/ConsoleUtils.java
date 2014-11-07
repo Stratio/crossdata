@@ -185,7 +185,7 @@ public final class ConsoleUtils {
 
         // Get column names or aliases width
         for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
-            colWidths.put(columnMetadata.getName().getAlias(),
+            colWidths.put(columnMetadata.getName().getName(),
                     columnMetadata.getName().getColumnNameToShow().length());
         }
 
