@@ -212,21 +212,23 @@ public class CreateIndexStatement extends IndexStatement {
         if (name == null) {
             StringBuilder sb = new StringBuilder();
             if (IndexType.FULL_TEXT.equals(type)) {
-                sb.append("stratio_lucene_");
-                sb.append(tableName);
-            } else {
-                sb.append(tableName);
+                sb.append("stratio_fulltext");
                 for (ColumnName c : targetColumns) {
                     sb.append("_");
-                    sb.append(c.getQualifiedName());
+                    sb.append(c.getName());
                 }
-                sb.append("_idx");
+            } else {
+                for (ColumnName c : targetColumns) {
+                    sb.append(c.getQualifiedName());
+                    sb.append("_");
+                }
+                sb.append("idx");
             }
             result = sb.toString();
         } else {
             result = name.getName();
             if (IndexType.FULL_TEXT.equals(type)) {
-                result = name.toString().replaceAll("\\[(\\w*)\\]", "[stratio_lucene_$1]");
+                result = "stratio_fulltext_" + name.getName();
             }
         }
         return result;
