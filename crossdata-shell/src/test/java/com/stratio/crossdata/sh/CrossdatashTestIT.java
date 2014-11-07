@@ -19,18 +19,16 @@
 package com.stratio.crossdata.sh;
 
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.fail;
 
 import org.testng.annotations.Test;
 
 public class CrossdatashTestIT {
 
-    @Test
+    @Test(timeOut = 18000)
     public void testSendManifest() throws Exception {
-        Shell crossDatash = new Shell(false);
-        //TODO Generate a temp file with the manifest
-        fail("Not implemented");
-        String result = crossDatash.sendManifest("ADD DATASTORE " +
+        Shell xdsh = new Shell(false);
+        xdsh.connect();
+        String result = xdsh.sendManifest("ADD DATASTORE " +
                 "'crossdata-common/src/main/resources/com/stratio/crossdata/connector/DataStoreDefinition.xml'");
         assertNotNull(result, "testSendManifest returns a empty String");
     }
