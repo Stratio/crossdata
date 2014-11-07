@@ -618,6 +618,7 @@ public class Normalizator {
         if (valueType != SelectorType.STRING) {
             throw new NotMatchDataTypeException(column.getName());
         }
+        // TODO: Add Match for full text indexes
         if (operator != Operator.EQ && operator != Operator.DISTINCT) {
             throw new BadFormatException("String relations only accept equal operator.");
         }
