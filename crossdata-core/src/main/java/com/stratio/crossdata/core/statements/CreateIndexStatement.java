@@ -228,7 +228,7 @@ public class CreateIndexStatement extends IndexStatement {
         } else {
             result = name.getName();
             if (IndexType.FULL_TEXT.equals(type)) {
-                result = name.getName().replaceAll("\\[(\\w*)\\]", "[stratio_lucene_$1]");
+                result = "stratio_fulltext_" + name.getName();
             }
         }
         return result;
