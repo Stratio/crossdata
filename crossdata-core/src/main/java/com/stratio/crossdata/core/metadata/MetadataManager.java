@@ -750,7 +750,7 @@ public enum MetadataManager {
         return columnList;
     }
 
-    /**
+        /**
      * Return all connectors.
      * @return List with all connectors.
      */
@@ -763,6 +763,21 @@ public enum MetadataManager {
             }
         }
         return connectors;
+    }
+
+    /**
+     * Return all datastores.
+     * @return List with all connectors.
+     */
+    public List<DataStoreMetadata> getDatastores() {
+        List<DataStoreMetadata> datastores = new ArrayList<>();
+        for (Map.Entry<FirstLevelName, IMetadata> entry : metadata.entrySet()) {
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata instanceof DataStoreMetadata) {
+                datastores.add((DataStoreMetadata) iMetadata);
+            }
+        }
+        return datastores;
     }
 
     /**
