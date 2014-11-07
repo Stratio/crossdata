@@ -53,7 +53,10 @@ import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertiesType;
 import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
+import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
+import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
@@ -187,6 +190,9 @@ public class APIManager {
         } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.LIST_CONNECTORS().toString());
             result = listConnectors();
+        } else if (APICommand.DESCRIBE_SYSTEM().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_SYSTEM().toString());
+            result = describeSystem();
         } else if (APICommand.DESCRIBE_CONNECTOR().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTOR().toString());
             result = describeConnector((ConnectorName) cmd.params().get(0));
@@ -199,6 +205,32 @@ public class APIManager {
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
         result.setQueryId(cmd.queryId());
+        return result;
+    }
+
+    private Result describeSystem(){
+        Result result=null;
+        StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
+        List<DataStoreMetadata> dataStores = MetadataManager.MANAGER.getDatastores();
+        for(DataStoreMetadata dataStore:dataStores){
+            stringBuilder = stringBuilder.append("Datastore ").append(dataStore.getName())
+                    .append(":").append(System.getProperty("line.separator"));
+            Set<Map.Entry<ClusterName, ClusterAttachedMetadata>> refs = dataStore.getClusterAttachedRefs().entrySet();
+            for(Map.Entry<ClusterName, ClusterAttachedMetadata> ref:refs){
+                ClusterName clustername = ref.getKey();
+                stringBuilder = stringBuilder.append("\tCluster ").append(clustername.getName())
+                        .append(":").append(System.getProperty("line.separator"));
+                ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(clustername);
+                ClusterAttachedMetadata clusterdata= ref.getValue();
+                Map<Selector, Selector> clusterproperties = clusterdata.getProperties();
+                Set<Map.Entry<ConnectorName, ConnectorAttachedMetadata>> connectors = cluster.getConnectorAttachedRefs().entrySet();
+                for(Map.Entry<ConnectorName, ConnectorAttachedMetadata>c:connectors){
+                    stringBuilder = stringBuilder.append("\t\tConnector ").append( c.getKey().getName() )
+                            .append(System.getProperty("line.separator"));
+                }
+            }
+        }
+
         return result;
     }
 
