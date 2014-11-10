@@ -101,7 +101,6 @@
         <infinispan.version>6.0.2.Final</infinispan.version>
         <scala.dep.version>2.10.4</scala.dep.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
-        <scala.version>2.10.4</scala.version>
         <slf4j.version>1.7.7</slf4j.version>
         <config.version>1.2.0</config.version>
         <testng.version>6.8.8</testng.version>
