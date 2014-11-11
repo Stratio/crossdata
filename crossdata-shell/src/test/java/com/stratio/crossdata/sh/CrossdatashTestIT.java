@@ -20,6 +20,8 @@ package com.stratio.crossdata.sh;
 
 import static org.testng.Assert.assertNotNull;
 
+import java.net.URL;
+
 import org.testng.annotations.Test;
 
 public class CrossdatashTestIT {
@@ -28,8 +30,9 @@ public class CrossdatashTestIT {
     public void testSendManifest() throws Exception {
         Shell xdsh = new Shell(false);
         xdsh.connect();
-        String result = xdsh.sendManifest("ADD DATASTORE " +
-                "'crossdata-common/src/main/resources/com/stratio/crossdata/connector/DataStoreDefinition.xml'");
+        URL url = Thread.currentThread().getContextClassLoader()
+                .getResource("com/stratio/crossdata/connector/DataStoreDefinition.xml");
+        String result = url.getPath();
         assertNotNull(result, "testSendManifest returns NULL");
     }
 
