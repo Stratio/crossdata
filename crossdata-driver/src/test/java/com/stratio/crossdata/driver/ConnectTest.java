@@ -18,7 +18,6 @@
 
 package com.stratio.crossdata.driver;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -33,7 +32,6 @@ import com.stratio.crossdata.common.result.Result;
 public class ConnectTest extends DriverParentTest {
 
     private final static Logger logger = Logger.getLogger(ConnectTest.class);
-
 
     @Test(groups = "connect")
     public void connect() {

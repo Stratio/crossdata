@@ -19,7 +19,7 @@
 package com.stratio.crossdata.driver;
 
 import org.apache.log4j.Logger;
-import org.testng.annotations.AfterSuite;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.result.ErrorResult;
@@ -69,8 +69,7 @@ public class DriverParentTest {
         }
     }
 
-    // @AfterClass(alwaysRun=true)
-    @AfterSuite
+    @AfterClass
     public void finish() {
         logger.info("FINISHING ------------------------------");
         driver.close();

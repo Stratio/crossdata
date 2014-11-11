@@ -24,7 +24,12 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.ConnectorStatus;
+import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
@@ -34,11 +39,6 @@ import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotConnectionException;
 import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -48,7 +48,6 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
 import com.stratio.crossdata.core.normalizer.NormalizedFields;
@@ -149,6 +148,9 @@ public class Validator {
             case MUST_BE_CONNECTED:
                 validateConnectorConnected(parsedQuery.getStatement());
                 break;
+            case MUST_BE_UNIQUE_DATASTORE:
+                validatePreviousAttachment(parsedQuery.getStatement());
+                break;
             default:
                 break;
             }
@@ -170,6 +172,19 @@ public class Validator {
         }
 
         return validatedQuery;
+    }
+
+    private void validatePreviousAttachment(CrossdataStatement statement) throws BadFormatException {
+        AttachClusterStatement attachClusterStatement = (AttachClusterStatement) statement;
+        DataStoreName datastoreName = attachClusterStatement.getDatastoreName();
+        ClusterName clusterName = attachClusterStatement.getClusterName();
+
+        if (MetadataManager.MANAGER.exists(clusterName)){
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+            if(!clusterMetadata.getDataStoreRef().equals(datastoreName)){
+                throw new BadFormatException("A cluster can be attached to only one data store.");
+            }
+        }
     }
 
     private void validateConnectorAttachedRefs(CrossdataStatement statement) throws ValidationException {

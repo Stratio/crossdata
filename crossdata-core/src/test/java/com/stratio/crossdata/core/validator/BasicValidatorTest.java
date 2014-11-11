@@ -34,7 +34,6 @@ import org.jgroups.util.UUID;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
-import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -43,6 +42,7 @@ import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -55,17 +55,37 @@ import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.grammar.ParsingTest;
 import com.stratio.crossdata.core.grid.Grid;
 import com.stratio.crossdata.core.grid.GridInitializer;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class BasicValidatorTest {
 
-    protected static final ParsingTest pt = new ParsingTest();
-    protected static MetadataManager metadataManager = null;
     static Map<FirstLevelName, IMetadata> metadataMap;
     private static String path = "";
+
+    @BeforeClass
+    public static void setUpBeforeClass() {
+        GridInitializer gridInitializer = Grid.initializer();
+        gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
+        path = "/tmp/metadatastore" + UUID.randomUUID();
+        gridInitializer.withPort(7800)
+                .withListenAddress("127.0.0.1")
+                .withMinInitialMembers(1)
+                .withJoinTimeoutInMs(3000)
+                .withPersistencePath(path).init();
+
+        metadataMap = Grid.INSTANCE.map("crossDatatest");
+        Lock lock = Grid.INSTANCE.lock("crossDatatest");
+        TransactionManager tm = Grid.INSTANCE.transactionManager("crossDatatest");
+        MetadataManager.MANAGER.init(metadataMap, lock, tm);
+        MetadataManager.MANAGER.createDataStore(createDataStoreMetadata());
+        MetadataManager.MANAGER.createConnector(createConnectorMetadata());
+        MetadataManager.MANAGER.createCluster(createClusterMetadata());
+        MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata());
+        MetadataManager.MANAGER.createTable(createTable());
+        MetadataManager.MANAGER.createTable(createJoinTable());
+    }
 
     private static CatalogMetadata generateCatalogsMetadata() {
         CatalogMetadata catalogMetadata;
@@ -169,29 +189,6 @@ public class BasicValidatorTest {
         ClusterMetadata clusterMetadata = new ClusterMetadata(new ClusterName("cluster"),
                 new DataStoreName("Cassandra"), null, connectorAttachedRefs);
         return clusterMetadata;
-    }
-
-    @BeforeClass
-    public static void setUpBeforeClass() {
-        GridInitializer gridInitializer = Grid.initializer();
-        gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
-        path = "/tmp/metadatastore" + UUID.randomUUID();
-        gridInitializer.withPort(7800)
-                .withListenAddress("127.0.0.1")
-                .withMinInitialMembers(1)
-                .withJoinTimeoutInMs(3000)
-                .withPersistencePath(path).init();
-
-        metadataMap = Grid.INSTANCE.map("crossDatatest");
-        Lock lock = Grid.INSTANCE.lock("crossDatatest");
-        TransactionManager tm = Grid.INSTANCE.transactionManager("crossDatatest");
-        MetadataManager.MANAGER.init(metadataMap, lock, tm);
-        MetadataManager.MANAGER.createDataStore(createDataStoreMetadata());
-        MetadataManager.MANAGER.createConnector(createConnectorMetadata());
-        MetadataManager.MANAGER.createCluster(createClusterMetadata());
-        MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata());
-        MetadataManager.MANAGER.createTable(createTable());
-        MetadataManager.MANAGER.createTable(createJoinTable());
     }
 
     @AfterClass

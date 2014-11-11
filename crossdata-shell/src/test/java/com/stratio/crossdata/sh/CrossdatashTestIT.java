@@ -24,13 +24,13 @@ import org.testng.annotations.Test;
 
 public class CrossdatashTestIT {
 
-    @Test(timeOut = 18000)
+    @Test(timeOut = 12000)
     public void testSendManifest() throws Exception {
         Shell xdsh = new Shell(false);
         xdsh.connect();
         String result = xdsh.sendManifest("ADD DATASTORE " +
                 "'crossdata-common/src/main/resources/com/stratio/crossdata/connector/DataStoreDefinition.xml'");
-        assertNotNull(result, "testSendManifest returns a empty String");
+        assertNotNull(result, "testSendManifest returns NULL");
     }
 
 }
