@@ -21,6 +21,7 @@ package com.stratio.crossdata.core.validator.statements;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
@@ -36,7 +37,9 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
     public void alterCluster() {
         String query = "ALTER CLUSTER IF EXISTS cluster WITH OPTIONS {'comment':'my coments'}";
 
-        AlterClusterStatement alterClusterStatement = new AlterClusterStatement("cluster", true,
+        AlterClusterStatement alterClusterStatement = new AlterClusterStatement(
+                new ClusterName("cluster"),
+                true,
                 "{'comment':'my coments'}");
         Validator validator = new Validator();
 
@@ -57,7 +60,9 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
     public void alterIfExistsClusterNotExists() {
         String query = "ALTER CLUSTER IF EXISTS unknown WITH OPTIONS {'comment':'my coments'}";
 
-        AlterClusterStatement alterClusterStatement = new AlterClusterStatement("unknown", true,
+        AlterClusterStatement alterClusterStatement = new AlterClusterStatement(
+                new ClusterName("unknown"),
+                true,
                 "{'comment':'my coments'}");
 
         Validator validator = new Validator();
@@ -79,7 +84,10 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
     public void alterClusterEmptyOptions() {
         String query = "ALTER CLUSTER cluster WITH OPTIONS";
 
-        AlterClusterStatement alterClusterStatement = new AlterClusterStatement("cluster", false, "");
+        AlterClusterStatement alterClusterStatement = new AlterClusterStatement(
+                new ClusterName("cluster"),
+                false,
+                "");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"));
@@ -99,7 +107,10 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
     public void alterNotExistCluster() {
         String query = "ALTER CLUSTER unknown";
 
-        AlterClusterStatement alterClusterStatement = new AlterClusterStatement("unknown", false, "{}");
+        AlterClusterStatement alterClusterStatement = new AlterClusterStatement(
+                new ClusterName("unknown"),
+                false,
+                "{}");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"));

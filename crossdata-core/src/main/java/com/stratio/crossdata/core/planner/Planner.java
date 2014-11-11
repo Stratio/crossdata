@@ -87,6 +87,7 @@ import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.AlterCatalogStatement;
+import com.stratio.crossdata.core.statements.AlterClusterStatement;
 import com.stratio.crossdata.core.statements.AlterTableStatement;
 import com.stratio.crossdata.core.statements.AttachClusterStatement;
 import com.stratio.crossdata.core.statements.AttachConnectorStatement;
@@ -600,7 +601,7 @@ public class Planner {
         managementStatements.add(AttachConnectorStatement.class.toString());
         managementStatements.add(DetachConnectorStatement.class.toString());
         managementStatements.add(DetachClusterStatement.class.toString());
-
+        managementStatements.add(AlterClusterStatement.class.toString());
 
         if (metadataStatements.contains(metadataStatement.getClass().toString())) {
             executionWorkflow = buildMetadataWorkflow(query);
@@ -901,6 +902,19 @@ public class Planner {
             managementWorkflow = new ManagementWorkflow(queryId, connector.getActorRef(), executionType, type);
             managementWorkflow.setConnectorName(detachConnectorStatement.getConnectorName());
             managementWorkflow.setClusterName(detachConnectorStatement.getClusterName());
+
+        } else if (metadataStatement instanceof AlterClusterStatement){
+            AlterClusterStatement alterClusterStatement = (AlterClusterStatement) metadataStatement;
+            ExecutionType executionType = ExecutionType.ALTER_CLUSTER;
+            ResultType type = ResultType.RESULTS;
+
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER
+                    .getCluster(alterClusterStatement.getClusterName());
+
+            managementWorkflow = new ManagementWorkflow(queryId, null, executionType, type);
+            managementWorkflow.setClusterName(alterClusterStatement.getClusterName());
+            managementWorkflow.setOptions(alterClusterStatement.getOptions());
+            managementWorkflow.setDatastoreName(clusterMetadata.getDataStoreRef());
 
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());

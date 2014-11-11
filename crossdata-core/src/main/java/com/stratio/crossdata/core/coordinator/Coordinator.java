@@ -42,6 +42,7 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.communication.AlterCluster;
 import com.stratio.crossdata.communication.AttachCluster;
 import com.stratio.crossdata.communication.AttachConnector;
 import com.stratio.crossdata.communication.DetachCluster;
@@ -107,12 +108,16 @@ public class Coordinator implements Serializable {
             result = persistAttachCluster(ac.targetCluster(), ac.datastoreName(), ac.options());
         } else if (DetachCluster.class.isInstance(workflow)) {
             DetachCluster dc = DetachCluster.class.cast(workflow);
-            result =persistDetachCluster(dc.targetCluster());
+            result = persistDetachCluster(dc.targetCluster());
         } else if (AttachConnector.class.isInstance(workflow)) {
             AttachConnector ac = AttachConnector.class.cast(workflow);
             result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
         } else if (DetachConnector.class.isInstance(workflow)) {
-            result = Result.createUnsupportedOperationErrorResult("Detach connector not supported yet.");
+            DetachConnector dc = DetachConnector.class.cast(workflow);
+            result = persistDetachConnector(dc.targetCluster(), dc.connectorName());
+        } else if (AlterCluster.class.isInstance(workflow)) {
+            AlterCluster ac = AlterCluster.class.cast(workflow);
+            result = persistAlterCluster(ac.targetCluster(), ac.options());
         }
 
         result.setQueryId(workflow.queryId());
@@ -151,6 +156,24 @@ public class Coordinator implements Serializable {
 
         MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
         return CommandResult.createCommandResult("Cluster attached successfully");
+    }
+
+    /**
+     * Persists new options' cluster in Metadata manager.
+     *
+     * @param clusterName   The cluster name.
+     * @param options       A set of cluster options.
+     * @return A {@link com.stratio.crossdata.common.result.Result}.
+     */
+    public Result persistAlterCluster(ClusterName clusterName,
+            Map<Selector, Selector> options) {
+
+        // Create and persist Cluster metadata
+        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+        clusterMetadata.setOptions(options);
+        MetadataManager.MANAGER.createCluster(clusterMetadata, false);
+
+        return CommandResult.createCommandResult("New cluster's options modified successfully");
     }
 
     /**

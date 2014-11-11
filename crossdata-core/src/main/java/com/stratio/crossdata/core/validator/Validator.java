@@ -268,7 +268,7 @@ public class Validator {
         boolean hasIfExists = false;
 
         if (stmt instanceof AlterClusterStatement) {
-            name = new ClusterName(((AlterClusterStatement) stmt).getClusterName());
+            name = ((AlterClusterStatement) stmt).getClusterName();
             hasIfExists = ((AlterClusterStatement) stmt).isIfExists();
         }
 

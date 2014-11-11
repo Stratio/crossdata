@@ -150,6 +150,9 @@ sealed abstract class ManagementOperation(queryId: String) extends Operation(que
 case class AttachCluster(override val queryId: String, targetCluster: ClusterName, datastoreName: DataStoreName,
                          options: java.util.Map[Selector, Selector]) extends ManagementOperation(queryId)
 
+case class AlterCluster(override val queryId: String, targetCluster: ClusterName, datastoreName: DataStoreName,
+                         options: java.util.Map[Selector, Selector]) extends ManagementOperation(queryId)
+
 case class DetachCluster(override val queryId: String, targetCluster: ClusterName,
                          datastoreName:DataStoreName) extends ManagementOperation(queryId)
 

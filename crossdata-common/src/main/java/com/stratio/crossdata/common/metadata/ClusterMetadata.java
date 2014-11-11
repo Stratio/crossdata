@@ -34,7 +34,7 @@ public class ClusterMetadata implements IMetadata {
 
     private final ClusterName name;
     private final DataStoreName dataStoreRef;
-    private final Map<Selector, Selector> options;
+    private Map<Selector, Selector> options;
     private Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs;
 
     public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<Selector, Selector> options,
@@ -66,4 +66,7 @@ public class ClusterMetadata implements IMetadata {
         this.connectorAttachedRefs = connectorAttachedRefs;
     }
 
+    public void setOptions(Map<Selector, Selector> options) {
+        this.options = options;
+    }
 }

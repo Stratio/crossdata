@@ -375,7 +375,7 @@ alterClusterStatement returns [AlterClusterStatement acs]
         boolean ifExists = false;
     }
     @after{
-        acs = new AlterClusterStatement($clusterName.text, ifExists, j);
+        acs = new AlterClusterStatement(new ClusterName($clusterName.text), ifExists, j);
     }:
     T_ALTER T_CLUSTER (T_IF T_EXISTS {ifExists = true;} )? clusterName=T_IDENT T_WITH T_OPTIONS j=getJson
 ;
