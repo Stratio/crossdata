@@ -493,9 +493,9 @@ public enum Operations {
 
     /**
      * The engine supports full text search syntax in {@link com.stratio.crossdata.common.logicalplan.Filter}
-     * operations.
+     * operations with a MACTH Operator.
      */
-    FILTER_FULLTEXT("FILTER_FULLTEXT"),
+    FILTER_INDEXED_MATCH("FILTER_INDEXED_MATCH"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using

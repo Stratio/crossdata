@@ -453,7 +453,7 @@ public class Shell {
                     }
                     sb = new StringBuilder();
                     println("");
-                } else {
+                } else if(!toExecute.isEmpty()) {
                     if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
                         currentPrompt = console.getPrompt();
                         String tempPrompt =

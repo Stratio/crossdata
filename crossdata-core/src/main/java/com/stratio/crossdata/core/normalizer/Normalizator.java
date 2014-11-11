@@ -19,11 +19,15 @@
 package com.stratio.crossdata.core.normalizer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.AmbiguousNameException;
@@ -34,6 +38,8 @@ import com.stratio.crossdata.common.exceptions.validation.NotValidColumnExceptio
 import com.stratio.crossdata.common.exceptions.validation.YodaConditionException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
@@ -618,8 +624,35 @@ public class Normalizator {
         if (valueType != SelectorType.STRING) {
             throw new NotMatchDataTypeException(column.getName());
         }
-        // TODO: Add Match for full text indexes
-        if (operator != Operator.EQ && operator != Operator.DISTINCT) {
+
+        if(operator == Operator.MATCH){
+            if(valueType != SelectorType.STRING){
+                throw new BadFormatException("MATCH operator only accepts comparison with string literals.");
+            }
+
+            TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(column.getName().getTableName());
+            Map<IndexName, IndexMetadata> indexes = tableMetadata.getIndexes();
+            if(indexes == null || indexes.isEmpty()){
+                throw new BadFormatException("Table "+column.getName().getTableName() + " doesn't contain any index.");
+            }
+
+            boolean indexFound = false;
+            Collection<IndexMetadata> indexesMetadata = indexes.values();
+            Iterator<IndexMetadata> iter = indexesMetadata.iterator();
+            while(iter.hasNext() && !indexFound){
+                IndexMetadata indexMetadata = iter.next();
+                if(indexMetadata.getColumns().containsKey(column.getName())){
+                    if(indexMetadata.getType() != IndexType.FULL_TEXT){
+                        throw new BadFormatException("MATCH operator can be only applied to FULL_TEXT indexes.");
+                    } else {
+                        indexFound = true;
+                    }
+                }
+            }
+            if(!indexFound){
+                throw new BadFormatException("No index was found for the MATCH operator.");
+            }
+        } else if (operator != Operator.EQ && operator != Operator.DISTINCT) {
             throw new BadFormatException("String relations only accept equal operator.");
         }
 
