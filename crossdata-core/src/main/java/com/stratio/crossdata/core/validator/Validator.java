@@ -305,12 +305,12 @@ public class Validator {
         DataStoreMetadata dataStoreMetadata = MetadataManager.MANAGER.getDataStore(dataStoreName);
         Map<ClusterName, ClusterAttachedMetadata> refs = dataStoreMetadata.getClusterAttachedRefs();
         ClusterName clusterName = myStmt.getClusterName();
-        if (! options.isEmpty()) {
+        if (!options.isEmpty()) {
             //StringSelector hosts =(StringSelector)options.get("hosts");
             Selector hosts =options.get("hosts");
             if(hosts != null){
                 String[] myHosts = hosts.getStringValue().replace("[", "").replace("]", "").split(",");
-                for(String host:myHosts){
+                for(String host: myHosts){
                     //MetadataManager.MANAGER.exists(dataStoreName);
                     Iterator<Map.Entry<ClusterName, ClusterAttachedMetadata>> it = refs.entrySet().iterator();
                     boolean found = false;
@@ -319,10 +319,11 @@ public class Validator {
                         if(entry.getKey().equals(clusterName)){
                             found=true;
                             break;
-                        };
+                        }
                     }
-                    if(found==false)
-                        throw new ClusterNodeNotInDatastoreException("cluster node not found in datastore");
+                    if(!found){
+                        throw new ClusterNodeNotInDatastoreException("Cluster node not found in datastore");
+                    }
                 }
             }
         }

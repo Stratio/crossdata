@@ -184,6 +184,12 @@ public enum Operations {
     INSERT("INSERT"),
 
     /**
+     * For Data stores whose insert operation behave as upsert by default, this operation points out that the
+     * connector is capable of behaving as a "classic" insert.
+     */
+    INSERT_IF_NOT_EXISTS("INSERT_IF_NOT_EXISTS"),
+
+    /**
      * The engine supports delete operations on columns
      * that are part of the primary key with an equal operator.
      */
