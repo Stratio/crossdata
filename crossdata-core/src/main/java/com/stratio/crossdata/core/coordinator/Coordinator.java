@@ -62,7 +62,7 @@ public class Coordinator implements Serializable {
     private static final Logger LOG = Logger.getLogger(Coordinator.class);
 
     /**
-     * Persists workflow in infinispan.
+     * Persists workflow in Metadata Manager.
      *
      * @param metadataWorkflow The metadata workflow.
      */
@@ -126,7 +126,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Persists cluster's characteristics in infinispan.
+     * Persists cluster's characteristics in Metadata Manager.
      *
      * @param clusterName   The cluster name.
      * @param datastoreName The datastore name.
@@ -177,7 +177,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Detaches cluster from infinispan.
+     * Detaches cluster from Metadata Manager.
      *
      * @param clusterName   The cluster name.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
@@ -199,7 +199,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Persists catalog data in infinispan.
+     * Persists catalog data in Metadata Manager.
      *
      * @param catalog The catalog metadata to be stored.
      */
@@ -208,7 +208,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Persists table Metadata in infinispan.
+     * Persists table Metadata in Metadata Manager.
      *
      * @param table The table metadata to be stored.
      */
@@ -217,7 +217,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Persists index Metadata in infinispan.
+     * Persists index Metadata in Metadata Manager.
      *
      * @param index The index metadata to be stored.
      */
@@ -229,7 +229,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Deletes catalog from infinispan.
+     * Deletes catalog from Metadata Manager.
      *
      * @param catalog The catalog name.
      */
@@ -238,7 +238,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Deletes table data from infinispan.
+     * Deletes table data from Metadata Manager.
      *
      * @param table The table name.
      */
@@ -247,7 +247,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Deletes index from infinispan.
+     * Deletes index from Metadata Manager.
      *
      * @param index The index name.
      */
@@ -259,7 +259,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Persists attached connector's metadata in infinispan.
+     * Persists attached connector's metadata in Metadata Manager.
      *
      * @param clusterName   The cluster name.
      * @param connectorName The connector name.
@@ -289,7 +289,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Deletes persisted data from an attached connector in infinispan.
+     * Deletes persisted data from an attached connector in Metadata Manager.
      *
      * @param clusterName   The cluster name.
      * @param connectorName The connector name.
