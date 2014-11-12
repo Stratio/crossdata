@@ -35,6 +35,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
@@ -385,6 +386,9 @@ public class Shell {
                 result = describeConnectors();
             } else if (command.toLowerCase().startsWith("describe system")) {
                 result = describeSystem();
+            } else if (command.toLowerCase().startsWith("describe datastore ")) {
+                result = describeDatastore(
+                        command.toLowerCase().replace("describe datastore ", "").replace(";", "").trim());
             }
             apiCallExecuted = true;
         } else if (command.toLowerCase().startsWith("add connector")
@@ -496,6 +500,11 @@ public class Shell {
     private String describeSystem() {
         return ConsoleUtils.stringResult(crossDataDriver.describeSystem());
     }
+
+    private String describeDatastore(String datastoreName) {
+        return ConsoleUtils.stringResult(crossDataDriver.describeDatastore(new DataStoreName(datastoreName)));
+    }
+
 
     private String updateCatalog(String toExecute) {
         String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();

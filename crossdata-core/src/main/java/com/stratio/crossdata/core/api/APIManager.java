@@ -190,6 +190,9 @@ public class APIManager {
         } else if (APICommand.DESCRIBE_CONNECTOR().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTOR().toString());
             result = describeConnector((ConnectorName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_DATASTORE().equals(cmd.commandType())) {
+                LOG.info(PROCESSING + APICommand.DESCRIBE_DATASTORE().toString());
+                result = describeDatastore((DataStoreName) cmd.params().get(0));
         } else if (APICommand.DESCRIBE_CONNECTORS().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTORS().toString());
             result = describeConnectors();
@@ -231,6 +234,33 @@ public class APIManager {
             }
         }
         result = CommandResult.createCommandResult(stringBuilder.toString());
+        return result;
+    }
+
+    private Result describeDatastore(DataStoreName dataStoreName) {
+        Result result = null;
+        DataStoreMetadata datastore = null;
+        try {
+            datastore = MetadataManager.MANAGER.getDataStore(dataStoreName);
+        } catch (MetadataManagerException mme) {
+            result = CommandResult.createExecutionErrorResult(mme.getMessage());
+        }
+
+        if (datastore != null){
+            StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
+            sb.append("\t").append("Name: ").append(datastore.getName()).append(System.lineSeparator());
+            sb.append("\t").append("Version: ").append(datastore.getVersion()).append(System.lineSeparator());
+            sb.append("\t").append("Required properties: ").append(datastore.getRequiredProperties())
+                    .append(System.lineSeparator());
+            sb.append("\t").append("Other properties: ").append(datastore.getOthersProperties())
+                    .append(System.lineSeparator());
+            sb.append("\t").append("Behaviours: ").append(datastore.getBehaviors())
+                    .append(System.lineSeparator());
+            sb.append("\t").append("Attached Refs: ").append(datastore.getClusterAttachedRefs().keySet())
+                    .append(System.lineSeparator());
+            result = CommandResult.createCommandResult(sb.toString());
+        }
+
         return result;
     }
 

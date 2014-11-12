@@ -208,8 +208,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
           } else if (workflow1.getExecutionType == ExecutionType.DETACH_CONNECTOR) {
-            //Send shutdown signal to connector
-            val credentials = null
             val managementOperation = workflow1.createManagementOperationMessage()
             val detachConnectorOperation = managementOperation.asInstanceOf[DetachConnector]
             val connectorClusterConfig = new ConnectorClusterConfig(
