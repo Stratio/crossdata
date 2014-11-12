@@ -17,6 +17,8 @@ And then, run it:
     > target/stratio-connector-cassandra-0.1.0/bin/stratio-connector-cassandra-0.1.0 start
 ```
 
+**NOTE:** All the connectors have to be started once CrossdataServer is already running!
+
 Now, from the Crossdata Shell we can write the following commands:
 
 Add a data store. We need to specified the XML manifest that defines the data store. The XML manifest can be found
