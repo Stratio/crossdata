@@ -581,6 +581,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         DataStoreName dataStoreName = createTestDatastore();
         Set<Operations> operations = new HashSet<>();
         operations.add(Operations.INSERT);
+        operations.add(Operations.INSERT_IF_NOT_EXISTS);
         ConnectorMetadata connectorMetadata = createTestConnector("cassandraConnector", dataStoreName,
                 new HashSet<ClusterName>(), operations, "1");
         createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
