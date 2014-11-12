@@ -65,7 +65,7 @@ public interface IConnector {
             throws ConnectionException;
 
     /**
-     * Close the connection with the underlying datastore.
+     * Close the connection with the underlying cluster.
      *
      * @throws ConnectionException If the close operation cannot be performed.
      */

@@ -306,6 +306,13 @@ public class Coordinator implements Serializable {
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
 
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
-        return CommandResult.createCommandResult("Connector attached successfully");
+
+        ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+        connectorMetadata.getClusterRefs().remove(clusterName);
+        connectorMetadata.getClusterProperties().remove(clusterName);
+
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
+
+        return CommandResult.createCommandResult("CONNECTOR detached successfully");
     }
 }

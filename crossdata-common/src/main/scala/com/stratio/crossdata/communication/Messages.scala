@@ -41,6 +41,9 @@ case class Reply(msg: String) extends Serializable
 @SerialVersionUID(-4155642367894752622L)
 case class Disconnect(userId: String) extends Serializable
 
+@SerialVersionUID(-3815643667894592648L)
+case class DisconnectFromCluster(clusterName: String) extends Serializable
+
 //CONNECTOR messages
 @SerialVersionUID(-4155642367894222659L)
 case class ConnectToConnector(msg: String) extends Serializable

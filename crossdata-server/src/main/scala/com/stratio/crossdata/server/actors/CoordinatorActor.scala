@@ -216,9 +216,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               detachConnectorOperation.targetCluster, SelectorHelper.convertSelectorMapToStringMap
                 (MetadataManager.MANAGER.getCluster(detachConnectorOperation.targetCluster).getOptions))
             val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(workflow1.getActorRef()))
-            connectorSelection ! new Connect(credentials, connectorClusterConfig)
-            //Delete connector's info from metadata manager
-            ExecutionManager.MANAGER.deleteEntry(queryId)
+            connectorSelection ! new DisconnectFromCluster(connectorClusterConfig.getName.getName)
+
+            val executionInfo = new ExecutionInfo()
+            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+            executionInfo.setWorkflow(workflow1)
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
           }
           sender ! coordinator.executeManagementOperation(workflow1.createManagementOperationMessage())
         }
