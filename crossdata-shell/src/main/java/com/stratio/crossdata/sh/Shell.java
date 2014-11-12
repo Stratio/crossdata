@@ -34,6 +34,7 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
@@ -377,8 +378,14 @@ public class Shell {
     public boolean executeApiCAll(String command){
         boolean apiCallExecuted = false;
         String result = "OK";
-        if(command.toLowerCase().startsWith("list connectors")){
-            result = listConnectors();
+        if(command.toLowerCase().startsWith("describe")){
+            if(command.toLowerCase().startsWith("describe connector ")){
+                result = describeConnector(command.toLowerCase().replace("describe connector ", "").replace(";", "").trim());
+            } else if (command.toLowerCase().startsWith("describe connectors")) {
+                result = describeConnectors();
+            } else if (command.toLowerCase().startsWith("describe system")) {
+                result = describeSystem();
+            }
             apiCallExecuted = true;
         } else if (command.toLowerCase().startsWith("add connector")
                    || command.toLowerCase().startsWith("add datastore")) {
@@ -475,11 +482,19 @@ public class Shell {
      */
     private void explainPlan(String toExecute){
         Result r = crossDataDriver.explainPlan(toExecute.substring(EXPLAIN_PLAN_TOKEN.length()));
-        println(ConsoleUtils.stringResult(r));
+        LOG.info(ConsoleUtils.stringResult(r));
     }
 
-    private String listConnectors() {
-        return crossDataDriver.listConnectors().getResult().toString();
+    private String describeConnectors() {
+        return ConsoleUtils.stringResult(crossDataDriver.describeConnectors());
+    }
+
+    private String describeConnector(String connectorName) {
+        return ConsoleUtils.stringResult(crossDataDriver.describeConnector(new ConnectorName(connectorName)));
+    }
+
+    private String describeSystem() {
+        return ConsoleUtils.stringResult(crossDataDriver.describeSystem());
     }
 
     private String updateCatalog(String toExecute) {
@@ -505,14 +520,14 @@ public class Shell {
      * Trigger the operation to reset only the metadata information related to catalogs.
      */
     private String cleanMetadata() {
-        return crossDataDriver.cleanMetadata().getResult().toString();
+        return ConsoleUtils.stringResult(crossDataDriver.cleanMetadata());
     }
 
     /**
      * Trigger the operation to reset the metadata information.
      */
     private String resetMetadata() {
-        return crossDataDriver.resetMetadata().getResult().toString();
+        return ConsoleUtils.stringResult(crossDataDriver.resetMetadata());
     }
 
     /**

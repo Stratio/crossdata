@@ -274,7 +274,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
     @Test
     public void testListConnectors() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
-        Command cmd = new Command("QID", APICommand.LIST_CONNECTORS(), null);
+        Command cmd = new Command("QID", APICommand.DESCRIBE_CONNECTORS(), null);
         createTestConnector("connectorTest", new DataStoreName("datastoreTest"), "akkaActorRef");
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
         String expectedResult = System.lineSeparator() + "Connector: connector.connectortest" +

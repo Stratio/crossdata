@@ -187,15 +187,15 @@ public class APIManager {
         } else if (APICommand.CLEAN_METADATA().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.CLEAN_METADATA().toString());
             result = cleanMetadata();
-        } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.LIST_CONNECTORS().toString());
-            result = listConnectors();
-        } else if (APICommand.DESCRIBE_SYSTEM().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.DESCRIBE_SYSTEM().toString());
-            result = describeSystem();
         } else if (APICommand.DESCRIBE_CONNECTOR().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTOR().toString());
             result = describeConnector((ConnectorName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_CONNECTORS().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTORS().toString());
+            result = describeConnectors();
+        } else if (APICommand.DESCRIBE_SYSTEM().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_SYSTEM().toString());
+            result = describeSystem();
         } else if (APICommand.EXPLAIN_PLAN().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.EXPLAIN_PLAN().toString());
             result = explainPlan(cmd);
@@ -209,7 +209,7 @@ public class APIManager {
     }
 
     private Result describeSystem(){
-        Result result=null;
+        Result result;
         StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
         List<DataStoreMetadata> dataStores = MetadataManager.MANAGER.getDatastores();
         for(DataStoreMetadata dataStore:dataStores){
@@ -224,58 +224,67 @@ public class APIManager {
                 ClusterAttachedMetadata clusterdata= ref.getValue();
                 Map<Selector, Selector> clusterproperties = clusterdata.getProperties();
                 Set<Map.Entry<ConnectorName, ConnectorAttachedMetadata>> connectors = cluster.getConnectorAttachedRefs().entrySet();
-                for(Map.Entry<ConnectorName, ConnectorAttachedMetadata>c:connectors){
-                    stringBuilder = stringBuilder.append("\t\tConnector ").append( c.getKey().getName() )
+                for(Map.Entry<ConnectorName, ConnectorAttachedMetadata>c: connectors){
+                    stringBuilder = stringBuilder.append("\t\tConnector ").append(c.getKey().getName())
                             .append(System.getProperty("line.separator"));
                 }
             }
         }
-
-        return result;
-    }
-
-    private Result describeConnector(ConnectorName name) {
-        Result result=null;
-        ConnectorMetadata connector = MetadataManager.MANAGER.getConnector(name);
-        StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
-        Set<DataStoreName> datastores = connector.getDataStoreRefs();
-        Set<ClusterName> clusters = connector.getClusterRefs();
-        Map<ClusterName, Map<Selector, Selector>> properties = connector.getClusterProperties();
-
-        stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
-                .append("\t").append(System.getProperty("line.separator"));
-
-        stringBuilder.append("\t").append("Status: ").append(connector.getConnectorStatus()).append(System.getProperty(
-                "line.separator"));
-
-        stringBuilder.append("\t").append("Properties: ").append(System.getProperty("line.separator"));
-
-        Iterator<Map.Entry<ClusterName, Map<Selector, Selector>>> propIt = properties.entrySet().iterator();
-        while(propIt.hasNext()){
-            Map.Entry<ClusterName, Map<Selector, Selector>> e = propIt.next();
-            stringBuilder.append("\t\t").append(e.getKey().toString()).append(": ")
-                    .append(e.getValue().toString())
-                    .append(System .getProperty("line.separator"));
-        }
-
-        stringBuilder.append("\t").append("Datastores: ").append(System.getProperty("line.separator"));
-        for(DataStoreName datastore:datastores){
-            stringBuilder.append("\t\t").append(datastore.getName().toString())
-                    .append(System .getProperty("line.separator"));
-        }
-
-        stringBuilder.append("\t").append("Clusters: ").append(System.getProperty("line.separator"));
-        for(ClusterName cluster:clusters){
-            stringBuilder.append("\t\t").append(cluster.getName().toString())
-                .append(System .getProperty("line.separator"));
-        }
-
-        stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
         result = CommandResult.createCommandResult(stringBuilder.toString());
         return result;
     }
 
-    private Result listConnectors() {
+    private Result describeConnector(ConnectorName name) {
+        Result result = null;
+        ConnectorMetadata connector = null;
+        try {
+            connector = MetadataManager.MANAGER.getConnector(name);
+        } catch (MetadataManagerException mme) {
+            result = CommandResult.createExecutionErrorResult(mme.getMessage());
+        }
+
+        if (connector != null){
+            StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
+            Set<DataStoreName> datastores = connector.getDataStoreRefs();
+            Set<ClusterName> clusters = connector.getClusterRefs();
+            Map<ClusterName, Map<Selector, Selector>> properties = connector.getClusterProperties();
+
+            stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
+                    .append("\t").append(System.getProperty("line.separator"));
+
+            stringBuilder.append("\t").append("Status: ").append(connector.getConnectorStatus()).append(System.getProperty(
+                    "line.separator"));
+
+            stringBuilder.append("\t").append("Properties: ").append(System.getProperty("line.separator"));
+
+            Iterator<Map.Entry<ClusterName, Map<Selector, Selector>>> propIt = properties.entrySet().iterator();
+            while(propIt.hasNext()){
+                Map.Entry<ClusterName, Map<Selector, Selector>> e = propIt.next();
+                stringBuilder.append("\t\t").append(e.getKey().toString()).append(": ")
+                        .append(e.getValue().toString())
+                        .append(System .getProperty("line.separator"));
+            }
+
+            stringBuilder.append("\t").append("Datastores: ").append(System.getProperty("line.separator"));
+            for(DataStoreName datastore:datastores){
+                stringBuilder.append("\t\t").append(datastore.getName().toString())
+                        .append(System .getProperty("line.separator"));
+            }
+
+            stringBuilder.append("\t").append("Clusters: ").append(System.getProperty("line.separator"));
+            for(ClusterName cluster:clusters){
+                stringBuilder.append("\t\t").append(cluster.getName().toString())
+                        .append(System .getProperty("line.separator"));
+            }
+
+            stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
+            result = CommandResult.createCommandResult(stringBuilder.toString());
+        }
+
+        return result;
+    }
+
+    private Result describeConnectors() {
         Result result;
         List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
         StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));

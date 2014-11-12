@@ -84,6 +84,12 @@ public final class MetadataResult extends Result {
     public static final int OPERATION_ALTER_TABLE = 11;
 
     /**
+     * Unknown Operation.
+     */
+    public static final int OPERATION_UNKNOWN = 12;
+
+
+    /**
      * Operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}.
      */
     private int operation = 0;

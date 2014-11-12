@@ -37,6 +37,7 @@ import org.apache.log4j.Logger
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 
 import scala.concurrent.duration._
+import com.stratio.crossdata.common.data.ConnectorName
 
 object BasicDriver extends DriverConfig {
   /**
@@ -176,7 +177,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   def listCatalogs(): MetadataResult = {
     val queryId = UUID.randomUUID().toString
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_CATALOGS, null))
-    result.asInstanceOf[MetadataResult]
+    if(result.isInstanceOf[MetadataResult]){
+      result.asInstanceOf[MetadataResult]
+    } else {
+      MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_UNKNOWN)
+    }
   }
 
   /**
@@ -189,7 +194,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     params.add(catalogName)
     val queryId = UUID.randomUUID().toString
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_TABLES, params))
-    result.asInstanceOf[MetadataResult]
+    if(result.isInstanceOf[MetadataResult]){
+      result.asInstanceOf[MetadataResult]
+    } else {
+      MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_UNKNOWN)
+    }
   }
 
   /**
@@ -202,7 +211,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     params.add(tableName)
     val queryId = UUID.randomUUID().toString
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_COLUMNS, params))
-    result.asInstanceOf[MetadataResult]
+    if(result.isInstanceOf[MetadataResult]){
+      result.asInstanceOf[MetadataResult]
+    } else {
+      MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_UNKNOWN)
+    }
   }
 
   /**
@@ -216,7 +229,12 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     params.add(manifest)
     val queryId = UUID.randomUUID().toString
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.ADD_MANIFEST, params))
-    result.asInstanceOf[CommandResult]
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
   }
 
   /**
@@ -242,7 +260,12 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   def resetMetadata(): CommandResult = {
     val queryId = UUID.randomUUID().toString
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_METADATA, null))
-    result.asInstanceOf[CommandResult]
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
   }
 
   /**
@@ -252,17 +275,59 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   def cleanMetadata(): CommandResult = {
     val queryId = UUID.randomUUID().toString
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.CLEAN_METADATA, null))
-    result.asInstanceOf[CommandResult]
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
   }
 
   /**
-   * List the connectors available.
+   * Describe the connectors available.
    * @return A CommandResult with the list.
    */
-  def listConnectors():CommandResult = {
+  def describeConnectors():CommandResult = {
     val queryId = UUID.randomUUID().toString
-    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_CONNECTORS, null))
-    result.asInstanceOf[CommandResult]
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CONNECTORS, null))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
+  }
+
+  /**
+   * Describe a connector.
+   * @return A CommandResult with the description of the connector.
+   */
+  def describeConnector(connectorName: ConnectorName): CommandResult = {
+    val queryId = UUID.randomUUID().toString
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(connectorName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CONNECTOR, params))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
+  }
+
+  /**
+   * Describe the system.
+   * @return A CommandResult with the description of the system.
+   */
+  def describeSystem():CommandResult = {
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_SYSTEM, null))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
   }
 
   /**
