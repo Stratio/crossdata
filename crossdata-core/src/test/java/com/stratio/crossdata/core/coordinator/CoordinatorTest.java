@@ -19,6 +19,7 @@
 package com.stratio.crossdata.core.coordinator;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Map;
@@ -110,7 +111,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
                 break;
             }
         }
-        assertTrue(!found);
+        assertFalse(found);
     }
 
     /*@Test

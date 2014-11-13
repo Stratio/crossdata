@@ -224,8 +224,6 @@ public class APIManager {
                 stringBuilder = stringBuilder.append("\tCluster ").append(clustername.getName())
                         .append(":").append(System.getProperty("line.separator"));
                 ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(clustername);
-                ClusterAttachedMetadata clusterdata= ref.getValue();
-                Map<Selector, Selector> clusterproperties = clusterdata.getProperties();
                 Set<Map.Entry<ConnectorName, ConnectorAttachedMetadata>> connectors = cluster.getConnectorAttachedRefs().entrySet();
                 for(Map.Entry<ConnectorName, ConnectorAttachedMetadata>c: connectors){
                     stringBuilder = stringBuilder.append("\t\tConnector ").append(c.getKey().getName())
