@@ -181,9 +181,9 @@ public class APIManager {
             } catch (ApiException e) {
                 result = CommandResult.createExecutionErrorResult(e.getMessage());
             }
-        } else if (APICommand.RESET_METADATA().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.RESET_METADATA().toString());
-            result = resetMetadata();
+        } else if (APICommand.RESET_SERVERDATA().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.RESET_SERVERDATA().toString());
+            result = resetServerdata();
         } else if (APICommand.CLEAN_METADATA().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.CLEAN_METADATA().toString());
             result = cleanMetadata();
@@ -351,8 +351,8 @@ public class APIManager {
         return result;
     }
 
-    private Result resetMetadata() {
-        Result result = CommandResult.createCommandResult("Metadata reset.");
+    private Result resetServerdata() {
+        Result result = CommandResult.createCommandResult("Crossdata server reset.");
         try {
             MetadataManager.MANAGER.clear();
             ExecutionManager.MANAGER.clear();

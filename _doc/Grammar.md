@@ -241,11 +241,11 @@ Example:
 
 ### RESET
 
-Remove all metadata stored in the system.
+Remove all data stored in the system (all the servers).
 
-RESET METADATA;
+RESET SERVERDATA;
 
 Example:
 
-    RESET METADATA;
+    RESET SERVERDATA;
 
