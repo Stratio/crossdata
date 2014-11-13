@@ -28,15 +28,29 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 
+/**
+ * Core Utils Class.
+ */
 public final class CoreUtils {
 
     private CoreUtils() {
     }
 
+    /**
+     * Constructor.
+     * @return
+     */
     public static CoreUtils create(){
         return new CoreUtils();
     }
 
+    /**
+     * Convert Selector to Object.
+     * @param selector The Selector
+     * @param columnName The ColumnName
+     * @return
+     * @throws PlanningException
+     */
     public static Object convertSelectorToObject(Selector selector, ColumnName columnName) throws PlanningException {
         Object result = null;
         ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
