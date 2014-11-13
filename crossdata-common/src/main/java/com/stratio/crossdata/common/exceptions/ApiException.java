@@ -20,8 +20,6 @@ package com.stratio.crossdata.common.exceptions;
 
 public class ApiException extends Exception {
 
-    String error;
-
     public ApiException(Throwable cause) {
         super(cause);
     }
@@ -29,5 +27,6 @@ public class ApiException extends Exception {
     public ApiException(String error, Throwable cause) {
         super(error, cause);
     }
+
 
 }

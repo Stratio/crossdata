@@ -197,7 +197,7 @@ public final class ConsoleUtils {
                 String cellContent = String.valueOf(row.getCell(key).getValue());
 
                 int currentWidth;
-                if(colWidths.containsValue(key)){
+                if(colWidths.containsKey(key)){
                     currentWidth = colWidths.get(key);
                 } else {
                     Iterator<Map.Entry<String, Integer>> iter = colWidths.entrySet().iterator();

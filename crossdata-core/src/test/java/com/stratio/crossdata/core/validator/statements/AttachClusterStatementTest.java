@@ -45,6 +45,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachClusterNoOptions() {
+        boolean res=true;
         String query = "ATTACH CLUSTER cluster on DATASTORE Cassandra";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -60,14 +61,15 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             fail("Options are required for ATTACH CLUSTER statement");
         } catch (ValidationException e) {
-            assertTrue(true);
+            assertTrue(res);
         } catch (IgnoreQueryException e) {
-            assertTrue(true);
+            assertTrue(res);
         }
     }
 
     @Test
     public void attachClusterUnknownDatastore() {
+        boolean res=true;
         String query = "ATTACH CLUSTER cluster on DATASTORE unknown";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -82,14 +84,15 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             fail("Datastore must exists before ATTACH CLUSTER statement");
         } catch (ValidationException e) {
-            assertTrue(true);
+            assertTrue(res);
         } catch (IgnoreQueryException e) {
-            assertTrue(true);
+            assertTrue(res);
         }
     }
 
     @Test
     public void attachClusterWithOptions() {
+        boolean res=true;
         String query = "ATTACH CLUSTER cluster on DATASTORE Cassandra with options {'comment':'attach cluster'}";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -102,7 +105,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            assertTrue(true);
+            assertTrue(res);
         } catch (ValidationException e) {
             fail(e.getMessage());
         } catch (IgnoreQueryException e) {
@@ -112,6 +115,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachUnknownClusterWithOptionsIfexists() {
+        boolean res=true;
         String query = "ATTACH CLUSTER IF EXIST unknown on DATASTORE Cassandra with options {'comment':'attach " +
                 "cluster'}";
 
@@ -125,7 +129,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            assertTrue(true);
+            assertTrue(res);
         } catch (ValidationException e) {
             fail(e.getMessage());
         } catch (IgnoreQueryException e) {

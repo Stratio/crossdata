@@ -306,12 +306,10 @@ public class Validator {
         Map<ClusterName, ClusterAttachedMetadata> refs = dataStoreMetadata.getClusterAttachedRefs();
         ClusterName clusterName = myStmt.getClusterName();
         if (!options.isEmpty()) {
-            //StringSelector hosts =(StringSelector)options.get("hosts");
             Selector hosts =options.get("hosts");
             if(hosts != null){
                 String[] myHosts = hosts.getStringValue().replace("[", "").replace("]", "").split(",");
-                for(String host: myHosts){
-                    //MetadataManager.MANAGER.exists(dataStoreName);
+                for(int i=0; i<myHosts.length;i++){
                     Iterator<Map.Entry<ClusterName, ClusterAttachedMetadata>> it = refs.entrySet().iterator();
                     boolean found = false;
                     while(it.hasNext()){
@@ -587,7 +585,11 @@ public class Validator {
         case RELATION:
             badFormatException = new BadFormatException("Operation not supported in where.");
             break;
+        default:
+            break;
         }
+
+
         if (notMatchDataTypeException != null) {
             throw notMatchDataTypeException;
         } else if (badFormatException != null) {

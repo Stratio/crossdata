@@ -452,9 +452,7 @@ public class Shell {
                         }
                     }
                 } else if (toExecute.endsWith(";")) {
-                    if (" ".equalsIgnoreCase(sb.toString())
-                            || System.lineSeparator().equalsIgnoreCase(sb.toString())) {
-                    } else if (toExecute.toLowerCase().startsWith("help")) {
+                    if (toExecute.toLowerCase().startsWith("help")) {
                         showHelp(sb.toString());
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);

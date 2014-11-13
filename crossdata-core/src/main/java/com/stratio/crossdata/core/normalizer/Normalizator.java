@@ -119,7 +119,6 @@ public class Normalizator {
      */
     public void normalizeTables(List<TableName> fromTables) throws ValidationException {
         for (TableName tableName : fromTables) {
-            System.out.println("Checking: " + tableName.toString());
             checkTable(tableName);
             fields.getCatalogNames().add(tableName.getCatalogName());
             fields.addTableName(tableName);
