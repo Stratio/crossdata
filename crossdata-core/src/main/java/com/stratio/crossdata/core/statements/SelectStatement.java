@@ -41,11 +41,6 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 public class SelectStatement extends CrossdataStatement implements Serializable {
 
     /**
-     * Maximum limit of rows to be retrieved in a query.
-     */
-    private static final int MAX_LIMIT = 10000;
-
-    /**
      * The name of the target table.
      */
     private final TableName tableName;
@@ -262,11 +257,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     public void setLimit(int limit) {
         this.limitInc = true;
-        if (limit <= MAX_LIMIT) {
-            this.limit = limit;
-        } else {
-            this.limit = MAX_LIMIT;
-        }
+        this.limit = limit;
     }
 
     public Window getWindow() {
