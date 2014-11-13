@@ -2,6 +2,7 @@ package com.stratio.crossdata.core.utils;
 
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -93,6 +94,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         Selector selector = new IntegerSelector(25);
         ColumnName columnName = new ColumnName(table, "ListColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
+        fail();
     }
 
     @Test(expectedExceptions = PlanningException.class)
@@ -101,6 +103,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         Selector selector = new StringSelector("test");
         ColumnName columnName = new ColumnName(table, "FloatColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
+        fail();
     }
 
     @Test(expectedExceptions = PlanningException.class)
@@ -109,6 +112,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         Selector selector = new StringSelector("test");
         ColumnName columnName = new ColumnName(table, "DoubleColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
+        fail();
     }
 
     @Test(expectedExceptions = PlanningException.class)
@@ -117,6 +121,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         Selector selector = new StringSelector("test");
         ColumnName columnName = new ColumnName(table, "IntColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
+        fail();
     }
 
     @Test(expectedExceptions = PlanningException.class)
@@ -125,6 +130,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         Selector selector = new StringSelector("test");
         ColumnName columnName = new ColumnName(table, "BigIntColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
+        fail();
     }
 
     @Test(expectedExceptions = PlanningException.class)
@@ -133,6 +139,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         Selector selector = new AsteriskSelector();
         ColumnName columnName = new ColumnName(table, "TextColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
+        fail();
     }
 
     @Test(expectedExceptions = PlanningException.class)
@@ -141,5 +148,6 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         Selector selector = new StringSelector("test");
         ColumnName columnName = new ColumnName(table, "BooleanColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
+        fail();
     }
 }

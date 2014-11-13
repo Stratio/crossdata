@@ -433,7 +433,25 @@ public class Shell {
                 cmd = console.readLine();
                 sb.append(cmd).append(" ");
                 toExecute = sb.toString().trim();
-                if (toExecute.endsWith(";")) {
+                if (toExecute.startsWith("//") || toExecute.startsWith("#")) {
+                    LOG.debug("Comment: " + toExecute);
+                    sb = new StringBuilder();
+                } else if (toExecute.startsWith("/*")) {
+                    LOG.debug("Multiline comment START");
+                    if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                        currentPrompt = console.getPrompt();
+                        String tempPrompt =
+                                StringUtils.repeat(" ", DEFAULT_PROMPT.length()-1) + DEFAULT_TEMP_PROMPT + " ";
+                        console.setPrompt(tempPrompt);
+                    }
+                    if(toExecute.endsWith("*/")){
+                        LOG.debug("Multiline comment END");
+                        sb = new StringBuilder();
+                        if(!console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                            console.setPrompt(currentPrompt);
+                        }
+                    }
+                } else if (toExecute.endsWith(";")) {
                     if (" ".equalsIgnoreCase(sb.toString())
                             || System.lineSeparator().equalsIgnoreCase(sb.toString())) {
                     } else if (toExecute.toLowerCase().startsWith("help")) {
@@ -442,7 +460,8 @@ public class Shell {
                         updateCatalog(toExecute);
                     } else if(toExecute.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
                         explainPlan(toExecute);
-                    } else if(executeApiCAll(toExecute)){
+                    } else if(executeApiCAll(toExecute)) {
+                        LOG.debug("API call executed.");
                     } else {
                         executeQuery(toExecute);
                     }
@@ -464,7 +483,7 @@ public class Shell {
                     }
                     sb = new StringBuilder();
                     println("");
-                } else if(!toExecute.isEmpty()) {
+                } else if(!toExecute.isEmpty()) { // Multiline code
                     if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
                         currentPrompt = console.getPrompt();
                         String tempPrompt =
