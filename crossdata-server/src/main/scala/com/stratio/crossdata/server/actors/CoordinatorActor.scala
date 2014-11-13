@@ -195,9 +195,14 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val credentials = null
             val managementOperation = workflow1.createManagementOperationMessage()
             val attachConnectorOperation = managementOperation.asInstanceOf[AttachConnector]
+
+            val clusterName = attachConnectorOperation.targetCluster
             val connectorClusterConfig = new ConnectorClusterConfig(
-              attachConnectorOperation.targetCluster, SelectorHelper.convertSelectorMapToStringMap
+              clusterName, SelectorHelper.convertSelectorMapToStringMap
                 (MetadataManager.MANAGER.getCluster(attachConnectorOperation.targetCluster).getOptions))
+            val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
+            connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
+
             val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(workflow1.getActorRef()))
             connectorSelection ! new Connect(credentials, connectorClusterConfig)
 
@@ -210,9 +215,14 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           } else if (workflow1.getExecutionType == ExecutionType.DETACH_CONNECTOR) {
             val managementOperation = workflow1.createManagementOperationMessage()
             val detachConnectorOperation = managementOperation.asInstanceOf[DetachConnector]
+
+            val clusterName = detachConnectorOperation.targetCluster
             val connectorClusterConfig = new ConnectorClusterConfig(
-              detachConnectorOperation.targetCluster, SelectorHelper.convertSelectorMapToStringMap
+              clusterName, SelectorHelper.convertSelectorMapToStringMap
                 (MetadataManager.MANAGER.getCluster(detachConnectorOperation.targetCluster).getOptions))
+            val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
+            connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
+
             val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(workflow1.getActorRef()))
             connectorSelection ! new DisconnectFromCluster(connectorClusterConfig.getName.getName)
 
