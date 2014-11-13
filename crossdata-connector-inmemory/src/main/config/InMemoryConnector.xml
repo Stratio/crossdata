@@ -30,14 +30,14 @@
 
     <!-- Define the set of required operations the user will be asked to input
     when attaching the connector -->
-    <!--
-    <RequiredProperties>
+
+    <!--OptionalProperties>
         <Property>
-            <PropertyName>ConnectorProperty</PropertyName>
-            <Description>Property description</Description>
+            <PropertyName>TableRowLimit</PropertyName>
+            <Description>Limit of rows allowed per table</Description>
         </Property>
-    </RequiredProperties>
-    -->
+    </OptionalProperties-->
+
     <!-- Define the list of operations supported by the connector.
     Check crossdata/doc/ConnectorOperations.md for more information. -->
     <SupportedOperations>
@@ -45,10 +45,20 @@
         <operation>DROP_CATALOG</operation>
         <operation>CREATE_TABLE</operation>
         <operation>DROP_TABLE</operation>
+        <operation>TRUNCATE_TABLE</operation>
         <operation>INSERT</operation>
         <operation>PROJECT</operation>
         <operation>SELECT_OPERATOR</operation>
         <operation>SELECT_LIMIT</operation>
         <operation>FILTER_PK_EQ</operation>
+        <operation>FILTER_PK_GT</operation>
+        <operation>FILTER_PK_LT</operation>
+        <operation>FILTER_PK_GET</operation>
+        <operation>FILTER_PK_LET</operation>
+        <operation>FILTER_NON_INDEXED_EQ</operation>
+        <operation>FILTER_NON_INDEXED_GT</operation>
+        <operation>FILTER_NON_INDEXED_LT</operation>
+        <operation>FILTER_NON_INDEXED_GET</operation>
+        <operation>FILTER_NON_INDEXED_LET</operation>
     </SupportedOperations>
 </Connector>

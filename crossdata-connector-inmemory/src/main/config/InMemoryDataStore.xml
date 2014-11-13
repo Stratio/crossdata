@@ -35,7 +35,7 @@
 
     <!-- List of datastore behaviours -->
     <Behaviors>
-        <Behavior>UPSERT_ON_INSERT</Behavior>
+        <Behavior>EPHEMERAL</Behavior>
     </Behaviors>
 </DataStore>
 

@@ -28,8 +28,8 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
     <artifactId>crossdata-connector-inmemory</artifactId>
-    <name>Stratio Crossdata core</name>
-    <description>Stratio Crossdata Core</description>
+    <name>Stratio Crossdata InMemory connector</name>
+    <description>Stratio Crossdata InMemory connector</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
@@ -221,6 +221,7 @@
                 <configuration>
                     <mainClass>com.stratio.connector.inmemory.InMemoryConnector</mainClass>
                     <jmxPort>7180</jmxPort>
+                    <useCallingUserAsService>true</useCallingUserAsService>
                 </configuration>
             </plugin>
 

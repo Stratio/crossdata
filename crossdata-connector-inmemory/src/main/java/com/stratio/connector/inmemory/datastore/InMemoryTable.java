@@ -18,16 +18,181 @@
 
 package com.stratio.connector.inmemory.datastore;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
  * This class provides a basic abstraction of a database-like table stored in memory.
  */
 public class InMemoryTable {
 
     /**
-     * Class constructor
+     * Table name.
      */
-    public InMemoryTable(){
+    private final String tableName;
 
+    /**
+     * Name of the columns.
+     */
+    private final String [] columnNames;
+
+    /**
+     * Index in where the different columns have been stored in the object array.
+     */
+    private final Map<String, Integer> columnIndex = new HashMap<>();
+
+    /**
+     * Java column types.
+     */
+    private final Class [] columnTypes;
+
+    /**
+     * List of columns in the primary key.
+     */
+    private final List<String> primaryKey = new ArrayList<>();
+
+    /**
+     * Map of rows indexed by primary key.
+     */
+    private final Map<String, Object[]> rows = new HashMap<>();
+
+    /**
+     * Maximum number of rows in the table.
+     */
+    private final int maxRows;
+
+    /**
+     * Class constructor.
+     * @param tableName The name of the table.
+     * @param columnNames The name of the columns.
+     * @param columnTypes The types of the columns.
+     * @param primaryKey The list of columns in the primary key.
+     * @param maxRows The maximum number of rows per table.
+     */
+    public InMemoryTable(String tableName, String[] columnNames, Class[] columnTypes, List<String> primaryKey,
+            int maxRows) {
+        this.tableName = tableName;
+        this.columnNames = columnNames;
+        this.columnTypes = columnTypes;
+        this.primaryKey.addAll(primaryKey);
+        int index = 0;
+        for(String col: columnNames){
+            columnIndex.put(col, index);
+            index++;
+        }
+        this.maxRows = maxRows;
     }
 
+    /**
+     * Get the types of the columns.
+     * @return An array of Java classes.
+     */
+    public Class[] getColumnTypes() {
+        return columnTypes;
+    }
+
+    /**
+     * Get the column names.
+     * @return An array of column names.
+     */
+    public String[] getColumnNames() {
+        return columnNames;
+    }
+
+    /**
+     * Insert a new row in the table.
+     * @param row The map associating column name with cell value.
+     */
+    public void insert(Map<String, Object> row) throws Exception {
+        checkTableSpace();
+        Object [] rowObjects = new Object[columnNames.length];
+        for(Map.Entry<String, Object> cols : row.entrySet()){
+            rowObjects[columnIndex.get(cols.getKey())] = cols.getValue();
+        }
+        String key = generatePrimaryKey(row);
+        rows.put(key, rowObjects);
+    }
+
+    /**
+     * Check that the table size have not reached the maximum.
+     * @throws Exception If the maximum capacity have been reached.
+     */
+    private void checkTableSpace() throws Exception {
+        if(rows.size() >= maxRows){
+            throw new Exception("Table maximum capacity reached: " + maxRows);
+        }
+    }
+
+    /**
+     * Generate the primary key for a given row.
+     * @param row The map associating column name with cell value.
+     * @return A String representation of the key.
+     * @throws Exception If the row does not contains all required values.
+     */
+    private String generatePrimaryKey(Map<String, Object> row) throws Exception {
+        StringBuffer sb = new StringBuffer();
+        for(String keyColumn: primaryKey){
+            if(!row.containsKey(keyColumn)){
+                throw new Exception("Key column " + keyColumn + " not found in the row to be inserted.");
+            }else{
+                sb.append(row.get(keyColumn)).append("$");
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Truncate the contents of a table.
+     */
+    public void truncate() {
+        rows.clear();
+    }
+
+    /**
+     * Perform a full scan search.
+     * @param relations The list of relationships.
+     * @param outputColumns The output columns in order.
+     * @return A list with the matching columns.
+     */
+    public List<Object[]> fullScanSearch(List<InMemoryRelation> relations, List<String> outputColumns){
+        List<Object[]> results = new ArrayList<>();
+        boolean toAdd = true;
+        for(Object [] row : rows.values()){
+            toAdd = true;
+            for(InMemoryRelation relation : relations){
+                Object o = row[columnIndex.get(relation.getColumnName())];
+                toAdd &= relation.getRelation().compare(o, relation.getRightPart());
+            }
+            if(toAdd){
+                results.add(projectColumns(row, outputColumns));
+            }
+        }
+        return results;
+    }
+
+    /**
+     * Project a set of columns given a complete row.
+     * @param row The source row.
+     * @param outputColumns The set of output columns.
+     * @return A row with the projected columns.
+     */
+    private Object[] projectColumns(final Object [] row, final List<String> outputColumns){
+        Object [] result = new Object[outputColumns.size()];
+        int index = 0;
+        for(String output : outputColumns){
+            result[index] = row[columnIndex.get(output)];
+            index++;
+        }
+        return result;
+    }
+
+    /**
+     * Get the size of the table in number of rows.
+     * @return The number of rows.
+     */
+    public int size(){
+        return rows.size();
+    }
 }

@@ -36,6 +36,7 @@ import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.security.ICredentials;
+import com.stratio.crossdata.connectors.ConnectorApp;
 
 /**
  * InMemory connector that demonstrates the internals of a crossdata connector.
@@ -56,9 +57,9 @@ public class InMemoryConnector implements IConnector{
     private final Map<ClusterName, InMemoryDatastore> clusters = new HashMap<>();
 
     /**
-     * Constant defining the required datastore property.
+     * Constant defining the required connector property.
      */
-    private static final String DATASTORE_PROPERTY = "TableRowLimit";
+    private static final String CONNECTOR_PROPERTY = "TableRowLimit";
 
     @Override
     public String getConnectorName() {
@@ -82,13 +83,13 @@ public class InMemoryConnector implements IConnector{
         ClusterName targetCluster = config.getName();
         Map<String, String> options = config.getOptions();
 
-        if(!options.isEmpty() && options.get(DATASTORE_PROPERTY) != null){
+        if(!options.isEmpty() && options.get(CONNECTOR_PROPERTY) != null){
             //At this step we usually connect to the database. As this is an tutorial implementation,
             //we instantiate the Datastore instead.
-            InMemoryDatastore datastore = new InMemoryDatastore(Integer.valueOf(options.get(DATASTORE_PROPERTY)));
+            InMemoryDatastore datastore = new InMemoryDatastore(Integer.valueOf(options.get(CONNECTOR_PROPERTY)));
             clusters.put(targetCluster, datastore);
         }else{
-            throw new ConnectionException("Invalid options, expeting TableRowLimit");
+            throw new ConnectionException("Invalid options, expecting TableRowLimit");
         }
     }
 
@@ -114,16 +115,35 @@ public class InMemoryConnector implements IConnector{
 
     @Override
     public IStorageEngine getStorageEngine() throws UnsupportedException {
-        return null;
+        return new InMemoryStorageEngine(this);
     }
 
     @Override
     public IQueryEngine getQueryEngine() throws UnsupportedException {
-        return null;
+        return new InMemoryQueryEngine(this);
     }
 
     @Override
     public IMetadataEngine getMetadataEngine() throws UnsupportedException {
-        return null;
+        return new InMemoryMetadataEngine(this);
+    }
+
+    /**
+     * Get the datastore associated to a given cluster.
+     * @param cluster The cluster name.
+     * @return A {@link com.stratio.connector.inmemory.datastore.InMemoryDatastore}.
+     */
+    protected InMemoryDatastore getDatastore(ClusterName cluster){
+        return this.clusters.get(cluster);
+    }
+
+    /**
+     * Run an InMemory Connector using a {@link com.stratio.crossdata.connectors.ConnectorApp}.
+     * @param args The arguments.
+     */
+    public static void main(String [] args){
+        InMemoryConnector inMemoryConnector = new InMemoryConnector();
+        ConnectorApp connectorApp = new ConnectorApp();
+        connectorApp.startup(inMemoryConnector);
     }
 }

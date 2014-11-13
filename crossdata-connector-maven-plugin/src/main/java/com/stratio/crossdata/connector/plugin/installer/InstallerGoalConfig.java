@@ -33,11 +33,12 @@ public class InstallerGoalConfig {
     private final List<File> dependenciesJarRepo;
     private final String unixScriptTemplate;
     private final String jmxPort;
+    private boolean useCallingUserAsService;
 
     public InstallerGoalConfig(String outputDirectory, String configDirectory, String includeDirectory,
             String connectorName, String description, String userService, String mainClass,
             String jmxPort, File mainJarRepo,
-            List<File> dependenciesJarRepo, String unixScriptTemplate) {
+            List<File> dependenciesJarRepo, String unixScriptTemplate, boolean useCallingUserAsService) {
         this.outputDirectory = outputDirectory;
         this.configDirectory = configDirectory;
         this.includeDirectory = includeDirectory;
@@ -49,6 +50,7 @@ public class InstallerGoalConfig {
         this.mainJarRepo = mainJarRepo;
         this.dependenciesJarRepo = dependenciesJarRepo;
         this.unixScriptTemplate = unixScriptTemplate;
+        this.useCallingUserAsService = useCallingUserAsService;
     }
 
     public String getOutputDirectory() {
@@ -93,5 +95,9 @@ public class InstallerGoalConfig {
 
     public String getUnixScriptTemplate() {
         return unixScriptTemplate;
+    }
+
+    public boolean isUseCallingUserAsService() {
+        return useCallingUserAsService;
     }
 }
