@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.core.grid;
 
+import static org.testng.Assert.assertTrue;
+
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.locks.Lock;
@@ -85,6 +87,7 @@ public class GridTest {
         Lock lock = Grid.INSTANCE.lock("testGridLock");
         lock.lock();
         lock.unlock();
+        assertTrue(true);
     }
 
     /**
