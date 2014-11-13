@@ -499,7 +499,7 @@ public enum Operations {
 
     /**
      * The engine supports full text search syntax in {@link com.stratio.crossdata.common.logicalplan.Filter}
-     * operations with a MACTH Operator.
+     * operations with a MATCH Operator.
      */
     FILTER_INDEXED_MATCH("FILTER_INDEXED_MATCH"),
 

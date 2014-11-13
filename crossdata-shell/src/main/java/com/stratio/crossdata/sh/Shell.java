@@ -376,7 +376,7 @@ public class Shell {
         }
     }
 
-    public boolean executeApiCAll(String command){
+    public boolean executeApiCall(String command){
         boolean apiCallExecuted = false;
         String result = "OK";
         if(command.toLowerCase().startsWith("describe")){
@@ -431,6 +431,8 @@ public class Shell {
                     CrossdataManifest.TYPE_CONNECTOR,
                     command.toLowerCase().replace("drop connector ", "").replace(";", "").trim());
             apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
+            result = explainPlan(command);
         }
         if(apiCallExecuted){
             LOG.info(result);
@@ -476,9 +478,7 @@ public class Shell {
                         showHelp(sb.toString());
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);
-                    } else if(toExecute.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
-                        explainPlan(toExecute);
-                    } else if(executeApiCAll(toExecute)) {
+                    } else if(executeApiCall(toExecute)) {
                         LOG.debug("API call executed.");
                     } else {
                         executeQuery(toExecute);
@@ -520,10 +520,11 @@ public class Shell {
     /**
      * Trigger the explain plan operation using the driver.
      * @param toExecute The user input.
+     * @return Execution plan.
      */
-    private void explainPlan(String toExecute){
+    private String explainPlan(String toExecute){
         Result r = crossDataDriver.explainPlan(toExecute.substring(EXPLAIN_PLAN_TOKEN.length()));
-        LOG.info(ConsoleUtils.stringResult(r));
+        return ConsoleUtils.stringResult(r);
     }
 
     private String describeConnectors() {
