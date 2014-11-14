@@ -32,7 +32,7 @@ public class AlterOptions implements Serializable {
      */
     private AlterOperation option;
 
-    ColumnMetadata columnMetadata;
+    private ColumnMetadata columnMetadata;
 
     private Map<Selector, Selector> properties = null;
 

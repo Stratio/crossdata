@@ -44,17 +44,17 @@ content:
       The CREATE command can be used with different targets. For
       more information check one of the following:
       
-        > help create keyspace
+        > help create catalog
         > help create table
         > help create index
 
-  - entry: CREATE_KEYSPACE
+  - entry: CREATE_CATALOG
     help: |
-      Create a new keyspace on the system specifying its replication properties.
+      Create a new catalog on the system specifying its replication properties.
       
       Syntax:
 
-        CREATE KEYSPACE (IF NOT EXISTS)? <keyspace_name> 
+        CREATE CATALOG (IF NOT EXISTS)? <catalog_name> 
           WITH replication = <options_map>
           (AND durable_writes = <boolean>)?;
 
@@ -64,13 +64,13 @@ content:
 
       Example:
 
-        CREATE KEYSPACE key_space1
+        CREATE CATALOG key_space1
           WITH replication = {class: SimpleStrategy, replication_factor: 3}
           AND durable_writes = false;
       
   - entry: CREATE_TABLE
     help: |
-      Create a new table on the selected keyspace.
+      Create a new table on the selected catalog.
       
       Syntax:
       
@@ -184,7 +184,7 @@ content:
       
   - entry: INSERT_INTO
     help: |
-      Insert new values in a table of the keyspace
+      Insert new values in a table of the catalog
       
       Syntax:
         INSERT INTO <tablename> ( <column_name_0>, ..., <column_name_i> )
@@ -197,7 +197,7 @@ content:
 
       
       Example:
-        INSERT INTO mykeyspace.tablename (column1, column2)
+        INSERT INTO mycatalog.tablename (column1, column2)
           VALUES(value1, value2)
           IF NOT EXISTS
           USING TTL = 10;
@@ -219,7 +219,7 @@ content:
       The DROP command can be used with different targets. For
       more information check one of the following:
       
-        > help drop keyspace
+        > help drop catalog
         > help drop table
         > help drop index
         > help drop trigger
@@ -248,17 +248,17 @@ content:
       
         DROP TABLE IF EXISTS users;
       
-  - entry: DROP_KEYSPACE
+  - entry: DROP_CATALOG
     help: |
-      Remove an existing keyspace.
+      Remove an existing catalog.
       
       Syntax:
       
-        DROP KEYSPACE (IF EXISTS) <keyspace>;
+        DROP CATALOG (IF EXISTS) <catalog>;
       
       Example:
       
-        DROP KEYSPACE IF EXISTS application_0;
+        DROP CATALOG IF EXISTS application_0;
       
   - entry: DROP_TRIGGER
     help: |
@@ -423,23 +423,23 @@ content:
       The ALTER command can be used with different targets. For
       more information check one of the following:
       
-        > help alter keyspace
+        > help alter catalog
         > help alter table
       
-  - entry: ALTER_KEYSPACE
+  - entry: ALTER_CATALOG
     help: |
-      Alter the configuration of a keyspace.
+      Alter the configuration of a catalog.
       
       Syntax:
       
-        ALTER KEYSPACE <keyspace_name> WITH <properties>;
+        ALTER CATALOG <catalog_name> WITH <properties>;
       
         where the <properties> match the ones specified during
-        the keyspace creation.
+        the catalog creation.
 
       For more information check:
       
-        > help create keyspace
+        > help create catalog
       
   - entry: ALTER_TABLE
     help: |
@@ -473,38 +473,38 @@ content:
       The DESCRIBE command can be used to provide information. For
       more information check one of the following:
       
-        > help describe keyspace
-        > help describe keyspaces
+        > help describe catalog
+        > help describe catalogs
         > help describe table
         > help describe tables
 
-  - entry: DESCRIBE_KEYSPACES
+  - entry: DESCRIBE_CATALOGS
     help: |
-      Describe all keyspaces.
+      Describe all catalogs.
       
       Syntax:
       
-        DESCRIBE KEYSPACES ;
+        DESCRIBE CATALOGS ;
 
       Example:
       
-        DESCRIBE KEYSPACES;     
+        DESCRIBE CATALOGS;     
 
-  - entry: DESCRIBE_KEYSPACE
+  - entry: DESCRIBE_CATALOG
     help: |
-      Describe a keyspace.
+      Describe a catalog.
       
       Syntax:
       
-        DESCRIBE KEYSPACE (<keyspacename>)? ;
+        DESCRIBE CATALOG (<catalogname>)? ;
 
       Example:
       
-        DESCRIBE KEYSPACE demo;     
+        DESCRIBE CATALOG demo;     
 
   - entry: DESCRIBE_TABLES
     help: |
-      Describe the keyspace tables.
+      Describe the catalog tables.
       
       Syntax:
       

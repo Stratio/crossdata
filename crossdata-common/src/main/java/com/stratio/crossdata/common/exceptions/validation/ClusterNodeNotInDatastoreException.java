@@ -16,29 +16,12 @@
  * under the License.
  */
 
-package com.stratio.crossdata.server
+package com.stratio.crossdata.common.exceptions.validation;
 
-import scala.annotation.tailrec
+import com.stratio.crossdata.common.exceptions.ValidationException;
 
-object CrossDataApplication extends App {
-  val crossDataServer: CrossDataServer = new CrossDataServer
-
-  /**
-   * This method make a command loop.
-   * @return  nothing.
-   * */
-  @tailrec
-  private def commandLoop(): Unit = {
-    Console.readLine() match {
-      case "quit" | "exit" => exit()
-      case _ =>
+public class ClusterNodeNotInDatastoreException extends ValidationException {
+    public ClusterNodeNotInDatastoreException(String cause) {
+        super(cause);
     }
-    commandLoop()
-  }
-
-  crossDataServer.init(null)
-  crossDataServer.start()
-  commandLoop()
-  crossDataServer.stop()
-  crossDataServer.destroy()
 }

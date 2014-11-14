@@ -23,4 +23,10 @@ public class ApiException extends Exception {
     public ApiException(Throwable cause) {
         super(cause);
     }
+
+    public ApiException(String error, Throwable cause) {
+        super(error, cause);
+    }
+
+
 }

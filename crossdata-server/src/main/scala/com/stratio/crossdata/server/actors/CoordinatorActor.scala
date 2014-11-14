@@ -26,7 +26,7 @@ import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.executionplan.{ExecutionType, ManagementWorkflow, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{AttachConnector, Connect, ConnectToConnector, DisconnectFromConnector, Execute}
+import com.stratio.crossdata.communication._
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionManagerException, ExecutionInfo, ExecutionManager}
 import com.stratio.crossdata.core.metadata.MetadataManager
@@ -195,11 +195,15 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val credentials = null
             val managementOperation = workflow1.createManagementOperationMessage()
             val attachConnectorOperation = managementOperation.asInstanceOf[AttachConnector]
+            val clusterName = attachConnectorOperation.targetCluster
             val clusterOptions = SelectorHelper.convertSelectorMapToStringMap(
-                MetadataManager.MANAGER.getCluster(attachConnectorOperation.targetCluster).getOptions)
+              MetadataManager.MANAGER.getCluster(attachConnectorOperation.targetCluster).getOptions)
             val connectorOptions = SelectorHelper.convertSelectorMapToStringMap(attachConnectorOperation.options)
             val connectorClusterConfig = new ConnectorClusterConfig(
-              attachConnectorOperation.targetCluster, connectorOptions, clusterOptions)
+              clusterName, connectorOptions, clusterOptions)
+
+            val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
+            connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
             val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(workflow1.getActorRef()))
             connectorSelection ! new Connect(credentials, connectorClusterConfig)
 
@@ -212,6 +216,25 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setWorkflow(workflow1)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
+          } else if (workflow1.getExecutionType == ExecutionType.DETACH_CONNECTOR) {
+            val managementOperation = workflow1.createManagementOperationMessage()
+            val detachConnectorOperation = managementOperation.asInstanceOf[DetachConnector]
+
+            val clusterName = detachConnectorOperation.targetCluster
+            val connectorClusterConfig = new ConnectorClusterConfig(
+              clusterName, SelectorHelper.convertSelectorMapToStringMap
+                (MetadataManager.MANAGER.getCluster(detachConnectorOperation.targetCluster).getOptions))
+            val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
+            connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
+
+            val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(workflow1.getActorRef()))
+            connectorSelection ! new DisconnectFromCluster(connectorClusterConfig.getName.getName)
+
+            val executionInfo = new ExecutionInfo()
+            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+            executionInfo.setWorkflow(workflow1)
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
           }
           sender ! coordinator.executeManagementOperation(workflow1.createManagementOperationMessage())
         }
@@ -234,7 +257,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
 
             actorSelection.asInstanceOf[ActorSelection] ! operation
-            log.info("\nmessage sent to" + actorRef.toString())
+            log.info("\nMessage sent to" + actorRef.toString())
 
           } else if (ResultType.TRIGGER_EXECUTION.equals(workflow1.getResultType)) {
 
@@ -255,12 +278,12 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo)
 
             actorSelection.asInstanceOf[ActorSelection] ! operation
-            log.info("\nmessage sent to" + actorRef.toString())
+            log.info("\nMessage sent to" + actorRef.toString())
 
           }
         }
         case _ => {
-          log.error("non recognized workflow")
+          log.error("Non recognized workflow")
         }
       }
     }
@@ -305,7 +328,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         }
       } catch {
         case ex: ExecutionManagerException => {
-          log.error(ex.getStackTraceString + "cannot access queryId actorRef associated value")
+          log.error("Cannot access queryId actorRef associated value:" + System.lineSeparator() + ex.getMessage)
         }
       }
     }

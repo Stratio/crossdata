@@ -71,7 +71,7 @@ public class AttachClusterStatement extends MetadataStatement {
         this.ifNotExists = ifNotExists;
         this.datastoreName = datastoreName;
 
-        if (options.isEmpty()) {
+        if ((options == null) || options.isEmpty()) {
             this.options = new HashMap<>();
         } else {
             this.options = StringUtils.convertJsonToOptions(options);
@@ -94,6 +94,7 @@ public class AttachClusterStatement extends MetadataStatement {
     @Override
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_DATASTORE)
+                .add(ValidationTypes.MUST_BE_UNIQUE_DATASTORE)
                 .add(ValidationTypes.VALID_CLUSTER_OPTIONS);
     }
 

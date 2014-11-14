@@ -54,9 +54,124 @@ public enum Operations {
     DROP_TABLE("DROP_TABLE"),
 
     /**
-     * The engine supports updating the data of a table according to some conditions.
+     * The engine supports update operations on columns
+     * that are part of the primary key with an equal operator.
      */
-    UPDATE_TABLE("UPDATE_TABLE"),
+    UPDATE_PK_EQ("UPDATE_PK_EQ"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are part of the primary key with greater than operator.
+     */
+    UPDATE_PK_GT("UPDATE_PK_GT"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are part of the primary key with less than operator.
+     */
+    UPDATE_PK_LT("UPDATE_PK_LT"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are part of the primary key with greater than or equal operator.
+     */
+    UPDATE_PK_GET("UPDATE_PK_GET"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are part of the primary key with less than or equal operator.
+     */
+    UPDATE_PK_LET("UPDATE_PK_LET"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with an equal operator.
+     */
+    UPDATE_NON_INDEXED_EQ("UPDATE_NON_INDEXED_EQ"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with a greater than operator.
+     */
+    UPDATE_NON_INDEXED_GT("UPDATE_NON_INDEXED_GT"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with a less than operator.
+     */
+    UPDATE_NON_INDEXED_LT("UPDATE_NON_INDEXED_LT"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with greater than or equal operator.
+     */
+    UPDATE_NON_INDEXED_GET("UPDATE_NON_INDEXED_GET"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with less than or equal operator.
+     */
+    UPDATE_NON_INDEXED_LET("UPDATE_NON_INDEXED_LET"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with an equal operator.
+     */
+    UPDATE_INDEXED_EQ("UPDATE_INDEXED_EQ"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with a greater than operator.
+     */
+    UPDATE_INDEXED_GT("UPDATE_INDEXED_GT"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with a less than operator.
+     */
+    UPDATE_INDEXED_LT("UPDATE_INDEXED_LT"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with a greater than or equal operator.
+     */
+    UPDATE_INDEXED_GET("UPDATE_INDEXED_GET"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with a less than or equal operator.
+     */
+    UPDATE_INDEXED_LET("UPDATE_INDEXED_LET"),
+
+    /**
+     * The engine supports update operations using
+     * a function as part of a relation using with an equal operator.
+     */
+    UPDATE_FUNCTION_EQ("UPDATE_FUNCTION_EQ"),
+
+    /**
+     * The engine supports update operations using
+     * a function as part of a relation using with a greater than operator.
+     */
+    UPDATE_FUNCTION_GT("UPDATE_FUNCTION_GT"),
+
+    /**
+     * The engine supports update operations using
+     * a function as part of a relation using with a less than operator.
+     */
+    UPDATE_FUNCTION_LT("UPDATE_FUNCTION_LT"),
+
+    /**
+     * The engine supports update operations using
+     * a function as part of a relation using with a greater than or equal operator.
+     */
+    UPDATE_FUNCTION_GET("UPDATE_FUNCTION_GET"),
+
+    /**
+     * The engine supports update operations using
+     * a function as part of a relation using with a less than or equal operator.
+     */
+    UPDATE_FUNCTION_LET("UPDATE_FUNCTION_LET"),
 
     /**
      * The engine supports deleting all the data from a table without removing its metadata.
@@ -69,9 +184,130 @@ public enum Operations {
     INSERT("INSERT"),
 
     /**
-     * The engine supports deleting elements from existing tables.
+     * For Data stores whose insert operation behave as upsert by default, this operation points out that the
+     * connector is capable of behaving as a "classic" insert.
      */
-    DELETE("DELETE"),
+    INSERT_IF_NOT_EXISTS("INSERT_IF_NOT_EXISTS"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with an equal operator.
+     */
+    DELETE_PK_EQ("DELETE_PK_EQ"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with greater than operator.
+     */
+    DELETE_PK_GT("DELETE_PK_GT"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with less than operator.
+     */
+    DELETE_PK_LT("DELETE_PK_LT"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with greater than or equal operator.
+     */
+    DELETE_PK_GET("DELETE_PK_GET"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with less than or equal operator.
+     */
+    DELETE_PK_LET("DELETE_PK_LET"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with an equal operator.
+     */
+    DELETE_NON_INDEXED_EQ("DELETE_NON_INDEXED_EQ"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with a greater than operator.
+     */
+    DELETE_NON_INDEXED_GT("DELETE_NON_INDEXED_GT"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with a less than operator.
+     */
+    DELETE_NON_INDEXED_LT("DELETE_NON_INDEXED_LT"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with greater than or equal operator.
+     */
+    DELETE_NON_INDEXED_GET("DELETE_NON_INDEXED_GET"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with less than or equal operator.
+     */
+    DELETE_NON_INDEXED_LET("DELETE_NON_INDEXED_LET"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with an equal operator.
+     */
+    DELETE_INDEXED_EQ("DELETE_INDEXED_EQ"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with a greater than operator.
+     */
+    DELETE_INDEXED_GT("DELETE_INDEXED_GT"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with a less than operator.
+     */
+    DELETE_INDEXED_LT("DELETE_INDEXED_LT"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with a greater than or equal operator.
+     */
+    DELETE_INDEXED_GET("DELETE_INDEXED_GET"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with a less than or equal operator.
+     */
+    DELETE_INDEXED_LET("DELETE_INDEXED_LET"),
+
+    /**
+     * The engine supports delete operations using
+     * a function as part of a relation using with an equal operator.
+     */
+    DELETE_FUNCTION_EQ("DELETE_FUNCTION_EQ"),
+
+    /**
+     * The engine supports delete operations using
+     * a function as part of a relation using with a greater than operator.
+     */
+    DELETE_FUNCTION_GT("DELETE_FUNCTION_GT"),
+
+    /**
+     * The engine supports delete operations using
+     * a function as part of a relation using with a less than operator.
+     */
+    DELETE_FUNCTION_LT("DELETE_FUNCTION_LT"),
+
+    /**
+     * The engine supports delete operations using
+     * a function as part of a relation using with a greater than or equal operator.
+     */
+    DELETE_FUNCTION_GET("DELETE_FUNCTION_GET"),
+
+    /**
+     * The engine supports delete operations using
+     * a function as part of a relation using with a less than or equal operator.
+     */
+    DELETE_FUNCTION_LET("DELETE_FUNCTION_LET"),
 
     /**
      * The engine supports index creation from existing tables.
@@ -263,9 +499,9 @@ public enum Operations {
 
     /**
      * The engine supports full text search syntax in {@link com.stratio.crossdata.common.logicalplan.Filter}
-     * operations.
+     * operations with a MATCH Operator.
      */
-    FILTER_FULLTEXT("FILTER_FULLTEXT"),
+    FILTER_INDEXED_MATCH("FILTER_INDEXED_MATCH"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using

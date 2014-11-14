@@ -41,6 +41,9 @@ case class Reply(msg: String) extends Serializable
 @SerialVersionUID(-4155642367894752622L)
 case class Disconnect(userId: String) extends Serializable
 
+@SerialVersionUID(-3815643667894592648L)
+case class DisconnectFromCluster(clusterName: String) extends Serializable
+
 //CONNECTOR messages
 @SerialVersionUID(-4155642367894222659L)
 case class ConnectToConnector(msg: String) extends Serializable
@@ -150,7 +153,11 @@ sealed abstract class ManagementOperation(queryId: String) extends Operation(que
 case class AttachCluster(override val queryId: String, targetCluster: ClusterName, datastoreName: DataStoreName,
                          options: java.util.Map[Selector, Selector]) extends ManagementOperation(queryId)
 
-case class DetachCluster(override val queryId: String, targetCluster: ClusterName) extends ManagementOperation(queryId)
+case class AlterCluster(override val queryId: String, targetCluster: ClusterName, datastoreName: DataStoreName,
+                         options: java.util.Map[Selector, Selector]) extends ManagementOperation(queryId)
+
+case class DetachCluster(override val queryId: String, targetCluster: ClusterName,
+                         datastoreName:DataStoreName) extends ManagementOperation(queryId)
 
 case class AttachConnector(override val queryId: String, targetCluster: ClusterName,
                            connectorName: ConnectorName, options: java.util.Map[Selector, Selector]) extends ManagementOperation(queryId)

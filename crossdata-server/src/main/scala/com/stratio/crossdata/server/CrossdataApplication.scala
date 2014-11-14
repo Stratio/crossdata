@@ -16,24 +16,29 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.ask
+package com.stratio.crossdata.server
 
-/**
- * Types of supported API operations.
- */
-@SerialVersionUID(1L)
-object APICommand extends Enumeration {
-  type APICommand = Value
-  val LIST_CATALOGS = Value("LIST_CATALOGS")
-  val LIST_TABLES = Value("LIST_TABLES")
-  val LIST_COLUMNS = Value("LIST_COLUMNS")
-  val DESCRIBE_CONNECTORS = Value("DESCRIBE_CONNECTORS")
-  val DESCRIBE_CONNECTOR = Value("DESCRIBE_CONNECTOR")
-  val DESCRIBE_DATASTORE = Value("DESCRIBE_CONNECTOR")
-  val DESCRIBE_SYSTEM = Value("DESCRIBE_SYSTEM")
-  val ADD_MANIFEST = Value("ADD_MANIFEST")
-  val DROP_MANIFEST = Value("DROP_MANIFEST")
-  val RESET_SERVERDATA = Value("RESET_SERVERDATA")
-  val CLEAN_METADATA = Value("CLEAN_METADATA")
-  val EXPLAIN_PLAN = Value("EXPLAIN_PLAN")
+import scala.annotation.tailrec
+
+object CrossdataApplication extends App {
+  val crossdataServer: CrossdataServer = new CrossdataServer
+
+  /**
+   * This method make a command loop.
+   * @return  nothing.
+   * */
+  @tailrec
+  private def commandLoop(): Unit = {
+    Console.readLine() match {
+      case "quit" | "exit" => exit()
+      case _ =>
+    }
+    commandLoop()
+  }
+
+  crossdataServer.init(null)
+  crossdataServer.start()
+  commandLoop()
+  crossdataServer.stop()
+  crossdataServer.destroy()
 }

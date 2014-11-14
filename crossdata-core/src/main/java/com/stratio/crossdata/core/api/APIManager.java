@@ -20,7 +20,10 @@ package com.stratio.crossdata.core.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -33,8 +36,10 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.exceptions.ApiException;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
@@ -48,7 +53,10 @@ import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertiesType;
 import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
+import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
+import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
@@ -56,8 +64,10 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
+import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
+import com.stratio.crossdata.core.metadata.MetadataManagerException;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.query.BaseQuery;
@@ -154,19 +164,41 @@ public class APIManager {
             ((MetadataResult) result).setColumnList(columns);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.ADD_MANIFEST().toString());
-            persistManifest((CrossdataManifest) cmd.params().get(0));
             result = CommandResult.createCommandResult("CrossdataManifest added "
                     + System.lineSeparator()
                     + cmd.params().get(0).toString());
-        } else if (APICommand.RESET_CROSSDATADATA().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.RESET_CROSSDATADATA().toString());
-            result = resetMetadata();
-        } else if (APICommand.CLEAN_CROSSDATADATA().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.CLEAN_CROSSDATADATA().toString());
+            try {
+                persistManifest((CrossdataManifest) cmd.params().get(0));
+            } catch (ApiException e) {
+                result = new ErrorResult(e);
+            }
+
+        } else if (APICommand.DROP_MANIFEST().equals(cmd.commandType())){
+            LOG.info(PROCESSING + APICommand.DROP_MANIFEST().toString());
+            result = CommandResult.createCommandResult("Manifest dropped");
+            try {
+                dropManifest(Integer.parseInt(String.valueOf(cmd.params().get(0))), cmd.params().get(1).toString());
+            } catch (ApiException e) {
+                result = CommandResult.createExecutionErrorResult(e.getMessage());
+            }
+        } else if (APICommand.RESET_SERVERDATA().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.RESET_SERVERDATA().toString());
+            result = resetServerdata();
+        } else if (APICommand.CLEAN_METADATA().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.CLEAN_METADATA().toString());
             result = cleanMetadata();
-        } else if (APICommand.LIST_CONNECTORS().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.LIST_CONNECTORS().toString());
-            result = listConnectors();
+        } else if (APICommand.DESCRIBE_CONNECTOR().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTOR().toString());
+            result = describeConnector((ConnectorName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_DATASTORE().equals(cmd.commandType())) {
+                LOG.info(PROCESSING + APICommand.DESCRIBE_DATASTORE().toString());
+                result = describeDatastore((DataStoreName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_CONNECTORS().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTORS().toString());
+            result = describeConnectors();
+        } else if (APICommand.DESCRIBE_SYSTEM().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_SYSTEM().toString());
+            result = describeSystem();
         } else if (APICommand.EXPLAIN_PLAN().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.EXPLAIN_PLAN().toString());
             result = explainPlan(cmd);
@@ -175,10 +207,112 @@ public class APIManager {
                     Result.createUnsupportedOperationErrorResult("Command " + cmd.commandType() + " not supported");
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
+        result.setQueryId(cmd.queryId());
         return result;
     }
 
-    private Result listConnectors() {
+    private Result describeSystem(){
+        Result result;
+        StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
+        List<DataStoreMetadata> dataStores = MetadataManager.MANAGER.getDatastores();
+        for(DataStoreMetadata dataStore:dataStores){
+            stringBuilder = stringBuilder.append("Datastore ").append(dataStore.getName())
+                    .append(":").append(System.getProperty("line.separator"));
+            Set<Map.Entry<ClusterName, ClusterAttachedMetadata>> refs = dataStore.getClusterAttachedRefs().entrySet();
+            for(Map.Entry<ClusterName, ClusterAttachedMetadata> ref:refs){
+                ClusterName clustername = ref.getKey();
+                stringBuilder = stringBuilder.append("\tCluster ").append(clustername.getName())
+                        .append(":").append(System.getProperty("line.separator"));
+                ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(clustername);
+                Set<Map.Entry<ConnectorName, ConnectorAttachedMetadata>> connectors = cluster.getConnectorAttachedRefs().entrySet();
+                for(Map.Entry<ConnectorName, ConnectorAttachedMetadata>c: connectors){
+                    stringBuilder = stringBuilder.append("\t\tConnector ").append(c.getKey().getName())
+                            .append(System.getProperty("line.separator"));
+                }
+            }
+        }
+        result = CommandResult.createCommandResult(stringBuilder.toString());
+        return result;
+    }
+
+    private Result describeDatastore(DataStoreName dataStoreName) {
+        Result result = null;
+        DataStoreMetadata datastore = null;
+        try {
+            datastore = MetadataManager.MANAGER.getDataStore(dataStoreName);
+        } catch (MetadataManagerException mme) {
+            result = CommandResult.createExecutionErrorResult(mme.getMessage());
+        }
+
+        if (datastore != null){
+            StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
+            sb.append("\t").append("Name: ").append(datastore.getName()).append(System.lineSeparator());
+            sb.append("\t").append("Version: ").append(datastore.getVersion()).append(System.lineSeparator());
+            sb.append("\t").append("Required properties: ").append(datastore.getRequiredProperties())
+                    .append(System.lineSeparator());
+            sb.append("\t").append("Other properties: ").append(datastore.getOthersProperties())
+                    .append(System.lineSeparator());
+            sb.append("\t").append("Behaviours: ").append(datastore.getBehaviors())
+                    .append(System.lineSeparator());
+            sb.append("\t").append("Attached Refs: ").append(datastore.getClusterAttachedRefs().keySet())
+                    .append(System.lineSeparator());
+            result = CommandResult.createCommandResult(sb.toString());
+        }
+
+        return result;
+    }
+
+    private Result describeConnector(ConnectorName name) {
+        Result result = null;
+        ConnectorMetadata connector = null;
+        try {
+            connector = MetadataManager.MANAGER.getConnector(name);
+        } catch (MetadataManagerException mme) {
+            result = CommandResult.createExecutionErrorResult(mme.getMessage());
+        }
+
+        if (connector != null){
+            StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
+            Set<DataStoreName> datastores = connector.getDataStoreRefs();
+            Set<ClusterName> clusters = connector.getClusterRefs();
+            Map<ClusterName, Map<Selector, Selector>> properties = connector.getClusterProperties();
+
+            stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
+                    .append("\t").append(System.getProperty("line.separator"));
+
+            stringBuilder.append("\t").append("Status: ").append(connector.getConnectorStatus()).append(System.getProperty(
+                    "line.separator"));
+
+            stringBuilder.append("\t").append("Properties: ").append(System.getProperty("line.separator"));
+
+            Iterator<Map.Entry<ClusterName, Map<Selector, Selector>>> propIt = properties.entrySet().iterator();
+            while(propIt.hasNext()){
+                Map.Entry<ClusterName, Map<Selector, Selector>> e = propIt.next();
+                stringBuilder.append("\t\t").append(e.getKey().toString()).append(": ")
+                        .append(e.getValue().toString())
+                        .append(System .getProperty("line.separator"));
+            }
+
+            stringBuilder.append("\t").append("Datastores: ").append(System.getProperty("line.separator"));
+            for(DataStoreName datastore:datastores){
+                stringBuilder.append("\t\t").append(datastore.getName().toString())
+                        .append(System .getProperty("line.separator"));
+            }
+
+            stringBuilder.append("\t").append("Clusters: ").append(System.getProperty("line.separator"));
+            for(ClusterName cluster:clusters){
+                stringBuilder.append("\t\t").append(cluster.getName().toString())
+                        .append(System .getProperty("line.separator"));
+            }
+
+            stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
+            result = CommandResult.createCommandResult(stringBuilder.toString());
+        }
+
+        return result;
+    }
+
+    private Result describeConnectors() {
         Result result;
         List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
         StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
@@ -217,8 +351,8 @@ public class APIManager {
         return result;
     }
 
-    private Result resetMetadata() {
-        Result result = CommandResult.createCommandResult("Metadata reset.");
+    private Result resetServerdata() {
+        Result result = CommandResult.createCommandResult("Crossdata server reset.");
         try {
             MetadataManager.MANAGER.clear();
             ExecutionManager.MANAGER.clear();
@@ -243,11 +377,15 @@ public class APIManager {
         return result;
     }
 
-    private void persistManifest(CrossdataManifest manifest) {
-        if (manifest.getManifestType() == CrossdataManifest.TYPE_DATASTORE) {
-            persistDataStore((DataStoreType) manifest);
-        } else {
-            persistConnector((ConnectorType) manifest);
+    private void persistManifest(CrossdataManifest manifest) throws ApiException {
+        try {
+            if (manifest.getManifestType() == CrossdataManifest.TYPE_DATASTORE) {
+                persistDataStore((DataStoreType) manifest);
+            } else {
+                persistConnector((ConnectorType) manifest);
+            }
+        } catch (NullPointerException npe){
+            throw new ApiException("Manifest couldn't be added", npe);
         }
     }
 
@@ -287,8 +425,7 @@ public class APIManager {
         ConnectorName name = new ConnectorName(connectorType.getConnectorName());
 
         // DATASTORES
-        DataStoreRefsType dataStoreRefs = connectorType
-                .getDataStores();
+        DataStoreRefsType dataStoreRefs = connectorType.getDataStores();
 
         // VERSION
         String version = connectorType.getVersion();
@@ -331,13 +468,45 @@ public class APIManager {
     }
 
     /**
+     * Remove all the information related to a Datastore or Connector.
+     *
+     * @param manifestType Datastore or Connector.
+     * @param manifestName Name of the manifest.
+     */
+    private void dropManifest(int manifestType, String manifestName) throws ApiException {
+        if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
+            dropDataStore(new DataStoreName(manifestName));
+        } else {
+            dropConnector(new ConnectorName(manifestName));
+        }
+    }
+
+    private void dropDataStore(DataStoreName dataStoreName) throws ApiException {
+        try {
+            MetadataManager.MANAGER.deleteDatastore(dataStoreName);
+        } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
+                RollbackException | MetadataManagerException e) {
+            throw new ApiException(e);
+        }
+    }
+
+    private void dropConnector(ConnectorName connectorName) throws ApiException {
+        try {
+            MetadataManager.MANAGER.deleteConnector(connectorName);
+        } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
+                RollbackException | MetadataManagerException e) {
+            throw new ApiException(e);
+        }
+    }
+
+    /**
      * Method that implements the explain logic. The method will follow the query processing stages: Parser,
      * Validator, and Planner and will provide as result the execution workflow.
      * @param cmd The command to be executed.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     private Result explainPlan(Command cmd) {
-        Result result = null;
+        Result result;
         if (cmd.params().size() == 2) {
             String statement = (String) cmd.params().get(0);
             String catalog = (String) cmd.params().get(1);
@@ -366,7 +535,6 @@ public class APIManager {
             result = Result.createUnsupportedOperationErrorResult(
                     "Invalid number of parameters invoking explain plan");
         }
-        result.setQueryId(cmd.queryId());
         return result;
     }
 

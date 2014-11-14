@@ -27,28 +27,28 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.sh.help.generated.CrossDataHelpLexer;
-import com.stratio.crossdata.sh.help.generated.CrossDataHelpParser;
+import com.stratio.crossdata.sh.help.generated.CrossdataHelpLexer;
+import com.stratio.crossdata.sh.help.generated.CrossdataHelpParser;
 
-public class CrossDataHelpParserTest {
+public class CrossdataHelpParserTest {
 
     protected static String[][] supportedHelpCommands = { { "exit", "EXIT" }, { "quit", "EXIT" },
-            { "datatypes", "DATATYPES" }, { "create", "CREATE" }, { "create keyspace", "CREATE_KEYSPACE" },
+            { "datatypes", "DATATYPES" }, { "create", "CREATE" }, { "create catalog", "CREATE_CATALOG" },
             { "create table", "CREATE_TABLE" }, { "create index", "CREATE_INDEX" },
             { "create default index", "CREATE_INDEX" }, { "create lucene index", "CREATE_LUCENE_INDEX" },
             { "update", "UPDATE" }, { "insert", "INSERT_INTO" }, { "insert into", "INSERT_INTO" },
             { "truncate", "TRUNCATE" }, { "drop", "DROP" }, { "drop index", "DROP_INDEX" },
-            { "drop table", "DROP_TABLE" }, { "drop keyspace", "DROP_KEYSPACE" },
+            { "drop table", "DROP_TABLE" }, { "drop catalog", "DROP_CATALOG" },
             { "drop trigger", "DROP_TRIGGER" }, { "select", "SELECT" }, { "add", "ADD" }, { "list", "LIST" },
             { "list process", "LIST_PROCESS" }, { "list udf", "LIST_UDF" }, { "list trigger", "LIST_TRIGGER" },
             { "remove udf", "REMOVE_UDF" }, { "delete", "DELETE" }, { "set options", "SET_OPTIONS" },
-            { "explain plan", "EXPLAIN_PLAN" }, { "alter", "ALTER" }, { "alter keyspace", "ALTER_KEYSPACE" },
+            { "explain plan", "EXPLAIN_PLAN" }, { "alter", "ALTER" }, { "alter catalog", "ALTER_CATALOG" },
             { "alter table", "ALTER_TABLE" }, { "stop", "STOP" }, { "describe", "DESCRIBE" },
-            { "describe keyspace", "DESCRIBE_KEYSPACE" }, { "describe table", "DESCRIBE_TABLE" }, };
+            { "describe catalog", "DESCRIBE_CATALOG" }, { "describe table", "DESCRIBE_TABLE" }, };
     /**
      * Class logger.
      */
-    private final Logger logger = Logger.getLogger(CrossDataHelpParserTest.class);
+    private final Logger logger = Logger.getLogger(CrossdataHelpParserTest.class);
 
     /**
      * Parse a input text and return the equivalent HelpStatement.
@@ -59,9 +59,9 @@ public class CrossDataHelpParserTest {
     private HelpStatement parseStatement(String inputText) {
         HelpStatement result = null;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
-        CrossDataHelpLexer lexer = new CrossDataHelpLexer(input);
+        CrossdataHelpLexer lexer = new CrossdataHelpLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        CrossDataHelpParser parser = new CrossDataHelpParser(tokens);
+        CrossdataHelpParser parser = new CrossdataHelpParser(tokens);
         try {
             result = parser.query();
         } catch (RecognitionException e) {

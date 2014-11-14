@@ -190,14 +190,14 @@ public class CreateTableStatementTest extends ParsingTest {
     }
 
     @Test
-    public void createTableWithGetCrossDataProperty() {
+    public void createTableWithGetCrossdataProperty() {
         String inputText =
                 "CREATE TABLE key_space1.timeseries ON CLUSTER siliconValley (event_type text, insertion_time text, event text,"
                         + " PRIMARY KEY (event_type, insertion_time)) WITH {'CLUSTERING ORDER BY': 'insertion_time DESC', 'ephemeral': true};";
         String expectedText =
                 "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley(key_space1.timeseries.event_type=text, key_space1.timeseries.insertion_time=text, key_space1.timeseries.event=text,"
                         + " PRIMARY KEY((key_space1.timeseries.event_type), key_space1.timeseries.insertion_time)) WITH {'CLUSTERING ORDER BY'='insertion_time DESC', 'ephemeral'=true};";
-        testRegularStatementSession("demo", inputText, expectedText, "createTableWithGetCrossDataProperty");
+        testRegularStatementSession("demo", inputText, expectedText, "createTableWithGetCrossdataProperty");
     }
 
     @Test

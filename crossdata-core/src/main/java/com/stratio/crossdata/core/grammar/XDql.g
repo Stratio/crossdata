@@ -176,8 +176,6 @@ T_DESCRIBE: D E S C R I B E;
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_ALTER: A L T E R;
-T_KEYSPACE: K E Y S P A C E;
-T_KEYSPACES: K E Y S P A C E S;
 T_NOT: N O T;
 T_WITH: W I T H;
 T_DROP: D R O P;
@@ -202,7 +200,6 @@ T_THREE: T H R E E;
 T_EACH_QUORUM: E A C H '_' Q U O R U M;
 T_LOCAL_ONE: L O C A L '_' O N E;
 T_LOCAL_QUORUM: L O C A L '_' Q U O R U M;
-T_EXPLAIN: E X P L A I N;
 T_PLAN: P L A N;
 T_FOR: F O R;
 T_INDEX: I N D E X;
@@ -377,7 +374,7 @@ alterClusterStatement returns [AlterClusterStatement acs]
         boolean ifExists = false;
     }
     @after{
-        acs = new AlterClusterStatement($clusterName.text, ifExists, j);
+        acs = new AlterClusterStatement(new ClusterName($clusterName.text), ifExists, j);
     }:
     T_ALTER T_CLUSTER (T_IF T_EXISTS {ifExists = true;} )? clusterName=T_IDENT T_WITH T_OPTIONS j=getJson
 ;
@@ -756,12 +753,6 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
     }
 ;
 
-explainPlanStatement returns [ExplainPlanStatement xpplst]:
-    T_EXPLAIN T_PLAN T_FOR parsedStmnt=crossdataStatement
-    {$xpplst = new ExplainPlanStatement(parsedStmnt);}
-;
-
-
 dropTableStatement returns [DropTableStatement drtbst]
     @init{
         boolean ifExists = false;
@@ -792,7 +783,6 @@ crossdataStatement returns [CrossdataStatement st]:
     | st_trst = truncateStatement { $st = st_trst; }
     | st_lsst = listStatement { $st = st_lsst; }
     | st_stpr = stopProcessStatement { $st = st_stpr; }
-    | st_xppl = explainPlanStatement { $st = st_xppl;}
     | st_adds = addStatement { $st = st_adds; }
     | st_drmn = dropManifestStatement { $st = st_drmn;}
     | st_rust = removeUDFStatement { $st = st_rust; }

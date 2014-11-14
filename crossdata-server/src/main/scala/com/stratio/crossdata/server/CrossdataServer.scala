@@ -27,8 +27,8 @@ import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 
-class CrossDataServer extends Daemon with ServerConfig {
-  override lazy val logger = Logger.getLogger(classOf[CrossDataServer])
+class CrossdataServer extends Daemon with ServerConfig {
+  override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
 
   lazy val engine = new Engine(engineConfig)
   // Create an Akka system
@@ -49,7 +49,7 @@ class CrossDataServer extends Daemon with ServerConfig {
   }
 
   override def init(p1: DaemonContext): Unit = {
-    logger.info("Init Crossdata Server --- v0.1.0")
+    logger.info("Init Crossdata Server --- v0.1.1")
     val serverActor = system.actorOf(ServerActor.props(engine).withRouter(RoundRobinRouter(nrOfInstances = num_server_actor)), actorName)
     ClusterReceptionistExtension(system).registerService(serverActor)
   }

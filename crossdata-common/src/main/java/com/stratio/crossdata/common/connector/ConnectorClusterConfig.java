@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.DataStoreName;
 
 /**
  * Configuration used by a connector to establish a connection to a specific cluster.
@@ -33,6 +34,8 @@ public class ConnectorClusterConfig implements Serializable {
      * Name of the target cluster.
      */
     private final ClusterName name;
+
+    private DataStoreName dataStoreName;
 
     /**
      * Map of connector options required by a connector in order to be able to establish a connection
@@ -71,6 +74,14 @@ public class ConnectorClusterConfig implements Serializable {
         this.name = name;
         this.connectorOptions = connectorOptions;
         this.clusterOptions = clusterOptions;
+    }
+
+    public DataStoreName getDataStoreName() {
+        return dataStoreName;
+    }
+
+    public void setDataStoreName(DataStoreName dataStoreName) {
+        this.dataStoreName = dataStoreName;
     }
 
     /**

@@ -30,36 +30,43 @@ public class AlterClusterStatementTest extends ParsingTest {
     @Test
     public void alterClusterEmptyJSON() {
         String inputText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {};";
-        testRegularStatement(inputText, "alterClusterEmptyJSON");
+        String expectedText = "ALTER CLUSTER cluster.dev_environment1 WITH OPTIONS {};";
+        testRegularStatement(inputText, expectedText, "alterClusterEmptyJSON");
     }
 
     @Test
     public void alterClusterBasic() {
         String inputText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {"
-                + "\"hosts\": [\"127.0.0.1\", \"127.0.0.2\"], "
+                + "\"hosts\": \"[127.0.0.1, 127.0.0.2]\", "
                 + "\"port\": 1234};";
 
-        String expectedText = "ALTER CLUSTER dev_environment1 WITH OPTIONS {'hosts': ['127.0.0.1', '127.0.0.2'], 'port': 1234};";
+        String expectedText = "ALTER CLUSTER cluster.dev_environment1 WITH OPTIONS " +
+                "{'hosts'='[127.0.0.1, 127.0.0.2]', 'port'=1234};";
         testRegularStatement(inputText, expectedText, "alterClusterBasic");
     }
 
     @Test
     public void alterClusterSimple() {
-        String inputText = "ALTER CLUSTER production_madrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': \"random\"};";
-        String expectedText = "ALTER CLUSTER production_madrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'mode': 'random'};";
+        String inputText = "ALTER CLUSTER production_madrid WITH OPTIONS " +
+                "{'hosts': '[127.0.0.1]', 'port': 9160, 'mode': \"random\"};";
+        String expectedText = "ALTER CLUSTER cluster.production_madrid WITH OPTIONS " +
+                "{'hosts'='[127.0.0.1]', 'port'=9160, 'mode'='random'};";
         testRegularStatement(inputText, expectedText, "alterClusterSimple");
     }
 
     @Test
     public void alterClusterIfExists() {
-        String inputText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS {'host': '127.0.0.1', \"port\": 9160, 'exhaustive': false};";
-        String expectedText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS {'host': '127.0.0.1', 'port': 9160, 'exhaustive': false};";
+        String inputText = "ALTER CLUSTER IF EXISTS productionMadrid WITH OPTIONS " +
+                "{'hosts': '[127.0.0.1]', \"port\": 9160, 'exhaustive': false};";
+        String expectedText = "ALTER CLUSTER IF EXISTS cluster.productionMadrid WITH OPTIONS " +
+                "{'hosts'='[127.0.0.1]', 'port'=9160, 'exhaustive'=false};";
         testRegularStatement(inputText, expectedText, "alterClusterIfExists");
     }
 
     @Test
     public void alterClusterWrongClusterName() {
-        String inputText = "ALTER CLUSTER ^productionMadrid WITH OPTIONS {'host': '127.0.0.1'};";
+        String inputText = "ALTER CLUSTER ^productionMadrid WITH OPTIONS " +
+                "{'hosts': '[127.0.0.1]'};";
         testParserFails(inputText, "alterClusterWrongName");
     }
 

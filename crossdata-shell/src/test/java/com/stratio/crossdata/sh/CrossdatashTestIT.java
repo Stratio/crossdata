@@ -16,24 +16,24 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.ask
+package com.stratio.crossdata.sh;
 
-/**
- * Types of supported API operations.
- */
-@SerialVersionUID(1L)
-object APICommand extends Enumeration {
-  type APICommand = Value
-  val LIST_CATALOGS = Value("LIST_CATALOGS")
-  val LIST_TABLES = Value("LIST_TABLES")
-  val LIST_COLUMNS = Value("LIST_COLUMNS")
-  val DESCRIBE_CONNECTORS = Value("DESCRIBE_CONNECTORS")
-  val DESCRIBE_CONNECTOR = Value("DESCRIBE_CONNECTOR")
-  val DESCRIBE_DATASTORE = Value("DESCRIBE_CONNECTOR")
-  val DESCRIBE_SYSTEM = Value("DESCRIBE_SYSTEM")
-  val ADD_MANIFEST = Value("ADD_MANIFEST")
-  val DROP_MANIFEST = Value("DROP_MANIFEST")
-  val RESET_SERVERDATA = Value("RESET_SERVERDATA")
-  val CLEAN_METADATA = Value("CLEAN_METADATA")
-  val EXPLAIN_PLAN = Value("EXPLAIN_PLAN")
+import static org.testng.Assert.assertNotNull;
+
+import java.net.URL;
+
+import org.testng.annotations.Test;
+
+public class CrossdatashTestIT {
+
+    @Test(timeOut = 12000)
+    public void testSendManifest() throws Exception {
+        Shell xdsh = new Shell(false);
+        xdsh.connect();
+        URL url = Thread.currentThread().getContextClassLoader()
+                .getResource("com/stratio/crossdata/connector/DataStoreDefinition.xml");
+        String result = url.getPath();
+        assertNotNull(result, "testSendManifest returns NULL");
+    }
+
 }

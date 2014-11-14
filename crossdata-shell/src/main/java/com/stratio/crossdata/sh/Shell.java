@@ -31,24 +31,28 @@ import java.util.List;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
+import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.IResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
+import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.driver.BasicDriver;
 import com.stratio.crossdata.sh.help.HelpContent;
 import com.stratio.crossdata.sh.help.HelpManager;
 import com.stratio.crossdata.sh.help.HelpStatement;
-import com.stratio.crossdata.sh.help.generated.CrossDataHelpLexer;
-import com.stratio.crossdata.sh.help.generated.CrossDataHelpParser;
+import com.stratio.crossdata.sh.help.generated.CrossdataHelpLexer;
+import com.stratio.crossdata.sh.help.generated.CrossdataHelpParser;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
 import com.stratio.crossdata.sh.utils.XDshCompletionHandler;
 import com.stratio.crossdata.sh.utils.XDshCompletor;
-import com.stratio.crossdata.common.result.Result;
 
 import jline.console.ConsoleReader;
 
@@ -106,6 +110,13 @@ public class Shell {
      * Constant to define the prefix for explain plan operations.
      */
     private static final String EXPLAIN_PLAN_TOKEN = "explain plan for";
+
+    /**
+     * Default String for the Crossdata prompt
+     */
+    private static final String DEFAULT_PROMPT = "xdsh:";
+
+    private static final char DEFAULT_TEMP_PROMPT = '»';
 
     /**
      * Class constructor.
@@ -210,7 +221,7 @@ public class Shell {
      * @param currentCatalog The currentCatalog.
      */
     private void setPrompt(String currentCatalog) {
-        StringBuilder sb = new StringBuilder("xdsh:");
+        StringBuilder sb = new StringBuilder(DEFAULT_PROMPT);
         sb.append(crossDataDriver.getUserName());
         if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
             sb.append(":");
@@ -229,9 +240,9 @@ public class Shell {
     private HelpStatement parseHelp(String inputText) {
         HelpStatement result = null;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
-        CrossDataHelpLexer lexer = new CrossDataHelpLexer(input);
+        CrossdataHelpLexer lexer = new CrossdataHelpLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        CrossDataHelpParser parser = new CrossDataHelpParser(tokens);
+        CrossdataHelpParser parser = new CrossdataHelpParser(tokens);
         try {
             result = parser.query();
         } catch (RecognitionException e) {
@@ -365,21 +376,66 @@ public class Shell {
         }
     }
 
-    public boolean executeApiCAll(String command){
+    public boolean executeApiCall(String command){
         boolean apiCallExecuted = false;
-        if(command.toLowerCase().startsWith("list connectors")){
-            listConnectors();
+        String result = "OK";
+        if(command.toLowerCase().startsWith("describe")){
+            if(command.toLowerCase().startsWith("describe connector ")){
+                result = describeConnector(command.toLowerCase().replace("describe connector ", "").replace(";", "").trim());
+            } else if (command.toLowerCase().startsWith("describe connectors")) {
+                result = describeConnectors();
+            } else if (command.toLowerCase().startsWith("describe system")) {
+                result = describeSystem();
+            } else if (command.toLowerCase().startsWith("describe datastore ")) {
+                result = describeDatastore(
+                        command.toLowerCase().replace("describe datastore ", "").replace(";", "").trim());
+            }
             apiCallExecuted = true;
         } else if (command.toLowerCase().startsWith("add connector")
                    || command.toLowerCase().startsWith("add datastore")) {
-            sendManifest(command);
+            result = sendManifest(command);
             apiCallExecuted = true;
-        } else if (command.toLowerCase().startsWith("reset metadata")) {
-            resetMetadata();
+        } else if (command.toLowerCase().startsWith("reset serverdata")) {
+            if(command.toLowerCase().contains("--force")) {
+                result = resetServerdata();
+            } else {
+                String currentPrompt = console.getPrompt();
+                String answer = "No";
+                try {
+                    console.print(" > RESET SERVERDATA will ERASE ALL THE DATA stored in the Crossdata Server, ");
+                    console.println("even the one related to datastores, clusters and connectors.");
+                    console.print(" > Maybe you can use CLEAN METADATA, ");
+                    console.println("which erases only metadata related to catalogs, tables, indexes and columns.");
+                    console.setPrompt(" > Do you want to continue? (yes/no): ");
+                    answer = console.readLine();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage());
+                }
+                answer = answer.replace(";", "").trim();
+                if(answer.equalsIgnoreCase("yes") || answer.equalsIgnoreCase("y")){
+                    result = resetServerdata();
+                }
+                console.setPrompt(currentPrompt);
+            }
             apiCallExecuted = true;
         } else if (command.toLowerCase().startsWith("clean metadata")){
-            cleanMetadata();
+            result = cleanMetadata();
             apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("drop datastore")){
+            result = dropManifest(
+                    CrossdataManifest.TYPE_DATASTORE,
+                    command.toLowerCase().replace("drop datastore ", "").replace(";", "").trim());
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("drop connector")){
+            result = dropManifest(
+                    CrossdataManifest.TYPE_CONNECTOR,
+                    command.toLowerCase().replace("drop connector ", "").replace(";", "").trim());
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
+            result = explainPlan(command);
+        }
+        if(apiCallExecuted){
+            LOG.info(result);
         }
         return apiCallExecuted;
     }
@@ -393,34 +449,49 @@ public class Shell {
             String cmd = "";
             StringBuilder sb = new StringBuilder(cmd);
             String toExecute;
+            String currentPrompt = "";
             while (!cmd.trim().toLowerCase().startsWith("exit")
                     && !cmd.trim().toLowerCase().startsWith("quit")) {
                 cmd = console.readLine();
                 sb.append(cmd).append(" ");
                 toExecute = sb.toString().trim();
-                if (toExecute.endsWith(";")) {
-                    if (" ".equalsIgnoreCase(sb.toString())
-                            || System.lineSeparator().equalsIgnoreCase(sb.toString())) {
-                        println("");
-                    } else if (toExecute.toLowerCase().startsWith("help")) {
+                if (toExecute.startsWith("//") || toExecute.startsWith("#")) {
+                    LOG.debug("Comment: " + toExecute);
+                    sb = new StringBuilder();
+                } else if (toExecute.startsWith("/*")) {
+                    LOG.debug("Multiline comment START");
+                    if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                        currentPrompt = console.getPrompt();
+                        String tempPrompt =
+                                StringUtils.repeat(" ", DEFAULT_PROMPT.length()-1) + DEFAULT_TEMP_PROMPT + " ";
+                        console.setPrompt(tempPrompt);
+                    }
+                    if(toExecute.endsWith("*/")){
+                        LOG.debug("Multiline comment END");
+                        sb = new StringBuilder();
+                        if(!console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                            console.setPrompt(currentPrompt);
+                        }
+                    }
+                } else if (toExecute.endsWith(";")) {
+                    if (toExecute.toLowerCase().startsWith("help")) {
                         showHelp(sb.toString());
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);
-                        println("");
-                    }else if(toExecute.toLowerCase().startsWith("list connectors")){
-                        listConnectors();
-                    }else if(toExecute.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
-                        explainPlan(toExecute);
-                    } else if(executeApiCAll(toExecute)){
-                        println("");
+                    } else if(executeApiCall(toExecute)) {
+                        LOG.debug("API call executed.");
                     } else {
                         executeQuery(toExecute);
-                        println("");
                     }
                     sb = new StringBuilder();
+                    if(!console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                        console.setPrompt(currentPrompt);
+                    }
+                    println("");
                 } else if (toExecute.toLowerCase().startsWith("help")) {
                     showHelp(sb.toString());
                     sb = new StringBuilder();
+                    println("");
                 } else if (toExecute.toLowerCase().startsWith("script")) {
                     String[] params = toExecute.split(" ");
                     if (params.length == 2) {
@@ -429,6 +500,14 @@ public class Shell {
                         showHelp(sb.toString());
                     }
                     sb = new StringBuilder();
+                    println("");
+                } else if(!toExecute.isEmpty()) { // Multiline code
+                    if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                        currentPrompt = console.getPrompt();
+                        String tempPrompt =
+                                StringUtils.repeat(" ", DEFAULT_PROMPT.length()-1) + DEFAULT_TEMP_PROMPT + " ";
+                        console.setPrompt(tempPrompt);
+                    }
                 }
             }
         } catch (IOException ex) {
@@ -441,16 +520,29 @@ public class Shell {
     /**
      * Trigger the explain plan operation using the driver.
      * @param toExecute The user input.
+     * @return Execution plan.
      */
-    private void explainPlan(String toExecute){
+    private String explainPlan(String toExecute){
         Result r = crossDataDriver.explainPlan(toExecute.substring(EXPLAIN_PLAN_TOKEN.length()));
-        println(ConsoleUtils.stringResult(r));
+        return ConsoleUtils.stringResult(r);
     }
 
-    private void listConnectors() {
-        CommandResult commandResult= crossDataDriver.listConnectors();
-        LOG.info(commandResult.getResult());
+    private String describeConnectors() {
+        return ConsoleUtils.stringResult(crossDataDriver.describeConnectors());
     }
+
+    private String describeConnector(String connectorName) {
+        return ConsoleUtils.stringResult(crossDataDriver.describeConnector(new ConnectorName(connectorName)));
+    }
+
+    private String describeSystem() {
+        return ConsoleUtils.stringResult(crossDataDriver.describeSystem());
+    }
+
+    private String describeDatastore(String datastoreName) {
+        return ConsoleUtils.stringResult(crossDataDriver.describeDatastore(new DataStoreName(datastoreName)));
+    }
+
 
     private String updateCatalog(String toExecute) {
         String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();
@@ -474,15 +566,15 @@ public class Shell {
     /**
      * Trigger the operation to reset only the metadata information related to catalogs.
      */
-    private void cleanMetadata() {
-        crossDataDriver.cleanMetadata();
+    private String cleanMetadata() {
+        return ConsoleUtils.stringResult(crossDataDriver.cleanMetadata());
     }
 
     /**
-     * Trigger the operation to reset the metadata information.
+     * Trigger the operation to reset all the data in the server.
      */
-    private void resetMetadata() {
-        crossDataDriver.resetMetadata();
+    private String resetServerdata() {
+        return ConsoleUtils.stringResult(crossDataDriver.resetServerdata());
     }
 
     /**
@@ -531,10 +623,26 @@ public class Shell {
         }
         queryEnd = System.currentTimeMillis();
         updatePrompt(crossDataResult);
-        println("Result: " + ConsoleUtils.stringResult(crossDataResult));
-        println("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
-
+        LOG.info("Result: " + ConsoleUtils.stringResult(crossDataResult));
+        LOG.info("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
         return "OK";
+    }
+
+    private String dropManifest(int manifestType, String manifestName) {
+        try {
+            Result result = crossDataDriver.dropManifest(manifestType, manifestName);
+            String message;
+            if(result.hasError()){
+                ErrorResult errorResult = (ErrorResult) result;
+                message = errorResult.getErrorMessage();
+            } else {
+                CommandResult commandResult = (CommandResult) result;
+                message = commandResult.getResult().toString();
+            }
+            return message;
+        } catch (ManifestException e) {
+            return "ERROR";
+        }
     }
 
     /**

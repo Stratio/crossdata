@@ -21,7 +21,8 @@ package com.stratio.crossdata.server.actors
 import akka.actor.{Actor, ActorRef, Props}
 import com.stratio.crossdata.common.exceptions.ValidationException
 import com.stratio.crossdata.common.result.Result
-import com.stratio.crossdata.core.query.{IValidatedQuery, IParsedQuery}
+import com.stratio.crossdata.core.metadata.MetadataManagerException
+import com.stratio.crossdata.core.query.{IParsedQuery, IValidatedQuery}
 import com.stratio.crossdata.core.validator.Validator
 import org.apache.log4j.Logger
 
@@ -59,6 +60,11 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
         case e: ValidationException => {
           log.info(e.getMessage())
           val result = Result.createValidationErrorResult(e)
+          result.setQueryId(query.getQueryId)
+          sender ! result
+        }
+        case e2: MetadataManagerException => {
+          val result = Result.createExecutionErrorResult(e2.getMessage)
           result.setQueryId(query.getQueryId)
           sender ! result
         }

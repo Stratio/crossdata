@@ -31,7 +31,8 @@ import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.ListIterator;
 import java.util.Map;
 
@@ -49,23 +50,23 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.xml.sax.SAXException;
 
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.ConnectorFactory;
+import com.stratio.crossdata.common.manifest.ConnectorType;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
+import com.stratio.crossdata.common.manifest.DataStoreFactory;
+import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
+import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.QueryResult;
-import com.stratio.crossdata.common.result.StorageResult;
-import com.stratio.crossdata.common.manifest.ConnectorFactory;
-import com.stratio.crossdata.common.manifest.ConnectorType;
-import com.stratio.crossdata.common.manifest.DataStoreFactory;
-import com.stratio.crossdata.common.manifest.DataStoreType;
-import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
+import com.stratio.crossdata.common.result.StorageResult;
 
 import jline.console.ConsoleReader;
 import jline.console.history.History;
@@ -181,22 +182,38 @@ public final class ConsoleUtils {
      * width.
      */
     private static Map<String, Integer> calculateColWidths(ResultSet resultSet) {
-        Map<String, Integer> colWidths = new HashMap<>();
+        LinkedHashMap<String, Integer> colWidths = new LinkedHashMap<>();
 
         // Get column names or aliases width
         for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
-            colWidths.put(columnMetadata.getName().getAlias(),
+            colWidths.put(columnMetadata.getName().getColumnNameToShow(),
                     columnMetadata.getName().getColumnNameToShow().length());
         }
 
         // Find widest cell content of every column
         for (Row row: resultSet) {
+            int pos = 0;
             for (String key: row.getCells().keySet()) {
                 String cellContent = String.valueOf(row.getCell(key).getValue());
-                int currentWidth = colWidths.get(key);
+
+                int currentWidth;
+                if(colWidths.containsKey(key)){
+                    currentWidth = colWidths.get(key);
+                } else {
+                    Iterator<Map.Entry<String, Integer>> iter = colWidths.entrySet().iterator();
+                    int limit = 0;
+                    while(limit < pos){
+                        iter.next();
+                        limit++;
+                    }
+                    currentWidth = iter.next().getKey().length();
+                }
+
                 if (cellContent.length() > currentWidth) {
                     colWidths.put(key, cellContent.length());
                 }
+
+                pos++;
             }
         }
 
@@ -219,9 +236,9 @@ public final class ConsoleUtils {
     }
 
     /**
-     * Get previous history of the CrossData console from a file.
+     * Get previous history of the Crossdata console from a file.
      *
-     * @param console CrossData console created from a JLine console
+     * @param console Crossdata console created from a JLine console
      * @param sdf     Simple Date Format to read dates from history file
      * @return File inserted in the JLine console with the previous history
      * @throws IOException
@@ -272,9 +289,9 @@ public final class ConsoleUtils {
     }
 
     /**
-     * This method save history extracted from the CrossData console to be persisted in the disk.
+     * This method save history extracted from the Crossdata console to be persisted in the disk.
      *
-     * @param console CrossData console created from a JLine console
+     * @param console Crossdata console created from a JLine console
      * @param file    represents the file to be created of updated with the statements from the current
      *                session
      * @param sdf     Simple Date Format to create dates for the history file

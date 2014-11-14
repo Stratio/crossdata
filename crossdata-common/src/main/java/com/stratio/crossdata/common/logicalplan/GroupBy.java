@@ -15,45 +15,60 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.stratio.crossdata.common.logicalplan;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
-/**
- * Class definition for {@link com.stratio.crossdata.common.logicalplan.LogicalStep} that are
- * preceded by a single logical step. Examples of this type of operators are PROJECT and FILTER.
- */
-public class TransformationStep extends LogicalStep {
+public class GroupBy extends TransformationStep {
 
     /**
-     * Single previous step.
+     * Identifiers.
      */
-    private LogicalStep previous;
+    private List<Selector> ids = new ArrayList<>();
 
     /**
      * Class constructor.
      *
      * @param operation The operation to be applied.
+     * @param ids Identifiers.
      */
-    public TransformationStep(Operations operation) {
+    public GroupBy(Operations operation, List<Selector> ids) {
         super(operation);
+        this.ids = ids;
     }
 
-    @Override
-    public List<LogicalStep> getPreviousSteps() {
-        return Arrays.asList(previous);
+    /**
+     * Get Identifiers.
+     * @return Identifiers.
+     */
+    public List<Selector> getIds() {
+        return ids;
     }
 
-    @Override
-    public LogicalStep getFirstPrevious() {
-        return previous;
+    /**
+     * Set identifiers.
+     * @param ids Identifiers to be assigned.
+     */
+    public void setIds(List<Selector> ids) {
+        this.ids = ids;
     }
 
-    public void setPrevious(LogicalStep previous) {
-        this.previous = previous;
+    @Override public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("GROUP BY ");
+        Iterator<Selector> iter = ids.iterator();
+        while(iter.hasNext()){
+            Selector selector = iter.next();
+            sb.append(selector);
+            if(iter.hasNext()){
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
     }
 }

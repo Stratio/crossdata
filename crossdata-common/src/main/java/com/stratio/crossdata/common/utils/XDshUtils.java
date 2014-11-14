@@ -51,7 +51,6 @@ public final class XDshUtils {
             "RESET");
 
     public static final Set<String> NON_INITIALS = Sets.newHashSet(
-            "KEYSPACE",
             "NOT",
             "WITH",
             "TABLE",
@@ -129,7 +128,7 @@ public final class XDshUtils {
             "CONNECTOR",
             "CONNECTORS",
             "CLUSTER",
-            "CROSSDATADATA",
+            "METADATA",
             "CATALOG");
 
     /**

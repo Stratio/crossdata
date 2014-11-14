@@ -19,12 +19,12 @@
 package com.stratio.crossdata.driver;
 
 import org.apache.log4j.Logger;
-import org.testng.annotations.AfterSuite;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
-import com.stratio.crossdata.server.CrossDataServer;
+import com.stratio.crossdata.server.CrossdataServer;
 
 public class DriverParentTest {
 
@@ -34,7 +34,7 @@ public class DriverParentTest {
 
     protected static BasicDriver driver = null;
 
-    protected static CrossDataServer crossDataServer = null;
+    protected static CrossdataServer crossdataServer = null;
 
     public static String getErrorMessage(Result crossDataResult) {
         String result = "Invalid class: " + crossDataResult.getClass();
@@ -47,10 +47,10 @@ public class DriverParentTest {
     @BeforeClass
     public void init() {
         logger.info("INIT >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        if (crossDataServer == null) {
-            crossDataServer = new CrossDataServer();
-            crossDataServer.init(null);
-            crossDataServer.start();
+        if (crossdataServer == null) {
+            crossdataServer = new CrossdataServer();
+            crossdataServer.init(null);
+            crossdataServer.start();
 
             try {
                 Thread.sleep(SLEEP_TIME);
@@ -69,13 +69,12 @@ public class DriverParentTest {
         }
     }
 
-    // @AfterClass(alwaysRun=true)
-    @AfterSuite
+    @AfterClass
     public void finish() {
         logger.info("FINISHING ------------------------------");
         driver.close();
-        crossDataServer.stop();
-        crossDataServer.destroy();
+        crossdataServer.stop();
+        crossdataServer.destroy();
         logger.info("FINISH <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
     }
 

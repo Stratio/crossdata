@@ -37,6 +37,7 @@ import com.stratio.crossdata.common.manifest.PropertiesType;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
@@ -58,7 +59,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         dataStoreType.setName("dataStoreTest");
 
-        dataStoreType.setVersion("0.1.0");
+        dataStoreType.setVersion("0.1.1");
 
         PropertiesType requiredProperties = new PropertiesType();
         List<PropertyType> property = new ArrayList<>();
@@ -91,7 +92,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
                 "Name: dataStoreTest" + System.lineSeparator()
-                + "Version: 0.1.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                 "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                 System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
                 System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
@@ -107,6 +108,57 @@ public class APIManagerTest extends MetadataManagerTestHelper {
     }
 
     @Test
+    public void testPersistDataStoreFail() throws Exception {
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+
+        DataStoreType dataStoreType = new DataStoreType();
+
+        dataStoreType.setVersion("0.1.1");
+
+        PropertiesType requiredProperties = new PropertiesType();
+        List<PropertyType> property = new ArrayList<>();
+        PropertyType propertyType = new PropertyType();
+        propertyType.setPropertyName("RequiredProperty");
+        propertyType.setDescription("Test");
+        property.add(propertyType);
+        requiredProperties.setProperty(property);
+        dataStoreType.setRequiredProperties(requiredProperties);
+
+        PropertiesType optionalProperties = new PropertiesType();
+        property = new ArrayList<>();
+        propertyType = new PropertyType();
+        propertyType.setPropertyName("OptionalProperty");
+        propertyType.setDescription("Test");
+        property.add(propertyType);
+        optionalProperties.setProperty(property);
+        dataStoreType.setOptionalProperties(optionalProperties);
+
+        BehaviorsType behaviorsType = new BehaviorsType();
+        List<String> behavior = new ArrayList<>();
+        behavior.add("Test");
+        behaviorsType.setBehavior(behavior);
+        dataStoreType.setBehaviors(behaviorsType);
+
+        List params = new ArrayList();
+        params.add(dataStoreType);
+
+        Command cmd = new Command("QID", APICommand.ADD_MANIFEST(), params);
+
+        String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
+                "Name: dataStoreTest" + System.lineSeparator()
+                + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
+                System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
+                System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
+                "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
+                "Behaviors: " + System.lineSeparator() + "\tBehavior: Test" + System.lineSeparator();
+
+        Result result = ApiManager.processRequest(cmd);
+
+        assertTrue(result instanceof ErrorResult);
+    }
+
+    @Test
     public void testPersistConnector() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
 
@@ -114,7 +166,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         connectorType.setConnectorName("connectorTest");
 
-        connectorType.setVersion("0.1.0");
+        connectorType.setVersion("0.1.1");
 
         connectorType.setDataStores(new DataStoreRefsType());
 
@@ -150,7 +202,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "CONNECTOR" +
                 System.lineSeparator() + "ConnectorName: connectorTest" + System.lineSeparator()
                 + "DataStores: " + System.lineSeparator()
-                + "Version: 0.1.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                 "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                 System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
                 System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
@@ -166,9 +218,63 @@ public class APIManagerTest extends MetadataManagerTestHelper {
     }
 
     @Test
+    public void testPersistConnectorFail() throws Exception {
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+
+        ConnectorType connectorType = new ConnectorType();
+
+        connectorType.setVersion("0.1.1");
+
+        connectorType.setDataStores(new DataStoreRefsType());
+
+        PropertiesType requiredProperties = new PropertiesType();
+        List<PropertyType> property = new ArrayList<>();
+        PropertyType propertyType = new PropertyType();
+        propertyType.setPropertyName("RequiredProperty");
+        propertyType.setDescription("Test");
+        property.add(propertyType);
+        requiredProperties.setProperty(property);
+        connectorType.setRequiredProperties(requiredProperties);
+
+        PropertiesType optionalProperties = new PropertiesType();
+        property = new ArrayList<>();
+        propertyType = new PropertyType();
+        propertyType.setPropertyName("OptionalProperty");
+        propertyType.setDescription("Test");
+        property.add(propertyType);
+        optionalProperties.setProperty(property);
+        connectorType.setOptionalProperties(optionalProperties);
+
+        SupportedOperationsType supportedOperationsType = new SupportedOperationsType();
+        List<String> operation = new ArrayList<>();
+        operation.add("PROJECT");
+        supportedOperationsType.setOperation(operation);
+        connectorType.setSupportedOperations(supportedOperationsType);
+
+        List params = new ArrayList();
+        params.add(connectorType);
+
+        Command cmd = new Command("QID", APICommand.ADD_MANIFEST(), params);
+
+        String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "CONNECTOR" +
+                System.lineSeparator() + "ConnectorName: connectorTest" + System.lineSeparator()
+                + "DataStores: " + System.lineSeparator()
+                + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
+                System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
+                System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
+                "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
+                "Supported operations: " + System.lineSeparator() + "\tOperation: PROJECT" + System.lineSeparator();
+
+        Result result = ApiManager.processRequest(cmd);
+
+        assertTrue(result instanceof ErrorResult);
+    }
+
+    @Test
     public void testListConnectors() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
-        Command cmd = new Command("QID", APICommand.LIST_CONNECTORS(), null);
+        Command cmd = new Command("QID", APICommand.DESCRIBE_CONNECTORS(), null);
         createTestConnector("connectorTest", new DataStoreName("datastoreTest"), "akkaActorRef");
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
         String expectedResult = System.lineSeparator() + "Connector: connector.connectortest" +
@@ -182,7 +288,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
     public void testResetMetadata() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         createTestConnector("connectorTest2", new DataStoreName("datastoreTest"), "akkaActorRef");
-        Command cmd = new Command("QID", APICommand.RESET_CROSSDATADATA(), null);
+        Command cmd = new Command("QID", APICommand.RESET_SERVERDATA(), null);
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
 
         String str = String.valueOf(result.getResult());

@@ -4,9 +4,9 @@ CROSSDATA Grammar
 
 Language definition
 
-Version: 0.1.0
+Version: 0.1.1
 
-Date: 27, Oct, 2014
+Date: 14, Nov, 2014
 
 
 * * * * *
@@ -19,15 +19,23 @@ Table of contents
 -   [Language Features](#language-features)
     -   [Statements](#statements)
         -   [ADD DATASTORE](#add-dataStore)
+        -   [DROP DATASTORE](#drop-dataStore)
         -   [ADD CONNECTOR](#add-connector)
+        -   [DROP CONNECTOR](#drop-connector)
         -   [ATTACH CLUSTER](#attach-cluster)
         -   [ATTACH CONNECTOR](#attach-connector)
         -   [CREATE CATALOG](#create-catalog)
         -   [CREATE TABLE](#create-table)
         -   [INSERT](#insert)
         -   [SELECT](#select)
-        -   [LIST](#list)
-        -   [RESET](#reset)
+        -   [EXPLAIN PLAN](#explain-plan)
+        -   [RESET SERVERDATA](#reset-serverdata)
+        -   [CLEAN METADATA](#clean-metadata)
+        -   [DESCRIBE SYSTEM](#describe-system)
+        -   [DESCRIBE DATASTORE](#describe-datastore)
+        -   [DESCRIBE CONNECTORS](#describe-connectors)
+        -   [DESCRIBE CONNECTOR](#describe-connector)
+-   [Shell features] (#shell-features)
 
 * * * * *
 
@@ -138,6 +146,14 @@ Example:
 
     ADD DATASTORE “/home/stratio/crossdata/cassandra.xml”;
 
+### DROP DATASTORE
+
+DROP DATASTORE \<datastore-name\> ';'
+
+Example:
+
+    DROP DATASTORE cassandra;
+
 ### ADD CONNECTOR
 
 ADD CONNECTOR \<path\> ';'
@@ -145,6 +161,14 @@ ADD CONNECTOR \<path\> ';'
 Examples:
 
     ADD CONNECTOR “/home/stratio/crossdata/connectors/connector\_native\_cassandra.xml”;
+
+### DROP CONNECTOR
+
+DROP CONNECTOR \<connector-name\> ';'
+
+Examples:
+
+    DROP CONNECTOR cassandra_connector;
 
 ### ATTACH CLUSTER
 
@@ -229,23 +253,99 @@ Example:
 
     SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID
 
-### LIST
+### EXPLAIN PLAN
 
-List the existing connectors in the system and information about them.
+Explain plan for a specific command according to the current state of the system.
 
-LIST CONNECTORS;
-
-Example:
-
-    LIST CONNECTORS;
-
-### RESET
-
-Remove all metadata stored in the system.
-
-RESET METADATA;
+EXPLAIN PLAN FOR \<crossdata-statement\>;
 
 Example:
 
-    RESET METADATA;
+    EXPLAIN PLAN FOR Select * from demoCatalog.demoCatalog;
 
+### RESET SERVERDATA
+
+Remove all data stored in the system (in all servers), including information related to datastores, clusters and connectors.
+This command shows a warning message and requires to answer a security question.
+
+RESET SERVERDATA;
+
+Example:
+
+    RESET SERVERDATA;
+
+### CLEAN METADATA
+
+Remove all metadata related to catalogs, tables, indexes and columns.
+
+CLEAN METADATA;
+
+Example:
+
+    CLEAN METADATA;
+
+### DESCRIBE SYSTEM
+
+Describe all the information related to datastores, clusters and connectors.
+
+DESCRIBE SYSTEM;
+
+Example:
+
+    DESCRIBE SYSTEM;
+
+### DESCRIBE DATASTORE
+
+Describe information related to a specific datastore.
+
+DESCRIBE DATASTORE \<datastore-name\>;
+
+Example:
+
+    DESCRIBE DATASTORE cassandra;
+
+### DESCRIBE CONNECTORS
+
+Describe all the connectors registered in the system.
+
+DESCRIBE CONNECTORS;
+
+Example:
+
+    DESCRIBE CONNECTORS;
+
+### DESCRIBE CONNECTOR
+
+Describe the specified connector.
+
+DESCRIBE CONNECTOR \<connector-name\>;
+
+Example:
+
+    DESCRIBE CONNECTOR cassandra_connector;
+
+* * * * *
+
+Shell Features
+==============
+
+        This section describes the specific and special features of the CROSSDATA shell:
+
+*   Shell accepts comments:
+    *   One line comment: line starts with "//" or "#".
+        *   ``` > // This is a one line comment```
+        *   ``` > /# This is also a one line comment```
+    *   Multiline comment: starts with a line starting with "/*" and ends with a line ending with "*/"
+        *   ``` > /* This is a ```
+        *   ``` > multiline ```
+        *   ``` > comment */ ```
+*   How to exit from the shell:
+    *   ``` > exit```
+    *   ``` > quit```
+*   Help:
+    *   A help entry is available for every command, just type "help \<command\>"
+        *   ``` > help create```
+*   Script:
+    *   You can execute a script upon launching the shell. The script will be executed first,
+    and the prompt will be shown afterwards. Run the shell with an input argument "--script <path-to-xdql-file>"
+        *   ``` > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--script /path/script.xdql"```

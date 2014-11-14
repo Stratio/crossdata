@@ -39,8 +39,8 @@ class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike {
   val engine: Engine = createEngine.create()
 
 
-  def executeStatement(query: String, keyspace: String, shouldExecute: Boolean): Result = {
-    val stmt = Query("basic-server", keyspace, query, "test_actor")
+  def executeStatement(query: String, catalog: String, shouldExecute: Boolean): Result = {
+    val stmt = Query("basic-server", catalog, query, "test_actor")
 
     serverRef ! stmt
     val result = receiveActorMessages(shouldExecute, false, !shouldExecute)

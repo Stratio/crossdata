@@ -97,7 +97,7 @@ public class MetadataManagerTestHelper {
 
     protected DataStoreMetadata insertDataStore(String dataStore, String cluster) {
         DataStoreName dataStoreName = new DataStoreName(dataStore);
-        String version = "0.1.0";
+        String version = "0.1.1";
 
         Set<PropertyType> requiredPropertiesForDataStore = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
@@ -137,7 +137,7 @@ public class MetadataManagerTestHelper {
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName,
             String actorRef) {
-        final String version = "0.1.0";
+        final String version = "0.1.1";
         ConnectorName connectorName = new ConnectorName(name);
         ArrayList<String> dataStoreRefs = new ArrayList<>();
         dataStoreRefs.add(dataStoreName.getName());
@@ -157,7 +157,7 @@ public class MetadataManagerTestHelper {
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
             String actorRef) {
-        final String version = "0.1.0";
+        final String version = "0.1.1";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
@@ -179,7 +179,7 @@ public class MetadataManagerTestHelper {
     public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
             Set<Operations> options,
             String actorRef) {
-        final String version = "0.1.0";
+        final String version = "0.1.1";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
