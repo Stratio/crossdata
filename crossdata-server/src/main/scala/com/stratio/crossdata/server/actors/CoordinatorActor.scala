@@ -195,16 +195,20 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val credentials = null
             val managementOperation = workflow1.createManagementOperationMessage()
             val attachConnectorOperation = managementOperation.asInstanceOf[AttachConnector]
-
             val clusterName = attachConnectorOperation.targetCluster
+            val clusterOptions = SelectorHelper.convertSelectorMapToStringMap(
+              MetadataManager.MANAGER.getCluster(attachConnectorOperation.targetCluster).getOptions)
+            val connectorOptions = SelectorHelper.convertSelectorMapToStringMap(attachConnectorOperation.options)
             val connectorClusterConfig = new ConnectorClusterConfig(
-              clusterName, SelectorHelper.convertSelectorMapToStringMap
-                (MetadataManager.MANAGER.getCluster(attachConnectorOperation.targetCluster).getOptions))
+              clusterName, connectorOptions, clusterOptions)
+
             val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
             connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
-
             val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(workflow1.getActorRef()))
             connectorSelection ! new Connect(credentials, connectorClusterConfig)
+
+            log.info("connectorOptions: " + connectorClusterConfig.getConnectorOptions.toString + " clusterOptions: " +
+              connectorClusterConfig.getClusterOptions.toString)
 
             val executionInfo = new ExecutionInfo()
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)

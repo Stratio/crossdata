@@ -38,20 +38,42 @@ public class ConnectorClusterConfig implements Serializable {
     private DataStoreName dataStoreName;
 
     /**
-     * Map of options required by a connector in order to be able to establish a connection
+     * Map of connector options required by a connector in order to be able to establish a connection
      * to an existing datastore cluster.
      */
-    private final Map<String, String> options;
+    private final Map<String, String> connectorOptions;
+
+    /**
+     * Map of cluster options required by a connector in order to be able to establish a connection to an
+     * existing datastore cluster.
+     */
+    private Map<String, String> clusterOptions;
 
     /**
      * Class constructor.
      *
      * @param name    Name of the target cluster.
-     * @param options Map of options.
+     * @param connectorOptions Map of options.
+     * @deprecated Use ConnectorClusterConfig(ClusterName, Map<String, String>, Map<String,String>).
      */
-    public ConnectorClusterConfig(ClusterName name, Map<String, String> options) {
+    @Deprecated
+    public ConnectorClusterConfig(ClusterName name, Map<String, String> connectorOptions) {
         this.name = name;
-        this.options = options;
+        this.connectorOptions = connectorOptions;
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param name    Name of the target cluster.
+     * @param connectorOptions Map of connector options.
+     * @param clusterOptions Map of cluster options.
+     */
+    public ConnectorClusterConfig(ClusterName name, Map<String, String> connectorOptions, Map<String,
+            String> clusterOptions) {
+        this.name = name;
+        this.connectorOptions = connectorOptions;
+        this.clusterOptions = clusterOptions;
     }
 
     public DataStoreName getDataStoreName() {
@@ -66,9 +88,27 @@ public class ConnectorClusterConfig implements Serializable {
      * Get the cluster options.
      *
      * @return A map of options.
+     * @deprecated Use either getClusterOptions or getConnectorOptions.
      */
+    @Deprecated
     public Map<String, String> getOptions() {
-        return options;
+        return clusterOptions;
+    }
+
+    /**
+     * Get the connector options.
+     * @return A map of options.
+     */
+    public Map<String, String> getConnectorOptions() {
+        return connectorOptions;
+    }
+
+    /**
+     * Get the cluster options.
+     * @return A map of options.
+     */
+    public Map<String, String> getClusterOptions() {
+        return clusterOptions;
     }
 
     /**

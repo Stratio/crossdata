@@ -116,6 +116,11 @@ public class InstallerGoalMojo extends AbstractMojo {
     )
     private String jmxPort;
 
+    @Parameter(
+            name = "useCallingUserAsService"
+    )
+    private boolean useCallingUserAsService;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         File mainJarRepo = this.resolveProjectArtifact();
@@ -125,7 +130,7 @@ public class InstallerGoalMojo extends AbstractMojo {
 
         InstallerGoalConfig config = new InstallerGoalConfig(this.outputDirectory, this.configDirectory,
                 this.includeDirectory, this.connectorName, this.description, this.userService, this.mainClass,
-                this.jmxPort, mainJarRepo, dependenciesJarRepo, unixScriptTemplate);
+                this.jmxPort, mainJarRepo, dependenciesJarRepo, unixScriptTemplate, useCallingUserAsService);
         try {
             InstallerGoalLauncher.launchInstallerGoal(config,getLog());
         } catch (IOException e) {
