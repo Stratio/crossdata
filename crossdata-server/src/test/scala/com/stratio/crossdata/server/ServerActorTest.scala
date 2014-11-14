@@ -203,6 +203,8 @@ ImplicitSender with BeforeAndAfterAll{
     val operations=new java.util.HashSet[Operations]()
     operations.add(Operations.PROJECT)
     operations.add(Operations.SELECT_OPERATOR)
+    operations.add(Operations.CREATE_TABLE)
+    operations.add(Operations.CREATE_CATALOG)
     operations.add(Operations.INSERT)
 
     //create metadatamanager

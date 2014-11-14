@@ -142,7 +142,7 @@ class ParserActorIT extends ServerActorTest{
       }
     }
     within(6000 millis) {
-      val query="create TABLE mynewcatalog.demo ON CLUSTER " + myClusterName + "(field1 varchar PRIMARY KEY , " +
+      val query="create TABLE mynewCatalog.demo ON CLUSTER " + myClusterName + "(field1 varchar PRIMARY KEY , " +
         "field2 varchar);"
       parserActor3 ! Query(queryId + (2), mynewcatalog, query,user0)
       fishForMessage(6 seconds){
