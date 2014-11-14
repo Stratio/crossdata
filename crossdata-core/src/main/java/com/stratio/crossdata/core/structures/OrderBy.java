@@ -59,7 +59,7 @@ public class OrderBy implements Serializable {
 
     /**
      * Get a list of Selectors of the Group By.
-     * @return
+     * @return List of Selectors of the Group By.
      */
     public List<Selector> getSelectorList() {
         return selectorList;
@@ -74,8 +74,8 @@ public class OrderBy implements Serializable {
     }
 
     /**
-     * Get the direction of the groupBy.
-     * @return
+     * Get the direction of the Group By.
+     * @return Direction of the Group By.
      */
     public OrderDirection getDirection() {
         return direction;

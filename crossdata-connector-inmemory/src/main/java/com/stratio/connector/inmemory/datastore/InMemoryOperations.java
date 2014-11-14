@@ -21,8 +21,6 @@ package com.stratio.connector.inmemory.datastore;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import sun.security.util.BigInt;
-
 /**
  * Enumeration of the different operations that can be applied
  */

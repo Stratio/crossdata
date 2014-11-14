@@ -317,6 +317,11 @@
                 </configuration>
                 <executions>
                     <execution>
+                        <configuration>
+                            <wildcardSuites>
+                                [^IT.scala]
+                            </wildcardSuites>
+                        </configuration>
                         <id>test</id>
                         <goals>
                             <goal>test</goal>

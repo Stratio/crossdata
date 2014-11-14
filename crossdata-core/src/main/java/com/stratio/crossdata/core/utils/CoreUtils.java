@@ -38,7 +38,7 @@ public final class CoreUtils {
 
     /**
      * Constructor.
-     * @return
+     * @return An instance of CoreUtils.
      */
     public static CoreUtils create(){
         return new CoreUtils();
@@ -47,8 +47,8 @@ public final class CoreUtils {
     /**
      * Convert Selector to Object.
      * @param selector The Selector
-     * @param columnName The ColumnName
-     * @return
+     * @param columnName The ColumnName.
+     * @return An Object with a Java type according to the parameters.
      * @throws PlanningException
      */
     public static Object convertSelectorToObject(Selector selector, ColumnName columnName) throws PlanningException {
