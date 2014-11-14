@@ -18,7 +18,9 @@
 
 package com.stratio.crossdata.core.grammar.statements;
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.testng.Assert.*;
 
 import com.stratio.crossdata.core.grammar.ParsingTest;
 
@@ -118,7 +120,8 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void testSimpleQueryWithAliasesOk() {
         String inputText = "SELECT demo.users.gender as genero FROM demo.users;";
-        testRegularStatement(inputText, "testSimpleGroupQueryWithAliasesOk");
+        Assert.assertNotNull(testRegularStatement(inputText,
+                "testSimpleGroupQueryWithAliasesOk"),"regular statement error");
     }
 
     @Test
@@ -522,7 +525,8 @@ public class SelectStatementTest extends ParsingTest {
         String expectedText =
                 "SELECT <unknown_name>.users.gender, min(<unknown_name>.users.age) as minimo "
                         + "FROM demo.users GROUP BY <unknown_name>.users.gender;";
-        testRegularStatement(inputText, expectedText, "testSimpleGroupQueryWithAliasesOk");
+        Assert.assertNotNull(testRegularStatement(inputText, expectedText, "testSimpleGroupQueryWithAliasesOk"),
+                "regular statement error");
     }
 
     //

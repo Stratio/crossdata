@@ -33,6 +33,7 @@ public class MetadataManagerConstructorTest {
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testConstructorException(){
         MetadataManager.MANAGER.init(null, null, null);
+        fail();
     }
 
 }
