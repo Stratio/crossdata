@@ -57,9 +57,9 @@ public class InMemoryConnector implements IConnector{
     private final Map<ClusterName, InMemoryDatastore> clusters = new HashMap<>();
 
     /**
-     * Constant defining the required connector property.
+     * Constant defining the required datastore property.
      */
-    private static final String CONNECTOR_PROPERTY = "TableRowLimit";
+    private static final String DATASTORE_PROPERTY = "TableRowLimit";
 
     @Override
     public String getConnectorName() {
@@ -81,12 +81,12 @@ public class InMemoryConnector implements IConnector{
     @Override
     public void connect(ICredentials credentials, ConnectorClusterConfig config) throws ConnectionException {
         ClusterName targetCluster = config.getName();
-        Map<String, String> options = config.getOptions();
-
-        if(!options.isEmpty() && options.get(CONNECTOR_PROPERTY) != null){
+        Map<String, String> options = config.getClusterOptions();
+        LOG.info("clusterOptions: " + config.getClusterOptions().toString() + " connectorOptions: " + config.getConnectorOptions());
+        if(!options.isEmpty() && options.get(DATASTORE_PROPERTY) != null){
             //At this step we usually connect to the database. As this is an tutorial implementation,
             //we instantiate the Datastore instead.
-            InMemoryDatastore datastore = new InMemoryDatastore(Integer.valueOf(options.get(CONNECTOR_PROPERTY)));
+            InMemoryDatastore datastore = new InMemoryDatastore(Integer.valueOf(options.get(DATASTORE_PROPERTY)));
             clusters.put(targetCluster, datastore);
         }else{
             throw new ConnectionException("Invalid options, expecting TableRowLimit");

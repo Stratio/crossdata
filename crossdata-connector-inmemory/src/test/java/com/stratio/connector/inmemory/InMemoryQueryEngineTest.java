@@ -90,10 +90,11 @@ public class InMemoryQueryEngineTest {
             fail("Failed to init the connector", e);
         }
 
-        Map<String, String> options = new HashMap<>();
-        options.put("TableRowLimit", "100");
+        Map<String,String> clusterOptions = new HashMap<>();
+        Map<String,String> connectorOptions = new HashMap<>();
+        clusterOptions.put("TableRowLimit", "1000");
         clusterName = new ClusterName("test_cluster");
-        ConnectorClusterConfig config = new ConnectorClusterConfig(clusterName, options);
+        ConnectorClusterConfig config = new ConnectorClusterConfig(clusterName, connectorOptions, clusterOptions);
 
         try {
             connector.connect(new ICredentials() {

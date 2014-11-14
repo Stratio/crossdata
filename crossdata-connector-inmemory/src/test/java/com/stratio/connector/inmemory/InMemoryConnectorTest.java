@@ -54,10 +54,11 @@ public class InMemoryConnectorTest {
             fail("Failed to init the connector", e);
         }
 
-        Map<String,String> options = new HashMap<>();
-        options.put("TableRowLimit", "10");
+        Map<String,String> clusterOptions = new HashMap<>();
+        Map<String,String> connectorOptions = new HashMap<>();
+        clusterOptions.put("TableRowLimit", "10");
         ClusterName clusterName = new ClusterName("cluster");
-        ConnectorClusterConfig config = new ConnectorClusterConfig(clusterName, options);
+        ConnectorClusterConfig config = new ConnectorClusterConfig(clusterName, connectorOptions, clusterOptions);
 
         try {
             connector.connect(new ICredentials() {
