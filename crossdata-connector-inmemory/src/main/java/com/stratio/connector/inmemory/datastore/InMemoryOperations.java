@@ -46,6 +46,13 @@ public enum InMemoryOperations {
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) > 0;
             }else if(Comparable.class.isInstance(o1)
                     && Comparable.class.isInstance(o2.getClass())) {
+                // TODO:
+                /*
+                    InMemoryOperations.java:49: warning: [unchecked] unchecked call to compareTo(T) as a member of the raw type Comparable
+                                    return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) > 0;                                                                              ^
+                      where T is a type-variable:
+                        T extends Object declared in interface Comparable
+                 */
                 return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) > 0;
             }
             return false;
@@ -61,6 +68,14 @@ public enum InMemoryOperations {
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) < 0;
             }else if(Comparable.class.isInstance(o1)
                     && Comparable.class.isInstance(o2.getClass())) {
+                // TODO:
+                /*
+                    InMemoryOperations.java:64: warning: [unchecked] unchecked call to compareTo(T) as a member of the raw type Comparable
+                                    return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) < 0;
+                                                                              ^
+                      where T is a type-variable:
+                        T extends Object declared in interface Comparable
+                 */
                 return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) < 0;
             }
             return false;
@@ -76,6 +91,14 @@ public enum InMemoryOperations {
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) >= 0;
             }else if(Comparable.class.isInstance(o1)
                     && Comparable.class.isInstance(o2.getClass())) {
+                // TODO:
+                /*
+                    InMemoryOperations.java:79: warning: [unchecked] unchecked call to compareTo(T) as a member of the raw type Comparable
+                                    return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) >= 0;
+                                                                              ^
+                      where T is a type-variable:
+                        T extends Object declared in interface Comparable
+                 */
                 return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) >= 0;
             }
             return false;
@@ -91,6 +114,14 @@ public enum InMemoryOperations {
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) <= 0;
             }else if(Comparable.class.isInstance(o1)
                     && Comparable.class.isInstance(o2.getClass())) {
+                // TODO:
+                /*
+                    InMemoryOperations.java:94: warning: [unchecked] unchecked call to compareTo(T) as a member of the raw type Comparable
+                                    return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) <= 0;
+                                                                              ^
+                      where T is a type-variable:
+                        T extends Object declared in interface Comparable
+                 */
                 return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) <= 0;
             }
             return false;

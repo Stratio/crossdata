@@ -89,7 +89,7 @@ public class Join extends UnionStep {
 
     /**
      * Get the Identifiers.
-     * @return
+     * @return List of logical step identifiers involved in the join.
      */
     public List<String> getSourceIdentifiers() {
         return sourceIdentifiers;
@@ -97,7 +97,7 @@ public class Join extends UnionStep {
 
     /**
      * Get the id.
-     * @return
+     * @return Join identifier.
      */
     public String getId() {
         return id;
