@@ -44,20 +44,13 @@ public enum InMemoryOperations {
         @Override public boolean compare(Object o1, Object o2) {
             if(Number.class.isInstance(o1) && Number.class.isInstance(o2)){
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) > 0;
-            }else if(Comparable.class.isInstance(o1)
-                    && Comparable.class.isInstance(o2.getClass())) {
-                // TODO:
-                /*
-                    InMemoryOperations.java:49: warning: [unchecked] unchecked call to compareTo(T) as a member of the raw type Comparable
-                                    return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) > 0;                                                                              ^
-                      where T is a type-variable:
-                        T extends Object declared in interface Comparable
-                 */
-                return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) > 0;
+            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1)){
+                return compareTo(String.class.cast(o1), String.class.cast(o2)) > 0;
             }
             return false;
         }
     },
+
 
     /**
      * Less than.
@@ -66,17 +59,8 @@ public enum InMemoryOperations {
         @Override public boolean compare(Object o1, Object o2) {
             if(Number.class.isInstance(o1) && Number.class.isInstance(o2)){
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) < 0;
-            }else if(Comparable.class.isInstance(o1)
-                    && Comparable.class.isInstance(o2.getClass())) {
-                // TODO:
-                /*
-                    InMemoryOperations.java:64: warning: [unchecked] unchecked call to compareTo(T) as a member of the raw type Comparable
-                                    return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) < 0;
-                                                                              ^
-                      where T is a type-variable:
-                        T extends Object declared in interface Comparable
-                 */
-                return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) < 0;
+            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1)){
+                return compareTo(String.class.cast(o1), String.class.cast(o2)) < 0;
             }
             return false;
         }
@@ -87,19 +71,10 @@ public enum InMemoryOperations {
      */
     GET {
         @Override public boolean compare(Object o1, Object o2) {
-            if(Number.class.isInstance(o1) && Number.class.isInstance(o2)){
+            if(Number.class.isInstance(o1) && Number.class.isInstance(o2)) {
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) >= 0;
-            }else if(Comparable.class.isInstance(o1)
-                    && Comparable.class.isInstance(o2.getClass())) {
-                // TODO:
-                /*
-                    InMemoryOperations.java:79: warning: [unchecked] unchecked call to compareTo(T) as a member of the raw type Comparable
-                                    return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) >= 0;
-                                                                              ^
-                      where T is a type-variable:
-                        T extends Object declared in interface Comparable
-                 */
-                return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) >= 0;
+            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1)){
+                    return compareTo(String.class.cast(o1), String.class.cast(o2)) >= 0;
             }
             return false;
         }
@@ -110,19 +85,10 @@ public enum InMemoryOperations {
      */
     LET {
         @Override public boolean compare(Object o1, Object o2) {
-            if(Number.class.isInstance(o1) && Number.class.isInstance(o2)){
+            if(Number.class.isInstance(o1) && Number.class.isInstance(o2)) {
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) <= 0;
-            }else if(Comparable.class.isInstance(o1)
-                    && Comparable.class.isInstance(o2.getClass())) {
-                // TODO:
-                /*
-                    InMemoryOperations.java:94: warning: [unchecked] unchecked call to compareTo(T) as a member of the raw type Comparable
-                                    return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) <= 0;
-                                                                              ^
-                      where T is a type-variable:
-                        T extends Object declared in interface Comparable
-                 */
-                return Comparable.class.cast(o1).compareTo(Comparable.class.cast(o2)) <= 0;
+            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1)){
+                return compareTo(String.class.cast(o1), String.class.cast(o2)) <= 0;
             }
             return false;
         }
@@ -138,6 +104,17 @@ public enum InMemoryOperations {
      */
     private static int compareNumbers(Number n1, Number n2){
         return toBigDecimal(n1).compareTo(toBigDecimal(n2));
+    }
+
+    /**
+     * Compare two elements of the same class that implement the {@link java.lang.Comparable} interface.
+     * @param c1 The first element.
+     * @param c2 The second element.
+     * @param <T> The type that extends Comparable.
+     * @return The comparison value.
+     */
+    protected static <T extends Comparable<T>> int compareTo(T c1, T c2){
+        return c1.compareTo(c2);
     }
 
     /**

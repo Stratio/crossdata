@@ -24,6 +24,7 @@ import static org.testng.Assert.fail;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -176,9 +177,9 @@ public class InMemoryQueryEngineTest {
             project.addColumn(new ColumnName(tableMetadata.getName(), columnName));
         }
 
-        Map<ColumnName, String> columnMap = new HashMap<>();
-        Map<String, ColumnType> typeMap = new HashMap<>();
-        Map<ColumnName, ColumnType> typeMapFromColumnName = new HashMap<>();
+        Map<ColumnName, String> columnMap = new LinkedHashMap<>();
+        Map<String, ColumnType> typeMap = new LinkedHashMap<>();
+        Map<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
 
         int index = 0;
         for(ColumnName column : project.getColumnList()){
@@ -192,6 +193,16 @@ public class InMemoryQueryEngineTest {
         //Link the elements
         project.setNextStep(select);
         return project;
+    }
+
+    public void checkResultMetadata(ResultSet results, String [] columnNames, ColumnType [] types){
+        assertEquals(results.getColumnMetadata().size(), columnNames.length, "Expecting one column");
+        for(int index = 0; index < columnNames.length; index++) {
+            assertEquals(results.getColumnMetadata().get(index).getName().getAlias(), columnNames[index],
+                    "Expecting matching column name");
+            assertEquals(results.getColumnMetadata().get(index).getColumnType(), types[index],
+                    "Expecting matching column type");
+        }
     }
 
     @Test
@@ -211,6 +222,7 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), NUM_ROWS, "Invalid number of results returned");
+        checkResultMetadata(results, columnNames, types);
     }
 
     @Test
@@ -230,6 +242,7 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), NUM_ROWS, "Invalid number of results returned");
+        checkResultMetadata(results, columnNames, types);
     }
 
     @Test
@@ -259,6 +272,7 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), 1, "Invalid number of results returned");
+        checkResultMetadata(results, columnNames, types);
     }
 
     @Test
@@ -288,6 +302,7 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), NUM_ROWS / 2, "Invalid number of results returned");
+        checkResultMetadata(results, columnNames, types);
     }
 
     @Test
@@ -317,6 +332,7 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), 1, "Invalid number of results returned");
+        checkResultMetadata(results, columnNames, types);
     }
 
 }
