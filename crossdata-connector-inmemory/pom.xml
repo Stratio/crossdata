@@ -17,16 +17,19 @@
   ~ under the License.
   -->
 
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>crossdata-parent</artifactId>
+        <groupId>com.stratio.crossdata</groupId>
+        <version>0.1.1-SNAPSHOT</version>
+    </parent>
     <modelVersion>4.0.0</modelVersion>
-
-    <groupId>com.stratio.crossdata</groupId>
-    <artifactId>crossdata-parent</artifactId>
-    <packaging>pom</packaging>
-    <version>0.1.1-SNAPSHOT</version>
-    <name>Stratio Crossdata parent</name>
-    <description>Stratio Crossdata parent</description>
+    <packaging>jar</packaging>
+    <artifactId>crossdata-connector-inmemory</artifactId>
+    <name>Stratio Crossdata InMemory connector</name>
+    <description>Stratio Crossdata InMemory connector</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
@@ -84,64 +87,102 @@
         </developer>
     </developers>
 
-
-    <modules>
-        <module>crossdata-common</module>
-        <module>crossdata-core</module>
-        <module>crossdata-driver</module>
-        <module>crossdata-server</module>
-        <module>crossdata-shell</module>
-        <module>crossdata-dist</module>
-        <module>crossdata-connector</module>
-        <module>crossdata-connector-maven-plugin</module>
-        <module>crossdata-connector-inmemory</module>
-    </modules>
     <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <crossdata.version>0.1.1-SNAPSHOT</crossdata.version>
         <scala.version>2.10.4</scala.version>
         <akka.version>2.2.4</akka.version>
-        <infinispan.version>6.0.2.Final</infinispan.version>
-        <scala.dep.version>2.10.4</scala.dep.version>
-        <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
-        <scala.version>2.10.4</scala.version>
+        <scala.dep.version>2.10</scala.dep.version>
         <slf4j.version>1.7.7</slf4j.version>
-        <config.version>1.2.0</config.version>
-        <testng.version>6.8.8</testng.version>
-        <commons-lang3.version>3.2.1</commons-lang3.version>
+        <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
     </properties>
+    <dependencies>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-connector</artifactId>
+            <version>${crossdata.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>6.8.8</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-common</artifactId>
+            <version>${crossdata.version}</version>
+        </dependency>
+        <!-- SCALA AND AKKA -->
+        <dependency>
+            <groupId>org.scala-lang</groupId>
+            <artifactId>scala-compiler</artifactId>
+            <version>${scala.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-actor_${scala.dep.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-contrib_2.10</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-cluster_${scala.dep.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-remote_${scala.dep.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-slf4j_${scala.dep.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-agent_${scala.dep.version}</artifactId>
+            <version>${akka.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe</groupId>
+            <artifactId>config</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+
+    </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.1</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>cobertura-maven-plugin</artifactId>
-                <version>2.6</version>
-                <configuration>
-                    <formats>
-                        <format>html</format>
-                        <format>xml</format>
-                    </formats>
-                    <aggregate>true</aggregate>
-                    <check/>
-                </configuration>
-            </plugin>
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.1</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.7</version>
-                <configuration>
-                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
                 </configuration>
             </plugin>
 
@@ -174,12 +215,16 @@
             </plugin>
 
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>2.3.1</version>
+                <artifactId>crossdata-connector-maven-plugin</artifactId>
+                <groupId>com.stratio.crossdata</groupId>
+                <version>${crossdata.version}</version>
+                <configuration>
+                    <mainClass>com.stratio.connector.inmemory.InMemoryConnector</mainClass>
+                    <jmxPort>7180</jmxPort>
+                    <useCallingUserAsService>true</useCallingUserAsService>
+                </configuration>
             </plugin>
+
         </plugins>
     </build>
-
-
 </project>

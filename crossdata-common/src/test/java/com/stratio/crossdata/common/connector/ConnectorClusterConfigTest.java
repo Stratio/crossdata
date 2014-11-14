@@ -30,12 +30,16 @@ public class ConnectorClusterConfigTest {
 
     @Test
     public void testConnectorClusterConfig() throws Exception {
-        Map<String, String> options = new HashMap<>();
+        Map<String, String> clusterOptions = new HashMap<>();
+        clusterOptions.put("cluster", "options");
+        Map<String, String> connectorOptions = new HashMap<>();
+        connectorOptions.put("connector", "options");
 
         ConnectorClusterConfig connectorClusterConfig = new ConnectorClusterConfig(new ClusterName("myCluster"),
-                options);
+                connectorOptions, clusterOptions);
 
-        Assert.assertTrue(connectorClusterConfig.getName().getName().equals("mycluster"));
-        Assert.assertTrue(connectorClusterConfig.getOptions().isEmpty());
+        Assert.assertTrue(connectorClusterConfig.getName().getName().equals("mycluster"), "Invalid cluster name");
+        Assert.assertFalse(connectorClusterConfig.getConnectorOptions().isEmpty(), "Empty connector options");
+        Assert.assertFalse(connectorClusterConfig.getClusterOptions().isEmpty(), "Empty cluster options");
     }
 }

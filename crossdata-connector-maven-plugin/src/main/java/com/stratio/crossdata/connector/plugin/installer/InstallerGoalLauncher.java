@@ -60,7 +60,11 @@ public class InstallerGoalLauncher {
         String outputString=(config.getUnixScriptTemplate());
         outputString=outputString.replaceAll("<name>", config.getConnectorName());
         outputString=outputString.replaceAll("<desc>", config.getDescription());
-        outputString=outputString.replaceAll("<user>", config.getUserService());
+        String user = config.getUserService();
+        if(config.isUseCallingUserAsService()){
+            user = System.getProperty("user.name");
+        }
+        outputString=outputString.replaceAll("<user>", user);
         outputString=outputString.replaceAll("<mainClass>", config.getMainClass());
         int index = config.getMainClass().lastIndexOf('.');
         String className = config.getMainClass();
