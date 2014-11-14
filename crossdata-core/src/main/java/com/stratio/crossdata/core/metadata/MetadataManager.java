@@ -250,6 +250,7 @@ public enum MetadataManager {
     /**
      * Remove the selected catalog. Not implemented yet.
      * @param catalogName Removed catalog name.
+     * @param ifExist Conditon if the catalog exists
      */
     public void deleteCatalog(CatalogName catalogName, boolean ifExist) {
         shouldBeInit();
@@ -816,6 +817,14 @@ public enum MetadataManager {
         return metadata.isEmpty();
     }
 
+    /**
+     * Remove catalogs.
+     * @throws NotSupportedException
+     * @throws SystemException
+     * @throws HeuristicRollbackException
+     * @throws HeuristicMixedException
+     * @throws RollbackException
+     */
     public void clearCatalogs()
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
             RollbackException {
@@ -842,6 +851,16 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Remove the connector from metadata manager.
+     * @param connectorName The connector name
+     * @throws NotSupportedException
+     * @throws SystemException
+     * @throws HeuristicRollbackException
+     * @throws HeuristicMixedException
+     * @throws RollbackException
+     * @throws MetadataManagerException
+     */
     public void deleteConnector(ConnectorName connectorName)
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
             RollbackException, MetadataManagerException {
@@ -872,6 +891,16 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Remove the data store from the metadata manager.
+     * @param dataStoreName The data store name
+     * @throws NotSupportedException
+     * @throws SystemException
+     * @throws HeuristicRollbackException
+     * @throws HeuristicMixedException
+     * @throws RollbackException
+     * @throws MetadataManagerException
+     */
     public void deleteDatastore(DataStoreName dataStoreName)
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
             RollbackException, MetadataManagerException {

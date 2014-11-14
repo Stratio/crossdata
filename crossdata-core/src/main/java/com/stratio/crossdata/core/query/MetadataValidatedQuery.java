@@ -20,13 +20,24 @@ package com.stratio.crossdata.core.query;
 
 import com.stratio.crossdata.common.result.QueryStatus;
 
+/**
+ * Metadata validate query with a previously parsed query.
+ */
 public class MetadataValidatedQuery extends MetadataParsedQuery implements IValidatedQuery {
 
+    /**
+     * Contructor Class.
+     * @param metadataParsedQuery The metadata parsed query
+     */
     public MetadataValidatedQuery(MetadataParsedQuery metadataParsedQuery) {
         super(metadataParsedQuery);
         setQueryStatus(QueryStatus.VALIDATED);
     }
 
+    /**
+     * Constructor Class.
+     * @param metadataValidatedQuery
+     */
     public MetadataValidatedQuery(MetadataValidatedQuery metadataValidatedQuery) {
         this((MetadataParsedQuery) metadataValidatedQuery);
     }

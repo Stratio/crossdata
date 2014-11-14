@@ -257,9 +257,9 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Reset metadata in server.
    * @return A CommandResult with a string.
    */
-  def resetMetadata(): CommandResult = {
+  def resetServerdata(): CommandResult = {
     val queryId = UUID.randomUUID().toString
-    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_METADATA, null))
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_SERVERDATA, null))
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {

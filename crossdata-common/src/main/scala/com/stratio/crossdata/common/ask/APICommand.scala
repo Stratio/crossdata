@@ -33,7 +33,7 @@ object APICommand extends Enumeration {
   val DESCRIBE_SYSTEM = Value("DESCRIBE_SYSTEM")
   val ADD_MANIFEST = Value("ADD_MANIFEST")
   val DROP_MANIFEST = Value("DROP_MANIFEST")
-  val RESET_METADATA = Value("RESET_METADATA")
+  val RESET_SERVERDATA = Value("RESET_SERVERDATA")
   val CLEAN_METADATA = Value("CLEAN_METADATA")
   val EXPLAIN_PLAN = Value("EXPLAIN_PLAN")
 }

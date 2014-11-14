@@ -376,7 +376,7 @@ public class Shell {
         }
     }
 
-    public boolean executeApiCAll(String command){
+    public boolean executeApiCall(String command){
         boolean apiCallExecuted = false;
         String result = "OK";
         if(command.toLowerCase().startsWith("describe")){
@@ -395,8 +395,28 @@ public class Shell {
                    || command.toLowerCase().startsWith("add datastore")) {
             result = sendManifest(command);
             apiCallExecuted = true;
-        } else if (command.toLowerCase().startsWith("reset metadata")) {
-            result = resetMetadata();
+        } else if (command.toLowerCase().startsWith("reset serverdata")) {
+            if(command.toLowerCase().contains("--force")) {
+                result = resetServerdata();
+            } else {
+                String currentPrompt = console.getPrompt();
+                String answer = "No";
+                try {
+                    console.print(" > RESET SERVERDATA will ERASE ALL THE DATA stored in the Crossdata Server, ");
+                    console.println("even the one related to datastores, clusters and connectors.");
+                    console.print(" > Maybe you can use CLEAN METADATA, ");
+                    console.println("which erases only metadata related to catalogs, tables, indexes and columns.");
+                    console.setPrompt(" > Do you want to continue? (yes/no): ");
+                    answer = console.readLine();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage());
+                }
+                answer = answer.replace(";", "").trim();
+                if(answer.equalsIgnoreCase("yes") || answer.equalsIgnoreCase("y")){
+                    result = resetServerdata();
+                }
+                console.setPrompt(currentPrompt);
+            }
             apiCallExecuted = true;
         } else if (command.toLowerCase().startsWith("clean metadata")){
             result = cleanMetadata();
@@ -411,6 +431,8 @@ public class Shell {
                     CrossdataManifest.TYPE_CONNECTOR,
                     command.toLowerCase().replace("drop connector ", "").replace(";", "").trim());
             apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
+            result = explainPlan(command);
         }
         if(apiCallExecuted){
             LOG.info(result);
@@ -456,9 +478,7 @@ public class Shell {
                         showHelp(sb.toString());
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);
-                    } else if(toExecute.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
-                        explainPlan(toExecute);
-                    } else if(executeApiCAll(toExecute)) {
+                    } else if(executeApiCall(toExecute)) {
                         LOG.debug("API call executed.");
                     } else {
                         executeQuery(toExecute);
@@ -500,10 +520,11 @@ public class Shell {
     /**
      * Trigger the explain plan operation using the driver.
      * @param toExecute The user input.
+     * @return Execution plan.
      */
-    private void explainPlan(String toExecute){
+    private String explainPlan(String toExecute){
         Result r = crossDataDriver.explainPlan(toExecute.substring(EXPLAIN_PLAN_TOKEN.length()));
-        LOG.info(ConsoleUtils.stringResult(r));
+        return ConsoleUtils.stringResult(r);
     }
 
     private String describeConnectors() {
@@ -550,10 +571,10 @@ public class Shell {
     }
 
     /**
-     * Trigger the operation to reset the metadata information.
+     * Trigger the operation to reset all the data in the server.
      */
-    private String resetMetadata() {
-        return ConsoleUtils.stringResult(crossDataDriver.resetMetadata());
+    private String resetServerdata() {
+        return ConsoleUtils.stringResult(crossDataDriver.resetServerdata());
     }
 
     /**
