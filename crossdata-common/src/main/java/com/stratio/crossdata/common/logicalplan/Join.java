@@ -73,7 +73,7 @@ public class Join extends UnionStep {
 
     /**
      * Get the Relations of the join.
-     * @return
+     * @return List of logical step identifiers involved in the join.
      */
     public List<Relation> getJoinRelations() {
         return joinRelations;

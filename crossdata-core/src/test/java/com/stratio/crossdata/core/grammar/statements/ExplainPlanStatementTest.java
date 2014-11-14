@@ -22,20 +22,15 @@ import org.testng.annotations.Test;
 
 import com.stratio.crossdata.core.grammar.ParsingTest;
 
+/**
+ * NOTE: "Explain Plan" is an API call, so the parser should always fail.
+ */
 public class ExplainPlanStatementTest extends ParsingTest {
 
     @Test
-    public void explainPlanForDropIndex() {
-        String inputText = "EXPLAIN PLAN FOR DROP INDEX table1.indexName;";
-        String expectedText = "EXPLAIN PLAN FOR DROP INDEX demo.table1.index[indexName];";
-        testRegularStatementSession("demo", inputText, expectedText, "explainPlanForDropIndex");
-    }
-
-    @Test
-    public void explainPlanForSimpleSelect() {
-        String inputText = "EXPLAIN PLAN FOR SELECT users.name, users.age FROM demo.users;";
-        String expectedText = "EXPLAIN PLAN FOR SELECT demo.users.name, demo.users.age FROM demo.users;";
-        testRegularStatementSession("demo", inputText, expectedText, "explainPlanForSimpleSelect");
+    public void explainPlanIsAnAPICall() {
+        String inputText = "EXPLAIN PLAN FOR DROP INDEX indexName;";
+        testParserFails(inputText, "explainPlanIsAnAPICall");
     }
 
     @Test

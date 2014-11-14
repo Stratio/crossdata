@@ -292,8 +292,9 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
 
         String str = String.valueOf(result.getResult());
-        assertTrue(str.equals("Metadata reset."), "Expected: Metadata reset." + System.lineSeparator() +
-                                                  "   Found: " + str);
+        String expectedAnswer = "Crossdata server reset.";
+        assertTrue(str.equals(expectedAnswer), System.lineSeparator() + "Expected: " + expectedAnswer +
+                System.lineSeparator() + "   Found: " + str);
         assertTrue(MetadataManager.MANAGER.isEmpty(), "MetadataManager should be empty");
     }
 
