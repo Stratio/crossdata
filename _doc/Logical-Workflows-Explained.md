@@ -58,26 +58,60 @@ has several previous *LogicalSteps* (e.g., a *Join*).
 Project
 -------
 
+The *Project* operator specifies the columns of a table that need to be retrieved from the database and are involved 
+in the query. In a *SELECT* statement it will include the columns requested as output of the query, 
+and the columns involved in any checking (e.g., columns in the where or join clauses).
+
 Filter
 ------
+
+The *Filter* operator specifies a filtering operation that should be applied to all the rows retrieved before that 
+filtering element. In a *SELECT* statement *Filter* operator are associated with the relationships found in the where
+ clause. A *Filter* includes the left and right parts of the relationship as well as the *Operator* to be applied.
 
 Select
 ------
 
+The *Select* operator specifies which columns should be returned to the user, their order, 
+and the alias to be applied when building the *QueryResult*.
+
 Limit
 -----
+
+The *Limit* operator specifies the amount of rows to be returned to the user.
 
 Window
 ------
 
+The *Window* operator specifies a time window to retrieve data from streaming sources. The windows could either be 
+specified in amount of tuples to be returned or in a time window. For example, a *SELECT ... WITH WINDOW 2 minutes* 
+should provide results back to the user every 2 minutes after the query is started. In the case of absolute windows 
+(*SELECT ... WITH WINDOW 3 ROWS*) the user will receive back results as soon as 3 elements matching the query arrive 
+to the system.
+
 Join
 ----
+
+The *Join* operator specifies that the results comming from 2 different branches (they will be started by a 
+*Project*) need to be merged. The operator contains information about the related *Project* logical steps, 
+as well as information about the conditions to be applied during the join.
 
 PartialResults
 --------------
 
+The *PartialResults* operator specifies a source of rows to be used for further processing. As an example, 
+imagine a user trying to perform a *Join* between two datastore: d1 and d2; each of them accessible with a connector 
+c1 and c2 respectively. If non of the connectors (c1 and c2) is able to directly perform a *Join* between tables in 
+d1 and d2, but one of them supports joins with partial results the query will be solved in the following steps. 
+Crossdata will define a LogicalWorkflow and based on the available connector it decides that requires two of them. 
+Asuming c2 is the one with joins on partial results, Crossdata will send first a query to c1 to retrieve data from c1
+. The resulting data will be injected in a *PartialResult* logical step, and that step linked as the input for the 
+join operation. Then Crossdata will send the query to c2 in order to make the join.
+
 GroupBy
 -------
+
+The *GroupBy* operator specifies the list of columns to be used to group results.
 
 Examples
 --------
@@ -122,3 +156,9 @@ Crossdata will generate the following LogicalWorkflow:
     	catalog.table2.c AS catalog.table2.c, catalog.table2.d AS catalog.table2.d)
 ```
 
+More Information
+----------------
+
+For more information about the available operations, check the 
+[Connector Operations](ConnectorOperations.md)
+document
