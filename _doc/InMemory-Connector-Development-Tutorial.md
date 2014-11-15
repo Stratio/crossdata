@@ -442,5 +442,4 @@ All operations defined in the different interfaces throw **ConnectorException** 
 | InitializationException | If the connector initialization fails. |
 | UnsupportedException | If the invoked method is not implemented by the connector. |
 | ExecutionException | If the operation to be executed fails. |
-| CriticalExecutionException | If the operation to be executed fails, and the connector is not longer usable. In this
- situation the connector service is expected to be rebooted. |
+| CriticalExecutionException | If the operation to be executed fails, and the connector is not longer usable. In this situation the connector service is expected to be rebooted. |
