@@ -19,8 +19,7 @@ Compiling Crossdata involves generating a set of files (.tokens, Lexers, and Par
 ## Running the com.stratio.crossdata-server##
 
 ```
-   > mvn exec:java -DskipTests -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server
-   .CrossdataApplication"
+   > mvn exec:java -DskipTests -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.CrossdataApplication"
 ```
 
 ## Running the crosdata-shell ##
@@ -74,22 +73,18 @@ Grammar specification for this release can be found [here](_doc/Grammar.md).
 
 ## Getting started ##
 In this [link](_doc/GettingStarted.md) you can follow an example of Crossdata with a Cassandra Connector as an access 
-to a Cassandra data store.
+to a Cassandra datastore.
 
 
 ## Connectors ##
-Crossdata can use this connectors:
 
-[Cassandra Connector](https://github.com/Stratio/stratio-connector-cassandra)
+[List of Crossdata Connectors](_doc/List-of-Crossdata-Connectors.md)
 
-[Stratio Deep Connector](https://github.com/Stratio/stratio-connector-deep)
+[InMemory Connector development tutorial](_doc/InMemory-Connector-Development-Tutorial.md)
 
-[MongoDB Connector](https://github.com/Stratio/stratio-connector-mongodb)
+[Definition of Connector Operations](_doc/ConnectorOperations.md)
 
-[ElasticSearch Connector](https://github.com/Stratio/stratio-connector-elasticsearch)
-
-[Stratio Streaming Connector](https://github.com/Stratio/stratio-connector-streaming)
-
+[Crossdata Connector Challenge](stratio.github.io/crossdata/contest)
 
 # License #
 
