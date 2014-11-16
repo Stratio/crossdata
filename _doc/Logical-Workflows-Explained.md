@@ -13,6 +13,8 @@ This document will provided a detailed description of the types of elements that
   6. [Join](#join)
   7. [PartialResults](#partialresults)
   8. [GroupBy](#groupby)
+3. [Examples](#examples)
+4. [More information](#more-information)
   
 Definition of LogicalWorkflow
 =============================
@@ -114,7 +116,7 @@ GroupBy
 The *GroupBy* operator specifies the list of columns to be used to group results.
 
 Examples
---------
+========
 
 **Basic SELECT**
 
@@ -157,7 +159,7 @@ Crossdata will generate the following LogicalWorkflow:
 ```
 
 More Information
-----------------
+================
 
 For more information about the available operations, check the 
 [Connector Operations](ConnectorOperations.md)
