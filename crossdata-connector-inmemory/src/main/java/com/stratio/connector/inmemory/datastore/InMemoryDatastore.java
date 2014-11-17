@@ -154,4 +154,13 @@ public class InMemoryDatastore {
         catalogShouldExist(catalogName);
         return catalogs.get(catalogName).search(tableName, relations, columnOrder);
     }
+
+    /**
+     * Determine if a given catalog exists.
+     * @param catalogName The name of the catalog.
+     * @return Whether it exists.
+     */
+    public boolean existsCatalog(String catalogName) {
+        return catalogs.containsKey(catalogName);
+    }
 }
