@@ -1,0 +1,92 @@
+#!/bin/sh
+STRATIO_ENV=$1
+STRATIO_MODULE_VERSION=$2
+
+ipaddress=$(ip -4 addr show dev eth0 | grep inet | sed 's/^ *//g' | cut -d' ' -f 2 | cut -d'/' -f1)
+#######################################
+## SERVICES
+#######################################
+
+#######################################
+## Cassandra
+#######################################
+
+dpkg -s stratio-cassandra > /dev/null 2>&1 || apt-get -q -y install stratio-cassandra
+
+##Config Cassandra:
+sed -i "s/^\(num_tokens:\)/#\1/" /etc/sds/cassandra/cassandra.yaml
+sed -i "s/^# \(initial_token:\)/\1/" /etc/sds/cassandra/cassandra.yaml
+sed -i "s/^\(hinted_handoff_enabled:\) true$/\1 false/" /etc/sds/cassandra/cassandra.yaml
+sed -i "s/^\(concurrent_reads:\) 32$/\1 16/" /etc/sds/cassandra/cassandra.yaml
+sed -i "s/^\(concurrent_writes:\) 32$/\1 8/" /etc/sds/cassandra/cassandra.yaml
+sed -i "s/^\(concurrent_counter_writes:\) 32$/\1 16/" /etc/sds/cassandra/cassandra.yaml
+sed -i "s/\(seeds:\) \"127.0.0.1\"/\1 \"$ipaddress\"/" /etc/sds/cassandra/cassandra.yaml
+sed -i "s/^\(listen_address:\).*$/\1 $ipaddress/" /etc/sds/cassandra/cassandra.yaml
+sed -i "s/^\(rpc_address:\).*$/\1 0.0.0.0/" /etc/sds/cassandra/cassandra.yaml
+sed -i "s/^# \(broadcast_rpc_address:\).*$/\1 $ipaddress/" /etc/sds/cassandra/cassandra.yaml
+sed -i "s/\(\-Dcassandra.logdir=\)\$CASSANDRA_HOME\/logs/\1\/var\/log\/sds\/cassandra/" /opt/sds/cassandra/bin/cassandra
+
+#######################################
+## Crossdata
+#######################################
+dpkg -s stratio-crossdata > /dev/null 2>&1 || apt-get -q -y install stratio-crossdata
+
+
+#Config Crossdata
+sed -i "s/^\(CROSSDATA_HOME=\).*$/\1\"\/opt\/sds\/crossdata\"/" /etc/sds/crossdata/crossdata-env.sh
+sed -i "s/^\(CROSSDATA_LOG_OUT=\).*$/\1\"\/var\/log\/sds\/crossdata\/crossdata-server.out\"/" /etc/sds/crossdata/crossdata-env.sh
+sed -i "s/^\(CROSSDATA_LOG_ERR=\).*$/\1\"\/var\/log\/sds\/crossdata\/crossdata-server.err\"/" /etc/sds/crossdata/crossdata-env.sh
+sed -i "s/^\(CROSSDATA_SERVER_PID=\).*$/\1\"\/var\/run\/sds\/crossdata-server.pid\"/" /etc/sds/crossdata/crossdata-env.sh
+sed -i "s/^\(crossdata-server.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/crossdata/server-application.conf
+sed -i "s/^\(crossdata-server.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/crossdata/server-application.conf
+sed -i "s/^\(crossdata-driver.config.cluster.hosts =\).*$/\1 \[\"$ipaddress\:13420\"\]/" /etc/sds/crossdata/driver-application.conf
+
+#######################################
+## Spark
+#######################################
+dpkg -s stratio-spark > /dev/null 2>&1 || apt-get -q -y install stratio-spark
+
+#Config Spark
+mkdir /opt/sds/spark/.ssh
+chmod 700 /opt/sds/spark/.ssh
+ssh-keygen -t rsa -b 2048 -f /opt/sds/spark/.ssh/id_rsa -N ""
+cp /opt/sds/spark/.ssh/id_rsa.pub /opt/sds/spark/.ssh/authorized_keys
+chown -R spark:spark /opt/sds/spark/.ssh/
+sed -i "s/^\(spark.master\).*$/\1         spark:\/\/$ipaddress:7077/" /etc/sds/spark/spark-defaults.conf
+sed -i "s/^export MESOS_NATIVE_LIBRARY=.*$//" /etc/sds/spark/spark-env.sh
+sed -i "s/^export MASTER=.*$//" /etc/sds/spark/spark-env.sh
+sed -i "s/^#export SPARK_EXECUTOR_URI=.*$//" /etc/sds/spark/spark-env.sh
+sed -i "s/\(SPARK_WORKER_MEMORY=\)\"4g\"/\1\"2g\"/" /etc/sds/spark/spark-env.sh
+sed -i "s/\(SPARK_WORKER_CORES\)=2/\1=1/" /etc/sds/spark/spark-env.sh
+sed -i "s/^#\(SPARK_MASTER_IP=\)/\1$ipaddress/" /etc/sds/spark/spark-env.sh
+sed -i "s/^#\(SPARK_EXECUTOR_MEMORY=\)/\1/" /etc/sds/spark/spark-env.sh
+sed -i "s/^#\(SPARK_DRIVER_MEMORY=\)/\1/" /etc/sds/spark/spark-env.sh
+
+#######################################
+## Connectors
+#######################################
+#Cassandra
+dpkg -s stratio-connector-cassandra > /dev/null 2>&1 || apt-get -q -y install stratio-connector-cassandra
+
+#config
+sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/cassandra/connector-application.conf
+sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/cassandra/connector-application.conf
+
+#Deep
+dpkg -s stratio-connector-deep > /dev/null 2>&1 || apt-get -q -y install stratio-connector-deep
+
+#config
+sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/deep/connector-application.conf
+sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/deep/connector-application.conf
+
+
+
+update-rc.d stratio-crossdata defaults
+update-rc.d stratio-cassandra defaults
+update-rc.d stratio-connector-cassandra defaults
+update-rc.d stratio-connector-deep defaults
+
+service stratio-cassandra start
+service stratio-crossdata start
+service stratio-connector-cassandra start
+service stratio-connector-deep start
