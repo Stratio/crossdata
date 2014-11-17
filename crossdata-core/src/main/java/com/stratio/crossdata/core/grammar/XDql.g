@@ -437,23 +437,7 @@ alterCatalogStatement returns [AlterCatalogStatement alctst]:
 // TABLE
 // ========================================================
 
-
 //STATEMENTS
-
-describeStatement returns [DescribeStatement descs]:
-    T_DESCRIBE (
-        T_CATALOG genericID=getGenericID {$descs = new DescribeStatement(DescribeType.CATALOG); $descs.setCatalog(new CatalogName(genericID));}
-    	| T_CATALOGS {$descs = new DescribeStatement(DescribeType.CATALOGS);}
-        | T_TABLE tablename=getTableName { $descs = new DescribeStatement(DescribeType.TABLE); $descs.setTableName(tablename);}
-        | T_TABLES {$descs = new DescribeStatement(DescribeType.TABLES);}
-        | T_CLUSTER genericID=getGenericID {$descs = new DescribeStatement(DescribeType.CLUSTER); $descs.setClusterName(new ClusterName(genericID));}
-        | T_CLUSTERS {$descs = new DescribeStatement(DescribeType.CLUSTERS); }
-        | T_DATASTORE genericID=getGenericID {$descs = new DescribeStatement(DescribeType.DATASTORE); $descs.setDataStoreName(new DataStoreName(genericID));}
-        | T_DATASTORES {$descs = new DescribeStatement(DescribeType.DATASTORES);}
-        | T_CONNECTOR genericID=getGenericID {$descs = new DescribeStatement(DescribeType.CONNECTOR); $descs.setConnectorName(new ConnectorName(genericID));}
-        | T_CONNECTORS {$descs = new DescribeStatement(DescribeType.CONNECTORS);}
-    )
-;
 
 //DELETE FROM table1 WHERE field1=value1 AND field2=value2;
 deleteStatement returns [DeleteStatement ds]
@@ -787,7 +771,6 @@ crossdataStatement returns [CrossdataStatement st]:
     | st_drmn = dropManifestStatement { $st = st_drmn;}
     | st_rust = removeUDFStatement { $st = st_rust; }
     | st_dlst = deleteStatement { $st = st_dlst; }
-    | st_desc = describeStatement { $st = st_desc;}
     | st_crks = createCatalogStatement { $st = st_crks; }
     | st_alks = alterCatalogStatement { $st = st_alks; }
     | st_drks = dropCatalogStatement { $st = st_drks ;}
