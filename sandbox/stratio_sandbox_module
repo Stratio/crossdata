@@ -11,7 +11,7 @@ ipaddress=$(ip -4 addr show dev eth0 | grep inet | sed 's/^ *//g' | cut -d' ' -f
 ## Cassandra
 #######################################
 
-dpkg -s stratio-cassandra > /dev/null 2>&1 || apt-get -q -y install stratio-cassandra
+dpkg -s stratio-cassandra > /dev/null 2>&1 || apt-get -q -y install stratio-cassandra --force-yes
 
 ##Config Cassandra:
 sed -i "s/^\(num_tokens:\)/#\1/" /etc/sds/cassandra/cassandra.yaml
@@ -29,7 +29,7 @@ sed -i "s/\(\-Dcassandra.logdir=\)\$CASSANDRA_HOME\/logs/\1\/var\/log\/sds\/cass
 #######################################
 ## Crossdata
 #######################################
-dpkg -s stratio-crossdata > /dev/null 2>&1 || apt-get -q -y install stratio-crossdata
+dpkg -s stratio-crossdata > /dev/null 2>&1 || apt-get -q -y install stratio-crossdata --force-yes
 
 
 #Config Crossdata
@@ -44,7 +44,7 @@ sed -i "s/^\(crossdata-driver.config.cluster.hosts =\).*$/\1 \[\"$ipaddress\:134
 #######################################
 ## Spark
 #######################################
-dpkg -s stratio-spark > /dev/null 2>&1 || apt-get -q -y install stratio-spark
+dpkg -s stratio-spark > /dev/null 2>&1 || apt-get -q -y install stratio-spark --force-yes
 
 #Config Spark
 mkdir /opt/sds/spark/.ssh
@@ -66,14 +66,14 @@ sed -i "s/^#\(SPARK_DRIVER_MEMORY=\)/\1/" /etc/sds/spark/spark-env.sh
 ## Connectors
 #######################################
 #Cassandra
-dpkg -s stratio-connector-cassandra > /dev/null 2>&1 || apt-get -q -y install stratio-connector-cassandra
+dpkg -s stratio-connector-cassandra > /dev/null 2>&1 || apt-get -q -y install stratio-connector-cassandra --force-yes
 
 #config
 sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/cassandra/connector-application.conf
 sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/cassandra/connector-application.conf
 
 #Deep
-dpkg -s stratio-connector-deep > /dev/null 2>&1 || apt-get -q -y install stratio-connector-deep
+dpkg -s stratio-connector-deep > /dev/null 2>&1 || apt-get -q -y install stratio-connector-deep --force-yes
 
 #config
 sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/deep/connector-application.conf
