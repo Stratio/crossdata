@@ -719,7 +719,7 @@ crossdataStatement returns [CrossdataStatement st]:
     | st_atcn = attachConnectorStatement { $st = st_atcn;}
     | st_decn = detachConnectorStatement { $st = st_decn;}
     | st_cixs = createIndexStatement { $st = st_cixs; }
-    | st_dixs = dropIndexStatement { $st = st_dixs; }
+    | st_dixs = dropIndexStatement { $st = st_dixs; })
 ;
 
 query returns [CrossdataStatement st]:

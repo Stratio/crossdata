@@ -172,7 +172,7 @@ ADD CONNECTOR \<path\> ';'
 
 Examples:
 
-    ADD CONNECTOR “/home/stratio/crossdata/connectors/connector\_native\_cassandra.xml”;
+    ADD CONNECTOR “/home/stratio/crossdata/connectors/connector_native_cassandra.xml”;
 
 ### DROP CONNECTOR
 
@@ -188,7 +188,7 @@ ATTACH CLUSTER (IF NOT EXISTS)? \<cluster\_name\> ON DATASTORE \<datastore\_name
 
 Example:
 
-    ATTACH CLUSTER production\_madrid ON DATASTORE cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'port': 9160};
+    ATTACH CLUSTER production_madrid ON DATASTORE cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'port': 9160};
 
 ### ALTER CLUSTER
 
@@ -196,7 +196,7 @@ ALTER CLUSTER (IF EXISTS)? \<cluster\_name\> WITH \<JSON\> ';'
 
 Example:
 
-    ALTER CLUSTER production\_madrid WITH {"port": 9161};
+    ALTER CLUSTER production_madrid WITH {"port": 9161};
 
 ### DETACH CLUSTER
 
@@ -204,7 +204,7 @@ DETACH CLUSTER \<cluster\_name\>';'
 
 Example:
 
-    DETACH CLUSTER production\_madrid;
+    DETACH CLUSTER production_madrid;
 
 ### ATTACH CONNECTOR
 
@@ -212,7 +212,7 @@ ATTACH CONNECTOR \<connector-name\> TO \<cluster-name\> WITH OPTIONS \<JSON\>';'
 
 Example:
 
-    ATTACH CONNECTOR con\_native\_cassandra TO cassandra\_production WITH OPTIONS {'DefaultLimit': '1000'};
+    ATTACH CONNECTOR con_native_cassandra TO cassandra_production WITH OPTIONS {'DefaultLimit': '1000'};
 
 ### DETACH CONNECTOR
 
@@ -220,7 +220,7 @@ DETACH CONNECTOR \<connector-name\> FROM \<cluster-name\> WITH OPTIONS \<JSON\>'
 
 Example:
 
-    DETACH CONNECTOR con\_native\_cassandra FROM cassandra\_production;
+    DETACH CONNECTOR con_native_cassandra FROM cassandra_production;
 
 ### CREATE CATALOG
 
