@@ -108,14 +108,14 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
       if((clusterProps != null) && (!clusterProps.isEmpty)){
         for(clusterProp <- clusterProps.entrySet()){
           val clusterName = clusterProp.getKey
-          val opts = MetadataManager.MANAGER.getCluster(clusterName).getOptions;
-          val connectorClusterConfig = new ConnectorClusterConfig(clusterName,
-            SelectorHelper.convertSelectorMapToStringMap(opts))
+          val optsCluster = MetadataManager.MANAGER.getCluster(clusterName).getOptions;
+          val clusterConfig = new ConnectorClusterConfig(clusterName,
+            SelectorHelper.convertSelectorMapToStringMap(optsCluster))
 
           val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
-          connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
+          clusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
 
-          sender ! new Connect(null, connectorClusterConfig)
+          sender ! new Connect(null, clusterConfig)
         }
       }
       MetadataManager.MANAGER.setConnectorStatus(connectorName, ConnectorStatus.ONLINE)
