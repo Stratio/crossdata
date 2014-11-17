@@ -81,12 +81,12 @@ sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipa
 
 
 
-update-rc.d stratio-crossdata defaults
-update-rc.d stratio-cassandra defaults
-update-rc.d stratio-connector-cassandra defaults
-update-rc.d stratio-connector-deep defaults
+update-rc.d crossdata defaults
+update-rc.d cassandra defaults
+update-rc.d connector-cassandra defaults
+update-rc.d connector-deep defaults
 
-service stratio-cassandra start
-service stratio-crossdata start
-service stratio-connector-cassandra start
-service stratio-connector-deep start
+service cassandra start
+service crossdata start
+service connector-cassandra start
+service connector-deep start
