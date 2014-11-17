@@ -32,14 +32,14 @@ import com.stratio.crossdata.common.data.ClusterName;
 public interface IConnector {
 
     /**
-     * Get the name of the actor.
+     * Get the name of the connector.
      *
      * @return A name.
      */
     String getConnectorName();
 
     /**
-     * Get the names of the datastores required by the connector.
+     * Get the names of the datastores supported by the connector.
      * Several connectors may declare the same datastore name.
      *
      * @return The names.

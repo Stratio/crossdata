@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
 import com.stratio.crossdata.common.data.AlterOptions;
@@ -48,6 +50,11 @@ public class InMemoryMetadataEngine implements IMetadataEngine{
     private final InMemoryConnector connector;
 
     /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(InMemoryMetadataEngine.class);
+
+    /**
      * Class constructor.
      * @param connector The linked {@link com.stratio.connector.inmemory.InMemoryConnector}.
      */
@@ -58,6 +65,7 @@ public class InMemoryMetadataEngine implements IMetadataEngine{
     @Override
     public void createCatalog(ClusterName targetCluster, CatalogMetadata catalogMetadata)
             throws ConnectorException {
+        LOG.info("Creating catalog " + catalogMetadata.getName().getQualifiedName() + " on " + targetCluster);
         InMemoryDatastore datastore = connector.getDatastore(targetCluster);
         if(datastore != null){
             datastore.createCatalog(catalogMetadata.getName().getQualifiedName());
@@ -69,6 +77,7 @@ public class InMemoryMetadataEngine implements IMetadataEngine{
     @Override
     public void createTable(ClusterName targetCluster, TableMetadata tableMetadata)
             throws ConnectorException {
+        LOG.info("Creating table " + tableMetadata.getName().getQualifiedName() + " on " + targetCluster);
         InMemoryDatastore datastore = connector.getDatastore(targetCluster);
         if(datastore != null){
             String catalogName = tableMetadata.getName().getCatalogName().getQualifiedName();
@@ -90,6 +99,10 @@ public class InMemoryMetadataEngine implements IMetadataEngine{
             }
 
             try {
+                //Create catalog if not exists
+                if(!datastore.existsCatalog(catalogName)){
+                    datastore.createCatalog(catalogName);
+                }
                 datastore.createTable(catalogName, tableName, columnNames, columnTypes, primaryKey);
             } catch (Exception e) {
                 throw new ExecutionException(e);

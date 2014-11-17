@@ -30,9 +30,11 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
@@ -151,10 +153,12 @@ public final class ConsoleUtils {
         sb.append(System.lineSeparator());
         sb.append(bar).append(System.lineSeparator());
         sb.append("| ");
+        List<String> columnNames = new ArrayList<>();
         for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
             sb.append(
                     StringUtils.rightPad(columnMetadata.getName().getColumnNameToShow(),
                             colWidths.get(columnMetadata.getName().getColumnNameToShow()) + 1)).append("| ");
+            columnNames.add(columnMetadata.getName().getColumnNameToShow());
         }
 
         sb.append(System.lineSeparator());
@@ -163,9 +167,9 @@ public final class ConsoleUtils {
 
         for (Row row : resultSet) {
             sb.append("| ");
-            for (Map.Entry<String, Cell> entry : row.getCells().entrySet()) {
-                String str = String.valueOf(entry.getValue().getValue());
-                sb.append(StringUtils.rightPad(str, colWidths.get(entry.getKey())));
+            for(String columnName : columnNames){
+                String str = String.valueOf(row.getCell(columnName).getValue());
+                sb.append(StringUtils.rightPad(str, colWidths.get(columnName)));
                 sb.append(" | ");
             }
             sb.append(System.lineSeparator());
