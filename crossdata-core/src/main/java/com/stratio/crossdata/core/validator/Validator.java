@@ -472,7 +472,7 @@ public class Validator {
             name = insertIntoStatement.getCatalogName();
             hasIfExists = insertIntoStatement.isIfNotExists();
         } else {
-            //TODO: ¿should through exception?
+            //TODO: should through exception?
             //Correctness - Method call passes null for nonnull parameter
             validate = false;
         }

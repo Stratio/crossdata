@@ -376,7 +376,7 @@ alterClusterStatement returns [AlterClusterStatement acs]
     @after{
         acs = new AlterClusterStatement(new ClusterName($clusterName.text), ifExists, j);
     }:
-    T_ALTER T_CLUSTER (T_IF T_EXISTS {ifExists = true;} )? clusterName=T_IDENT T_WITH T_OPTIONS j=getJson
+    T_ALTER T_CLUSTER (T_IF T_EXISTS {ifExists = true;} )? clusterName=T_IDENT T_WITH j=getJson
 ;
 
 // ========================================================
@@ -446,41 +446,6 @@ deleteStatement returns [DeleteStatement ds]
 	}:
 	T_DELETE T_FROM tablename=getTableName
 	T_WHERE whereClauses=getWhereClauses[tablename] { if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name"); }
-;
-
-//ADD \"index_path\";
-addStatement returns [AddStatement as]:
-	T_ADD name=QUOTED_LITERAL {$as = new AddStatement($name.text);}
-;
-
-//DROP (DATASTORE | CONNECTOR) \"name\";
-dropManifestStatement returns [CrossdataStatement dms]
-    @init{
-        boolean dataStore = true;
-    }:
-    T_DROP (T_DATASTORE | T_CONNECTOR { dataStore = false; } ) name=T_IDENT
-    { if(dataStore)
-        $dms = new DropDataStoreStatement($name.text);
-      else
-        $dms = new DropConnectorStatement($name.text);
-    }
-;
-
-//LIST ( PROCESS | UDF | TRIGGER) ;
-listStatement returns [ListStatement ls]:
-	T_LIST (type=getListTypes)
-	{
-		if($type.text != null){
-			$ls = new ListStatement($type.text);
-		}else{
-			throw new RecognitionException();
-		}
-	}
-;
-
-//REMOVE UDF \"jar.name\";"
-removeUDFStatement returns [RemoveUDFStatement rus]:
-	T_REMOVE T_UDF jar=QUOTED_LITERAL {$rus = new RemoveUDFStatement($jar.text);}
 ;
 
 //DROP INDEX IF EXISTS index_name;
@@ -570,27 +535,6 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
             else
                 $pdtbst = new UpdateTableStatement(tablename, assignations, whereClauses);
     }
-;
-
-stopProcessStatement returns [StopProcessStatement stprst]:
-    T_STOP T_PROCESS tablename=T_IDENT { $stprst = new StopProcessStatement($tablename.text); }
-;
-
-dropTriggerStatement returns [DropTriggerStatement drtrst]:
-    T_DROP
-    T_TRIGGER tablename=T_IDENT
-    T_ON
-    ident2=T_IDENT
-    {$drtrst = new DropTriggerStatement($tablename.text,$ident2.text);}
-    ;
-
-createTriggerStatement returns [CreateTriggerStatement crtrst]:
-    T_CREATE
-    T_TRIGGER trigger_name=T_IDENT
-    T_ON
-    table_name=T_IDENT
-    T_USING class_name=T_IDENT
-    {$crtrst = new CreateTriggerStatement($trigger_name.text,$table_name.text,$class_name.text);}
 ;
 
 createTableStatement returns [CreateTableStatement crtast]
@@ -765,11 +709,6 @@ crossdataStatement returns [CrossdataStatement st]:
     | st_pdtb = updateTableStatement { $st = st_pdtb; }
     | st_tbdr = dropTableStatement { $st = st_tbdr; }
     | st_trst = truncateStatement { $st = st_trst; }
-    | st_lsst = listStatement { $st = st_lsst; }
-    | st_stpr = stopProcessStatement { $st = st_stpr; }
-    | st_adds = addStatement { $st = st_adds; }
-    | st_drmn = dropManifestStatement { $st = st_drmn;}
-    | st_rust = removeUDFStatement { $st = st_rust; }
     | st_dlst = deleteStatement { $st = st_dlst; }
     | st_crks = createCatalogStatement { $st = st_crks; }
     | st_alks = alterCatalogStatement { $st = st_alks; }
@@ -781,8 +720,6 @@ crossdataStatement returns [CrossdataStatement st]:
     | st_decn = detachConnectorStatement { $st = st_decn;}
     | st_cixs = createIndexStatement { $st = st_cixs; }
     | st_dixs = dropIndexStatement { $st = st_dixs; }
-    | st_crtr = createTriggerStatement { $st = st_crtr; }
-    | st_drtr = dropTriggerStatement { $st = st_drtr; })
 ;
 
 query returns [CrossdataStatement st]:
@@ -936,10 +873,6 @@ getSelector[TableName tablename] returns [Selector s]
             | qLiteral=QUOTED_LITERAL {s = new StringSelector($qLiteral.text);}
         )
     )
-;
-
-getListTypes returns [String listType]:
-	tablename=(T_PROCESS | T_UDF | T_TRIGGER) {$listType = new String($tablename.text);}
 ;
 
 getAssignment[TableName tablename] returns [Relation assign]
