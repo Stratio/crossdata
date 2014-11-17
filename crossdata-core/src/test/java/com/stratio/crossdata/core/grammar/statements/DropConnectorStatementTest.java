@@ -27,7 +27,7 @@ public class DropConnectorStatementTest extends ParsingTest {
     @Test
     public void dropConnectorSimple() {
         String inputText = "DROP CONNECTOR myConnector;";
-        testRegularStatement(inputText, "dropConnectorSimple");
+        testParserFails(inputText, "dropConnectorSimple");
     }
 
     @Test

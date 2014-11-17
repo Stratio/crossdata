@@ -70,7 +70,7 @@ public class AlterClusterStatement extends MetadataStatement {
             sb.append("IF EXISTS ");
         }
         sb.append(clusterName);
-        sb.append(" WITH OPTIONS ").append(options);
+        sb.append(" WITH ").append(options);
         return sb.toString();
     }
 
