@@ -84,7 +84,7 @@ to a Cassandra datastore.
 
 [Definition of Connector Operations](_doc/ConnectorOperations.md)
 
-[Crossdata Connector Challenge](stratio.github.io/crossdata/contest)
+[Crossdata Connector Challenge](https://stratio.github.io/crossdata/contest)
 
 # License #
 
