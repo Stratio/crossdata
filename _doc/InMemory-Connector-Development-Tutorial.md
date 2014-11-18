@@ -1,7 +1,7 @@
 # Developing an In Memory Connector for Crossdata #
 
 This tutorial will guide you through the different steps required to implement a Stratio Crossdata connector. The 
-tutorial takes as an example the **InMemoryConnector** already include in the Crossdata packages as an example. The 
+tutorial takes the **InMemoryConnector** that is already included in the Crossdata packages, as an example. The 
 tutorial is organized as follows:
 
 1. [Preparing the environment](#preparing-the-environment)
@@ -32,10 +32,10 @@ interface defines the basic set of operations required to connect the connector 
  
 First, we should define the name of the connector and the name of the datastores supported by the connector. This 
 information will be used by Crossdata to validate the different logical connections in the system. Remember that a 
-single connector may access different clusters of the same datastore technology and it may support several datastore 
-technologies. In this example, the connector name is *InMemoryConnector* and the datastore technology it access is 
+single connector may access different clusters of the same datastore technology, and it may support several datastore 
+technologies. In this example, the connector name is *InMemoryConnector*, and the datastore technology it access is 
 named *InMemoryDatastore*. The usual naming convention is to use *<DatastoreTechnology>Connector* and 
-*<DatastoreTechnology>* respectively. For instance the connector that access Cassandra is named CassandraConnector.
+*<DatastoreTechnology>* respectively. For instance, the connector that access Cassandra is named CassandraConnector.
  
 ```java
 
@@ -50,7 +50,7 @@ named *InMemoryDatastore*. The usual naming convention is to use *<DatastoreTech
     }
 ```
 
-Then, we should define how are we going to establish the connections with the given datastores. This is done in the 
+Then, we should define how to establish the connections with the given datastores. This is done in the 
 connect and close methods.
 
 ```java
@@ -82,8 +82,8 @@ connect and close methods.
 ```
 
 After that, we should provide the implementation of the *IStorageEngine*, *IMetadataEngine*, 
-and *IQueryEngine*. Notice that in our implementation, we pass a reference to the *InMemoryConnector* class due to the 
-internal design of this class but it may not be necessary in other connectors.
+and *IQueryEngine*. Notice that, in our implementation, we pass a reference to the *InMemoryConnector* class due to the 
+internal design of this class, but it may not be necessary in other connectors.
 
 ```java
 
@@ -103,7 +103,7 @@ internal design of this class but it may not be necessary in other connectors.
     }
 ```
 
-Finally, we must provide a main entry point for the connector class so it can be executed either using maven or as a 
+Finally, we must provide a main entry point for the connector class, so it can be executed either using maven, or as a 
 service.
 
 ```java
@@ -127,14 +127,14 @@ when a connector starts and joins the internal Akka cluster. It will also trigge
  executed.
  
 Once we have a basic skeleton for the main class, we should define the connector capabilities before implementing the
- remainder of the required interfaces.
+ remaining required interfaces.
 
 Defining the manifests
 ----------------------
 
-In Crossdata there are two important notions to consider: *datastores* and *connectors*. A datastore describes 
-a particular storage technology describing its name, its properties and its behaviours. This information is stored in
- a xml manifest file and it is uploaded to Crossdata using the 
+In Crossdata there are two important notions to consider: *datastores*, and *connectors*. A datastore describes 
+a particular storage technology describing its name, its properties, and its behaviours. This information is stored in
+ a xml manifest file, and it is uploaded to Crossdata using the 
 [ADD DATASTORE](Grammar.md#add-datastore)
 sentence. For instance, the datastore manifest for Cassandra have the following definition:
  
@@ -160,7 +160,7 @@ sentence. For instance, the datastore manifest for Cassandra have the following 
 </DataStore>
 ```
 
-In this example, the datastore is characterized by a property named Hosts and a property named Port. With this 
+In this example, the datastore is characterized by a property named Hosts, and a property named Port. With this 
 information, the user can define as many clusters of type Cassandra as required. In the case of the 
 InMemoryConnector given that we are not connecting to any external system, the manifest has the following 
 content:
@@ -193,13 +193,13 @@ content:
 
 Crossdata will require the presence of these properties when the 
 [ATTACH CLUSTER](Grammar.md#attach-cluster)
-operation is executed but it is responsibility of the connector itself to semantically check that the given parameters
+operation is executed, but it is responsibility of the connector itself to semantically check that the given parameters
 can be used.
 
 Once the datastore have been characterized, the next step is to define the properties and capabilities of the 
 connector. As before, a XML manifest is used and uploaded to Crossdata with the
 [ADD CONNECTOR](Grammar.md#add-connector)
-sentence. In the case of the *InMemoryConnector* the manifest has the following contents:
+sentence. In the case of the *InMemoryConnector*, the manifest has the following contents:
 
 ```xml
 
@@ -268,10 +268,10 @@ Implementing IMetadataEngine
 
 The *IMetadataEngine* interface defines the set of operations related to metadata management that a connector may 
 provide to Crossdata. Notice that not all operations must be supported by the connector implementation, 
-only those defined in the *SupportedOperations* section of the connector manifest. In our case we will provide 
+only those defined in the *SupportedOperations* section of the connector manifest. In our case, we will provide 
 implementations for *createCatalog, *createTable*, *dropCatalog*, and *dropTable*. This connector will not support 
-*alterTable*, *createIndex*, and *dropIndex* as of current implementation. If a future version implements any other 
-operation the connector manifest should be modified accordingly. As an example, consider the *createTable* method:
+*alterTable*, *createIndex*, and *dropIndex*. If a future version implements any other 
+operation, the connector manifest should be modified accordingly. As an example, consider the *createTable* method:
 
 
 ```java
@@ -320,19 +320,19 @@ operation the connector manifest should be modified accordingly. As an example, 
 The first step is to determine whether this connector has an actual connection with the datastore. In a classical
  approach this would involve obtaining the connection previously established through the connect method. After that, we
  transform the Crossdata *TableMetatada* structure into the classes required by our datastore and execute the 
- equivalente createTable statement using the connection previously obtained.
+ equivalent createTable statement using the previously obtained connection.
  
 It is important to highlight that the abstraction of what a table is for a particular connector needs to be decided 
-by the developer creating the connector. For example a table depending on the connector we are creating may be 
+by the developer creating the connector. For example, a table depending on the connector we are creating may be 
 translated in an IRC channel, a directory, a tag for future queries, etc. From the point of view of Crossdata the 
 only requirement is to be consistent inside a datastore about the representation of high-level concepts such as 
-catalogs, tables, etc.
+catalogs, or tables.
 
 Implementing IStorageEngine
 ---------------------------
 
 The *IStorageEngine* defines the set of operations that are related to storing data in a datastore. In the case of the
- *InMemoryConnector* we implement *insert*, *batch insert*, and *truncate* as specified in the connector manifest. As
+ *InMemoryConnector*, we implement *insert*, *batch insert*, and *truncate* as specified in the connector manifest. As
   an practical example, consider the *insert* method:
   
 ```java
@@ -361,7 +361,7 @@ The *IStorageEngine* defines the set of operations that are related to storing d
 ```
 
 Similarly to the *IMetadataEngine* operations, the insert method transforms the data contained in the Crossdata Row 
-class into the ones required by the datastore interface and triggers the insertion.
+class into the ones required by the datastore interface, and triggers the insertion.
 
 Implementing IQueryEngine
 -------------------------
