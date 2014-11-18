@@ -1,8 +1,10 @@
+stratio_sandbox_moduleAbrir
 #!/bin/sh
 STRATIO_ENV=$1
 STRATIO_MODULE_VERSION=$2
 
 ipaddress=$(ip -4 addr show dev eth0 | grep inet | sed 's/^ *//g' | cut -d' ' -f 2 | cut -d'/' -f1)
+
 #######################################
 ## SERVICES
 #######################################
@@ -11,8 +13,10 @@ ipaddress=$(ip -4 addr show dev eth0 | grep inet | sed 's/^ *//g' | cut -d' ' -f
 ## Cassandra
 #######################################
 
+echo "Installing Cassandra..."
 dpkg -s stratio-cassandra > /dev/null 2>&1 || apt-get -q -y install stratio-cassandra --force-yes
 
+echo "Configuring Cassandra..."
 ##Config Cassandra:
 sed -i "s/^\(num_tokens:\)/#\1/" /etc/sds/cassandra/cassandra.yaml
 sed -i "s/^# \(initial_token:\)/\1/" /etc/sds/cassandra/cassandra.yaml
@@ -29,9 +33,11 @@ sed -i "s/\(\-Dcassandra.logdir=\)\$CASSANDRA_HOME\/logs/\1\/var\/log\/sds\/cass
 #######################################
 ## Crossdata
 #######################################
+echo "Installing Crossdata..."
+dpkg -s jsvc > /dev/null 2>&1 || apt-get -q -y install jsvc --force-yes
 dpkg -s stratio-crossdata > /dev/null 2>&1 || apt-get -q -y install stratio-crossdata --force-yes
 
-
+echo "Configuring Crossdata..."
 #Config Crossdata
 sed -i "s/^\(CROSSDATA_HOME=\).*$/\1\"\/opt\/sds\/crossdata\"/" /etc/sds/crossdata/crossdata-env.sh
 sed -i "s/^\(CROSSDATA_LOG_OUT=\).*$/\1\"\/var\/log\/sds\/crossdata\/crossdata-server.out\"/" /etc/sds/crossdata/crossdata-env.sh
@@ -44,14 +50,18 @@ sed -i "s/^\(crossdata-driver.config.cluster.hosts =\).*$/\1 \[\"$ipaddress\:134
 #######################################
 ## Spark
 #######################################
+echo "Installing Spark..."
 dpkg -s stratio-spark > /dev/null 2>&1 || apt-get -q -y install stratio-spark --force-yes
 
-#Config Spark
+echo "Generating keys..."
 mkdir /opt/sds/spark/.ssh
 chmod 700 /opt/sds/spark/.ssh
 ssh-keygen -t rsa -b 2048 -f /opt/sds/spark/.ssh/id_rsa -N ""
 cp /opt/sds/spark/.ssh/id_rsa.pub /opt/sds/spark/.ssh/authorized_keys
 chown -R spark:spark /opt/sds/spark/.ssh/
+
+#Config Spark
+echo "Configuring Spark..."
 sed -i "s/^\(spark.master\).*$/\1         spark:\/\/$ipaddress:7077/" /etc/sds/spark/spark-defaults.conf
 sed -i "s/^export MESOS_NATIVE_LIBRARY=.*$//" /etc/sds/spark/spark-env.sh
 sed -i "s/^export MASTER=.*$//" /etc/sds/spark/spark-env.sh
@@ -66,27 +76,30 @@ sed -i "s/^#\(SPARK_DRIVER_MEMORY=\)/\1/" /etc/sds/spark/spark-env.sh
 ## Connectors
 #######################################
 #Cassandra
+echo "Installing Cassandra connector..."
 dpkg -s stratio-connector-cassandra > /dev/null 2>&1 || apt-get -q -y install stratio-connector-cassandra --force-yes
 
 #config
+echo "Configuring Cassandra connector..."
 sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/cassandra/connector-application.conf
 sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/cassandra/connector-application.conf
 
 #Deep
+echo "Installing Deep connector..."
 dpkg -s stratio-connector-deep > /dev/null 2>&1 || apt-get -q -y install stratio-connector-deep --force-yes
 
 #config
+echo "Configuring Deep connector..."
 sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/deep/connector-application.conf
 sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/deep/connector-application.conf
 
-
-
 update-rc.d crossdata defaults
 update-rc.d cassandra defaults
-update-rc.d connector-cassandra defaults
-update-rc.d connector-deep defaults
+update-rc.d connector_cassandra defaults
+update-rc.d connector_deep defaults
 
+echo "Starting services..."
 service cassandra start
 service crossdata start
-service connector-cassandra start
-service connector-deep start
+service connector_cassandra start
+service connector_deep start
