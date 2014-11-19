@@ -196,14 +196,21 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val managementOperation = workflow1.createManagementOperationMessage()
             val attachConnectorOperation = managementOperation.asInstanceOf[AttachConnector]
             val clusterName = attachConnectorOperation.targetCluster
-            val clusterOptions = SelectorHelper.convertSelectorMapToStringMap(
-              MetadataManager.MANAGER.getCluster(attachConnectorOperation.targetCluster).getOptions)
+
+            val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
+
+            val datastoreName = clusterMetadata.getDataStoreRef
+            val datastoreMetadata = MetadataManager.MANAGER.getDataStore(datastoreName)
+            val clusterAttachedOpts = datastoreMetadata.getClusterAttachedRefs.get(clusterName)
+            val clusterOptions = SelectorHelper.convertSelectorMapToStringMap(clusterAttachedOpts.getProperties)
+
             val connectorOptions = SelectorHelper.convertSelectorMapToStringMap(attachConnectorOperation.options)
+
             val connectorClusterConfig = new ConnectorClusterConfig(
               clusterName, connectorOptions, clusterOptions)
 
-            val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
-            connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
+            connectorClusterConfig.setDataStoreName(datastoreName)
+
             val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(workflow1.getActorRef()))
             connectorSelection ! new Connect(credentials, connectorClusterConfig)
 

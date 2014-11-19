@@ -27,7 +27,7 @@ public class CreateTriggerStatementTest extends ParsingTest {
     @Test
     public void createTrigger() {
         String inputText = "create trigger trigger1 on table_name USING triggerClassName;";
-        testRegularStatement(inputText, "createTrigger");
+        testParserFails(inputText, "createTrigger");
     }
 
     @Test

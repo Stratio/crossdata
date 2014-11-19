@@ -27,7 +27,7 @@ public class DropTriggerStatementTest extends ParsingTest {
     @Test
     public void dropTrigger() {
         String inputText = "drop trigger trigger1 on table_name;";
-        testRegularStatement(inputText, "dropTrigger");
+        testParserFails(inputText, "dropTrigger");
     }
 
     @Test

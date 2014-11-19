@@ -412,9 +412,6 @@ public class Validator {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
             name = createTableStatement.getTableName();
             hasIfExists = createTableStatement.isIfNotExists();
-        } else if (stmt instanceof DescribeStatement) {
-            DescribeStatement describeStatement = (DescribeStatement) stmt;
-            name = describeStatement.getTableName();
         } else if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
             name = insertIntoStatement.getTableName();
@@ -466,9 +463,6 @@ public class Validator {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
             name = createTableStatement.getEffectiveCatalog();
             hasIfExists = createTableStatement.isIfNotExists();
-        } else if (stmt instanceof DescribeStatement) {
-            DescribeStatement describeStatement = (DescribeStatement) stmt;
-            name = describeStatement.getEffectiveCatalog();
         } else if (stmt instanceof DropTableStatement) {
             DropTableStatement dropTableStatement = (DropTableStatement) stmt;
             name = dropTableStatement.getCatalogName();
@@ -478,7 +472,7 @@ public class Validator {
             name = insertIntoStatement.getCatalogName();
             hasIfExists = insertIntoStatement.isIfNotExists();
         } else {
-            //TODO: ¿should through exception?
+            //TODO: should through exception?
             //Correctness - Method call passes null for nonnull parameter
             validate = false;
         }

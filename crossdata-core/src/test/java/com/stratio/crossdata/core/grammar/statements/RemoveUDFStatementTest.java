@@ -24,13 +24,6 @@ import com.stratio.crossdata.core.grammar.ParsingTest;
 
 public class RemoveUDFStatementTest extends ParsingTest {
 
-    //REMOVE UDF
-    @Test
-    public void basic() {
-        String inputText = "REMOVE UDF \"jar.name\";";
-        testRegularStatement(inputText, "removeUDF");
-    }
-
     @Test
     public void unexpectedWordFail() {
         String inputText = "REMOVE UDF \"jar.name\" NOW;";

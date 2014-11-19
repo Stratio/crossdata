@@ -27,19 +27,19 @@ public class AddStatementTest extends ParsingTest {
     @Test
     public void addBasic() {
         String inputText = "ADD \"jar_name-v1.0.jar\";";
-        testRegularStatement(inputText, "addBasic");
+        testParserFails(inputText, "addBasic");
     }
 
     @Test
     public void addRelative() {
         String inputText = "ADD \"dir/jar_name-v1.0.jar\";";
-        testRegularStatement(inputText, "addRelative");
+        testParserFails(inputText, "addRelative");
     }
 
     @Test
     public void addAbsolute() {
         String inputText = "ADD \"/dir/jar_name-v1.0.jar\";";
-        testRegularStatement(inputText, "addAbsolute");
+        testParserFails(inputText, "addAbsolute");
     }
 
     @Test

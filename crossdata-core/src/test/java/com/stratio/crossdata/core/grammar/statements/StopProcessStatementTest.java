@@ -27,7 +27,7 @@ public class StopProcessStatementTest extends ParsingTest {
     @Test
     public void stopProcess() {
         String inputText = "STOP process process1;";
-        testRegularStatement(inputText, "stopProcess");
+        testParserFails(inputText, "stopProcess");
     }
 
     @Test

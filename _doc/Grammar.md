@@ -23,10 +23,22 @@ Table of contents
         -   [ADD CONNECTOR](#add-connector)
         -   [DROP CONNECTOR](#drop-connector)
         -   [ATTACH CLUSTER](#attach-cluster)
+        -   [ALTER CLUSTER](#alter-cluster)
+        -   [DETACH CLUSTER](#detach-cluster)
         -   [ATTACH CONNECTOR](#attach-connector)
+        -   [DETACH CONNECTOR](#detach-connector)
         -   [CREATE CATALOG](#create-catalog)
+        -   [ALTER CATALOG](#alter-catalog)
+        -   [DROP CATALOG](#drop-catalog)
         -   [CREATE TABLE](#create-table)
+        -   [ALTER TABLE] (#alter-table)
+        -   [UPDATE TABLE] (#update-table)
+        -   [DROP TABLE] (#drop-table)
+        -   [TRUNCATE TABLE] (#truncate-table)
+        -   [DELETE] (#delete)
         -   [INSERT](#insert)
+        -   [CREATE INDEX](#create-index)
+        -   [DROP INDEX](#drop-index)
         -   [SELECT](#select)
         -   [EXPLAIN PLAN](#explain-plan)
         -   [RESET SERVERDATA](#reset-serverdata)
@@ -160,7 +172,7 @@ ADD CONNECTOR \<path\> ';'
 
 Examples:
 
-    ADD CONNECTOR “/home/stratio/crossdata/connectors/connector\_native\_cassandra.xml”;
+    ADD CONNECTOR “/home/stratio/crossdata/connectors/connector_native_cassandra.xml”;
 
 ### DROP CONNECTOR
 
@@ -176,15 +188,39 @@ ATTACH CLUSTER (IF NOT EXISTS)? \<cluster\_name\> ON DATASTORE \<datastore\_name
 
 Example:
 
-    ATTACH CLUSTER production\_madrid ON DATASTORE cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'port': 9160}
+    ATTACH CLUSTER production_madrid ON DATASTORE cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'port': 9160};
 
-### ATTACH CONNECTOR
+### ALTER CLUSTER
 
-ATTACH CONNECTOR \<connector-name\> TO \<cluster-name\> WITH OPTIONS \<JSON\>‘;'
+ALTER CLUSTER (IF EXISTS)? \<cluster\_name\> WITH \<JSON\> ';'
 
 Example:
 
-    ATTACH CONNECTOR con\_native\_cassandra TO cassandra\_production WITH OPTIONS {'DefaultLimit': '1000'};
+    ALTER CLUSTER production_madrid WITH {"port": 9161};
+
+### DETACH CLUSTER
+
+DETACH CLUSTER \<cluster\_name\>';'
+
+Example:
+
+    DETACH CLUSTER production_madrid;
+
+### ATTACH CONNECTOR
+
+ATTACH CONNECTOR \<connector-name\> TO \<cluster-name\> WITH OPTIONS \<JSON\>';'
+
+Example:
+
+    ATTACH CONNECTOR con_native_cassandra TO cassandra_production WITH OPTIONS {'DefaultLimit': '1000'};
+
+### DETACH CONNECTOR
+
+DETACH CONNECTOR \<connector-name\> FROM \<cluster-name\> WITH OPTIONS \<JSON\>';'
+
+Example:
+
+    DETACH CONNECTOR con_native_cassandra FROM cassandra_production;
 
 ### CREATE CATALOG
 
@@ -192,7 +228,23 @@ CREATE CATALOG (IF NOT EXISTS)? \<catalog\_name\> (WITH \<JSON\>)? ';'
 
 Example:
 
-    CREATE CATALOG catalog1 WITH {"comment": "This is a comment"}                
+    CREATE CATALOG catalog1 WITH {"comment": "This is a comment"};                
+
+### ALTER CATALOG
+
+ALTER CATALOG (IF NOT EXISTS)? \<catalog\_name\> (WITH \<JSON\>)? ';'
+
+Example:
+
+    ALTER CATALOG catalog1 WITH {"comment": "This is a comment"};
+
+### DROP CATALOG
+
+DROP CATALOG (IF EXISTS)? \<catalog\_name\> ';'
+
+Example:
+
+    DROP CATALOG catalog1;  
 
 ### USE
 
@@ -214,6 +266,68 @@ Example:
 
     CREATE TABLE tableTest ON CLUSTER cassandra_prod (id int PRIMARY KEY, name text);
         
+### ALTER TABLE
+
+ALTER TABLE \<tablename\>
+        (ALTER \<column-name\> \<data-types\>
+        |ADD \<column-name\> \<data-types\>
+        |DROP \<column-name\>
+        |WITH \<JSON\>)) ';'   
+
+Example:
+
+    ALTER TABLE tableTest ADD timestamp INT;
+
+### UPDATE TABLE
+
+UPDATE \<tablename\>
+    (USING option (AND option)\*)?
+    SET assignment (COMMA assignment)\*
+    (WHERE \<where-clause\>)?
+    (IF option (AND option)\*)? ';'      
+
+\<option\> ::= \<property\> = \<value\>
+
+\<assignment\> ::= \<column-name\> = \<value-assignment\>
+
+\<value-assignment\> ::= \<value\> | \<column-name\> \<operator\> \<value-assignment\>
+
+\<where-clause\> ::= \<relation\> ( AND \<relation\> )\*
+
+\<relation\> ::= \<identifier\> ('=' | '\<' | '\>' | '\<=' | '\>=' | '\<\>'  | 'MATCH') \<data-types\>  
+
+Example:
+
+    UPDATE TABLE tableTest SET value = value + 900 WHERE age > 30;
+
+### DROP TABLE
+
+DROP TABLE (IF EXISTS)? \<tablename\> ';'
+
+Example:
+
+    DROP TABLE tableTest;
+
+### TRUNCATE TABLE
+
+TRUNCATE \<tablename\> ';'
+
+Example:
+
+    TRUNCATE tableTest;
+
+### DELETE
+
+DELETE FROM \<tablename\> WHERE \<where-clause\> ';'
+
+\<where-clause\> ::= \<relation\> ( AND \<relation\> )\*
+
+\<relation\> ::= \<identifier\> ('=' | '\<' | '\>' | '\<=' | '\>=' | '\<\>'  | 'MATCH') \<data-types\>  
+
+Example:
+
+    DELETE FROM tableTest WHERE income < 100;
+
 ### INSERT
 
 INSERT INTO \<tablename\> '('\<identifier\> (',' \<identifier\> )\*')' VALUES '('\<data-types\> (',' \<term-or-literal\> )\* ')' (IF NOT EXISTS)? ';'
@@ -221,6 +335,25 @@ INSERT INTO \<tablename\> '('\<identifier\> (',' \<identifier\> )\*')' VALUES '(
 Example:
 
     INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (-3.75, 'term2') IF NOT EXISTS;
+
+### CREATE INDEX
+
+CREATE (\<index-type\>)? INDEX (IF NOT EXISTS)? \<index-name\> ON \<table-name\> '(' \<column-names\> ')' (USING
+\<quoted-literal\>)? (WITH \<JSON\>)? ';'
+
+\<index-type\> ::= DEFAULT | FULL\_TEXT | CUSTOM
+
+Example:
+
+    CREATE FULL_TEXT INDEX revenueIndex ON tabletest (revenue);
+
+### DROP INDEX
+
+DROP INDEX (IF EXISTS)? \<index-name\> ';'
+
+Example:
+
+    DROP INDEX IF EXISTS revenueIndex;;
 
 ### SELECT
 
@@ -251,7 +384,7 @@ Modifications:
 
 Example:
 
-    SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID
+    SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;
 
 ### EXPLAIN PLAN
 
