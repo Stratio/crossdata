@@ -437,10 +437,10 @@ public class SelectStatementTest extends BasicValidatorTest {
             IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
             try {
-                validator.validate(parsedQuery);
-                fail("Strings operator must be only '=' ");
+                IValidatedQuery validationResult = validator.validate(parsedQuery);
+                assertNotNull(validationResult);
             } catch (ValidationException e) {
-                Assert.assertTrue(true);
+                fail();
             } catch (IgnoreQueryException e) {
                 fail(e.getMessage());
             }
