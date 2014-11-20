@@ -11,6 +11,7 @@ tutorial is organized as follows:
   3. [Implementing IStorageEngine](#implementing-istorageengine)
   4. [Implementing IQueryEngine](#implementing-iqueryengine)
   5. [Throwing Exceptions](#throwing-exceptions)
+3. [Running the connector](#running-the-connector)
  
 Preparing the environment
 =========================
@@ -443,3 +444,18 @@ All operations defined in the different interfaces throw **ConnectorException** 
 | UnsupportedException | If the invoked method is not implemented by the connector. |
 | ExecutionException | If the operation to be executed fails. |
 | CriticalExecutionException | If the operation to be executed fails, and the connector is not longer usable. In this situation the connector service is expected to be rebooted. |
+
+Running the Connector
+=====================
+
+The connector can be started in two different ways:
+
+1. Running the connector tests:
+    
+    > mvn clean verify -DconnectorJar="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata-connector
+    -inmemory-0.1.1-SNAPSHOT.jar" -DconnectorDefinition="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata-connector-inmemory-0.1.1-SNAPSHOT/conf/InMemoryConnector.xml" -DclusterOptions="[TableRowLimit-100]" -DconnectorCluster="TestCluster" -DconnectorMainClass="com.stratio.connector.inmemory.InMemoryConnector"
+    
+2. Starting the connector with maven:
+
+    > mvn -pl crossdata-connector-inmemory exec:java -DskipTests -Dexec.mainClass="com.stratio.connector.inmemory.InMemoryConnector" 
+    
