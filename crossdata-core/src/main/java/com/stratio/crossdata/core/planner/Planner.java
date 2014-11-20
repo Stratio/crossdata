@@ -646,11 +646,6 @@ public class Planner {
 
             String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.CREATE_TABLE);
 
-            if(actorRefUri == null){
-               throw new PlanningException("Cannot determine any connector for the operation: "
-                       + Operations.CREATE_TABLE);
-            }
-
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
             ResultType type = ResultType.RESULTS;
 
