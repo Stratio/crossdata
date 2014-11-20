@@ -1,4 +1,3 @@
-stratio_sandbox_moduleAbrir
 #!/bin/sh
 STRATIO_ENV=$1
 STRATIO_MODULE_VERSION=$2
@@ -34,8 +33,7 @@ sed -i "s/\(\-Dcassandra.logdir=\)\$CASSANDRA_HOME\/logs/\1\/var\/log\/sds\/cass
 ## Crossdata
 #######################################
 echo "Installing Crossdata..."
-rpm --quiet -q jakarta-commons-daemon-jsvc || yum -y -q --nogpgcheck install $REPOSITORY/RHEL/6.5/x86_64/jakarta-commons-daemon-jsvc-1.0.1-8.9
-.el6.x86_64.rpm
+rpm --quiet -q jakarta-commons-daemon-jsvc || yum -y -q --nogpgcheck install $REPOSITORY/RHEL/6.5/x86_64/jakarta-commons-daemon-jsvc-1.0.1-8.9.el6.x86_64.rpm
 rpm --quiet -q stratio-crossdata || yum -y -q --nogpgcheck install stratio-crossdata
 
 
@@ -96,10 +94,16 @@ echo "Configuring Deep connector..."
 sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/deep/connector-application.conf
 sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/deep/connector-application.conf
 
-update-rc.d crossdata defaults
-update-rc.d cassandra defaults
-update-rc.d connector_cassandra defaults
-update-rc.d connector_deep defaults
+
+chkconfig --add crossdata
+chkconfig --add cassandra
+chkconfig --add connector_cassandra
+chkconfig --add connector_deep
+
+chkconfig crossdata on
+chkconfig cassandra on
+chkconfig connector_cassandra on
+chkconfig connector_deep on
 
 echo "Starting services..."
 service cassandra start
