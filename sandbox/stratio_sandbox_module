@@ -14,7 +14,7 @@ ipaddress=$(ip -4 addr show dev eth0 | grep inet | sed 's/^ *//g' | cut -d' ' -f
 #######################################
 
 echo "Installing Cassandra..."
-dpkg -s stratio-cassandra > /dev/null 2>&1 || apt-get -q -y install stratio-cassandra --force-yes
+ rpm --quiet -q stratio-cassandra || yum -y -q --nogpgcheck install stratio-cassandra
 
 echo "Configuring Cassandra..."
 ##Config Cassandra:
@@ -34,8 +34,11 @@ sed -i "s/\(\-Dcassandra.logdir=\)\$CASSANDRA_HOME\/logs/\1\/var\/log\/sds\/cass
 ## Crossdata
 #######################################
 echo "Installing Crossdata..."
-dpkg -s jsvc > /dev/null 2>&1 || apt-get -q -y install jsvc --force-yes
-dpkg -s stratio-crossdata > /dev/null 2>&1 || apt-get -q -y install stratio-crossdata --force-yes
+rpm --quiet -q jakarta-commons-daemon-jsvc || yum -y -q --nogpgcheck install $REPOSITORY/RHEL/6.5/x86_64/jakarta-commons-daemon-jsvc-1.0.1-8.9
+.el6.x86_64.rpm
+rpm --quiet -q stratio-crossdata || yum -y -q --nogpgcheck install stratio-crossdata
+
+
 
 echo "Configuring Crossdata..."
 #Config Crossdata
@@ -51,7 +54,7 @@ sed -i "s/^\(crossdata-driver.config.cluster.hosts =\).*$/\1 \[\"$ipaddress\:134
 ## Spark
 #######################################
 echo "Installing Spark..."
-dpkg -s stratio-spark > /dev/null 2>&1 || apt-get -q -y install stratio-spark --force-yes
+rpm --quiet -q stratio-spark || yum -y -q --nogpgcheck install stratio-spark
 
 echo "Generating keys..."
 mkdir /opt/sds/spark/.ssh
@@ -77,7 +80,7 @@ sed -i "s/^#\(SPARK_DRIVER_MEMORY=\)/\1/" /etc/sds/spark/spark-env.sh
 #######################################
 #Cassandra
 echo "Installing Cassandra connector..."
-dpkg -s stratio-connector-cassandra > /dev/null 2>&1 || apt-get -q -y install stratio-connector-cassandra --force-yes
+rpm --quiet -q stratio-connector-cassandra || yum -y -q --nogpgcheck install stratio-connector-cassandra
 
 #config
 echo "Configuring Cassandra connector..."
@@ -86,7 +89,7 @@ sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipa
 
 #Deep
 echo "Installing Deep connector..."
-dpkg -s stratio-connector-deep > /dev/null 2>&1 || apt-get -q -y install stratio-connector-deep --force-yes
+rpm --quiet -q stratio-connector-deep || yum -y -q --nogpgcheck install stratio-connector-deep
 
 #config
 echo "Configuring Deep connector..."
