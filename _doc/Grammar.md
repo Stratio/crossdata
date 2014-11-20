@@ -47,6 +47,7 @@ Table of contents
         -   [DESCRIBE DATASTORE](#describe-datastore)
         -   [DESCRIBE CONNECTORS](#describe-connectors)
         -   [DESCRIBE CONNECTOR](#describe-connector)
+        -   [DESCRIBE CATALOGS](#describe-catalogs)
 -   [Shell features] (#shell-features)
 
 * * * * *
@@ -456,6 +457,16 @@ DESCRIBE CONNECTOR \<connector-name\>;
 Example:
 
     DESCRIBE CONNECTOR cassandra_connector;
+
+### DESCRIBE CATALOGS
+
+List of the catalogs created in the system.
+
+DESCRIBE CATALOGS;
+
+Example:
+
+    DESCRIBE CATALOGS;
 
 * * * * *
 

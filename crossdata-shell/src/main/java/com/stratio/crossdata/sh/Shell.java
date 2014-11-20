@@ -389,6 +389,10 @@ public class Shell {
             } else if (command.toLowerCase().startsWith("describe datastore ")) {
                 result = describeDatastore(
                         command.toLowerCase().replace("describe datastore ", "").replace(";", "").trim());
+            } else if (command.toLowerCase().startsWith("describe catalogs")) {
+                result = describeCatalogs();
+            } else {
+                result = "Unknown command";
             }
             apiCallExecuted = true;
         } else if (command.toLowerCase().startsWith("add connector")
@@ -537,6 +541,10 @@ public class Shell {
 
     private String describeSystem() {
         return ConsoleUtils.stringResult(crossDataDriver.describeSystem());
+    }
+
+    private String describeCatalogs() {
+        return ConsoleUtils.stringResult(crossDataDriver.listCatalogs());
     }
 
     private String describeDatastore(String datastoreName) {
