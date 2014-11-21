@@ -52,6 +52,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import akka.actor.Address
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
@@ -76,7 +77,9 @@ ImplicitSender with BeforeAndAfterAll{
     queryId + queryIdIncrement
   }
 //Actors in this tests
-  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(),
+var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet[Address]()
+
+  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(connectorManagerActorsSharedMemory),
   "ConnectorManagerActor")
   val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
     "CoordinatorActor")

@@ -27,21 +27,22 @@ import org.apache.log4j.Logger
 import org.scalatest.{FunSuiteLike, Suite}
 
 import scala.concurrent.duration.DurationInt
+import java.util
+import akka.actor.Address
 
 class ValidatorActorTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig {
   this: Suite =>
 
   override lazy val logger = Logger.getLogger(classOf[ValidatorActorTest])
  //lazy val system1 = ActorSystem(clusterName, config)
+ var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet[Address]()
+
   val engine: Engine = createEngine.create()
-  val connectorManagerRef = system.actorOf(ConnectorManagerActor.props(), "TestConnectorManagerActor")
+  val connectorManagerRef = system.actorOf(ConnectorManagerActor.props(connectorManagerActorsSharedMemory), "TestConnectorManagerActor")
   val coordinatorRef = system.actorOf(CoordinatorActor.props(connectorManagerRef, engine.getCoordinator()),
     "TestCoordinatorActor")
   val plannerRef = system.actorOf(PlannerActor.props(coordinatorRef, engine.getPlanner()), "TestPlannerActor")
   val validatorActor = system.actorOf(ValidatorActor.props(plannerRef, engine.getValidator()), "TestValidatorActor")
-
-
-
 
   test("Should return a KO message") {
     within(1000 millis) {
