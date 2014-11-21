@@ -453,7 +453,9 @@ The connector can be started in two different ways:
 1. Running the connector tests:
     
     > mvn clean verify -DconnectorJar="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata-connector
-    -inmemory-0.1.1-SNAPSHOT.jar" -DconnectorDefinition="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata-connector-inmemory-0.1.1-SNAPSHOT/conf/InMemoryConnector.xml" -DclusterOptions="[TableRowLimit-100]" -DconnectorCluster="TestCluster" -DconnectorMainClass="com.stratio.connector.inmemory.InMemoryConnector"
+    -inmemory-0.1.1-RC1.jar" -DconnectorDefinition="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata
+    -connector-inmemory-0.1.1-RC1/conf/InMemoryConnector.xml" -DclusterOptions="[TableRowLimit-100]"
+    -DconnectorCluster="TestCluster" -DconnectorMainClass="com.stratio.connector.inmemory.InMemoryConnector"
     
 2. Starting the connector with maven:
 
