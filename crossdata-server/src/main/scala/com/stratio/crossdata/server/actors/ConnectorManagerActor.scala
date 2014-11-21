@@ -36,12 +36,13 @@ import com.stratio.crossdata.common.data.ConnectorStatus
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
+import java.util
 
 object ConnectorManagerActor {
-  def props(): Props = Props(new ConnectorManagerActor())
+  def props(sharedMemory: util.HashSet[Address]): Props = Props(new ConnectorManagerActor(sharedMemory))
 }
 
-class ConnectorManagerActor() extends Actor with ActorLogging {
+class ConnectorManagerActor(sharedMemory: util.HashSet[Address]) extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
@@ -79,9 +80,12 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
         val role = it.next()
         role match {
           case "connector" => {
-            logger.debug("Asking its name to the connector " + mu.member.address)
-            val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
-            connectorActorRef ! getConnectorName()
+            if(!sharedMemory.contains(mu.member.address)){
+              sharedMemory.add(mu.member.address)
+              logger.debug("Asking its name to the connector " + mu.member.address)
+              val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
+              connectorActorRef ! getConnectorName()
+            }
           }
           case _ => {
             logger.debug(mu.member.address + " has the role: " + role)
@@ -94,6 +98,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
      * CONNECTOR answers its name.
      */
     case msg: replyConnectorName => {
+      sharedMemory.remove(sender.path.address)
       logger.info("Connector Name " + msg.name + " received from " + sender)
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
       logger.info("Registering connector at: " + actorRefUri)
