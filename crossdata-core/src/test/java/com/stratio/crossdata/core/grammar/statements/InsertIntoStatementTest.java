@@ -27,10 +27,10 @@ public class InsertIntoStatementTest extends ParsingTest {
     @Test
     public void insertInto() {
         String inputText =
-                "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES ('term1', 'term2') "
+                "INSERT INTO mycatalog.tablename (ident1, ident2) VALUES ('term1', 'term2') "
                         + "IF NOT EXISTS;";
         String expectText =
-                "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2) VALUES ('term1', 'term2') "
+                "INSERT INTO mycatalog.tablename (mycatalog.tablename.ident1, mycatalog.tablename.ident2) VALUES ('term1', 'term2') "
                         + "IF NOT EXISTS;";
         testRegularStatement(inputText, expectText, "insertInto");
     }
@@ -38,18 +38,18 @@ public class InsertIntoStatementTest extends ParsingTest {
     @Test
     public void insertIntoNegativeInteger() {
         String inputText =
-                "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (1, -4);";
-        String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2) VALUES (1, -4);";
+                "INSERT INTO mycatalog.tablename (ident1, ident2) VALUES (1, -4);";
+        String expectText = "INSERT INTO mycatalog.tablename (mycatalog.tablename.ident1, mycatalog.tablename.ident2) VALUES (1, -4);";
         testRegularStatement(inputText, expectText, "insertIntoNegativeInteger");
     }
 
     @Test
     public void insertIntoUsing() {
         String inputText =
-                "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (-3.75, 'term2') "
+                "INSERT INTO mycatalog.tablename (ident1, ident2) VALUES (-3.75, 'term2') "
                         + "IF NOT EXISTS USING COMPACT STORAGE AND 'prop1' = '{innerTerm: result}';";
         String expectText =
-                "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2) VALUES (-3.75, 'term2') "
+                "INSERT INTO mycatalog.tablename (mycatalog.tablename.ident1, mycatalog.tablename.ident2) VALUES (-3.75, 'term2') "
                         + "IF NOT EXISTS USING COMPACT STORAGE AND 'prop1' = '{innerTerm: result}';";
         testRegularStatement(inputText, expectText, "insertInto");
     }
@@ -68,15 +68,15 @@ public class InsertIntoStatementTest extends ParsingTest {
     @Test
     public void insertIntoAllValueTypes() {
         String inputText =
-                "INSERT INTO mykeyspace.tablename (c1, c2, c3, c4, c5) VALUES ('text', 'quoted_text', 123, 1.23, true);";
-        String expectText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.c1, mykeyspace.tablename.c2, mykeyspace.tablename.c3, mykeyspace.tablename.c4, mykeyspace.tablename.c5) VALUES ('text', 'quoted_text', 123, 1.23, true);";
+                "INSERT INTO mycatalog.tablename (c1, c2, c3, c4, c5) VALUES ('text', 'quoted_text', 123, 1.23, true);";
+        String expectText = "INSERT INTO mycatalog.tablename (mycatalog.tablename.c1, mycatalog.tablename.c2, mycatalog.tablename.c3, mycatalog.tablename.c4, mycatalog.tablename.c5) VALUES ('text', 'quoted_text', 123, 1.23, true);";
         testRegularStatementSession("demo", inputText, expectText, "insertIntoAllValueTypes");
     }
 
     @Test
     public void wrongIntoToken() {
         String inputText =
-                "INSERT INTI mykeyspace.tablename (ident1, ident2) VALUES(term1, term2)"
+                "INSERT INTI mycatalog.tablename (ident1, ident2) VALUES(term1, term2)"
                         + " IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
         testParserFails(inputText, "wrongIntoToken");
     }
@@ -84,7 +84,7 @@ public class InsertIntoStatementTest extends ParsingTest {
     @Test
     public void insertIntoWrongValuesToken() {
         String inputText =
-                "INSERT INTO mykeyspace.tablename (ident1, ident2) VALUED (term1, term2)"
+                "INSERT INTO mycatalog.tablename (ident1, ident2) VALUED (term1, term2)"
                         + " IF NOT EXISTS USING COMPACT STORAGE AND prop1 = {innerTerm: result};";
         testParserFails(inputText, "insertIntoWrongValuesToken");
     }
@@ -92,15 +92,15 @@ public class InsertIntoStatementTest extends ParsingTest {
     @Test
     public void insertIntoWrongNumberOfValues() {
         String inputText =
-                "INSERT INTO mykeyspace.tablename (ident1, ident2, ident3) VALUES ('term1', 'term2', 55, false);";
+                "INSERT INTO mycatalog.tablename (ident1, ident2, ident3) VALUES ('term1', 'term2', 55, false);";
         testParserFails(inputText, "insertIntoWrongNumberOfValues");
     }
 
     @Test
     public void insertIntoWithDecimalNumber() {
         String inputText =
-                "INSERT INTO mykeyspace.tablename (ident1, ident2, ident3) VALUES ('term1', true, -55.0);";
-        String expectedText = "INSERT INTO mykeyspace.tablename (mykeyspace.tablename.ident1, mykeyspace.tablename.ident2, mykeyspace.tablename.ident3) VALUES ('term1', true, -55.0);";
+                "INSERT INTO mycatalog.tablename (ident1, ident2, ident3) VALUES ('term1', true, -55.0);";
+        String expectedText = "INSERT INTO mycatalog.tablename (mycatalog.tablename.ident1, mycatalog.tablename.ident2, mycatalog.tablename.ident3) VALUES ('term1', true, -55.0);";
         testRegularStatementSession("demo", inputText, expectedText, "insertIntoWithDecimalNumber");
     }
 

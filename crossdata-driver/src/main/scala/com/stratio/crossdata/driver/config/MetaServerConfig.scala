@@ -22,16 +22,16 @@ import com.typesafe.config.Config
 
 import scala.collection.JavaConversions._
 
-object MetaServerConfig {
-  val META_SERVER_HOSTS_KEY = "config.cluster.hosts"
-  val META_SERVER_CLUSTER_NAME_KEY = "config.cluster.name"
-  val META_SERVER_ACTOR_NAME_KEY = "config.cluster.actor"
+object CrossdataServerConfig {
+  val CROSSDATA_SERVER_HOSTS_KEY = "config.cluster.hosts"
+  val CROSSDATA_SERVER_CLUSTER_NAME_KEY = "config.cluster.name"
+  val CROSSDATA_SERVER_ACTOR_NAME_KEY = "config.cluster.actor"
 }
 
-trait MetaServerConfig {
-  lazy val clusterHosts: List[String] = config.getStringList(MetaServerConfig.META_SERVER_HOSTS_KEY).toList
-  lazy val clusterName: String = config.getString(MetaServerConfig.META_SERVER_CLUSTER_NAME_KEY)
-  lazy val clusterActor: String = config.getString(MetaServerConfig.META_SERVER_ACTOR_NAME_KEY)
+trait CrossdataServerConfig {
+  lazy val clusterHosts: List[String] = config.getStringList(CrossdataServerConfig.CROSSDATA_SERVER_HOSTS_KEY).toList
+  lazy val clusterName: String = config.getString(CrossdataServerConfig.CROSSDATA_SERVER_CLUSTER_NAME_KEY)
+  lazy val clusterActor: String = config.getString(CrossdataServerConfig.CROSSDATA_SERVER_ACTOR_NAME_KEY)
 
   def config: Config = ???
 

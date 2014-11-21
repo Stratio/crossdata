@@ -18,15 +18,16 @@
 
 package com.stratio.crossdata.server.actors
 
-import akka.actor._
+import akka.actor.{ReceiveTimeout, RootActorPath, ActorLogging, Actor, Props, Address}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent._
+import akka.cluster.ClusterEvent.{ClusterMetricsChanged, MemberEvent, MemberExited,
+MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEvent}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.ConnectorName
 import com.stratio.crossdata.common.result.{Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication._
+import com.stratio.crossdata.communication.{replyConnectorName, getConnectorName,Connect}
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
@@ -35,12 +36,13 @@ import com.stratio.crossdata.common.data.ConnectorStatus
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
+import java.util
 
 object ConnectorManagerActor {
-  def props(): Props = Props(new ConnectorManagerActor())
+  def props(sharedMemory: util.HashSet[Address]): Props = Props(new ConnectorManagerActor(sharedMemory))
 }
 
-class ConnectorManagerActor() extends Actor with ActorLogging {
+class ConnectorManagerActor(sharedMemory: util.HashSet[Address]) extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
@@ -65,7 +67,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
     Cluster(context.system).unsubscribe(self)
   }
 
-  def receive = {
+  def receive : Receive= {
 
     /**
      * A new actor connects to the cluster. If the new actor is a connector, we requests its name.
@@ -78,9 +80,12 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
         val role = it.next()
         role match {
           case "connector" => {
-            logger.debug("Asking its name to the connector " + mu.member.address)
-            val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
-            connectorActorRef ! getConnectorName()
+            if(!sharedMemory.contains(mu.member.address)){
+              sharedMemory.add(mu.member.address)
+              logger.debug("Asking its name to the connector " + mu.member.address)
+              val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
+              connectorActorRef ! getConnectorName()
+            }
           }
           case _ => {
             logger.debug(mu.member.address + " has the role: " + role)
@@ -93,6 +98,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
      * CONNECTOR answers its name.
      */
     case msg: replyConnectorName => {
+      sharedMemory.remove(sender.path.address)
       logger.info("Connector Name " + msg.name + " received from " + sender)
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
       logger.info("Registering connector at: " + actorRefUri)
@@ -106,10 +112,21 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
 
       if((clusterProps != null) && (!clusterProps.isEmpty)){
         for(clusterProp <- clusterProps.entrySet()){
-          val opts = MetadataManager.MANAGER.getCluster(clusterProp.getKey).getOptions;
-          val connectorClusterConfig = new ConnectorClusterConfig(clusterProp.getKey,
-            SelectorHelper.convertSelectorMapToStringMap(opts))
-          sender ! new Connect(null, connectorClusterConfig)
+          val clusterName = clusterProp.getKey
+          val optsCluster = MetadataManager.MANAGER.getCluster(clusterName).getOptions;
+
+          val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
+          val datastoreName = clusterMetadata.getDataStoreRef;
+          val datastoreMetadata = MetadataManager.MANAGER.getDataStore(datastoreName)
+          val optsDatastore = datastoreMetadata.getClusterAttachedRefs.get(clusterName)
+
+          val clusterConfig = new ConnectorClusterConfig(clusterName,
+            SelectorHelper.convertSelectorMapToStringMap(optsCluster),
+            SelectorHelper.convertSelectorMapToStringMap(optsDatastore.getProperties))
+
+          clusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
+
+          sender ! new Connect(null, clusterConfig)
         }
       }
       MetadataManager.MANAGER.setConnectorStatus(connectorName, ConnectorStatus.ONLINE)

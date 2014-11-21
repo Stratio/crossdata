@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.stratio.crossdata.common.metadata.structures.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 
 public class ResultSet implements Iterable<Row>, Serializable {
 
@@ -36,7 +36,7 @@ public class ResultSet implements Iterable<Row>, Serializable {
      */
     private List<Row> rows;
     /**
-     * List of {@link com.stratio.crossdata.common.metadata.structures.ColumnMetadata}.
+     * List of {@link com.stratio.crossdata.common.metadata.ColumnMetadata}.
      */
     private List<ColumnMetadata> columnMetadata;
 
@@ -78,7 +78,7 @@ public class ResultSet implements Iterable<Row>, Serializable {
     /**
      * Get the column metadata in order.
      *
-     * @return A list of {@link com.stratio.crossdata.common.metadata.structures.ColumnMetadata}.
+     * @return A list of {@link com.stratio.crossdata.common.metadata.ColumnMetadata}.
      */
     public List<ColumnMetadata> getColumnMetadata() {
         return columnMetadata;
@@ -87,7 +87,7 @@ public class ResultSet implements Iterable<Row>, Serializable {
     /**
      * Set the list of column metadata.
      *
-     * @param columnMetadata A list of {@link com.stratio.crossdata.common.metadata.structures.ColumnMetadata}
+     * @param columnMetadata A list of {@link com.stratio.crossdata.common.metadata.ColumnMetadata}
      *                       in order.
      */
     public void setColumnMetadata(List<ColumnMetadata> columnMetadata) {

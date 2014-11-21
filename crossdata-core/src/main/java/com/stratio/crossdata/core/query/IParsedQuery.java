@@ -20,7 +20,7 @@ package com.stratio.crossdata.core.query;
 
 import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.core.statements.MetaStatement;
+import com.stratio.crossdata.core.statements.CrossdataStatement;
 
 /**
  * Interface IParsedQuery.
@@ -35,7 +35,7 @@ public interface IParsedQuery {
 
     /**
      * Get the queryId of a query.
-     * @return
+     * @return Query identification.
      */
     String getQueryId();
 
@@ -53,8 +53,8 @@ public interface IParsedQuery {
 
     /**
      * Get the statement of a query.
-     * @return com.stratio.crossdata.core.statements.MetaStatement
+     * @return com.stratio.crossdata.core.statements.CrossdataStatement
      */
-    MetaStatement getStatement();
+    CrossdataStatement getStatement();
 
 }

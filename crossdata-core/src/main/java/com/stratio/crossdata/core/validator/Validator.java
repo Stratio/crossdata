@@ -18,25 +18,34 @@
 
 package com.stratio.crossdata.core.validator;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.ConnectorStatus;
+import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
+import com.stratio.crossdata.common.exceptions.validation.ClusterNodeNotInDatastoreException;
+import com.stratio.crossdata.common.exceptions.validation.ConnectionHasNoRefsException;
 import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotConnectionException;
 import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
+import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
@@ -72,7 +81,7 @@ public class Validator {
      */
     public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
         IValidatedQuery validatedQuery = null;
-        LOG.info("Validating MetaStatements...");
+        LOG.info("Validating CrossdataStatements...");
         for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
 
             switch (val) {
@@ -113,6 +122,7 @@ public class Validator {
                 validateOptions(parsedQuery.getStatement());
                 break;
             case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
+                validateConnectorAttachedRefs(parsedQuery.getStatement());
                 break;
             case MUST_EXIST_PROPERTIES:
                 validateExistsProperties(parsedQuery.getStatement());
@@ -138,6 +148,9 @@ public class Validator {
             case MUST_BE_CONNECTED:
                 validateConnectorConnected(parsedQuery.getStatement());
                 break;
+            case MUST_BE_UNIQUE_DATASTORE:
+                validatePreviousAttachment(parsedQuery.getStatement());
+                break;
             default:
                 break;
             }
@@ -161,7 +174,46 @@ public class Validator {
         return validatedQuery;
     }
 
-    private void validateConnectorConnected(MetaStatement statement) throws ValidationException {
+    private void validatePreviousAttachment(CrossdataStatement statement) throws BadFormatException {
+        AttachClusterStatement attachClusterStatement = (AttachClusterStatement) statement;
+        DataStoreName datastoreName = attachClusterStatement.getDatastoreName();
+        ClusterName clusterName = attachClusterStatement.getClusterName();
+
+        if (MetadataManager.MANAGER.exists(clusterName)){
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+            if(!clusterMetadata.getDataStoreRef().equals(datastoreName)){
+                throw new BadFormatException("A cluster can be attached to only one data store.");
+            }
+        }
+    }
+
+    private void validateConnectorAttachedRefs(CrossdataStatement statement) throws ValidationException {
+        if (statement instanceof DetachConnectorStatement) {
+            DetachConnectorStatement detachConnectorStatement= (DetachConnectorStatement) statement;
+            ConnectorName connectorName = detachConnectorStatement.getConnectorName();
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER
+                    .getCluster(detachConnectorStatement.getClusterName());
+            Map<ConnectorName, ConnectorAttachedMetadata> refs = clusterMetadata
+                    .getConnectorAttachedRefs();
+            Iterator it=refs.entrySet().iterator();
+            boolean found=false;
+            while(it.hasNext()){
+                Map.Entry<ConnectorName, ConnectorMetadata>pairs=(Map.Entry)it.next();
+                if (connectorName.equals(pairs.getKey())){
+                   found=true;
+                   break;
+                }
+            }
+            if(!found){
+                throw new ConnectionHasNoRefsException("Invalid validation [MUST_EXIST_ATTACH_CONNECTOR_CLUSTER] for " +
+                        statement);
+            }
+        } else {
+            throw new ConnectionHasNoRefsException("Invalid validation [MUST_EXIST_ATTACH_CONNECTOR_CLUSTER] for " + statement);
+        }
+    }
+
+    private void validateConnectorConnected(CrossdataStatement statement) throws ValidationException {
         if (statement instanceof AttachConnectorStatement) {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) statement;
             ConnectorName connectorName = attachConnectorStatement.getConnectorName();
@@ -180,7 +232,6 @@ public class Validator {
         } else {
             validateNotExist(name, hasIfExist);
         }
-
     }
 
     private void validateSelect(IParsedQuery parsedQuery) throws ValidationException {
@@ -189,7 +240,7 @@ public class Validator {
         normalizator.execute();
     }
 
-    private void validateConnector(MetaStatement stmt, boolean exist) throws IgnoreQueryException,
+    private void validateConnector(CrossdataStatement stmt, boolean exist) throws IgnoreQueryException,
             ExistNameException, NotExistNameException {
         Name name = null;
         boolean hasIfExist = false;
@@ -211,13 +262,13 @@ public class Validator {
         validateName(exist, name, hasIfExist);
     }
 
-    private void validateCluster(MetaStatement stmt, boolean exist) throws IgnoreQueryException,
+    private void validateCluster(CrossdataStatement stmt, boolean exist) throws IgnoreQueryException,
             NotExistNameException, ExistNameException {
         Name name = null;
         boolean hasIfExists = false;
 
         if (stmt instanceof AlterClusterStatement) {
-            name = new ClusterName(((AlterClusterStatement) stmt).getClusterName());
+            name = ((AlterClusterStatement) stmt).getClusterName();
             hasIfExists = ((AlterClusterStatement) stmt).isIfExists();
         }
 
@@ -247,6 +298,36 @@ public class Validator {
         validateName(exist, name, hasIfExists);
     }
 
+    private void validateClustersIps(CrossdataStatement stmt) throws ClusterNodeNotInDatastoreException{
+        AttachClusterStatement myStmt = (AttachClusterStatement) stmt;
+        Map<Selector, Selector> options = myStmt.getOptions();
+        DataStoreName dataStoreName = myStmt.getDatastoreName();
+        DataStoreMetadata dataStoreMetadata = MetadataManager.MANAGER.getDataStore(dataStoreName);
+        Map<ClusterName, ClusterAttachedMetadata> refs = dataStoreMetadata.getClusterAttachedRefs();
+        ClusterName clusterName = myStmt.getClusterName();
+        if (!options.isEmpty()) {
+            Selector hosts =options.get("hosts");
+            if(hosts != null){
+                String[] myHosts = hosts.getStringValue().replace("[", "").replace("]", "").split(",");
+                for(int i=0; i<myHosts.length;i++){
+                    Iterator<Map.Entry<ClusterName, ClusterAttachedMetadata>> it = refs.entrySet().iterator();
+                    boolean found = false;
+                    while(it.hasNext()){
+                        Map.Entry<ClusterName, ClusterAttachedMetadata> entry = it.next();
+                        if(entry.getKey().equals(clusterName)){
+                            found=true;
+                            break;
+                        }
+                    }
+                    if(!found){
+                        throw new ClusterNodeNotInDatastoreException("Cluster node not found in datastore");
+                    }
+                }
+            }
+        }
+    }
+
+
     private void validateExist(Name name, boolean hasIfExists)
             throws NotExistNameException, IgnoreQueryException {
         if (!MetadataManager.MANAGER.exists(name)) {
@@ -269,7 +350,7 @@ public class Validator {
         }
     }
 
-    private void validateDatastore(MetaStatement statement, boolean exist) throws IgnoreQueryException,
+    private void validateDatastore(CrossdataStatement statement, boolean exist) throws IgnoreQueryException,
             NotExistNameException, ExistNameException {
         Name name = null;
         boolean hasIfExists = false;
@@ -283,7 +364,7 @@ public class Validator {
         validateName(exist, name, hasIfExists);
     }
 
-    private void validateColumn(MetaStatement stmt, boolean exist)
+    private void validateColumn(CrossdataStatement stmt, boolean exist)
             throws NotExistNameException, IgnoreQueryException, ExistNameException {
         ColumnName columnName = null;
         if (stmt instanceof AlterTableStatement) {
@@ -299,7 +380,7 @@ public class Validator {
         }
     }
 
-    private void validateExistsProperties(MetaStatement stmt) throws ValidationException {
+    private void validateExistsProperties(CrossdataStatement stmt) throws ValidationException {
 
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
@@ -317,7 +398,7 @@ public class Validator {
 
     }
 
-    private void validateTable(MetaStatement stmt, boolean exist)
+    private void validateTable(CrossdataStatement stmt, boolean exist)
             throws NotExistNameException, IgnoreQueryException, ExistNameException {
         Name name;
         boolean hasIfExists = false;
@@ -331,9 +412,6 @@ public class Validator {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
             name = createTableStatement.getTableName();
             hasIfExists = createTableStatement.isIfNotExists();
-        } else if (stmt instanceof DescribeStatement) {
-            DescribeStatement describeStatement = (DescribeStatement) stmt;
-            name = describeStatement.getTableName();
         } else if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
             name = insertIntoStatement.getTableName();
@@ -355,6 +433,9 @@ public class Validator {
         } else if (stmt instanceof UpdateTableStatement) {
             UpdateTableStatement updateTableStatement = (UpdateTableStatement) stmt;
             name = updateTableStatement.getTableName();
+        } else if (stmt instanceof TruncateStatement) {
+            TruncateStatement truncateStatement = (TruncateStatement) stmt;
+            name = truncateStatement.getTableName();
         } else {
             throw new IgnoreQueryException(stmt.getClass().getCanonicalName() + " not supported yet.");
         }
@@ -362,7 +443,7 @@ public class Validator {
         validateName(exist, name, hasIfExists);
     }
 
-    private void validateCatalog(MetaStatement stmt, boolean exist)
+    private void validateCatalog(CrossdataStatement stmt, boolean exist)
             throws IgnoreQueryException, ExistNameException, NotExistNameException {
         Name name = null;
         boolean validate = true;
@@ -382,9 +463,6 @@ public class Validator {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
             name = createTableStatement.getEffectiveCatalog();
             hasIfExists = createTableStatement.isIfNotExists();
-        } else if (stmt instanceof DescribeStatement) {
-            DescribeStatement describeStatement = (DescribeStatement) stmt;
-            name = describeStatement.getEffectiveCatalog();
         } else if (stmt instanceof DropTableStatement) {
             DropTableStatement dropTableStatement = (DropTableStatement) stmt;
             name = dropTableStatement.getCatalogName();
@@ -394,7 +472,7 @@ public class Validator {
             name = insertIntoStatement.getCatalogName();
             hasIfExists = insertIntoStatement.isIfNotExists();
         } else {
-            //TODO: ¿should through exception?
+            //TODO: should through exception?
             //Correctness - Method call passes null for nonnull parameter
             validate = false;
         }
@@ -404,10 +482,11 @@ public class Validator {
         }
     }
 
-    private void validateOptions(MetaStatement stmt) throws ValidationException {
+    private void validateOptions(CrossdataStatement stmt) throws ValidationException {
 
         if (stmt instanceof AttachClusterStatement) {
             AttachClusterStatement myStmt = (AttachClusterStatement) stmt;
+            validateClustersIps(stmt);
             if (myStmt.getOptions().isEmpty()) {
                 throw new BadFormatException("AttachClusterStatement options can't be empty");
             }
@@ -422,7 +501,7 @@ public class Validator {
 
     }
 
-    private void validateIndex(MetaStatement stmt, boolean exist)
+    private void validateIndex(CrossdataStatement stmt, boolean exist)
             throws IgnoreQueryException, ExistNameException, NotExistNameException {
         Name name = null;
         boolean hasIfExist = false;
@@ -440,7 +519,7 @@ public class Validator {
         validateName(exist, name, hasIfExist);
     }
 
-    private void validateInsertTypes(MetaStatement stmt)
+    private void validateInsertTypes(CrossdataStatement stmt)
             throws BadFormatException, NotMatchDataTypeException {
         if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
@@ -500,7 +579,11 @@ public class Validator {
         case RELATION:
             badFormatException = new BadFormatException("Operation not supported in where.");
             break;
+        default:
+            break;
         }
+
+
         if (notMatchDataTypeException != null) {
             throw notMatchDataTypeException;
         } else if (badFormatException != null) {

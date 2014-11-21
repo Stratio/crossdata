@@ -28,7 +28,7 @@ import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.actors.ServerActor
 import com.typesafe.config.ConfigFactory
 import org.scalatest.FunSuiteLike
-import org.testng.Assert._
+import org.testng.Assert.{assertFalse, assertTrue}
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -109,7 +109,7 @@ with ImplicitSender with DefaultTimeout with FunSuiteLike {
   test("API List tables from unknown catalog") {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add("unknown")
-    val cmd: Command = new Command(APICommand.LIST_TABLES, params)
+    val cmd: Command = new Command("QID", APICommand.LIST_TABLES, params)
     var result: MetadataResult = null
     within(5000 millis) {
       result = executeAPICommand(cmd, true)

@@ -32,7 +32,7 @@ class APIActor(metadata: APIManager) extends Actor with TimeTracker {
   override lazy val timerName = this.getClass.getName
   val log = Logger.getLogger(classOf[APIActor])
 
-  def receive = {
+  def receive:Receive = {
     case cmd: Command => {
       log.debug("command received " + cmd.toString)
       val timer = initTimer()

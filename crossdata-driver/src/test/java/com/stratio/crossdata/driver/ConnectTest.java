@@ -18,7 +18,6 @@
 
 package com.stratio.crossdata.driver;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
@@ -34,19 +33,18 @@ public class ConnectTest extends DriverParentTest {
 
     private final static Logger logger = Logger.getLogger(ConnectTest.class);
 
-
     @Test(groups = "connect")
     public void connect() {
 
-        Result metaResult = null;
+        Result crossDataResult = null;
         try {
-            metaResult = driver.connect("TEST_USER");
+            crossDataResult = driver.connect("TEST_USER");
         } catch (ConnectionException e) {
             e.printStackTrace();
             fail("Exception not expected");
         }
-        assertFalse(metaResult.hasError());
-        ConnectResult r = ConnectResult.class.cast(metaResult);
+        assertFalse(crossDataResult.hasError());
+        ConnectResult r = ConnectResult.class.cast(crossDataResult);
         assertTrue(r.getSessionId() != null, "Invalid session identifier: " + r.getSessionId());
 
     }

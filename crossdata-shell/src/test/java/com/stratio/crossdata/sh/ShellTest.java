@@ -17,10 +17,6 @@
  */
 package com.stratio.crossdata.sh;
 
-
-
-import java.io.IOException;
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -28,16 +24,16 @@ public class ShellTest {
 
     @Test
     public void testShellConnectWithoutServer()  {
-        Shell metash = new Shell(false);
-        boolean result=metash.connect();
+        Shell crossDatash = new Shell(false);
+        boolean result=crossDatash.connect();
         Assert.assertFalse(result);
     }
 
     @Test
     public void testShellDisConnectWithoutServer()  {
-        Shell metash = new Shell(false);
+        Shell crossDatash = new Shell(false);
         try {
-            metash.closeConsole();
+            crossDatash.closeConsole();
             Assert.assertTrue(true);
         }catch (Exception e){
             Assert.fail("An error happened in sh");
@@ -46,9 +42,9 @@ public class ShellTest {
 
     @Test
     public void testPrinln()  {
-        Shell metash = new Shell(false);
+        Shell crossDatash = new Shell(false);
         try {
-            metash.println("prueba");
+            crossDatash.println("prueba");
             Assert.assertTrue(true);
         }catch (Exception e){
             Assert.fail("An error happened in sh");
@@ -57,9 +53,9 @@ public class ShellTest {
 
     @Test
     public void testSendManifest()  {
-        Shell metash = new Shell(false);
+        Shell crossDatash = new Shell(false);
         try {
-            metash.sendManifest("ADD DATASTORE 'com/stratio/crossdata/connector/DataStoreDefinition.xml'");
+            crossDatash.sendManifest("ADD DATASTORE 'com/stratio/crossdata/connector/DataStoreDefinition.xml'");
             Assert.assertTrue(true);
         }catch (Exception e){
             Assert.fail("An error happened in sh");

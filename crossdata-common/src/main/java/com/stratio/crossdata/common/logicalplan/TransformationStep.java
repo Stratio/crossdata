@@ -25,7 +25,7 @@ import com.stratio.crossdata.common.metadata.Operations;
 
 /**
  * Class definition for {@link com.stratio.crossdata.common.logicalplan.LogicalStep} that are
- * preceeded by a single logical step. Examples of this type of operators are PROJECT and FILTER.
+ * preceded by a single logical step. Examples of this type of operators are PROJECT and FILTER.
  */
 public class TransformationStep extends LogicalStep {
 

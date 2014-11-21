@@ -31,24 +31,28 @@ import java.util.List;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
 import org.antlr.runtime.RecognitionException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
+import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.IResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
+import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.driver.BasicDriver;
 import com.stratio.crossdata.sh.help.HelpContent;
 import com.stratio.crossdata.sh.help.HelpManager;
 import com.stratio.crossdata.sh.help.HelpStatement;
-import com.stratio.crossdata.sh.help.generated.MetaHelpLexer;
-import com.stratio.crossdata.sh.help.generated.MetaHelpParser;
+import com.stratio.crossdata.sh.help.generated.CrossdataHelpLexer;
+import com.stratio.crossdata.sh.help.generated.CrossdataHelpParser;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
-import com.stratio.crossdata.sh.utils.MetaCompletionHandler;
-import com.stratio.crossdata.sh.utils.MetaCompletor;
-import com.stratio.crossdata.common.result.Result;
+import com.stratio.crossdata.sh.utils.XDshCompletionHandler;
+import com.stratio.crossdata.sh.utils.XDshCompletor;
 
 import jline.console.ConsoleReader;
 
@@ -83,9 +87,9 @@ public class Shell {
     private File historyFile = null;
 
     /**
-     * Driver that connects to the META servers.
+     * Driver that connects to the CROSSDATA servers.
      */
-    private BasicDriver metaDriver = null;
+    private BasicDriver crossDataDriver = null;
 
     /**
      * History date format.
@@ -103,6 +107,18 @@ public class Shell {
     private static final int MS_TO_SECONDS = 1000;
 
     /**
+     * Constant to define the prefix for explain plan operations.
+     */
+    private static final String EXPLAIN_PLAN_TOKEN = "explain plan for";
+
+    /**
+     * Default String for the Crossdata prompt
+     */
+    private static final String DEFAULT_PROMPT = "xdsh:";
+
+    private static final char DEFAULT_TEMP_PROMPT = '»';
+
+    /**
      * Class constructor.
      *
      * @param useAsync Whether the queries will use the asynchronous interface.
@@ -116,7 +132,7 @@ public class Shell {
     }
 
     /**
-     * Launch the META server shell.
+     * Launch the CROSSDATA server shell.
      *
      * @param args The list of arguments. Not supported at the moment.
      */
@@ -155,10 +171,10 @@ public class Shell {
      * Initialize the console settings.
      */
     private void initialize() {
-        metaDriver = new BasicDriver();
+        crossDataDriver = new BasicDriver();
         // Take the username from the system.
-        metaDriver.setUserName(System.getProperty("user.name"));
-        LOG.debug("Connecting with user: " + metaDriver.getUserName());
+        crossDataDriver.setUserName(System.getProperty("user.name"));
+        LOG.debug("Connecting with user: " + crossDataDriver.getUserName());
 
         try {
             console = new ConsoleReader();
@@ -166,8 +182,8 @@ public class Shell {
             setPrompt(null);
             historyFile = ConsoleUtils.retrieveHistory(console, dateFormat);
 
-            console.setCompletionHandler(new MetaCompletionHandler());
-            console.addCompleter(new MetaCompletor());
+            console.setCompletionHandler(new XDshCompletionHandler());
+            console.addCompleter(new XDshCompletor());
         } catch (IOException e) {
             LOG.error("Cannot create a console.", e);
         }
@@ -205,8 +221,8 @@ public class Shell {
      * @param currentCatalog The currentCatalog.
      */
     private void setPrompt(String currentCatalog) {
-        StringBuilder sb = new StringBuilder("xdsh:");
-        sb.append(metaDriver.getUserName());
+        StringBuilder sb = new StringBuilder(DEFAULT_PROMPT);
+        sb.append(crossDataDriver.getUserName());
         if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
             sb.append(":");
             sb.append(currentCatalog);
@@ -224,9 +240,9 @@ public class Shell {
     private HelpStatement parseHelp(String inputText) {
         HelpStatement result = null;
         ANTLRStringStream input = new ANTLRStringStream(inputText);
-        MetaHelpLexer lexer = new MetaHelpLexer(input);
+        CrossdataHelpLexer lexer = new CrossdataHelpLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        MetaHelpParser parser = new MetaHelpParser(tokens);
+        CrossdataHelpParser parser = new CrossdataHelpParser(tokens);
         try {
             result = parser.query();
         } catch (RecognitionException e) {
@@ -246,7 +262,7 @@ public class Shell {
     }
 
     /**
-     * Execute a query on the remote META servers.
+     * Execute a query on the remote CROSSDATA servers.
      *
      * @param cmd The query.
      */
@@ -267,12 +283,12 @@ public class Shell {
         LOG.debug("Command: " + cmd);
         long queryStart = System.currentTimeMillis();
         long queryEnd = queryStart;
-        Result metaResult;
+        Result crossDataResult;
         try {
-            metaResult = metaDriver.executeQuery(cmd);
+            crossDataResult = crossDataDriver.executeQuery(cmd);
             queryEnd = System.currentTimeMillis();
-            updatePrompt(metaResult);
-            println("Result: " + ConsoleUtils.stringResult(metaResult));
+            updatePrompt(crossDataResult);
+            println("Result: " + ConsoleUtils.stringResult(crossDataResult));
             println("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
         } catch (Exception e) {
             println("Error: " + e.getMessage());
@@ -285,7 +301,7 @@ public class Shell {
      * @param queryId The query identifier.
      */
     protected void removeResultsHandler(String queryId) {
-        metaDriver.removeResultHandler(queryId);
+        crossDataDriver.removeResultHandler(queryId);
     }
 
     /**
@@ -296,7 +312,7 @@ public class Shell {
     private void executeAsyncQuery(String cmd) {
         String queryId;
         try {
-            queryId = metaDriver.asyncExecuteQuery(cmd, resultHandler);
+            queryId = crossDataDriver.asyncExecuteQuery(cmd, resultHandler);
             LOG.debug("Async command: " + cmd + " id: " + queryId);
             println("QID: " + queryId);
             println("");
@@ -319,7 +335,7 @@ public class Shell {
             if (qr.isCatalogChanged()) {
                 String currentCatalog = qr.getCurrentCatalog();
                 if (!currentCatalog.isEmpty()) {
-                    metaDriver.setCurrentCatalog(currentCatalog);
+                    crossDataDriver.setCurrentCatalog(currentCatalog);
                     setPrompt(currentCatalog);
                 }
             }
@@ -327,14 +343,14 @@ public class Shell {
     }
 
     /**
-     * Establish the connection with the META servers.
+     * Establish the connection with the CROSSDATA servers.
      *
      * @return Whether the connection has been successfully established.
      */
     public boolean connect() {
         boolean result = true;
         try {
-            Result connectionResult = metaDriver.connect(metaDriver.getUserName());
+            Result connectionResult = crossDataDriver.connect(crossDataDriver.getUserName());
             LOG.info("Driver connections established");
             LOG.info(ConsoleUtils.stringResult(connectionResult));
         } catch (ConnectionException ce) {
@@ -352,12 +368,80 @@ public class Shell {
             ConsoleUtils.saveHistory(console, historyFile, dateFormat);
             LOG.debug("History saved");
 
-            metaDriver.close();
+            crossDataDriver.close();
             LOG.info("Driver connections closed");
 
         } catch (IOException ex) {
             LOG.error("Cannot save user history", ex);
         }
+    }
+
+    public boolean executeApiCall(String command){
+        boolean apiCallExecuted = false;
+        String result = "OK";
+        if(command.toLowerCase().startsWith("describe")){
+            if(command.toLowerCase().startsWith("describe connector ")){
+                result = describeConnector(command.toLowerCase().replace("describe connector ", "").replace(";", "").trim());
+            } else if (command.toLowerCase().startsWith("describe connectors")) {
+                result = describeConnectors();
+            } else if (command.toLowerCase().startsWith("describe system")) {
+                result = describeSystem();
+            } else if (command.toLowerCase().startsWith("describe datastore ")) {
+                result = describeDatastore(
+                        command.toLowerCase().replace("describe datastore ", "").replace(";", "").trim());
+            } else if (command.toLowerCase().startsWith("describe catalogs")) {
+                result = describeCatalogs();
+            } else {
+                result = "Unknown command";
+            }
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("add connector")
+                   || command.toLowerCase().startsWith("add datastore")) {
+            result = sendManifest(command);
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("reset serverdata")) {
+            if(command.toLowerCase().contains("--force")) {
+                result = resetServerdata();
+            } else {
+                String currentPrompt = console.getPrompt();
+                String answer = "No";
+                try {
+                    console.print(" > RESET SERVERDATA will ERASE ALL THE DATA stored in the Crossdata Server, ");
+                    console.println("even the one related to datastores, clusters and connectors.");
+                    console.print(" > Maybe you can use CLEAN METADATA, ");
+                    console.println("which erases only metadata related to catalogs, tables, indexes and columns.");
+                    console.setPrompt(" > Do you want to continue? (yes/no): ");
+                    answer = console.readLine();
+                } catch (IOException e) {
+                    LOG.error(e.getMessage());
+                }
+                answer = answer.replace(";", "").trim();
+                if(answer.equalsIgnoreCase("yes") || answer.equalsIgnoreCase("y")){
+                    result = resetServerdata();
+                }
+                console.setPrompt(currentPrompt);
+            }
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("clean metadata")){
+            result = cleanMetadata();
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("drop datastore")){
+            result = dropManifest(
+                    CrossdataManifest.TYPE_DATASTORE,
+                    command.toLowerCase().replace("drop datastore ", "").replace(";", "").trim());
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith("drop connector")){
+            result = dropManifest(
+                    CrossdataManifest.TYPE_CONNECTOR,
+                    command.toLowerCase().replace("drop connector ", "").replace(";", "").trim());
+            apiCallExecuted = true;
+        } else if (command.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
+            result = explainPlan(command);
+        }
+        if(apiCallExecuted){
+            LOG.info(result);
+        }
+        return apiCallExecuted;
     }
 
     /**
@@ -369,36 +453,49 @@ public class Shell {
             String cmd = "";
             StringBuilder sb = new StringBuilder(cmd);
             String toExecute;
+            String currentPrompt = "";
             while (!cmd.trim().toLowerCase().startsWith("exit")
                     && !cmd.trim().toLowerCase().startsWith("quit")) {
                 cmd = console.readLine();
                 sb.append(cmd).append(" ");
                 toExecute = sb.toString().trim();
-                if (toExecute.endsWith(";")) {
-                    if (" ".equalsIgnoreCase(sb.toString())
-                            || System.lineSeparator().equalsIgnoreCase(sb.toString())) {
-                        println("");
-                    } else if (toExecute.toLowerCase().startsWith("help")) {
+                if (toExecute.startsWith("//") || toExecute.startsWith("#")) {
+                    LOG.debug("Comment: " + toExecute);
+                    sb = new StringBuilder();
+                } else if (toExecute.startsWith("/*")) {
+                    LOG.debug("Multiline comment START");
+                    if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                        currentPrompt = console.getPrompt();
+                        String tempPrompt =
+                                StringUtils.repeat(" ", DEFAULT_PROMPT.length()-1) + DEFAULT_TEMP_PROMPT + " ";
+                        console.setPrompt(tempPrompt);
+                    }
+                    if(toExecute.endsWith("*/")){
+                        LOG.debug("Multiline comment END");
+                        sb = new StringBuilder();
+                        if(!console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                            console.setPrompt(currentPrompt);
+                        }
+                    }
+                } else if (toExecute.endsWith(";")) {
+                    if (toExecute.toLowerCase().startsWith("help")) {
                         showHelp(sb.toString());
-                    } else if (toExecute.toLowerCase().startsWith("add connector") || toExecute.toLowerCase()
-                            .startsWith("add datastore")) {
-                        sendManifest(toExecute);
-                        println("");
-                    } else if (toExecute.toLowerCase().startsWith("reset metadata")) {
-                        resetMetadata();
                     } else if (toExecute.toLowerCase().startsWith("use ")) {
                         updateCatalog(toExecute);
-                        println("");
-                    }else if(toExecute.toLowerCase().startsWith("list connectors")){
-                        listConnectors();
+                    } else if(executeApiCall(toExecute)) {
+                        LOG.debug("API call executed.");
                     } else {
                         executeQuery(toExecute);
-                        println("");
                     }
                     sb = new StringBuilder();
+                    if(!console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                        console.setPrompt(currentPrompt);
+                    }
+                    println("");
                 } else if (toExecute.toLowerCase().startsWith("help")) {
                     showHelp(sb.toString());
                     sb = new StringBuilder();
+                    println("");
                 } else if (toExecute.toLowerCase().startsWith("script")) {
                     String[] params = toExecute.split(" ");
                     if (params.length == 2) {
@@ -407,6 +504,14 @@ public class Shell {
                         showHelp(sb.toString());
                     }
                     sb = new StringBuilder();
+                    println("");
+                } else if(!toExecute.isEmpty()) { // Multiline code
+                    if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
+                        currentPrompt = console.getPrompt();
+                        String tempPrompt =
+                                StringUtils.repeat(" ", DEFAULT_PROMPT.length()-1) + DEFAULT_TEMP_PROMPT + " ";
+                        console.setPrompt(tempPrompt);
+                    }
                 }
             }
         } catch (IOException ex) {
@@ -416,21 +521,47 @@ public class Shell {
         }
     }
 
-    private void listConnectors() {
-        CommandResult commandResult= metaDriver.listConnectors();
-        LOG.info(commandResult.getResult());
+    /**
+     * Trigger the explain plan operation using the driver.
+     * @param toExecute The user input.
+     * @return Execution plan.
+     */
+    private String explainPlan(String toExecute){
+        Result r = crossDataDriver.explainPlan(toExecute.substring(EXPLAIN_PLAN_TOKEN.length()));
+        return ConsoleUtils.stringResult(r);
     }
+
+    private String describeConnectors() {
+        return ConsoleUtils.stringResult(crossDataDriver.describeConnectors());
+    }
+
+    private String describeConnector(String connectorName) {
+        return ConsoleUtils.stringResult(crossDataDriver.describeConnector(new ConnectorName(connectorName)));
+    }
+
+    private String describeSystem() {
+        return ConsoleUtils.stringResult(crossDataDriver.describeSystem());
+    }
+
+    private String describeCatalogs() {
+        return ConsoleUtils.stringResult(crossDataDriver.listCatalogs());
+    }
+
+    private String describeDatastore(String datastoreName) {
+        return ConsoleUtils.stringResult(crossDataDriver.describeDatastore(new DataStoreName(datastoreName)));
+    }
+
 
     private String updateCatalog(String toExecute) {
         String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();
-        String currentCatalog = metaDriver.getCurrentCatalog();
+        String currentCatalog = crossDataDriver.getCurrentCatalog();
         if(newCatalog.isEmpty()){
-            metaDriver.setCurrentCatalog(newCatalog);
+            crossDataDriver.setCurrentCatalog(newCatalog);
             currentCatalog = newCatalog;
         } else {
-            List<String> catalogs = metaDriver.listCatalogs().getCatalogList();
+            List<String> catalogs = crossDataDriver.listCatalogs().getCatalogList();
             if (catalogs.contains(newCatalog.toLowerCase())) {
-                metaDriver.setCurrentCatalog(newCatalog);
+                crossDataDriver.setCurrentCatalog(newCatalog);
                 currentCatalog = newCatalog;
             } else {
                 LOG.error("Catalog " + newCatalog + " doesn't exist.");
@@ -441,10 +572,17 @@ public class Shell {
     }
 
     /**
-     * Trigger the operation to reset the metadata information.
+     * Trigger the operation to reset only the metadata information related to catalogs.
      */
-    private void resetMetadata() {
-        metaDriver.resetMetadata();
+    private String cleanMetadata() {
+        return ConsoleUtils.stringResult(crossDataDriver.cleanMetadata());
+    }
+
+    /**
+     * Trigger the operation to reset all the data in the server.
+     */
+    private String resetServerdata() {
+        return ConsoleUtils.stringResult(crossDataDriver.resetServerdata());
     }
 
     /**
@@ -483,20 +621,36 @@ public class Shell {
 
         long queryStart = System.currentTimeMillis();
         long queryEnd = queryStart;
-        Result metaResult;
+        Result crossDataResult;
 
         try {
-            metaResult = metaDriver.addManifest(manifest);
+            crossDataResult = crossDataDriver.addManifest(manifest);
         } catch (ManifestException e) {
             LOG.error("CrossdataManifest couldn't be parsed", e);
             return null;
         }
         queryEnd = System.currentTimeMillis();
-        updatePrompt(metaResult);
-        println("Result: " + ConsoleUtils.stringResult(metaResult));
-        println("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
-
+        updatePrompt(crossDataResult);
+        LOG.info("Result: " + ConsoleUtils.stringResult(crossDataResult));
+        LOG.info("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
         return "OK";
+    }
+
+    private String dropManifest(int manifestType, String manifestName) {
+        try {
+            Result result = crossDataDriver.dropManifest(manifestType, manifestName);
+            String message;
+            if(result.hasError()){
+                ErrorResult errorResult = (ErrorResult) result;
+                message = errorResult.getErrorMessage();
+            } else {
+                CommandResult commandResult = (CommandResult) result;
+                message = commandResult.getResult().toString();
+            }
+            return message;
+        } catch (ManifestException e) {
+            return "ERROR";
+        }
     }
 
     /**

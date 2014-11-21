@@ -103,8 +103,8 @@ public class Engine {
 
         parser = new Parser();
         validator = new Validator();
-        manager = new APIManager();
         planner = new Planner();
+        manager = new APIManager(parser, validator, planner);
         coordinator = new Coordinator();
     }
 

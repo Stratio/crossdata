@@ -36,21 +36,16 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code SELECT} statement from the META language.
+ * Class that models a {@code SELECT} statement from the CROSSDATA language.
  */
-public class SelectStatement extends MetaStatement implements Serializable {
-
-    /**
-     * Maximum limit of rows to be retreived in a query.
-     */
-    private static final int MAX_LIMIT = 10000;
+public class SelectStatement extends CrossdataStatement implements Serializable {
 
     /**
      * The name of the target table.
      */
     private final TableName tableName;
     /**
-     * The list of selectors to be retreived.
+     * The list of selectors to be retrieved.
      */
     private SelectExpression selectExpression = null;
     /**
@@ -262,11 +257,7 @@ public class SelectStatement extends MetaStatement implements Serializable {
      */
     public void setLimit(int limit) {
         this.limitInc = true;
-        if (limit <= MAX_LIMIT) {
-            this.limit = limit;
-        } else {
-            this.limit = MAX_LIMIT;
-        }
+        this.limit = limit;
     }
 
     public Window getWindow() {
@@ -301,7 +292,7 @@ public class SelectStatement extends MetaStatement implements Serializable {
     }
 
     /**
-     * Creates a String representing the Statement with META syntax.
+     * Creates a String representing the Statement with CROSSDATA syntax.
      *
      * @return String
      */

@@ -19,11 +19,15 @@
 package com.stratio.crossdata.core.normalizer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.AmbiguousNameException;
@@ -34,6 +38,8 @@ import com.stratio.crossdata.common.exceptions.validation.NotValidColumnExceptio
 import com.stratio.crossdata.common.exceptions.validation.YodaConditionException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
@@ -115,7 +121,7 @@ public class Normalizator {
         for (TableName tableName : fromTables) {
             checkTable(tableName);
             fields.getCatalogNames().add(tableName.getCatalogName());
-            fields.getTableNames().add(tableName);
+            fields.addTableName(tableName);
         }
     }
 
@@ -139,9 +145,6 @@ public class Normalizator {
      */
     public void normalizeJoins(InnerJoin innerJoin)
             throws ValidationException {
-        TableName joinTable = innerJoin.getTablename();
-        checkTable(joinTable);
-        fields.getTableNames().add(joinTable);
         checkJoinRelations(innerJoin.getRelations());
     }
 
@@ -166,7 +169,7 @@ public class Normalizator {
     public void normalizeOrderBy()
             throws ValidationException {
 
-        //TODO: NOT SUPORTED YET. REVIEW IN FUTURES RELEASES
+        //TODO: NOT SUPPORTED YET. REVIEW IN FUTURES RELEASES
         OrderBy orderBy = ((SelectStatement) parsedQuery.getStatement()).getOrderBy();
 
         if (orderBy != null) {
@@ -183,7 +186,7 @@ public class Normalizator {
      */
     public void normalizeOrderBy(OrderBy orderBy)
             throws ValidationException {
-        for (Selector selector : orderBy.getSelectorList()) {
+        for (Selector selector: orderBy.getSelectorList()) {
             switch (selector.getType()) {
             case COLUMN:
                 checkColumnSelector((ColumnSelector) selector);
@@ -208,7 +211,7 @@ public class Normalizator {
             throws ValidationException {
         SelectExpression selectExpression = ((SelectStatement) parsedQuery.getStatement()).getSelectExpression();
         if (selectExpression != null) {
-            normalizeSelectExpresion(selectExpression);
+            normalizeSelectExpression(selectExpression);
         }
     }
 
@@ -217,7 +220,7 @@ public class Normalizator {
      * @param selectExpression The select expression
      * @throws ValidationException
      */
-    public void normalizeSelectExpresion(SelectExpression selectExpression)
+    public void normalizeSelectExpression(SelectExpression selectExpression)
             throws ValidationException {
         fields.setDistinctSelect(selectExpression.isDistinct());
         List<Selector> normalizeSelectors = checkListSelector(selectExpression.getSelectorList());
@@ -230,11 +233,9 @@ public class Normalizator {
      */
     public void normalizeGroupBy() throws ValidationException {
         GroupBy groupBy = ((SelectStatement) parsedQuery.getStatement()).getGroupBy();
-        //TODO: NOT SUPORTED YET. REVIEW IN FUTURES RELEASES
         if (groupBy != null) {
             normalizeGroupBy(groupBy);
             fields.setGroupBy(groupBy);
-            throw new BadFormatException("GROUP BY not supported yet.");
         }
     }
 
@@ -391,7 +392,7 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void checkColumnSelector(ColumnSelector selector) throws ValidationException {
-        ColumnName columnName = selector.getName();
+        ColumnName columnName = applyAlias(selector.getName());
         if (columnName.isCompletedName()) {
             if (!MetadataManager.MANAGER.exists(columnName)) {
                 throw new NotValidColumnException(columnName);
@@ -400,8 +401,21 @@ public class Normalizator {
             TableName searched = this.searchTableNameByColumn(columnName);
             columnName.setTableName(searched);
         }
-        fields.getColumnNames().add(columnName);
+        fields.addColumnName(columnName, selector.getAlias());
+        selector.setName(columnName);
 
+    }
+
+    private ColumnName applyAlias(ColumnName columnName){
+        ColumnName result = columnName;
+        if(columnName.getTableName() != null && fields.existTableAlias(columnName.getTableName().getName())){
+            columnName.setTableName(fields.getTableName(columnName.getTableName().getName()));
+        }
+
+        if(fields.existColumnAlias(columnName.getName())){
+            result = fields.getColumnName(columnName.getName());
+        }
+        return result;
     }
 
     /**
@@ -498,15 +512,19 @@ public class Normalizator {
     }
 
     /**
-     * Validate the Funtions Selectors of a parsed query.
+     * Validate the Functions Selectors of a parsed query.
      * @param functionSelector The function Selector to validate.
      * @throws ValidationException
      */
     public void checkFunctionSelector(FunctionSelector functionSelector)
             throws ValidationException {
+        // Check columns
         List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());
         functionSelector.getFunctionColumns().clear();
         functionSelector.getFunctionColumns().addAll(normalizeSelector);
+        // Check returning type
+        //TODO: This should be updated with information from the MetadataManager
+        functionSelector.setReturningType(ColumnType.INT);
     }
 
     private void checkRightSelector(ColumnName name, Operator operator, Selector rightTerm)
@@ -518,6 +536,8 @@ public class Normalizator {
 
         if (rightTerm.getType() == SelectorType.COLUMN) {
             ColumnSelector columnSelector = (ColumnSelector) rightTerm;
+            ColumnName columnName = applyAlias(columnSelector.getName());
+            columnSelector.setName(columnName);
 
             TableName foundTableName = this.searchTableNameByColumn(columnSelector.getName());
             columnSelector.getName().setTableName(foundTableName);
@@ -603,7 +623,36 @@ public class Normalizator {
         if (valueType != SelectorType.STRING) {
             throw new NotMatchDataTypeException(column.getName());
         }
-        if (operator != Operator.EQ && operator != Operator.DISTINCT) {
+
+        if(operator == Operator.MATCH){
+            if(valueType != SelectorType.STRING){
+                throw new BadFormatException("MATCH operator only accepts comparison with string literals.");
+            }
+
+            TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(column.getName().getTableName());
+            Map<IndexName, IndexMetadata> indexes = tableMetadata.getIndexes();
+            if(indexes == null || indexes.isEmpty()){
+                throw new BadFormatException("Table "+column.getName().getTableName() + " doesn't contain any index.");
+            }
+
+            boolean indexFound = false;
+            Collection<IndexMetadata> indexesMetadata = indexes.values();
+            Iterator<IndexMetadata> iter = indexesMetadata.iterator();
+            while(iter.hasNext() && !indexFound){
+                IndexMetadata indexMetadata = iter.next();
+                if(indexMetadata.getColumns().containsKey(column.getName())){
+                    if(indexMetadata.getType() != IndexType.FULL_TEXT){
+                        throw new BadFormatException("MATCH operator can be only applied to FULL_TEXT indexes.");
+                    } else {
+                        indexFound = true;
+                    }
+                }
+            }
+            if(!indexFound){
+                throw new BadFormatException("No index was found for the MATCH operator.");
+            }
+        } else if (operator != Operator.EQ && operator != Operator.GT && operator != Operator.GET
+                && operator != Operator.LT && operator != Operator.LET && operator != Operator.DISTINCT) {
             throw new BadFormatException("String relations only accept equal operator.");
         }
 

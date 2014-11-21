@@ -17,7 +17,7 @@ public class MetadataManagerConstructorTest {
     @BeforeTest
     public void testShouldBeInitException(){
         DataStoreName name = new DataStoreName("dataStoreTest");
-        String version = "0.1.0";
+        String version = "0.1.1";
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
@@ -33,6 +33,7 @@ public class MetadataManagerConstructorTest {
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testConstructorException(){
         MetadataManager.MANAGER.init(null, null, null);
+        fail();
     }
 
 }

@@ -30,7 +30,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.utils.MetaUtils;
+import com.stratio.crossdata.common.utils.XDshUtils;
 
 /**
  * Utility class for parser-related tasks.
@@ -158,7 +158,7 @@ public final class ParserUtils {
     public static String getSuggestion(String query, AntlrError antlrError) {
         // We initialize the errorWord with the first word of the query
         // We initialize the token words with the initial tokens
-        Set<String> statementTokens = MetaUtils.INITIALS;
+        Set<String> statementTokens = XDshUtils.INITIALS;
         // We initialize the char position of the first word
         int charPosition = 0;
         // We initialize the suggestion from exception messages containing "T_..."
@@ -170,7 +170,7 @@ public final class ParserUtils {
             charPosition = getCharPosition(antlrError);
             // It's not a initial token
             if (charPosition > 0) {
-                statementTokens = MetaUtils.NON_INITIALS;
+                statementTokens = XDshUtils.NON_INITIALS;
             }
 
             // Antlr exception message is not provided
@@ -189,7 +189,7 @@ public final class ParserUtils {
                 suggestionFromToken = errorMessage.substring(positionToken + 2);
                 suggestionFromToken = suggestionFromToken.trim().split(" ")[0].toUpperCase();
 
-                // We check if there is a reserved word of Meta grammar equivalent to the expecting token
+                // We check if there is a reserved word of Crossdata grammar equivalent to the expecting token
                 if (!statementTokens.contains(suggestionFromToken)) {
                     suggestionFromToken = "";
                 }

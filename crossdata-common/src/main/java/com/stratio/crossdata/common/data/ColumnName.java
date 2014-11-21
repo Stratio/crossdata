@@ -21,11 +21,17 @@ package com.stratio.crossdata.common.data;
 public class ColumnName extends Name {
 
     /**
+     * Serial version UID in order to be Serializable.
+     */
+    private static final long serialVersionUID = -659653868246944302L;
+
+    /**
      * Name of the column.
      */
     private final String name;
 
     private TableName tableName;
+    private String alias;
 
     /**
      * Default constructor.
@@ -64,6 +70,10 @@ public class ColumnName extends Name {
 
     public String getName() {
         return name;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     @Override
@@ -125,5 +135,13 @@ public class ColumnName extends Name {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
         return result;
+    }
+
+    public String getColumnNameToShow() {
+        return (alias==null)? name: alias;
+    }
+
+    public String getAlias() {
+        return alias;
     }
 }

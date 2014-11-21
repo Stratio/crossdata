@@ -27,7 +27,7 @@ public class DropDataStoreStatementTest extends ParsingTest {
     @Test
     public void dropDatastoreSimple() {
         String inputText = "DROP DATASTORE myDatastore;";
-        testRegularStatement(inputText, "dropDatastoreSimple");
+        testParserFails(inputText, "dropDatastoreSimple");
     }
 
     @Test

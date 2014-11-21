@@ -393,17 +393,19 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testShouldBeUniqueException(){
         DataStoreName name = createTestDatastore();
-        String version = "0.1.0";
+        String version = "0.1.1";
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
         DataStoreMetadata dataStore = new DataStoreMetadata(name, version, requiredProperties, othersProperties, behaviors);
         MetadataManager.MANAGER.createDataStore(dataStore);
+        fail();
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testShouldExistException(){
         MetadataManager.MANAGER.getCluster(new ClusterName("random"));
+        fail();
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -411,6 +413,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         createTestCatalog("catalogTest");
         MetadataManager.MANAGER.createCatalog(new CatalogMetadata(new CatalogName("catalogTest"),
                 new HashMap<Selector, Selector>(), new HashMap<TableName, TableMetadata>()));
+        fail();
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -434,6 +437,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         TableMetadata tableMetadata = new TableMetadata(name, options, columns, indexes, clusterName, partitionKey,
                 clusterKey);
         MetadataManager.MANAGER.createTable(tableMetadata);
+        fail();
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -446,6 +450,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         Map<ConnectorName, ConnectorAttachedMetadata > connectorAttachedRefs = new HashMap<>();
         ClusterMetadata clusterMetadata = new ClusterMetadata(name, dataStoreRef, options, connectorAttachedRefs);
         MetadataManager.MANAGER.createCluster(clusterMetadata);
+        fail();
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -453,7 +458,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         createTestDatastore();
 
         DataStoreName name = new DataStoreName("dataStoreTest");
-        String version = "0.1.0";
+        String version = "0.1.1";
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
@@ -461,6 +466,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
                 othersProperties, behaviors);
 
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
+        fail();
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -470,7 +476,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String actorRef = "akkaRefTest";
         createTestConnector(name, dataStoreName, actorRef);
 
-        String version = "0.1.0";
+        String version = "0.1.1";
         List<String> dataStoreRefs = new ArrayList<>();
         List<PropertyType> requiredProperties = new ArrayList<>();
         List<PropertyType> optionalProperties = new ArrayList<>();
@@ -478,6 +484,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(new ConnectorName(name), version, dataStoreRefs,
                 requiredProperties, optionalProperties, supportedOperations);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
+        fail();
     }
 
 }

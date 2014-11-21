@@ -38,7 +38,7 @@ public class HelpManager {
     /**
      * Path of the file with the help contents.
      */
-    private static final String HELP_PATH = "com/stratio/crossdata/sh/help/MetaClientHelp.yaml";
+    private static final String HELP_PATH = "com/stratio/crossdata/sh/help/CrossdataClientHelp.yaml";
 
     /**
      * Load the help contents by reading the contents of {@code HELP_PATH}.

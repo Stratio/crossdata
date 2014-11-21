@@ -20,14 +20,17 @@ package com.stratio.crossdata.server.actors
 
 import java.util.UUID
 
-import akka.actor.{Actor, Props, ReceiveTimeout}
+import akka.actor.{Address, Actor, Props, ReceiveTimeout}
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
-import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.result.{ConnectResult,Result}
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
+import scala.collection.immutable.HashMap
+import akka.cluster.ClusterEvent.MemberUp
+import java.util
 
 
 object ServerActor {
@@ -37,14 +40,22 @@ object ServerActor {
 class ServerActor(engine: Engine) extends Actor with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
-  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props().withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
-  val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).withRouter(RoundRobinRouter(nrOfInstances = num_coordinator_actor)), "CoordinatorActor")
-  val plannerActorRef = context.actorOf(PlannerActor.props(coordinatorActorRef, engine.getPlanner).withRouter(RoundRobinRouter(nrOfInstances = num_planner_actor)), "PlannerActor")
-  val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef, engine.getValidator).withRouter(RoundRobinRouter(nrOfInstances = num_validator_actor)), "ValidatorActor")
-  val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef, engine.getParser()).withRouter(RoundRobinRouter(nrOfInstances = num_parser_actor)), "ParserActor")
-  val APIActorRef = context.actorOf(APIActor.props(engine.getAPIManager()).withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
+  var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet[Address]()
 
-  def receive = {
+  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(connectorManagerActorsSharedMemory).
+    withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
+  val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).
+    withRouter(RoundRobinRouter(nrOfInstances = num_coordinator_actor)), "CoordinatorActor")
+  val plannerActorRef = context.actorOf(PlannerActor.props(coordinatorActorRef, engine.getPlanner).
+    withRouter(RoundRobinRouter(nrOfInstances = num_planner_actor)), "PlannerActor")
+  val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef, engine.getValidator).
+    withRouter(RoundRobinRouter(nrOfInstances = num_validator_actor)), "ValidatorActor")
+  val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef, engine.getParser()).
+    withRouter(RoundRobinRouter(nrOfInstances = num_parser_actor)), "ParserActor")
+  val APIActorRef = context.actorOf(APIActor.props(engine.getAPIManager()).
+    withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
+
+  def receive : Receive= {
     case query: Query => {
       logger.info("query: " + query + " sender: " + sender.path.address)
       parserActorRef forward query

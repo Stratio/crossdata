@@ -19,13 +19,21 @@
 package com.stratio.crossdata.common.executionplan;
 
 import java.util.Collection;
+import java.util.List;
 
+import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.validation.CoordinationException;
+import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.communication.DeleteRows;
 import com.stratio.crossdata.communication.Insert;
 import com.stratio.crossdata.communication.InsertBatch;
 import com.stratio.crossdata.communication.StorageOperation;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.communication.Truncate;
+import com.stratio.crossdata.communication.Update;
 
 /**
  * Storage related operations.
@@ -36,9 +44,15 @@ public class StorageWorkflow extends ExecutionWorkflow{
 
     private TableMetadata tableMetadata = null;
 
+    private TableName tableName = null;
+
     private Row row = null;
 
     private Collection<Row> rows = null;
+
+    private Collection<Filter> whereClauses = null;
+
+    private Collection<Relation> assignments = null;
 
     /**
      * Class constructor.
@@ -73,12 +87,20 @@ public class StorageWorkflow extends ExecutionWorkflow{
      * Get the storage operation to be execution.
      * @return A {@link com.stratio.crossdata.communication.StorageOperation}.
      */
-    public StorageOperation getStorageOperation(){
-        StorageOperation result = null;
+    public StorageOperation getStorageOperation() throws CoordinationException {
+        StorageOperation result;
         if(ExecutionType.INSERT.equals(this.executionType)){
             result = new Insert(queryId, this.clusterName, this.tableMetadata, this.row);
-        }else if(ExecutionType.INSERT_BATCH.equals(this.executionType)){
+        } else if(ExecutionType.INSERT_BATCH.equals(this.executionType)){
             result = new InsertBatch(queryId, this.clusterName, this.tableMetadata, this.rows);
+        } else if(ExecutionType.DELETE_ROWS.equals(this.executionType)){
+            result = new DeleteRows(queryId, this.clusterName, tableName, this.whereClauses);
+        } else if(ExecutionType.UPDATE_TABLE.equals(this.executionType)){
+            result = new Update(queryId, this.clusterName, tableName, this.assignments, this.whereClauses);
+        } else if(ExecutionType.TRUNCATE_TABLE.equals(this.executionType)){
+            result = new Truncate(queryId, this.clusterName, tableName);
+        } else {
+            throw new CoordinationException("Operation " + this.executionType + " not supported yet.");
         }
         return result;
     }
@@ -98,4 +120,29 @@ public class StorageWorkflow extends ExecutionWorkflow{
     public Collection<Row> getRows() {
         return rows;
     }
+
+    public void setWhereClauses(List<Filter> whereClauses) {
+        this.whereClauses = whereClauses;
+    }
+
+    public void setAssignments(List<Relation> assignments) {
+        this.assignments = assignments;
+    }
+
+    public Collection<Filter> getWhereClauses() {
+        return whereClauses;
+    }
+
+    public Collection<Relation> getAssignments() {
+        return assignments;
+    }
+
+    public TableName getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(TableName tableName) {
+        this.tableName = tableName;
+    }
+
 }

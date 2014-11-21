@@ -63,7 +63,7 @@ chown -R spark:spark /opt/sds/spark/.ssh/
 
 #Config Spark
 echo "Configuring Spark..."
-sed -i "s/^\(spark.master\).*$/\1         spark:\/\/$ipaddress:7077/" /etc/sds/spark/spark-defaults.conf
+sed -i "s/^\(spark.master\).*$/\1 spark:\/\/$ipaddress:7077/" /etc/sds/spark/spark-defaults.conf
 sed -i "s/^export MESOS_NATIVE_LIBRARY=.*$//" /etc/sds/spark/spark-env.sh
 sed -i "s/^export MASTER=.*$//" /etc/sds/spark/spark-env.sh
 sed -i "s/^#export SPARK_EXECUTOR_URI=.*$//" /etc/sds/spark/spark-env.sh

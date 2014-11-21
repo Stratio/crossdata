@@ -19,18 +19,41 @@
 package com.stratio.crossdata.connectors
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
 import com.stratio.crossdata.common.exceptions.ExecutionException
-import com.stratio.crossdata.common.result.{ConnectResult, MetadataResult, QueryResult, QueryStatus, Result, StorageResult}
-import com.stratio.crossdata.communication.{ Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, MetadataOperation, StorageOperation}
-import com.stratio.crossdata.communication.{ACK, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DropIndex, DropTable}
-import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
+import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.communication._
 import org.apache.log4j.Logger
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
+import com.stratio.crossdata.communication.CreateCatalog
+import com.stratio.crossdata.communication.CreateIndex
+import com.stratio.crossdata.communication.replyConnectorName
+import com.stratio.crossdata.communication.Update
+import akka.cluster.ClusterEvent.MemberRemoved
+import com.stratio.crossdata.communication.IAmAlive
+import com.stratio.crossdata.communication.Execute
+import akka.cluster.ClusterEvent.MemberUp
+import com.stratio.crossdata.communication.ACK
+import com.stratio.crossdata.communication.getConnectorName
+import com.stratio.crossdata.communication.CreateTableAndCatalog
+import com.stratio.crossdata.communication.AlterTable
+import scala.Some
+import com.stratio.crossdata.communication.Truncate
+import com.stratio.crossdata.communication.DropIndex
+import com.stratio.crossdata.communication.CreateTable
+import com.stratio.crossdata.communication.InsertBatch
+import akka.cluster.ClusterEvent.CurrentClusterState
+import com.stratio.crossdata.communication.AsyncExecute
+import com.stratio.crossdata.communication.DeleteRows
+import akka.cluster.ClusterEvent.UnreachableMember
+import com.stratio.crossdata.communication.HeartbeatSig
+import com.stratio.crossdata.communication.DropTable
+import com.stratio.crossdata.communication.Insert
+import com.stratio.crossdata.common.data.ClusterName
 
 object State extends Enumeration {
   type state = Value
@@ -77,28 +100,35 @@ ActorLogging with IResultHandler{
       this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
       sender ! ConnectResult.createConnectResult("Connected successfully"); //TODO once persisted sessionId,
     }
+    case disconnectRequest: com.stratio.crossdata.communication.DisconnectFromCluster => {
+      logger.debug("->" + "Receiving MetadataRequest")
+      logger.info("Received disconnectFromCluster command")
+      connector.close(new ClusterName(disconnectRequest.clusterName))
+      this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
+      sender ! ConnectResult.createConnectResult("Connected successfully"); //TODO once persisted sessionId,
+    }
     case _: com.stratio.crossdata.communication.Shutdown => {
       logger.debug("->" + "Receiving Shutdown")
       this.shutdown()
     }
     case ex: Execute => {
       logger.info("Processing query: " + ex)
-      metodExecute(ex, sender)
+      methodExecute(ex, sender)
     }
     case aex: AsyncExecute => {
       logger.info("Processing asynchronous query: " + aex)
-      metodAsyncExecute(aex, sender)
+      methodAsyncExecute(aex, sender)
     }
     case metadataOp: MetadataOperation => {
 
-      metod1(metadataOp, sender)
+      method1(metadataOp, sender)
     }
     case result: Result =>
       logger.debug("connectorActor receives Result with ID=" + result.getQueryId())
       parentActorRef.get ! result
     //TODO:  ManagementWorkflow
     case storageOp: StorageOperation => {
-      metodStorageop(storageOp, sender)
+      methodStorageop(storageOp, sender)
     }
     case msg: getConnectorName => {
       logger.info(sender + " asked for my name")
@@ -148,7 +178,7 @@ ActorLogging with IResultHandler{
     }
   }
 
-  private def metodExecute(ex:Execute, s:ActorRef): Unit ={
+  private def methodExecute(ex:Execute, s:ActorRef): Unit ={
 
     try {
       runningJobs.put(ex.queryId, s)
@@ -162,13 +192,16 @@ ActorLogging with IResultHandler{
         s ! result
       }
       case err: Error =>
-        logger.error("error in ConnectorActor( receiving LogicalWorkflow )")
+        logger.error("Error in ConnectorActor (Receiving LogicalWorkflow)")
+        val result = new ErrorResult(err.getCause.asInstanceOf[Exception])
+        result.setQueryId(ex.queryId)
+        s ! result
     } finally {
       runningJobs.remove(ex.queryId)
     }
   }
 
-  private def metodAsyncExecute(aex: AsyncExecute, sender:ActorRef) : Unit = {
+  private def methodAsyncExecute(aex: AsyncExecute, sender:ActorRef) : Unit = {
     val asyncSender = sender
     try {
       runningJobs.put(aex.queryId, asyncSender)
@@ -186,7 +219,7 @@ ActorLogging with IResultHandler{
     }
   }
 
-  private def metod1(metadataOp: MetadataOperation, s: ActorRef): Unit = {
+  private def method1(metadataOp: MetadataOperation, s: ActorRef): Unit = {
     var qId: String = metadataOp.queryId
     var metadataOperation: Int = 0
     logger.info("Received queryId = " + qId)
@@ -194,16 +227,17 @@ ActorLogging with IResultHandler{
       val opclass = metadataOp.getClass().toString().split('.')
       val eng = connector.getMetadataEngine()
 
-      val abc = metodOpc(opclass,  metadataOp, eng)
+      val abc = methodOpc(opclass,  metadataOp, eng)
       qId = abc._1
       metadataOperation = abc._2
     } catch {
       case ex: Exception => {
-        val result = Result.createExecutionErrorResult(ex.getStackTraceString)
+        val result = Result.createExecutionErrorResult("Connector exception: " + ex.getMessage)
+        result.setQueryId(qId)
         s ! result
       }
       case err: Error =>
-        logger.error("error in ConnectorActor( receiving MetaOperation)")
+        logger.error("error in ConnectorActor( receiving CrossdataOperation)")
     }
     val result = MetadataResult.createSuccessMetadataResult(metadataOperation)
     result.setQueryId(qId)
@@ -211,7 +245,7 @@ ActorLogging with IResultHandler{
     s ! result
   }
 
-  private def metodStorageop(storageOp: StorageOperation, s: ActorRef): Unit = {
+  private def methodStorageop(storageOp: StorageOperation, s: ActorRef): Unit = {
     val qId: String = storageOp.queryId
     try {
       val eng = connector.getStorageEngine()
@@ -222,8 +256,17 @@ ActorLogging with IResultHandler{
         case InsertBatch(queryId, clustername, table, rows) => {
           eng.insert(clustername, table, rows)
         }
+        case DeleteRows(queryId, clustername, table, whereClauses) => {
+          eng.delete(clustername, table, whereClauses)
+        }
+        case Update(queryId, clustername, table, assignments, whereClauses) => {
+          eng.update(clustername, table, assignments, whereClauses)
+        }
+        case Truncate(queryId, clustername, table) => {
+          eng.truncate(clustername, table)
+        }
       }
-      val result = StorageResult.createSuccessFulStorageResult("INSERTED successfully");
+      val result = StorageResult.createSuccessFulStorageResult("STORED successfully");
       result.setQueryId(qId)
       s ! result
     } catch {
@@ -233,14 +276,14 @@ ActorLogging with IResultHandler{
         s ! result
       }
       case err: Error => {
-        logger.error("error in ConnectorActor( receiving StorageOperation)")
-        val result = crossdata.common.result.Result.createExecutionErrorResult("error in ConnectorActor")
+        logger.error("Error in ConnectorActor(Receiving StorageOperation)")
+        val result = crossdata.common.result.Result.createExecutionErrorResult("Error in ConnectorActor")
         s ! result
       }
     }
   }
 
-  private def metodOpc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
+  private def methodOpc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
 
     opclass(opclass.length - 1) match {
       case "CreateTable" => {
@@ -260,7 +303,6 @@ ActorLogging with IResultHandler{
         (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX)
       }
       case "DropCatalog" => {
-        val qId = metadataOp.asInstanceOf[DropIndex].queryId
         eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
         (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_CATALOG)
@@ -272,6 +314,11 @@ ActorLogging with IResultHandler{
       case "DropTable" => {
         eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
        (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE)
+      }
+      case "AlterTable" => {
+        eng.alterTable(metadataOp.asInstanceOf[AlterTable].targetCluster, metadataOp.asInstanceOf[AlterTable]
+          .tableName, metadataOp.asInstanceOf[AlterTable].alterOptions)
+        (metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_ALTER_TABLE)
       }
       case "CreateTableAndCatalog" => {
         eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,

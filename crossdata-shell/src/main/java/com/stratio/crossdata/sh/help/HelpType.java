@@ -19,7 +19,7 @@
 package com.stratio.crossdata.sh.help;
 
 /**
- * Type of help requested by the user through the META shell.
+ * Type of help requested by the user through the CROSSDATA shell.
  */
 public enum HelpType {
     /**
@@ -39,9 +39,9 @@ public enum HelpType {
      */
     CREATE,
     /**
-     * Show create keyspace help.
+     * Show create catalog help.
      */
-    CREATE_KEYSPACE,
+    CREATE_CATALOG,
     /**
      * Show create table help.
      */
@@ -79,9 +79,9 @@ public enum HelpType {
      */
     DROP_TABLE,
     /**
-     * Show drop keyspace help.
+     * Show drop catalog help.
      */
-    DROP_KEYSPACE,
+    DROP_CATALOG,
     /**
      * Show drop trigger help.
      */
@@ -131,9 +131,9 @@ public enum HelpType {
      */
     ALTER,
     /**
-     * Show alter keyspace help.
+     * Show alter catalog help.
      */
-    ALTER_KEYSPACE,
+    ALTER_CATALOG,
     /**
      * Show alter table help.
      */
@@ -147,13 +147,13 @@ public enum HelpType {
      */
     DESCRIBE,
     /**
-     * Show describe keyspace help.
+     * Show describe catalog help.
      */
-    DESCRIBE_KEYSPACE,
+    DESCRIBE_CATALOG,
     /**
-     * Show describe keyspace help.
+     * Show describe catalog help.
      */
-    DESCRIBE_KEYSPACES,
+    DESCRIBE_CATALOGS,
     /**
      * Show describe table help.
      */

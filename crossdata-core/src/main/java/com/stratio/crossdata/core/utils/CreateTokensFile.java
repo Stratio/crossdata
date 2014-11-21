@@ -56,10 +56,10 @@ public final class CreateTokensFile {
                 workingDir = workingDir.concat("/");
             }
 
-            String metaGrammarPath = workingDir + "src/main/java/com/stratio/crossdata/core/grammar/Meta.g";
-            String metaTokens = workingDir + "src/main/resources/com/stratio/crossdata/parser/tokens.txt";
-            File fileGrammar = new File(metaGrammarPath);
-            File outFile = new File(metaTokens);
+            String crossDataGrammarPath = workingDir + "src/main/java/com/stratio/crossdata/core/grammar/XDql.g";
+            String crossDataTokens = workingDir + "src/main/resources/com/stratio/crossdata/parser/tokens.txt";
+            File fileGrammar = new File(crossDataGrammarPath);
+            File outFile = new File(crossDataTokens);
 
             LOG.info("Reading grammar from " + fileGrammar.getAbsolutePath());
             BufferedWriter bw;

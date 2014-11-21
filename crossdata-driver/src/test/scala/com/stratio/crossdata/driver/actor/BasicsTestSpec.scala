@@ -25,7 +25,7 @@ import com.stratio.crossdata.common.result.ErrorResult
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike}
-import org.testng.Assert._
+import org.testng.Assert.{assertTrue}
 
 import scala.concurrent.duration._
 
@@ -35,9 +35,10 @@ import scala.concurrent.duration._
 class BasicsTestSpec extends TestKit(ActorSystem("TestKitUsageSpec", ConfigFactory.parseString(TestKitUsageSpec.config)))
 with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll {
 
-  val proxyRef = system.actorOf(Props(classOf[ProxyActor], testActor, "test", null))
+  val test:String="test"
+  val proxyRef = system.actorOf(Props(classOf[ProxyActor], testActor,test, null))
 
-  val retryTestRef = system.actorOf(Props(classOf[ProxyActor], testActor, "test", null))
+  val retryTestRef = system.actorOf(Props(classOf[ProxyActor], testActor, test, null))
   val retryPolitics: RetryPolitics = new RetryPolitics(3, 1)
 
   override def afterAll() {
@@ -54,7 +55,7 @@ with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll
 
   test("testing retryPolitics 1") {
     within(500 millis) {
-      val r = retryPolitics.askRetry(retryTestRef, "Test").asInstanceOf[ErrorResult]
+      val r = retryPolitics.askRetry(retryTestRef, test).asInstanceOf[ErrorResult]
       assertTrue(r.hasError, "The actor should not forward the message");
     }
   }

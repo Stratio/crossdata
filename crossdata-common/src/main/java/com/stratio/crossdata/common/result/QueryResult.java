@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.result;
 import com.stratio.crossdata.common.data.ResultSet;
 
 /**
- * Result of the execution of a query in META.
+ * Result of the execution of a query in CROSSDATA.
  */
 public final class QueryResult extends Result {
 

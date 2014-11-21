@@ -4,9 +4,9 @@ CROSSDATA Grammar
 
 Language definition
 
-Version: 0.1.0
+Version: 0.1.1
 
-Date: 27, Oct, 2014
+Date: 14, Nov, 2014
 
 
 * * * * *
@@ -19,15 +19,36 @@ Table of contents
 -   [Language Features](#language-features)
     -   [Statements](#statements)
         -   [ADD DATASTORE](#add-dataStore)
+        -   [DROP DATASTORE](#drop-dataStore)
         -   [ADD CONNECTOR](#add-connector)
+        -   [DROP CONNECTOR](#drop-connector)
         -   [ATTACH CLUSTER](#attach-cluster)
+        -   [ALTER CLUSTER](#alter-cluster)
+        -   [DETACH CLUSTER](#detach-cluster)
         -   [ATTACH CONNECTOR](#attach-connector)
+        -   [DETACH CONNECTOR](#detach-connector)
         -   [CREATE CATALOG](#create-catalog)
+        -   [ALTER CATALOG](#alter-catalog)
+        -   [DROP CATALOG](#drop-catalog)
         -   [CREATE TABLE](#create-table)
+        -   [ALTER TABLE] (#alter-table)
+        -   [UPDATE TABLE] (#update-table)
+        -   [DROP TABLE] (#drop-table)
+        -   [TRUNCATE TABLE] (#truncate-table)
+        -   [DELETE] (#delete)
         -   [INSERT](#insert)
+        -   [CREATE INDEX](#create-index)
+        -   [DROP INDEX](#drop-index)
         -   [SELECT](#select)
-        -   [LIST](#list)
-        -   [RESET](#reset)
+        -   [EXPLAIN PLAN](#explain-plan)
+        -   [RESET SERVERDATA](#reset-serverdata)
+        -   [CLEAN METADATA](#clean-metadata)
+        -   [DESCRIBE SYSTEM](#describe-system)
+        -   [DESCRIBE DATASTORE](#describe-datastore)
+        -   [DESCRIBE CONNECTORS](#describe-connectors)
+        -   [DESCRIBE CONNECTOR](#describe-connector)
+        -   [DESCRIBE CATALOGS](#describe-catalogs)
+-   [Shell features] (#shell-features)
 
 * * * * *
 
@@ -138,13 +159,29 @@ Example:
 
     ADD DATASTORE “/home/stratio/crossdata/cassandra.xml”;
 
+### DROP DATASTORE
+
+DROP DATASTORE \<datastore-name\> ';'
+
+Example:
+
+    DROP DATASTORE cassandra;
+
 ### ADD CONNECTOR
 
 ADD CONNECTOR \<path\> ';'
 
 Examples:
 
-    ADD CONNECTOR “/home/stratio/crossdata/connectors/connector\_native\_cassandra.xml”;
+    ADD CONNECTOR “/home/stratio/crossdata/connectors/connector_native_cassandra.xml”;
+
+### DROP CONNECTOR
+
+DROP CONNECTOR \<connector-name\> ';'
+
+Examples:
+
+    DROP CONNECTOR cassandra_connector;
 
 ### ATTACH CLUSTER
 
@@ -152,15 +189,39 @@ ATTACH CLUSTER (IF NOT EXISTS)? \<cluster\_name\> ON DATASTORE \<datastore\_name
 
 Example:
 
-    ATTACH CLUSTER production\_madrid ON DATASTORE cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'port': 9160}
+    ATTACH CLUSTER production_madrid ON DATASTORE cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'port': 9160};
 
-### ATTACH CONNECTOR
+### ALTER CLUSTER
 
-ATTACH CONNECTOR \<connector-name\> TO \<cluster-name\> WITH OPTIONS \<JSON\>‘;'
+ALTER CLUSTER (IF EXISTS)? \<cluster\_name\> WITH \<JSON\> ';'
 
 Example:
 
-    ATTACH CONNECTOR con\_native\_cassandra TO cassandra\_production WITH OPTIONS {'DefaultLimit': '1000'};
+    ALTER CLUSTER production_madrid WITH {"port": 9161};
+
+### DETACH CLUSTER
+
+DETACH CLUSTER \<cluster\_name\>';'
+
+Example:
+
+    DETACH CLUSTER production_madrid;
+
+### ATTACH CONNECTOR
+
+ATTACH CONNECTOR \<connector-name\> TO \<cluster-name\> WITH OPTIONS \<JSON\>';'
+
+Example:
+
+    ATTACH CONNECTOR con_native_cassandra TO cassandra_production WITH OPTIONS {'DefaultLimit': '1000'};
+
+### DETACH CONNECTOR
+
+DETACH CONNECTOR \<connector-name\> FROM \<cluster-name\> WITH OPTIONS \<JSON\>';'
+
+Example:
+
+    DETACH CONNECTOR con_native_cassandra FROM cassandra_production;
 
 ### CREATE CATALOG
 
@@ -168,7 +229,23 @@ CREATE CATALOG (IF NOT EXISTS)? \<catalog\_name\> (WITH \<JSON\>)? ';'
 
 Example:
 
-    CREATE CATALOG catalog1 WITH {"comment": "This is a comment"}                
+    CREATE CATALOG catalog1 WITH {"comment": "This is a comment"};                
+
+### ALTER CATALOG
+
+ALTER CATALOG (IF NOT EXISTS)? \<catalog\_name\> (WITH \<JSON\>)? ';'
+
+Example:
+
+    ALTER CATALOG catalog1 WITH {"comment": "This is a comment"};
+
+### DROP CATALOG
+
+DROP CATALOG (IF EXISTS)? \<catalog\_name\> ';'
+
+Example:
+
+    DROP CATALOG catalog1;  
 
 ### USE
 
@@ -190,6 +267,68 @@ Example:
 
     CREATE TABLE tableTest ON CLUSTER cassandra_prod (id int PRIMARY KEY, name text);
         
+### ALTER TABLE
+
+ALTER TABLE \<tablename\>
+        (ALTER \<column-name\> \<data-types\>
+        |ADD \<column-name\> \<data-types\>
+        |DROP \<column-name\>
+        |WITH \<JSON\>)) ';'   
+
+Example:
+
+    ALTER TABLE tableTest ADD timestamp INT;
+
+### UPDATE TABLE
+
+UPDATE \<tablename\>
+    (USING option (AND option)\*)?
+    SET assignment (COMMA assignment)\*
+    (WHERE \<where-clause\>)?
+    (IF option (AND option)\*)? ';'      
+
+\<option\> ::= \<property\> = \<value\>
+
+\<assignment\> ::= \<column-name\> = \<value-assignment\>
+
+\<value-assignment\> ::= \<value\> | \<column-name\> \<operator\> \<value-assignment\>
+
+\<where-clause\> ::= \<relation\> ( AND \<relation\> )\*
+
+\<relation\> ::= \<identifier\> ('=' | '\<' | '\>' | '\<=' | '\>=' | '\<\>'  | 'MATCH') \<data-types\>  
+
+Example:
+
+    UPDATE TABLE tableTest SET value = value + 900 WHERE age > 30;
+
+### DROP TABLE
+
+DROP TABLE (IF EXISTS)? \<tablename\> ';'
+
+Example:
+
+    DROP TABLE tableTest;
+
+### TRUNCATE TABLE
+
+TRUNCATE \<tablename\> ';'
+
+Example:
+
+    TRUNCATE tableTest;
+
+### DELETE
+
+DELETE FROM \<tablename\> WHERE \<where-clause\> ';'
+
+\<where-clause\> ::= \<relation\> ( AND \<relation\> )\*
+
+\<relation\> ::= \<identifier\> ('=' | '\<' | '\>' | '\<=' | '\>=' | '\<\>'  | 'MATCH') \<data-types\>  
+
+Example:
+
+    DELETE FROM tableTest WHERE income < 100;
+
 ### INSERT
 
 INSERT INTO \<tablename\> '('\<identifier\> (',' \<identifier\> )\*')' VALUES '('\<data-types\> (',' \<term-or-literal\> )\* ')' (IF NOT EXISTS)? ';'
@@ -197,6 +336,25 @@ INSERT INTO \<tablename\> '('\<identifier\> (',' \<identifier\> )\*')' VALUES '(
 Example:
 
     INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (-3.75, 'term2') IF NOT EXISTS;
+
+### CREATE INDEX
+
+CREATE (\<index-type\>)? INDEX (IF NOT EXISTS)? \<index-name\> ON \<table-name\> '(' \<column-names\> ')' (USING
+\<quoted-literal\>)? (WITH \<JSON\>)? ';'
+
+\<index-type\> ::= DEFAULT | FULL\_TEXT | CUSTOM
+
+Example:
+
+    CREATE FULL_TEXT INDEX revenueIndex ON tabletest (revenue);
+
+### DROP INDEX
+
+DROP INDEX (IF EXISTS)? \<index-name\> ';'
+
+Example:
+
+    DROP INDEX IF EXISTS revenueIndex;;
 
 ### SELECT
 
@@ -227,25 +385,111 @@ Modifications:
 
 Example:
 
-    SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID
+    SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;
 
-### LIST
+### EXPLAIN PLAN
 
-List the existing connectors in the system and information about them.
+Explain plan for a specific command according to the current state of the system.
 
-LIST CONNECTORS;
-
-Example:
-
-    LIST CONNECTORS;
-
-### RESET
-
-Remove all metadata stored in the system.
-
-RESET METADATA;
+EXPLAIN PLAN FOR \<crossdata-statement\>;
 
 Example:
 
-    RESET METADATA;
+    EXPLAIN PLAN FOR Select * from demoCatalog.demoCatalog;
 
+### RESET SERVERDATA
+
+Remove all data stored in the system (in all servers), including information related to datastores, clusters and connectors.
+This command shows a warning message and requires to answer a security question.
+
+RESET SERVERDATA;
+
+Example:
+
+    RESET SERVERDATA;
+
+### CLEAN METADATA
+
+Remove all metadata related to catalogs, tables, indexes and columns.
+
+CLEAN METADATA;
+
+Example:
+
+    CLEAN METADATA;
+
+### DESCRIBE SYSTEM
+
+Describe all the information related to datastores, clusters and connectors.
+
+DESCRIBE SYSTEM;
+
+Example:
+
+    DESCRIBE SYSTEM;
+
+### DESCRIBE DATASTORE
+
+Describe information related to a specific datastore.
+
+DESCRIBE DATASTORE \<datastore-name\>;
+
+Example:
+
+    DESCRIBE DATASTORE cassandra;
+
+### DESCRIBE CONNECTORS
+
+Describe all the connectors registered in the system.
+
+DESCRIBE CONNECTORS;
+
+Example:
+
+    DESCRIBE CONNECTORS;
+
+### DESCRIBE CONNECTOR
+
+Describe the specified connector.
+
+DESCRIBE CONNECTOR \<connector-name\>;
+
+Example:
+
+    DESCRIBE CONNECTOR cassandra_connector;
+
+### DESCRIBE CATALOGS
+
+List of the catalogs created in the system.
+
+DESCRIBE CATALOGS;
+
+Example:
+
+    DESCRIBE CATALOGS;
+
+* * * * *
+
+Shell Features
+==============
+
+        This section describes the specific and special features of the CROSSDATA shell:
+
+*   Shell accepts comments:
+    *   One line comment: line starts with "//" or "#".
+        *   ``` > // This is a one line comment```
+        *   ``` > /# This is also a one line comment```
+    *   Multiline comment: starts with a line starting with "/*" and ends with a line ending with "*/"
+        *   ``` > /* This is a ```
+        *   ``` > multiline ```
+        *   ``` > comment */ ```
+*   How to exit from the shell:
+    *   ``` > exit```
+    *   ``` > quit```
+*   Help:
+    *   A help entry is available for every command, just type "help \<command\>"
+        *   ``` > help create```
+*   Script:
+    *   You can execute a script upon launching the shell. The script will be executed first,
+    and the prompt will be shown afterwards. Run the shell with an input argument "--script <path-to-xdql-file>"
+        *   ``` > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--script /path/script.xdql"```

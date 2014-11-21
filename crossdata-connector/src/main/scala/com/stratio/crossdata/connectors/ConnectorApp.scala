@@ -50,7 +50,7 @@ class ConnectorApp extends ConnectConfig {
     actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
       connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
     connector.init(new IConfiguration {})
-    system.actorSelection( StringUtils.getAkkaActorRefUri(actorClusterNode.toString()))
+    system.actorSelection( StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString()))
   }
 
 }

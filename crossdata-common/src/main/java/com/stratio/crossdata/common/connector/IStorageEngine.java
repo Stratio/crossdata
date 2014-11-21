@@ -22,8 +22,11 @@ import java.util.Collection;
 
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
+import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.Relation;
 
 /**
  * Interface provided by a connector to access storage related operations such as inserting new
@@ -54,5 +57,39 @@ public interface IStorageEngine {
      */
     void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows)
             throws ConnectorException;
+
+    /**
+     * Delete rows, on the indicated cluster, that meet the conditions of the where clauses.
+     *
+     * @param targetCluster Target cluster.
+     * @param tableName Target table name including fully qualified including catalog.
+     * @param whereClauses Where clauses.
+     * @throws ConnectorException
+     */
+    void delete(ClusterName targetCluster, TableName tableName, Collection<Filter> whereClauses) throws
+            ConnectorException;
+
+    /**
+     * Update data of a table according to some conditions.
+     *
+     * @param targetCluster Target cluster.
+     * @param tableName Target table name including fully qualified including catalog.
+     * @param assignments Operations to be executed for every row.
+     * @param whereClauses Where clauses.
+     * @throws ConnectorException
+     */
+    void update(ClusterName targetCluster,
+                TableName tableName,
+                Collection<Relation> assignments,
+                Collection<Filter> whereClauses) throws ConnectorException;
+
+    /**
+     * Delete all the rows of a table.
+     *
+     * @param targetCluster Target cluster.
+     * @param tableName Target table name including fully qualified including catalog.
+     * @throws ConnectorException
+     */
+    void truncate(ClusterName targetCluster, TableName tableName) throws ConnectorException;
 
 }

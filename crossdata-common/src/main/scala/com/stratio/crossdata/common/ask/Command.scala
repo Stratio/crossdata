@@ -21,8 +21,8 @@ package com.stratio.crossdata.common.ask
 import com.stratio.crossdata.common.ask.APICommand.APICommand
 
 /**
- * Class that wrappers the calls to the META API.
+ * Class that wrappers the calls to the CROSSDATA API.
  * @param commandType Type of command to be executed.
  */
-case class Command(commandType: APICommand, params: java.util.List[AnyRef])
+case class Command(queryId: String, commandType: APICommand, params: java.util.List[AnyRef])
 

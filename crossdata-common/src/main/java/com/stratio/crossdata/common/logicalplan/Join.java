@@ -55,26 +55,50 @@ public class Join extends UnionStep {
         this.id = id;
     }
 
+    /**
+     * Add a Relation in the Join.
+     * @param r The relation
+     */
     public void addJoinRelation(Relation r) {
         joinRelations.add(r);
     }
 
+    /**
+     * Add a list of relations in the Join.
+     * @param list The list of Relation
+     */
     public void addJoinRelations(List<Relation> list) {
         joinRelations.addAll(list);
     }
 
+    /**
+     * Get the Relations of the join.
+     * @return List of logical step identifiers involved in the join.
+     */
     public List<Relation> getJoinRelations() {
         return joinRelations;
     }
 
+    /**
+     * Add an identifier.
+     * @param id The identifier
+     */
     public void addSourceIdentifier(String id) {
         sourceIdentifiers.add(id);
     }
 
+    /**
+     * Get the Identifiers.
+     * @return List of logical step identifiers involved in the join.
+     */
     public List<String> getSourceIdentifiers() {
         return sourceIdentifiers;
     }
 
+    /**
+     * Get the id.
+     * @return Join identifier.
+     */
     public String getId() {
         return id;
     }

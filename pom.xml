@@ -24,7 +24,7 @@
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>crossdata-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.1.0</version>
+    <version>0.1.1-RC1</version>
     <name>Stratio Crossdata parent</name>
     <description>Stratio Crossdata parent</description>
     <url>http://stratio.github.io/crossdata/</url>
@@ -94,6 +94,7 @@
         <module>crossdata-dist</module>
         <module>crossdata-connector</module>
         <module>crossdata-connector-maven-plugin</module>
+        <module>crossdata-connector-inmemory</module>
     </modules>
     <properties>
         <scala.version>2.10.4</scala.version>
@@ -101,7 +102,6 @@
         <infinispan.version>6.0.2.Final</infinispan.version>
         <scala.dep.version>2.10.4</scala.dep.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
-        <scala.version>2.10.4</scala.version>
         <slf4j.version>1.7.7</slf4j.version>
         <config.version>1.2.0</config.version>
         <testng.version>6.8.8</testng.version>

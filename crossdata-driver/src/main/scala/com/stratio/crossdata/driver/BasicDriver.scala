@@ -37,6 +37,7 @@ import org.apache.log4j.Logger
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 
 import scala.concurrent.duration._
+import com.stratio.crossdata.common.data.{DataStoreName, ConnectorName}
 
 object BasicDriver extends DriverConfig {
   /**
@@ -60,10 +61,10 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   /**
    * Default user to connect to the com.stratio.crossdata server.
    */
-  private final val DEFAULT_USER: String = "META_USER"
+  private final val DEFAULT_USER: String = "CROSSDATA_USER"
   lazy val logger = BasicDriver.logger
   lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
-  lazy val system = ActorSystem("MetaDriverSystem", BasicDriver.config)
+  lazy val system = ActorSystem("CrossdataDriverSystem", BasicDriver.config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
   lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, basicDriverConfig.serverSection.clusterActor, this), "proxy-actor")
@@ -81,7 +82,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   var userName: String = ""
   var currentCatalog: String = ""
 
-  val list:Option [java.util.List[AnyRef]]=None
+  val list:Option[java.util.List[AnyRef]]=None
 
   def this() {
     this(BasicDriver.getBasicDriverConfigFromFile)
@@ -89,8 +90,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
 
   /**
    * Release connection to MetaServer.
-   * @param user Login to the user (Audit only)
-   * @return ConnectResult
+   * @param user Login to the user (Audit only).
+   * @return ConnectResult.
    */
   @throws(classOf[ConnectionException])
   def connect(user: String): Result = {
@@ -108,7 +109,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Finnish connection to MetaServer.
+   * Finnish connection to CrossdataServer.
    */
   @throws(classOf[ConnectionException])
   def disconnect(): Unit = {
@@ -125,7 +126,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Execute a query in the Meta server asynchronously.
+   * Execute a query in the Crossdata server asynchronously.
    * @param query The query.
    * @param callback The callback object.
    */
@@ -145,7 +146,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Launch query in Meta Server
+   * Launch query in Crossdata Server
    * @param query Launched query
    * @return QueryResult
    */
@@ -174,8 +175,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    *         containing the error message.
    */
   def listCatalogs(): MetadataResult = {
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CATALOGS, null))
-    result.asInstanceOf[MetadataResult]
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_CATALOGS, null))
+    if(result.isInstanceOf[MetadataResult]){
+      result.asInstanceOf[MetadataResult]
+    } else {
+      MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_UNKNOWN)
+    }
   }
 
   /**
@@ -186,8 +192,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   def listTables(catalogName: String): MetadataResult = {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(catalogName)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_TABLES, params))
-    result.asInstanceOf[MetadataResult]
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_TABLES, params))
+    if(result.isInstanceOf[MetadataResult]){
+      result.asInstanceOf[MetadataResult]
+    } else {
+      MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_UNKNOWN)
+    }
   }
 
   /**
@@ -198,35 +209,157 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(catalogName)
     params.add(tableName)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_COLUMNS, params))
-    result.asInstanceOf[MetadataResult]
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.LIST_COLUMNS, params))
+    if(result.isInstanceOf[MetadataResult]){
+      result.asInstanceOf[MetadataResult]
+    } else {
+      MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_UNKNOWN)
+    }
   }
 
   /**
-   * Send manifest to the server
-   * @param manifest The manifest to be sent
-   * @return A CommandResult with a string
+   * Send manifest to the server.
+   * @param manifest The manifest to be sent.
+   * @return A CommandResult with a string.
    */
   @throws(classOf[ManifestException])
   def addManifest(manifest: CrossdataManifest): CommandResult = {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(manifest)
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.ADD_MANIFEST, params))
-    result.asInstanceOf[CommandResult]
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.ADD_MANIFEST, params))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
   }
 
   /**
-   * Reset metadata in server
-   * @return A CommandResult with a string
+   * Drop manifest in the server.
+   * @param manifestType The type of the manifest.
+   * @param manifestName The name of the manifest.
+   * @return A CommandResult with a string.
    */
-  def resetMetadata(): CommandResult = {
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.RESET_METADATA, null))
-    result.asInstanceOf[CommandResult]
+  @throws(classOf[ManifestException])
+  def dropManifest(manifestType: Int, manifestName: String): Result = {
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(manifestType.toString);
+    params.add(manifestName)
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DROP_MANIFEST, params))
+    result.asInstanceOf[Result]
   }
 
-  def listConnectors():CommandResult = {
-    val result = retryPolitics.askRetry(proxyActor, new Command(APICommand.LIST_CONNECTORS, null))
-    result.asInstanceOf[CommandResult]
+  /**
+   * Reset metadata in server.
+   * @return A CommandResult with a string.
+   */
+  def resetServerdata(): CommandResult = {
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_SERVERDATA, null))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
+  }
+
+  /**
+   * Clean metadata related to catalogs in server.
+   * @return A CommandResult with a string.
+   */
+  def cleanMetadata(): CommandResult = {
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.CLEAN_METADATA, null))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
+  }
+
+  /**
+   * Describe the connectors available.
+   * @return A CommandResult with the list.
+   */
+  def describeConnectors():CommandResult = {
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CONNECTORS, null))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
+  }
+
+  /**
+   * Describe a connector.
+   * @return A CommandResult with the description of the connector.
+   */
+  def describeConnector(connectorName: ConnectorName): CommandResult = {
+    val queryId = UUID.randomUUID().toString
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(connectorName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CONNECTOR, params))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
+  }
+
+  /**
+   * Describe a datastore.
+   * @return A CommandResult with the description of the datastore.
+   */
+  def describeDatastore(datastoreName: DataStoreName): CommandResult = {
+    val queryId = UUID.randomUUID().toString
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(datastoreName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_DATASTORE, params))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
+  }
+
+
+  /**
+   * Describe the system.
+   * @return A CommandResult with the description of the system.
+   */
+  def describeSystem():CommandResult = {
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_SYSTEM, null))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      val errorResult = result.asInstanceOf[ErrorResult]
+      CommandResult.createCommandResult(errorResult.getErrorMessage)
+    }
+  }
+
+  /**
+   * Return the explained execution workflow for a given query.
+   * @param query The user query.
+   * @return A Result.
+   */
+  def explainPlan(query: String): Result = {
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(query)
+    params.add(currentCatalog)
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.EXPLAIN_PLAN, params))
+    result
   }
 
   /**
@@ -248,19 +381,17 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Shutdown actor system
+   * Shutdown actor system.
    */
   def close() {
     system.shutdown()
   }
 
   /**
-   * @username is the user of this class
+   * This method get the UserName.
+   * @return the value of userName.
    * */
-  def getUserName: String = {
-
-    return userName
-  }
+  def getUserName: String = userName
 
   def setUserName(userName: String) {
     this.userName = userName
@@ -270,10 +401,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * @currentCatalog is the catalog of this class
+   * This method get the Current catalog.
+   * @return  is the Catalog we are using.
    * */
   def getCurrentCatalog: String = {
-    return currentCatalog
+    currentCatalog
   }
 
   def setCurrentCatalog(catalog: String) {

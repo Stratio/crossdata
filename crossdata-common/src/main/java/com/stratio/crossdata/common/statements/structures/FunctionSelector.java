@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.metadata.ColumnType;
 
 /**
  * Selector composed by a function and the list of columns required by the function.
@@ -40,6 +41,8 @@ public class FunctionSelector extends Selector {
      */
     private List<Selector> functionColumns;
 
+    private ColumnType returningType;
+
     /**
      * Class constructor.
      *
@@ -48,6 +51,18 @@ public class FunctionSelector extends Selector {
     public FunctionSelector(String functionName, List<Selector> functionColumns) {
         this.functionName = functionName;
         this.functionColumns = functionColumns;
+    }
+
+    public ColumnType getReturningType() {
+        return returningType;
+    }
+
+    public void setReturningType(ColumnType returningType) {
+        this.returningType = returningType;
+    }
+
+    public String getFunctionName() {
+        return functionName;
     }
 
     /**

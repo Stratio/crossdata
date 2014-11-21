@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to STRATIO (C) under one or more contributor license agreements.
+  ~ See the NOTICE file distributed with this work for additional information
+  ~ regarding copyright ownership.  The STRATIO (C) licenses this file
+  ~ to you under the Apache License, Version 2.0 (the
+  ~ "License"); you may not use this file except in compliance
+  ~ with the License.  You may obtain a copy of the License at
+  ~
+  ~   http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing,
+  ~ software distributed under the License is distributed on an
+  ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+  ~ KIND, either express or implied.  See the License for the
+  ~ specific language governing permissions and limitations
+  ~ under the License.
+  -->
+
+<!-- This file contains the manifest that defines the underlying datastore. -->
+<DataStore>
+    <!-- Name of the target datastore. Be aware that a manifest may already exists for
+    the datastore of your choice. -->
+    <Name>InMemoryDatastore</Name>
+    <Version>2.0.0</Version>
+    <!-- Define the set of required properties the user will be asked for when defining
+    a cluster of this datastore. -->
+
+    <RequiredProperties>
+        <Property>
+            <PropertyName>TableRowLimit</PropertyName>
+            <Description>Limit of rows allowed per table</Description>
+        </Property>
+    </RequiredProperties>
+
+    <!-- List of datastore behaviours -->
+    <Behaviors>
+        <Behavior>EPHEMERAL</Behavior>
+    </Behaviors>
+</DataStore>
+
+
+

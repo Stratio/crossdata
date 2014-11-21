@@ -28,7 +28,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code SELECT} statement from the META language. This class recognizes the
+ * Class that models a {@code SELECT} statement from the CROSSDATA language. This class recognizes the
  * following syntax:
  * <p/>
  * DELETE ( {@literal <column>}, ( ',' {@literal <column>} )*)? FROM {@literal <tablename>} WHERE
@@ -60,6 +60,10 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
      */
     public void addRelation(Relation relation) {
         whereClauses.add(relation);
+    }
+
+    public List<Relation> getWhereClauses() {
+        return whereClauses;
     }
 
     @Override

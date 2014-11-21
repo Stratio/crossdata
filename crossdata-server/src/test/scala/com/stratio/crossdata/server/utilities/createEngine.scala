@@ -26,15 +26,19 @@ import com.stratio.crossdata.core.engine.{Engine, EngineConfig}
  * To generate unit test of proxy actor
  */
 object createEngine {
+  val port:Int=5900
+  val timeout:Int=3000
+  val nextInt:Int=100000
+
   def create(): Engine = {
     val engineConfig: EngineConfig = {
       val result = new EngineConfig
       result.setGridListenAddress("localhost")
       result.setGridContactHosts(Array[String]())
       result.setGridMinInitialMembers(1)
-      result.setGridPort(5900)
-      result.setGridJoinTimeout(3000)
-      result.setGridPersistencePath("/tmp/com.stratio.crossdata-test-" + new Random().nextInt(100000))
+      result.setGridPort(port)
+      result.setGridJoinTimeout(timeout)
+      result.setGridPersistencePath("/tmp/com.stratio.crossdata-test-" + new Random().nextInt(nextInt))
       result
     }
     new Engine(engineConfig)

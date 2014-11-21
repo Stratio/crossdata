@@ -19,7 +19,7 @@
 package Mocks
 
 import com.stratio.crossdata.common.connector.{IMetadataEngine}
-import com.stratio.crossdata.common.data.{CatalogName, ClusterName, TableName}
+import com.stratio.crossdata.common.data.{AlterOptions, CatalogName, ClusterName, TableName}
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.QueryResult
 import org.apache.log4j.Logger
@@ -51,4 +51,6 @@ class DummyIMetadataEngine extends IMetadataEngine{
   override def dropTable(targetCluster: ClusterName, name: TableName): Unit = {}
 
   override def dropIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata): Unit = {}
+
+  override def alterTable(targetCluster: ClusterName, name: TableName, alterOptions: AlterOptions): Unit = {}
 }

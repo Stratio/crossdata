@@ -18,36 +18,49 @@
 
 package com.stratio.crossdata.core.statements;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code ALTER CLUSTER} statement from the META language.
+ * Class that models a {@code ALTER CLUSTER} statement from the CROSSDATA language.
  */
 public class AlterClusterStatement extends MetadataStatement {
 
     /**
      * CLUSTER name given by the user.
      */
-    private final String clusterName;
+    private final ClusterName clusterName;
 
     private final boolean ifExists;
 
     /**
-     * A JSON with the options specified by the user.
+     * A JSON with the options of the cluster.
      */
-    private final String options;
+    private final Map<Selector, Selector> options;
 
     /**
      * Alter an existing cluster configuration.
      *
      * @param clusterName The name of the cluster.
+     * @param ifExists whether to check if cluster already exists
      * @param options     A JSON with the cluster options.
      */
-    public AlterClusterStatement(String clusterName, boolean ifExists, String options) {
+    public AlterClusterStatement(ClusterName clusterName, boolean ifExists, String options) {
         this.clusterName = clusterName;
         this.ifExists = ifExists;
-        this.options = options;
+
+        if ((options == null) || options.isEmpty()) {
+            this.options = new HashMap<>();
+        } else {
+            this.options = StringUtils.convertJsonToOptions(options);
+        }
+
     }
 
     @Override
@@ -57,7 +70,7 @@ public class AlterClusterStatement extends MetadataStatement {
             sb.append("IF EXISTS ");
         }
         sb.append(clusterName);
-        sb.append(" WITH OPTIONS ").append(options);
+        sb.append(" WITH ").append(options);
         return sb.toString();
     }
 
@@ -66,7 +79,7 @@ public class AlterClusterStatement extends MetadataStatement {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CLUSTER).add(ValidationTypes.MUST_EXIST_PROPERTIES);
     }
 
-    public String getClusterName() {
+    public ClusterName getClusterName() {
         return clusterName;
     }
 
@@ -74,7 +87,7 @@ public class AlterClusterStatement extends MetadataStatement {
         return ifExists;
     }
 
-    public String getOptions() {
+    public Map<Selector, Selector> getOptions() {
         return options;
     }
 }

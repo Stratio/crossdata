@@ -26,15 +26,20 @@ public enum ExecutionType {
     //IMetadata
     CREATE_CATALOG,
     DROP_CATALOG,
+    ALTER_CATALOG,
     CREATE_TABLE,
     CREATE_TABLE_AND_CATALOG,
     DROP_TABLE,
+    ALTER_TABLE,
     CREATE_INDEX,
     DROP_INDEX,
 
     //IStorage
     INSERT,
     INSERT_BATCH,
+    DELETE_ROWS,
+    UPDATE_TABLE,
+    TRUNCATE_TABLE,
 
     //IQuery
     SELECT,
@@ -43,6 +48,6 @@ public enum ExecutionType {
     ATTACH_CLUSTER,
     DETACH_CLUSTER,
     ATTACH_CONNECTOR,
-    DETACH_CONNECTOR
-
+    DETACH_CONNECTOR,
+    ALTER_CLUSTER
 }

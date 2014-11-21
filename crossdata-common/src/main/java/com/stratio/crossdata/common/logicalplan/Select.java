@@ -18,7 +18,9 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import com.stratio.crossdata.common.metadata.Operations;
@@ -72,6 +74,18 @@ public class Select extends TransformationStep {
 
     public Map<ColumnName, ColumnType> getTypeMapFromColumnName() {
         return typeMapFromColumnName;
+    }
+
+    /**
+     * Get the columns in the expected order.
+     * @return A list of {@link com.stratio.crossdata.common.data.ColumnName}.
+     */
+    public List<ColumnName> getColumnOrder(){
+        List<ColumnName> results = new ArrayList<>();
+        for(ColumnName columnName : columnMap.keySet()){
+            results.add(columnName);
+        }
+        return results;
     }
 
     @Override

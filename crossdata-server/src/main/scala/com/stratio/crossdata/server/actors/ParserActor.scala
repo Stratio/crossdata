@@ -35,7 +35,7 @@ class ParserActor(validator: ActorRef, parser: Parser) extends Actor with TimeTr
   override lazy val timerName = this.getClass.getName
   val log = Logger.getLogger(classOf[ParserActor])
 
-  def receive = {
+  def receive : Receive = {
     case Query(queryId, catalog, statement, user) => {
       log.info("\nInit Parser Task", queryId, catalog, statement, user)
       val timer = initTimer()

@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>crossdata-parent</artifactId>
-        <version>0.1.0</version>
+        <version>0.1.1-RC1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -124,7 +124,7 @@
                             <unixScriptTemplate>${project.basedir}/src/main/template/unix-script.sh</unixScriptTemplate>
                             <programs>
                                 <program>
-                                    <mainClass>com.stratio.crossdata.server.MetaApplication</mainClass>
+                                    <mainClass>com.stratio.crossdata.server.CrossdataApplication</mainClass>
                                     <id>crossdata-server</id>
                                     <platforms>
                                         <platform>unix</platform>
@@ -161,7 +161,7 @@
                             <unixScriptTemplate>${project.basedir}/src/main/template/unix-daemon.sh</unixScriptTemplate>
                             <programs>
                                 <program>
-                                    <mainClass>com.stratio.crossdata.server.MetaServer</mainClass>
+                                    <mainClass>com.stratio.crossdata.server.CrossdataServer</mainClass>
                                     <id>crossdata-server-daemon</id>
                                     <platforms>
                                         <platform>unix</platform>

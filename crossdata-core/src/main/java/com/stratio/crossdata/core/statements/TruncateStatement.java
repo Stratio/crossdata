@@ -26,17 +26,28 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 /**
  * TruncateStatement class.
  */
-public class TruncateStatement extends StorageStatement {
+public class TruncateStatement extends StorageStatement implements ITableStatement {
 
-    private TableName tablename;
+    /**
+     * The name of the table.
+     */
+    private TableName tableName;
 
     /**
      * Class Constructor.
-     * @param tablename The table name of the truncate statement.
+     * @param tableName The table name of the truncate statement.
      */
-    public TruncateStatement(TableName tablename) {
+    public TruncateStatement(TableName tableName) {
         this.command = false;
-        this.tablename = tablename;
+        this.tableName = tableName;
+    }
+
+    @Override public TableName getTableName() {
+        return tableName;
+    }
+
+    @Override public void setTableName(TableName tableName) {
+        this.tableName = tableName;
     }
 
     /**
@@ -76,15 +87,15 @@ public class TruncateStatement extends StorageStatement {
      * @return com.stratio.crossdata.common.data.TableName
      */
     public TableName getTablename() {
-        return tablename;
+        return tableName;
     }
 
     /**
      * Set the table name of a truncate statement
-     * @param tablename
+     * @param tableName
      */
-    public void setTablename(TableName tablename) {
-        this.tablename = tablename;
+    public void setTablename(TableName tableName) {
+        this.tableName = tableName;
     }
 
   
@@ -94,7 +105,7 @@ public class TruncateStatement extends StorageStatement {
         if (catalogInc) {
             sb.append(catalog).append(".");
         }
-        sb.append(tablename);
+        sb.append(tableName);
         return sb.toString();
     }
 

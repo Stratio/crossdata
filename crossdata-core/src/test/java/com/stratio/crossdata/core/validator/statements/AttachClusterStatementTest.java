@@ -18,14 +18,22 @@
 
 package com.stratio.crossdata.core.validator.statements;
 
-import org.testng.Assert;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
+import java.util.HashSet;
+
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
-import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
+import com.stratio.crossdata.common.manifest.PropertyType;
+import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
@@ -37,6 +45,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachClusterNoOptions() {
+        boolean res=true;
         String query = "ATTACH CLUSTER cluster on DATASTORE Cassandra";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -50,16 +59,17 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Options are required for ATTACH CLUSTER statement");
+            fail("Options are required for ATTACH CLUSTER statement");
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            assertTrue(res);
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            assertTrue(res);
         }
     }
 
     @Test
     public void attachClusterUnknownDatastore() {
+        boolean res=true;
         String query = "ATTACH CLUSTER cluster on DATASTORE unknown";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -72,16 +82,17 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("Datastore must exists before ATTACH CLUSTER statement");
+            fail("Datastore must exists before ATTACH CLUSTER statement");
         } catch (ValidationException e) {
-            Assert.assertTrue(true);
+            assertTrue(res);
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            assertTrue(res);
         }
     }
 
     @Test
     public void attachClusterWithOptions() {
+        boolean res=true;
         String query = "ATTACH CLUSTER cluster on DATASTORE Cassandra with options {'comment':'attach cluster'}";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -94,16 +105,17 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertTrue(true);
+            assertTrue(res);
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         }
     }
 
     @Test
     public void attachUnknownClusterWithOptionsIfexists() {
+        boolean res=true;
         String query = "ATTACH CLUSTER IF EXIST unknown on DATASTORE Cassandra with options {'comment':'attach " +
                 "cluster'}";
 
@@ -117,13 +129,50 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.assertTrue(true);
+            assertTrue(res);
         } catch (ValidationException e) {
-            Assert.fail(e.getMessage());
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            fail(e.getMessage());
         }
     }
 
+    @Test
+    public void attachToADifferentDatastore(){
+        // Add ElasticSearch Data Store to Metadata Manager
+        HashSet<String> behaviours = new HashSet<>();
+        behaviours.add("PROJECT");
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(
+                new DataStoreName("ElasticSearch"),
+                "1.0",
+                new HashSet<PropertyType>(),
+                new HashSet<PropertyType>(),
+                behaviours);
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
+
+        // Create & send query
+        String query = "ATTACH CLUSTER cluster on DATASTORE ElasticSearch WITH OPTIONS {'comment':'attach cluster'};";
+
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement(
+                new ClusterName("cluster"),
+                false,
+                new DataStoreName("ElasticSearch"),
+                "{'comment':'attach cluster'}");
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("attachToADifferentDatastore", query, new CatalogName("catalogTest"));
+
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        try {
+            validator.validate(parsedQuery);
+            fail("Test should have failed.");
+        } catch (ValidationException e) {
+            assertEquals(e.getMessage(),
+                    "A cluster can be attached to only one data store.",
+                    "Message exception not expected");
+        } catch (IgnoreQueryException e) {
+            fail(e.getMessage());
+        }
+    }
 
 }

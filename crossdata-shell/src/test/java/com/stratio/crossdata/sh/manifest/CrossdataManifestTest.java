@@ -107,7 +107,7 @@ public class CrossdataManifestTest {
         sb.append("\t").append("DataStoreName: ").append("cassandra").append(System.lineSeparator());
 
         // VERSION
-        sb.append("Version: ").append("0.1.0").append(System.lineSeparator());
+        sb.append("Version: ").append("0.1.1").append(System.lineSeparator());
 
         // REQUIRED PROPERTIES
         sb.append("Required properties: ").append(System.lineSeparator());

@@ -20,7 +20,7 @@ package com.stratio.crossdata.common.result;
 
 import java.util.List;
 
-import com.stratio.crossdata.common.metadata.structures.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
 /**
@@ -72,6 +72,22 @@ public final class MetadataResult extends Result {
      * Operation identifier to list columns.
      */
     public static final int OPERATION_LIST_COLUMNS = 9;
+
+    /**
+     * Operation identifier to ALTER CATALOG.
+     */
+    public static final int OPERATION_ALTER_CATALOG = 10;
+
+    /**
+     * Operation identifier to ALTER TABLE.
+     */
+    public static final int OPERATION_ALTER_TABLE = 11;
+
+    /**
+     * Unknown Operation.
+     */
+    public static final int OPERATION_UNKNOWN = 12;
+
 
     /**
      * Operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}.

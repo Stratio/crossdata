@@ -86,7 +86,7 @@ public final class StringUtils {
             Iterator<Map.Entry<String, JsonNode>> iter = root.getFields();
             while (iter.hasNext()) {
                 Map.Entry<String, JsonNode> entry = iter.next();
-                Selector selector = convertJsonNodeToMetaParserType(entry.getValue());
+                Selector selector = convertJsonNodeToCrossdataParserType(entry.getValue());
                 options.put(new StringSelector(entry.getKey()), selector);
             }
         } catch (IOException e) {
@@ -117,7 +117,7 @@ public final class StringUtils {
         return options;
     }
 
-    private static Selector convertJsonNodeToMetaParserType(JsonNode jsonNode) {
+    private static Selector convertJsonNodeToCrossdataParserType(JsonNode jsonNode) {
         Selector selector;
         if (jsonNode.isBigDecimal() || jsonNode.isDouble()) {
             selector = new FloatingPointSelector(jsonNode.getDoubleValue());

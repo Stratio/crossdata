@@ -42,6 +42,7 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.communication.AlterCluster;
 import com.stratio.crossdata.communication.AttachCluster;
 import com.stratio.crossdata.communication.AttachConnector;
 import com.stratio.crossdata.communication.DetachCluster;
@@ -61,7 +62,7 @@ public class Coordinator implements Serializable {
     private static final Logger LOG = Logger.getLogger(Coordinator.class);
 
     /**
-     * Persists workflow in infinispan.
+     * Persists workflow in Metadata Manager.
      *
      * @param metadataWorkflow The metadata workflow.
      */
@@ -79,7 +80,7 @@ public class Coordinator implements Serializable {
             persistCreateTable(metadataWorkflow.getTableMetadata());
             break;
         case DROP_CATALOG:
-            persistDropCatalog(metadataWorkflow.getCatalogName());
+            persistDropCatalog(metadataWorkflow.getCatalogName(),true);
             break;
         case DROP_INDEX:
             persistDropIndex(metadataWorkflow.getIndexMetadata().getName());
@@ -106,12 +107,17 @@ public class Coordinator implements Serializable {
             AttachCluster ac = AttachCluster.class.cast(workflow);
             result = persistAttachCluster(ac.targetCluster(), ac.datastoreName(), ac.options());
         } else if (DetachCluster.class.isInstance(workflow)) {
-            result = Result.createUnsupportedOperationErrorResult("Detach cluster not supported yet.");
+            DetachCluster dc = DetachCluster.class.cast(workflow);
+            result = persistDetachCluster(dc.targetCluster());
         } else if (AttachConnector.class.isInstance(workflow)) {
             AttachConnector ac = AttachConnector.class.cast(workflow);
             result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
         } else if (DetachConnector.class.isInstance(workflow)) {
-            result = Result.createUnsupportedOperationErrorResult("Detach connector not supported yet.");
+            DetachConnector dc = DetachConnector.class.cast(workflow);
+            result = persistDetachConnector(dc.targetCluster(), dc.connectorName());
+        } else if (AlterCluster.class.isInstance(workflow)) {
+            AlterCluster ac = AlterCluster.class.cast(workflow);
+            result = persistAlterCluster(ac.targetCluster(), ac.options());
         }
 
         result.setQueryId(workflow.queryId());
@@ -120,7 +126,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Persists cluster's characteristics in infinispan.
+     * Persists cluster's characteristics in Metadata Manager.
      *
      * @param clusterName   The cluster name.
      * @param datastoreName The datastore name.
@@ -153,29 +159,47 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Detaches cluster from infinispan.
+     * Persists new options' cluster in Metadata manager.
      *
      * @param clusterName   The cluster name.
-     * @param datastoreName The datastore name.
+     * @param options       A set of cluster options.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
-    public Result persistDetachCluster(ClusterName clusterName, DataStoreName datastoreName) {
-        //TODO Move this type of operations to MetadataManager in order to use a single lock
-        DataStoreMetadata datastoreMetadata =
-                MetadataManager.MANAGER.getDataStore(datastoreName);
+    public Result persistAlterCluster(ClusterName clusterName,
+            Map<Selector, Selector> options) {
 
-        Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs =
-                datastoreMetadata.getClusterAttachedRefs();
+        // Create and persist Cluster metadata
+        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+        clusterMetadata.setOptions(options);
+        MetadataManager.MANAGER.createCluster(clusterMetadata, false);
+
+        return CommandResult.createCommandResult("New cluster's options modified successfully");
+    }
+
+    /**
+     * Detaches cluster from Metadata Manager.
+     *
+     * @param clusterName   The cluster name.
+     * @return A {@link com.stratio.crossdata.common.result.Result}.
+     */
+    public Result persistDetachCluster(ClusterName clusterName) {
+        //TODO: Move this type of operations to MetadataManager in order to use a single lock
+        //find the datastore first, to which the cluster is connected
+        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+        DataStoreName datastoreName = clusterMetadata.getDataStoreRef();
+        DataStoreMetadata datastoreMetadata = MetadataManager.MANAGER.getDataStore(datastoreName);
+
+        Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs = datastoreMetadata.getClusterAttachedRefs();
 
         clusterAttachedRefs.remove(clusterName);
         datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
 
         MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
-        return CommandResult.createCommandResult("CLUSTER attached successfully");
+        return CommandResult.createCommandResult("CLUSTER detached successfully");
     }
 
     /**
-     * Persists catalog data in infinispan.
+     * Persists catalog data in Metadata Manager.
      *
      * @param catalog The catalog metadata to be stored.
      */
@@ -184,7 +208,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Persists table Metadata in infinispan.
+     * Persists table Metadata in Metadata Manager.
      *
      * @param table The table metadata to be stored.
      */
@@ -193,7 +217,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Persists index Metadata in infinispan.
+     * Persists index Metadata in Metadata Manager.
      *
      * @param index The index metadata to be stored.
      */
@@ -205,16 +229,16 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Deletes catalog from infinispan.
+     * Deletes catalog from Metadata Manager.
      *
      * @param catalog The catalog name.
      */
-    public void persistDropCatalog(CatalogName catalog) {
-        MetadataManager.MANAGER.deleteCatalog(catalog);
+    public void persistDropCatalog(CatalogName catalog, boolean ifExist) {
+        MetadataManager.MANAGER.deleteCatalog(catalog, ifExist);
     }
 
     /**
-     * Deletes table data from infinispan.
+     * Deletes table data from Metadata Manager.
      *
      * @param table The table name.
      */
@@ -223,7 +247,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Deletes index from infinispan.
+     * Deletes index from Metadata Manager.
      *
      * @param index The index name.
      */
@@ -235,7 +259,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Persists attached connector's metadata in infinispan.
+     * Persists attached connector's metadata in Metadata Manager.
      *
      * @param clusterName   The cluster name.
      * @param connectorName The connector name.
@@ -265,7 +289,7 @@ public class Coordinator implements Serializable {
     }
 
     /**
-     * Deletes persisted data from an attached connector in infinispan.
+     * Deletes persisted data from an attached connector in Metadata Manager.
      *
      * @param clusterName   The cluster name.
      * @param connectorName The connector name.
@@ -282,6 +306,13 @@ public class Coordinator implements Serializable {
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
 
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
-        return CommandResult.createCommandResult("Connector attached successfully");
+
+        ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+        connectorMetadata.getClusterRefs().remove(clusterName);
+        connectorMetadata.getClusterProperties().remove(clusterName);
+
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
+
+        return CommandResult.createCommandResult("CONNECTOR detached successfully");
     }
 }

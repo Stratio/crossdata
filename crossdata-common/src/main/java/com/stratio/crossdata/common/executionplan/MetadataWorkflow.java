@@ -18,7 +18,15 @@
 
 package com.stratio.crossdata.common.executionplan;
 
-
+import com.stratio.crossdata.common.data.AlterOptions;
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.metadata.CatalogMetadata;
+import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.communication.AlterCatalog;
+import com.stratio.crossdata.communication.AlterTable;
 import com.stratio.crossdata.communication.CreateCatalog;
 import com.stratio.crossdata.communication.CreateIndex;
 import com.stratio.crossdata.communication.CreateTable;
@@ -27,12 +35,6 @@ import com.stratio.crossdata.communication.DropCatalog;
 import com.stratio.crossdata.communication.DropIndex;
 import com.stratio.crossdata.communication.DropTable;
 import com.stratio.crossdata.communication.MetadataOperation;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
-import com.stratio.crossdata.common.metadata.IndexMetadata;
-import com.stratio.crossdata.common.metadata.TableMetadata;
 
 /**
  * Execute a {@link com.stratio.crossdata.common.connector.IMetadataEngine} operation.
@@ -50,6 +52,8 @@ public class MetadataWorkflow extends ExecutionWorkflow {
     private TableMetadata tableMetadata = null;
 
     private IndexMetadata indexMetadata = null;
+
+    private AlterOptions alterOptions = null;
 
     /**
      * Class constructor.
@@ -112,12 +116,23 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         return indexMetadata;
     }
 
+    public AlterOptions getAlterOptions() {
+        return alterOptions;
+    }
+
+    public void setAlterOptions(AlterOptions alterOptions) {
+        this.alterOptions = alterOptions;
+    }
+
     public MetadataOperation createMetadataOperationMessage() {
         MetadataOperation result = null;
 
         switch (this.executionType) {
         case CREATE_CATALOG:
             result = new CreateCatalog(queryId, this.clusterName, this.catalogMetadata);
+            break;
+        case ALTER_CATALOG:
+            result = new AlterCatalog(queryId, this.clusterName, this.catalogMetadata);
             break;
         case DROP_CATALOG:
             result = new DropCatalog(queryId, this.clusterName, this.catalogName);
@@ -131,13 +146,17 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         case DROP_TABLE:
             result = new DropTable(queryId, this.clusterName, this.tableName);
             break;
+        case ALTER_TABLE:
+            result= new AlterTable(queryId, this.clusterName, this.tableName, this.alterOptions);
+            break;
         case CREATE_INDEX:
             result = new CreateIndex(queryId, this.clusterName, this.indexMetadata);
             break;
         case DROP_INDEX:
             result = new DropIndex(queryId, this.clusterName, this.indexMetadata);
             break;
-        default: break;
+        default:
+            break;
         }
 
         return result;

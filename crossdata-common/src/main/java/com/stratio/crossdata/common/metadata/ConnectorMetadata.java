@@ -132,10 +132,12 @@ public class ConnectorMetadata implements IMetadata {
         this.name = name;
         this.version = version;
         this.dataStoreRefs = dataStoreRefs;
-        this.clusterProperties = clusterProperties;
-        this.requiredProperties = requiredProperties;
-        this.optionalProperties = optionalProperties;
-        this.supportedOperations = supportedOperations;
+        this.clusterProperties = (clusterProperties!=null)?
+                clusterProperties:
+                new HashMap<ClusterName, Map<Selector, Selector>>();
+        this.requiredProperties = (requiredProperties!=null)?requiredProperties:new HashSet<PropertyType>();
+        this.optionalProperties = (optionalProperties!=null)?optionalProperties:new HashSet<PropertyType>();
+        this.supportedOperations = (supportedOperations!=null)?supportedOperations:new HashSet<Operations>();
         this.connectorStatus = connectorStatus;
         this.actorRef = actorRef;
     }

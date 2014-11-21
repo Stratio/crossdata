@@ -33,7 +33,7 @@ class MockConnectorManagerActor() extends Actor with ActorLogging {
   override def preStart(): Unit = {
   }
 
-  override def receive = {
+  override def receive : Receive = {
     case _ => {
       sender ! "ko"
     }

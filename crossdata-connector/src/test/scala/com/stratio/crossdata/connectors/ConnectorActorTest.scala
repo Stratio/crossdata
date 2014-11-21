@@ -16,14 +16,13 @@
  * under the License.
  */
 
-import java.util
 import Mocks.DummyIConnector
 import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.routing.RoundRobinRouter
 import akka.util.Timeout
-import com.stratio.crossdata.common.data.{IndexName, ColumnName, ClusterName, TableName}
-import com.stratio.crossdata.common.metadata.{IndexMetadata, ColumnMetadata, TableMetadata}
+import com.stratio.crossdata.common.data.{ClusterName, ColumnName, IndexName, TableName}
+import com.stratio.crossdata.common.metadata.{ColumnMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.MetadataResult
 import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.communication.CreateTable
@@ -35,7 +34,6 @@ import org.scalatest.{FunSuite, Suite}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import scala.util
 
 object ConnectorActorTest
 

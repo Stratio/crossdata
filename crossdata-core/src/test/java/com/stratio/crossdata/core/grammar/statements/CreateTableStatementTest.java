@@ -30,8 +30,20 @@ public class CreateTableStatementTest extends ParsingTest {
 
     @Test
     public void createTableBasic() {
-        String inputText = "CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, something2 int, something3 boolean);";
-        String expectedText = "CREATE TABLE <unknown_name>.myTable ON CLUSTER cluster.siliconvalley(<unknown_name>.myTable.something=text, <unknown_name>.myTable.something2=int, <unknown_name>.myTable.something3=boolean, PRIMARY KEY((<unknown_name>.myTable.something)));";
+        String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
+                "something2 int, something3 boolean);";
+        String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
+                ".something=text, mycatalog.myTable.something2=int, mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+        testRegularStatement(inputText, expectedText, "createTableBasic");
+    }
+
+    @Test
+    public void createTableBasicWithFloat() {
+        String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
+                "something2 int, something3 float, something4 boolean);";
+        String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
+                ".something=text, mycatalog.myTable.something2=int, mycatalog.myTable.something3=float, " +
+                "mycatalog.myTable.something4=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
         testRegularStatement(inputText, expectedText, "createTableBasic");
     }
 
@@ -178,14 +190,14 @@ public class CreateTableStatementTest extends ParsingTest {
     }
 
     @Test
-    public void createTableWithGetMetaProperty() {
+    public void createTableWithGetCrossdataProperty() {
         String inputText =
                 "CREATE TABLE key_space1.timeseries ON CLUSTER siliconValley (event_type text, insertion_time text, event text,"
                         + " PRIMARY KEY (event_type, insertion_time)) WITH {'CLUSTERING ORDER BY': 'insertion_time DESC', 'ephemeral': true};";
         String expectedText =
                 "CREATE TABLE key_space1.timeseries ON CLUSTER cluster.siliconValley(key_space1.timeseries.event_type=text, key_space1.timeseries.insertion_time=text, key_space1.timeseries.event=text,"
                         + " PRIMARY KEY((key_space1.timeseries.event_type), key_space1.timeseries.insertion_time)) WITH {'CLUSTERING ORDER BY'='insertion_time DESC', 'ephemeral'=true};";
-        testRegularStatementSession("demo", inputText, expectedText, "createTableWithGetMetaProperty");
+        testRegularStatementSession("demo", inputText, expectedText, "createTableWithGetCrossdataProperty");
     }
 
     @Test

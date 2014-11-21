@@ -19,7 +19,7 @@
 package com.stratio.crossdata.common.result;
 
 /**
- * Result of the connection with a remote META server.
+ * Result of the connection with a remote CROSSDATA server.
  */
 public final class ConnectResult extends Result {
 

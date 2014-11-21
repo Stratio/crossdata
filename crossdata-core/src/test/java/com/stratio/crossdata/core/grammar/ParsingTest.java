@@ -25,16 +25,14 @@ import static org.testng.Assert.fail;
 
 import java.util.UUID;
 
-import org.testng.annotations.Test;
-
-import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 
 /**
- * MetaParser tests that recognize the different options of each Statement.
+ * XDqlParser tests that recognize the different options of each Statement.
  */
 public class ParsingTest {
 
@@ -213,12 +211,6 @@ public class ParsingTest {
             }
             assertFalse(inputText.equalsIgnoreCase(st.toString() + ";"), "Test passed but it should have failed");
         }
-    }
-
-    @Test
-    public void unknownFirstWordOfStatement() {
-        String inputText = "WINDOWS GO HOME;";
-        testParserFails(inputText, "unknown_first_word_of_statement");
     }
 
 }

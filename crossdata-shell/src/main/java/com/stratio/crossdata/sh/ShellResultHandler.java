@@ -25,19 +25,19 @@ import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.sh.utils.ConsoleUtils;
 
 /**
- * Results handler for the Meta shell when the asynchronous interface is used.
+ * Results handler for the Crossdata shell when the asynchronous interface is used.
  */
 public class ShellResultHandler implements IResultHandler {
 
     /**
-     * Parent Meta shell.
+     * Parent Crossdata shell.
      */
     private final Shell parent;
 
     /**
      * Class constructor.
      *
-     * @param parent Parent metashell that will be informed when results are available.
+     * @param parent Parent crossDatashell that will be informed when results are available.
      */
     public ShellResultHandler(Shell parent) {
         this.parent = parent;

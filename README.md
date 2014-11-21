@@ -2,30 +2,27 @@
 
 Crossdata (aka Meta) is a distributed framework that unifies the interaction with batch and streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies Crossdata defines a common unifying interface containing the set of operations that a datastore may support. New connectors can be easily added to increase its connectivity capabilities. Two types of connectors are defined: native and spark-based. Native connectors are faster for simple operations, while Spark-based connectors offer a larger set of functionality. The Crossdata planner decides which connector will be used for any request based its characteristics. We offer a shell, Java/REST APIs, and ODBC for BI.
 
-## Full documentation ##
-
-See the Wiki for full documentation, examples, operational details and other information.
-
-See the [Javadoc] () and [Language reference](_doc/Grammar.md) for the internal details.
-
 ## Compiling Crossdata ##
 
 Compiling Crossdata involves generating a set of files (.tokens, Lexers, and Parsers) from the different grammar files. To automatically build Stratio Crossdata execute the following command:
 
-```
-   > mvn clean compile install
-```
+    > mvn clean compile install
+
 
 ## Running the com.stratio.crossdata-server##
 
-```
-   > mvn exec:java -DskipTests -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.MetaApplication"
-```
+    > mvn exec:java -DskipTests -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.CrossdataApplication"
+
 or you can run our script located in crossdata-dist:
 
-    > chmod +x crossdata-dist/target/crossdata-dist-0.1.0/bin/crossdata-server
-    > cd crossdata-dist/target/crossdata-dist-0.1.0/
+    > chmod +x crossdata-dist/target/crossdata-dist-[crossdata-version]/bin/crossdata-server
+    > cd crossdata-dist/target/crossdata-dist-[crossdata-version]/
     > bin/crossdata-server
+
+or run it like a service:
+
+    > bin/crossdata-server-daemon start
+    
 
 
 ## Running the crosdata-shell ##
@@ -39,36 +36,27 @@ The shell features:
  - Token completion (tab)
  - Help command
 
-```
-   > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell"
-```
+
+    > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell"
+
 
 The shell also supports synchronous query execution by means of the --sync parameter. This execution mode is required for streaming queries.
 
-```
-   > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--sync"
-```
+    > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--sync"
+
 
 Additionally, you can execute an script upon launching the shell. The script will be executed first, and the prompt will be shown afterwards.
 
-```
-   > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec
-   .args="--script /path/script.metaql"
-```
+
+    > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--script /path/script.xdql"
+
 
 You can run our shell too, executing our crossdata-dist script:
 
-    > chmod +x crossdata-dist/target/crossdata-dist-0.1.0/bin/crossdata-sh
-    > cd crossdata-dist/target/crossdata-dist-0.1.0/
+    > chmod +x crossdata-dist/target/crossdata-dist-[crossdata-version]/bin/crossdata-sh
+    > cd crossdata-dist/target/crossdata-dist-[crossdata-version]/
     > bin/crossdata-sh
 
-
-## Packaging ##
-
-```
-   > mvn package
-```
-See [this link](https://github.com/Stratio/crossdata/edit/release/0.0.4/meta-dist/src/main/include/README.md) to know start/stop the server and the shell from the dist packages
 
 
 ## Useful commands ##
@@ -76,7 +64,7 @@ See [this link](https://github.com/Stratio/crossdata/edit/release/0.0.4/meta-dis
 Once the shell is running, you can exit the program introducing the word **exit** or **quit** in the query prompt. A command help system is available by introducing the command **help**. A help entry is available per command, to check specify help topics use **help command**.
 
 ## Send issues to Jira ##
-You can send us issues in https://com.stratio.crossdata.atlassian.net
+You can send us issues in https://crossdata.atlassian.net/
 
 
 ## Grammar ##
@@ -85,22 +73,18 @@ Grammar specification for this release can be found [here](_doc/Grammar.md).
 
 ## Getting started ##
 In this [link](_doc/GettingStarted.md) you can follow an example of Crossdata with a Cassandra Connector as an access 
-to a Cassandra data store.
+to a Cassandra datastore.
 
 
 ## Connectors ##
-Crossdata can use this connectors:
 
-[Cassandra Connector](https://github.com/Stratio/stratio-connector-cassandra)
+[List of Crossdata Connectors](_doc/List-of-Crossdata-Connectors.md)
 
-[Stratio Deep Connector](https://github.com/Stratio/stratio-connector-deep)
+[InMemory Connector development tutorial](_doc/InMemory-Connector-Development-Tutorial.md)
 
-[MongoDB Connector](https://github.com/Stratio/stratio-connector-mongodb)
+[Definition of Connector Operations](_doc/ConnectorOperations.md)
 
-[ElasticSearch Connector](https://github.com/Stratio/stratio-connector-elasticsearch)
-
-[Stratio Streaming Connector](https://github.com/Stratio/stratio-connector-streaming)
-
+[Crossdata Connector Challenge](https://stratio.github.io/crossdata/contest)
 
 # License #
 

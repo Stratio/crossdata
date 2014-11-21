@@ -25,7 +25,7 @@ import com.stratio.crossdata.communication.ACK
 import com.stratio.crossdata.server.utilities.TestKitUsageSpec
 import com.stratio.crossdata.common.result.{ErrorResult, Result}
 import com.typesafe.config.ConfigFactory
-import org.testng.Assert._
+import org.testng.Assert.{assertTrue,assertEquals,fail,assertFalse}
 
 import scala.concurrent.duration._
 
@@ -118,15 +118,15 @@ with ImplicitSender with DefaultTimeout {
 
   /**
    * Get the error message if a {@link ErrorResult} is received.
-   * @param metaResult The result.
+   * @param crossDataResult The result.
    * @return The Error message.
    */
-  def getErrorMMessage(metaResult: Result): String = {
-    var result: String = "Invalid class: " + metaResult.getClass
-    if (classOf[ErrorResult].isInstance(metaResult)) {
-      result = classOf[ErrorResult].cast(metaResult).getErrorMessage
+  def getErrorMMessage(crossDataResult: Result): String = {
+    var result: String = "Invalid class: " + crossDataResult.getClass
+    if (classOf[ErrorResult].isInstance(crossDataResult)) {
+      result = classOf[ErrorResult].cast(crossDataResult).getErrorMessage
     }
-    return result
+    result
   }
 
 }

@@ -33,7 +33,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code CREATE INDEX} statement of the META language. This class recognizes
+ * Class that models a {@code CREATE INDEX} statement of the CROSSDATA language. This class recognizes
  * the following syntax:
  * <p/>
  * CREATE {@link IndexType} INDEX (IF NOT EXISTS)? {@literal <index_name>} <br>
@@ -43,7 +43,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 public class CreateIndexStatement extends IndexStatement {
 
     /**
-     * The {@link com.stratio.crossdata.core.structures.IndexType} to be created.
+     * The {@link IndexType} to be created.
      */
     private IndexType type = null;
 
@@ -90,7 +90,7 @@ public class CreateIndexStatement extends IndexStatement {
     /**
      * Set the type of index.
      *
-     * @param type The type from {@link com.stratio.crossdata.core.structures.IndexType}.
+     * @param type The type from {@link IndexType}.
      */
     public void setIndexType(String type) {
         this.type = IndexType.valueOf(type.toUpperCase());
@@ -147,7 +147,7 @@ public class CreateIndexStatement extends IndexStatement {
     /**
      * Set the type of index.
      *
-     * @param type A {@link com.stratio.crossdata.core.structures.IndexType}.
+     * @param type A {@link IndexType}.
      */
     public void setType(IndexType type) {
         this.type = type;
@@ -212,21 +212,23 @@ public class CreateIndexStatement extends IndexStatement {
         if (name == null) {
             StringBuilder sb = new StringBuilder();
             if (IndexType.FULL_TEXT.equals(type)) {
-                sb.append("stratio_lucene_");
-                sb.append(tableName);
-            } else {
-                sb.append(tableName);
+                sb.append("stratio_fulltext");
                 for (ColumnName c : targetColumns) {
                     sb.append("_");
-                    sb.append(c.getQualifiedName());
+                    sb.append(c.getName());
                 }
-                sb.append("_idx");
+            } else {
+                for (ColumnName c : targetColumns) {
+                    sb.append(c.getQualifiedName());
+                    sb.append("_");
+                }
+                sb.append("idx");
             }
             result = sb.toString();
         } else {
             result = name.getName();
             if (IndexType.FULL_TEXT.equals(type)) {
-                result = name.toString().replaceAll("\\[(\\w*)\\]", "[stratio_lucene_$1]");
+                result = "stratio_fulltext_" + name.getName();
             }
         }
         return result;
@@ -253,7 +255,7 @@ public class CreateIndexStatement extends IndexStatement {
             sb.append(catalog).append(".");
         }
         sb.append(tableName);
-        sb.append(" (").append(StringUtils.stringList(targetColumns, ", ")).append(")");
+        sb.append("(").append(StringUtils.stringList(targetColumns, ", ")).append(")");
         if (usingClass != null) {
             sb.append(" USING ");
             sb.append("'").append(usingClass).append("'");

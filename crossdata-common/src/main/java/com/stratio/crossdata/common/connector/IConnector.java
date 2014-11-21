@@ -26,20 +26,20 @@ import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.common.data.ClusterName;
 
 /**
- * Common interface for META connectors. A connector provides implementations for storage and query
+ * Common interface for CROSSDATA connectors. A connector provides implementations for storage and query
  * engines. Notice that connectors do not need to provide both functionalities at the same time.
  */
 public interface IConnector {
 
     /**
-     * Get the name of the actor.
+     * Get the name of the connector.
      *
      * @return A name.
      */
     String getConnectorName();
 
     /**
-     * Get the names of the datastores required by the connector.
+     * Get the names of the datastores supported by the connector.
      * Several connectors may declare the same datastore name.
      *
      * @return The names.
@@ -65,14 +65,14 @@ public interface IConnector {
             throws ConnectionException;
 
     /**
-     * Close the connection with the underlying datastore.
+     * Close the connection with the underlying cluster.
      *
      * @throws ConnectionException If the close operation cannot be performed.
      */
     void close(ClusterName name) throws ConnectionException;
 
     /**
-     * Shutdown send a sing to terminate all operations of the connectormanager and then close all clusters connection.
+     * Shuts down and then close all cluster's connections
      *
      * @throws ExecutionException If the shutdown operation cannot be performed.
      */

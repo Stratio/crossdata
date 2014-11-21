@@ -29,7 +29,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
 /**
- * Class that models a {@code ATTACH CLUSTER} statement from the META language. A cluster represents
+ * Class that models a {@code ATTACH CLUSTER} statement from the CROSSDATA language. A cluster represents
  * a logical cluster of storage machines that target the same datastore technology. To create a
  * storage, the user must specify the hosts and ports where the datastore is available in the JSON
  * options.
@@ -71,7 +71,7 @@ public class AttachClusterStatement extends MetadataStatement {
         this.ifNotExists = ifNotExists;
         this.datastoreName = datastoreName;
 
-        if (options.isEmpty()) {
+        if ((options == null) || options.isEmpty()) {
             this.options = new HashMap<>();
         } else {
             this.options = StringUtils.convertJsonToOptions(options);
@@ -94,6 +94,7 @@ public class AttachClusterStatement extends MetadataStatement {
     @Override
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_DATASTORE)
+                .add(ValidationTypes.MUST_BE_UNIQUE_DATASTORE)
                 .add(ValidationTypes.VALID_CLUSTER_OPTIONS);
     }
 

@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.metadata;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,19 +33,18 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
-import com.stratio.crossdata.common.data.ConnectorStatus;
-import com.stratio.crossdata.common.metadata.Operations;
-import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.NameType;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
@@ -53,6 +53,7 @@ import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.IMetadata;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
@@ -79,8 +80,11 @@ public enum MetadataManager {
      * @param name It is the object to check.
      * @return True if it exists.
      */
-    public boolean exists(Name name) {
+    public boolean exists(Name name) throws MetadataManagerException {
         boolean result = false;
+        if(name == null){
+            throw new MetadataManagerException("Name is null");
+        }
         switch (name.getType()) {
         case CATALOG:
             result = exists((CatalogName) name);
@@ -159,8 +163,8 @@ public enum MetadataManager {
     public boolean exists(ColumnName name) {
         boolean result = false;
         if (exists(name.getTableName())) {
-            TableMetadata catalogMetadata = this.getTable(name.getTableName());
-            result = catalogMetadata.getColumns().containsKey(name);
+            TableMetadata tableMetadata = this.getTable(name.getTableName());
+            result = tableMetadata.getColumns().containsKey(name);
         }
         return result;
     }
@@ -246,8 +250,23 @@ public enum MetadataManager {
     /**
      * Remove the selected catalog. Not implemented yet.
      * @param catalogName Removed catalog name.
+     * @param ifExist Conditon if the catalog exists
      */
-    public void deleteCatalog(CatalogName catalogName) {
+    public void deleteCatalog(CatalogName catalogName, boolean ifExist) {
+        shouldBeInit();
+        writeLock.lock();
+        if (!ifExist) {
+            shouldExist(catalogName);
+        }
+        try {
+            beginTransaction();
+            metadata.remove(catalogName);
+            commitTransaction();
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex);
+        } finally {
+            writeLock.unlock();
+        }
 
     }
 
@@ -303,11 +322,26 @@ public enum MetadataManager {
     }
 
     /**
-     * Remove the selected table. Not implemented yet.
+     * Remove the selected table.
      * @param tableName Removed table name.
      */
     public void deleteTable(TableName tableName) {
-
+        shouldBeInit();
+        writeLock.lock();
+        shouldExist(tableName);
+        shouldExist(tableName.getCatalogName());
+        try {
+            beginTransaction();
+            metadata.remove(tableName);
+            CatalogMetadata catalogMetadata = getCatalog(tableName.getCatalogName());
+            catalogMetadata.getTables().remove(tableName);
+            metadata.put(catalogMetadata.getName(), catalogMetadata);
+            commitTransaction();
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     /**
@@ -717,7 +751,7 @@ public enum MetadataManager {
         return columnList;
     }
 
-    /**
+        /**
      * Return all connectors.
      * @return List with all connectors.
      */
@@ -730,6 +764,21 @@ public enum MetadataManager {
             }
         }
         return connectors;
+    }
+
+    /**
+     * Return all datastores.
+     * @return List with all connectors.
+     */
+    public List<DataStoreMetadata> getDatastores() {
+        List<DataStoreMetadata> datastores = new ArrayList<>();
+        for (Map.Entry<FirstLevelName, IMetadata> entry : metadata.entrySet()) {
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata instanceof DataStoreMetadata) {
+                datastores.add((DataStoreMetadata) iMetadata);
+            }
+        }
+        return datastores;
     }
 
     /**
@@ -766,5 +815,117 @@ public enum MetadataManager {
      */
     public boolean isEmpty() {
         return metadata.isEmpty();
+    }
+
+    /**
+     * Remove catalogs.
+     * @throws NotSupportedException
+     * @throws SystemException
+     * @throws HeuristicRollbackException
+     * @throws HeuristicMixedException
+     * @throws RollbackException
+     */
+    public void clearCatalogs()
+            throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
+            RollbackException {
+        shouldBeInit();
+        try {
+            writeLock.lock();
+
+            Set<CatalogName> catalogs = new HashSet<>();
+
+            for(FirstLevelName name: metadata.keySet()){
+                if(name instanceof CatalogName){
+                    catalogs.add((CatalogName) name);
+                }
+            }
+
+            beginTransaction();
+            for(CatalogName catalogName: catalogs){
+                metadata.remove(catalogName);
+            }
+            commitTransaction();
+
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    /**
+     * Remove the connector from metadata manager.
+     * @param connectorName The connector name
+     * @throws NotSupportedException
+     * @throws SystemException
+     * @throws HeuristicRollbackException
+     * @throws HeuristicMixedException
+     * @throws RollbackException
+     * @throws MetadataManagerException
+     */
+    public void deleteConnector(ConnectorName connectorName)
+            throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
+            RollbackException, MetadataManagerException {
+        shouldBeInit();
+        exists(connectorName);
+        try {
+            writeLock.lock();
+
+            for(FirstLevelName firstLevelName: metadata.keySet()){
+                if(firstLevelName instanceof ClusterName) {
+                    ClusterMetadata clusterMetadata = (ClusterMetadata) metadata.get(firstLevelName);
+                    Map<ConnectorName, ConnectorAttachedMetadata> attachedConnectors =
+                            clusterMetadata.getConnectorAttachedRefs();
+                    if(attachedConnectors.containsKey(connectorName)){
+                        StringBuilder sb = new StringBuilder("Connector ");
+                        sb.append(connectorName).append(" couldn't be deleted").append(System.lineSeparator());
+                        sb.append("It's attached to cluster ").append(clusterMetadata.getName());
+                        throw new MetadataManagerException(sb.toString());
+                    }
+                }
+            }
+
+            beginTransaction();
+            metadata.remove(connectorName);
+            commitTransaction();
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    /**
+     * Remove the data store from the metadata manager.
+     * @param dataStoreName The data store name
+     * @throws NotSupportedException
+     * @throws SystemException
+     * @throws HeuristicRollbackException
+     * @throws HeuristicMixedException
+     * @throws RollbackException
+     * @throws MetadataManagerException
+     */
+    public void deleteDatastore(DataStoreName dataStoreName)
+            throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
+            RollbackException, MetadataManagerException {
+        shouldBeInit();
+        exists(dataStoreName);
+        try {
+            writeLock.lock();
+
+            DataStoreMetadata dataStoreMetadata = getDataStore(dataStoreName);
+            Map<ClusterName, ClusterAttachedMetadata> attachedClusters = dataStoreMetadata.getClusterAttachedRefs();
+            if((attachedClusters != null) && (!attachedClusters.isEmpty())){
+                StringBuilder sb = new StringBuilder("Datastore ");
+                sb.append(dataStoreName).append(" couldn't be deleted").append(System.lineSeparator());
+                sb.append("It has attachments: ").append(System.lineSeparator());
+                for(ClusterName clusterName: attachedClusters.keySet()){
+                    sb.append(" - ").append(clusterName).append(System.lineSeparator());
+                }
+                throw new MetadataManagerException(sb.toString());
+            }
+
+            beginTransaction();
+            metadata.remove(dataStoreName);
+            commitTransaction();
+        } finally {
+            writeLock.unlock();
+        }
     }
 }

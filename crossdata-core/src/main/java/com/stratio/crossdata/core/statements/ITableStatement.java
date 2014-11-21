@@ -23,7 +23,7 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 
 /**
- * Meta statement that are executed over a table.
+ * Crossdata statement that are executed over a table.
  */
 public interface ITableStatement {
 

@@ -35,11 +35,11 @@ class MockCoordinatorActor() extends Actor {
   lazy val logger = Logger.getLogger(classOf[MockCoordinatorActor])
   override def receive: Receive = {
     case query:MetadataPlannedQuery=>{
-      logger.debug("MockCoordinator actor sending EXECUTED")
+      logger.debug("MockCoordinator actor sending  EXECUTED")
       sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
     }
     case query:SelectPlannedQuery=>{
-      logger.debug("MockCoordinator actor sending EXECUTED")
+      logger.debug("MockCoordinator actor sending EXECUTED ")
       sender ! ACK(query.getQueryId,QueryStatus.EXECUTED)
     }
     case query:StoragePlannedQuery=>{

@@ -18,8 +18,9 @@
 
 package com.stratio.crossdata.driver.result
 
-import com.stratio.crossdata.common.exceptions.{ExecutionException, ParsingException, UnsupportedException, ValidationException}
-import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.exceptions.{ExecutionException, ParsingException, UnsupportedException,
+ValidationException}
+import com.stratio.crossdata.common.result.{IResultHandler, QueryStatus, QueryResult, Result}
 import com.stratio.crossdata.common.result.ErrorResult
 import com.stratio.crossdata.common.data.ResultSet
 import org.apache.log4j.Logger
@@ -70,7 +71,10 @@ class SyncResultHandler extends IResultHandler {
     errorFound = true
     notify()
   }
-
+  /**
+   * This method get the Result.
+   * @return  queryResult.
+   * */
   @throws(classOf[ParsingException])
   @throws(classOf[ValidationException])
   @throws(classOf[ExecutionException])
@@ -83,10 +87,12 @@ class SyncResultHandler extends IResultHandler {
       throw exception
     }
 
-    if (queryResult != null) {
-      return queryResult
-    }
 
-    return nonQueryResult
+    if (queryResult != null) {
+      queryResult
+    }
+    else {
+      nonQueryResult
+    }
   }
 }

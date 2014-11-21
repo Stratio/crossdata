@@ -28,14 +28,27 @@ public class ExecutionException extends ConnectorException {
      */
     private static final long serialVersionUID = 9044542877799283335L;
 
+    /**
+     * Constructor Class.
+     * @param e
+     */
     public ExecutionException(Exception e){
         super(e);
     }
 
+    /**
+     * Constructor Class.
+     * @param message
+     */
     public ExecutionException(String message) {
         super(message);
     }
 
+    /**
+     * Constructor Class.
+     * @param msg
+     * @param cause
+     */
     public ExecutionException(String msg, Throwable cause) {
         super(msg, cause);
     }

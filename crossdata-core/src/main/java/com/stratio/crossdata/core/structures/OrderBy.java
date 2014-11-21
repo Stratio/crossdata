@@ -25,35 +25,66 @@ import java.util.List;
 
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * OrderBy Class.
+ */
 public class OrderBy implements Serializable {
     private List<Selector> selectorList = new ArrayList<>();
     private OrderDirection direction = OrderDirection.ASC;
 
+    /**
+     * Constructor Class.
+     */
     public OrderBy() {
     }
 
+    /**
+     * Constructor Class.
+     * @param direction The order direction
+     * @param selectorList A list of Selectors
+     */
     public OrderBy(OrderDirection direction,
             List<Selector> selectorList) {
         this.direction = direction;
         this.selectorList = selectorList;
     }
 
+    /**
+     * Constructor Class.
+     * @param selectorList A list of Selectors
+     */
     public OrderBy(List<Selector> selectorList) {
         this.selectorList = selectorList;
     }
 
+    /**
+     * Get a list of Selectors of the Group By.
+     * @return List of Selectors of the Group By.
+     */
     public List<Selector> getSelectorList() {
         return selectorList;
     }
 
+    /**
+     * Set the selector List of the Group By.
+     * @param selectorList The selector list
+     */
     public void setSelectorList(List<Selector> selectorList) {
         this.selectorList = selectorList;
     }
 
+    /**
+     * Get the direction of the Group By.
+     * @return Direction of the Group By.
+     */
     public OrderDirection getDirection() {
         return direction;
     }
 
+    /**
+     * Set the direction of the GroupBy.
+     * @param direction
+     */
     public void setDirection(OrderDirection direction) {
         this.direction = direction;
     }
