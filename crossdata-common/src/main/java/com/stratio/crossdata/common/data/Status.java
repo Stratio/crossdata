@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.common.data;
 
-public enum ConnectorStatus {
+public enum Status {
     OFFLINE,
     ONLINE,
     SHUTTING_DOWN,

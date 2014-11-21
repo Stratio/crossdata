@@ -24,7 +24,7 @@ import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
 import akka.pattern.ask
 import akka.testkit.ImplicitSender
-import com.stratio.crossdata.common.data.{CatalogName, ClusterName, ColumnName, ConnectorName, ConnectorStatus,
+import com.stratio.crossdata.common.data.{CatalogName, ClusterName, ColumnName, ConnectorName, Status,
 DataStoreName, FirstLevelName, IndexName, TableName}
 import com.stratio.crossdata.common.executionplan.{StorageWorkflow, ExecutionType, ResultType, MetadataWorkflow,
 QueryWorkflow}
@@ -77,9 +77,7 @@ ImplicitSender with BeforeAndAfterAll{
     queryId + queryIdIncrement
   }
 //Actors in this tests
-var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet[Address]()
-
-  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(connectorManagerActorsSharedMemory),
+  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(),
   "ConnectorManagerActor")
   val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
     "CoordinatorActor")
@@ -231,7 +229,7 @@ var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet
 
     //create catalog
     metadataManager.createTestCatalog(catalogName)
-    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), ConnectorStatus.ONLINE)
+    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
 
     val clusterMetadata = MetadataManager.MANAGER.getCluster(testcluster)
     val connectorsMap = new java.util.HashMap[ConnectorName, ConnectorAttachedMetadata]()

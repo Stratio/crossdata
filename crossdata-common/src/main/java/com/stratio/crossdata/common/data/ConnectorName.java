@@ -40,8 +40,8 @@ public class ConnectorName extends FirstLevelName {
     }
 
     /**
-     * Get the Cluster Name.
-     * @return Cluster Name.
+     * Get the Connector Name.
+     * @return Connector Name.
      */
     public String getName() {
         return name;
