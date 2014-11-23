@@ -37,7 +37,7 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.ConnectorStatus;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
@@ -202,11 +202,11 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         List<ConnectorName> names = new ArrayList<>();
         ConnectorName connectorName = new ConnectorName("connectorTest");
         names.add(connectorName);
-        ConnectorStatus status = ConnectorStatus.ONLINE;
+        Status status = Status.ONLINE;
         MetadataManager.MANAGER.setConnectorStatus(names, status);
 
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-        assertEquals(connectorMetadata.getConnectorStatus(), status);
+        assertEquals(connectorMetadata.getStatus(), status);
     }
 
     @Test
@@ -250,12 +250,12 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         List<ConnectorName> names = new ArrayList<>();
         ConnectorName connectorName = new ConnectorName("connectorTest");
         names.add(connectorName);
-        ConnectorStatus connectorStatus = ConnectorStatus.SHUTTING_DOWN;
-        MetadataManager.MANAGER.setConnectorStatus(names, connectorStatus);
+        Status status = Status.SHUTTING_DOWN;
+        MetadataManager.MANAGER.setConnectorStatus(names, status);
 
         ClusterName clusterName = new ClusterName(cluster);
         List<ConnectorMetadata> attachedConnectors = MetadataManager.MANAGER
-                .getAttachedConnectors(connectorStatus, clusterName);
+                .getAttachedConnectors(status, clusterName);
 
         assertTrue(attachedConnectors.size() == 1);
         assertEquals(attachedConnectors.get(0).getName(), connectorName);
@@ -271,10 +271,10 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         List<ConnectorName> names = new ArrayList<>();
         ConnectorName connectorName = new ConnectorName("connectorTest");
         names.add(connectorName);
-        ConnectorStatus connectorStatus = ConnectorStatus.INITIALIZING;
-        MetadataManager.MANAGER.setConnectorStatus(names, connectorStatus);
+        Status status = Status.INITIALIZING;
+        MetadataManager.MANAGER.setConnectorStatus(names, status);
 
-        assertTrue(MetadataManager.MANAGER.checkConnectorStatus(connectorName, connectorStatus));
+        assertTrue(MetadataManager.MANAGER.checkConnectorStatus(connectorName, status));
     }
 
     @Test
@@ -365,11 +365,11 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         testCreateConnector();
 
-        ConnectorStatus status = ConnectorStatus.ONLINE;
+        Status status = Status.ONLINE;
         List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors(status);
 
         assertTrue(connectors.size() == 1);
-        assertTrue(connectors.get(0).getConnectorStatus() == status);
+        assertTrue(connectors.get(0).getStatus() == status);
     }
 
     @Test
@@ -384,7 +384,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         testCreateConnector();
 
-        List<ConnectorName> connectors = MetadataManager.MANAGER.getConnectorNames(ConnectorStatus.ONLINE);
+        List<ConnectorName> connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE);
 
         assertTrue(connectors.size() == 1);
         assertTrue(connectors.get(0).getName().equalsIgnoreCase("connectorTest"));

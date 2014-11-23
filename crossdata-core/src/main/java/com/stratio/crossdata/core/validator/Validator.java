@@ -27,7 +27,7 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.ConnectorStatus;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
@@ -217,7 +217,7 @@ public class Validator {
         if (statement instanceof AttachConnectorStatement) {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) statement;
             ConnectorName connectorName = attachConnectorStatement.getConnectorName();
-            if (!MetadataManager.MANAGER.checkConnectorStatus(connectorName, ConnectorStatus.ONLINE)) {
+            if (!MetadataManager.MANAGER.checkConnectorStatus(connectorName, Status.ONLINE)) {
                 throw new NotConnectionException("Connector " + connectorName + " is not connected.");
             }
         } else {

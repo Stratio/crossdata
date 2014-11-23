@@ -37,7 +37,8 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.ConnectorStatus;
+import com.stratio.crossdata.common.data.NodeName;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
@@ -53,6 +54,7 @@ import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.IMetadata;
+import com.stratio.crossdata.common.metadata.NodeMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -97,6 +99,9 @@ public enum MetadataManager {
             break;
         case CONNECTOR:
             result = exists((ConnectorName) name);
+            break;
+        case NODE:
+            result = exists((NodeName) name);
             break;
         case DATASTORE:
             result = exists((DataStoreName) name);
@@ -560,22 +565,22 @@ public enum MetadataManager {
     /**
      * Update connector status.
      * @param name Name for the selected connector.
-     * @param connectorStatus New connector status.
+     * @param status New connector status.
      */
-    public void setConnectorStatus(ConnectorName name, ConnectorStatus connectorStatus) {
+    public void setConnectorStatus(ConnectorName name, Status status) {
         ConnectorMetadata connectorMetadata = getConnector(name);
-        connectorMetadata.setConnectorStatus(connectorStatus);
+        connectorMetadata.setStatus(status);
         createConnector(connectorMetadata, false);
     }
 
     /**
      * Update the status of the connector list.
      * @param names List of connectors name.
-     * @param connectorStatus New connector status.
+     * @param status New connector status.
      */
-    public void setConnectorStatus(List<ConnectorName> names, ConnectorStatus connectorStatus) {
+    public void setConnectorStatus(List<ConnectorName> names, Status status) {
         for(ConnectorName connectorName: names){
-            setConnectorStatus(connectorName, connectorStatus);
+            setConnectorStatus(connectorName, status);
         }
     }
 
@@ -591,11 +596,11 @@ public enum MetadataManager {
     /**
      * Get the connectors that are attached to the clusters that store the requested tables.
      *
-     * @param connectorConnectorStatus The status of the connector.
+     * @param connectorStatus The status of the connector.
      * @param tables          The list of table names.
      * @return A map associating table names with a list of the available connectors.
      */
-    public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(ConnectorStatus connectorConnectorStatus,
+    public Map<TableName, List<ConnectorMetadata>> getAttachedConnectors(Status connectorStatus,
             List<TableName> tables) {
         Map<TableName, List<ConnectorMetadata>> result = new HashMap<>();
         List<ConnectorMetadata> connectors;
@@ -609,7 +614,7 @@ public enum MetadataManager {
             connectors = new ArrayList<>();
             for (ConnectorName connectorName : connectorNames) {
                 ConnectorMetadata connectorMetadata = getConnector(connectorName);
-                if (connectorMetadata.getConnectorStatus() == connectorConnectorStatus) {
+                if (connectorMetadata.getStatus() == connectorStatus) {
                     connectors.add(connectorMetadata);
                 }
             }
@@ -621,17 +626,17 @@ public enum MetadataManager {
 
     /**
      * Select a list available connector for a selected cluster.
-     * @param connectorStatus Selected status.
+     * @param status Selected status.
      * @param clusterName Selected cluster.
      * @return List of connector that it validate the restrictions.
      */
-    public List<ConnectorMetadata> getAttachedConnectors(ConnectorStatus connectorStatus, ClusterName clusterName) {
+    public List<ConnectorMetadata> getAttachedConnectors(Status status, ClusterName clusterName) {
         List<ConnectorMetadata> connectors = new ArrayList<>();
         Set<ConnectorName> connectorNames = getCluster(clusterName)
                 .getConnectorAttachedRefs().keySet();
         for (ConnectorName connectorName : connectorNames) {
             ConnectorMetadata connectorMetadata = getConnector(connectorName);
-            if (connectorMetadata.getConnectorStatus() == connectorStatus) {
+            if (connectorMetadata.getStatus() == status) {
                 connectors.add(connectorMetadata);
             }
         }
@@ -653,13 +658,13 @@ public enum MetadataManager {
     /**
      * Validate connector status.
      * @param connectorName Selected connector
-     * @param connectorStatus Status to validate.
+     * @param status Status to validate.
      * @return True if the status is equal.
      */
-    public boolean checkConnectorStatus(ConnectorName connectorName, ConnectorStatus connectorStatus) {
+    public boolean checkConnectorStatus(ConnectorName connectorName, Status status) {
         shouldBeInit();
         exists(connectorName);
-        return (getConnector(connectorName).getConnectorStatus() == connectorStatus);
+        return (getConnector(connectorName).getStatus() == status);
     }
 
     /**
@@ -783,13 +788,13 @@ public enum MetadataManager {
 
     /**
      * Return all connector with a specific status.
-     * @param connectorStatus Selected status.
+     * @param status Selected status.
      * @return List with all connectors.
      */
-    public List<ConnectorMetadata> getConnectors(ConnectorStatus connectorStatus){
+    public List<ConnectorMetadata> getConnectors(Status status){
         List<ConnectorMetadata> onlineConnectors = new ArrayList<>();
         for (ConnectorMetadata connector : getConnectors()) {
-            if (connector.getConnectorStatus() == connectorStatus) {
+            if (connector.getStatus() == status) {
                 onlineConnectors.add(connector);
             }
         }
@@ -798,12 +803,12 @@ public enum MetadataManager {
 
     /**
      * Return all connectors name with a selected status.
-     * @param connectorStatus Selected status.
+     * @param status Selected status.
      * @return List with all connector names.
      */
-    public List<ConnectorName> getConnectorNames(ConnectorStatus connectorStatus){
+    public List<ConnectorName> getConnectorNames(Status status){
         List<ConnectorName> onlineConnectorNames = new ArrayList<>();
-        for(ConnectorMetadata connectorMetadata: getConnectors(connectorStatus)){
+        for(ConnectorMetadata connectorMetadata: getConnectors(status)){
             onlineConnectorNames.add(connectorMetadata.getName());
         }
         return onlineConnectorNames;
@@ -928,4 +933,132 @@ public enum MetadataManager {
             writeLock.unlock();
         }
     }
+
+    public NodeMetadata getNode(NodeName name) {
+        shouldBeInit();
+        shouldExist(name);
+        return (NodeMetadata) metadata.get(name);
+    }
+
+    public NodeMetadata getNodeIfExists(NodeName name) {
+        shouldBeInit();
+        IMetadata iMetadata = metadata.get(name);
+        NodeMetadata nodeMetadata = null;
+        if(iMetadata != null){
+            nodeMetadata = (NodeMetadata) iMetadata;
+        }
+        return nodeMetadata;
+    }
+
+    public void createNode(NodeMetadata nodeMetadata){
+        createNode(nodeMetadata, true);
+    }
+
+    public void createNode(NodeMetadata nodeMetadata, boolean unique){
+        shouldBeInit();
+        try {
+            writeLock.lock();
+            if (unique) {
+                shouldBeUnique(nodeMetadata.getName());
+            }
+            beginTransaction();
+            metadata.put(nodeMetadata.getName(), nodeMetadata);
+            commitTransaction();
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public void setNodeStatus(NodeName nodeName, Status status){
+        shouldBeInit();
+        try {
+            writeLock.lock();
+            beginTransaction();
+            NodeMetadata nodeMetadata = new NodeMetadata(nodeName, status);
+            createNode(nodeMetadata, false);
+            commitTransaction();
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public void setNodeStatusIfExists(NodeName nodeName, Status status){
+        shouldBeInit();
+        try {
+            writeLock.lock();
+            NodeMetadata nodeMetadata = getNodeIfExists(nodeName);
+            if(nodeMetadata != null){
+                nodeMetadata.setStatus(status);
+                beginTransaction();
+                createNode(nodeMetadata, false);
+                commitTransaction();
+            }
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public Status getNodeStatus(NodeName nodeName){
+        return getNode(nodeName).getStatus();
+    }
+
+    public List<NodeName> getNodeNames(Status status){
+        List<NodeName> onlineNodeNames = new ArrayList<>();
+        for(NodeMetadata nodeMetadata: getNodes(status)){
+            onlineNodeNames.add(nodeMetadata.getName());
+        }
+        return onlineNodeNames;
+    }
+
+    public List<NodeMetadata> getNodes(Status status){
+        List<NodeMetadata> onlineNodes = new ArrayList<>();
+        for (NodeMetadata node: getNodes()) {
+            if (node.getStatus() == status) {
+                onlineNodes.add(node);
+            }
+        }
+        return onlineNodes;
+    }
+
+    public List<NodeMetadata> getNodes() {
+        List<NodeMetadata> nodes = new ArrayList<>();
+        for (Map.Entry<FirstLevelName, IMetadata> entry: metadata.entrySet()) {
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata instanceof ConnectorMetadata) {
+                nodes.add((NodeMetadata) iMetadata);
+            }
+        }
+        return nodes;
+    }
+
+    public void setNodeStatus(List<NodeName> names, Status status) {
+        for(NodeName nodeName: names){
+            setNodeStatus(nodeName, status);
+        }
+    }
+
+    public boolean checkGetConnectorName(NodeName nodeName) {
+        boolean result = false;
+        try {
+            writeLock.lock();
+            beginTransaction();
+            if ((!exists(nodeName)) || (getNode(nodeName).getStatus() == Status.OFFLINE)) {
+                setNodeStatus(nodeName, Status.INITIALIZING);
+                result = true;
+            }
+            commitTransaction();
+        } catch (SystemException | HeuristicRollbackException | RollbackException | NotSupportedException | HeuristicMixedException e) {
+            result = false;
+        } finally {
+            writeLock.unlock();
+        }
+        return result;
+    }
+
 }

@@ -354,11 +354,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
     }
 
     case ctc: ConnectToConnector =>
-      MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(ctc.msg), data.ConnectorStatus.ONLINE)
+      MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(ctc.msg), data.Status.ONLINE)
       log.info("Connected to connector")
 
     case dfc: DisconnectFromConnector =>
-      MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(dfc.msg), data.ConnectorStatus.OFFLINE)
+      MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(dfc.msg), data.Status.OFFLINE)
       log.info("Disconnected from connector")
 
     case _ => {

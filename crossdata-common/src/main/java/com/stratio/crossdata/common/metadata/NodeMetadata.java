@@ -16,11 +16,35 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.data;
+package com.stratio.crossdata.common.metadata;
 
-public enum ConnectorStatus {
-    OFFLINE,
-    ONLINE,
-    SHUTTING_DOWN,
-    INITIALIZING
+import com.stratio.crossdata.common.data.Status;
+import com.stratio.crossdata.common.data.NodeName;
+
+public class NodeMetadata implements IMetadata {
+
+    private final NodeName name;
+
+    private Status status;
+
+    public NodeMetadata(NodeName name, Status status) {
+        this.name = name;
+        this.status = status;
+    }
+
+    public NodeMetadata(NodeName name) {
+        this(name, Status.OFFLINE);
+    }
+
+    public NodeName getName() {
+        return name;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 }

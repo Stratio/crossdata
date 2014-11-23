@@ -280,7 +280,7 @@ public class APIManager {
             stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
                     .append("\t").append(System.getProperty("line.separator"));
 
-            stringBuilder.append("\t").append("Status: ").append(connector.getConnectorStatus()).append(System.getProperty(
+            stringBuilder.append("\t").append("Status: ").append(connector.getStatus()).append(System.getProperty(
                     "line.separator"));
 
             stringBuilder.append("\t").append("Properties: ").append(System.getProperty("line.separator"));
@@ -319,7 +319,7 @@ public class APIManager {
 
         for (ConnectorMetadata connector : connectors) {
             stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
-                    .append("\t").append(connector.getConnectorStatus());
+                    .append("\t").append(connector.getStatus());
             // ClusterRefs
             if (connector.getClusterRefs() == null) {
                 stringBuilder = stringBuilder.append("\t")

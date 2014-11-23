@@ -24,14 +24,13 @@ import akka.cluster.ClusterEvent.{ClusterMetricsChanged, MemberEvent, MemberExit
 MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEvent}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
-import com.stratio.crossdata.common.data.ConnectorName
+import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
 import com.stratio.crossdata.common.result.{Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{replyConnectorName, getConnectorName,Connect}
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
-import com.stratio.crossdata.common.data.ConnectorStatus
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
@@ -39,10 +38,10 @@ import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import java.util
 
 object ConnectorManagerActor {
-  def props(sharedMemory: util.HashSet[Address]): Props = Props(new ConnectorManagerActor(sharedMemory))
+  def props(): Props = Props(new ConnectorManagerActor)
 }
 
-class ConnectorManagerActor(sharedMemory: util.HashSet[Address]) extends Actor with ActorLogging {
+class ConnectorManagerActor() extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
@@ -50,14 +49,6 @@ class ConnectorManagerActor(sharedMemory: util.HashSet[Address]) extends Actor w
   var connectorsAlreadyReset = false
 
   log.info("Lifting coordinator actor")
-  try {
-    val connectors = MetadataManager.MANAGER.getConnectorNames(ConnectorStatus.ONLINE)
-    MetadataManager.MANAGER.setConnectorStatus(connectors, ConnectorStatus.OFFLINE)
-  } catch {
-    case e: Exception => {
-      log.error("Couldn't set connectors to OFFLINE")
-    }
-  }
 
   override def preStart(): Unit = {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
@@ -80,10 +71,10 @@ class ConnectorManagerActor(sharedMemory: util.HashSet[Address]) extends Actor w
         val role = it.next()
         role match {
           case "connector" => {
-            if(!sharedMemory.contains(mu.member.address)){
-              sharedMemory.add(mu.member.address)
-              logger.debug("Asking its name to the connector " + mu.member.address)
-              val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
+            logger.debug("Asking its name to the connector " + mu.member.address)
+            val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
+            val nodeName = new NodeName(mu.member.address.toString)
+            if(MetadataManager.MANAGER.checkGetConnectorName(nodeName)){
               connectorActorRef ! getConnectorName()
             }
           }
@@ -98,7 +89,6 @@ class ConnectorManagerActor(sharedMemory: util.HashSet[Address]) extends Actor w
      * CONNECTOR answers its name.
      */
     case msg: replyConnectorName => {
-      sharedMemory.remove(sender.path.address)
       logger.info("Connector Name " + msg.name + " received from " + sender)
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
       logger.info("Registering connector at: " + actorRefUri)
@@ -129,8 +119,8 @@ class ConnectorManagerActor(sharedMemory: util.HashSet[Address]) extends Actor w
           sender ! new Connect(null, clusterConfig)
         }
       }
-      MetadataManager.MANAGER.setConnectorStatus(connectorName, ConnectorStatus.ONLINE)
-
+      MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
+      MetadataManager.MANAGER.setNodeStatus(new NodeName(sender.path.address.toString), Status.ONLINE)
     }
 
     case c: ConnectResult => {
@@ -152,8 +142,10 @@ class ConnectorManagerActor(sharedMemory: util.HashSet[Address]) extends Actor w
         }
         if(foundServers.size == 1){
           logger.info("Resetting Connectors status")
-          val connectors = MetadataManager.MANAGER.getConnectorNames(data.ConnectorStatus.ONLINE)
-          MetadataManager.MANAGER.setConnectorStatus(connectors, data.ConnectorStatus.OFFLINE)
+          val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
+          MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
+          val nodes = MetadataManager.MANAGER.getNodeNames(data.Status.ONLINE)
+          MetadataManager.MANAGER.setNodeStatus(nodes, data.Status.OFFLINE)
           connectorsAlreadyReset = true
         }
       }
@@ -170,7 +162,9 @@ class ConnectorManagerActor(sharedMemory: util.HashSet[Address]) extends Actor w
       val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address)
       val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri + "/user/ConnectorActor/")
       MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
-        data.ConnectorStatus.OFFLINE)
+        data.Status.OFFLINE)
+      MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString),
+        data.Status.OFFLINE)
     }
 
     case member: MemberExited => {
@@ -178,7 +172,9 @@ class ConnectorManagerActor(sharedMemory: util.HashSet[Address]) extends Actor w
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
       val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
       MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
-        data.ConnectorStatus.SHUTTING_DOWN)
+        data.Status.SHUTTING_DOWN)
+      MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString),
+        data.Status.OFFLINE)
     }
 
     case _: MemberEvent => {
