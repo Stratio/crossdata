@@ -23,8 +23,8 @@ public enum NameType {
     CLUSTER,
     COLUMN,
     CONNECTOR,
-    NODE,
     DATASTORE,
+    NODE,
     TABLE,
     INDEX;
 

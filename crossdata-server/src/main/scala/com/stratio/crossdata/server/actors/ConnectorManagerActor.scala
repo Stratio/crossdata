@@ -39,7 +39,7 @@ import java.util
 import com.stratio.crossdata.common.metadata.NodeMetadata
 
 object ConnectorManagerActor {
-  def props(): Props = Props(new ConnectorManagerActor())
+  def props(): Props = Props(new ConnectorManagerActor)
 }
 
 class ConnectorManagerActor() extends Actor with ActorLogging {
@@ -50,16 +50,6 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
   var connectorsAlreadyReset = false
 
   log.info("Lifting coordinator actor")
-  try {
-    val connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE)
-    MetadataManager.MANAGER.setConnectorStatus(connectors, Status.OFFLINE)
-    val nodes = MetadataManager.MANAGER.getNodeNames(Status.ONLINE)
-    MetadataManager.MANAGER.setNodeStatus(nodes, Status.OFFLINE)
-  } catch {
-    case e: Exception => {
-      log.error("Couldn't set connectors to OFFLINE")
-    }
-  }
 
   override def preStart(): Unit = {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
@@ -82,13 +72,10 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
         val role = it.next()
         role match {
           case "connector" => {
-            val node = MetadataManager.MANAGER.getNodeIfExists(new NodeName(mu.member.address.toString))
-            if((node == null) || (node.asInstanceOf[NodeMetadata].getStatus == Status.OFFLINE)){
-              val nodeName = new NodeName(mu.member.address.toString)
-              val node = new NodeMetadata(nodeName, Status.INITIALIZING)
-              MetadataManager.MANAGER.createNode(node, false)
-              logger.debug("Asking its name to the connector " + mu.member.address)
-              val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
+            logger.debug("Asking its name to the connector " + mu.member.address)
+            val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
+            val nodeName = new NodeName(mu.member.address.toString)
+            if(MetadataManager.MANAGER.checkGetConnectorName(nodeName)){
               connectorActorRef ! getConnectorName()
             }
           }
@@ -158,9 +145,8 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
           logger.info("Resetting Connectors status")
           val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
           MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
-          for(member <- state.getMembers){
-            MetadataManager.MANAGER.setNodeStatus(new NodeName(member.address.toString), data.Status.OFFLINE)
-          }
+          val nodes = MetadataManager.MANAGER.getNodeNames(data.Status.ONLINE)
+          MetadataManager.MANAGER.setNodeStatus(nodes, data.Status.OFFLINE)
           connectorsAlreadyReset = true
         }
       }
@@ -176,8 +162,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
       logger.info("Member info: " + member.toString)
       val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address)
       val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri + "/user/ConnectorActor/")
-      MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
-        data.Status.OFFLINE)
+      MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName], Status.OFFLINE)
       MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
     }
 
@@ -185,8 +170,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
       logger.info("Member is exiting: " + member.member.address)
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
       val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
-      MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName],
-        data.Status.SHUTTING_DOWN)
+      MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName], Status.SHUTTING_DOWN)
       MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
     }
 

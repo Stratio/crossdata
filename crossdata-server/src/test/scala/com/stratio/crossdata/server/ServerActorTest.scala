@@ -76,14 +76,14 @@ ImplicitSender with BeforeAndAfterAll{
     queryIdIncrement += 1;
     queryId + queryIdIncrement
   }
-//Actors in this tests
-  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(),
-  "ConnectorManagerActor")
+
+  //Actors in this tests
+  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(), "ConnectorManagerActor")
   val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
     "CoordinatorActor")
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
 
-//Variables
+  //Variables
   var queryId = "query_id-2384234-1341234-23434"
   var queryIdIncrement = 0
   val tableName="myTable"
@@ -138,13 +138,13 @@ ImplicitSender with BeforeAndAfterAll{
 
   val metadataStatement1: MetadataStatement =  new CreateTableStatement(TableType.DATABASE,
 
-      new TableName(catalogName,tableName1),
-      new ClusterName(myClusterName),
+    new TableName(catalogName,tableName1),
+    new ClusterName(myClusterName),
 
-      new util.HashMap[ColumnName, ColumnType](),
-      new util.ArrayList[ColumnName](),
-      new util.ArrayList[ColumnName]()
-    )
+    new util.HashMap[ColumnName, ColumnType](),
+    new util.ArrayList[ColumnName](),
+    new util.ArrayList[ColumnName]()
+  )
   val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table " + tableName1 + ";",
     new CatalogName(catalogName)),
     metadataStatement1)
@@ -163,14 +163,14 @@ ImplicitSender with BeforeAndAfterAll{
   val myList=new java.util.ArrayList[ColumnName]()
   myList.add(columnNme)
   metadataWorkflow1.setTableMetadata(
-  new TableMetadata(
-    new TableName(catalogName, tableName1),
-    new util.HashMap[Selector, Selector](),
-    new util.HashMap[ColumnName, ColumnMetadata](),
-    new util.HashMap[IndexName, IndexMetadata](),
-    new ClusterName(myClusterName),
-    myList,
-    new java.util.ArrayList[ColumnName]()
+    new TableMetadata(
+      new TableName(catalogName, tableName1),
+      new util.HashMap[Selector, Selector](),
+      new util.HashMap[ColumnName, ColumnMetadata](),
+      new util.HashMap[IndexName, IndexMetadata](),
+      new ClusterName(myClusterName),
+      myList,
+      new java.util.ArrayList[ColumnName]()
     )
   )
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
@@ -201,7 +201,7 @@ ImplicitSender with BeforeAndAfterAll{
   }
 
   def initializeTablesInfinispan(){//: TableMetadata = {
-    val operations=new java.util.HashSet[Operations]()
+  val operations=new java.util.HashSet[Operations]()
     operations.add(Operations.PROJECT)
     operations.add(Operations.SELECT_OPERATOR)
     operations.add(Operations.CREATE_TABLE)
@@ -260,7 +260,6 @@ ImplicitSender with BeforeAndAfterAll{
         StringUtils.getAkkaActorRefUri(connectorActor),
         ExecutionType.SELECT, ResultType.RESULTS,workflow))
   }
-
 
   /**
    * Create a test Project operator.

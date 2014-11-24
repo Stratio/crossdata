@@ -32,7 +32,6 @@ import scala.collection.immutable.HashMap
 import akka.cluster.ClusterEvent.MemberUp
 import java.util
 
-
 object ServerActor {
   def props(engine: Engine): Props = Props(new ServerActor(engine))
 }
