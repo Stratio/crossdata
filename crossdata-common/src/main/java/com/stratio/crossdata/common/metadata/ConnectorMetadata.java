@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.Status;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -154,7 +155,7 @@ public class ConnectorMetadata implements IMetadata {
      */
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
-            List<String> supportedOperations) {
+            List<String> supportedOperations) throws ManifestException {
         this.name = name;
         this.version = version;
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
@@ -376,7 +377,7 @@ public class ConnectorMetadata implements IMetadata {
      *
      * @param supportedOperations A list of supported operations.
      */
-    public void setSupportedOperations(List<String> supportedOperations) {
+    public void setSupportedOperations(List<String> supportedOperations) throws ManifestException {
         this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
     }
 
@@ -387,11 +388,16 @@ public class ConnectorMetadata implements IMetadata {
      * @return A set of {@link com.stratio.crossdata.common.metadata.Operations}.
      */
     private Set<Operations> convertManifestOperationsToMetadataOperations(
-            List<String> supportedOperations) {
+            List<String> supportedOperations) throws ManifestException {
         Set<Operations> operations = new HashSet<>();
-        for (String supportedOperation : supportedOperations) {
-            operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
+        try {
+            for (String supportedOperation: supportedOperations) {
+                operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
+            }
+        } catch (IllegalArgumentException ex) {
+            throw new ManifestException(ex);
         }
+
         return operations;
     }
 

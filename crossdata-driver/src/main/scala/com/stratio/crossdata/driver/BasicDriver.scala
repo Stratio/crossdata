@@ -224,7 +224,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return A CommandResult with a string.
    */
   @throws(classOf[ManifestException])
-  def addManifest(manifest: CrossdataManifest): CommandResult = {
+  def addManifest(manifest: CrossdataManifest): Result = {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(manifest)
     val queryId = UUID.randomUUID().toString
@@ -232,8 +232,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
     }
   }
 
