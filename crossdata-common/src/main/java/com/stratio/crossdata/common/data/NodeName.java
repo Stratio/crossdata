@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.common.data;
 
-public class ConnectorName extends FirstLevelName {
+public class NodeName extends FirstLevelName {
 
     /**
      * Serial version UID.
@@ -26,33 +26,33 @@ public class ConnectorName extends FirstLevelName {
     private static final long serialVersionUID = 4037037885060672489L;
 
     /**
-     * Connector name.
+     * Node name.
      */
     private final String name;
 
     /**
      * Constructor.
-     * @param connectorName Connector Name.
+     * @param nodeName Node Name.
      */
-    public ConnectorName(String connectorName) {
+    public NodeName(String nodeName) {
         super();
-        this.name = connectorName.toLowerCase();
+        this.name = nodeName.toLowerCase();
     }
 
     /**
-     * Get the Connector Name.
-     * @return Connector Name.
+     * Get the Node Name.
+     * @return Node Name.
      */
     public String getName() {
         return name;
     }
 
     /**
-     * Get the qualified name of the connector.
-     * @return qualified name of the connector.
+     * Get the qualified name of the node.
+     * @return qualified name of the node.
      */
     public String getQualifiedName() {
-        return QualifiedNames.getConnectorQualifiedName(getName());
+        return QualifiedNames.getNodeQualifiedName(getName());
     }
 
     /**
@@ -60,7 +60,7 @@ public class ConnectorName extends FirstLevelName {
      */
     @Override
     public NameType getType() {
-        return NameType.CONNECTOR;
+        return NameType.NODE;
     }
 
 }

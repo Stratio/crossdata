@@ -37,7 +37,7 @@ import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.ConnectorStatus;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.data.TableName;
@@ -178,7 +178,7 @@ public class Planner {
 
         //Obtain the map of connector that is able to access those tables.
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
-                .getAttachedConnectors(ConnectorStatus.ONLINE, tables);
+                .getAttachedConnectors(Status.ONLINE, tables);
 
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
         for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()) {
@@ -644,7 +644,7 @@ public class Planner {
 
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
 
-            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.CREATE_TABLE);
+            String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
 
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
             ResultType type = ResultType.RESULTS;
@@ -656,7 +656,7 @@ public class Planner {
                     createTableStatement.getClusterName())) {
 
                 try {
-                    actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.CREATE_CATALOG);
+                    actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
 
                     executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
 
@@ -728,7 +728,7 @@ public class Planner {
             ClusterName clusterName = tableMetadata.getClusterRef();
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
 
-            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.CREATE_INDEX);
+            String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_INDEX);
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.CREATE_INDEX,
                     ResultType.RESULTS);
@@ -758,7 +758,7 @@ public class Planner {
             ClusterName clusterName = tableMetadata.getClusterRef();
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
 
-            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.DROP_INDEX);
+            String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.DROP_INDEX);
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.DROP_INDEX,
                     ResultType.RESULTS);
@@ -778,7 +778,7 @@ public class Planner {
             ClusterName clusterName = tableMetadata.getClusterRef();
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
 
-            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.DROP_TABLE);
+            String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.DROP_TABLE);
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
@@ -826,7 +826,7 @@ public class Planner {
             ClusterName clusterName = tableMetadata.getClusterRef();
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
 
-            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.ALTER_TABLE);
+            String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.ALTER_TABLE);
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
@@ -950,9 +950,9 @@ public class Planner {
             ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
 
             if(insertIntoStatement.isIfNotExists()){
-                actorRef = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.INSERT_IF_NOT_EXISTS);
+                actorRef = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.INSERT_IF_NOT_EXISTS);
             } else {
-                actorRef = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.INSERT);
+                actorRef = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.INSERT);
             }
 
             storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT,
@@ -985,7 +985,7 @@ public class Planner {
             }
 
             actorRef = findAnyActorRef(clusterMetadata,
-                    ConnectorStatus.ONLINE,
+                    Status.ONLINE,
                     requiredOperations.toArray(new Operations[requiredOperations.size()]));
 
             storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.DELETE_ROWS,
@@ -1020,7 +1020,7 @@ public class Planner {
             }
 
             actorRef = findAnyActorRef(clusterMetadata,
-                    ConnectorStatus.ONLINE,
+                    Status.ONLINE,
                     requiredOperations.toArray(new Operations[requiredOperations.size()]));
 
             storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.UPDATE_TABLE,
@@ -1042,7 +1042,7 @@ public class Planner {
             ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
 
             actorRef = findAnyActorRef(clusterMetadata,
-                    ConnectorStatus.ONLINE,
+                    Status.ONLINE,
                     Operations.TRUNCATE_TABLE);
 
             storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.TRUNCATE_TABLE,
@@ -1325,7 +1325,7 @@ public class Planner {
 
     private String findAnyActorRef(
             ClusterMetadata clusterMetadata,
-            ConnectorStatus status,
+            Status status,
             Operations... requiredOperations) throws
             PlanningException {
         String actorRef = null;
@@ -1338,7 +1338,7 @@ public class Planner {
         while (it.hasNext() && !found) {
             ConnectorName connectorName = (ConnectorName) it.next();
             ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-            if ((connectorMetadata.getConnectorStatus() == status) &&
+            if ((connectorMetadata.getStatus() == status) &&
                     connectorMetadata.getSupportedOperations().containsAll(Arrays.asList(requiredOperations))) {
                 actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
                 found = true;

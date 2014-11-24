@@ -92,6 +92,16 @@ public final class QualifiedNames {
     }
 
     /**
+     * Get the qualified name for a node.
+     *
+     * @param name The node name.
+     * @return The name of the node preceded by {@code node.}.
+     */
+    public static String getNodeQualifiedName(String name) {
+        return normalize("node." + name);
+    }
+
+    /**
      * Get the qualified name for a datastore.
      *
      * @param name The datastore name.

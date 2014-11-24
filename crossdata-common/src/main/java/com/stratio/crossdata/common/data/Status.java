@@ -18,17 +18,9 @@
 
 package com.stratio.crossdata.common.data;
 
-public enum NameType {
-    CATALOG,
-    CLUSTER,
-    COLUMN,
-    CONNECTOR,
-    DATASTORE,
-    NODE,
-    TABLE,
-    INDEX;
-
-    public String toString() {
-        return name();
-    }
+public enum Status {
+    OFFLINE,
+    ONLINE,
+    SHUTTING_DOWN,
+    INITIALIZING
 }

@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.crossdata.common.data.ConnectorStatus;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -66,7 +66,7 @@ public class ConnectorMetadata implements IMetadata {
     /**
      * The connector status.
      */
-    private ConnectorStatus connectorStatus;
+    private Status status;
 
     /**
      * The actor Akka reference.
@@ -103,7 +103,7 @@ public class ConnectorMetadata implements IMetadata {
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations) {
-        this(name, version, dataStoreRefs, clusterProperties, ConnectorStatus.OFFLINE, null, requiredProperties,
+        this(name, version, dataStoreRefs, clusterProperties, Status.OFFLINE, null, requiredProperties,
                 optionalProperties,
                 supportedOperations);
     }
@@ -115,7 +115,7 @@ public class ConnectorMetadata implements IMetadata {
      * @param version             The connector version.
      * @param dataStoreRefs       The set of datastores the connector may access.
      * @param clusterProperties   The map of clusters associated with this connector and their associated properties.
-     * @param connectorStatus     The connector status.
+     * @param status     The connector status.
      * @param actorRef            The actor Akka reference.
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
@@ -123,7 +123,7 @@ public class ConnectorMetadata implements IMetadata {
      */
     public ConnectorMetadata(ConnectorName name, String version,
             Set<DataStoreName> dataStoreRefs,
-            Map<ClusterName, Map<Selector, Selector>> clusterProperties, ConnectorStatus connectorStatus,
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties, Status status,
             String actorRef,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
@@ -138,7 +138,7 @@ public class ConnectorMetadata implements IMetadata {
         this.requiredProperties = (requiredProperties!=null)?requiredProperties:new HashSet<PropertyType>();
         this.optionalProperties = (optionalProperties!=null)?optionalProperties:new HashSet<PropertyType>();
         this.supportedOperations = (supportedOperations!=null)?supportedOperations:new HashSet<Operations>();
-        this.connectorStatus = connectorStatus;
+        this.status = status;
         this.actorRef = actorRef;
     }
 
@@ -170,7 +170,7 @@ public class ConnectorMetadata implements IMetadata {
         }
 
         this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
-        this.connectorStatus = ConnectorStatus.OFFLINE;
+        this.status = Status.OFFLINE;
 
     }
 
@@ -269,19 +269,19 @@ public class ConnectorMetadata implements IMetadata {
     /**
      * Get the connector status.
      *
-     * @return A {@link com.stratio.crossdata.common.data.ConnectorStatus}.
+     * @return A {@link com.stratio.crossdata.common.data.Status}.
      */
-    public ConnectorStatus getConnectorStatus() {
-        return connectorStatus;
+    public Status getStatus() {
+        return status;
     }
 
     /**
      * Set the connector status.
      *
-     * @param connectorStatus A {@link com.stratio.crossdata.common.data.ConnectorStatus}.
+     * @param status A {@link com.stratio.crossdata.common.data.Status}.
      */
-    public void setConnectorStatus(ConnectorStatus connectorStatus) {
-        this.connectorStatus = connectorStatus;
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     /**
@@ -299,7 +299,7 @@ public class ConnectorMetadata implements IMetadata {
      * @param actorRef String of the actor reference path.
      */
     public void setActorRef(String actorRef) {
-        this.connectorStatus = ConnectorStatus.ONLINE;
+        this.status = Status.ONLINE;
         this.actorRef = actorRef;
     }
 
@@ -398,7 +398,7 @@ public class ConnectorMetadata implements IMetadata {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Connector: ");
-        sb.append(name).append(" status: ").append(connectorStatus).append(" actorRef: ").append(actorRef);
+        sb.append(name).append(" status: ").append(status).append(" actorRef: ").append(actorRef);
         return sb.toString();
     }
 }

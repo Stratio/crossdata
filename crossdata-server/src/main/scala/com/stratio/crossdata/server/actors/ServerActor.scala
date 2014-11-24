@@ -32,7 +32,6 @@ import scala.collection.immutable.HashMap
 import akka.cluster.ClusterEvent.MemberUp
 import java.util
 
-
 object ServerActor {
   def props(engine: Engine): Props = Props(new ServerActor(engine))
 }
@@ -40,9 +39,7 @@ object ServerActor {
 class ServerActor(engine: Engine) extends Actor with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
 
-  var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet[Address]()
-
-  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(connectorManagerActorsSharedMemory).
+  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props().
     withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
   val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).
     withRouter(RoundRobinRouter(nrOfInstances = num_coordinator_actor)), "CoordinatorActor")
