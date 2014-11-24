@@ -37,8 +37,6 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.NodeName;
-import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
@@ -997,10 +995,8 @@ public enum MetadataManager {
         shouldBeInit();
         try {
             writeLock.lock();
-            beginTransaction();
             NodeMetadata nodeMetadata = new NodeMetadata(nodeName, status);
             createNode(nodeMetadata, false);
-            commitTransaction();
         } catch (Exception ex) {
             throw new MetadataManagerException(ex);
         } finally {
@@ -1052,7 +1048,7 @@ public enum MetadataManager {
         List<NodeMetadata> nodes = new ArrayList<>();
         for (Map.Entry<FirstLevelName, IMetadata> entry: metadata.entrySet()) {
             IMetadata iMetadata = entry.getValue();
-            if (iMetadata instanceof ConnectorMetadata) {
+            if (iMetadata instanceof NodeMetadata) {
                 nodes.add((NodeMetadata) iMetadata);
             }
         }
@@ -1063,13 +1059,11 @@ public enum MetadataManager {
         boolean result = false;
         try {
             writeLock.lock();
-            beginTransaction();
             if ((!exists(nodeName)) || (getNode(nodeName).getStatus() == Status.OFFLINE)) {
                 setNodeStatus(nodeName, Status.INITIALIZING);
                 result = true;
             }
-            commitTransaction();
-        } catch (SystemException | HeuristicRollbackException | RollbackException | NotSupportedException | HeuristicMixedException e) {
+        } catch (Exception e) {
             result = false;
         } finally {
             writeLock.unlock();

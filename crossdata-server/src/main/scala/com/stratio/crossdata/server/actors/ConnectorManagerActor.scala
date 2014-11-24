@@ -72,10 +72,11 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
         val role = it.next()
         role match {
           case "connector" => {
-            logger.debug("Asking its name to the connector " + mu.member.address)
+
             val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
             val nodeName = new NodeName(mu.member.address.toString)
             if(MetadataManager.MANAGER.checkGetConnectorName(nodeName)){
+              logger.debug("Asking its name to the connector " + mu.member.address)
               connectorActorRef ! getConnectorName()
             }
           }
@@ -184,7 +185,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
     }
 
     case clusterDomainEvent: ClusterDomainEvent => {
-      logger.info("ClusterDomainEvent: " + clusterDomainEvent)
+      logger.debug("ClusterDomainEvent: " + clusterDomainEvent)
       //TODO Process ClusterDomainEvent
     }
 
