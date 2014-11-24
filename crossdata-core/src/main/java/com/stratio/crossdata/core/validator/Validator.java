@@ -366,7 +366,7 @@ public class Validator {
 
     private void validateColumn(CrossdataStatement stmt, boolean exist)
             throws NotExistNameException, IgnoreQueryException, ExistNameException {
-        ColumnName columnName = null;
+        ColumnName columnName;
         if (stmt instanceof AlterTableStatement) {
             columnName = ((AlterTableStatement) stmt).getColumn();
             validateName(exist, columnName, false);

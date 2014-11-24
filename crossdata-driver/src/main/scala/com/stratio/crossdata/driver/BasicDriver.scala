@@ -89,7 +89,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Release connection to MetaServer.
+   * Release connection to CrossdataServer.
    * @param user Login to the user (Audit only).
    * @return ConnectResult.
    */
