@@ -644,7 +644,12 @@ public class Planner {
 
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
 
-            String actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.CREATE_TABLE);
+            String actorRefUri = null;
+            try {
+                actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.CREATE_TABLE);
+            } catch (PlanningException pe) {
+                LOG.debug("No connector was found to execute CREATE_TABLE");
+            }
 
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
             ResultType type = ResultType.RESULTS;
@@ -657,22 +662,23 @@ public class Planner {
 
                 try {
                     actorRefUri = findAnyActorRef(clusterMetadata, ConnectorStatus.ONLINE, Operations.CREATE_CATALOG);
-
-                    executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
-
-                    // Create MetadataWorkFlow
-                    metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
-
-                    // Add CatalogMetadata to the WorkFlow
-                    metadataWorkflow.setCatalogName(
-                            createTableStatement.getTableName().getCatalogName());
-
-                    metadataWorkflow.setCatalogMetadata(
-                            MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName().getCatalogName()));
                 } catch (PlanningException pe) {
                     LOG.debug("Cannot determine any connector for the operation: "
                             + Operations.CREATE_CATALOG);
                 }
+
+                executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
+
+                // Create MetadataWorkFlow
+                metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
+
+                // Add CatalogMetadata to the WorkFlow
+                metadataWorkflow.setCatalogName(
+                        createTableStatement.getTableName().getCatalogName());
+
+                metadataWorkflow.setCatalogMetadata(
+                        MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName().getCatalogName()));
+
             }
 
             // Create & add TableMetadata to the MetadataWorkflow
@@ -918,6 +924,12 @@ public class Planner {
         return managementWorkflow;
     }
 
+    /**
+     * Check if a catalog was already registered in a cluster.
+     * @param catalogName catalog to be search.
+     * @param clusterName cluster that should contain the catalog.
+     * @return if the catalog was found in the cluster.
+     */
     private boolean existsCatalogInCluster(CatalogName catalogName, ClusterName clusterName) {
         CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalogName);
         Map<TableName, TableMetadata> tables = catalogMetadata.getTables();
