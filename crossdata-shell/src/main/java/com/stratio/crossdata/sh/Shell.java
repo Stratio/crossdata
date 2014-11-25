@@ -632,10 +632,9 @@ public class Shell {
         }
         queryEnd = System.currentTimeMillis();
         updatePrompt(crossDataResult);
-        LOG.info("Result: " + ConsoleUtils.stringResult(crossDataResult));
         LOG.info("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
         if(crossDataResult instanceof ErrorResult){
-            result = "ERROR";
+            result = "Result: " + ConsoleUtils.stringResult(crossDataResult);
         }
         return result;
     }
