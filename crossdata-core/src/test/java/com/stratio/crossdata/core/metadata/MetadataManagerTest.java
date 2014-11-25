@@ -41,6 +41,7 @@ import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -481,8 +482,13 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         List<PropertyType> requiredProperties = new ArrayList<>();
         List<PropertyType> optionalProperties = new ArrayList<>();
         List<String> supportedOperations = new ArrayList<>();
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(new ConnectorName(name), version, dataStoreRefs,
-                requiredProperties, optionalProperties, supportedOperations);
+        ConnectorMetadata connectorMetadata = null;
+        try {
+            connectorMetadata = new ConnectorMetadata(new ConnectorName(name), version, dataStoreRefs,
+                    requiredProperties, optionalProperties, supportedOperations);
+        } catch (ManifestException e) {
+            fail(e.getMessage());
+        }
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         fail();
     }

@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.core.metadata;
 
+import static org.testng.Assert.fail;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,6 +47,7 @@ import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -141,8 +144,13 @@ public class MetadataManagerTestHelper {
         ConnectorName connectorName = new ConnectorName(name);
         ArrayList<String> dataStoreRefs = new ArrayList<>();
         dataStoreRefs.add(dataStoreName.getName());
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version,
-                dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
+        ConnectorMetadata connectorMetadata = null;
+        try {
+            connectorMetadata = new ConnectorMetadata(connectorName, version,
+                    dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
+        } catch (ManifestException e) {
+            fail(e.getMessage());
+        }
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorName;

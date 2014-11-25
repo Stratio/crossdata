@@ -41,6 +41,7 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.exceptions.ApiException;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
@@ -420,7 +421,7 @@ public class APIManager {
 
     }
 
-    private void persistConnector(ConnectorType connectorType) {
+    private void persistConnector(ConnectorType connectorType) throws ManifestException {
         // NAME
         ConnectorName name = new ConnectorName(connectorType.getConnectorName());
 
