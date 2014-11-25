@@ -321,31 +321,41 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         // and $ for clients
         val target = executionInfo.asInstanceOf[ExecutionInfo].getSender
           .replace("Actor[", "").replace("]", "").split("#")(0)
-        //val clientActor = context.actorSelection(StringUtils.getAkkaActorRefUri(executionInfo
-        //  .asInstanceOf[ExecutionInfo].getSender))
         val clientActor = context.actorSelection(target)
-        log.info("Send result to: " + clientActor.toString())
 
-        if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
-          coordinator.persist(executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.asInstanceOf[MetadataWorkflow])
-        }
-        if (executionInfo.asInstanceOf[ExecutionInfo].isRemoveOnSuccess) {
-          ExecutionManager.MANAGER.deleteEntry(queryId)
+        var sendResultToClient = true
+
+        val it = MetadataManager.MANAGER.getTables.iterator()
+        while(it.hasNext){
+          log.info("TableMetadata.name = " + it.next().getName)
         }
 
-        if (queryId.endsWith(CoordinatorActor.TriggerToken)) {
-          val triggerQueryId = queryId.substring(0, queryId.length - CoordinatorActor.TriggerToken.length)
-          log.info("Retrieving Triggering queryId: " + triggerQueryId);
-          val executionInfo = ExecutionManager.MANAGER.getValue(triggerQueryId).asInstanceOf[ExecutionInfo]
-          val partialResults = result.asInstanceOf[QueryResult].getResultSet
-          executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
-          val actorRef = StringUtils.getAkkaActorRefUri(executionInfo.getWorkflow.getActorRef())
-          val actorSelection = context.actorSelection(actorRef)
-          actorSelection.asInstanceOf[ActorSelection] ! executionInfo.getWorkflow.asInstanceOf[QueryWorkflow]
-            .getExecuteOperation(queryId + CoordinatorActor.TriggerToken)
-        } else {
+        if(!result.hasError){
+          if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
+            coordinator.persist(executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.asInstanceOf[MetadataWorkflow])
+          }
+          if (executionInfo.asInstanceOf[ExecutionInfo].isRemoveOnSuccess) {
+            ExecutionManager.MANAGER.deleteEntry(queryId)
+          }
+          if (queryId.endsWith(CoordinatorActor.TriggerToken)) {
+            sendResultToClient = false
+            val triggerQueryId = queryId.substring(0, queryId.length - CoordinatorActor.TriggerToken.length)
+            log.info("Retrieving Triggering queryId: " + triggerQueryId);
+            val executionInfo = ExecutionManager.MANAGER.getValue(triggerQueryId).asInstanceOf[ExecutionInfo]
+            val partialResults = result.asInstanceOf[QueryResult].getResultSet
+            executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+            val actorRef = StringUtils.getAkkaActorRefUri(executionInfo.getWorkflow.getActorRef())
+            val actorSelection = context.actorSelection(actorRef)
+            actorSelection.asInstanceOf[ActorSelection] ! executionInfo.getWorkflow.asInstanceOf[QueryWorkflow]
+              .getExecuteOperation(queryId + CoordinatorActor.TriggerToken)
+          }
+        }
+
+        if(sendResultToClient) {
+          log.info("Send result to: " + clientActor.toString())
           clientActor ! result
         }
+
       } catch {
         case ex: ExecutionManagerException => {
           log.error("Cannot access queryId actorRef associated value:" + System.lineSeparator() + ex.getMessage)

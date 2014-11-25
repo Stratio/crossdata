@@ -36,7 +36,7 @@ sed -i "s/^\(CROSSDATA_LOG_OUT=\).*$/\1\"\/var\/log\/sds\/crossdata\/crossdata-s
 sed -i "s/^\(CROSSDATA_LOG_ERR=\).*$/\1\"\/var\/log\/sds\/crossdata\/crossdata-server.err\"/" /etc/sds/crossdata/crossdata-env.sh
 sed -i "s/^\(CROSSDATA_SERVER_PID=\).*$/\1\"\/var\/run\/sds\/crossdata-server.pid\"/" /etc/sds/crossdata/crossdata-env.sh
 sed -i "s/^\(crossdata-server.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/crossdata/server-application.conf
-sed -i "s/^\(crossdata-server.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/crossdata/server-application.conf
+sed -i "s/^\(crossdata-server.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/crossdata/server-application.conf
 sed -i "s/^\(crossdata-driver.config.cluster.hosts =\).*$/\1 \[\"$ipaddress\:13420\"\]/" /etc/sds/crossdata/driver-application.conf
 #######################################
 ## Spark
@@ -68,14 +68,14 @@ echo "Installing Cassandra connector..."
 rpm --quiet -q stratio-connector-cassandra || yum -y -q --nogpgcheck install stratio-connector-cassandra
 #config
 echo "Configuring Cassandra connector..."
-sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/cassandra/connector-application.conf
+sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/cassandra/connector-application.conf
 sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/cassandra/connector-application.conf
 #Deep
 echo "Installing Deep connector..."
 rpm --quiet -q stratio-connector-deep || yum -y -q --nogpgcheck install stratio-connector-deep
 #config
 echo "Configuring Deep connector..."
-sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/deep/connector-application.conf
+sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/deep/connector-application.conf
 sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/deep/connector-application.conf
 chkconfig --add crossdata
 chkconfig --add cassandra
