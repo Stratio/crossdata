@@ -256,14 +256,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Reset metadata in server.
    * @return A CommandResult with a string.
    */
-  def resetServerdata(): CommandResult = {
+  def resetServerdata(): Result = {
     val queryId = UUID.randomUUID().toString
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_SERVERDATA, null))
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
     }
   }
 
@@ -271,14 +270,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Clean metadata related to catalogs in server.
    * @return A CommandResult with a string.
    */
-  def cleanMetadata(): CommandResult = {
+  def cleanMetadata(): Result = {
     val queryId = UUID.randomUUID().toString
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.CLEAN_METADATA, null))
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
     }
   }
 
@@ -301,7 +299,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Describe a connector.
    * @return A CommandResult with the description of the connector.
    */
-  def describeConnector(connectorName: ConnectorName): CommandResult = {
+  def describeConnector(connectorName: ConnectorName): Result = {
     val queryId = UUID.randomUUID().toString
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(connectorName)
@@ -309,8 +307,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
     }
   }
 
@@ -318,7 +315,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Describe a datastore.
    * @return A CommandResult with the description of the datastore.
    */
-  def describeDatastore(datastoreName: DataStoreName): CommandResult = {
+  def describeDatastore(datastoreName: DataStoreName): Result = {
     val queryId = UUID.randomUUID().toString
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(datastoreName)
@@ -326,11 +323,29 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
     }
   }
 
+  def describeDatastores(): Result = {
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_DATASTORES, null))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      result.asInstanceOf[ErrorResult]
+    }
+  }
+
+  def describeClusters(): Result = {
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CLUSTERS, null))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      result.asInstanceOf[ErrorResult]
+    }
+  }
 
   /**
    * Describe the system.

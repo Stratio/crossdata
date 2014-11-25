@@ -52,6 +52,7 @@ import com.stratio.crossdata.common.manifest.DataStoreRefsType;
 import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertiesType;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -188,15 +189,21 @@ public class APIManager {
         } else if (APICommand.CLEAN_METADATA().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.CLEAN_METADATA().toString());
             result = cleanMetadata();
-        } else if (APICommand.DESCRIBE_CONNECTOR().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTOR().toString());
-            result = describeConnector((ConnectorName) cmd.params().get(0));
-        } else if (APICommand.DESCRIBE_DATASTORE().equals(cmd.commandType())) {
-                LOG.info(PROCESSING + APICommand.DESCRIBE_DATASTORE().toString());
-                result = describeDatastore((DataStoreName) cmd.params().get(0));
         } else if (APICommand.DESCRIBE_CONNECTORS().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTORS().toString());
             result = describeConnectors();
+        } else if (APICommand.DESCRIBE_CONNECTOR().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTOR().toString());
+            result = describeConnector((ConnectorName) cmd.params().get(0));
+        } else if(APICommand.DESCRIBE_DATASTORES().equals(cmd.commandType())){
+            LOG.info(PROCESSING + APICommand.DESCRIBE_DATASTORES().toString());
+            result = describeDatastores();
+        } else if(APICommand.DESCRIBE_CLUSTERS().equals(cmd.commandType())){
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CLUSTERS().toString());
+            result = describeClusters();
+        } else if (APICommand.DESCRIBE_DATASTORE().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_DATASTORE().toString());
+            result = describeDatastore((DataStoreName) cmd.params().get(0));
         } else if (APICommand.DESCRIBE_SYSTEM().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.DESCRIBE_SYSTEM().toString());
             result = describeSystem();
@@ -316,39 +323,108 @@ public class APIManager {
     private Result describeConnectors() {
         Result result;
         List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
-        StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
+        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
 
         for (ConnectorMetadata connector : connectors) {
-            stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
+            sb = sb.append("Connector: ").append(connector.getName())
                     .append("\t").append(connector.getStatus());
             // ClusterRefs
             if (connector.getClusterRefs() == null) {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append("UNKNOWN");
             } else {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append(Arrays.toString(connector.getClusterRefs().toArray()));
             }
             // DatastoreRefs
             if (connector.getDataStoreRefs() == null) {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append("UNKNOWN");
             } else {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append(Arrays.toString(connector.getDataStoreRefs().toArray()));
             }
             // ActorRef
             if (connector.getActorRef() == null) {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append("UNKNOWN");
             } else {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append(connector.getActorRef());
             }
 
-            stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
+            sb = sb.append(System.getProperty("line.separator"));
         }
-        result = CommandResult.createCommandResult(stringBuilder.toString());
+        result = CommandResult.createCommandResult(sb.toString());
+        return result;
+    }
+
+    private Result describeDatastores() {
+        Result result;
+        List<DataStoreMetadata> datastores = MetadataManager.MANAGER.getDatastores();
+        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+        for (DataStoreMetadata datastore: datastores) {
+
+            sb.append("Datastore: ").append(datastore.getName()).append(System.lineSeparator());
+
+            sb.append("Version: ").append(datastore.getVersion()).append(System.lineSeparator());
+
+            sb.append("Required properties: ").append(datastore.getVersion()).append(System.lineSeparator());
+            Set<PropertyType> properties = datastore.getRequiredProperties();
+            for(PropertyType pt: properties){
+                sb.append("\t").append(pt.getPropertyName()).append(pt.getDescription())
+                        .append(System.lineSeparator());
+            }
+
+            sb.append("Optional properties: ").append(datastore.getVersion()).append(System.lineSeparator());
+            properties = datastore.getOthersProperties();
+            for(PropertyType pt: properties){
+                sb.append("\t").append(pt.getPropertyName()).append(pt.getDescription())
+                        .append(System.lineSeparator());
+            }
+
+            sb.append("Behaviours: ").append(datastore.getVersion()).append(System.lineSeparator());
+            Set<String> behaviours = datastore.getBehaviors();
+            for(String b: behaviours){
+                sb.append("\t").append(b).append(System.lineSeparator());
+            }
+
+            sb.append("Attached clusters: ").append(datastore.getVersion()).append(System.lineSeparator());
+            Set<ClusterName> clusters = datastore.getClusterAttachedRefs().keySet();
+            for(ClusterName cluster: clusters){
+                sb.append("\t").append(cluster).append(System.getProperty("line.separator"));
+            }
+
+            sb = sb.append(System.getProperty("line.separator"));
+        }
+        result = CommandResult.createCommandResult(sb.toString());
+        return result;
+    }
+
+    private Result describeClusters() {
+        Result result;
+        List<ClusterMetadata> clusters = MetadataManager.MANAGER.getClusters();
+        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+        for (ClusterMetadata cluster: clusters) {
+
+            sb.append("Cluster: ").append(cluster.getName()).append(System.lineSeparator());
+
+            sb.append("Datastore: ").append(cluster.getDataStoreRef()).append(System.lineSeparator());
+
+            sb.append("Options: ").append(System.lineSeparator());
+            Map<Selector, Selector> options = cluster.getOptions();
+            for(Map.Entry<Selector, Selector> entry: options.entrySet()){
+                sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(System.lineSeparator());
+            }
+
+            sb.append("Attached connectors: ").append(cluster.getConnectorAttachedRefs().keySet())
+                    .append(System.lineSeparator());
+
+            sb = sb.append(System.getProperty("line.separator"));
+        }
+        result = CommandResult.createCommandResult(sb.toString());
         return result;
     }
 

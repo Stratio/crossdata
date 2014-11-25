@@ -812,6 +812,17 @@ public enum MetadataManager {
         return connectors;
     }
 
+    public List<ClusterMetadata> getClusters() {
+        List<ClusterMetadata> clusters = new ArrayList<>();
+        for (Map.Entry<FirstLevelName, IMetadata> entry : metadata.entrySet()) {
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata instanceof ClusterMetadata) {
+                clusters.add((ClusterMetadata) iMetadata);
+            }
+        }
+        return clusters;
+    }
+
     /**
      * Return all datastores.
      * @return List with all connectors.
