@@ -38,6 +38,7 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
@@ -590,6 +591,11 @@ public class Shell {
 
     private String describeTables(String catalogName) {
         return ConsoleUtils.stringResult(crossdataDriver.describeTables(new CatalogName(catalogName)));
+    }
+
+    private String describeTable(String tableName) {
+        String[] table = tableName.split("\\.");
+        return ConsoleUtils.stringResult(crossdataDriver.describeTable(new TableName(table[0], table[1])));
     }
 
     private String describeDatastore(String datastoreName) {
