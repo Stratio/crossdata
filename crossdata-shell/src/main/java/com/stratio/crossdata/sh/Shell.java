@@ -588,6 +588,10 @@ public class Shell {
         return ConsoleUtils.stringResult(crossdataDriver.listCatalogs());
     }
 
+    private String describeTables(String catalogName) {
+        return ConsoleUtils.stringResult(crossdataDriver.describeTables(new CatalogName(catalogName)));
+    }
+
     private String describeDatastore(String datastoreName) {
         return ConsoleUtils.stringResult(crossdataDriver.describeDatastore(new DataStoreName(datastoreName)));
     }

@@ -339,6 +339,18 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     }
   }
 
+  def describeTables(catalogName: CatalogName): Result = {
+    val queryId = UUID.randomUUID().toString
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(catalogName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_TABLES, params))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      result.asInstanceOf[ErrorResult]
+    }
+  }
+
   def describeCluster(clusterName: ClusterName): Result = {
     val queryId = UUID.randomUUID().toString
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
