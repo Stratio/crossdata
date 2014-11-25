@@ -41,7 +41,7 @@ import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
-import com.stratio.crossdata.common.result.IResultHandler;
+import com.stratio.crossdata.common.result.IDriverResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.driver.BasicDriver;
@@ -74,7 +74,7 @@ public class Shell {
     /**
      * Asynchronous result handler.
      */
-    private final IResultHandler resultHandler;
+    private final IDriverResultHandler resultHandler;
 
     /**
      * Console reader.
@@ -128,7 +128,7 @@ public class Shell {
         help = hm.loadHelpContent();
         this.useAsync = useAsync;
         initialize();
-        resultHandler = new ShellResultHandler(this);
+        resultHandler = new ShellDriverResultHandler(this);
     }
 
     /**
@@ -296,7 +296,7 @@ public class Shell {
     }
 
     /**
-     * Remove the {@link com.stratio.crossdata.common.result.IResultHandler} associated with a query.
+     * Remove the {@link com.stratio.crossdata.common.result.IDriverResultHandler} associated with a query.
      *
      * @param queryId The query identifier.
      */

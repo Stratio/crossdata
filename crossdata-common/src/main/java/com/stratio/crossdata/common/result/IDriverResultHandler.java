@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.result;
 /**
  * Callback interface for classes receiving asynchronous results from crossdata servers.
  */
-public interface IResultHandler {
+public interface IDriverResultHandler {
 
     /**
      * Process an acknowledgement message for a specific query.

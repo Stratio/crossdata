@@ -20,20 +20,20 @@ package com.stratio.crossdata.driver;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.result.IResultHandler;
+import com.stratio.crossdata.common.result.IDriverResultHandler;
 import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.common.result.Result;
 
 /**
- * IResultHandler wrapper for test purposes.
+ * IDriverResultHandler wrapper for test purposes.
  */
-public class ResultHandlerWrapper implements IResultHandler {
+public class DriverResultHandlerWrapper implements IDriverResultHandler {
 
-    private final static Logger logger = Logger.getLogger(ResultHandlerWrapper.class);
+    private final static Logger logger = Logger.getLogger(DriverResultHandlerWrapper.class);
     /**
      * Class logger.
      */
-    private static final Logger LOG = Logger.getLogger(ResultHandlerWrapper.class);
+    private static final Logger LOG = Logger.getLogger(DriverResultHandlerWrapper.class);
     private boolean ackReceived = false;
     private boolean errorReceived = false;
     private boolean resultReceived = false;

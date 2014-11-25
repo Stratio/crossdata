@@ -27,11 +27,11 @@ import com.stratio.crossdata.common.ask.{APICommand, Command, Query, Connect}
 import com.stratio.crossdata.common.exceptions.{ManifestException, UnsupportedException, ExecutionException,
 ValidationException, ParsingException, ConnectionException}
 import com.stratio.crossdata.common.result.{CommandResult, MetadataResult, DisconnectResult, ConnectResult,
-ErrorResult, Result, IResultHandler}
+ErrorResult, Result, IDriverResultHandler}
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
-import com.stratio.crossdata.driver.result.SyncResultHandler
+import com.stratio.crossdata.driver.result.SyncDriverResultHandler
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import org.apache.log4j.Logger
 import com.stratio.crossdata.common.manifest.CrossdataManifest
@@ -63,7 +63,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    */
   private final val DEFAULT_USER: String = "CROSSDATA_USER"
   lazy val logger = BasicDriver.logger
-  lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
+  lazy val queries: java.util.Map[String, IDriverResultHandler] = new java.util.HashMap[String, IDriverResultHandler]
   lazy val system = ActorSystem("CrossdataDriverSystem", BasicDriver.config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
@@ -131,7 +131,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @param callback The callback object.
    */
   @throws(classOf[ConnectionException])
-  def asyncExecuteQuery(query: String, callback: IResultHandler): String = {
+  def asyncExecuteQuery(query: String, callback: IDriverResultHandler): String = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
@@ -160,7 +160,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
-    val callback = new SyncResultHandler
+    val callback = new SyncDriverResultHandler
     queries.put(queryId.toString, callback)
     sendQuery(new Query(queryId.toString, currentCatalog, query, userId))
     val r = callback.waitForResult()
@@ -362,11 +362,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Get the IResultHandler associated with a query identifier.
+   * Get the IDriverResultHandler associated with a query identifier.
    * @param queryId Query identifier.
    * @return The result handler.
    */
-  def getResultHandler(queryId: String): IResultHandler = {
+  def getResultHandler(queryId: String): IDriverResultHandler = {
     queries.get(queryId)
   }
 
