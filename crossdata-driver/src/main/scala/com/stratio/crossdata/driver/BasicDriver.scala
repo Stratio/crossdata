@@ -37,7 +37,7 @@ import org.apache.log4j.Logger
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 
 import scala.concurrent.duration._
-import com.stratio.crossdata.common.data.{ClusterName, DataStoreName, ConnectorName}
+import com.stratio.crossdata.common.data.{CatalogName, ClusterName, DataStoreName, ConnectorName}
 
 object BasicDriver extends DriverConfig {
   /**
@@ -304,6 +304,18 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(connectorName)
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CONNECTOR, params))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      result.asInstanceOf[ErrorResult]
+    }
+  }
+
+  def describeCatalog(catalogName: CatalogName): Result = {
+    val queryId = UUID.randomUUID().toString
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(catalogName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CATALOG, params))
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {

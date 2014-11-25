@@ -34,6 +34,7 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
@@ -577,6 +578,10 @@ public class Shell {
 
     private String describeSystem() {
         return ConsoleUtils.stringResult(crossdataDriver.describeSystem());
+    }
+
+    private String describeCatalog(String catalogName) {
+        return ConsoleUtils.stringResult(crossdataDriver.describeCatalog(new CatalogName(catalogName)));
     }
 
     private String describeCatalogs() {

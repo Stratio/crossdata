@@ -198,6 +198,9 @@ public class APIManager {
         } else if (APICommand.DESCRIBE_CLUSTER().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.DESCRIBE_CLUSTER().toString());
             result = describeCluster((ClusterName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_CATALOG().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CATALOG().toString());
+            result = describeCatalog((CatalogName) cmd.params().get(0));
         } else if(APICommand.DESCRIBE_DATASTORES().equals(cmd.commandType())){
             LOG.info(PROCESSING + APICommand.DESCRIBE_DATASTORES().toString());
             result = describeDatastores();
@@ -319,6 +322,27 @@ public class APIManager {
             stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
             result = CommandResult.createCommandResult(stringBuilder.toString());
         }
+
+        return result;
+    }
+
+    private Result describeCatalog(CatalogName name) {
+        Result result;
+
+        CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name);
+        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+        sb.append("Catalog: ").append(catalog.getName()).append(System.lineSeparator());
+
+        sb.append("Options: ").append(System.lineSeparator());
+        for(Map.Entry<Selector, Selector> entry: catalog.getOptions().entrySet()){
+            sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue())
+                    .append(System.lineSeparator());
+        }
+
+        sb.append("Tables: ").append(catalog.getTables().keySet()).append(System.lineSeparator());
+
+        result = CommandResult.createCommandResult(sb.toString());
 
         return result;
     }
