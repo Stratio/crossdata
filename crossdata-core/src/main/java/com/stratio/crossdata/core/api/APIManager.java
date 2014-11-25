@@ -195,6 +195,9 @@ public class APIManager {
         } else if (APICommand.DESCRIBE_CONNECTOR().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTOR().toString());
             result = describeConnector((ConnectorName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_CLUSTER().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CLUSTER().toString());
+            result = describeCluster((ClusterName) cmd.params().get(0));
         } else if(APICommand.DESCRIBE_DATASTORES().equals(cmd.commandType())){
             LOG.info(PROCESSING + APICommand.DESCRIBE_DATASTORES().toString());
             result = describeDatastores();
@@ -316,6 +319,30 @@ public class APIManager {
             stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
             result = CommandResult.createCommandResult(stringBuilder.toString());
         }
+
+        return result;
+    }
+
+    private Result describeCluster(ClusterName name) {
+        Result result;
+
+        ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(name);
+        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+        sb.append("Cluster: ").append(cluster.getName()).append(System.lineSeparator());
+
+        sb.append("Datastore: ").append(cluster.getDataStoreRef()).append(System.lineSeparator());
+
+        sb.append("Options: ").append(System.lineSeparator());
+        Map<Selector, Selector> options = cluster.getOptions();
+        for(Map.Entry<Selector, Selector> entry: options.entrySet()){
+            sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(System.lineSeparator());
+        }
+
+        sb.append("Attached connectors: ").append(cluster.getConnectorAttachedRefs().keySet())
+                .append(System.lineSeparator());
+
+        result = CommandResult.createCommandResult(sb.toString());
 
         return result;
     }
