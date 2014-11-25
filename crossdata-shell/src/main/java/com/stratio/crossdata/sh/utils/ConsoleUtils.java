@@ -52,7 +52,6 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.xml.sax.SAXException;
 
-import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ManifestException;
@@ -137,7 +136,7 @@ public final class ConsoleUtils {
 
     private static String stringQueryResult(QueryResult queryResult) {
         if (queryResult.getResultSet().isEmpty()) {
-            return System.lineSeparator() + "OK";
+            return System.lineSeparator() + "0 results returned";
         }
 
         ResultSet resultSet = queryResult.getResultSet();

@@ -53,8 +53,8 @@ class SyncResultHandler extends IResultHandler {
         if (queryResult == null) {
           queryResult = r
         } else {
-          queryResult.getResultSet.asInstanceOf[ResultSet].getRows.addAll(
-            r.getResultSet.asInstanceOf[ResultSet].getRows)
+          queryResult.getResultSet.getRows.addAll(
+            r.getResultSet.getRows)
         }
       case _ =>
         nonQueryResult = result
@@ -86,7 +86,6 @@ class SyncResultHandler extends IResultHandler {
     if (errorFound) {
       throw exception
     }
-
 
     if (queryResult != null) {
       queryResult

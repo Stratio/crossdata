@@ -37,7 +37,7 @@ public class ShellResultHandler implements IResultHandler {
     /**
      * Class constructor.
      *
-     * @param parent Parent crossDatashell that will be informed when results are available.
+     * @param parent Parent Crossdata Shell that will be informed when results are available.
      */
     public ShellResultHandler(Shell parent) {
         this.parent = parent;
