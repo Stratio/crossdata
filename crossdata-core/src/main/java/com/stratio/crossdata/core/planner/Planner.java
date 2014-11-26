@@ -1250,27 +1250,25 @@ public class Planner {
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
         LinkedHashMap<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
         boolean addAll = false;
-        for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
+        for (Selector s: selectStatement.getSelectExpression().getSelectorList()) {
             if (AsteriskSelector.class.isInstance(s)) {
                 addAll = true;
             } else if (ColumnSelector.class.isInstance(s)) {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
                 if (cs.getAlias() != null) {
-                    aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()),
-                            cs.getAlias());
+                    aliasMap.put(cs.getName(), cs.getAlias());
 
-                    typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()),
+                    typeMapFromColumnName.put(cs.getName(),
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
 
                     typeMap.put(cs.getAlias(),
-                            tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(
-                                    cs.getName()).getColumnType()
-                    );
+                            tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().
+                                    get(cs.getName()).getColumnType());
                 } else {
-                    aliasMap.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
+                    aliasMap.put(cs.getName(),
                             cs.getName().getName());
 
-                    typeMapFromColumnName.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
+                    typeMapFromColumnName.put(cs.getName(),
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
 
                     typeMap.put(cs.getName().getName(),
