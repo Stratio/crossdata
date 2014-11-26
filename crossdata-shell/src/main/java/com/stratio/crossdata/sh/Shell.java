@@ -655,9 +655,10 @@ public class Shell {
      */
     public String sendManifest(String sentence) {
         LOG.debug("Command: " + sentence);
-        // Get manifest type
+
         String result = "OK";
 
+        // Get manifest type
         String[] tokens = sentence.split(" ");
         if (tokens.length != 3) {
             return "ERROR: Invalid ADD syntax";

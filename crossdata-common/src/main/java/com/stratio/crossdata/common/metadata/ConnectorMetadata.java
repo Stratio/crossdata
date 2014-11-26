@@ -24,13 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
