@@ -72,8 +72,8 @@ public class InMemoryQueryEngine implements IQueryEngine{
 
     static {
         operationsTransformations.put(Operator.EQ, InMemoryOperations.EQ);
-        operationsTransformations.put(Operator.GT, InMemoryOperations.EQ);
-        operationsTransformations.put(Operator.LT, InMemoryOperations.EQ);
+        operationsTransformations.put(Operator.GT, InMemoryOperations.GT);
+        operationsTransformations.put(Operator.LT, InMemoryOperations.LT);
         operationsTransformations.put(Operator.GET, InMemoryOperations.GET);
         operationsTransformations.put(Operator.LET, InMemoryOperations.LET);
     }
@@ -116,7 +116,7 @@ public class InMemoryQueryEngine implements IQueryEngine{
             try {
                 results = datastore.search(catalogName, tableName, relations, outputColumns);
             } catch (Exception e) {
-                throw new ExecutionException("Cannot perform execute operation", e);
+                throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
             }
         }else{
             throw new ExecutionException("No datastore connected to " + projectStep.getClusterName());
@@ -135,17 +135,20 @@ public class InMemoryQueryEngine implements IQueryEngine{
         ResultSet crossdataResults = new ResultSet();
 
         final List<String> columnAlias = new ArrayList<>();
-        //Store the metadata information
+        final List<ColumnName> outputColumns = selectStep.getColumnOrder();
+
         List<ColumnMetadata> columnMetadataList = new ArrayList<>();
-        for(Map.Entry<ColumnName, ColumnType> aliasType : selectStep.getTypeMapFromColumnName().entrySet()){
-            ColumnName columnName = aliasType.getKey();
+
+        for(ColumnName columnName : outputColumns){
             columnAlias.add(selectStep.getColumnMap().get(columnName));
             columnName.setAlias(selectStep.getColumnMap().get(columnName));
-            ColumnMetadata metadata = new ColumnMetadata(columnName, null, aliasType.getValue());
+            ColumnMetadata metadata = new ColumnMetadata(
+                    columnName, null, selectStep.getTypeMapFromColumnName().get(columnName));
             columnMetadataList.add(metadata);
         }
+
+        //Store the metadata information
         crossdataResults.setColumnMetadata(columnMetadataList);
-        final List<ColumnName> outputColumns = selectStep.getColumnOrder();
 
         int resultToAdd = results.size();
         if(limit != -1){
@@ -172,11 +175,9 @@ public class InMemoryQueryEngine implements IQueryEngine{
      */
     private Row toCrossdataRow(Object[] row, List<String> columnAlias) {
         Row result = new Row();
-        Map<String, Cell> cells = new HashMap<>();
-        for(int index = 0; index < row.length; index++){
-            cells.put(columnAlias.get(index), new Cell(row[index]));
+        for(int index = 0; index < columnAlias.size(); index++){
+            result.addCell(columnAlias.get(index), new Cell(row[index]));
         }
-        result.setCells(cells);
         return result;
     }
 

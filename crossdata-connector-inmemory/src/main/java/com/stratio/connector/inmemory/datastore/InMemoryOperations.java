@@ -44,7 +44,7 @@ public enum InMemoryOperations {
         @Override public boolean compare(Object o1, Object o2) {
             if(Number.class.isInstance(o1) && Number.class.isInstance(o2)){
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) > 0;
-            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1)){
+            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1.getClass())){
                 return compareTo(String.class.cast(o1), String.class.cast(o2)) > 0;
             }
             return false;
@@ -59,7 +59,7 @@ public enum InMemoryOperations {
         @Override public boolean compare(Object o1, Object o2) {
             if(Number.class.isInstance(o1) && Number.class.isInstance(o2)){
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) < 0;
-            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1)){
+            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1.getClass())){
                 return compareTo(String.class.cast(o1), String.class.cast(o2)) < 0;
             }
             return false;
@@ -73,7 +73,7 @@ public enum InMemoryOperations {
         @Override public boolean compare(Object o1, Object o2) {
             if(Number.class.isInstance(o1) && Number.class.isInstance(o2)) {
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) >= 0;
-            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1)){
+            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1.getClass())){
                     return compareTo(String.class.cast(o1), String.class.cast(o2)) >= 0;
             }
             return false;
@@ -87,7 +87,7 @@ public enum InMemoryOperations {
         @Override public boolean compare(Object o1, Object o2) {
             if(Number.class.isInstance(o1) && Number.class.isInstance(o2)) {
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) <= 0;
-            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1)){
+            }else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1.getClass())){
                 return compareTo(String.class.cast(o1), String.class.cast(o2)) <= 0;
             }
             return false;
