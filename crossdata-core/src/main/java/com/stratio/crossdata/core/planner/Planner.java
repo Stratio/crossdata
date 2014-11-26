@@ -662,23 +662,22 @@ public class Planner {
 
                 try {
                     actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
+
+                    executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
+
+                    // Create MetadataWorkFlow
+                    metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
+
+                    // Add CatalogMetadata to the WorkFlow
+                    metadataWorkflow.setCatalogName(
+                            createTableStatement.getTableName().getCatalogName());
+
+                    metadataWorkflow.setCatalogMetadata(
+                            MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName().getCatalogName()));
                 } catch (PlanningException pe) {
                     LOG.debug("Cannot determine any connector for the operation: "
                             + Operations.CREATE_CATALOG);
                 }
-
-                executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
-
-                // Create MetadataWorkFlow
-                metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
-
-                // Add CatalogMetadata to the WorkFlow
-                metadataWorkflow.setCatalogName(
-                        createTableStatement.getTableName().getCatalogName());
-
-                metadataWorkflow.setCatalogMetadata(
-                        MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName().getCatalogName()));
-
             }
 
             // Create & add TableMetadata to the MetadataWorkflow
