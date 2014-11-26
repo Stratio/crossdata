@@ -442,6 +442,18 @@ public enum MetadataManager {
         return (ClusterMetadata) metadata.get(name);
     }
 
+    public List<ClusterMetadata> getClusters() {
+        shouldBeInit();
+        List<ClusterMetadata> clusters = new ArrayList<>();
+        for (Map.Entry<FirstLevelName, IMetadata> entry: metadata.entrySet()) {
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata instanceof ClusterMetadata) {
+                clusters.add((ClusterMetadata) iMetadata);
+            }
+        }
+        return clusters;
+    }
+
     /**
      * Save in the metadata store a new datastore.
      * @param dataStoreMetadata New datastore.
@@ -927,5 +939,23 @@ public enum MetadataManager {
         } finally {
             writeLock.unlock();
         }
+    }
+
+    public void addCatalogToCluster(CatalogName catalog, ClusterName clusterName) {
+        ClusterMetadata clusterMetadata = getCluster(clusterName);
+        clusterMetadata.addPersistedCatalog(catalog);
+        createCluster(clusterMetadata, false);
+    }
+
+    public void removeCatalogFromClusters(CatalogName catalog) {
+        List<ClusterMetadata> clusters = getClusters();
+        for(ClusterMetadata cluster: clusters){
+            removeCatalogFromCluster(catalog, cluster);
+        }
+    }
+
+    private void removeCatalogFromCluster(CatalogName catalog, ClusterMetadata cluster) {
+        cluster.removePersistedCatalog(catalog);
+        createCluster(cluster, false);
     }
 }

@@ -926,22 +926,17 @@ public class Planner {
 
     /**
      * Check if a catalog was already registered in a cluster.
-     * @param catalogName catalog to be search.
+     * @param catalogName catalog to be searched.
      * @param clusterName cluster that should contain the catalog.
      * @return if the catalog was found in the cluster.
      */
     private boolean existsCatalogInCluster(CatalogName catalogName, ClusterName clusterName) {
-        CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalogName);
-        Map<TableName, TableMetadata> tables = catalogMetadata.getTables();
-        if (tables.isEmpty()) {
-            return false;
+        ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(clusterName);
+        boolean result = false;
+        if(cluster.getPersistedCatalogs().contains(catalogName)){
+            return true;
         }
-        for (Map.Entry<TableName, TableMetadata> t : tables.entrySet()) {
-            if (t.getValue().getClusterRef().equals(clusterName)) {
-                return true;
-            }
-        }
-        return false;
+        return result;
     }
 
     protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) throws PlanningException {
