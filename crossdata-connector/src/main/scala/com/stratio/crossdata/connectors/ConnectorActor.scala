@@ -187,7 +187,7 @@ ActorLogging with IResultHandler{
       s ! result
     } catch {
       case e: Exception => {
-        val result = Result.createExecutionErrorResult(e.getStackTraceString)
+        val result = Result.createErrorResult(e)
         result.setQueryId(ex.queryId)
         s ! result
       }
@@ -235,7 +235,7 @@ ActorLogging with IResultHandler{
     } catch {
       case ex: Exception => {
         logger.error("Connector exception: " + ex.getMessage)
-        result = Result.createExecutionErrorResult("Connector exception: " + ex.getMessage)
+        result = Result.createErrorResult(ex)
       }
       case err: Error => {
         logger.error("Error in ConnectorActor(Receiving CrossdataOperation)")
@@ -273,8 +273,8 @@ ActorLogging with IResultHandler{
       s ! result
     } catch {
       case ex: Exception => {
-        logger.debug(ex.getStackTraceString)
-        val result = Result.createExecutionErrorResult(ex.getStackTraceString)
+        logger.error(ex)
+        val result = Result.createErrorResult(ex)
         result.setQueryId(qId)
         s ! result
       }
