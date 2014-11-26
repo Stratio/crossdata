@@ -299,7 +299,7 @@ UPDATE \<tablename\>
 
 Example:
 
-    UPDATE TABLE tableTest SET value = value + 900 WHERE age > 30;
+    UPDATE tableTest SET value = value + 900 WHERE age > 30;
 
 ### DROP TABLE
 
