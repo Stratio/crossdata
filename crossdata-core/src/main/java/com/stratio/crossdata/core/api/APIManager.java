@@ -272,10 +272,21 @@ public class APIManager {
             StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
             sb.append("\t").append("Name: ").append(datastore.getName()).append(System.lineSeparator());
             sb.append("\t").append("Version: ").append(datastore.getVersion()).append(System.lineSeparator());
-            sb.append("\t").append("Required properties: ").append(datastore.getRequiredProperties())
-                    .append(System.lineSeparator());
-            sb.append("\t").append("Other properties: ").append(datastore.getOthersProperties())
-                    .append(System.lineSeparator());
+
+            sb.append("\t").append("Required properties: ").append(System.lineSeparator());
+            Set<PropertyType> requiredProps = datastore.getRequiredProperties();
+            for(PropertyType pt: requiredProps){
+                sb.append("\t").append(pt.getPropertyName()).append(": ").append(pt.getDescription()).append(
+                        System.lineSeparator());
+            }
+
+            sb.append("\t").append("Other properties: ").append(System.lineSeparator());
+            Set<PropertyType> othersProps = datastore.getOthersProperties();
+            for(PropertyType pt: othersProps){
+                sb.append("\t").append(pt.getPropertyName()).append(": ").append(pt.getDescription()).append(
+                        System.lineSeparator());
+            }
+
             sb.append("\t").append("Behaviours: ").append(datastore.getBehaviors())
                     .append(System.lineSeparator());
             sb.append("\t").append("Attached Refs: ").append(datastore.getClusterAttachedRefs().keySet())
@@ -339,20 +350,25 @@ public class APIManager {
     private Result describeCatalog(CatalogName name) {
         Result result;
 
-        CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name);
-        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+        try {
+            CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name);
+            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
 
-        sb.append("Catalog: ").append(catalog.getName()).append(System.lineSeparator());
+            sb.append("Catalog: ").append(catalog.getName()).append(System.lineSeparator());
 
-        sb.append("Options: ").append(System.lineSeparator());
-        for(Map.Entry<Selector, Selector> entry: catalog.getOptions().entrySet()){
-            sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue())
-                    .append(System.lineSeparator());
+            sb.append("Options: ").append(System.lineSeparator());
+            for(Map.Entry<Selector, Selector> entry: catalog.getOptions().entrySet()){
+                sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue())
+                        .append(System.lineSeparator());
+            }
+
+            sb.append("Tables: ").append(catalog.getTables().keySet()).append(System.lineSeparator());
+
+            result = CommandResult.createCommandResult(sb.toString());
+
+        } catch (MetadataManagerException mme){
+            result = new ErrorResult(mme);
         }
-
-        sb.append("Tables: ").append(catalog.getTables().keySet()).append(System.lineSeparator());
-
-        result = CommandResult.createCommandResult(sb.toString());
 
         return result;
     }
@@ -360,15 +376,19 @@ public class APIManager {
     private Result describeTables(CatalogName name) {
         Result result;
 
-        CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name);
-        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+        try {
+            CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name);
+            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
 
-        sb.append("Catalog: ").append(catalog.getName()).append(System.lineSeparator());
+            sb.append("Catalog: ").append(catalog.getName()).append(System.lineSeparator());
 
-        sb.append("Tables: ").append(catalog.getTables().keySet()).append(System.lineSeparator());
+            sb.append("Tables: ").append(catalog.getTables().keySet()).append(System.lineSeparator());
 
-        result = CommandResult.createCommandResult(sb.toString());
+            result = CommandResult.createCommandResult(sb.toString());
 
+        } catch (MetadataManagerException mme){
+            result = ErrorResult.createErrorResult(mme);
+        }
         return result;
     }
 
