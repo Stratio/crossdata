@@ -105,7 +105,11 @@ public final class ConsoleUtils {
      */
     public static String stringResult(Result result) {
         if (ErrorResult.class.isInstance(result)) {
-            return ErrorResult.class.cast(result).getErrorMessage();
+            ErrorResult error = ErrorResult.class.cast(result);
+            StringBuilder sb = new StringBuilder("The operation for query ");
+            sb.append(error.getQueryId()).append(" cannot be executed:").append(System.lineSeparator());
+            sb.append(error.getErrorMessage()).append(System.lineSeparator());
+            return sb.toString();
         }
         if (result instanceof QueryResult) {
             QueryResult queryResult = (QueryResult) result;
