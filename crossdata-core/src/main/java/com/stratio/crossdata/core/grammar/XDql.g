@@ -70,6 +70,9 @@ options {
             String[] idParts = str.split("\\.");
             return new TableName(idParts[0], idParts[1]);
         } else {
+            if((sessionCatalog == null) || (sessionCatalog.isEmpty())){
+                throwParsingException("Catalog can't be empty");
+            }
             return new TableName(sessionCatalog, str);
         }
     }
