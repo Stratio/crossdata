@@ -492,6 +492,9 @@ public class APIManager {
 
     private void dropDataStore(DataStoreName dataStoreName) throws ApiException {
         try {
+            if(!MetadataManager.MANAGER.exists(dataStoreName)){
+                throw new ApiException(new ExecutionException(dataStoreName + " doesn't exist"));
+            }
             MetadataManager.MANAGER.deleteDatastore(dataStoreName);
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
                 RollbackException | MetadataManagerException e) {
@@ -501,6 +504,9 @@ public class APIManager {
 
     private void dropConnector(ConnectorName connectorName) throws ApiException {
         try {
+            if(!MetadataManager.MANAGER.exists(connectorName)){
+                throw new ApiException(new ExecutionException(connectorName + " doesn't exist"));
+            }
             MetadataManager.MANAGER.deleteConnector(connectorName);
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
                 RollbackException | MetadataManagerException e) {

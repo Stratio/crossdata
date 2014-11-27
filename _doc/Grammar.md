@@ -18,8 +18,8 @@ Table of contents
 -   [Main characteristics](#main-characteristics)
 -   [Language Features](#language-features)
     -   [Statements](#statements)
-        -   [ADD DATASTORE](#add-dataStore)
-        -   [DROP DATASTORE](#drop-dataStore)
+        -   [ADD DATASTORE](#add-datastore)
+        -   [DROP DATASTORE](#drop-datastore)
         -   [ADD CONNECTOR](#add-connector)
         -   [DROP CONNECTOR](#drop-connector)
         -   [ATTACH CLUSTER](#attach-cluster)
@@ -411,7 +411,7 @@ Example:
 
 ### CLEAN METADATA
 
-Remove all metadata related to catalogs, tables, indexes and columns.
+Remove all apiManager related to catalogs, tables, indexes and columns.
 
 CLEAN METADATA;
 

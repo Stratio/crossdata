@@ -267,7 +267,7 @@ manifest schemas.
 Implementing IMetadataEngine
 ----------------------------
 
-The *IMetadataEngine* interface defines the set of operations related to metadata management that a connector may 
+The *IMetadataEngine* interface defines the set of operations related to metadata management that a connector may
 provide to Crossdata. Notice that not all operations must be supported by the connector implementation, 
 only those defined in the *SupportedOperations* section of the connector manifest. In our case, we will provide 
 implementations for *createCatalog, *createTable*, *dropCatalog*, and *dropTable*. This connector will not support 
