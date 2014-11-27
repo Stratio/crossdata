@@ -40,6 +40,7 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.exceptions.ApiException;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
@@ -394,6 +395,10 @@ public class APIManager {
         // NAME
         DataStoreName name = new DataStoreName(dataStoreType.getName());
 
+        if(MetadataManager.MANAGER.exists(name)){
+            throw new ManifestException(new ExecutionException(name + " already exists"));
+        }
+
         // VERSION
         String version = dataStoreType.getVersion();
 
@@ -415,7 +420,7 @@ public class APIManager {
                 (behaviorsType == null) ? null : behaviorsType.getBehavior());
 
         // Persist
-        MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
 
         LOG.debug("DataStore added: " + MetadataManager.MANAGER.getDataStore(name).toString());
 
@@ -424,6 +429,9 @@ public class APIManager {
     private void persistConnector(ConnectorType connectorType) throws ManifestException {
         // NAME
         ConnectorName name = new ConnectorName(connectorType.getConnectorName());
+        if(MetadataManager.MANAGER.exists(name)){
+            throw new ManifestException(new ExecutionException(name + " already exists"));
+        }
 
         // DATASTORES
         DataStoreRefsType dataStoreRefs = connectorType.getDataStores();
@@ -465,7 +473,7 @@ public class APIManager {
         }
 
         // Persist
-        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
+        MetadataManager.MANAGER.createConnector(connectorMetadata);
     }
 
     /**

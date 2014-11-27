@@ -410,8 +410,8 @@ public enum MetadataManager {
             if (unique) {
                 shouldBeUnique(clusterMetadata.getName());
             }
-            for (ConnectorAttachedMetadata connectorRef : clusterMetadata.getConnectorAttachedRefs()
-                    .values()) {
+            for (ConnectorAttachedMetadata connectorRef:
+                    clusterMetadata.getConnectorAttachedRefs().values()) {
                 shouldExist(connectorRef.getConnectorRef());
             }
             beginTransaction();
