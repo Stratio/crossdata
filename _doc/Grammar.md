@@ -137,6 +137,7 @@ language .
 -   \<catalog\_name\> ::= \<identifier\>
 -   \<tablename\> ::= (\<catalog\_name\> '.')? \<identifier\>
 -   \<columnname\> ::= (\<tablename\> '.')? \<identifier\>
+-   \<indexname\> ::= \<tablename\> '.' \<identifier\>
 -   \<properties\> ::= \<property\> (AND \<property\>)\*
 -   \<property\> ::= (\<literal\> | \<identifier\> ) '=' ( \<literal\> | \<constant\> )
 -   \<data-types\> = TEXT | BIGINT | INT | DOUBLE | FLOAT | BOOLEAN
@@ -350,11 +351,11 @@ Example:
 
 ### DROP INDEX
 
-DROP INDEX (IF EXISTS)? \<index-name\> ';'
+DROP INDEX (IF EXISTS)? \<indexname\> ';'
 
 Example:
 
-    DROP INDEX IF EXISTS revenueIndex;;
+    DROP INDEX IF EXISTS tabletest.revenueIndex;
 
 ### SELECT
 
