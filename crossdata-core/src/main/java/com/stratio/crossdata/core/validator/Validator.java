@@ -18,9 +18,11 @@
 
 package com.stratio.crossdata.core.validator;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -33,13 +35,12 @@ import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
-import com.stratio.crossdata.common.exceptions.validation.ClusterNodeNotInDatastoreException;
 import com.stratio.crossdata.common.exceptions.validation.ConnectionHasNoRefsException;
 import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotConnectionException;
 import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
-import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
@@ -298,35 +299,55 @@ public class Validator {
         validateName(exist, name, hasIfExists);
     }
 
-    private void validateClustersIps(CrossdataStatement stmt) throws ClusterNodeNotInDatastoreException{
-        AttachClusterStatement myStmt = (AttachClusterStatement) stmt;
-        Map<Selector, Selector> options = myStmt.getOptions();
-        DataStoreName dataStoreName = myStmt.getDatastoreName();
-        DataStoreMetadata dataStoreMetadata = MetadataManager.MANAGER.getDataStore(dataStoreName);
-        Map<ClusterName, ClusterAttachedMetadata> refs = dataStoreMetadata.getClusterAttachedRefs();
-        ClusterName clusterName = myStmt.getClusterName();
-        if (!options.isEmpty()) {
-            Selector hosts =options.get("hosts");
-            if(hosts != null){
-                String[] myHosts = hosts.getStringValue().replace("[", "").replace("]", "").split(",");
-                for(int i=0; i<myHosts.length;i++){
-                    Iterator<Map.Entry<ClusterName, ClusterAttachedMetadata>> it = refs.entrySet().iterator();
-                    boolean found = false;
-                    while(it.hasNext()){
-                        Map.Entry<ClusterName, ClusterAttachedMetadata> entry = it.next();
-                        if(entry.getKey().equals(clusterName)){
-                            found=true;
-                            break;
-                        }
-                    }
-                    if(!found){
-                        throw new ClusterNodeNotInDatastoreException("Cluster node not found in datastore");
-                    }
-                }
-            }
+    private void validateClusterProperties(DataStoreName name, Map<Selector, Selector> opts)
+            throws ValidationException {
+        if(!MetadataManager.MANAGER.exists(name)){
+            throw new NotExistNameException(name);
         }
+        DataStoreMetadata datastore = MetadataManager.MANAGER.getDataStore(name);
+        validateAttachmentProperties(opts, datastore.getRequiredProperties(), datastore.getOthersProperties());
     }
 
+    private void validateConnectorProperties(ConnectorName name, Map<Selector, Selector> opts)
+            throws ValidationException {
+        if(!MetadataManager.MANAGER.exists(name)){
+            throw new NotExistNameException(name);
+        }
+        ConnectorMetadata connector = MetadataManager.MANAGER.getConnector(name);
+        validateAttachmentProperties(opts, connector.getRequiredProperties(), connector.getOptionalProperties());
+    }
+
+    private void validateAttachmentProperties(
+            Map<Selector, Selector> opts,
+            Set<PropertyType> requiredProps,
+            Set<PropertyType> optProps)
+            throws ValidationException {
+
+        // Get property names of the attachment
+        Set<String> attProps = new HashSet<>();
+        for(Selector sel: opts.keySet()){
+            attProps.add(sel.getStringValue().toLowerCase());
+        }
+
+        // Verify required properties
+        Set<String> props = new HashSet<>();
+        for(PropertyType pt: requiredProps){
+            props.add(pt.getPropertyName().toLowerCase());
+        }
+        if(!attProps.containsAll(props)){
+            throw new BadFormatException("Some required properties are missing");
+        }
+        attProps.removeAll(props);
+
+        // Verify optional properties
+        props = new HashSet<>();
+        for(PropertyType pt: optProps){
+            props.add(pt.getPropertyName().toLowerCase());
+        }
+        if(!props.containsAll(attProps)){
+            throw new BadFormatException("Some properties are not found in the datastore manifest");
+        }
+    }
 
     private void validateExist(Name name, boolean hasIfExists)
             throws NotExistNameException, IgnoreQueryException {
@@ -485,17 +506,10 @@ public class Validator {
     private void validateOptions(CrossdataStatement stmt) throws ValidationException {
         if (stmt instanceof AttachClusterStatement) {
             AttachClusterStatement myStmt = (AttachClusterStatement) stmt;
-            validateClustersIps(stmt);
-            if (myStmt.getOptions().isEmpty()) {
-                throw new BadFormatException("AttachClusterStatement options can't be empty");
-            }
-        } else {
-            if (stmt instanceof AttachConnectorStatement) {
-                AttachConnectorStatement myStmt = (AttachConnectorStatement) stmt;
-                if (myStmt.getOptions() == null || myStmt.getOptions().isEmpty()) {
-                    throw new BadFormatException("AttachConnectorStatement options can't be empty");
-                }
-            }
+            validateClusterProperties(myStmt.getDatastoreName(), myStmt.getOptions());
+        } else if (stmt instanceof AttachConnectorStatement) {
+            AttachConnectorStatement myStmt = (AttachConnectorStatement) stmt;
+            validateConnectorProperties(myStmt.getConnectorName(), myStmt.getOptions());
         }
     }
 
