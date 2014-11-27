@@ -551,7 +551,6 @@ public class Shell {
         return ConsoleUtils.stringResult(crossDataDriver.describeDatastore(new DataStoreName(datastoreName)));
     }
 
-
     private String updateCatalog(String toExecute) {
         String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();
         String currentCatalog = crossDataDriver.getCurrentCatalog();

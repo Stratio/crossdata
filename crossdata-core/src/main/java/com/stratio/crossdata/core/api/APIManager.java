@@ -390,7 +390,7 @@ public class APIManager {
         }
     }
 
-    private void persistDataStore(DataStoreType dataStoreType) {
+    private void persistDataStore(DataStoreType dataStoreType) throws ManifestException {
         // NAME
         DataStoreName name = new DataStoreName(dataStoreType.getName());
 
