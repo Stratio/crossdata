@@ -29,6 +29,7 @@ serviceGroup="<user>"
 javaCommandLineKeyword="<mainClassName>"
 connectorClass="<mainClass>"
 JMXPort="<jmxPort>"
+PIDFileName="<pidFileName>"
 
 # If JAVA_HOME has not been set, try to determine it.ner
 JVM_SEARCH_DIRS="/usr/java/default /usr/java/latest /opt/java"
@@ -85,6 +86,10 @@ if [ ! -d "$pidDir" ]; then
 fi
 pidFile="${pidDir}/${NAME}.pid"
 
+if [ ! -z "${PIDFileName}" ]; then
+    pidFile="${pidDir}/${PIDFileName}.pid"
+fi
+
 # Returns 0 if the process with PID $1 is running.
 function checkProcessIsRunning {
 	local pid="$1"
@@ -116,7 +121,8 @@ function startServiceProcess {
 	rm -f $pidFile
 	local cmd="$javaCommandLine >>$LOGFILE 2>&1 & echo \$! >$pidFile"
 	#sudo -u $serviceUser $SHELL -c "$cmd" || return 1
-	echo "\nLaunching service process: ${NAME}"
+	echo "Launching service process: ${NAME}"
+	echo ""
 	su - $serviceUser -c "$cmd" || return 1
 	sleep 0.1
 	servicePid="$(<$pidFile)"
@@ -159,7 +165,7 @@ function startService {
 	# Add any service start conditions here
 	getServicePid
 	if [ $? -eq 0 ]; then echo "${NAME} is already running"; return 0; fi
-	echo -n "Starting ${NAME}"
+	echo "Starting ${NAME}"
 	startServiceProcess
 	if [ $? -ne 0 ]; then echo "Error starting ${NAME}" ; return 1; fi
 	return 0;
@@ -168,14 +174,14 @@ function startService {
 function stopService {
 	getServicePid
 	if [ $? -ne 0 ]; then echo "${NAME} is not running"; return 0; fi
-	echo -n "Stopping ${NAME} "
+	echo "Stopping ${NAME} "
 	stopServiceProcess
 	if [ $? -ne 0 ]; then echo "Error stopping ${NAME}"; return 1; fi
 	return 0;
 }
 
 function checkServiceStatus {
-	echo -n "Checking for ${NAME}: "
+	echo "Checking for ${NAME}: "
 	if [ ! -f "${CONFDIR}/connector-application.conf" ]; then
 		echo "Error: Configuration file not found!"
 		return 1

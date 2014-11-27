@@ -74,6 +74,11 @@ public class InstallerGoalLauncher {
         outputString=outputString.replaceAll("<mainClassName>", className);
 
         outputString=outputString.replaceAll("<jmxPort>", config.getJmxPort());
+        String pidFileName = "";
+        if(config.getPidFileName() != null){
+            pidFileName = config.getPidFileName();
+        }
+        outputString=outputString.replaceAll("<pidFileName>", pidFileName);
 
         File binFile= new File(FilenameUtils.concat(binDirectory.toString(),config.getConnectorName()));
         FileUtils.writeStringToFile(binFile,outputString);
