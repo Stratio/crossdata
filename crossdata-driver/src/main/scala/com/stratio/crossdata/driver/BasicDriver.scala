@@ -27,17 +27,21 @@ import com.stratio.crossdata.common.ask.{APICommand, Command, Query, Connect}
 import com.stratio.crossdata.common.exceptions.{ManifestException, UnsupportedException, ExecutionException,
 ValidationException, ParsingException, ConnectionException}
 import com.stratio.crossdata.common.result.{CommandResult, MetadataResult, DisconnectResult, ConnectResult,
-ErrorResult, Result, IResultHandler}
+ErrorResult, Result, IDriverResultHandler}
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
-import com.stratio.crossdata.driver.result.SyncResultHandler
+import com.stratio.crossdata.driver.result.SyncDriverResultHandler
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import org.apache.log4j.Logger
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 
 import scala.concurrent.duration._
-import com.stratio.crossdata.common.data.{DataStoreName, ConnectorName}
+import com.stratio.crossdata.common.data._
+import com.stratio.crossdata.common.ask.Connect
+import com.stratio.crossdata.communication.Disconnect
+import com.stratio.crossdata.common.ask.Command
+import com.stratio.crossdata.common.ask.Query
 
 object BasicDriver extends DriverConfig {
   /**
@@ -74,7 +78,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    */
   private final val DEFAULT_USER: String = "CROSSDATA_USER"
   lazy val logger = BasicDriver.logger
-  lazy val queries: java.util.Map[String, IResultHandler] = new java.util.HashMap[String, IResultHandler]
+  lazy val queries: java.util.Map[String, IDriverResultHandler] = new java.util.HashMap[String, IDriverResultHandler]
   lazy val system = ActorSystem("CrossdataDriverSystem", BasicDriver.config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
@@ -146,7 +150,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @param callback The callback object.
    */
   @throws(classOf[ConnectionException])
-  def asyncExecuteQuery(query: String, callback: IResultHandler): String = {
+  def asyncExecuteQuery(query: String, callback: IDriverResultHandler): String = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
@@ -175,7 +179,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
-    val callback = new SyncResultHandler
+    val callback = new SyncDriverResultHandler
     queries.put(queryId.toString, callback)
     sendQuery(new Query(queryId.toString, currentCatalog, query, userId))
     val r = callback.waitForResult()
@@ -271,14 +275,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Reset metadata in server.
    * @return A CommandResult with a string.
    */
-  def resetServerdata(): CommandResult = {
+  def resetServerdata(): Result = {
     val queryId = UUID.randomUUID().toString
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.RESET_SERVERDATA, null))
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
     }
   }
 
@@ -286,14 +289,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Clean metadata related to catalogs in server.
    * @return A CommandResult with a string.
    */
-  def cleanMetadata(): CommandResult = {
+  def cleanMetadata(): Result = {
     val queryId = UUID.randomUUID().toString
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.CLEAN_METADATA, null))
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
     }
   }
 
@@ -316,7 +318,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Describe a connector.
    * @return A CommandResult with the description of the connector.
    */
-  def describeConnector(connectorName: ConnectorName): CommandResult = {
+  def describeConnector(connectorName: ConnectorName): Result = {
     val queryId = UUID.randomUUID().toString
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(connectorName)
@@ -324,8 +326,19 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
+    }
+  }
+
+  def describeCatalog(catalogName: CatalogName): Result = {
+    val queryId = UUID.randomUUID().toString
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(catalogName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CATALOG, params))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      result.asInstanceOf[ErrorResult]
     }
   }
 
@@ -333,7 +346,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Describe a datastore.
    * @return A CommandResult with the description of the datastore.
    */
-  def describeDatastore(datastoreName: DataStoreName): CommandResult = {
+  def describeDatastore(datastoreName: DataStoreName): Result = {
     val queryId = UUID.randomUUID().toString
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(datastoreName)
@@ -341,11 +354,65 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
     }
   }
 
+  def describeTables(catalogName: CatalogName): Result = {
+    val queryId = UUID.randomUUID().toString
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(catalogName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_TABLES, params))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      result.asInstanceOf[ErrorResult]
+    }
+  }
+
+  def describeTable(tableName: TableName): Result = {
+    val queryId = UUID.randomUUID().toString
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(tableName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_TABLE, params))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      result.asInstanceOf[ErrorResult]
+    }
+  }
+
+  def describeCluster(clusterName: ClusterName): Result = {
+    val queryId = UUID.randomUUID().toString
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(clusterName)
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CLUSTER, params))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      result.asInstanceOf[ErrorResult]
+    }
+  }
+
+  def describeDatastores(): Result = {
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_DATASTORES, null))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      result.asInstanceOf[ErrorResult]
+    }
+  }
+
+  def describeClusters(): Result = {
+    val queryId = UUID.randomUUID().toString
+    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CLUSTERS, null))
+    if(result.isInstanceOf[CommandResult]){
+      result.asInstanceOf[CommandResult]
+    } else {
+      result.asInstanceOf[ErrorResult]
+    }
+  }
 
   /**
    * Describe the system.
@@ -377,11 +444,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Get the IResultHandler associated with a query identifier.
+   * Get the IDriverResultHandler associated with a query identifier.
    * @param queryId Query identifier.
    * @return The result handler.
    */
-  def getResultHandler(queryId: String): IResultHandler = {
+  def getResultHandler(queryId: String): IDriverResultHandler = {
     queries.get(queryId)
   }
 

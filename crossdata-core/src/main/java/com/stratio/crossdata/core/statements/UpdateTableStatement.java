@@ -18,9 +18,12 @@
 
 package com.stratio.crossdata.core.statements;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.Option;
@@ -72,13 +75,38 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
      */
     public UpdateTableStatement(TableName tableName, List<Option> options,
             List<Relation> assignations, List<Relation> whereClauses,
-            Map<Selector, Selector> conditions) {
+            Map<Selector, Selector> conditions) throws ParsingException {
         this.command = false;
+
+        if(tableName.getName().isEmpty()){
+            throw new ParsingException("Table name cannot be empty");
+        }
         this.tableName = tableName;
-        this.options = options;
-        this.assignations = assignations;
-        this.whereClauses = whereClauses;
-        this.conditions = conditions;
+
+        if(options == null){
+            this.options = new ArrayList<>();
+        } else {
+            this.options = options;
+        }
+
+        if(assignations == null){
+            this.assignations = new ArrayList<>();
+        } else {
+            this.assignations = assignations;
+        }
+
+        if(whereClauses == null){
+            this.whereClauses = new ArrayList<>();
+        } else {
+            this.whereClauses = whereClauses;
+        }
+
+        if(conditions == null){
+            this.conditions = new HashMap<>();
+        } else {
+            this.conditions = conditions;
+        }
+
     }
 
     /**
@@ -90,7 +118,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
      * @param conditions   The map of conditions.
      */
     public UpdateTableStatement(TableName tableName, List<Relation> assignations,
-            List<Relation> whereClauses, Map<Selector, Selector> conditions) {
+            List<Relation> whereClauses, Map<Selector, Selector> conditions) throws ParsingException {
         this(tableName, null, assignations, whereClauses, conditions);
     }
 
@@ -103,7 +131,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
      * @param whereClauses The list of relations.
      */
     public UpdateTableStatement(TableName tableName, List<Option> options,
-            List<Relation> assignations, List<Relation> whereClauses) {
+            List<Relation> assignations, List<Relation> whereClauses) throws ParsingException {
         this(tableName, options, assignations, whereClauses, null);
     }
 
@@ -115,7 +143,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
      * @param whereClauses The list of relations.
      */
     public UpdateTableStatement(TableName tableName, List<Relation> assignations,
-            List<Relation> whereClauses) {
+            List<Relation> whereClauses) throws ParsingException {
         this(tableName, null, assignations, whereClauses, null);
     }
 

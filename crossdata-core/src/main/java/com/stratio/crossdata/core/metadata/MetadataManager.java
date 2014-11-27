@@ -415,8 +415,8 @@ public enum MetadataManager {
             if (unique) {
                 shouldBeUnique(clusterMetadata.getName());
             }
-            for (ConnectorAttachedMetadata connectorRef : clusterMetadata.getConnectorAttachedRefs()
-                    .values()) {
+            for (ConnectorAttachedMetadata connectorRef:
+                    clusterMetadata.getConnectorAttachedRefs().values()) {
                 shouldExist(connectorRef.getConnectorRef());
             }
             beginTransaction();
@@ -445,6 +445,18 @@ public enum MetadataManager {
         shouldBeInit();
         shouldExist(name);
         return (ClusterMetadata) metadata.get(name);
+    }
+
+    public List<ClusterMetadata> getClusters() {
+        shouldBeInit();
+        List<ClusterMetadata> clusters = new ArrayList<>();
+        for (Map.Entry<FirstLevelName, IMetadata> entry: metadata.entrySet()) {
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata instanceof ClusterMetadata) {
+                clusters.add((ClusterMetadata) iMetadata);
+            }
+        }
+        return clusters;
     }
 
     /**
@@ -1071,4 +1083,21 @@ public enum MetadataManager {
         return result;
     }
 
+    public void addCatalogToCluster(CatalogName catalog, ClusterName clusterName) {
+        ClusterMetadata clusterMetadata = getCluster(clusterName);
+        clusterMetadata.addPersistedCatalog(catalog);
+        createCluster(clusterMetadata, false);
+    }
+
+    public void removeCatalogFromClusters(CatalogName catalog) {
+        List<ClusterMetadata> clusters = getClusters();
+        for(ClusterMetadata cluster: clusters){
+            removeCatalogFromCluster(catalog, cluster);
+        }
+    }
+
+    private void removeCatalogFromCluster(CatalogName catalog, ClusterMetadata cluster) {
+        cluster.removePersistedCatalog(catalog);
+        createCluster(cluster, false);
+    }
 }

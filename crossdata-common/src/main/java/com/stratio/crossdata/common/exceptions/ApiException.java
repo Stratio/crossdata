@@ -28,5 +28,4 @@ public class ApiException extends Exception {
         super(error, cause);
     }
 
-
 }

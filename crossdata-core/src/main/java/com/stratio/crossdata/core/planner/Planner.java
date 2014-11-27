@@ -644,7 +644,12 @@ public class Planner {
 
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
 
-            String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
+            String actorRefUri = null;
+            try {
+                actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
+            } catch (PlanningException pe) {
+                LOG.debug("No connector was found to execute CREATE_TABLE");
+            }
 
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
             ResultType type = ResultType.RESULTS;
@@ -918,18 +923,19 @@ public class Planner {
         return managementWorkflow;
     }
 
+    /**
+     * Check if a catalog was already registered in a cluster.
+     * @param catalogName catalog to be searched.
+     * @param clusterName cluster that should contain the catalog.
+     * @return if the catalog was found in the cluster.
+     */
     private boolean existsCatalogInCluster(CatalogName catalogName, ClusterName clusterName) {
-        CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalogName);
-        Map<TableName, TableMetadata> tables = catalogMetadata.getTables();
-        if (tables.isEmpty()) {
-            return false;
+        ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(clusterName);
+        boolean result = false;
+        if(cluster.getPersistedCatalogs().contains(catalogName)){
+            return true;
         }
-        for (Map.Entry<TableName, TableMetadata> t : tables.entrySet()) {
-            if (t.getValue().getClusterRef().equals(clusterName)) {
-                return true;
-            }
-        }
-        return false;
+        return result;
     }
 
     protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) throws PlanningException {
@@ -1243,27 +1249,25 @@ public class Planner {
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
         LinkedHashMap<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
         boolean addAll = false;
-        for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
+        for (Selector s: selectStatement.getSelectExpression().getSelectorList()) {
             if (AsteriskSelector.class.isInstance(s)) {
                 addAll = true;
             } else if (ColumnSelector.class.isInstance(s)) {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
                 if (cs.getAlias() != null) {
-                    aliasMap.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()),
-                            cs.getAlias());
+                    aliasMap.put(cs.getName(), cs.getAlias());
 
-                    typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), cs.getName().getName()),
+                    typeMapFromColumnName.put(cs.getName(),
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
 
                     typeMap.put(cs.getAlias(),
-                            tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(
-                                    cs.getName()).getColumnType()
-                    );
+                            tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().
+                                    get(cs.getName()).getColumnType());
                 } else {
-                    aliasMap.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
+                    aliasMap.put(cs.getName(),
                             cs.getName().getName());
 
-                    typeMapFromColumnName.put(new ColumnName(cs.getName().getTableName(), cs.getName().getName()),
+                    typeMapFromColumnName.put(cs.getName(),
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName()).getColumnType());
 
                     typeMap.put(cs.getName().getName(),

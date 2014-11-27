@@ -76,7 +76,6 @@ public class AttachClusterStatement extends MetadataStatement {
         } else {
             this.options = StringUtils.convertJsonToOptions(options);
         }
-
     }
 
     @Override
@@ -93,7 +92,9 @@ public class AttachClusterStatement extends MetadataStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_DATASTORE)
+        return new ValidationRequirements()
+                .add(ValidationTypes.MUST_NOT_EXIST_CLUSTER)
+                .add(ValidationTypes.MUST_EXIST_DATASTORE)
                 .add(ValidationTypes.MUST_BE_UNIQUE_DATASTORE)
                 .add(ValidationTypes.VALID_CLUSTER_OPTIONS);
     }

@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.sh;
 
-import com.stratio.crossdata.common.result.IResultHandler;
+import com.stratio.crossdata.common.result.IDriverResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.common.result.Result;
@@ -27,7 +27,7 @@ import com.stratio.crossdata.sh.utils.ConsoleUtils;
 /**
  * Results handler for the Crossdata shell when the asynchronous interface is used.
  */
-public class ShellResultHandler implements IResultHandler {
+public class ShellDriverResultHandler implements IDriverResultHandler {
 
     /**
      * Parent Crossdata shell.
@@ -37,9 +37,9 @@ public class ShellResultHandler implements IResultHandler {
     /**
      * Class constructor.
      *
-     * @param parent Parent crossDatashell that will be informed when results are available.
+     * @param parent Parent Crossdata Shell that will be informed when results are available.
      */
-    public ShellResultHandler(Shell parent) {
+    public ShellDriverResultHandler(Shell parent) {
         this.parent = parent;
     }
 

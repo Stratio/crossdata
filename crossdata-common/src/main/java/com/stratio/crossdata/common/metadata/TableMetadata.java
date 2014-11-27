@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.metadata;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +42,7 @@ public class TableMetadata implements IMetadata {
 
     private Map<ColumnName, ColumnMetadata> columns;
 
-    private final Map<IndexName, IndexMetadata> indexes;
+    private Map<IndexName, IndexMetadata> indexes;
 
     private final ClusterName clusterRef;
 
@@ -63,13 +64,27 @@ public class TableMetadata implements IMetadata {
             ClusterName clusterRef,
             List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
         this.name = name;
+
         this.options = options;
+        if(options == null){
+            this.options = new HashMap<>();
+        }
+
         this.columns = columns;
+        if(columns == null){
+            this.columns = new HashMap<>();
+        }
+
         this.indexes = indexes;
+        if(indexes == null){
+            this.indexes = new HashMap<>();
+        }
+
         this.clusterRef = clusterRef;
 
-        this.partitionKey = partitionKey;
-        this.clusterKey = clusterKey;
+        this.partitionKey = (partitionKey == null)? new ArrayList<ColumnName>(): partitionKey;
+
+        this.clusterKey = (clusterKey == null)? new ArrayList<ColumnName>(): clusterKey;
     }
 
     /**

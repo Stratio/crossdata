@@ -20,7 +20,7 @@ package com.stratio.crossdata.driver.result
 
 import com.stratio.crossdata.common.exceptions.{ExecutionException, ParsingException, UnsupportedException,
 ValidationException}
-import com.stratio.crossdata.common.result.{IResultHandler, QueryStatus, QueryResult, Result}
+import com.stratio.crossdata.common.result.{IDriverResultHandler, QueryStatus, QueryResult, Result}
 import com.stratio.crossdata.common.result.ErrorResult
 import com.stratio.crossdata.common.data.ResultSet
 import org.apache.log4j.Logger
@@ -28,9 +28,9 @@ import org.apache.log4j.Logger
 /**
  * Synchronous result handler.
  */
-class SyncResultHandler extends IResultHandler {
+class SyncDriverResultHandler extends IDriverResultHandler {
 
-  lazy val logger = Logger.getLogger(classOf[SyncResultHandler])
+  lazy val logger = Logger.getLogger(classOf[SyncDriverResultHandler])
   var errorFound: Boolean = false
 
   var exception: Exception = null
@@ -53,8 +53,8 @@ class SyncResultHandler extends IResultHandler {
         if (queryResult == null) {
           queryResult = r
         } else {
-          queryResult.getResultSet.asInstanceOf[ResultSet].getRows.addAll(
-            r.getResultSet.asInstanceOf[ResultSet].getRows)
+          queryResult.getResultSet.getRows.addAll(
+            r.getResultSet.getRows)
         }
       case _ =>
         nonQueryResult = result
@@ -86,7 +86,6 @@ class SyncResultHandler extends IResultHandler {
     if (errorFound) {
       throw exception
     }
-
 
     if (queryResult != null) {
       queryResult

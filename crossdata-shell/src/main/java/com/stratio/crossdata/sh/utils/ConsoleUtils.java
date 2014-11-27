@@ -52,7 +52,6 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.xml.sax.SAXException;
 
-import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ManifestException;
@@ -106,7 +105,11 @@ public final class ConsoleUtils {
      */
     public static String stringResult(Result result) {
         if (ErrorResult.class.isInstance(result)) {
-            return ErrorResult.class.cast(result).getErrorMessage();
+            ErrorResult error = ErrorResult.class.cast(result);
+            StringBuilder sb = new StringBuilder("The operation for query ");
+            sb.append(error.getQueryId()).append(" cannot be executed:").append(System.lineSeparator());
+            sb.append(error.getErrorMessage()).append(System.lineSeparator());
+            return sb.toString();
         }
         if (result instanceof QueryResult) {
             QueryResult queryResult = (QueryResult) result;
@@ -137,7 +140,7 @@ public final class ConsoleUtils {
 
     private static String stringQueryResult(QueryResult queryResult) {
         if (queryResult.getResultSet().isEmpty()) {
-            return System.lineSeparator() + "OK";
+            return System.lineSeparator() + "0 results returned";
         }
 
         ResultSet resultSet = queryResult.getResultSet();

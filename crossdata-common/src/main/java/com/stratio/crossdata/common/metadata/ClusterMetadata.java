@@ -18,8 +18,11 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
@@ -36,6 +39,7 @@ public class ClusterMetadata implements IMetadata {
     private final DataStoreName dataStoreRef;
     private Map<Selector, Selector> options;
     private Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs;
+    private Set<CatalogName> persistedCatalogs;
 
     public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<Selector, Selector> options,
             Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
@@ -43,6 +47,7 @@ public class ClusterMetadata implements IMetadata {
         this.options = options;
         this.dataStoreRef = dataStoreRef;
         this.connectorAttachedRefs = connectorAttachedRefs;
+        this.persistedCatalogs = new HashSet<>();
     }
 
     public ClusterName getName() {
@@ -68,5 +73,17 @@ public class ClusterMetadata implements IMetadata {
 
     public void setOptions(Map<Selector, Selector> options) {
         this.options = options;
+    }
+
+    public Set<CatalogName> getPersistedCatalogs() {
+        return persistedCatalogs;
+    }
+
+    public void addPersistedCatalog(CatalogName persistedCatalog) {
+        this.persistedCatalogs.add(persistedCatalog);
+    }
+
+    public void removePersistedCatalog(CatalogName catalog) {
+        this.persistedCatalogs.remove(catalog);
     }
 }
