@@ -121,16 +121,23 @@ public class InstallerGoalMojo extends AbstractMojo {
     )
     private boolean useCallingUserAsService;
 
+    @Parameter(
+            name = "pidFileName",
+            defaultValue = ""
+    )
+    private String pidFileName;
+
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         File mainJarRepo = this.resolveProjectArtifact();
         List<File> dependenciesJarRepo = this.resolveTransitiveDependecies();
-        String unixScriptTemplate= readStream(getClass().getResourceAsStream(UNIX_SCRIPT_REFERENCE));
+        String unixScriptTemplate = readStream(getClass().getResourceAsStream(UNIX_SCRIPT_REFERENCE));
 
 
         InstallerGoalConfig config = new InstallerGoalConfig(this.outputDirectory, this.configDirectory,
                 this.includeDirectory, this.connectorName, this.description, this.userService, this.mainClass,
-                this.jmxPort, mainJarRepo, dependenciesJarRepo, unixScriptTemplate, useCallingUserAsService);
+                this.jmxPort, mainJarRepo, dependenciesJarRepo, unixScriptTemplate, useCallingUserAsService,
+                pidFileName);
         try {
             InstallerGoalLauncher.launchInstallerGoal(config,getLog());
         } catch (IOException e) {
