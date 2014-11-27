@@ -483,7 +483,6 @@ public class Validator {
     }
 
     private void validateOptions(CrossdataStatement stmt) throws ValidationException {
-
         if (stmt instanceof AttachClusterStatement) {
             AttachClusterStatement myStmt = (AttachClusterStatement) stmt;
             validateClustersIps(stmt);
@@ -498,7 +497,6 @@ public class Validator {
                 }
             }
         }
-
     }
 
     private void validateIndex(CrossdataStatement stmt, boolean exist)

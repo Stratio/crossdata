@@ -28,6 +28,7 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Status;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
@@ -132,7 +133,13 @@ public class ConnectorMetadata implements IMetadata {
 
         this.name = name;
         this.version = version;
-        this.dataStoreRefs = dataStoreRefs;
+
+        if(dataStoreRefs == null){
+            this.dataStoreRefs = new HashSet<>();
+        } else {
+            this.dataStoreRefs = dataStoreRefs;
+        }
+
         this.clusterProperties = (clusterProperties!=null)?
                 clusterProperties:
                 new HashMap<ClusterName, Map<Selector, Selector>>();
@@ -156,14 +163,30 @@ public class ConnectorMetadata implements IMetadata {
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
             List<String> supportedOperations) throws ManifestException {
-        this.name = name;
-        this.version = version;
+
+        if(name.getName().isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
+        } else {
+            this.name = name;
+        }
+
+        if(version.isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag version cannot be empty"));
+        } else {
+            this.version = version;
+        }
+
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
+        if(this.dataStoreRefs == null){
+            this.dataStoreRefs = new HashSet<>();
+        }
+
         if (requiredProperties != null) {
             this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
         } else {
             this.requiredProperties = null;
         }
+
         if (optionalProperties != null) {
             this.optionalProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties);
         } else {
@@ -173,6 +196,7 @@ public class ConnectorMetadata implements IMetadata {
         this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
         this.status = Status.OFFLINE;
 
+        this.status = Status.OFFLINE;
     }
 
     /**

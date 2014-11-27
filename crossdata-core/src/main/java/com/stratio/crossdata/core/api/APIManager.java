@@ -43,6 +43,7 @@ import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ApiException;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
@@ -603,9 +604,13 @@ public class APIManager {
         }
     }
 
-    private void persistDataStore(DataStoreType dataStoreType) {
+    private void persistDataStore(DataStoreType dataStoreType) throws ManifestException {
         // NAME
         DataStoreName name = new DataStoreName(dataStoreType.getName());
+
+        if(MetadataManager.MANAGER.exists(name)){
+            throw new ManifestException(new ExecutionException(name + " already exists"));
+        }
 
         // VERSION
         String version = dataStoreType.getVersion();
@@ -628,7 +633,7 @@ public class APIManager {
                 (behaviorsType == null) ? null : behaviorsType.getBehavior());
 
         // Persist
-        MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
 
         LOG.debug("DataStore added: " + MetadataManager.MANAGER.getDataStore(name).toString());
 
@@ -697,6 +702,9 @@ public class APIManager {
 
     private void dropDataStore(DataStoreName dataStoreName) throws ApiException {
         try {
+            if(!MetadataManager.MANAGER.exists(dataStoreName)){
+                throw new ApiException(new ExecutionException(dataStoreName + " doesn't exist"));
+            }
             MetadataManager.MANAGER.deleteDatastore(dataStoreName);
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
                 RollbackException | MetadataManagerException e) {
@@ -706,6 +714,9 @@ public class APIManager {
 
     private void dropConnector(ConnectorName connectorName) throws ApiException {
         try {
+            if(!MetadataManager.MANAGER.exists(connectorName)){
+                throw new ApiException(new ExecutionException(connectorName + " doesn't exist"));
+            }
             MetadataManager.MANAGER.deleteConnector(connectorName);
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
                 RollbackException | MetadataManagerException e) {

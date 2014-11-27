@@ -26,15 +26,17 @@ import java.util.Set;
 
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 
 public class DataStoreMetadata implements IMetadata {
-    private final DataStoreName name;
-    private final String version;
-    private final Set<PropertyType> requiredProperties;
-    private final Set<PropertyType> othersProperties;
-    private final Set<String> behaviors;
+    private DataStoreName name;
+    private String version;
+    private Set<PropertyType> requiredProperties;
+    private Set<PropertyType> othersProperties;
+    private Set<String> behaviors;
     private Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
 
     public DataStoreMetadata(DataStoreName name, String version, Set<PropertyType> requiredProperties,
@@ -48,24 +50,38 @@ public class DataStoreMetadata implements IMetadata {
     }
 
     public DataStoreMetadata(DataStoreName name, String version, List<PropertyType> requiredProperties,
-            List<PropertyType> othersProperties, List<String> behaviors) {
-        this.name = name;
-        this.version = version;
+            List<PropertyType> othersProperties, List<String> behaviors) throws ManifestException {
+
+        if(name.getName().isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
+        } else {
+            this.name = name;
+        }
+
+        if(version.isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag version cannot be empty"));
+        } else {
+            this.version = version;
+        }
+
         if(requiredProperties != null){
             this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
         } else {
             this.requiredProperties = new HashSet<>();
         }
+
         if(othersProperties != null){
             this.othersProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(othersProperties);
         } else {
             this.othersProperties = new HashSet<>();
         }
+
         if(behaviors != null){
             this.behaviors = ManifestHelper.convertManifestBehaviorsToMetadataBehaviors(behaviors);
         } else {
             this.behaviors = new HashSet<>();
         }
+
         this.clusterAttachedRefs = new HashMap<>();
     }
 
