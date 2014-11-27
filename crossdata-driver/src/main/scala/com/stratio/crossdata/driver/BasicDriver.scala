@@ -54,6 +54,17 @@ object BasicDriver extends DriverConfig {
     new BasicDriverConfig(new DriverSectionConfig(retryTimes, retryDuration.duration.toMillis),
       new ServerSectionConfig(clusterName, clusterActor, clusterHosts.map(_.toString).toArray))
   }
+
+  def getBasicDriverConfigFromFile(servers:Array[String]):BasicDriverConfig = {
+    logger.debug("RetryTimes    --> " + retryTimes)
+    logger.debug("RetryDuration --> " + retryDuration.duration.toMillis.toString)
+    logger.debug("ClusterName   --> " + clusterName)
+    logger.debug("ClusterName   --> " + clusterActor)
+    logger.debug("ClusterHosts  --> " + clusterHosts.map(_.toString).toArray.toString)
+    System.out.println(clusterHosts.map(_.toString))
+    new BasicDriverConfig(new DriverSectionConfig(retryTimes, retryDuration.duration.toMillis),
+      new ServerSectionConfig(clusterName, clusterActor, servers.map(_.toString).toArray))
+  }
 }
 
 class BasicDriver(basicDriverConfig: BasicDriverConfig) {
@@ -86,6 +97,10 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
 
   def this() {
     this(BasicDriver.getBasicDriverConfigFromFile)
+  }
+
+  def this(servers:Array[String]) {
+    this(BasicDriver.getBasicDriverConfigFromFile(servers))
   }
 
   /**
