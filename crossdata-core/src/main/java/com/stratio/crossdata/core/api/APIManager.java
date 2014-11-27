@@ -429,9 +429,6 @@ public class APIManager {
     private void persistConnector(ConnectorType connectorType) throws ManifestException {
         // NAME
         ConnectorName name = new ConnectorName(connectorType.getConnectorName());
-        if(MetadataManager.MANAGER.exists(name)){
-            throw new ManifestException(new ExecutionException(name + " already exists"));
-        }
 
         // DATASTORES
         DataStoreRefsType dataStoreRefs = connectorType.getDataStores();
@@ -473,7 +470,7 @@ public class APIManager {
         }
 
         // Persist
-        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
     }
 
     /**

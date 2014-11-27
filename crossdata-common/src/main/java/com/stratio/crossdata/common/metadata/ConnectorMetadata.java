@@ -133,7 +133,13 @@ public class ConnectorMetadata implements IMetadata {
 
         this.name = name;
         this.version = version;
-        this.dataStoreRefs = dataStoreRefs;
+
+        if(dataStoreRefs == null){
+            this.dataStoreRefs = new HashSet<>();
+        } else {
+            this.dataStoreRefs = dataStoreRefs;
+        }
+
         this.clusterProperties = (clusterProperties!=null)?
                 clusterProperties:
                 new HashMap<ClusterName, Map<Selector, Selector>>();
@@ -171,6 +177,9 @@ public class ConnectorMetadata implements IMetadata {
         }
 
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
+        if(this.dataStoreRefs == null){
+            this.dataStoreRefs = new HashSet<>();
+        }
 
         if (requiredProperties != null) {
             this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
