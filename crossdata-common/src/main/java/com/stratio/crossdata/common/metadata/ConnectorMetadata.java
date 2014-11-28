@@ -91,6 +91,11 @@ public class ConnectorMetadata implements IMetadata {
     private Set<Operations> supportedOperations;
 
     /**
+     * Whether the manifest of this connector was already added or not
+     */
+    private boolean manifestAdded = false;
+
+    /**
      * Class constructor.
      *
      * @param name                The connector name.
@@ -104,10 +109,9 @@ public class ConnectorMetadata implements IMetadata {
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations) {
+            Set<Operations> supportedOperations) throws ManifestException {
         this(name, version, dataStoreRefs, clusterProperties, Status.OFFLINE, null, requiredProperties,
-                optionalProperties,
-                supportedOperations);
+                optionalProperties, supportedOperations);
     }
 
     /**
@@ -129,9 +133,14 @@ public class ConnectorMetadata implements IMetadata {
             String actorRef,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations) {
+            Set<Operations> supportedOperations) throws ManifestException {
 
-        this.name = name;
+        if(name.getName().isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
+        } else {
+            this.name = name;
+        }
+
         this.version = version;
 
         if(dataStoreRefs == null){
@@ -184,17 +193,20 @@ public class ConnectorMetadata implements IMetadata {
         if (requiredProperties != null) {
             this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
         } else {
-            this.requiredProperties = null;
+            this.requiredProperties = new HashSet<>();
         }
 
         if (optionalProperties != null) {
             this.optionalProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties);
         } else {
-            this.optionalProperties = null;
+            this.optionalProperties = new HashSet<>();
         }
 
-        this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
-        this.status = Status.OFFLINE;
+        if(supportedOperations != null){
+            this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
+        } else {
+            this.supportedOperations = new HashSet<>();
+        }
 
         this.status = Status.OFFLINE;
     }
@@ -403,6 +415,14 @@ public class ConnectorMetadata implements IMetadata {
      */
     public void setSupportedOperations(List<String> supportedOperations) throws ManifestException {
         this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
+    }
+
+    public boolean isManifestAdded() {
+        return manifestAdded;
+    }
+
+    public void setManifestAdded(boolean manifestAdded) {
+        this.manifestAdded = manifestAdded;
     }
 
     /**

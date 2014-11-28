@@ -30,6 +30,7 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -101,7 +102,7 @@ public class Coordinator implements Serializable {
      * @param workflow The management workflow.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
-    public Result executeManagementOperation(ManagementOperation workflow) {
+    public Result executeManagementOperation(ManagementOperation workflow) throws ManifestException {
         Result result = Result.createExecutionErrorResult("Unrecognized management operation.");
 
         if (AttachCluster.class.isInstance(workflow)) {
@@ -135,7 +136,7 @@ public class Coordinator implements Serializable {
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistAttachCluster(ClusterName clusterName, DataStoreName datastoreName,
-            Map<Selector, Selector> options) {
+            Map<Selector, Selector> options) throws ManifestException {
 
         // Create and persist Cluster metadata
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, datastoreName, options,

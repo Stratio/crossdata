@@ -30,6 +30,7 @@ Table of contents
         -   [CREATE CATALOG](#create-catalog)
         -   [ALTER CATALOG](#alter-catalog)
         -   [DROP CATALOG](#drop-catalog)
+        -   [USE] (#use)
         -   [CREATE TABLE](#create-table)
         -   [ALTER TABLE] (#alter-table)
         -   [UPDATE TABLE] (#update-table)

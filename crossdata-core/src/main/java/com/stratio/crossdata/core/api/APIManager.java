@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -662,25 +663,35 @@ public class APIManager {
         ConnectorMetadata connectorMetadata;
 
         if (MetadataManager.MANAGER.exists(name)) {
+
             connectorMetadata = MetadataManager.MANAGER.getConnector(name);
+
+            if(connectorMetadata.isManifestAdded()){
+                throw new ManifestException(new ExecutionException("Connector " + name + " was already added"));
+            }
+
             connectorMetadata.setVersion(version);
             connectorMetadata.setDataStoreRefs(
                     ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs
                             .getDataStoreName()));
-            connectorMetadata.setRequiredProperties((requiredProperties == null) ? null : ManifestHelper
-                    .convertManifestPropertiesToMetadataProperties(requiredProperties.getProperty()));
-            connectorMetadata.setOptionalProperties((optionalProperties == null) ? null : ManifestHelper
-                    .convertManifestPropertiesToMetadataProperties(optionalProperties.getProperty()));
+            connectorMetadata.setRequiredProperties((requiredProperties == null) ?
+                    new HashSet<PropertyType>() :
+                    ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties.getProperty()));
+            connectorMetadata.setOptionalProperties((optionalProperties == null) ?
+                    new HashSet<PropertyType>() :
+                    ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties.getProperty()));
             connectorMetadata.setSupportedOperations(supportedOperations.getOperation());
         } else {
             connectorMetadata = new ConnectorMetadata(
                     name,
                     version,
-                    (dataStoreRefs == null) ? null : dataStoreRefs.getDataStoreName(),
-                    (requiredProperties == null) ? null : requiredProperties.getProperty(),
-                    (optionalProperties == null) ? null : optionalProperties.getProperty(),
-                    (supportedOperations == null) ? null : supportedOperations.getOperation());
+                    (dataStoreRefs == null) ? new ArrayList<String>() : dataStoreRefs.getDataStoreName(),
+                    (requiredProperties == null) ? new ArrayList<PropertyType>() : requiredProperties.getProperty(),
+                    (optionalProperties == null) ? new ArrayList<PropertyType>() : optionalProperties.getProperty(),
+                    (supportedOperations == null) ? new ArrayList<String>() : supportedOperations.getOperation());
         }
+
+        connectorMetadata.setManifestAdded(true);
 
         // Persist
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);

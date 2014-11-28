@@ -35,6 +35,7 @@ import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
@@ -72,7 +73,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
     private static final Logger LOG = Logger.getLogger(ExplainPlanAPIManagerTest.class);
 
     @BeforeClass
-    public void setUp() {
+    public void setUp() throws ManifestException {
         super.setUp();
         DataStoreName dataStoreName = createTestDatastore();
 

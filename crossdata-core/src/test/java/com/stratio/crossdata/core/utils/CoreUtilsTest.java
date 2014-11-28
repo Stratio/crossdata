@@ -11,6 +11,7 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
@@ -25,7 +26,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
     private TableName table;
 
     @BeforeClass
-    public void setUp() {
+    public void setUp() throws ManifestException {
         super.setUp();
         createTestDatastore();
         createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));

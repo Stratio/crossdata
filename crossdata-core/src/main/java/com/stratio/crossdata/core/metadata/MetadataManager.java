@@ -45,6 +45,7 @@ import com.stratio.crossdata.common.data.NameType;
 import com.stratio.crossdata.common.data.NodeName;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -576,14 +577,14 @@ public enum MetadataManager {
      * @param name Name for the selected connector.
      * @param actorRef Actor reference URI.
      */
-    public void addConnectorRef(ConnectorName name, String actorRef) {
+    public void addConnectorRef(ConnectorName name, String actorRef) throws ManifestException {
         if (!exists(name)) {
             String version = null;
-            Set<DataStoreName> dataStoreRefs = null;
-            Map<ClusterName, Map<Selector, Selector>> clusterProperties = null;
-            Set<PropertyType> requiredProperties = null;
-            Set<PropertyType> optionalProperties = null;
-            Set<Operations> supportedOperations = null;
+            Set<DataStoreName> dataStoreRefs = new HashSet<>();
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
+            Set<PropertyType> requiredProperties = new HashSet<>();
+            Set<PropertyType> optionalProperties = new HashSet<>();
+            Set<Operations> supportedOperations = new HashSet<>();
             ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
                     clusterProperties, requiredProperties, optionalProperties, supportedOperations);
             connectorMetadata.setActorRef(actorRef);

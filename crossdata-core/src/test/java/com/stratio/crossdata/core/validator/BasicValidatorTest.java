@@ -68,7 +68,7 @@ public class BasicValidatorTest {
     private static String path = "";
 
     @BeforeClass
-    public static void setUpBeforeClass() {
+    public static void setUpBeforeClass() throws ManifestException {
         GridInitializer gridInitializer = Grid.initializer();
         gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
         path = "/tmp/metadatastore" + UUID.randomUUID();
@@ -189,7 +189,7 @@ public class BasicValidatorTest {
         return dataStoreMetadata;
     }
 
-    private static ClusterMetadata createClusterMetadata() {
+    private static ClusterMetadata createClusterMetadata() throws ManifestException {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ConnectorAttachedMetadata connectorAttachedMetadata = new ConnectorAttachedMetadata(
                 new ConnectorName("CassandraConnector"), new ClusterName("cluster"), null);

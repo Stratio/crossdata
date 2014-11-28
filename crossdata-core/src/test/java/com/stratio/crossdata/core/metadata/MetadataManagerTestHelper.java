@@ -73,7 +73,7 @@ public class MetadataManagerTestHelper {
     private String path = "";
 
     @BeforeClass
-    public void setUp() {
+    public void setUp() throws ManifestException {
         initializeGrid();
         //MetadataManager
         Map<FirstLevelName, IMetadata> metadataMap = Grid.INSTANCE.map("crossdata-test");
@@ -164,7 +164,7 @@ public class MetadataManagerTestHelper {
      * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
-            String actorRef) {
+            String actorRef) throws ManifestException {
         final String version = "0.1.1";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
@@ -186,7 +186,7 @@ public class MetadataManagerTestHelper {
      */
     public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
             Set<Operations> options,
-            String actorRef) {
+            String actorRef) throws ManifestException {
         final String version = "0.1.1";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
@@ -206,7 +206,7 @@ public class MetadataManagerTestHelper {
      * @param name          The name of the cluster.
      * @param dataStoreName The backend dataStore.
      */
-    public ClusterName createTestCluster(String name, DataStoreName dataStoreName) {
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName) throws ManifestException {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
@@ -223,7 +223,8 @@ public class MetadataManagerTestHelper {
      * @param name          The name of the cluster.
      * @param dataStoreName The backend dataStore.
      */
-    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName ... connectorNames) {
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName ... connectorNames)
+            throws ManifestException {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
