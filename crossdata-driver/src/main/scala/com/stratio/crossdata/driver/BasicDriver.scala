@@ -120,7 +120,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
         throw new ConnectionException(errorResult.getErrorMessage)
       }
       case connectResult: DisconnectResult => {
-        userId = ""
+        userId = connectResult.getSessionId
       }
     }
   }

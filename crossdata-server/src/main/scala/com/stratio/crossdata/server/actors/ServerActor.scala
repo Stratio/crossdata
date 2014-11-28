@@ -23,7 +23,7 @@ import java.util.UUID
 import akka.actor.{Address, Actor, Props, ReceiveTimeout}
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
-import com.stratio.crossdata.common.result.{ConnectResult,Result}
+import com.stratio.crossdata.common.result.{DisconnectResult, ConnectResult, Result}
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.config.ServerConfig
@@ -66,7 +66,7 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
     }
     case Disconnect(user) => {
       logger.info("Goodbye " + user + ".")
-      //sender ! DisconnectResult.createDisconnectResult(user)
+      sender ! DisconnectResult.createDisconnectResult(user)
     }
     case cmd: Command => {
       logger.info("API Command call " + cmd.commandType)
