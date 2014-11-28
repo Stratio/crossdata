@@ -44,6 +44,7 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
@@ -153,7 +154,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
     }
 
     @BeforeClass
-    public void setUp() {
+    public void setUp() throws ManifestException {
         super.setUp();
         DataStoreName dataStoreName = createTestDatastore();
 
@@ -582,9 +583,18 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Set<Operations> operations = new HashSet<>();
         operations.add(Operations.INSERT);
         operations.add(Operations.INSERT_IF_NOT_EXISTS);
-        ConnectorMetadata connectorMetadata = createTestConnector("cassandraConnector", dataStoreName,
-                new HashSet<ClusterName>(), operations, "1");
-        createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
+        ConnectorMetadata connectorMetadata = null;
+        try {
+            connectorMetadata = createTestConnector("cassandraConnector", dataStoreName,
+                    new HashSet<ClusterName>(), operations, "1");
+        } catch (ManifestException e) {
+            fail();
+        }
+        try {
+            createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
+        } catch (ManifestException e) {
+            fail();
+        }
 
         String[] columnNames = { "name", "gender", "age", "bool", "phrase", "email" };
         ColumnType[] columnTypes = { ColumnType.TEXT, ColumnType.TEXT, ColumnType.INT, ColumnType.BOOLEAN,

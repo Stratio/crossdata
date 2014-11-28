@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.metadata;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -66,19 +67,19 @@ public class DataStoreMetadata implements IMetadata {
         if(requiredProperties != null){
             this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
         } else {
-            this.requiredProperties = null;
+            this.requiredProperties = new HashSet<>();
         }
 
         if(othersProperties != null){
             this.othersProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(othersProperties);
         } else {
-            this.othersProperties = null;
+            this.othersProperties = new HashSet<>();
         }
 
         if(behaviors != null){
             this.behaviors = ManifestHelper.convertManifestBehaviorsToMetadataBehaviors(behaviors);
         } else {
-            this.behaviors = null;
+            this.behaviors = new HashSet<>();
         }
 
         this.clusterAttachedRefs = new HashMap<>();

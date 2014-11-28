@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,8 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
 public class ClusterMetadata implements IMetadata {
@@ -42,11 +45,28 @@ public class ClusterMetadata implements IMetadata {
     private Set<CatalogName> persistedCatalogs;
 
     public ClusterMetadata(ClusterName name, DataStoreName dataStoreRef, Map<Selector, Selector> options,
-            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) {
-        this.name = name;
-        this.options = options;
+            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs) throws ManifestException {
+
+        if(name.getName().isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
+        } else {
+            this.name = name;
+        }
+
+        if(options == null){
+            this.options = new HashMap<>();
+        } else {
+            this.options = options;
+        }
+
         this.dataStoreRef = dataStoreRef;
-        this.connectorAttachedRefs = connectorAttachedRefs;
+
+        if(connectorAttachedRefs == null){
+            this.connectorAttachedRefs = new HashMap<>();
+        } else {
+            this.connectorAttachedRefs = connectorAttachedRefs;
+        }
+
         this.persistedCatalogs = new HashSet<>();
     }
 

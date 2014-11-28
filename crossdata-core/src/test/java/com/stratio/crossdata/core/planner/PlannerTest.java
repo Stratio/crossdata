@@ -41,6 +41,7 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
@@ -90,7 +91,7 @@ public class PlannerTest extends PlannerBaseTest{
     private TableMetadata table3 = null;
 
     @BeforeClass
-    public void setUp() {
+    public void setUp() throws ManifestException {
         super.setUp();
         DataStoreName dataStoreName = createTestDatastore();
 

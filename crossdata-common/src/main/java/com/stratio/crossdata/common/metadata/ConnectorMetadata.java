@@ -104,7 +104,7 @@ public class ConnectorMetadata implements IMetadata {
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations) {
+            Set<Operations> supportedOperations) throws ManifestException {
         this(name, version, dataStoreRefs, clusterProperties, ConnectorStatus.OFFLINE, null, requiredProperties,
                 optionalProperties,
                 supportedOperations);
@@ -129,10 +129,19 @@ public class ConnectorMetadata implements IMetadata {
             String actorRef,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations) {
+            Set<Operations> supportedOperations) throws ManifestException {
 
-        this.name = name;
-        this.version = version;
+        if(name.getName().isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
+        } else {
+            this.name = name;
+        }
+
+        if(version.isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag version cannot be empty"));
+        } else {
+            this.version = version;
+        }
 
         if(dataStoreRefs == null){
             this.dataStoreRefs = new HashSet<>();

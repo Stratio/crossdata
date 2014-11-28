@@ -44,6 +44,7 @@ import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.NameType;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -541,7 +542,7 @@ public enum MetadataManager {
      * @param name Name for the selected connector.
      * @param actorRef Actor reference URI.
      */
-    public void addConnectorRef(ConnectorName name, String actorRef) {
+    public void addConnectorRef(ConnectorName name, String actorRef) throws ManifestException {
         if (!exists(name)) {
             String version = null;
             Set<DataStoreName> dataStoreRefs = null;
