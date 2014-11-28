@@ -137,11 +137,7 @@ public class ConnectorMetadata implements IMetadata {
             this.name = name;
         }
 
-        if(version.isEmpty()){
-            throw new ManifestException(new ExecutionException("Tag version cannot be empty"));
-        } else {
-            this.version = version;
-        }
+        this.version = version;
 
         if(dataStoreRefs == null){
             this.dataStoreRefs = new HashSet<>();

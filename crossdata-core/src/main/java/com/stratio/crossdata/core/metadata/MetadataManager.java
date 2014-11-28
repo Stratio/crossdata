@@ -545,11 +545,11 @@ public enum MetadataManager {
     public void addConnectorRef(ConnectorName name, String actorRef) throws ManifestException {
         if (!exists(name)) {
             String version = null;
-            Set<DataStoreName> dataStoreRefs = null;
-            Map<ClusterName, Map<Selector, Selector>> clusterProperties = null;
-            Set<PropertyType> requiredProperties = null;
-            Set<PropertyType> optionalProperties = null;
-            Set<Operations> supportedOperations = null;
+            Set<DataStoreName> dataStoreRefs = new HashSet<>();
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
+            Set<PropertyType> requiredProperties = new HashSet<>();
+            Set<PropertyType> optionalProperties = new HashSet<>();
+            Set<Operations> supportedOperations = new HashSet<>();
             ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
                     clusterProperties, requiredProperties, optionalProperties, supportedOperations);
             connectorMetadata.setActorRef(actorRef);
