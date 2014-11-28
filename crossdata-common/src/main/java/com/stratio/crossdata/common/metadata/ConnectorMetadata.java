@@ -91,6 +91,11 @@ public class ConnectorMetadata implements IMetadata {
     private Set<Operations> supportedOperations;
 
     /**
+     * Whether the manifest of this connector was already added or not
+     */
+    private boolean manifestAdded = false;
+
+    /**
      * Class constructor.
      *
      * @param name                The connector name.
@@ -411,6 +416,14 @@ public class ConnectorMetadata implements IMetadata {
      */
     public void setSupportedOperations(List<String> supportedOperations) throws ManifestException {
         this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
+    }
+
+    public boolean isManifestAdded() {
+        return manifestAdded;
+    }
+
+    public void setManifestAdded(boolean manifestAdded) {
+        this.manifestAdded = manifestAdded;
     }
 
     /**

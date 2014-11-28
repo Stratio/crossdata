@@ -451,7 +451,13 @@ public class APIManager {
         ConnectorMetadata connectorMetadata;
 
         if (MetadataManager.MANAGER.exists(name)) {
+
             connectorMetadata = MetadataManager.MANAGER.getConnector(name);
+
+            if(connectorMetadata.isManifestAdded()){
+                throw new ManifestException(new ExecutionException("Connector " + name + " was already added"));
+            }
+
             connectorMetadata.setVersion(version);
             connectorMetadata.setDataStoreRefs(
                     ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs
@@ -472,6 +478,8 @@ public class APIManager {
                     (optionalProperties == null) ? new ArrayList<PropertyType>() : optionalProperties.getProperty(),
                     (supportedOperations == null) ? new ArrayList<String>() : supportedOperations.getOperation());
         }
+
+        connectorMetadata.setManifestAdded(true);
 
         // Persist
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
