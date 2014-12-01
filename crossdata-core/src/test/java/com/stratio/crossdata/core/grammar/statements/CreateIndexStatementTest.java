@@ -47,8 +47,8 @@ public class CreateIndexStatementTest extends ParsingTest {
     @Test
     public void createIndexDefaultUsing() {
         String inputText = "CREATE DEFAULT INDEX index1 ON table1(field1, field2) USING \"com.company.INDEX.class\";";
-        String expectedText = "CREATE DEFAULT INDEX index1 ON <unknown_name>.table1(<unknown_name>.table1.field1, <unknown_name>.table1.field2) USING 'com.company.INDEX.class';";
-        testRegularStatement(inputText, expectedText, "createIndexDefaultUsing");
+        String expectedText = "CREATE DEFAULT INDEX index1 ON test.table1(test.table1.field1, test.table1.field2) USING 'com.company.INDEX.class';";
+        testRegularStatementSession("test", inputText, expectedText, "createIndexDefaultUsing");
     }
 
     @Test
@@ -115,8 +115,8 @@ public class CreateIndexStatementTest extends ParsingTest {
     @Test
     public void createDefaultIndexLowercase() {
         String inputText = "create default INDEX index1 ON table1(field1, field2);";
-        String expectedText = "CREATE DEFAULT INDEX index1 ON <unknown_name>.table1(<unknown_name>.table1.field1, <unknown_name>.table1.field2);";
-        testRegularStatement(inputText, expectedText, "createDefaultIndexLowercase");
+        String expectedText = "CREATE DEFAULT INDEX index1 ON test.table1(test.table1.field1, test.table1.field2);";
+        testRegularStatementSession("test", inputText, expectedText, "createDefaultIndexLowercase");
     }
 
     @Test

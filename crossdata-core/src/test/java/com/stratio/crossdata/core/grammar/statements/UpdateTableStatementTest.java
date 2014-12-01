@@ -63,10 +63,10 @@ public class UpdateTableStatementTest extends ParsingTest {
                 + " field2 = 'value2' WHERE field3 = 'value3' AND field4 = 'value4'"
                 + " IF 'class' = 'transaction_value5';";
         String expectedText =
-                "UPDATE <unknown_name>.table1 USING 'TTL' = 400 SET <unknown_name>.table1.field1 = 'value1',"
-                        + " <unknown_name>.table1.field2 = 'value2' WHERE <unknown_name>.table1.field3 = 'value3' AND <unknown_name>.table1.field4 = 'value4'"
+                "UPDATE test.table1 USING 'TTL' = 400 SET test.table1.field1 = 'value1',"
+                        + " test.table1.field2 = 'value2' WHERE test.table1.field3 = 'value3' AND test.table1.field4 = 'value4'"
                         + " IF 'class' = 'transaction_value5';";
-        testRegularStatement(inputText, expectedText, "updateFull");
+        testRegularStatementSession("test", inputText, expectedText, "updateFull");
     }
 
     @Test

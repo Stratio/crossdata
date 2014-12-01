@@ -27,8 +27,8 @@ public class TruncateStatementTest extends ParsingTest {
     @Test
     public void truncateTable1() {
         String inputText = "TRUNCATE usersTable;";
-        String expectedText = "TRUNCATE <unknown_name>.usersTable;";
-        testRegularStatement(inputText, expectedText, "truncateTable1");
+        String expectedText = "TRUNCATE test.usersTable;";
+        testRegularStatementSession("test", inputText, expectedText, "truncateTable1");
     }
 
     @Test

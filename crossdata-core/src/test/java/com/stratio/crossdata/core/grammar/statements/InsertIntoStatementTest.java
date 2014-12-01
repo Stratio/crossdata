@@ -56,11 +56,11 @@ public class InsertIntoStatementTest extends ParsingTest {
 
     @Test
     public void insertInto2() {
-        String inputText =
+        String inputText = "[test], " +
                 "INSERT INTO tablename (column1, column2) VALUES ('value1', 'value2')"
                         + " IF NOT EXISTS USING 'TTL' = 10;";
         String expectText =
-                "INSERT INTO <unknown_name>.tablename (<unknown_name>.tablename.column1, <unknown_name>.tablename.column2) VALUES ('value1', 'value2')"
+                "INSERT INTO test.tablename (test.tablename.column1, test.tablename.column2) VALUES ('value1', 'value2')"
                         + " IF NOT EXISTS USING 'TTL' = 10;";
         testRegularStatement(inputText, expectText, "insertInto2");
     }
