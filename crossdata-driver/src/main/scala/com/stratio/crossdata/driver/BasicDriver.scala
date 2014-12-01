@@ -31,7 +31,7 @@ ErrorResult, Result, IDriverResultHandler}
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
-import com.stratio.crossdata.driver.utils.RetryPolitics
+import com.stratio.crossdata.driver.utils.{ManifestUtils, RetryPolitics}
 import org.apache.log4j.Logger
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 
@@ -187,7 +187,6 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     r
   }
 
-
   /**
    * List the existing catalogs in the underlying database.
    * @return A MetadataResult with a list of catalogs, or the object with hasError set
@@ -253,6 +252,24 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     } else {
       result.asInstanceOf[ErrorResult]
     }
+  }
+
+  @throws(classOf[ManifestException])
+  def addManifest(manifestType: Int, path: String): Result = {
+    // Create CrossdataManifest object from XML file
+    var manifest: CrossdataManifest = null
+
+    try {
+      manifest = ManifestUtils.parseFromXmlToManifest(
+        manifestType, path.replace(";", "").replace("\"", "").replace("'", ""))
+    }
+    catch {
+      case e: Any => {
+        logger.error("CrossdataManifest couldn't be parsed", e)
+        throw new ManifestException(e)
+      }
+    }
+    addManifest(manifest)
   }
 
   /**

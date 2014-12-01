@@ -673,31 +673,23 @@ public class Shell {
             return "ERROR: Unknown type: " + tokens[1];
         }
 
-        // Create CrossdataManifest object from XML file
-        CrossdataManifest manifest;
-        try {
-            manifest = ConsoleUtils.parseFromXmlToManifest(typeManifest,
-                    tokens[2].replace(";", "").replace("\"", "").replace("'", ""));
-        } catch (ManifestException | FileNotFoundException e) {
-            LOG.error("CrossdataManifest couldn't be parsed", e);
-            return null;
-        }
-
         long queryStart = System.currentTimeMillis();
-        long queryEnd = queryStart;
-        Result crossDataResult;
-
+        long queryEnd;
+        Result crossdataResult;
         try {
-            crossDataResult = crossdataDriver.addManifest(manifest);
+            crossdataResult = crossdataDriver.addManifest(
+                    typeManifest,
+                    tokens[2]);
         } catch (ManifestException e) {
             LOG.error("CrossdataManifest couldn't be parsed", e);
             return null;
         }
+
         queryEnd = System.currentTimeMillis();
-        updatePrompt(crossDataResult);
+        updatePrompt(crossdataResult);
         LOG.info("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
-        if(crossDataResult instanceof ErrorResult){
-            result = "Result: " + ConsoleUtils.stringResult(crossDataResult);
+        if(crossdataResult instanceof ErrorResult){
+            result = "Result: " + ConsoleUtils.stringResult(crossdataResult);
         }
         return result;
     }

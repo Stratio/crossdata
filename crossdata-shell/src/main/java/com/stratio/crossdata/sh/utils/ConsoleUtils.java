@@ -22,10 +22,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.ParseException;
@@ -38,28 +36,13 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
-import org.xml.sax.SAXException;
 
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
-import com.stratio.crossdata.common.exceptions.ManifestException;
-import com.stratio.crossdata.common.manifest.ConnectorFactory;
-import com.stratio.crossdata.common.manifest.ConnectorType;
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
-import com.stratio.crossdata.common.manifest.DataStoreFactory;
-import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
@@ -87,9 +70,6 @@ public final class ConsoleUtils {
      * Number of days a history entry is maintained.
      */
     private static final int DAYS_HISTORY_ENTRY_VALID = 30;
-
-    private static final String DATASTORE_SCHEMA_PATH = "/com/stratio/crossdata/connector/DataStoreDefinition.xsd";
-    private static final String CONNECTOR_SCHEMA_PATH = "/com/stratio/crossdata/connector/ConnectorDefinition.xsd";
 
     /**
      * Private class constructor as all methods are static.
@@ -327,74 +307,4 @@ public final class ConsoleUtils {
         }
     }
 
-    /**
-     * Parse an XML document into a {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
-     * @param manifestType The type of manifest.
-     * @param path The XML path.
-     * @return A {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
-     * @throws ManifestException If the XML is not valid.
-     * @throws FileNotFoundException If the XML file does not exists.
-     */
-    public static CrossdataManifest parseFromXmlToManifest(int manifestType, String path) throws
-            ManifestException, FileNotFoundException {
-        if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
-            return parseFromXmlToDataStoreManifest(new FileInputStream(path));
-        } else {
-            return parseFromXmlToConnectorManifest(new FileInputStream(path));
-        }
-    }
-
-    /**
-     * Parse an XML document into a {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
-     * @param manifestType The type of manifest.
-     * @param path The {@link java.io.InputStream} to retrieve the XML.
-     * @return A {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
-     * @throws ManifestException If the XML is not valid.
-     */
-    public static CrossdataManifest parseFromXmlToManifest(int manifestType, InputStream path) throws
-            ManifestException {
-        if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
-            return parseFromXmlToDataStoreManifest(path);
-        } else {
-            return parseFromXmlToConnectorManifest(path);
-        }
-    }
-
-    private static DataStoreType parseFromXmlToDataStoreManifest(InputStream path)
-            throws ManifestException {
-        try {
-            SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
-            Schema schema = sf.newSchema(ConsoleUtils.class.getResource(DATASTORE_SCHEMA_PATH));
-
-            JAXBContext jaxbContext = JAXBContext.newInstance(DataStoreFactory.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-            unmarshaller.setSchema(schema);
-
-            JAXBElement<DataStoreType> unmarshalledDataStore = (JAXBElement<DataStoreType>) unmarshaller
-                    .unmarshal(path);
-            return unmarshalledDataStore.getValue();
-        } catch (JAXBException | SAXException e) {
-            throw new ManifestException(e);
-        }
-    }
-
-    private static CrossdataManifest parseFromXmlToConnectorManifest(InputStream path) throws ManifestException {
-        try {
-            SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = sf.newSchema(ConsoleUtils.class.getResource(CONNECTOR_SCHEMA_PATH));
-
-            JAXBContext jaxbContext = JAXBContext.newInstance(ConnectorFactory.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-            unmarshaller.setSchema(schema);
-
-            JAXBElement<ConnectorType> unmarshalledDataStore = (JAXBElement<ConnectorType>) unmarshaller
-                    .unmarshal(path);
-            return unmarshalledDataStore.getValue();
-        } catch (JAXBException | SAXException e) {
-            throw new ManifestException(e);
-        }
-    }
 }
