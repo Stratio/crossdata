@@ -38,6 +38,7 @@ import com.stratio.crossdata.common.manifest.CrossdataManifest
 
 import scala.concurrent.duration._
 import com.stratio.crossdata.common.data.{DataStoreName, ConnectorName}
+import akka.cluster.Cluster
 
 object BasicDriver extends DriverConfig {
   /**
@@ -89,7 +90,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
-   * Release connection to MetaServer.
+   * Release connection to CrossdataServer.
    * @param user Login to the user (Audit only).
    * @return ConnectResult.
    */
@@ -120,7 +121,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
         throw new ConnectionException(errorResult.getErrorMessage)
       }
       case connectResult: DisconnectResult => {
-        userId = connectResult.getSessionId
+        userId = ""
       }
     }
   }

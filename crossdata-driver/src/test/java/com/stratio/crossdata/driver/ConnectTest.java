@@ -40,8 +40,7 @@ public class ConnectTest extends DriverParentTest {
         try {
             crossDataResult = driver.connect("TEST_USER");
         } catch (ConnectionException e) {
-            e.printStackTrace();
-            fail("Exception not expected");
+            fail("Exception not expected: " + System.lineSeparator() + e.getMessage());
         }
         assertFalse(crossDataResult.hasError());
         ConnectResult r = ConnectResult.class.cast(crossDataResult);
