@@ -23,12 +23,11 @@ import java.util.UUID
 import akka.actor.{ActorSelection, ActorSystem}
 import akka.contrib.pattern.ClusterClient
 import akka.pattern.ask
-import com.stratio.crossdata.common.ask.{APICommand, Command, Query, Connect}
+import com.stratio.crossdata.common.ask.APICommand
 import com.stratio.crossdata.common.exceptions.{ManifestException, UnsupportedException, ExecutionException,
 ValidationException, ParsingException, ConnectionException}
 import com.stratio.crossdata.common.result.{CommandResult, MetadataResult, DisconnectResult, ConnectResult,
 ErrorResult, Result, IDriverResultHandler}
-import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
@@ -42,6 +41,7 @@ import com.stratio.crossdata.common.ask.Connect
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.common.ask.Command
 import com.stratio.crossdata.common.ask.Query
+import com.stratio.crossdata.common.data.{DataStoreName, ConnectorName}
 
 object BasicDriver extends DriverConfig {
   /**
@@ -139,7 +139,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
         throw new ConnectionException(errorResult.getErrorMessage)
       }
       case connectResult: DisconnectResult => {
-        userId = connectResult.getSessionId
+        userId = ""
       }
     }
   }
