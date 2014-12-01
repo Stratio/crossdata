@@ -23,16 +23,15 @@ import java.util.UUID
 import akka.actor.{ActorSelection, ActorSystem}
 import akka.contrib.pattern.ClusterClient
 import akka.pattern.ask
-import com.stratio.crossdata.common.ask.{APICommand, Command, Query, Connect}
+import com.stratio.crossdata.common.ask.APICommand
 import com.stratio.crossdata.common.exceptions.{ManifestException, UnsupportedException, ExecutionException,
 ValidationException, ParsingException, ConnectionException}
 import com.stratio.crossdata.common.result.{CommandResult, MetadataResult, DisconnectResult, ConnectResult,
 ErrorResult, Result, IDriverResultHandler}
-import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
-import com.stratio.crossdata.driver.utils.RetryPolitics
+import com.stratio.crossdata.driver.utils.{ManifestUtils, RetryPolitics}
 import org.apache.log4j.Logger
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 
@@ -254,9 +253,22 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     }
   }
 
+  @throws(classOf[ManifestException])
   def addManifest(manifestType: Int, path: String): Result = {
+    // Create CrossdataManifest object from XML file
+    var manifest: CrossdataManifest = null
 
-    addManifest()
+    try {
+      manifest = ManifestUtils.parseFromXmlToManifest(
+        manifestType, path.replace(";", "").replace("\"", "").replace("'", ""))
+    }
+    catch {
+      case e: Any => {
+        logger.error("CrossdataManifest couldn't be parsed", e)
+        throw new ManifestException(e)
+      }
+    }
+    addManifest(manifest)
   }
 
   /**

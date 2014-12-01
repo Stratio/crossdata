@@ -23,10 +23,10 @@ import static org.testng.Assert.fail;
 
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.exceptions.ManifestException;
-import com.stratio.crossdata.sh.utils.ConsoleUtils;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
+import com.stratio.crossdata.driver.utils.ManifestUtils;
 
 public class CrossdataManifestTest {
 
@@ -35,7 +35,7 @@ public class CrossdataManifestTest {
 
         CrossdataManifest manifest = null;
         try {
-            manifest = ConsoleUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_DATASTORE,
+            manifest = ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_DATASTORE,
                     getClass().getResourceAsStream("/com/stratio/crossdata/connector/DataStoreDefinition.xml"));
         } catch (ManifestException e) {
             fail("CrossdataManifest validation failed", e);
@@ -88,7 +88,7 @@ public class CrossdataManifestTest {
 
         CrossdataManifest manifest = null;
         try {
-            manifest = ConsoleUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_CONNECTOR,
+            manifest = ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_CONNECTOR,
                     getClass().getResourceAsStream("/com/stratio/crossdata/connector/ConnectorDefinition.xml"));
         } catch (ManifestException e) {
             fail("CrossdataManifest validation failed", e);
