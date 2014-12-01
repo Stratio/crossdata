@@ -38,6 +38,7 @@ import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * Class that implements the {@link com.stratio.crossdata.common.connector.IMetadataEngine}.
@@ -72,6 +73,11 @@ public class InMemoryMetadataEngine implements IMetadataEngine{
         }else{
             throw new ExecutionException("No datastore connected to " + targetCluster);
         }
+    }
+
+    @Override public void alterCatalog(ClusterName targetCluster, CatalogName catalogName,
+            Map<Selector, Selector> options) throws ConnectorException {
+        throw new UnsupportedException("Alter Catalog not implemented yet");
     }
 
     @Override

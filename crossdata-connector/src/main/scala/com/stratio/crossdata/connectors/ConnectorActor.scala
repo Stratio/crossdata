@@ -301,15 +301,21 @@ ActorLogging with IResultHandler{
           metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
         (metadataOp.asInstanceOf[CreateCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG)
       }
+      case "AlterCatalog" => {
+        eng.alterCatalog(metadataOp.asInstanceOf[AlterCatalog].targetCluster,
+          metadataOp.asInstanceOf[AlterCatalog].catalogMetadata.getName,
+          metadataOp.asInstanceOf[AlterCatalog].catalogMetadata.getOptions)
+        (metadataOp.asInstanceOf[AlterCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG)
+      }
       case "CreateIndex" => {
        eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
         metadataOp.asInstanceOf[CreateIndex].indexMetadata)
         (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX)
       }
       case "DropCatalog" => {
-        eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
-          metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-        (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_CATALOG)
+        eng.dropCatalog(metadataOp.asInstanceOf[DropCatalog].targetCluster,
+          metadataOp.asInstanceOf[DropCatalog].catalogName)
+        (metadataOp.asInstanceOf[DropCatalog].queryId, MetadataResult.OPERATION_DROP_CATALOG)
       }
       case "DropIndex" => {
        eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)

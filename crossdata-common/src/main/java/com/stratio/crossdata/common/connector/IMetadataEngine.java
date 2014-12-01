@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.connector;
 
+import java.util.Map;
+
 import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -26,6 +28,7 @@ import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * Interface provided by a connector to access metadata related operations such as creating new
@@ -42,6 +45,9 @@ public interface IMetadataEngine {
      *                            supported by the connector or ExecutionException if the execution fails.
      */
     void createCatalog(ClusterName targetCluster, CatalogMetadata catalogMetadata)
+            throws ConnectorException;
+
+    void alterCatalog(ClusterName targetCluster, CatalogName catalogName, Map<Selector, Selector> options)
             throws ConnectorException;
 
     /**

@@ -725,6 +725,7 @@ public class Planner {
             metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.ALTER_CATALOG, ResultType.RESULTS);
 
             metadataWorkflow.setCatalogMetadata(catalogMetadata);
+            metadataWorkflow.setCatalogName(catalogMetadata.getName());
 
         } else if (metadataStatement instanceof CreateIndexStatement) {
 
