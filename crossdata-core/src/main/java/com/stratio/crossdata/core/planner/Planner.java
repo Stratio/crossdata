@@ -721,8 +721,10 @@ public class Planner {
             CatalogName catalog = alterCatalogStatement.getCatalogName();
             CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalog);
             catalogMetadata.setOptions(alterCatalogStatement.getOptions());
-            MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
+
             metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.ALTER_CATALOG, ResultType.RESULTS);
+
+            metadataWorkflow.setCatalogMetadata(catalogMetadata);
 
         } else if (metadataStatement instanceof CreateIndexStatement) {
 

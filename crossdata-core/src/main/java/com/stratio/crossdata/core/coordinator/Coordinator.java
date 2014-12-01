@@ -81,6 +81,8 @@ public class Coordinator implements Serializable {
         case CREATE_TABLE:
             persistCreateTable(metadataWorkflow.getTableMetadata());
             break;
+        case ALTER_CATALOG:
+            persistAlterCatalog(metadataWorkflow.getCatalogMetadata());
         case DROP_CATALOG:
             persistDropCatalog(metadataWorkflow.getCatalogName(), true);
             break;
@@ -207,6 +209,10 @@ public class Coordinator implements Serializable {
      */
     public void persistCreateCatalog(CatalogMetadata catalog) {
         MetadataManager.MANAGER.createCatalog(catalog);
+    }
+
+    public void persistAlterCatalog(CatalogMetadata catalog) {
+        MetadataManager.MANAGER.createCatalog(catalog, false);
     }
 
     public void persistCreateCatalogInCluster(CatalogName catalog, ClusterName clusterName) {
