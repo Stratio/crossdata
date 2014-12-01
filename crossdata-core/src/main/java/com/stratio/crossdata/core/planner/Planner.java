@@ -979,15 +979,20 @@ public class Planner {
             List<Filter> filters = new ArrayList<>();
             Set<Operations> requiredOperations = new HashSet<>();
 
-            for(Relation relation: deleteStatement.getWhereClauses()){
-                Operations operation = getFilterOperation(
-                        tableMetadata,
-                        "DELETE",
-                        relation.getLeftTerm(),
-                        relation.getOperator());
-                Filter filter = new Filter(operation, relation);
-                filters.add(filter);
-                requiredOperations.add(filter.getOperation());
+            List<Relation> relations = deleteStatement.getWhereClauses();
+            if((relations == null) || (relations.isEmpty())){
+                requiredOperations.add(Operations.DELETE_NO_FILTERS);
+            } else {
+                for(Relation relation: deleteStatement.getWhereClauses()){
+                    Operations operation = getFilterOperation(
+                            tableMetadata,
+                            "DELETE",
+                            relation.getLeftTerm(),
+                            relation.getOperator());
+                    Filter filter = new Filter(operation, relation);
+                    filters.add(filter);
+                    requiredOperations.add(filter.getOperation());
+                }
             }
 
             actorRef = findAnyActorRef(clusterMetadata,
@@ -1014,15 +1019,20 @@ public class Planner {
             List<Filter> filters = new ArrayList<>();
             Set<Operations> requiredOperations = new HashSet<>();
 
-            for(Relation relation: updateTableStatement.getWhereClauses()){
-                Operations operation = getFilterOperation(
-                        tableMetadata,
-                        "UPDATE",
-                        relation.getLeftTerm(),
-                        relation.getOperator());
-                Filter filter = new Filter(operation, relation);
-                filters.add(filter);
-                requiredOperations.add(filter.getOperation());
+            List<Relation> relations = updateTableStatement.getWhereClauses();
+            if((relations == null) || (relations.isEmpty())){
+                requiredOperations.add(Operations.UPDATE_NO_FILTERS);
+            } else {
+                for(Relation relation: updateTableStatement.getWhereClauses()){
+                    Operations operation = getFilterOperation(
+                            tableMetadata,
+                            "UPDATE",
+                            relation.getLeftTerm(),
+                            relation.getOperator());
+                    Filter filter = new Filter(operation, relation);
+                    filters.add(filter);
+                    requiredOperations.add(filter.getOperation());
+                }
             }
 
             actorRef = findAnyActorRef(clusterMetadata,
@@ -1058,7 +1068,7 @@ public class Planner {
             storageWorkflow.setTableName(tableMetadata.getName());
 
         } else {
-            throw new PlanningException("Delete, Truncate and Update statements not supported yet");
+            throw new PlanningException("This statement is not supported yet");
         }
 
         return storageWorkflow;

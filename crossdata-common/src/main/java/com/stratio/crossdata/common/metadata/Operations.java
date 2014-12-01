@@ -54,6 +54,11 @@ public enum Operations {
     DROP_TABLE("DROP_TABLE"),
 
     /**
+     * The engine supports unconditional updates.
+     */
+    UPDATE_NO_FILTERS("UPDATE_NO_FILTERS"),
+
+    /**
      * The engine supports update operations on columns
      * that are part of the primary key with an equal operator.
      */
@@ -188,6 +193,11 @@ public enum Operations {
      * connector is capable of behaving as a "classic" insert.
      */
     INSERT_IF_NOT_EXISTS("INSERT_IF_NOT_EXISTS"),
+
+    /**
+     * The engine supports unconditional deletes.
+     */
+    DELETE_NO_FILTERS("DELETE_NO_FILTERS"),
 
     /**
      * The engine supports delete operations on columns

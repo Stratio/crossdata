@@ -448,7 +448,8 @@ deleteStatement returns [DeleteStatement ds]
 		$ds = new DeleteStatement(tablename, whereClauses);
 	}:
 	T_DELETE T_FROM tablename=getTableName
-	T_WHERE whereClauses=getWhereClauses[tablename] { if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name"); }
+	(T_WHERE whereClauses=getWhereClauses[tablename]
+	    { if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name"); })?
 ;
 
 //DROP INDEX IF EXISTS index_name;
