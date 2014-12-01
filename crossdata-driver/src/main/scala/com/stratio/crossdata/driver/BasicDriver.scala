@@ -187,7 +187,6 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     r
   }
 
-
   /**
    * List the existing catalogs in the underlying database.
    * @return A MetadataResult with a list of catalogs, or the object with hasError set
@@ -253,6 +252,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     } else {
       result.asInstanceOf[ErrorResult]
     }
+  }
+
+  def addManifest(manifestType: Int, path: String): Result = {
+
+    addManifest()
   }
 
   /**
