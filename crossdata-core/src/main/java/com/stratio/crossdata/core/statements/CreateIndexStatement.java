@@ -227,9 +227,6 @@ public class CreateIndexStatement extends IndexStatement {
             result = sb.toString();
         } else {
             result = name.getName();
-            if (IndexType.FULL_TEXT.equals(type)) {
-                result = "stratio_fulltext_" + name.getName();
-            }
         }
         return result;
     }

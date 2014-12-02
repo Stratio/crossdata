@@ -1371,8 +1371,8 @@ public class Planner {
             }
         }
         if (!found) {
-            throw new PlanningException("There is no actorRef for Operations: " + System.lineSeparator() +
-                    Arrays.toString(requiredOperations));
+            throw new PlanningException("There is no any attached connector supporting: " +
+                    System.lineSeparator() + Arrays.toString(requiredOperations));
         }
 
         return actorRef;
