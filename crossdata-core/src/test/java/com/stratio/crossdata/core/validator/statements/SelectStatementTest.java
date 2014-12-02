@@ -47,8 +47,8 @@ import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
-import com.stratio.crossdata.core.structures.OrderBy;
-import com.stratio.crossdata.core.structures.OrderDirection;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.OrderDirection;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -1156,13 +1156,11 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Selector> selectorListOrderBy = new ArrayList<>();
+        List<OrderByClause> orderByClauseClauses = new ArrayList<>();
         Selector selectorOrderBy = new ColumnSelector(new ColumnName("demo","users","age"));
-        selectorListOrderBy.add(selectorOrderBy);
+        orderByClauseClauses.add(new OrderByClause(OrderDirection.ASC, selectorOrderBy));
 
-        OrderBy orderBy = new OrderBy(OrderDirection.ASC,selectorListOrderBy);
-
-        selectStatement.setOrderBy(orderBy);
+        selectStatement.setOrderByClauses(orderByClauseClauses);
 
         Validator validator = new Validator();
 
@@ -1172,14 +1170,12 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not supported yet");
-        } catch (ValidationException e) {
             Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
-
-
     }
 
     @Test
@@ -1196,15 +1192,13 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Selector> selectorListOrderBy = new ArrayList<>();
-        Selector selectorOrderBy = new ColumnSelector(new ColumnName("demo","users","gender"));
+        List<OrderByClause> orderByClauseClauses = new ArrayList<>();
+        Selector selectorOrderBy1 = new ColumnSelector(new ColumnName("demo","users","gender"));
         Selector selectorOrderBy2 = new ColumnSelector(new ColumnName("demo","users","age"));
-        selectorListOrderBy.add(selectorOrderBy);
-        selectorListOrderBy.add(selectorOrderBy2);
+        orderByClauseClauses.add(new OrderByClause(OrderDirection.DESC, selectorOrderBy1));
+        orderByClauseClauses.add(new OrderByClause(OrderDirection.ASC, selectorOrderBy2));
 
-        OrderBy orderBy = new OrderBy(OrderDirection.ASC,selectorListOrderBy);
-
-        selectStatement.setOrderBy(orderBy);
+        selectStatement.setOrderByClauses(orderByClauseClauses);
 
         Validator validator = new Validator();
 
@@ -1214,9 +1208,9 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not supported yet");
-        } catch (ValidationException e) {
             Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            fail(e.getMessage());
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
@@ -1238,14 +1232,12 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Selector> selectorListOrderBy = new ArrayList<>();
+        List<OrderByClause> orderByClauseClauses = new ArrayList<>();
         Selector selectorOrderBy = new ColumnSelector(new ColumnName("demo","users","unknown"));
 
-        selectorListOrderBy.add(selectorOrderBy);
+        orderByClauseClauses.add(new OrderByClause(OrderDirection.ASC, selectorOrderBy));
 
-        OrderBy orderBy = new OrderBy(OrderDirection.ASC,selectorListOrderBy);
-
-        selectStatement.setOrderBy(orderBy);
+        selectStatement.setOrderByClauses(orderByClauseClauses);
 
         Validator validator = new Validator();
 

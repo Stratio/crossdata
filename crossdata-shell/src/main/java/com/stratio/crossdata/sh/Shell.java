@@ -496,7 +496,7 @@ public class Shell {
                     && !cmd.trim().toLowerCase().startsWith("quit")) {
                 cmd = console.readLine();
                 sb.append(cmd).append(" ");
-                toExecute = sb.toString().trim();
+                toExecute = sb.toString().replaceAll("\\s+", " ").trim();
                 if (toExecute.startsWith("//") || toExecute.startsWith("#")) {
                     LOG.debug("Comment: " + toExecute);
                     sb = new StringBuilder();

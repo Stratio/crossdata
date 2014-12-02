@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.structures;
+package com.stratio.crossdata.common.statements.structures;
 
 /**
  * Type direction in order result.

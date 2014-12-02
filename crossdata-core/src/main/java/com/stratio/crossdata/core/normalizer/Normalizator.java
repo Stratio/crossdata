@@ -52,9 +52,9 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
-import com.stratio.crossdata.core.structures.GroupBy;
+import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
-import com.stratio.crossdata.core.structures.OrderBy;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
 
 /**
  * Normalizator Class.
@@ -169,24 +169,23 @@ public class Normalizator {
     public void normalizeOrderBy()
             throws ValidationException {
 
-        //TODO: NOT SUPPORTED YET. REVIEW IN FUTURES RELEASES
-        OrderBy orderBy = ((SelectStatement) parsedQuery.getStatement()).getOrderBy();
+        List<OrderByClause> orderByClauseClauses = ((SelectStatement) parsedQuery.getStatement()).getOrderByClauses();
 
-        if (orderBy != null) {
-            normalizeOrderBy(orderBy);
-            fields.setOrderBy(orderBy);
-            throw new BadFormatException("ORDER BY not supported yet.");
+        if (orderByClauseClauses != null) {
+            normalizeOrderBy(orderByClauseClauses);
+            fields.setOrderByClauseClauses(orderByClauseClauses);
         }
     }
 
     /**
      * Normalize an specific order by of a parsed query.
-     * @param orderBy The order by
+     * @param orderByClauseClauses The order by
      * @throws ValidationException
      */
-    public void normalizeOrderBy(OrderBy orderBy)
+    public void normalizeOrderBy(List<OrderByClause> orderByClauseClauses)
             throws ValidationException {
-        for (Selector selector: orderBy.getSelectorList()) {
+        for (OrderByClause orderBy: orderByClauseClauses) {
+            Selector selector = orderBy.getSelector();
             switch (selector.getType()) {
             case COLUMN:
                 checkColumnSelector((ColumnSelector) selector);
@@ -232,10 +231,10 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeGroupBy() throws ValidationException {
-        GroupBy groupBy = ((SelectStatement) parsedQuery.getStatement()).getGroupBy();
-        if (groupBy != null) {
-            normalizeGroupBy(groupBy);
-            fields.setGroupBy(groupBy);
+        GroupByClause groupByClause = ((SelectStatement) parsedQuery.getStatement()).getGroupByClause();
+        if (groupByClause != null) {
+            normalizeGroupBy(groupByClause);
+            fields.setGroupByClause(groupByClause);
         }
     }
 
@@ -273,12 +272,12 @@ public class Normalizator {
 
     /**
      * Normalize an specific group by of a parsed query.
-     * @param groupBy
+     * @param groupByClause
      * @throws ValidationException
      */
-    public void normalizeGroupBy(GroupBy groupBy) throws ValidationException {
+    public void normalizeGroupBy(GroupByClause groupByClause) throws ValidationException {
         Set<ColumnName> columnNames = new HashSet<>();
-        for (Selector selector : groupBy.getSelectorIdentifier()) {
+        for (Selector selector : groupByClause.getSelectorIdentifier()) {
             checkFormatBySelectorIdentifier(selector, columnNames);
         }
         // Check if all columns are correct

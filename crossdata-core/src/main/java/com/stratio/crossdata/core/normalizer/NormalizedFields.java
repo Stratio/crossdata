@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.core.structures.GroupBy;
+import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -34,7 +34,7 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.structures.OrderBy;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
 
 public class NormalizedFields {
     private Set<ColumnName> columnNames = new HashSet<>();
@@ -46,8 +46,8 @@ public class NormalizedFields {
     // Join relations
     private InnerJoin join ;
     private List<Relation> where = new ArrayList<>();
-    private OrderBy orderBy = new OrderBy();
-    private GroupBy groupBy = new GroupBy();
+    private List<OrderByClause> orderByClauseClauses = new ArrayList<>();
+    private GroupByClause groupByClause = new GroupByClause();
 
     private List<TableMetadata> tablesMetadata = new ArrayList<>();
 
@@ -140,20 +140,20 @@ public class NormalizedFields {
         this.where = where;
     }
 
-    public OrderBy getOrderBy() {
-        return orderBy;
+    public List<OrderByClause> getOrderByClauseClauses() {
+        return orderByClauseClauses;
     }
 
-    public void setOrderBy(OrderBy orderBy) {
-        this.orderBy = orderBy;
+    public void setOrderByClauseClauses(List<OrderByClause> orderByClauseClauses) {
+        this.orderByClauseClauses = orderByClauseClauses;
     }
 
-    public GroupBy getGroupBy() {
-        return groupBy;
+    public GroupByClause getGroupByClause() {
+        return groupByClause;
     }
 
-    public void setGroupBy(GroupBy groupBy) {
-        this.groupBy = groupBy;
+    public void setGroupByClause(GroupByClause groupByClause) {
+        this.groupByClause = groupByClause;
     }
 
     public List<TableMetadata> getTablesMetadata() {

@@ -16,61 +16,56 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.structures;
+package com.stratio.crossdata.common.statements.structures;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
- * OrderBy Class.
+ * OrderByClause Class.
  */
-public class OrderBy implements Serializable {
-    private List<Selector> selectorList = new ArrayList<>();
+public class OrderByClause implements Serializable {
+    private Selector selector;
     private OrderDirection direction = OrderDirection.ASC;
 
     /**
      * Constructor Class.
      */
-    public OrderBy() {
+    public OrderByClause() {
     }
 
     /**
      * Constructor Class.
-     * @param direction The order direction
-     * @param selectorList A list of Selectors
+     * @param direction The order direction.
+     * @param selector The selector.
      */
-    public OrderBy(OrderDirection direction,
-            List<Selector> selectorList) {
+    public OrderByClause(OrderDirection direction,
+            Selector selector) {
         this.direction = direction;
-        this.selectorList = selectorList;
+        this.selector = selector;
     }
 
     /**
      * Constructor Class.
-     * @param selectorList A list of Selectors
+     * @param selector The selector.
      */
-    public OrderBy(List<Selector> selectorList) {
-        this.selectorList = selectorList;
+    public OrderByClause(Selector selector) {
+        this.selector = selector;
     }
 
     /**
-     * Get a list of Selectors of the Group By.
-     * @return List of Selectors of the Group By.
+     * Get the Selector of the Group By.
+     * @return The Selector of the Group By.
      */
-    public List<Selector> getSelectorList() {
-        return selectorList;
+    public Selector getSelector() {
+        return selector;
     }
 
     /**
-     * Set the selector List of the Group By.
-     * @param selectorList The selector list
+     * Set the selector of the Group By.
+     * @param selector The selector.
      */
-    public void setSelectorList(List<Selector> selectorList) {
-        this.selectorList = selectorList;
+    public void setSelector(Selector selector) {
+        this.selector = selector;
     }
 
     /**
@@ -82,7 +77,7 @@ public class OrderBy implements Serializable {
     }
 
     /**
-     * Set the direction of the GroupBy.
+     * Set the direction of the GroupByClause.
      * @param direction
      */
     public void setDirection(OrderDirection direction) {
@@ -93,14 +88,7 @@ public class OrderBy implements Serializable {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        Iterator<Selector> iter = selectorList.iterator();
-
-        while (iter.hasNext()) {
-            sb.append(iter.next());
-            if (iter.hasNext()) {
-                sb.append(", ");
-            }
-        }
+        sb.append(selector);
 
         if (direction == OrderDirection.DESC) {
             sb.append(" DESC");

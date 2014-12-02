@@ -615,8 +615,8 @@ selectStatement returns [SelectStatement slctst]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses[null])?
     (T_WHERE {whereInc = true;} whereClauses=getWhereClauses[null])?
-    (T_ORDER T_BY {orderInc = true;} orderBy=getOrdering[null])?
-    (T_GROUP T_BY {groupInc = true;} groupBy=getGroupBy[null])?
+    (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
+    (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
         if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
@@ -628,9 +628,9 @@ selectStatement returns [SelectStatement slctst]
         if(whereInc)
              $slctst.setWhere(whereClauses);
         if(orderInc)
-             $slctst.setOrderBy(orderBy);
+             $slctst.setOrderByClauses(orderByClauses);
         if(groupInc)
-             $slctst.setGroupBy(new GroupBy(groupBy));
+             $slctst.setGroupByClause(new GroupByClause(groupByClause));
         if(limitInc)
              $slctst.setLimit(Integer.parseInt($constant.text));
 
@@ -759,17 +759,21 @@ getMapType returns [ColumnType dataType]:
     T_MAP { $dataType = ColumnType.MAP; }
 ;
 
-getOrdering[TableName tablename] returns [OrderBy orderBy]
+getOrdering[TableName tablename] returns [List<OrderByClause> orderByClauses]
     @init{
-        List<Selector> selectorListOrder = new ArrayList<>();
-        OrderDirection direction = OrderDirection.ASC;
+        List<OrderByClause> sels = new ArrayList<>();
+        OrderDirection dir;
     }
     @after{
-        $orderBy = new OrderBy(direction, selectorListOrder);
+        $orderByClauses = sels;
     }:
-    ident1=getSelector[tablename] {selectorListOrder.add(ident1);}
-    (T_COMMA identN=getSelector[tablename] {selectorListOrder.add(identN);})*
-    (T_ASC | T_DESC { direction = OrderDirection.DESC; } )?
+    ident1=getSelector[tablename] {dir = OrderDirection.ASC;}
+        (T_ASC | T_DESC { dir = OrderDirection.DESC; } )?
+    {sels.add(new OrderByClause(dir, ident1));}
+    (T_COMMA identN=getSelector[tablename] {dir = OrderDirection.ASC;}
+        (T_ASC | T_DESC { dir = OrderDirection.DESC; } )?
+    {sels.add(new OrderByClause(dir, identN));}
+    )*
 ;
 
 getGroupBy[TableName tablename] returns [ArrayList<Selector> groups]

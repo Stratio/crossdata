@@ -257,14 +257,14 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         // ORDER BY
         List<Selector> selectorListOrder = new ArrayList<>();
         selectorListOrder.add(new ColumnSelector(new ColumnName(null, "year")));
-        OrderBy orderBy = new OrderBy(selectorListOrder);
-        selectStatement.setOrderBy(orderBy);
+        OrderByClause orderBy = new OrderByClause(selectorListOrder);
+        selectStatement.setOrderByClauses(orderBy);
 
         // GROUP BY
         List<Selector> groupBy = new ArrayList<>();
         groupBy.add(new ColumnSelector(new ColumnName(null, "colSales")));
         groupBy.add(new ColumnSelector(new ColumnName(null, "colExpenses")));
-        selectStatement.setGroupBy(new GroupBy(groupBy));
+        selectStatement.setGroupByClause(new GroupByClause(groupBy));
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -321,14 +321,14 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         // ORDER BY
         List<Selector> selectorListOrder = new ArrayList<>();
         selectorListOrder.add(new ColumnSelector(new ColumnName(null, "age")));
-        OrderBy orderBy = new OrderBy(selectorListOrder);
-        selectStatement.setOrderBy(orderBy);
+        OrderByClause orderBy = new OrderByClause(selectorListOrder);
+        selectStatement.setOrderByClauses(orderBy);
 
         // GROUP BY
         List<Selector> groupBy = new ArrayList<>();
         groupBy.add(new ColumnSelector(new ColumnName(null, "colSales")));
         groupBy.add(new ColumnSelector(new ColumnName(null, "colFee")));
-        selectStatement.setGroupBy(new GroupBy(groupBy));
+        selectStatement.setGroupByClause(new GroupByClause(groupBy));
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 

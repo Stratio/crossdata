@@ -23,16 +23,16 @@ import java.util.List;
 
 import com.stratio.crossdata.common.statements.structures.Selector;
 
-public class GroupBy implements Serializable {
+public class GroupByClause implements Serializable {
 
     private static final long serialVersionUID = 1946514142415876581L;
 
     private List<Selector> selectorIdentifier;
 
-    public GroupBy() {
+    public GroupByClause() {
     }
 
-    public GroupBy(
+    public GroupByClause(
             List<Selector> selectorIdentifier) {
         this.selectorIdentifier = selectorIdentifier;
     }

@@ -56,6 +56,7 @@ import com.stratio.crossdata.common.logicalplan.Join;
 import com.stratio.crossdata.common.logicalplan.Limit;
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
+import com.stratio.crossdata.common.logicalplan.OrderBy;
 import com.stratio.crossdata.common.logicalplan.PartialResults;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
@@ -555,10 +556,18 @@ public class Planner {
 
         // GROUP BY clause
         if(ss.isGroupInc()){
-            GroupBy groupBy = new GroupBy(Operations.SELECT_GROUP_BY, ss.getGroupBy().getSelectorIdentifier());
+            GroupBy groupBy = new GroupBy(Operations.SELECT_GROUP_BY, ss.getGroupByClause().getSelectorIdentifier());
             last.setNextStep(groupBy);
             groupBy.setPrevious(last);
             last = groupBy;
+        }
+
+        // ORDER BY clause
+        if(ss.isOrderInc()){
+            OrderBy orderBy = new OrderBy(Operations.SELECT_ORDER_BY, ss.getOrderByClauses());
+            last.setNextStep(orderBy);
+            orderBy.setPrevious(last);
+            last = orderBy;
         }
 
         //Add LIMIT clause

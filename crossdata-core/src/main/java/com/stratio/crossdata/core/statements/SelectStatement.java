@@ -29,9 +29,9 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.window.Window;
 import com.stratio.crossdata.common.utils.StringUtils;
-import com.stratio.crossdata.core.structures.GroupBy;
+import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
-import com.stratio.crossdata.core.structures.OrderBy;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
@@ -83,10 +83,10 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     private boolean groupInc = false;
     /**
-     * The {@link com.stratio.crossdata.core.structures.GroupBy} clause.
+     * The {@link com.stratio.crossdata.core.structures.GroupByClause} clause.
      */
-    private GroupBy groupBy = null;
-    private OrderBy orderBy = null;
+    private GroupByClause groupByClause = null;
+    private List<OrderByClause> orderByClauseClauses = new ArrayList<>();
     /**
      * Whether a LIMIT clause has been specified.
      */
@@ -212,20 +212,20 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     /**
      * Return GROUP BY clause.
      *
-     * @return list of {@link com.stratio.crossdata.core.structures.GroupBy}.
+     * @return list of {@link com.stratio.crossdata.core.structures.GroupByClause}.
      */
-    public GroupBy getGroupBy() {
-        return groupBy;
+    public GroupByClause getGroupByClause() {
+        return groupByClause;
     }
 
     /**
-     * Set the {@link com.stratio.crossdata.core.structures.GroupBy} clause.
+     * Set the {@link com.stratio.crossdata.core.structures.GroupByClause} clause.
      *
-     * @param groupBy The group by.
+     * @param groupByClause The group by.
      */
-    public void setGroupBy(GroupBy groupBy) {
+    public void setGroupByClause(GroupByClause groupByClause) {
         this.groupInc = true;
-        this.groupBy = groupBy;
+        this.groupByClause = groupByClause;
     }
 
     /**
@@ -318,10 +318,10 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(StringUtils.stringList(where, " AND "));
         }
         if (orderInc) {
-            sb.append(" ORDER BY ").append(orderBy);
+            sb.append(" ORDER BY ").append(orderByClauseClauses);
         }
         if (groupInc) {
-            sb.append(" GROUP BY ").append(StringUtils.stringList(groupBy.getSelectorIdentifier(), ", "));
+            sb.append(" GROUP BY ").append(StringUtils.stringList(groupByClause.getSelectorIdentifier(), ", "));
         }
         if (limitInc) {
             sb.append(" LIMIT ").append(limit);
@@ -336,13 +336,15 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
                 .VALIDATE_SELECT);
     }
 
-    public OrderBy getOrderBy() {
-        return orderBy;
+    public List<OrderByClause> getOrderByClauses() {
+        return orderByClauseClauses;
     }
 
-    public void setOrderBy(OrderBy orderBy) {
-        this.orderInc = true;
-        this.orderBy = orderBy;
+    public void setOrderByClauses(List<OrderByClause> orderByClauseClauses) {
+        if((orderByClauseClauses != null) && (!orderByClauseClauses.isEmpty())){
+            this.orderInc = true;
+            this.orderByClauseClauses = orderByClauseClauses;
+        }
     }
 
     @Override

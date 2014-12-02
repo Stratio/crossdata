@@ -279,7 +279,7 @@ public class SelectStatementTest extends ParsingTest {
                 "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
                         + "INNER JOIN test.tableCostumers ON <unknown_name>.<unknown_name>.AssistantId = <unknown_name>.<unknown_name>.clientId "
                         + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
-                        + "ORDER BY <unknown_name>.<unknown_name>.age "
+                        + "ORDER BY [<unknown_name>.<unknown_name>.age] "
                         + "GROUP BY <unknown_name>.<unknown_name>.gender;";
         testRegularStatement(inputText, expectedText, "selectStatementJoinComplex");
     }
@@ -546,12 +546,13 @@ public class SelectStatementTest extends ParsingTest {
         String inputText =
                 "[test], SELECT colSales, colRevenues FROM tableClients "
                         + "WHERE colCity = 'Madrid' "
-                        + "ORDER BY age "
+                        + "ORDER BY age DESC, rating ASC "
                         + "GROUP BY gender;";
         String expectedText =
                 "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
                         + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
-                        + "ORDER BY <unknown_name>.<unknown_name>.age "
+                        + "ORDER BY [<unknown_name>.<unknown_name>.age DESC, " +
+                                    "<unknown_name>.<unknown_name>.rating] "
                         + "GROUP BY <unknown_name>.<unknown_name>.gender;";
         testRegularStatement(inputText, expectedText, "selectComplex");
     }
