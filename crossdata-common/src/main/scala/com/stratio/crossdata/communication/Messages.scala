@@ -33,7 +33,7 @@ import com.stratio.crossdata.common.statements.structures.{Relation, Selector}
 case class ACK(queryId: String, status: QueryStatus) extends Serializable
 
 @SerialVersionUID(-4225642367894752659L)
-case class Connect(credentials: ICredentials, connectorClusterConfig: ConnectorClusterConfig) extends Serializable
+case class Connect(queryId: String, credentials: ICredentials, connectorClusterConfig: ConnectorClusterConfig) extends Serializable
 
 @SerialVersionUID(-2255642367894752659L)
 case class Reply(msg: String) extends Serializable

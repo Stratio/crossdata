@@ -65,7 +65,6 @@ object BasicDriver extends DriverConfig {
     logger.debug("ClusterName   --> " + clusterName)
     logger.debug("ClusterName   --> " + clusterActor)
     logger.debug("ClusterHosts  --> " + clusterHosts.map(_.toString).toArray.toString)
-    System.out.println(clusterHosts.map(_.toString))
     new BasicDriverConfig(new DriverSectionConfig(retryTimes, retryDuration.duration.toMillis),
       new ServerSectionConfig(clusterName, clusterActor, servers.map(_.toString).toArray))
   }

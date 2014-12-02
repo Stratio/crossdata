@@ -25,10 +25,10 @@ MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEv
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
-import com.stratio.crossdata.common.result.{Result, ConnectResult}
+import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{replyConnectorName, getConnectorName,Connect}
-import com.stratio.crossdata.core.execution.ExecutionManager
+import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
 
@@ -37,6 +37,7 @@ import scala.collection.mutable
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import java.util
 import com.stratio.crossdata.common.metadata.NodeMetadata
+import java.util.UUID
 
 object ConnectorManagerActor {
   def props(): Props = Props(new ConnectorManagerActor)
@@ -49,7 +50,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
   val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
   var connectorsAlreadyReset = false
 
-  log.info("Lifting coordinator actor")
+  log.info("Lifting connector manager actor")
 
   override def preStart(): Unit = {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
@@ -118,7 +119,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
 
           clusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
 
-          sender ! new Connect(null, clusterConfig)
+          sender ! new Connect(UUID.randomUUID().toString, null, clusterConfig)
         }
       }
       MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
@@ -127,6 +128,11 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
 
     case c: ConnectResult => {
       logger.info("Connect result from " + sender + " => " + c.getSessionId)
+      coordinatorActorRef ! c
+    }
+
+    case er: ErrorResult => {
+      coordinatorActorRef ! er
     }
 
     //Pass the message to the connectorActor to extract the member in the cluster

@@ -226,7 +226,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             connectorClusterConfig.setDataStoreName(datastoreName)
 
             val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(workflow1.getActorRef()))
-            connectorSelection ! new Connect(credentials, connectorClusterConfig)
+            connectorSelection ! new Connect(queryId, credentials, connectorClusterConfig)
 
             log.info("connectorOptions: " + connectorClusterConfig.getConnectorOptions.toString + " clusterOptions: " +
               connectorClusterConfig.getClusterOptions.toString)
@@ -308,10 +308,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         }
       }
     }
-
+/*
     case result: ConnectResult => {
       log.info("Connect result received from " + sender + " with SessionId = " + result.getSessionId);
     }
+*/
 
     case result: Result => {
       val queryId = result.getQueryId

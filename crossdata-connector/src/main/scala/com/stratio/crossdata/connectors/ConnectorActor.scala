@@ -23,7 +23,7 @@ import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
-import com.stratio.crossdata.common.exceptions.ExecutionException
+import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication._
 import org.apache.log4j.Logger
@@ -79,7 +79,6 @@ ActorLogging with IResultHandler{
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
-
     runningJobs.foreach {
       keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
     }
@@ -96,9 +95,20 @@ ActorLogging with IResultHandler{
     case connectRequest: com.stratio.crossdata.communication.Connect => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received connect command")
-      connector.connect(connectRequest.credentials, connectRequest.connectorClusterConfig)
-      this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
-      sender ! ConnectResult.createConnectResult("Connected successfully"); //TODO once persisted sessionId,
+      try {
+        connector.connect(connectRequest.credentials, connectRequest.connectorClusterConfig)
+        this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
+        val result = ConnectResult.createConnectResult("Connected successfully")
+        result.setQueryId(connectRequest.queryId)
+        sender ! result //TODO once persisted sessionId,
+      } catch {
+        case e: ConnectionException => {
+          val result = Result.createErrorResult(e)
+          result.setQueryId(connectRequest.queryId)
+          sender ! result
+        }
+      }
+
     }
     case disconnectRequest: com.stratio.crossdata.communication.DisconnectFromCluster => {
       logger.debug("->" + "Receiving MetadataRequest")
@@ -120,7 +130,6 @@ ActorLogging with IResultHandler{
       methodAsyncExecute(aex, sender)
     }
     case metadataOp: MetadataOperation => {
-
       method1(metadataOp, sender)
     }
     case result: Result =>
@@ -179,7 +188,6 @@ ActorLogging with IResultHandler{
   }
 
   private def methodExecute(ex:Execute, s:ActorRef): Unit ={
-
     try {
       runningJobs.put(ex.queryId, s)
       val result = connector.getQueryEngine().execute(ex.workflow)
