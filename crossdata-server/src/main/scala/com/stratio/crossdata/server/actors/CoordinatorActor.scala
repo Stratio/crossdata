@@ -159,7 +159,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               var result:MetadataResult = null
 
               if(workflow1.getExecutionType == ExecutionType.CREATE_CATALOG){
-                coordinator.persistCreateCatalog(workflow1.getCatalogMetadata)
+                coordinator.persistCreateCatalog(workflow1.getCatalogMetadata, workflow1.isIfNotExists)
                 executionInfo.setQueryStatus(QueryStatus.PLANNED)
                 ExecutionManager.MANAGER.createEntry(workflow1.getCatalogMetadata.getName.toString, queryId, true)
                 ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
