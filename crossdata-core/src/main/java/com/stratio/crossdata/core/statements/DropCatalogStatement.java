@@ -56,7 +56,11 @@ public class DropCatalogStatement extends MetadataStatement {
     }
 
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG);
+        ValidationRequirements validationRequirements = new ValidationRequirements();
+        if(!ifExists){
+            validationRequirements = validationRequirements.add(ValidationTypes.MUST_EXIST_CATALOG);
+        }
+        return validationRequirements;
     }
 
     public boolean isIfExists() {

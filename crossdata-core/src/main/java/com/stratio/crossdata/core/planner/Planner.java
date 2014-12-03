@@ -716,12 +716,12 @@ public class Planner {
             CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalog);
 
             if (catalogMetadata.getTables().isEmpty() || catalogMetadata.getTables() == null) {
-                MetadataManager.MANAGER.deleteCatalog(catalog, true);
+                MetadataManager.MANAGER.deleteCatalog(catalog, dropCatalogStatement.isIfExists());
                 // Create MetadataWorkFlow
                 metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.DROP_CATALOG, ResultType.RESULTS);
             } else {
                 throw new PlanningException("This statement can't be planned: " + metadataStatement.toString() + ". " +
-                        "All tables of catalog must be removed before drop catalog.");
+                        "All tables of the catalog must be removed before dropping the catalog.");
             }
 
         } else if (metadataStatement instanceof AlterCatalogStatement) {

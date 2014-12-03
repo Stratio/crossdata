@@ -256,7 +256,7 @@ public enum MetadataManager {
     /**
      * Remove the selected catalog. Not implemented yet.
      * @param catalogName Removed catalog name.
-     * @param ifExist Conditon if the catalog exists
+     * @param ifExist Condition if the catalog exists
      */
     public void deleteCatalog(CatalogName catalogName, boolean ifExist) {
         shouldBeInit();
