@@ -298,7 +298,7 @@ public class Coordinator implements Serializable {
         connectorMetadata.addClusterProperties(clusterName, options);
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
 
-        return CommandResult.createCommandResult("Connector is connecting to the cluster");
+        return CommandResult.createCommandResult("Connector started its session successfully");
     }
 
     /**

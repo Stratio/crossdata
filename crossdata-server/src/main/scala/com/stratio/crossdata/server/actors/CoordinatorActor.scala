@@ -202,6 +202,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         case workflow1: ManagementWorkflow => {
 
           log.info("ManagementWorkflow received")
+          var sendResultToClient = true
 
           val queryId = plannedQuery.getQueryId
           if (workflow1.getExecutionType == ExecutionType.ATTACH_CONNECTOR) {
@@ -235,7 +236,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
             executionInfo.setWorkflow(workflow1)
+            executionInfo.setPersistOnSuccess(true)
+            executionInfo.setRemoveOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+
+            sendResultToClient = false
 
           } else if (workflow1.getExecutionType == ExecutionType.DETACH_CONNECTOR) {
             val managementOperation = workflow1.createManagementOperationMessage()
@@ -257,7 +262,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setWorkflow(workflow1)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
           }
-          sender ! coordinator.executeManagementOperation(workflow1.createManagementOperationMessage())
+
+          if(sendResultToClient){
+            sender ! coordinator.executeManagementOperation(workflow1.createManagementOperationMessage())
+          }
+
         }
 
         case workflow1: QueryWorkflow => {
@@ -308,11 +317,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         }
       }
     }
-/*
-    case result: ConnectResult => {
-      log.info("Connect result received from " + sender + " with SessionId = " + result.getSessionId);
-    }
-*/
 
     case result: Result => {
       val queryId = result.getQueryId
@@ -334,7 +338,12 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         if(!result.hasError){
           if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
-            coordinator.persist(executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.asInstanceOf[MetadataWorkflow])
+            val storedWorkflow = executionInfo.asInstanceOf[ExecutionInfo].getWorkflow
+            if(storedWorkflow.isInstanceOf[MetadataWorkflow]){
+              coordinator.persist(storedWorkflow.asInstanceOf[MetadataWorkflow])
+            } else if (storedWorkflow.isInstanceOf[ManagementWorkflow]) {
+              coordinator.executeManagementOperation(storedWorkflow.asInstanceOf[ManagementWorkflow].createManagementOperationMessage())
+            }
           }
           if (executionInfo.asInstanceOf[ExecutionInfo].isRemoveOnSuccess) {
             ExecutionManager.MANAGER.deleteEntry(queryId)
