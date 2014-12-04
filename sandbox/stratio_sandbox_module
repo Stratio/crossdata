@@ -27,7 +27,7 @@ sed -i "s/\(\-Dcassandra.logdir=\)\$CASSANDRA_HOME\/logs/\1\/var\/log\/sds\/cass
 ## Crossdata
 #######################################
 echo "Installing Crossdata..."
-rpm --quiet -q jakarta-commons-daemon-jsvc || yum -y -q --nogpgcheck install $REPOSITORY/RHEL/6.5/x86_64/jakarta-commons-daemon-jsvc-1.0.1-8.9.el6.x86_64.rpm
+rpm --quiet -q jakarta-commons-daemon-jsvc || yum -y -q --nogpgcheck install http://$REPOSITORY/RHEL/6.5/x86_64/jakarta-commons-daemon-jsvc-1.0.1-8.9.el6.x86_64.rpm
 rpm --quiet -q stratio-crossdata || yum -y -q --nogpgcheck install stratio-crossdata
 echo "Configuring Crossdata..."
 #Config Crossdata
