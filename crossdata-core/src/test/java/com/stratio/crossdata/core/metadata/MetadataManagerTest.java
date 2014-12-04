@@ -41,6 +41,7 @@ import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -171,7 +172,11 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         ConnectorName connectorName = new ConnectorName("connectorName");
         actorRef = "akkaActorRefTest";
-        MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+        try {
+            MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+        } catch (ManifestException e) {
+            fail();
+        }
 
         assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef().equalsIgnoreCase(actorRef));
     }
@@ -187,7 +192,11 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         ConnectorName connectorName = new ConnectorName("connectorName");
         String actorRef = "akkaActorRefTest";
-        MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+        try {
+            MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+        } catch (ManifestException e) {
+            fail();
+        }
 
         assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef().equalsIgnoreCase(actorRef));
     }
@@ -245,7 +254,11 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String actorRef = null;
         createTestConnector(connector, dataStoreName, actorRef);
 
-        createTestCluster(cluster, dataStoreName, new ConnectorName(connector));
+        try {
+            createTestCluster(cluster, dataStoreName, new ConnectorName(connector));
+        } catch (ManifestException e) {
+            fail();
+        }
 
         List<ConnectorName> names = new ArrayList<>();
         ConnectorName connectorName = new ConnectorName("connectorTest");
@@ -442,13 +455,22 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testCreateClusterException(){
-        createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
+        try {
+            createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
+        } catch (ManifestException e) {
+            fail();
+        }
 
         ClusterName name = new ClusterName("clusterTest");
         DataStoreName dataStoreRef = new DataStoreName("dataStoreTest");
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata > connectorAttachedRefs = new HashMap<>();
-        ClusterMetadata clusterMetadata = new ClusterMetadata(name, dataStoreRef, options, connectorAttachedRefs);
+        ClusterMetadata clusterMetadata = null;
+        try {
+            clusterMetadata = new ClusterMetadata(name, dataStoreRef, options, connectorAttachedRefs);
+        } catch (ManifestException e) {
+            fail();
+        }
         MetadataManager.MANAGER.createCluster(clusterMetadata);
         fail();
     }
@@ -481,8 +503,13 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         List<PropertyType> requiredProperties = new ArrayList<>();
         List<PropertyType> optionalProperties = new ArrayList<>();
         List<String> supportedOperations = new ArrayList<>();
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(new ConnectorName(name), version, dataStoreRefs,
-                requiredProperties, optionalProperties, supportedOperations);
+        ConnectorMetadata connectorMetadata = null;
+        try {
+            connectorMetadata = new ConnectorMetadata(new ConnectorName(name), version, dataStoreRefs,
+                    requiredProperties, optionalProperties, supportedOperations);
+        } catch (ManifestException e) {
+            fail(e.getMessage());
+        }
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         fail();
     }

@@ -92,7 +92,6 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachClusterWithOptions() {
-        boolean res=true;
         String query = "ATTACH CLUSTER cluster on DATASTORE Cassandra with options {'comment':'attach cluster'}";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -105,19 +104,22 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            assertTrue(res);
+            fail("Execution should have failed because cluster already exists");
         } catch (ValidationException e) {
-            fail(e.getMessage());
+            String errorMsg = System.lineSeparator() +
+                    "Expected: [cluster.cluster] exists already" + System.lineSeparator() +
+                    "   Found: " + e.getMessage().trim();
+            assertTrue(e.getMessage().trim().equalsIgnoreCase("[cluster.cluster] exists already"), errorMsg);
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
     }
 
     @Test
-    public void attachUnknownClusterWithOptionsIfexists() {
+    public void attachUnknownClusterWithOptionsIfExists() {
         boolean res=true;
-        String query = "ATTACH CLUSTER IF EXIST unknown on DATASTORE Cassandra with options {'comment':'attach " +
-                "cluster'}";
+        String query = "ATTACH CLUSTER IF EXIST unknown on DATASTORE Cassandra with options " +
+                "{'comment':'attach cluster'}";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("unknown"), true,
                 new DataStoreName("Cassandra"),
@@ -129,9 +131,12 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
             validator.validate(parsedQuery);
-            assertTrue(res);
+            fail("Execution should have failed because comment options is not in the manifest");
         } catch (ValidationException e) {
-            fail(e.getMessage());
+            String errorMsg = System.lineSeparator() +
+                    "Expected: Some properties are not found in the datastore manifest" + System.lineSeparator() +
+                    "   Found: " + e.getMessage().trim();
+            assertTrue(e.getMessage().trim().equalsIgnoreCase("Some properties are not found in the datastore manifest"), errorMsg);
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
@@ -167,8 +172,8 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             fail("Test should have failed.");
         } catch (ValidationException e) {
-            assertEquals(e.getMessage(),
-                    "A cluster can be attached to only one data store.",
+            assertEquals(e.getMessage().trim(),
+                    "[cluster.cluster] exists already",
                     "Message exception not expected");
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());

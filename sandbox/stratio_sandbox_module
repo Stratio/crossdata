@@ -13,7 +13,7 @@ ipaddress=$(ip -4 addr show dev eth0 | grep inet | sed 's/^ *//g' | cut -d' ' -f
 #######################################
 
 echo "Installing Cassandra..."
- rpm --quiet -q stratio-cassandra || yum -y -q --nogpgcheck install stratio-cassandra
+rpm --quiet -q stratio-cassandra || yum -y -q --nogpgcheck install stratio-cassandra
 
 echo "Configuring Cassandra..."
 ##Config Cassandra:
@@ -33,7 +33,7 @@ sed -i "s/\(\-Dcassandra.logdir=\)\$CASSANDRA_HOME\/logs/\1\/var\/log\/sds\/cass
 ## Crossdata
 #######################################
 echo "Installing Crossdata..."
-rpm --quiet -q jakarta-commons-daemon-jsvc || yum -y -q --nogpgcheck install $REPOSITORY/RHEL/6.5/x86_64/jakarta-commons-daemon-jsvc-1.0.1-8.9.el6.x86_64.rpm
+rpm --quiet -q jakarta-commons-daemon-jsvc || yum -y -q --nogpgcheck install http://$REPOSITORY/RHEL/6.5/x86_64/jakarta-commons-daemon-jsvc-1.0.1-8.9.el6.x86_64.rpm
 rpm --quiet -q stratio-crossdata || yum -y -q --nogpgcheck install stratio-crossdata
 
 
@@ -45,7 +45,7 @@ sed -i "s/^\(CROSSDATA_LOG_OUT=\).*$/\1\"\/var\/log\/sds\/crossdata\/crossdata-s
 sed -i "s/^\(CROSSDATA_LOG_ERR=\).*$/\1\"\/var\/log\/sds\/crossdata\/crossdata-server.err\"/" /etc/sds/crossdata/crossdata-env.sh
 sed -i "s/^\(CROSSDATA_SERVER_PID=\).*$/\1\"\/var\/run\/sds\/crossdata-server.pid\"/" /etc/sds/crossdata/crossdata-env.sh
 sed -i "s/^\(crossdata-server.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/crossdata/server-application.conf
-sed -i "s/^\(crossdata-server.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/crossdata/server-application.conf
+sed -i "s/^\(crossdata-server.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/crossdata/server-application.conf
 sed -i "s/^\(crossdata-driver.config.cluster.hosts =\).*$/\1 \[\"$ipaddress\:13420\"\]/" /etc/sds/crossdata/driver-application.conf
 
 #######################################
@@ -82,7 +82,7 @@ rpm --quiet -q stratio-connector-cassandra || yum -y -q --nogpgcheck install str
 
 #config
 echo "Configuring Cassandra connector..."
-sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/cassandra/connector-application.conf
+sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/cassandra/connector-application.conf
 sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/cassandra/connector-application.conf
 
 #Deep
@@ -91,7 +91,7 @@ rpm --quiet -q stratio-connector-deep || yum -y -q --nogpgcheck install stratio-
 
 #config
 echo "Configuring Deep connector..."
-sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/MetaServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/deep/connector-application.conf
+sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/deep/connector-application.conf
 sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/deep/connector-application.conf
 
 
@@ -99,14 +99,16 @@ chkconfig --add crossdata
 chkconfig --add cassandra
 chkconfig --add connector_cassandra
 chkconfig --add connector_deep
-
-chkconfig crossdata on
+chkconfig crossdata off
 chkconfig cassandra on
-chkconfig connector_cassandra on
-chkconfig connector_deep on
-
+chkconfig connector_cassandra off
+chkconfig connector_deep off
 echo "Starting services..."
 service cassandra start
-service crossdata start
-service connector_cassandra start
-service connector_deep start
+echo "Starting demo environment"
+cat >>/home/vagrant/.bash_profile <<EOF 
+echo "--- PLEASE READ /etc/sds/crossdata/README.txt ---" 
+EOF
+wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/raw/master/src/main/resources/README.txt --no-check-certificate
+wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/raw/master/src/main/resources/CrossdataClientExample.jar --no-check-certificate
+echo "Follow instructions in /etc/sds/crossdata/README.txt"

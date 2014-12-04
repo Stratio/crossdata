@@ -30,6 +30,7 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -76,11 +77,12 @@ public class Coordinator implements Serializable {
             persistCreateIndex(metadataWorkflow.getIndexMetadata());
             break;
         case CREATE_TABLE_AND_CATALOG:
+            persistCreateCatalogInCluster(metadataWorkflow.getCatalogName(), metadataWorkflow.getClusterName());
         case CREATE_TABLE:
             persistCreateTable(metadataWorkflow.getTableMetadata());
             break;
         case DROP_CATALOG:
-            persistDropCatalog(metadataWorkflow.getCatalogName(),true);
+            persistDropCatalog(metadataWorkflow.getCatalogName(), true);
             break;
         case DROP_INDEX:
             persistDropIndex(metadataWorkflow.getIndexMetadata().getName());
@@ -100,7 +102,7 @@ public class Coordinator implements Serializable {
      * @param workflow The management workflow.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
-    public Result executeManagementOperation(ManagementOperation workflow) {
+    public Result executeManagementOperation(ManagementOperation workflow) throws ManifestException {
         Result result = Result.createExecutionErrorResult("Unrecognized management operation.");
 
         if (AttachCluster.class.isInstance(workflow)) {
@@ -134,7 +136,7 @@ public class Coordinator implements Serializable {
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistAttachCluster(ClusterName clusterName, DataStoreName datastoreName,
-            Map<Selector, Selector> options) {
+            Map<Selector, Selector> options) throws ManifestException {
 
         // Create and persist Cluster metadata
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, datastoreName, options,
@@ -207,6 +209,10 @@ public class Coordinator implements Serializable {
         MetadataManager.MANAGER.createCatalog(catalog);
     }
 
+    public void persistCreateCatalogInCluster(CatalogName catalog, ClusterName clusterName) {
+        MetadataManager.MANAGER.addCatalogToCluster(catalog, clusterName);
+    }
+
     /**
      * Persists table Metadata in Metadata Manager.
      *
@@ -235,6 +241,7 @@ public class Coordinator implements Serializable {
      */
     public void persistDropCatalog(CatalogName catalog, boolean ifExist) {
         MetadataManager.MANAGER.deleteCatalog(catalog, ifExist);
+        MetadataManager.MANAGER.removeCatalogFromClusters(catalog);
     }
 
     /**

@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.core.metadata;
 
+import static org.testng.Assert.fail;
+
 import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -45,6 +47,7 @@ import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -70,7 +73,7 @@ public class MetadataManagerTestHelper {
     private String path = "";
 
     @BeforeClass
-    public void setUp() {
+    public void setUp() throws ManifestException {
         initializeGrid();
         //MetadataManager
         Map<FirstLevelName, IMetadata> metadataMap = Grid.INSTANCE.map("crossdata-test");
@@ -141,8 +144,13 @@ public class MetadataManagerTestHelper {
         ConnectorName connectorName = new ConnectorName(name);
         ArrayList<String> dataStoreRefs = new ArrayList<>();
         dataStoreRefs.add(dataStoreName.getName());
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version,
-                dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
+        ConnectorMetadata connectorMetadata = null;
+        try {
+            connectorMetadata = new ConnectorMetadata(connectorName, version,
+                    dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
+        } catch (ManifestException e) {
+            fail(e.getMessage());
+        }
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorName;
@@ -156,7 +164,7 @@ public class MetadataManagerTestHelper {
      * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
-            String actorRef) {
+            String actorRef) throws ManifestException {
         final String version = "0.1.1";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
@@ -178,7 +186,7 @@ public class MetadataManagerTestHelper {
      */
     public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
             Set<Operations> options,
-            String actorRef) {
+            String actorRef) throws ManifestException {
         final String version = "0.1.1";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
@@ -198,7 +206,7 @@ public class MetadataManagerTestHelper {
      * @param name          The name of the cluster.
      * @param dataStoreName The backend dataStore.
      */
-    public ClusterName createTestCluster(String name, DataStoreName dataStoreName) {
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName) throws ManifestException {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
@@ -215,7 +223,8 @@ public class MetadataManagerTestHelper {
      * @param name          The name of the cluster.
      * @param dataStoreName The backend dataStore.
      */
-    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName ... connectorNames) {
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName ... connectorNames)
+            throws ManifestException {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();

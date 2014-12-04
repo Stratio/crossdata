@@ -46,8 +46,8 @@ public class DropTableStatementTest extends ParsingTest {
 
     @Test
     public void dropTableWithEmptyCatalog() {
-        String inputText = "[ ], DROP TABLE lastTable;";
-        String expectedText = "DROP TABLE <unknown_name>.lastTable;";
+        String inputText = "[test], DROP TABLE lastTable;";
+        String expectedText = "DROP TABLE test.lastTable;";
         testRegularStatement(inputText, expectedText, "dropTableWithEmptyCatalog");
     }
 

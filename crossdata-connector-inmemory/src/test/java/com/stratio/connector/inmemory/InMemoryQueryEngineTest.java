@@ -308,7 +308,7 @@ public class InMemoryQueryEngineTest {
     @Test
     public void simpleSelectFilterIntEQ() {
         String [] columnNames = {"int_column"};
-        ColumnType[] types = { ColumnType.BOOLEAN };
+        ColumnType[] types = { ColumnType.INT };
 
         Project project = generateProjectAndSelect(columnNames, types);
 
@@ -332,6 +332,36 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), 1, "Invalid number of results returned");
+        checkResultMetadata(results, columnNames, types);
+    }
+
+    @Test
+    public void simpleSelectFilterNonIndexedIntGT() {
+        String [] columnNames = {"int_column"};
+        ColumnType[] types = { ColumnType.INT };
+
+        Project project = generateProjectAndSelect(columnNames, types);
+
+        ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
+        IntegerSelector right = new IntegerSelector(NUM_ROWS/2);
+        Filter filter = new Filter(Operations.FILTER_NON_INDEXED_GT, new Relation(left, Operator.GT, right));
+
+        Select s = Select.class.cast(project.getNextStep());
+        filter.setNextStep(s);
+        project.setNextStep(filter);
+        filter.setPrevious(project);
+        s.setPrevious(filter);
+        LogicalWorkflow workflow = new LogicalWorkflow(Arrays.asList((LogicalStep)project));
+
+        ResultSet results = null;
+        try {
+            QueryResult result = connector.getQueryEngine().execute(workflow);
+            results = result.getResultSet();
+        } catch (ConnectorException e) {
+            fail("Cannot retrieve data", e);
+        }
+
+        assertEquals(results.size(), (NUM_ROWS/2)-1, "Invalid number of results returned");
         checkResultMetadata(results, columnNames, types);
     }
 

@@ -20,7 +20,6 @@ package com.stratio.crossdata.core.grammar.statements;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import org.testng.Assert.*;
 
 import com.stratio.crossdata.core.grammar.ParsingTest;
 
@@ -32,15 +31,15 @@ public class SelectStatementTest extends ParsingTest {
 
     @Test
     public void basicSelectAsterisk() {
-        String inputText = "SELECT * FROM table1;";
-        String expectedText = "SELECT * FROM <unknown_name>.table1;";
+        String inputText = "[test], SELECT * FROM table1;";
+        String expectedText = "SELECT * FROM test.table1;";
         testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
     }
 
     @Test
     public void basicSelectAsteriskWithLimit() {
-        String inputText = "SELECT * FROM table1 LIMIT 1;";
-        String expectedText = "SELECT * FROM <unknown_name>.table1 LIMIT 1;";
+        String inputText = "[test], SELECT * FROM table1 LIMIT 1;";
+        String expectedText = "SELECT * FROM test.table1 LIMIT 1;";
         testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
     }
 
@@ -126,43 +125,43 @@ public class SelectStatementTest extends ParsingTest {
 
     @Test
     public void basicSelectIntColumn() {
-        String inputText = "SELECT 1 FROM table1;";
-        String expectedText = "SELECT 1 FROM <unknown_name>.table1;";
+        String inputText = "SELECT 1 FROM test.table1;";
+        String expectedText = "SELECT 1 FROM test.table1;";
         testRegularStatement(inputText, expectedText, "basicSelectIntColumn");
     }
 
     @Test
     public void basicSelectNegativeIntColumn() {
-        String inputText = "SELECT -99 FROM table1;";
-        String expectedText = "SELECT -99 FROM <unknown_name>.table1;";
+        String inputText = "SELECT -99 FROM test.table1;";
+        String expectedText = "SELECT -99 FROM test.table1;";
         testRegularStatement(inputText, expectedText, "basicSelectNegativeIntColumn");
     }
 
     @Test
     public void basicSelectDoubleColumn() {
-        String inputText = "SELECT 1.1234 FROM table1;";
-        String expectedText = "SELECT 1.1234 FROM <unknown_name>.table1;";
+        String inputText = "SELECT 1.1234 FROM test.table1;";
+        String expectedText = "SELECT 1.1234 FROM test.table1;";
         testRegularStatement(inputText, expectedText, "basicSelectDoubleColumn");
     }
 
     @Test
     public void basicSelectNegativeDoubleColumn() {
-        String inputText = "SELECT -9.9876 FROM table1;";
-        String expectedText = "SELECT -9.9876 FROM <unknown_name>.table1;";
+        String inputText = "SELECT -9.9876 FROM test.table1;";
+        String expectedText = "SELECT -9.9876 FROM test.table1;";
         testRegularStatement(inputText, expectedText, "basicSelectNegativeDoubleColumn");
     }
 
     @Test
     public void basicSelectBooleanColumn() {
-        String inputText = "SELECT true FROM table1;";
-        String expectedText = "SELECT true FROM <unknown_name>.table1;";
+        String inputText = "[test], SELECT true FROM table1;";
+        String expectedText = "SELECT true FROM test.table1;";
         testRegularStatement(inputText, expectedText, "basicSelectBooleanColumn");
     }
 
     @Test
     public void basicSelectQuotedLiteralColumn() {
-        String inputText = "SELECT \"literal\" FROM table1;";
-        String expectedText = "SELECT 'literal' FROM <unknown_name>.table1;";
+        String inputText = "[test], SELECT \"literal\" FROM table1;";
+        String expectedText = "SELECT 'literal' FROM test.table1;";
         testRegularStatement(inputText, expectedText, "basicSelectBooleanColumn");
     }
 
@@ -211,19 +210,19 @@ public class SelectStatementTest extends ParsingTest {
 
     @Test
     public void selectWithTimeWindow() {
-        String inputText =
+        String inputText = "[test], " +
                 "SELECT table1.column1 FROM table1 WITH WINDOW 5 SECONDS WHERE table1.column2 = 3;";
         String expectedText =
-                "SELECT <unknown_name>.table1.column1 FROM <unknown_name>.table1 WITH WINDOW 5 SECONDS WHERE <unknown_name>.table1.column2 = 3;";
+                "SELECT test.table1.column1 FROM test.table1 WITH WINDOW 5 SECONDS WHERE test.table1.column2 = 3;";
         testRegularStatement(inputText, expectedText, "selectWithTimeWindow");
     }
 
     @Test
     public void selectWithTimeWindow2() {
-        String inputText =
+        String inputText = "[test], " +
                 "SELECT table1.column1 FROM table1 WITH WINDOW 1 min WHERE table1.column2 = 3;";
         String expectedText =
-                "SELECT <unknown_name>.table1.column1 FROM <unknown_name>.table1 WITH WINDOW 1 MINUTES WHERE <unknown_name>.table1.column2 = 3;";
+                "SELECT test.table1.column1 FROM test.table1 WITH WINDOW 1 MINUTES WHERE test.table1.column2 = 3;";
         testRegularStatement(inputText, expectedText, "selectWithTimeWindow2");
     }
 
@@ -270,15 +269,15 @@ public class SelectStatementTest extends ParsingTest {
 
     @Test
     public void selectStatementJoinComplex() {
-        String inputText =
+        String inputText = "[test], " +
                 "SELECT colSales, colRevenues FROM tableClients "
                         + "INNER JOIN tableCostumers ON AssistantId = clientId "
                         + "WHERE colCity = 'Madrid' "
                         + "ORDER BY age "
                         + "GROUP BY gender;";
         String expectedText =
-                "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM <unknown_name>.tableClients "
-                        + "INNER JOIN <unknown_name>.tableCostumers ON <unknown_name>.<unknown_name>.AssistantId = <unknown_name>.<unknown_name>.clientId "
+                "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
+                        + "INNER JOIN test.tableCostumers ON <unknown_name>.<unknown_name>.AssistantId = <unknown_name>.<unknown_name>.clientId "
                         + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
                         + "ORDER BY <unknown_name>.<unknown_name>.age "
                         + "GROUP BY <unknown_name>.<unknown_name>.gender;";
@@ -301,39 +300,39 @@ public class SelectStatementTest extends ParsingTest {
 
   @Test
   public void selectStatementAliasedColumnsJoin() {
-    String inputText =
+    String inputText = "[test], " +
         "SELECT c.a, c.b FROM c INNER JOIN tablename t ON c.field1=tablename.field2 WHERE c.x = 5;";
     String expectedText =
-        "SELECT <unknown_name>.c.a, <unknown_name>.c.b FROM <unknown_name>.c " +
-                "INNER JOIN <unknown_name>.tablename AS t " +
-                "ON <unknown_name>.c.field1 = <unknown_name>.tablename.field2 " +
-                "WHERE <unknown_name>.c.x = 5;";
+        "SELECT test.c.a, test.c.b FROM test.c " +
+                "INNER JOIN test.tablename AS t " +
+                "ON test.c.field1 = test.tablename.field2 " +
+                "WHERE test.c.x = 5;";
     testRegularStatement(inputText, expectedText, "selectStatementAliasedColumnsJoin");
   }
 
 
   @Test
   public void selectStatementAliasedInversedColumnsJoins() {
-    String inputText =
+    String inputText = "[test], " +
         "SELECT c.a, c.b FROM c INNER JOIN tablename t ON tablename.field2=c.field1 WHERE c.x = 5;";
     String expectedText =
-        "SELECT <unknown_name>.c.a, <unknown_name>.c.b FROM <unknown_name>.c " +
-                "INNER JOIN <unknown_name>.tablename AS t " +
-                "ON <unknown_name>.tablename.field2 = <unknown_name>.c.field1 " +
-                "WHERE <unknown_name>.c.x = 5;";
+        "SELECT test.c.a, test.c.b FROM test.c " +
+                "INNER JOIN test.tablename AS t " +
+                "ON test.tablename.field2 = test.c.field1 " +
+                "WHERE test.c.x = 5;";
 
     testRegularStatement(inputText, expectedText, "selectStatementJoins");
   }
 
   @Test
   public void selectStatementAliasedTableJoins() {
-    String inputText =
+    String inputText = "[test], " +
         "SELECT c.a, c.b FROM table_c c INNER JOIN tablename t ON t.field2=c.field1 WHERE c.x = 5;";
     String expectedText =
-        "SELECT <unknown_name>.c.a, <unknown_name>.c.b FROM <unknown_name>.table_c AS c " +
-                "INNER JOIN <unknown_name>.tablename AS t " +
-                "ON <unknown_name>.t.field2 = <unknown_name>.c.field1 " +
-                "WHERE <unknown_name>.c.x = 5;";
+        "SELECT test.c.a, test.c.b FROM test.table_c AS c " +
+                "INNER JOIN test.tablename AS t " +
+                "ON test.t.field2 = test.c.field1 " +
+                "WHERE test.c.x = 5;";
 
     testRegularStatement(inputText, expectedText, "selectStatementAliasedTableJoins");
   }
@@ -504,8 +503,6 @@ public class SelectStatementTest extends ParsingTest {
 */
 
 
-
-
 /*
   @Test
   public void testComplexQueryWithAliasesOk() {
@@ -544,17 +541,15 @@ public class SelectStatementTest extends ParsingTest {
   }
   */
 
-
-
     @Test
     public void selectComplex() {
         String inputText =
-                "SELECT colSales, colRevenues FROM tableClients "
+                "[test], SELECT colSales, colRevenues FROM tableClients "
                         + "WHERE colCity = 'Madrid' "
                         + "ORDER BY age "
                         + "GROUP BY gender;";
         String expectedText =
-                "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM <unknown_name>.tableClients "
+                "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
                         + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
                         + "ORDER BY <unknown_name>.<unknown_name>.age "
                         + "GROUP BY <unknown_name>.<unknown_name>.gender;";

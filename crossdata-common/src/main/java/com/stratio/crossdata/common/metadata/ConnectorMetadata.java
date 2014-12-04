@@ -24,12 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.crossdata.common.data.ConnectorStatus;
-import com.stratio.crossdata.common.manifest.ManifestHelper;
-import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
+import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.ManifestHelper;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
@@ -89,6 +91,11 @@ public class ConnectorMetadata implements IMetadata {
     private Set<Operations> supportedOperations;
 
     /**
+     * Whether the manifest of this connector was already added or not
+     */
+    private boolean manifestAdded = false;
+
+    /**
      * Class constructor.
      *
      * @param name                The connector name.
@@ -102,7 +109,7 @@ public class ConnectorMetadata implements IMetadata {
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations) {
+            Set<Operations> supportedOperations) throws ManifestException {
         this(name, version, dataStoreRefs, clusterProperties, ConnectorStatus.OFFLINE, null, requiredProperties,
                 optionalProperties,
                 supportedOperations);
@@ -127,11 +134,22 @@ public class ConnectorMetadata implements IMetadata {
             String actorRef,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations) {
+            Set<Operations> supportedOperations) throws ManifestException {
 
-        this.name = name;
+        if(name.getName().isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
+        } else {
+            this.name = name;
+        }
+
         this.version = version;
-        this.dataStoreRefs = dataStoreRefs;
+
+        if(dataStoreRefs == null){
+            this.dataStoreRefs = new HashSet<>();
+        } else {
+            this.dataStoreRefs = dataStoreRefs;
+        }
+
         this.clusterProperties = (clusterProperties!=null)?
                 clusterProperties:
                 new HashMap<ClusterName, Map<Selector, Selector>>();
@@ -154,24 +172,44 @@ public class ConnectorMetadata implements IMetadata {
      */
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
-            List<String> supportedOperations) {
-        this.name = name;
-        this.version = version;
+            List<String> supportedOperations) throws ManifestException {
+
+        if(name.getName().isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
+        } else {
+            this.name = name;
+        }
+
+        if(version.isEmpty()){
+            throw new ManifestException(new ExecutionException("Tag version cannot be empty"));
+        } else {
+            this.version = version;
+        }
+
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
+        if(this.dataStoreRefs == null){
+            this.dataStoreRefs = new HashSet<>();
+        }
+
         if (requiredProperties != null) {
             this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
         } else {
-            this.requiredProperties = null;
+            this.requiredProperties = new HashSet<>();
         }
+
         if (optionalProperties != null) {
             this.optionalProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties);
         } else {
-            this.optionalProperties = null;
+            this.optionalProperties = new HashSet<>();
         }
 
-        this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
-        this.connectorStatus = ConnectorStatus.OFFLINE;
+        if(supportedOperations != null){
+            this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
+        } else {
+            this.supportedOperations = new HashSet<>();
+        }
 
+        this.connectorStatus = ConnectorStatus.OFFLINE;
     }
 
     /**
@@ -376,8 +414,16 @@ public class ConnectorMetadata implements IMetadata {
      *
      * @param supportedOperations A list of supported operations.
      */
-    public void setSupportedOperations(List<String> supportedOperations) {
+    public void setSupportedOperations(List<String> supportedOperations) throws ManifestException {
         this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
+    }
+
+    public boolean isManifestAdded() {
+        return manifestAdded;
+    }
+
+    public void setManifestAdded(boolean manifestAdded) {
+        this.manifestAdded = manifestAdded;
     }
 
     /**
@@ -387,10 +433,14 @@ public class ConnectorMetadata implements IMetadata {
      * @return A set of {@link com.stratio.crossdata.common.metadata.Operations}.
      */
     private Set<Operations> convertManifestOperationsToMetadataOperations(
-            List<String> supportedOperations) {
+            List<String> supportedOperations) throws ManifestException {
         Set<Operations> operations = new HashSet<>();
-        for (String supportedOperation : supportedOperations) {
-            operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
+        try {
+            for (String supportedOperation: supportedOperations) {
+                operations.add(Operations.valueOf(supportedOperation.toUpperCase()));
+            }
+        } catch (IllegalArgumentException ex) {
+            throw new ManifestException(ex);
         }
         return operations;
     }

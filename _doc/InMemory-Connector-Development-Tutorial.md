@@ -267,7 +267,7 @@ manifest schemas.
 Implementing IMetadataEngine
 ----------------------------
 
-The *IMetadataEngine* interface defines the set of operations related to metadata management that a connector may 
+The *IMetadataEngine* interface defines the set of operations related to metadata management that a connector may
 provide to Crossdata. Notice that not all operations must be supported by the connector implementation, 
 only those defined in the *SupportedOperations* section of the connector manifest. In our case, we will provide 
 implementations for *createCatalog, *createTable*, *dropCatalog*, and *dropTable*. This connector will not support 
@@ -453,8 +453,8 @@ The connector can be started in two different ways:
 1. Running the connector tests:
     
     > mvn clean verify -DconnectorJar="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata-connector
-    -inmemory-0.1.1-RC1.jar" -DconnectorDefinition="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata
-    -connector-inmemory-0.1.1-RC1/conf/InMemoryConnector.xml" -DclusterOptions="[TableRowLimit-100]"
+    -inmemory-0.1.1.jar" -DconnectorDefinition="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata
+    -connector-inmemory-0.1.1/conf/InMemoryConnector.xml" -DclusterOptions="[TableRowLimit-100]"
     -DconnectorCluster="TestCluster" -DconnectorMainClass="com.stratio.connector.inmemory.InMemoryConnector"
     
 2. Starting the connector with maven:

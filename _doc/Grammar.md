@@ -18,8 +18,8 @@ Table of contents
 -   [Main characteristics](#main-characteristics)
 -   [Language Features](#language-features)
     -   [Statements](#statements)
-        -   [ADD DATASTORE](#add-dataStore)
-        -   [DROP DATASTORE](#drop-dataStore)
+        -   [ADD DATASTORE](#add-datastore)
+        -   [DROP DATASTORE](#drop-datastore)
         -   [ADD CONNECTOR](#add-connector)
         -   [DROP CONNECTOR](#drop-connector)
         -   [ATTACH CLUSTER](#attach-cluster)
@@ -30,6 +30,7 @@ Table of contents
         -   [CREATE CATALOG](#create-catalog)
         -   [ALTER CATALOG](#alter-catalog)
         -   [DROP CATALOG](#drop-catalog)
+        -   [USE] (#use)
         -   [CREATE TABLE](#create-table)
         -   [ALTER TABLE] (#alter-table)
         -   [UPDATE TABLE] (#update-table)
@@ -137,6 +138,7 @@ language .
 -   \<catalog\_name\> ::= \<identifier\>
 -   \<tablename\> ::= (\<catalog\_name\> '.')? \<identifier\>
 -   \<columnname\> ::= (\<tablename\> '.')? \<identifier\>
+-   \<indexname\> ::= \<tablename\> '.' \<identifier\>
 -   \<properties\> ::= \<property\> (AND \<property\>)\*
 -   \<property\> ::= (\<literal\> | \<identifier\> ) '=' ( \<literal\> | \<constant\> )
 -   \<data-types\> = TEXT | BIGINT | INT | DOUBLE | FLOAT | BOOLEAN
@@ -299,7 +301,7 @@ UPDATE \<tablename\>
 
 Example:
 
-    UPDATE TABLE tableTest SET value = value + 900 WHERE age > 30;
+    UPDATE tableTest SET value = value + 900 WHERE age > 30;
 
 ### DROP TABLE
 
@@ -350,11 +352,11 @@ Example:
 
 ### DROP INDEX
 
-DROP INDEX (IF EXISTS)? \<index-name\> ';'
+DROP INDEX (IF EXISTS)? \<indexname\> ';'
 
 Example:
 
-    DROP INDEX IF EXISTS revenueIndex;;
+    DROP INDEX IF EXISTS tabletest.revenueIndex;
 
 ### SELECT
 
@@ -410,7 +412,7 @@ Example:
 
 ### CLEAN METADATA
 
-Remove all metadata related to catalogs, tables, indexes and columns.
+Remove all apiManager related to catalogs, tables, indexes and columns.
 
 CLEAN METADATA;
 

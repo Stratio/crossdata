@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.core.validator;
 
+import static org.testng.Assert.fail;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,7 @@ import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
@@ -65,7 +68,7 @@ public class BasicValidatorTest {
     private static String path = "";
 
     @BeforeClass
-    public static void setUpBeforeClass() {
+    public static void setUpBeforeClass() throws ManifestException {
         GridInitializer gridInitializer = Grid.initializer();
         gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
         path = "/tmp/metadatastore" + UUID.randomUUID();
@@ -169,8 +172,13 @@ public class BasicValidatorTest {
 
         ArrayList<String> supportedOperations = new ArrayList();
 
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
-                dataStoreRefs, null, null, supportedOperations);
+        ConnectorMetadata connectorMetadata = null;
+        try {
+            connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
+                    dataStoreRefs, null, null, supportedOperations);
+        } catch (ManifestException e) {
+            fail(e.getMessage());
+        }
         return connectorMetadata;
 
     }
@@ -181,7 +189,7 @@ public class BasicValidatorTest {
         return dataStoreMetadata;
     }
 
-    private static ClusterMetadata createClusterMetadata() {
+    private static ClusterMetadata createClusterMetadata() throws ManifestException {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ConnectorAttachedMetadata connectorAttachedMetadata = new ConnectorAttachedMetadata(
                 new ConnectorName("CassandraConnector"), new ClusterName("cluster"), null);

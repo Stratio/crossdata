@@ -187,7 +187,7 @@ ActorLogging with IResultHandler{
       s ! result
     } catch {
       case e: Exception => {
-        val result = Result.createExecutionErrorResult(e.getStackTraceString)
+        val result = Result.createErrorResult(e)
         result.setQueryId(ex.queryId)
         s ! result
       }
@@ -223,6 +223,7 @@ ActorLogging with IResultHandler{
     var qId: String = metadataOp.queryId
     var metadataOperation: Int = 0
     logger.info("Received queryId = " + qId)
+    var result: Result = null
     try {
       val opclass = metadataOp.getClass().toString().split('.')
       val eng = connector.getMetadataEngine()
@@ -230,16 +231,17 @@ ActorLogging with IResultHandler{
       val abc = methodOpc(opclass,  metadataOp, eng)
       qId = abc._1
       metadataOperation = abc._2
+      result = MetadataResult.createSuccessMetadataResult(metadataOperation)
     } catch {
       case ex: Exception => {
-        val result = Result.createExecutionErrorResult("Connector exception: " + ex.getMessage)
-        result.setQueryId(qId)
-        s ! result
+        logger.error("Connector exception: " + ex.getMessage)
+        result = Result.createErrorResult(ex)
       }
-      case err: Error =>
-        logger.error("error in ConnectorActor( receiving CrossdataOperation)")
+      case err: Error => {
+        logger.error("Error in ConnectorActor(Receiving CrossdataOperation)")
+        result = Result.createExecutionErrorResult("Connector exception: " + err.getMessage)
+      }
     }
-    val result = MetadataResult.createSuccessMetadataResult(metadataOperation)
     result.setQueryId(qId)
     logger.info("Sending back queryId = " + qId)
     s ! result
@@ -271,13 +273,15 @@ ActorLogging with IResultHandler{
       s ! result
     } catch {
       case ex: Exception => {
-        logger.debug(ex.getStackTraceString)
-        val result = Result.createExecutionErrorResult(ex.getStackTraceString)
+        logger.error(ex)
+        val result = Result.createErrorResult(ex)
+        result.setQueryId(qId)
         s ! result
       }
       case err: Error => {
         logger.error("Error in ConnectorActor(Receiving StorageOperation)")
         val result = crossdata.common.result.Result.createExecutionErrorResult("Error in ConnectorActor")
+        result.setQueryId(qId)
         s ! result
       }
     }

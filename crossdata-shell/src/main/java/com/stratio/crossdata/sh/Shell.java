@@ -551,7 +551,6 @@ public class Shell {
         return ConsoleUtils.stringResult(crossDataDriver.describeDatastore(new DataStoreName(datastoreName)));
     }
 
-
     private String updateCatalog(String toExecute) {
         String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();
         String currentCatalog = crossDataDriver.getCurrentCatalog();
@@ -593,8 +592,10 @@ public class Shell {
      */
     public String sendManifest(String sentence) {
         LOG.debug("Command: " + sentence);
-        // Get manifest type
 
+        String result = "OK";
+
+        // Get manifest type
         String[] tokens = sentence.split(" ");
         if (tokens.length != 3) {
             return "ERROR: Invalid ADD syntax";
@@ -631,9 +632,11 @@ public class Shell {
         }
         queryEnd = System.currentTimeMillis();
         updatePrompt(crossDataResult);
-        LOG.info("Result: " + ConsoleUtils.stringResult(crossDataResult));
         LOG.info("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
-        return "OK";
+        if(crossDataResult instanceof ErrorResult){
+            result = "Result: " + ConsoleUtils.stringResult(crossDataResult);
+        }
+        return result;
     }
 
     private String dropManifest(int manifestType, String manifestName) {

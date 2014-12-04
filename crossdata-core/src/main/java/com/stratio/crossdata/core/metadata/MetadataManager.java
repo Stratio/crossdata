@@ -44,6 +44,7 @@ import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.NameType;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -410,8 +411,8 @@ public enum MetadataManager {
             if (unique) {
                 shouldBeUnique(clusterMetadata.getName());
             }
-            for (ConnectorAttachedMetadata connectorRef : clusterMetadata.getConnectorAttachedRefs()
-                    .values()) {
+            for (ConnectorAttachedMetadata connectorRef:
+                    clusterMetadata.getConnectorAttachedRefs().values()) {
                 shouldExist(connectorRef.getConnectorRef());
             }
             beginTransaction();
@@ -440,6 +441,18 @@ public enum MetadataManager {
         shouldBeInit();
         shouldExist(name);
         return (ClusterMetadata) metadata.get(name);
+    }
+
+    public List<ClusterMetadata> getClusters() {
+        shouldBeInit();
+        List<ClusterMetadata> clusters = new ArrayList<>();
+        for (Map.Entry<FirstLevelName, IMetadata> entry: metadata.entrySet()) {
+            IMetadata iMetadata = entry.getValue();
+            if (iMetadata instanceof ClusterMetadata) {
+                clusters.add((ClusterMetadata) iMetadata);
+            }
+        }
+        return clusters;
     }
 
     /**
@@ -529,14 +542,14 @@ public enum MetadataManager {
      * @param name Name for the selected connector.
      * @param actorRef Actor reference URI.
      */
-    public void addConnectorRef(ConnectorName name, String actorRef) {
+    public void addConnectorRef(ConnectorName name, String actorRef) throws ManifestException {
         if (!exists(name)) {
             String version = null;
-            Set<DataStoreName> dataStoreRefs = null;
-            Map<ClusterName, Map<Selector, Selector>> clusterProperties = null;
-            Set<PropertyType> requiredProperties = null;
-            Set<PropertyType> optionalProperties = null;
-            Set<Operations> supportedOperations = null;
+            Set<DataStoreName> dataStoreRefs = new HashSet<>();
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
+            Set<PropertyType> requiredProperties = new HashSet<>();
+            Set<PropertyType> optionalProperties = new HashSet<>();
+            Set<Operations> supportedOperations = new HashSet<>();
             ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
                     clusterProperties, requiredProperties, optionalProperties, supportedOperations);
             connectorMetadata.setActorRef(actorRef);
@@ -927,5 +940,23 @@ public enum MetadataManager {
         } finally {
             writeLock.unlock();
         }
+    }
+
+    public void addCatalogToCluster(CatalogName catalog, ClusterName clusterName) {
+        ClusterMetadata clusterMetadata = getCluster(clusterName);
+        clusterMetadata.addPersistedCatalog(catalog);
+        createCluster(clusterMetadata, false);
+    }
+
+    public void removeCatalogFromClusters(CatalogName catalog) {
+        List<ClusterMetadata> clusters = getClusters();
+        for(ClusterMetadata cluster: clusters){
+            removeCatalogFromCluster(catalog, cluster);
+        }
+    }
+
+    private void removeCatalogFromCluster(CatalogName catalog, ClusterMetadata cluster) {
+        cluster.removePersistedCatalog(catalog);
+        createCluster(cluster, false);
     }
 }

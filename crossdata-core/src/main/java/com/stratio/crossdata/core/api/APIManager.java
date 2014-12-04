@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.api;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,9 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.exceptions.ApiException;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
@@ -51,6 +54,7 @@ import com.stratio.crossdata.common.manifest.DataStoreRefsType;
 import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertiesType;
+import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -389,9 +393,13 @@ public class APIManager {
         }
     }
 
-    private void persistDataStore(DataStoreType dataStoreType) {
+    private void persistDataStore(DataStoreType dataStoreType) throws ManifestException {
         // NAME
         DataStoreName name = new DataStoreName(dataStoreType.getName());
+
+        if(MetadataManager.MANAGER.exists(name)){
+            throw new ManifestException(new ExecutionException(name + " already exists"));
+        }
 
         // VERSION
         String version = dataStoreType.getVersion();
@@ -414,13 +422,13 @@ public class APIManager {
                 (behaviorsType == null) ? null : behaviorsType.getBehavior());
 
         // Persist
-        MetadataManager.MANAGER.createDataStore(dataStoreMetadata, false);
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
 
         LOG.debug("DataStore added: " + MetadataManager.MANAGER.getDataStore(name).toString());
 
     }
 
-    private void persistConnector(ConnectorType connectorType) {
+    private void persistConnector(ConnectorType connectorType) throws ManifestException {
         // NAME
         ConnectorName name = new ConnectorName(connectorType.getConnectorName());
 
@@ -443,25 +451,35 @@ public class APIManager {
         ConnectorMetadata connectorMetadata;
 
         if (MetadataManager.MANAGER.exists(name)) {
+
             connectorMetadata = MetadataManager.MANAGER.getConnector(name);
+
+            if(connectorMetadata.isManifestAdded()){
+                throw new ManifestException(new ExecutionException("Connector " + name + " was already added"));
+            }
+
             connectorMetadata.setVersion(version);
             connectorMetadata.setDataStoreRefs(
                     ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs
                             .getDataStoreName()));
-            connectorMetadata.setRequiredProperties((requiredProperties == null) ? null : ManifestHelper
-                    .convertManifestPropertiesToMetadataProperties(requiredProperties.getProperty()));
-            connectorMetadata.setOptionalProperties((optionalProperties == null) ? null : ManifestHelper
-                    .convertManifestPropertiesToMetadataProperties(optionalProperties.getProperty()));
+            connectorMetadata.setRequiredProperties((requiredProperties == null) ?
+                    new HashSet<PropertyType>() :
+                    ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties.getProperty()));
+            connectorMetadata.setOptionalProperties((optionalProperties == null) ?
+                    new HashSet<PropertyType>() :
+                    ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties.getProperty()));
             connectorMetadata.setSupportedOperations(supportedOperations.getOperation());
         } else {
             connectorMetadata = new ConnectorMetadata(
                     name,
                     version,
-                    (dataStoreRefs == null) ? null : dataStoreRefs.getDataStoreName(),
-                    (requiredProperties == null) ? null : requiredProperties.getProperty(),
-                    (optionalProperties == null) ? null : optionalProperties.getProperty(),
-                    (supportedOperations == null) ? null : supportedOperations.getOperation());
+                    (dataStoreRefs == null) ? new ArrayList<String>() : dataStoreRefs.getDataStoreName(),
+                    (requiredProperties == null) ? new ArrayList<PropertyType>() : requiredProperties.getProperty(),
+                    (optionalProperties == null) ? new ArrayList<PropertyType>() : optionalProperties.getProperty(),
+                    (supportedOperations == null) ? new ArrayList<String>() : supportedOperations.getOperation());
         }
+
+        connectorMetadata.setManifestAdded(true);
 
         // Persist
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
@@ -483,6 +501,9 @@ public class APIManager {
 
     private void dropDataStore(DataStoreName dataStoreName) throws ApiException {
         try {
+            if(!MetadataManager.MANAGER.exists(dataStoreName)){
+                throw new ApiException(new ExecutionException(dataStoreName + " doesn't exist"));
+            }
             MetadataManager.MANAGER.deleteDatastore(dataStoreName);
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
                 RollbackException | MetadataManagerException e) {
@@ -492,6 +513,9 @@ public class APIManager {
 
     private void dropConnector(ConnectorName connectorName) throws ApiException {
         try {
+            if(!MetadataManager.MANAGER.exists(connectorName)){
+                throw new ApiException(new ExecutionException(connectorName + " doesn't exist"));
+            }
             MetadataManager.MANAGER.deleteConnector(connectorName);
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
                 RollbackException | MetadataManagerException e) {

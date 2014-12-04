@@ -25,10 +25,10 @@ import com.stratio.crossdata.core.api.APIManager
 import org.apache.log4j.Logger
 
 object APIActor {
-  def props(metadata: APIManager): Props = Props(new APIActor(metadata))
+  def props(apiManager: APIManager): Props = Props(new APIActor(apiManager))
 }
 
-class APIActor(metadata: APIManager) extends Actor with TimeTracker {
+class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
   override lazy val timerName = this.getClass.getName
   val log = Logger.getLogger(classOf[APIActor])
 
@@ -36,7 +36,7 @@ class APIActor(metadata: APIManager) extends Actor with TimeTracker {
     case cmd: Command => {
       log.debug("command received " + cmd.toString)
       val timer = initTimer()
-      sender ! metadata.processRequest(cmd)
+      sender ! apiManager.processRequest(cmd)
       finishTimer(timer)
     }
     case _ => {
