@@ -90,3 +90,7 @@ service cassandra start
 service crossdata start
 service connector_cassandra start
 service connector_deep start
+echo "Starting demo environment"
+wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/blob/master/src/main/resources/README.txt
+wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/blob/master/src/main/resources/CrossdataClientExample-1.0-jar-with-dependencies.jar
+echo "Follow instructions in /etc/sds/crossdata/README.txt"
