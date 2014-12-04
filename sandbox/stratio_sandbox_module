@@ -27,7 +27,6 @@ sed -i "s/\(\-Dcassandra.logdir=\)\$CASSANDRA_HOME\/logs/\1\/var\/log\/sds\/cass
 ## Crossdata
 #######################################
 echo "Installing Crossdata..."
-echo $REPOSITORY
 rpm --quiet -q jakarta-commons-daemon-jsvc || yum -y -q --nogpgcheck install http://$REPOSITORY/RHEL/6.5/x86_64/jakarta-commons-daemon-jsvc-1.0.1-8.9.el6.x86_64.rpm
 rpm --quiet -q stratio-crossdata || yum -y -q --nogpgcheck install stratio-crossdata
 echo "Configuring Crossdata..."
@@ -82,12 +81,16 @@ chkconfig --add crossdata
 chkconfig --add cassandra
 chkconfig --add connector_cassandra
 chkconfig --add connector_deep
-chkconfig crossdata on
+chkconfig crossdata off
 chkconfig cassandra on
-chkconfig connector_cassandra on
-chkconfig connector_deep on
+chkconfig connector_cassandra off
+chkconfig connector_deep off
 echo "Starting services..."
 service cassandra start
-service crossdata start
-service connector_cassandra start
-service connector_deep start
+echo "Starting demo environment"
+cat >>/home/vagrant/.bash_profile <<EOF 
+echo "--- PLEASE READ /etc/sds/crossdata/README.txt ---" 
+EOF
+wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/raw/master/src/main/resources/README.txt --no-check-certificate
+wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/raw/master/src/main/resources/CrossdataClientExample.jar --no-check-certificate
+echo "Follow instructions in /etc/sds/crossdata/README.txt"
