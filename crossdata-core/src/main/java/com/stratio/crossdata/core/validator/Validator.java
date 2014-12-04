@@ -345,7 +345,7 @@ public class Validator {
             props.add(pt.getPropertyName().toLowerCase());
         }
         if(!props.containsAll(attProps)){
-            throw new BadFormatException("Some properties are not found in the datastore manifest");
+            throw new BadFormatException("Some properties are not found in the manifest");
         }
     }
 
