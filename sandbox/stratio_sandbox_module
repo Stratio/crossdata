@@ -91,6 +91,6 @@ echo "Starting demo environment"
 cat >>/home/vagrant/.bash_profile <<EOF 
 echo "--- PLEASE READ /etc/sds/crossdata/README.txt ---" 
 EOF
-wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/blob/master/src/main/resources/README.txt
-wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/blob/master/src/main/resources/CrossdataClientExample-1.0-jar-with-dependencies.jar
+wget -P /etc/sds/crossdata https://raw.githubusercontent.com/miguel0afd/crossdata-client-example/master/src/main/resources/README.txt
+wget -P /etc/sds/crossdata https://raw.githubusercontent.com/miguel0afd/crossdata-client-example/master/src/main/resources/CrossdataClientExample.jar
 echo "Follow instructions in /etc/sds/crossdata/README.txt"
