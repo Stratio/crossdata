@@ -81,16 +81,16 @@ chkconfig --add crossdata
 chkconfig --add cassandra
 chkconfig --add connector_cassandra
 chkconfig --add connector_deep
-chkconfig crossdata on
+chkconfig crossdata off
 chkconfig cassandra on
-chkconfig connector_cassandra on
-chkconfig connector_deep on
+chkconfig connector_cassandra off
+chkconfig connector_deep off
 echo "Starting services..."
 service cassandra start
-service crossdata start
-service connector_cassandra start
-service connector_deep start
 echo "Starting demo environment"
+cat >>/home/vagrant/.bash_profile <<EOF 
+Follow instructions in /etc/sds/crossdata/README.txt 
+EOF
 wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/blob/master/src/main/resources/README.txt
 wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/blob/master/src/main/resources/CrossdataClientExample-1.0-jar-with-dependencies.jar
 echo "Follow instructions in /etc/sds/crossdata/README.txt"
