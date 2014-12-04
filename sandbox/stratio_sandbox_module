@@ -89,7 +89,7 @@ echo "Starting services..."
 service cassandra start
 echo "Starting demo environment"
 cat >>/home/vagrant/.bash_profile <<EOF 
---- PLEASE READ /etc/sds/crossdata/README.txt --- 
+echo "--- PLEASE READ /etc/sds/crossdata/README.txt ---" 
 EOF
 wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/blob/master/src/main/resources/README.txt
 wget -P /etc/sds/crossdata https://github.com/miguel0afd/crossdata-client-example/blob/master/src/main/resources/CrossdataClientExample-1.0-jar-with-dependencies.jar
