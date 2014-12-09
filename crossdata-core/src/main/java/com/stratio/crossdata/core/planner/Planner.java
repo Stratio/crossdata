@@ -645,6 +645,7 @@ public class Planner {
             CatalogMetadata catalogMetadata = new CatalogMetadata(name, options, tables);
             metadataWorkflow.setCatalogName(name);
             metadataWorkflow.setCatalogMetadata(catalogMetadata);
+            metadataWorkflow.setIfNotExists(createCatalogStatement.isIfNotExists());
 
         } else if (metadataStatement instanceof CreateTableStatement) {
 

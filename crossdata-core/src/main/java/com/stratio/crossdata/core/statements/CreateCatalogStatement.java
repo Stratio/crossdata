@@ -73,7 +73,11 @@ public class CreateCatalogStatement extends MetadataStatement {
     }
 
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_NOT_EXIST_CATALOG);
+        ValidationRequirements validationRequirements = new ValidationRequirements();
+        if(!ifNotExists){
+            validationRequirements = validationRequirements.add(ValidationTypes.MUST_NOT_EXIST_CATALOG);
+        }
+        return validationRequirements;
     }
 
     public CatalogName getCatalogName() {

@@ -190,19 +190,8 @@ T_AND: A N D;
 T_USE: U S E;
 T_SET: S E T;
 T_OPTIONS: O P T I O N S;
-T_ANALYTICS: A N A L Y T I C S;
 T_TRUE: T R U E;
 T_FALSE: F A L S E;
-T_CONSISTENCY: C O N S I S T E N C Y;
-T_ALL: A L L;
-T_ANY: A N Y;
-T_QUORUM: Q U O R U M;
-T_ONE: O N E;
-T_TWO: T W O;
-T_THREE: T H R E E;
-T_EACH_QUORUM: E A C H '_' Q U O R U M;
-T_LOCAL_ONE: L O C A L '_' O N E;
-T_LOCAL_QUORUM: L O C A L '_' Q U O R U M;
 T_PLAN: P L A N;
 T_FOR: F O R;
 T_INDEX: I N D E X;
@@ -240,7 +229,6 @@ T_INNER: I N N E R;
 T_JOIN: J O I N;
 T_BY: B Y;
 T_LIMIT: L I M I T;
-T_DISABLE: D I S A B L E;
 T_DISTINCT: D I S T I N C T;
 T_COUNT: C O U N T;
 T_AS: A S;
@@ -606,15 +594,18 @@ selectStatement returns [SelectStatement slctst]
         Map fieldsAliasesMap = new LinkedHashMap<String, String>();
         Map tablesAliasesMap = new LinkedHashMap<String, String>();
         MutablePair<String, String> pair = new MutablePair<>();
+        boolean implicitJoin = false;
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
         slctst.setTablesAliases(tablesAliasesMap);
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
+    (T_COMMA { joinInc = true; implicitJoin = true; } identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
-    (T_INNER T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON joinRelations=getWhereClauses[null])?
-    (T_WHERE {whereInc = true;} whereClauses=getWhereClauses[null])?
+    ((T_INNER)? T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
+    joinRelations=getWhereClauses[null])?
+    (T_WHERE { if(!implicitJoin) whereInc = true; } whereClauses=getWhereClauses[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
@@ -624,7 +615,10 @@ selectStatement returns [SelectStatement slctst]
         if(windowInc)
             $slctst.setWindow(window);
         if(joinInc)
-            $slctst.setJoin(new InnerJoin(identJoin, joinRelations));
+            if(implicitJoin)
+                $slctst.setJoin(new InnerJoin(identJoin, whereClauses));
+            else
+                $slctst.setJoin(new InnerJoin(identJoin, joinRelations));
         if(whereInc)
              $slctst.setWhere(whereClauses);
         if(orderInc)

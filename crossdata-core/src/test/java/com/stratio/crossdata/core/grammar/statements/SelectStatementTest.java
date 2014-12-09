@@ -271,10 +271,10 @@ public class SelectStatementTest extends ParsingTest {
     public void selectStatementJoinComplex() {
         String inputText = "[test], " +
                 "SELECT colSales, colRevenues FROM tableClients "
-                        + "INNER JOIN tableCostumers ON AssistantId = clientId "
-                        + "WHERE colCity = 'Madrid' "
-                        + "ORDER BY age "
-                        + "GROUP BY gender;";
+                + "INNER JOIN tableCostumers ON AssistantId = clientId "
+                + "WHERE colCity = 'Madrid' "
+                + "ORDER BY age "
+                + "GROUP BY gender;";
         String expectedText =
                 "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
                         + "INNER JOIN test.tableCostumers ON <unknown_name>.<unknown_name>.AssistantId = <unknown_name>.<unknown_name>.clientId "
@@ -284,82 +284,80 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatement(inputText, expectedText, "selectStatementJoinComplex");
     }
 
+    @Test
+    public void selectStatementJoinWithParenthesis() {
+        String inputText = "[catalogTest], " +
+                "SELECT c.a, c.b FROM c INNER JOIN tablename t ON (field1=field2) WHERE c.x = y;";
+        String expectedText =
+                "SELECT catalogTest.c.a, catalogTest.c.b FROM catalogTest.c INNER JOIN catalogTest.tablename AS t " +
+                        "ON <unknown_name>.<unknown_name>.field1 = <unknown_name>.<unknown_name>.field2 " +
+                        "WHERE catalogTest.c.x = <unknown_name>.<unknown_name>.y;";
+        testRegularStatement(inputText, expectedText, "selectStatementJoins");
+    }
 
-    /*
-  @Test
-  public void selectStatementJoinWithParenthesis() {
-
-    String inputText =
-        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON (field1=field2) WHERE c.x = y;";
-
-    String expectedText =
-        "SELECT c.a, c.b FROM c INNER JOIN tablename ON field1=field2 WHERE c.x = y;";
-
-    testRegularStatement(inputText, expectedText, "selectStatementJoins");
-  }*/
-
-  @Test
-  public void selectStatementAliasedColumnsJoin() {
-    String inputText = "[test], " +
-        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON c.field1=tablename.field2 WHERE c.x = 5;";
-    String expectedText =
-        "SELECT test.c.a, test.c.b FROM test.c " +
-                "INNER JOIN test.tablename AS t " +
-                "ON test.c.field1 = test.tablename.field2 " +
-                "WHERE test.c.x = 5;";
-    testRegularStatement(inputText, expectedText, "selectStatementAliasedColumnsJoin");
-  }
+    @Test
+    public void selectStatementAliasedColumnsJoin() {
+        String inputText = "[test], " +
+                "SELECT c.a, c.b FROM c INNER JOIN tablename t ON c.field1=tablename.field2 WHERE c.x = 5;";
+        String expectedText =
+                "SELECT test.c.a, test.c.b FROM test.c " +
+                        "INNER JOIN test.tablename AS t " +
+                        "ON test.c.field1 = test.tablename.field2 " +
+                        "WHERE test.c.x = 5;";
+        testRegularStatement(inputText, expectedText, "selectStatementAliasedColumnsJoin");
+    }
 
 
-  @Test
-  public void selectStatementAliasedInversedColumnsJoins() {
-    String inputText = "[test], " +
-        "SELECT c.a, c.b FROM c INNER JOIN tablename t ON tablename.field2=c.field1 WHERE c.x = 5;";
-    String expectedText =
-        "SELECT test.c.a, test.c.b FROM test.c " +
-                "INNER JOIN test.tablename AS t " +
-                "ON test.tablename.field2 = test.c.field1 " +
-                "WHERE test.c.x = 5;";
+    @Test
+    public void selectStatementAliasedInversedColumnsJoins() {
+        String inputText = "[test], " +
+                "SELECT c.a, c.b FROM c INNER JOIN tablename t ON tablename.field2=c.field1 WHERE c.x = 5;";
+        String expectedText =
+                "SELECT test.c.a, test.c.b FROM test.c " +
+                        "INNER JOIN test.tablename AS t " +
+                        "ON test.tablename.field2 = test.c.field1 " +
+                        "WHERE test.c.x = 5;";
 
-    testRegularStatement(inputText, expectedText, "selectStatementJoins");
-  }
+        testRegularStatement(inputText, expectedText, "selectStatementJoins");
+    }
 
-  @Test
-  public void selectStatementAliasedTableJoins() {
-    String inputText = "[test], " +
-        "SELECT c.a, c.b FROM table_c c INNER JOIN tablename t ON t.field2=c.field1 WHERE c.x = 5;";
-    String expectedText =
-        "SELECT test.c.a, test.c.b FROM test.table_c AS c " +
-                "INNER JOIN test.tablename AS t " +
-                "ON test.t.field2 = test.c.field1 " +
-                "WHERE test.c.x = 5;";
+    @Test
+    public void selectStatementAliasedTableJoins() {
+        String inputText = "[test], " +
+                "SELECT c.a, c.b FROM table_c c JOIN tablename t ON t.field2=c.field1 WHERE c.x = 5;";
+        String expectedText =
+                "SELECT test.c.a, test.c.b FROM test.table_c AS c " +
+                        "INNER JOIN test.tablename AS t " +
+                        "ON test.t.field2 = test.c.field1 " +
+                        "WHERE test.c.x = 5;";
 
-    testRegularStatement(inputText, expectedText, "selectStatementAliasedTableJoins");
-  }
+        testRegularStatement(inputText, expectedText, "selectStatementAliasedTableJoins");
+    }
 
     //
     // Select with order by
     //
 
-  /*
-  @Test
-  public void selectStatementCombineOrderby() {
-    for (String s : new String[] {"ASC", "DESC", "ASC, b.anothercolumn ASC",
-        "ASC, b.anothercolumn DESC", "DESC, b.anothercolumn DESC", "DESC, b.anothercolumn ASC"}) {
-      String inputText =
-          "SELECT b.a FROM b ORDER BY b.id1 " + s + " GROUP BY b.col1 LIMIT 50 DISABLE ANALYTICS;";
-      testRegularStatement(inputText, "selectStatementCombineOrderby");
+    @Test
+    public void selectStatementCombineOrderby() {
+        for (String s : new String[] {" ASC", " DESC", " ASC, demo.b.extracol ASC",
+                " ASC, demo.b.extracol DESC", " DESC, demo.b.extracol DESC",
+                " DESC, demo.b.extracol ASC"}) {
+            String inputText =
+                    "SELECT demo.b.a FROM demo.b ORDER BY demo.b.id1 " + s + " GROUP BY demo.b.col1 LIMIT 50;";
+            String expectedText =
+                    "SELECT demo.b.a FROM demo.b ORDER BY [demo.b.id1" + (s.replace(" ASC", "")) + "]"
+                            + " GROUP BY demo.b.col1 LIMIT 50;";
+            testRegularStatement(inputText, expectedText, "selectStatementCombineOrderby");
+        }
     }
 
+    @Test
+    public void selectWrongLikeWord() {
+        String inputText =
+                "SELECT newtb.ident1, myfunction(newtb.innerIdent, newtb.anotherIdent) LIKE ident1 FROM newks.newtb;";
+        testParserFails(inputText, "selectWrongLikeWord");
   }
-
-  @Test
-  public void selectWrongLikeWord() {
-    String inputText =
-        "SELECT newtb.ident1, myfunction(newtb.innerIdent, newtb.anotherIdent) LIKE ident1 FROM newks.newtb;";
-    testParserFails(inputText, "selectWrongLikeWord");
-  }
-*/
 
     @Test
     public void selectSelectors() {
@@ -423,85 +421,87 @@ public class SelectStatementTest extends ParsingTest {
   }
 */
 
-  @Test
-  public void selectGroupedWithCountOk() {
-    String inputText = "SELECT users.gender, COUNT(*) FROM demo.users GROUP BY users.gender;";
-    String expectedText = "SELECT <unknown_name>.users.gender, COUNT(*) FROM demo.users " +
-            "GROUP BY <unknown_name>.users.gender;";
-    testRegularStatement(inputText, expectedText, "selectGroupedWithCountOk");
-  }
-  /*
+    @Test
+    public void selectGroupedWithCountOk() {
+        String inputText = "SELECT users.gender, COUNT(*) FROM demo.users GROUP BY users.gender;";
+        String expectedText = "SELECT <unknown_name>.users.gender, COUNT(*) FROM demo.users " +
+                "GROUP BY <unknown_name>.users.gender;";
+        testRegularStatement(inputText, expectedText, "selectGroupedWithCountOk");
+    }
 
-  @Test
-  public void selectAliasGroupedWithCountOk() {
-    String inputText = "SELECT users.gender as g, COUNT(*) FROM demo.users GROUP BY users.gender;";
-    testRegularStatement(inputText, "selectAliasGroupedWithCountOk");
-  }
-
-  @Test
-  public void selectGroupedWithSumOk() {
-    String inputText = "SELECT users.gender, SUM(users.age) FROM demo.users GROUP BY users.gender;";
-    testRegularStatement(inputText, "selectGroupedWithSumOk");
-  }
-
-  @Test
-  public void selectSimpleOrderByOk() {
-
-    String inputText = "SELECT users.gender FROM demo.users ORDER BY users.age;";
-    testRegularStatement(inputText, "selectSimpleOrderByOk");
-  }
-
-  @Test
-  public void selectMultipleOrderByOk() {
-
-    String inputText = "SELECT users.gender FROM demo.users ORDER BY users.age, users.gender;";
-    testRegularStatement(inputText, "selectSimpleOrderByOk");
-  }
-
-  @Test
-  public void selectSimpleOrderByWithoutTableOk() {
-
-    String inputText = "SELECT users.gender FROM demo.users ORDER BY users.age;";
-    testRegularStatement(inputText, "selectSimpleOrderByOk");
-  }
-
-  @Test
-  public void selectMultipleOrderByWithoutTableOk() {
-
-    String inputText = "SELECT users.gender FROM demo.users ORDER BY users.age, users.gender;";
-    testRegularStatement(inputText, "selectSimpleOrderByOk");
-  }
-
-  @Test
-  public void selectMultipleOrderByWithoutTableMultipleDirectionOk() {
-
-    String inputText =
-        "SELECT users.gender FROM demo.users ORDER BY users.age ASC, users.gender DESC;";
-    testRegularStatement(inputText, "selectSimpleOrderByOk");
-  }
-
-  @Test
-  public void selectSimpleOrderByWithAscDirectionOk() {
-
-    String inputText = "SELECT users.gender FROM demo.users ORDER BY users.age ASC;";
-    testRegularStatement(inputText, "selectSimpleOrderByWithAscDirectionOk");
-  }
-
-  @Test
-  public void selectSimpleOrderByWithDescDirectionOk() {
-
-    String inputText = "SELECT users.gender FROM demo.users ORDER BY users.age DESC;";
-    testRegularStatement(inputText, "selectSimpleOrderByWithDescDirectionOk");
-  }
-*/
     /*
-  @Test
-  public void selectSimpleOrderByFail() {
-    String inputText = "SELECT users.gender FROM demo.users ORDER BY sum(users.age);";
-      testRegularStatement(inputText, "selectSimpleOrderByFail");
-  }
-*/
+    @Test
+    public void selectAliasGroupedWithCountOk() {
+        String inputText = "SELECT users.gender as g, COUNT(*) FROM demo.users GROUP BY users.gender;";
+        testRegularStatement(inputText, "selectAliasGroupedWithCountOk");
+    }
+    */
 
+    /*
+    @Test
+    public void selectGroupedWithSumOk() {
+        String inputText = "SELECT users.gender, SUM(users.age) FROM demo.users GROUP BY users.gender;";
+        testRegularStatement(inputText, "selectGroupedWithSumOk");
+    }
+    */
+
+    @Test
+    public void selectSimpleOrderByOk() {
+        String inputText = "SELECT users.gender FROM myCatalog.users ORDER BY users.age;";
+        String expectedText = "SELECT myCatalog.users.gender FROM myCatalog.users ORDER BY [myCatalog.users.age];";
+        testRegularStatementSession("myCatalog", inputText, expectedText, "selectSimpleOrderByOk");
+    }
+
+    @Test
+    public void selectMultipleOrderByOk() {
+        String inputText = "[myCatalog], SELECT users.gender FROM myCatalog.users ORDER BY users.age, users.gender;";
+        String expectedText = "SELECT myCatalog.users.gender FROM myCatalog.users " +
+                "ORDER BY [myCatalog.users.age, myCatalog.users.gender];";
+        testRegularStatement(inputText, expectedText, "selectMultipleOrderByOk");
+    }
+
+    @Test
+    public void selectSimpleOrderByWithoutTableOk() {
+        String inputText = "[demo], SELECT users.gender FROM demo.users ORDER BY users.age;";
+        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY [demo.users.age];";
+        testRegularStatement(inputText, expectedText, "selectSimpleOrderByOk");
+    }
+
+    @Test
+    public void selectMultipleOrderByWithoutTableOk() {
+        String inputText = "[demo], SELECT users.gender FROM demo.users ORDER BY users.age, users.gender;";
+        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY [demo.users.age, demo.users.gender];";
+        testRegularStatement(inputText, expectedText, "selectSimpleOrderByOk");
+    }
+
+    @Test
+    public void selectMultipleOrderByWithoutTableMultipleDirectionOk() {
+        String inputText = "[demo], " +
+                "SELECT users.gender FROM demo.users ORDER BY users.age ASC, users.gender DESC;";
+        String expectedText =
+                "SELECT demo.users.gender FROM demo.users ORDER BY [demo.users.age, demo.users.gender DESC];";
+        testRegularStatement(inputText, expectedText, "selectSimpleOrderByOk");
+    }
+
+    @Test
+    public void selectSimpleOrderByWithAscDirectionOk() {
+        String inputText = "SELECT users.gender FROM demo.users ORDER BY users.age ASC;";
+        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY [demo.users.age];";
+        testRegularStatementSession("demo", inputText, expectedText, "selectSimpleOrderByWithAscDirectionOk");
+    }
+
+    @Test
+    public void selectSimpleOrderByWithDescDirectionOk() {
+        String inputText = "[demo], SELECT users.gender FROM demo.users ORDER BY users.age DESC;";
+        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY [demo.users.age DESC];";
+        testRegularStatement(inputText, expectedText, "selectSimpleOrderByWithDescDirectionOk");
+    }
+
+    @Test
+    public void selectSimpleOrderByFail() {
+        String inputText = "SELECT users.gender FROM demo.users ORDER BY DESC users.age;";
+        testParserFails(inputText, "selectSimpleOrderByFail");
+    }
 
 /*
   @Test
@@ -536,7 +536,7 @@ public class SelectStatementTest extends ParsingTest {
     String inputText =
         "SELECT newtb.ident1 AS name1, myfunction(newtb.innerIdent, newtb.anotherIdent) AS functionName "
         + "FROM newks.newtb WITH WINDOW 5 ROWS INNER JOIN tablename ON field1=field2 WHERE newtb.ident1 LIKE whatever"
-        + " ORDER BY newtb.id1 ASC GROUP BY newtb.col1 LIMIT 50 DISABLE ANALYTICS;";
+        + " ORDER BY newtb.id1 ASC GROUP BY newtb.col1 LIMIT 50;";
     testRegularStatement(inputText, "complexSelect");
   }
   */
@@ -552,7 +552,7 @@ public class SelectStatementTest extends ParsingTest {
                 "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
                         + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
                         + "ORDER BY [<unknown_name>.<unknown_name>.age DESC, " +
-                                    "<unknown_name>.<unknown_name>.rating] "
+                        "<unknown_name>.<unknown_name>.rating] "
                         + "GROUP BY <unknown_name>.<unknown_name>.gender;";
         testRegularStatement(inputText, expectedText, "selectComplex");
     }
@@ -561,6 +561,14 @@ public class SelectStatementTest extends ParsingTest {
     public void selectWithWrongLeftTermTypeInWhere() {
         String inputText = "SELECT * FROM demo.emp WHERE myUDF(comment) < 10;";
         testParserFails("demo", inputText, "selectWithWrongLeftTermTypeInWhere");
+    }
+
+    @Test
+    public void implicitJoin() {
+        String inputText = "SELECT * FROM table1, table2 WHERE table1.id = table2.id;";
+        String expectedText = "SELECT * FROM myCatalog.table1 INNER JOIN myCatalog.table2 " +
+                "ON myCatalog.table1.id = myCatalog.table2.id;";
+        testRegularStatementSession("myCatalog", inputText, expectedText, "implicitJoin");
     }
 
 }

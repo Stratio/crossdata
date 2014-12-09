@@ -55,10 +55,14 @@ public class MetadataWorkflow extends ExecutionWorkflow {
 
     private AlterOptions alterOptions = null;
 
+    private boolean ifExists = false;
+
+    private boolean ifNotExists = false;
+
     /**
      * Class constructor.
      *
-     * @param queryId       Query identifer.
+     * @param queryId       Query identifier.
      * @param actorRef      Target actor reference.
      * @param executionType Type of execution.
      * @param type          Type of results.
@@ -122,6 +126,22 @@ public class MetadataWorkflow extends ExecutionWorkflow {
 
     public void setAlterOptions(AlterOptions alterOptions) {
         this.alterOptions = alterOptions;
+    }
+
+    public boolean isIfExists() {
+        return ifExists;
+    }
+
+    public void setIfExists(boolean ifExists) {
+        this.ifExists = ifExists;
+    }
+
+    public boolean isIfNotExists() {
+        return ifNotExists;
+    }
+
+    public void setIfNotExists(boolean ifNotExists) {
+        this.ifNotExists = ifNotExists;
     }
 
     public MetadataOperation createMetadataOperationMessage() {

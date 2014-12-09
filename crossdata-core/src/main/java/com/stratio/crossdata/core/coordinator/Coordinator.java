@@ -71,7 +71,7 @@ public class Coordinator implements Serializable {
 
         switch (metadataWorkflow.getExecutionType()) {
         case CREATE_CATALOG:
-            persistCreateCatalog(metadataWorkflow.getCatalogMetadata());
+            persistCreateCatalog(metadataWorkflow.getCatalogMetadata(), metadataWorkflow.isIfNotExists());
             break;
         case CREATE_INDEX:
             persistCreateIndex(metadataWorkflow.getIndexMetadata());
@@ -206,9 +206,16 @@ public class Coordinator implements Serializable {
      * Persists catalog data in Metadata Manager.
      *
      * @param catalog The catalog metadata to be stored.
+     * @param ifNotExists If Catalog doesn't exist.
      */
-    public void persistCreateCatalog(CatalogMetadata catalog) {
-        MetadataManager.MANAGER.createCatalog(catalog);
+    public void persistCreateCatalog(CatalogMetadata catalog, boolean ifNotExists) {
+        boolean persistOperation = true;
+        if(ifNotExists && (MetadataManager.MANAGER.exists(catalog.getName()))){
+            persistOperation = false;
+        }
+        if(persistOperation){
+            MetadataManager.MANAGER.createCatalog(catalog);
+        }
     }
 
     public void persistAlterCatalog(CatalogMetadata catalog) {
@@ -298,7 +305,7 @@ public class Coordinator implements Serializable {
         connectorMetadata.addClusterProperties(clusterName, options);
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
 
-        return CommandResult.createCommandResult("Connector is connecting to the cluster");
+        return CommandResult.createCommandResult("Connector started its session successfully");
     }
 
     /**
