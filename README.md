@@ -86,6 +86,11 @@ to a Cassandra datastore.
 
 [Crossdata Connector Challenge](https://stratio.github.io/crossdata/contest)
 
+
+## Sandbox ##
+
+if you want to test Crossdata you can get our Sandbox follow the instructions of this [link](_doc/Sandbox.md)
+
 # License #
 
 Stratio Crossdata is licensed as [Apache2](http://www.apache.org/licenses/LICENSE-2.0.txt)
