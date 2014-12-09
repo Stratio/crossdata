@@ -606,16 +606,18 @@ selectStatement returns [SelectStatement slctst]
         Map fieldsAliasesMap = new LinkedHashMap<String, String>();
         Map tablesAliasesMap = new LinkedHashMap<String, String>();
         MutablePair<String, String> pair = new MutablePair<>();
+        boolean implicitJoin = false;
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
         slctst.setTablesAliases(tablesAliasesMap);
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
+    (T_COMMA { joinInc = true; implicitJoin = true; } identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     ((T_INNER)? T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
     joinRelations=getWhereClauses[null])?
-    (T_WHERE {whereInc = true;} whereClauses=getWhereClauses[null])?
+    (T_WHERE { if(!implicitJoin) whereInc = true; } whereClauses=getWhereClauses[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
@@ -625,7 +627,10 @@ selectStatement returns [SelectStatement slctst]
         if(windowInc)
             $slctst.setWindow(window);
         if(joinInc)
-            $slctst.setJoin(new InnerJoin(identJoin, joinRelations));
+            if(implicitJoin)
+                $slctst.setJoin(new InnerJoin(identJoin, whereClauses));
+            else
+                $slctst.setJoin(new InnerJoin(identJoin, joinRelations));
         if(whereInc)
              $slctst.setWhere(whereClauses);
         if(orderInc)

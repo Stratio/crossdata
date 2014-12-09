@@ -327,7 +327,7 @@ public class SelectStatementTest extends ParsingTest {
   @Test
   public void selectStatementAliasedTableJoins() {
     String inputText = "[test], " +
-        "SELECT c.a, c.b FROM table_c c INNER JOIN tablename t ON t.field2=c.field1 WHERE c.x = 5;";
+        "SELECT c.a, c.b FROM table_c c JOIN tablename t ON t.field2=c.field1 WHERE c.x = 5;";
     String expectedText =
         "SELECT test.c.a, test.c.b FROM test.table_c AS c " +
                 "INNER JOIN test.tablename AS t " +
@@ -561,6 +561,14 @@ public class SelectStatementTest extends ParsingTest {
     public void selectWithWrongLeftTermTypeInWhere() {
         String inputText = "SELECT * FROM demo.emp WHERE myUDF(comment) < 10;";
         testParserFails("demo", inputText, "selectWithWrongLeftTermTypeInWhere");
+    }
+
+    @Test
+    public void implicitJoin() {
+        String inputText = "SELECT * FROM table1, table2 WHERE table1.id = table2.id;";
+        String expectedText = "SELECT * FROM myCatalog.table1 INNER JOIN myCatalog.table2 " +
+                "ON myCatalog.table1.id = myCatalog.table2.id;";
+        testRegularStatementSession("myCatalog", inputText, expectedText, "implicitJoin");
     }
 
 }
