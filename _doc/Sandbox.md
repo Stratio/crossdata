@@ -1,4 +1,4 @@
-# Crossdata Vagrant Sandbox #
+# Crossdata Sandbox #
 ---
 
 Crossdata provides a sandbox that allows to test its functionality. This sandbox includes Crossdata 0.1.1, Stratio 
