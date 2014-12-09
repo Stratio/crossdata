@@ -136,7 +136,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             String errorMsg = System.lineSeparator() +
                     "Expected: Some properties are not found in the datastore manifest" + System.lineSeparator() +
                     "   Found: " + e.getMessage().trim();
-            assertTrue(e.getMessage().trim().equalsIgnoreCase("Some properties are not found in the datastore manifest"), errorMsg);
+            assertTrue(e.getMessage().trim().equalsIgnoreCase("Some properties are not found in the manifest"), errorMsg);
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
