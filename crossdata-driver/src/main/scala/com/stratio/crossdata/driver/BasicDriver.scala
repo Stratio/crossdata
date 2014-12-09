@@ -26,8 +26,7 @@ import akka.pattern.ask
 import com.stratio.crossdata.common.ask.APICommand
 import com.stratio.crossdata.common.exceptions.{ManifestException, UnsupportedException, ExecutionException,
 ValidationException, ParsingException, ConnectionException}
-import com.stratio.crossdata.common.result.{CommandResult, MetadataResult, DisconnectResult, ConnectResult,
-ErrorResult, Result, IDriverResultHandler}
+import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
@@ -37,11 +36,11 @@ import com.stratio.crossdata.common.manifest.CrossdataManifest
 
 import scala.concurrent.duration._
 import com.stratio.crossdata.common.data._
+import com.stratio.crossdata.common.data.{DataStoreName, ConnectorName}
 import com.stratio.crossdata.common.ask.Connect
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.common.ask.Command
 import com.stratio.crossdata.common.ask.Query
-import com.stratio.crossdata.common.data.{DataStoreName, ConnectorName}
 
 object BasicDriver extends DriverConfig {
   /**
@@ -189,12 +188,245 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     r
   }
 
+  def executeCommand(command: String, async: Boolean): Result = {
+    var result:Result = null.asInstanceOf[Result]
+    if (executeApiCall(command)) {
+
+    } else {
+      if(async){
+        val partialResult = asyncExecuteQuery(command, null)
+        result = CommandResult.createCommandResult(partialResult)
+      } else {
+        result = executeQuery(command)
+      }
+    }
+    result
+  }
+
+  def executeApiCall(command: String): Boolean = {
+    /**
+     * Constant to define the prefix for explain plan operations.
+     */
+    val EXPLAIN_PLAN_TOKEN: String = "explain plan for"
+    var apiCallExecuted: Boolean = false
+    var result: String = "OK"
+    if (command.toLowerCase.startsWith("describe")) {
+      result = executeDescribe(command)
+      apiCallExecuted = true
+    }
+    else if (command.toLowerCase.startsWith("add connector") || command.toLowerCase.startsWith("add datastore")) {
+      result = sendManifest(command)
+      apiCallExecuted = true
+    }
+    else if (command.toLowerCase.startsWith("reset serverdata")) {
+      val xdResult = resetServerdata
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+      apiCallExecuted = true
+    }
+    else if (command.toLowerCase.startsWith("clean metadata")) {
+      val xdResult = cleanMetadata
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+      apiCallExecuted = true
+    }
+    else if (command.toLowerCase.startsWith("drop datastore")) {
+      val xdResult = dropManifest(CrossdataManifest.TYPE_DATASTORE, command.toLowerCase.replace("drop datastore ", "").replace(";", "").trim)
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+      apiCallExecuted = true
+    }
+    else if (command.toLowerCase.startsWith("drop connector")) {
+      val xdResult = dropManifest(CrossdataManifest.TYPE_CONNECTOR, command.toLowerCase.replace("drop connector ", "").replace(";", "").trim)
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+      apiCallExecuted = true
+    }
+    else if (command.toLowerCase.startsWith(EXPLAIN_PLAN_TOKEN)) {
+      val xdResult = explainPlan(command)
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+      apiCallExecuted = true
+    }
+    return apiCallExecuted
+  }
+
+  /**
+   * Send a manifest through the driver.
+   *
+   * @param sentence The sentence introduced by the user.
+   * @return The operation result.
+   */
+  def sendManifest(sentence: String): String = {
+    var result: String = "OK"
+    val tokens: Array[String] = sentence.split(" ")
+    if (tokens.length != 3) {
+      return "ERROR: Invalid ADD syntax"
+    }
+    var typeManifest: Int = 0
+    if (tokens(1).equalsIgnoreCase("datastore")) {
+      typeManifest = CrossdataManifest.TYPE_DATASTORE
+    }
+    else if (tokens(1).equalsIgnoreCase("connector")) {
+      typeManifest = CrossdataManifest.TYPE_CONNECTOR
+    }
+    else {
+      return "ERROR: Unknown type: " + tokens(1)
+    }
+    var crossdataResult: Result = null
+    try {
+      crossdataResult = addManifest(typeManifest, tokens(2))
+    }
+    catch {
+      case e: ManifestException => {
+        return null
+      }
+    }
+    return result
+  }
+
+  def executeDescribe(command: String): String = {
+    var result: String = null
+    if (command.toLowerCase.startsWith("describe system")) {
+      val xdResult = describeSystem
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+    } else if (command.toLowerCase.startsWith("describe datastores")) {
+      val xdResult = describeDatastores
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+    } else if (command.toLowerCase.startsWith("describe datastore ")) {
+      val datastore = command.toLowerCase.replace("describe datastore ", "").replace(";", "").trim
+      val xdResult = describeDatastore(new DataStoreName(datastore))
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+    } else if (command.toLowerCase.startsWith("describe clusters")) {
+      val xdResult = describeClusters
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+    } else if (command.toLowerCase.startsWith("describe cluster ")) {
+      val cluster = command.toLowerCase.replace("describe cluster ", "").replace(";", "").trim
+      val xdResult = describeCluster(new ClusterName(cluster))
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+    } else if (command.toLowerCase.startsWith("describe connectors")) {
+      val xdResult = describeConnectors
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+    } else if (command.toLowerCase.startsWith("describe connector ")) {
+      val connector = command.toLowerCase.replace("describe connector ", "").replace(";", "").trim
+      val xdResult = describeConnector(new ConnectorName(connector))
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+    } else if (command.toLowerCase.startsWith("describe catalogs")) {
+      val xdResult = listCatalogs
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[MetadataResult].getCatalogList.toString
+      }
+    } else if (command.toLowerCase.startsWith("describe catalog ")) {
+      val catalog = command.toLowerCase.replace("describe catalog ", "").replace(";", "").trim
+      val xdResult = describeCatalog(new CatalogName(catalog))
+      if(xdResult.isInstanceOf[ErrorResult]){
+        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+      } else {
+        result = xdResult.asInstanceOf[CommandResult].getResult.toString
+      }
+    } else if (command.toLowerCase.startsWith("describe tables")) {
+      var xdResult: Result = null
+      if (command.toLowerCase.startsWith("describe tables from ")) {
+        val catalog = command.toLowerCase.replace("describe tables from ", "").replace(";", "").trim
+        xdResult = describeTables(new CatalogName(catalog))
+        if(xdResult.isInstanceOf[ErrorResult]){
+          result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+        } else {
+          result = xdResult.asInstanceOf[CommandResult].getResult.toString
+        }
+      }
+      else if (!getCurrentCatalog.isEmpty) {
+        xdResult = describeTables(new CatalogName(getCurrentCatalog))
+        if(xdResult.isInstanceOf[ErrorResult]){
+          result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+        } else {
+          result = xdResult.asInstanceOf[CommandResult].getResult.toString
+        }
+      }
+      else {
+        result = "Catalog not specified"
+      }
+    } else if (command.toLowerCase.startsWith("describe table ")) {
+      if (command.toLowerCase.replace(";", "").trim.equalsIgnoreCase("describe table")) {
+        result = "Table name is missing"
+      } else if (command.toLowerCase.startsWith("describe table ") &&
+        command.toLowerCase.replace("describe table ", "").replace(";", "").trim.contains(".")) {
+        val table = command.toLowerCase.replace("describe table ", "").replace(";", "").trim
+        val xdResult = describeTable(new TableName(getCurrentCatalog, table))
+        if(xdResult.isInstanceOf[ErrorResult]){
+          result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+        } else {
+          result = xdResult.asInstanceOf[CommandResult].getResult.toString
+        }
+      } else if (!getCurrentCatalog.isEmpty) {
+        val table = getCurrentCatalog + "." +
+          command.toLowerCase.replace("describe table ", "").replace(";", "").trim
+        val xdResult = describeTable(new TableName(getCurrentCatalog, table))
+        if(xdResult.isInstanceOf[ErrorResult]){
+          result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
+        } else {
+          result = xdResult.asInstanceOf[CommandResult].getResult.toString
+        }
+      } else {
+        result = "Catalog not specified"
+      }
+    } else {
+      result = "Unknown command"
+    }
+    return result
+  }
+
   /**
    * List the existing catalogs in the underlying database.
    * @return A MetadataResult with a list of catalogs, or the object with hasError set
    *         containing the error message.
    */
-  def listCatalogs(): MetadataResult = {
+  def listCatalogs(): Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
@@ -203,7 +435,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if(result.isInstanceOf[MetadataResult]){
       result.asInstanceOf[MetadataResult]
     } else {
-      MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_UNKNOWN)
+      result.asInstanceOf[ErrorResult]
     }
   }
 
@@ -346,7 +578,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Describe the connectors available.
    * @return A CommandResult with the list.
    */
-  def describeConnectors():CommandResult = {
+  def describeConnectors():Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
@@ -355,8 +587,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
     }
   }
 
@@ -488,7 +719,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Describe the system.
    * @return A CommandResult with the description of the system.
    */
-  def describeSystem():CommandResult = {
+  def describeSystem():Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
@@ -497,8 +728,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if(result.isInstanceOf[CommandResult]){
       result.asInstanceOf[CommandResult]
     } else {
-      val errorResult = result.asInstanceOf[ErrorResult]
-      CommandResult.createCommandResult(errorResult.getErrorMessage)
+      result.asInstanceOf[ErrorResult]
     }
   }
 

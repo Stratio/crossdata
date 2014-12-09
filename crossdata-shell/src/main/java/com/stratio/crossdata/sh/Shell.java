@@ -45,6 +45,7 @@ import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.IDriverResultHandler;
+import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.driver.BasicDriver;
@@ -475,6 +476,7 @@ public class Shell {
             apiCallExecuted = true;
         } else if (command.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
             result = explainPlan(command);
+            apiCallExecuted = true;
         }
         if(apiCallExecuted){
             LOG.info(result);
@@ -621,7 +623,7 @@ public class Shell {
             crossdataDriver.setCurrentCatalog(newCatalog);
             currentCatalog = newCatalog;
         } else {
-            List<String> catalogs = crossdataDriver.listCatalogs().getCatalogList();
+            List<String> catalogs = ((MetadataResult) crossdataDriver.listCatalogs()).getCatalogList();
             if (catalogs.contains(newCatalog.toLowerCase())) {
                 crossdataDriver.setCurrentCatalog(newCatalog);
                 currentCatalog = newCatalog;
