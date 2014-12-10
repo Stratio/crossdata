@@ -33,9 +33,7 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
-import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.IDriverResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
@@ -95,11 +93,6 @@ public class Shell {
      * Whether the asynchronous interface should be used.
      */
     private boolean useAsync = false;
-
-    /**
-     * Constant to transform milliseconds in seconds.
-     */
-    private static final int MS_TO_SECONDS = 1000;
 
     /**
      * Default String for the Crossdata prompt
@@ -210,7 +203,7 @@ public class Shell {
      *
      * @param currentCatalog The currentCatalog.
      */
-    private void setPrompt(String currentCatalog) {
+    public void setPrompt(String currentCatalog) {
         StringBuilder sb = new StringBuilder(DEFAULT_PROMPT);
         sb.append(crossdataDriver.getUserName());
         if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
@@ -352,13 +345,7 @@ public class Shell {
                     } else {
                         try {
                             Result result = crossdataDriver.executeRawQuery(toExecute, resultHandler);
-                            if(result instanceof CommandResult){
-                                Object objectResult = ((CommandResult) result).getResult();
-                                if(objectResult instanceof CatalogName){
-                                    setPrompt(((CatalogName) objectResult).getName());
-                                }
-                            }
-                            LOG.info(ConsoleUtils.stringResult(result));
+                            LOG.info(ConsoleUtils.stringResult(result, this));
                         } catch (Exception ex) {
                             LOG.error("Execution failed: ", ex);
                         }
@@ -407,6 +394,7 @@ public class Shell {
         BufferedReader input = null;
         String query;
         int numberOps = 0;
+        Result result;
         try {
             input = new BufferedReader(
                         new InputStreamReader(
@@ -416,7 +404,14 @@ public class Shell {
             while ((query = input.readLine()) != null) {
                 query = query.trim();
                 if (query.length() > 0 && !query.startsWith("#")) {
-                    crossdataDriver.executeRawQuery(query);
+                    LOG.info("Executing: "+query);
+                    if(useAsync){
+                        result = crossdataDriver.executeRawQuery(query, resultHandler);
+                        Thread.sleep(1000);
+                    } else {
+                        result = crossdataDriver.executeRawQuery(query);
+                    }
+                    LOG.info(ConsoleUtils.stringResult(result, this));
                     numberOps++;
                 }
             }
@@ -426,6 +421,8 @@ public class Shell {
             LOG.error("Invalid path: " + scriptPath, e);
         } catch (IOException e) {
             LOG.error("Cannot read script: " + scriptPath, e);
+        } catch (InterruptedException e) {
+            LOG.error(e);
         } finally {
             if (input != null) {
                 try {
