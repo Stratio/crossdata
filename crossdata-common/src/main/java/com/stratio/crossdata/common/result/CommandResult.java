@@ -31,14 +31,14 @@ public final class CommandResult extends Result {
     /**
      * Execution result.
      */
-    private final String result;
+    private final Object result;
 
     /**
      * Private class constructor of the factory.
      *
      * @param result The execution result.
      */
-    private CommandResult(String result) {
+    private CommandResult(Object result) {
         this.result = result;
     }
 
@@ -48,7 +48,7 @@ public final class CommandResult extends Result {
      * @param result The execution result.
      * @return A {@link com.stratio.crossdata.common.result.CommandResult}.
      */
-    public static CommandResult createCommandResult(String result) {
+    public static CommandResult createCommandResult(Object result) {
         return new CommandResult(result);
     }
 

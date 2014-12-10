@@ -16,25 +16,15 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.exceptions;
+package com.stratio.crossdata.common.result;
 
-public class ManifestException extends ApiException {
+public class EmptyResult extends Result {
 
-    public ManifestException(String message) {
-        super(message);
+    private EmptyResult() {
     }
 
-    public ManifestException(Throwable cause) {
-        super(cause);
-    }
-
-    public ManifestException(String error, Throwable cause) {
-        super(error, cause);
-    }
-
-    @Override
-    public String toString() {
-        return "Error parsing manifest: " + System.lineSeparator() + super.toString();
+    public static EmptyResult createEmptyResult(){
+        return new EmptyResult();
     }
 
 }
