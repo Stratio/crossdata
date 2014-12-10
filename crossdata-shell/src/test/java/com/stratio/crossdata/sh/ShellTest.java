@@ -51,18 +51,4 @@ public class ShellTest {
         }
     }
 
-    @Test
-    public void testSendManifest()  {
-        Shell crossDatash = new Shell(false);
-        try {
-            crossDatash.sendManifest("ADD DATASTORE 'com/stratio/crossdata/connector/DataStoreDefinition.xml'");
-            Assert.assertTrue(true);
-        }catch (Exception e){
-            Assert.fail("An error happened in sh");
-        }
-    }
-
-
-
-
 }

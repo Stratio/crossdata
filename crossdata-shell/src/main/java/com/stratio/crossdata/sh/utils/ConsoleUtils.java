@@ -47,6 +47,7 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.ErrorResult;
+import com.stratio.crossdata.common.result.InProgressResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
@@ -96,7 +97,8 @@ public final class ConsoleUtils {
             return stringQueryResult(queryResult);
         } else if (result instanceof CommandResult) {
             CommandResult commandResult = (CommandResult) result;
-            return String.class.cast(commandResult.getResult());
+            Object objectResult = commandResult.getResult();
+            return String.valueOf(objectResult);
         } else if (result instanceof ConnectResult) {
             ConnectResult connectResult = (ConnectResult) result;
             return String.valueOf("Connected with SessionId=" + connectResult.getSessionId());
@@ -106,6 +108,9 @@ public final class ConsoleUtils {
         } else if (result instanceof StorageResult) {
             StorageResult storageResult = (StorageResult) result;
             return storageResult.toString();
+        } else if(result instanceof InProgressResult) {
+            InProgressResult inProgressResult = (InProgressResult) result;
+            return "Query " + inProgressResult.getQueryId() + " in progress";
         } else {
             return "Unknown result";
         }

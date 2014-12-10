@@ -41,6 +41,7 @@ import com.stratio.crossdata.common.ask.Connect
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.common.ask.Command
 import com.stratio.crossdata.common.ask.Query
+import com.stratio.crossdata.common.exceptions.validation.NotExistNameException
 
 object BasicDriver extends DriverConfig {
   /**
@@ -148,16 +149,17 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @param callback The callback object.
    */
   @throws(classOf[ConnectionException])
-  def asyncExecuteQuery(query: String, callback: IDriverResultHandler): String = {
+  def asyncExecuteQuery(query: String, callback: IDriverResultHandler): Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
     queries.put(queryId.toString, callback)
     sendQuery(new Query(queryId.toString, currentCatalog, query, userId))
-    queryId.toString
+    InProgressResult.createInProgressResult(queryId.toString)
   }
 
+  @throws(classOf[ConnectionException])
   def sendQuery(message: AnyRef) {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
@@ -188,82 +190,71 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     r
   }
 
-  def executeCommand(command: String, async: Boolean): Result = {
-    var result:Result = null.asInstanceOf[Result]
-    if (executeApiCall(command)) {
+  def executeRawQuery(command: String): Result = {
+    executeRawQuery(command, null)
+  }
 
+  @throws(classOf[NotExistNameException])
+  def executeRawQuery(command: String, callback: IDriverResultHandler): Result = {
+    var result:Result = null.asInstanceOf[Result]
+    if(command.toLowerCase.startsWith("use ")){
+      result = updateCatalog(command)
     } else {
-      if(async){
-        val partialResult = asyncExecuteQuery(command, null)
-        result = CommandResult.createCommandResult(partialResult)
-      } else {
-        result = executeQuery(command)
+      result = executeApiCall(command)
+      if(result.isInstanceOf[EmptyResult]){
+        if(callback != null){
+          val partialResult = asyncExecuteQuery(command, callback)
+          result = CommandResult.createCommandResult(partialResult)
+        } else {
+          result = executeQuery(command)
+        }
       }
     }
     result
   }
 
-  def executeApiCall(command: String): Boolean = {
+  @throws(classOf[NotExistNameException])
+  def updateCatalog(toExecute: String): Result = {
+    val newCatalog: String = toExecute.toLowerCase.replace("use ", "").replace(";", "").trim
+    var currentCatalog: String = getCurrentCatalog
+    if (newCatalog.isEmpty) {
+      setCurrentCatalog(newCatalog)
+      currentCatalog = newCatalog
+    } else {
+      val catalogs: java.util.List[String] = (listCatalogs.asInstanceOf[MetadataResult]).getCatalogList
+      if (catalogs.contains(newCatalog.toLowerCase)) {
+        setCurrentCatalog(newCatalog)
+        currentCatalog = newCatalog
+      } else {
+        throw new NotExistNameException(new CatalogName(newCatalog));
+      }
+    }
+    return CommandResult.createCommandResult(new CatalogName(currentCatalog));
+  }
+
+  def executeApiCall(command: String): Result = {
     /**
      * Constant to define the prefix for explain plan operations.
      */
     val EXPLAIN_PLAN_TOKEN: String = "explain plan for"
-    var apiCallExecuted: Boolean = false
-    var result: String = "OK"
+    var result: Result = null
+    result = EmptyResult.createEmptyResult()
     if (command.toLowerCase.startsWith("describe")) {
       result = executeDescribe(command)
-      apiCallExecuted = true
-    }
-    else if (command.toLowerCase.startsWith("add connector") || command.toLowerCase.startsWith("add datastore")) {
+    } else if (command.toLowerCase.startsWith("add connector") || command.toLowerCase.startsWith("add datastore")) {
       result = sendManifest(command)
-      apiCallExecuted = true
+    } else if (command.toLowerCase.startsWith("reset serverdata")) {
+      result = resetServerdata
+    } else if (command.toLowerCase.startsWith("clean metadata")) {
+      result = cleanMetadata
+    } else if (command.toLowerCase.startsWith("drop datastore")) {
+      result = dropManifest(CrossdataManifest.TYPE_DATASTORE, command.toLowerCase.replace("drop datastore ", "").replace(";", "").trim)
+    } else if (command.toLowerCase.startsWith("drop connector")) {
+      result = dropManifest(CrossdataManifest.TYPE_CONNECTOR, command.toLowerCase.replace("drop connector ", "").replace(";", "").trim)
+    } else if (command.toLowerCase.startsWith(EXPLAIN_PLAN_TOKEN)) {
+      result = explainPlan(command)
     }
-    else if (command.toLowerCase.startsWith("reset serverdata")) {
-      val xdResult = resetServerdata
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
-      apiCallExecuted = true
-    }
-    else if (command.toLowerCase.startsWith("clean metadata")) {
-      val xdResult = cleanMetadata
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
-      apiCallExecuted = true
-    }
-    else if (command.toLowerCase.startsWith("drop datastore")) {
-      val xdResult = dropManifest(CrossdataManifest.TYPE_DATASTORE, command.toLowerCase.replace("drop datastore ", "").replace(";", "").trim)
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
-      apiCallExecuted = true
-    }
-    else if (command.toLowerCase.startsWith("drop connector")) {
-      val xdResult = dropManifest(CrossdataManifest.TYPE_CONNECTOR, command.toLowerCase.replace("drop connector ", "").replace(";", "").trim)
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
-      apiCallExecuted = true
-    }
-    else if (command.toLowerCase.startsWith(EXPLAIN_PLAN_TOKEN)) {
-      val xdResult = explainPlan(command)
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
-      apiCallExecuted = true
-    }
-    return apiCallExecuted
+    return result
   }
 
   /**
@@ -272,151 +263,72 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @param sentence The sentence introduced by the user.
    * @return The operation result.
    */
-  def sendManifest(sentence: String): String = {
-    var result: String = "OK"
+  @throws(classOf[ManifestException])
+  def sendManifest(sentence: String): Result = {
     val tokens: Array[String] = sentence.split(" ")
     if (tokens.length != 3) {
-      return "ERROR: Invalid ADD syntax"
+      throw new ManifestException("ERROR: Invalid ADD syntax")
     }
     var typeManifest: Int = 0
     if (tokens(1).equalsIgnoreCase("datastore")) {
       typeManifest = CrossdataManifest.TYPE_DATASTORE
-    }
-    else if (tokens(1).equalsIgnoreCase("connector")) {
+    } else if (tokens(1).equalsIgnoreCase("connector")) {
       typeManifest = CrossdataManifest.TYPE_CONNECTOR
+    } else {
+      throw new ManifestException("ERROR: Unknown type: " + tokens(1))
     }
-    else {
-      return "ERROR: Unknown type: " + tokens(1)
-    }
-    var crossdataResult: Result = null
-    try {
-      crossdataResult = addManifest(typeManifest, tokens(2))
-    }
-    catch {
-      case e: ManifestException => {
-        return null
-      }
-    }
-    return result
+    addManifest(typeManifest, tokens(2))
   }
 
-  def executeDescribe(command: String): String = {
-    var result: String = null
+  def executeDescribe(command: String): Result = {
+    var result: Result = null
     if (command.toLowerCase.startsWith("describe system")) {
-      val xdResult = describeSystem
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
+      result = describeSystem
     } else if (command.toLowerCase.startsWith("describe datastores")) {
-      val xdResult = describeDatastores
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
+      result = describeDatastores
     } else if (command.toLowerCase.startsWith("describe datastore ")) {
       val datastore = command.toLowerCase.replace("describe datastore ", "").replace(";", "").trim
-      val xdResult = describeDatastore(new DataStoreName(datastore))
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
+      result = describeDatastore(new DataStoreName(datastore))
     } else if (command.toLowerCase.startsWith("describe clusters")) {
-      val xdResult = describeClusters
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
+      result = describeClusters
     } else if (command.toLowerCase.startsWith("describe cluster ")) {
       val cluster = command.toLowerCase.replace("describe cluster ", "").replace(";", "").trim
-      val xdResult = describeCluster(new ClusterName(cluster))
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
+      result = describeCluster(new ClusterName(cluster))
     } else if (command.toLowerCase.startsWith("describe connectors")) {
-      val xdResult = describeConnectors
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
+      result = describeConnectors
     } else if (command.toLowerCase.startsWith("describe connector ")) {
       val connector = command.toLowerCase.replace("describe connector ", "").replace(";", "").trim
-      val xdResult = describeConnector(new ConnectorName(connector))
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
+      result = describeConnector(new ConnectorName(connector))
     } else if (command.toLowerCase.startsWith("describe catalogs")) {
-      val xdResult = listCatalogs
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[MetadataResult].getCatalogList.toString
-      }
+      result = listCatalogs
     } else if (command.toLowerCase.startsWith("describe catalog ")) {
       val catalog = command.toLowerCase.replace("describe catalog ", "").replace(";", "").trim
-      val xdResult = describeCatalog(new CatalogName(catalog))
-      if(xdResult.isInstanceOf[ErrorResult]){
-        result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-      } else {
-        result = xdResult.asInstanceOf[CommandResult].getResult.toString
-      }
+      result = describeCatalog(new CatalogName(catalog))
     } else if (command.toLowerCase.startsWith("describe tables")) {
-      var xdResult: Result = null
       if (command.toLowerCase.startsWith("describe tables from ")) {
         val catalog = command.toLowerCase.replace("describe tables from ", "").replace(";", "").trim
-        xdResult = describeTables(new CatalogName(catalog))
-        if(xdResult.isInstanceOf[ErrorResult]){
-          result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-        } else {
-          result = xdResult.asInstanceOf[CommandResult].getResult.toString
-        }
-      }
-      else if (!getCurrentCatalog.isEmpty) {
-        xdResult = describeTables(new CatalogName(getCurrentCatalog))
-        if(xdResult.isInstanceOf[ErrorResult]){
-          result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-        } else {
-          result = xdResult.asInstanceOf[CommandResult].getResult.toString
-        }
-      }
-      else {
-        result = "Catalog not specified"
+        result = describeTables(new CatalogName(catalog))
+      } else if (!getCurrentCatalog.isEmpty) {
+        result = describeTables(new CatalogName(getCurrentCatalog))
+      } else {
+        result = Result.createErrorResult(new Exception("Catalog not specified"))
       }
     } else if (command.toLowerCase.startsWith("describe table ")) {
       if (command.toLowerCase.replace(";", "").trim.equalsIgnoreCase("describe table")) {
-        result = "Table name is missing"
+        result = Result.createErrorResult(new Exception("Table name is missing"))
       } else if (command.toLowerCase.startsWith("describe table ") &&
         command.toLowerCase.replace("describe table ", "").replace(";", "").trim.contains(".")) {
         val table = command.toLowerCase.replace("describe table ", "").replace(";", "").trim
-        val xdResult = describeTable(new TableName(getCurrentCatalog, table))
-        if(xdResult.isInstanceOf[ErrorResult]){
-          result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-        } else {
-          result = xdResult.asInstanceOf[CommandResult].getResult.toString
-        }
+        result = describeTable(new TableName(getCurrentCatalog, table))
       } else if (!getCurrentCatalog.isEmpty) {
         val table = getCurrentCatalog + "." +
           command.toLowerCase.replace("describe table ", "").replace(";", "").trim
-        val xdResult = describeTable(new TableName(getCurrentCatalog, table))
-        if(xdResult.isInstanceOf[ErrorResult]){
-          result = xdResult.asInstanceOf[ErrorResult].getErrorMessage
-        } else {
-          result = xdResult.asInstanceOf[CommandResult].getResult.toString
-        }
+        result = describeTable(new TableName(getCurrentCatalog, table))
       } else {
-        result = "Catalog not specified"
+        result = Result.createErrorResult(new Exception("Catalog not specified"))
       }
     } else {
-      result = "Unknown command"
+      result = Result.createErrorResult(new Exception("Unknown command"))
     }
     return result
   }
