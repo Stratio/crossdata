@@ -97,11 +97,6 @@ public class Shell {
     private boolean useAsync = false;
 
     /**
-     * Constant to transform milliseconds in seconds.
-     */
-    private static final int MS_TO_SECONDS = 1000;
-
-    /**
      * Default String for the Crossdata prompt
      */
     private static final String DEFAULT_PROMPT = "xdsh:";
@@ -407,6 +402,7 @@ public class Shell {
         BufferedReader input = null;
         String query;
         int numberOps = 0;
+        Result result;
         try {
             input = new BufferedReader(
                         new InputStreamReader(
@@ -416,7 +412,13 @@ public class Shell {
             while ((query = input.readLine()) != null) {
                 query = query.trim();
                 if (query.length() > 0 && !query.startsWith("#")) {
-                    crossdataDriver.executeRawQuery(query);
+                    if(useAsync){
+                        result = crossdataDriver.executeRawQuery(query, resultHandler);
+                        Thread.sleep(2000);
+                    } else {
+                        result = crossdataDriver.executeRawQuery(query);
+                    }
+                    LOG.info(ConsoleUtils.stringResult(result));
                     numberOps++;
                 }
             }
@@ -426,6 +428,8 @@ public class Shell {
             LOG.error("Invalid path: " + scriptPath, e);
         } catch (IOException e) {
             LOG.error("Cannot read script: " + scriptPath, e);
+        } catch (InterruptedException e) {
+            LOG.error(e);
         } finally {
             if (input != null) {
                 try {

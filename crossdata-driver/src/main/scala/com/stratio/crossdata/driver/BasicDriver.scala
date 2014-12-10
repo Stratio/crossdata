@@ -194,7 +194,6 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     executeRawQuery(command, null)
   }
 
-  @throws(classOf[NotExistNameException])
   def executeRawQuery(command: String, callback: IDriverResultHandler): Result = {
     var result:Result = null.asInstanceOf[Result]
     if(command.toLowerCase.startsWith("use ")){

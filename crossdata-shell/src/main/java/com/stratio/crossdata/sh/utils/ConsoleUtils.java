@@ -91,8 +91,7 @@ public final class ConsoleUtils {
             sb.append(error.getQueryId()).append(" cannot be executed:").append(System.lineSeparator());
             sb.append(error.getErrorMessage()).append(System.lineSeparator());
             return sb.toString();
-        }
-        if (result instanceof QueryResult) {
+        } else if (result instanceof QueryResult) {
             QueryResult queryResult = (QueryResult) result;
             return stringQueryResult(queryResult);
         } else if (result instanceof CommandResult) {
