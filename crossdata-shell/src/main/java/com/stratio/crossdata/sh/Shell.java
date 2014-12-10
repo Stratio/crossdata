@@ -33,9 +33,7 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
-import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.IDriverResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
@@ -205,7 +203,7 @@ public class Shell {
      *
      * @param currentCatalog The currentCatalog.
      */
-    private void setPrompt(String currentCatalog) {
+    public void setPrompt(String currentCatalog) {
         StringBuilder sb = new StringBuilder(DEFAULT_PROMPT);
         sb.append(crossdataDriver.getUserName());
         if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
@@ -347,13 +345,7 @@ public class Shell {
                     } else {
                         try {
                             Result result = crossdataDriver.executeRawQuery(toExecute, resultHandler);
-                            if(result instanceof CommandResult){
-                                Object objectResult = ((CommandResult) result).getResult();
-                                if(objectResult instanceof CatalogName){
-                                    setPrompt(((CatalogName) objectResult).getName());
-                                }
-                            }
-                            LOG.info(ConsoleUtils.stringResult(result));
+                            LOG.info(ConsoleUtils.stringResult(result, this));
                         } catch (Exception ex) {
                             LOG.error("Execution failed: ", ex);
                         }
@@ -412,13 +404,14 @@ public class Shell {
             while ((query = input.readLine()) != null) {
                 query = query.trim();
                 if (query.length() > 0 && !query.startsWith("#")) {
+                    LOG.info("Executing: "+query);
                     if(useAsync){
                         result = crossdataDriver.executeRawQuery(query, resultHandler);
-                        Thread.sleep(2000);
+                        Thread.sleep(1000);
                     } else {
                         result = crossdataDriver.executeRawQuery(query);
                     }
-                    LOG.info(ConsoleUtils.stringResult(result));
+                    LOG.info(ConsoleUtils.stringResult(result, this));
                     numberOps++;
                 }
             }

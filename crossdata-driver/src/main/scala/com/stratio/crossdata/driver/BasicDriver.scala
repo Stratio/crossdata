@@ -202,8 +202,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       result = executeApiCall(command)
       if(result.isInstanceOf[EmptyResult]){
         if(callback != null){
-          val partialResult = asyncExecuteQuery(command, callback)
-          result = CommandResult.createCommandResult(partialResult)
+          result = asyncExecuteQuery(command, callback)
         } else {
           result = executeQuery(command)
         }
