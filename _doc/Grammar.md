@@ -361,8 +361,8 @@ Example:
 ### SELECT
 
 SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)? (INNER JOIN
-\<tablename\> (AS \<identifier\>) ON \<field1\>=\<field2\>)? (WHERE \<where-clause\>)? (GROUP BY \<select-list\>)?
-(LIMIT \<integer\>)? ';'
+\<tablename\> (AS \<identifier\>) ON \<field1\>=\<field2\>)? (WHERE \<where-clause\>)? (ORDER BY \<select-list\>)?
+(GROUP BY \<select-list\>)? (LIMIT \<integer\>)? ';'
 
 \<selection-list\> ::= \<identifier\> (AS \<identifier\>)? (',' \<selector\> (AS \<identifier\>)? )\* | '\*'
 
