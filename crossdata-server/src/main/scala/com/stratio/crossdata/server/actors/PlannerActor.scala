@@ -34,44 +34,42 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
   val log = Logger.getLogger(classOf[PlannerActor])
 
   def receive : Receive= {
-    //case query: ValidatedQuery => {
     case query: MetadataValidatedQuery => {
-      log.info("\nGetting MetadataValidatedQuery; sending ack to " + sender + "\n")
+      log.info("Planning MetadataValidatedQuery from " + sender)
       val timer = initTimer()
       try {
         val planned = planner.planQuery(query)
         finishTimer(timer)
         coordinator forward planned
       } catch {
-        case pe:PlanningException => {
+        case pe: PlanningException => {
           log.error(" Planning error: " + pe.getMessage + " from sender: " + sender.toString())
           val errorResult = Result.createErrorResult(pe)
           errorResult.setQueryId(query.getQueryId)
           sender ! errorResult
         }
-        case e:Exception =>{
-          log.error("Planning error:  " + e.getMessage + "  from sender: " + sender.toString())
-        }
-      }
-      /*val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
-      sender ! ack*/
-    }
-    case query: SelectValidatedQuery => {
-      log.info("\nGetting SelectValidatedQuery; sending ack to " + sender + "\n")
-      try {
-        val planned = planner.planQuery(query)
-        log.info("\nplanner actor Sending " + planned.getClass + " to " + coordinator + "\n")
-        coordinator forward planned
-      } catch {
-        case pe:PlanningException => {
-          val errorResult = Result.createErrorResult(pe)
-          log.error("Planning  error: " + pe.getMessage + " from sender:  " + sender.toString())
+        case ex: Exception =>{
+          log.error("Planning error: " + ex.getMessage + " from sender: " + sender.toString())
+          val errorResult = Result.createErrorResult(new PlanningException(ex.getMessage))
           errorResult.setQueryId(query.getQueryId)
           sender ! errorResult
         }
       }
-      /*val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
-      sender ! ack*/
+    }
+    case query: SelectValidatedQuery => {
+      log.info("Planning SelectValidatedQuery from " + sender)
+      try {
+        val planned = planner.planQuery(query)
+        log.info("Planner actor Sending " + planned.getClass + " to " + coordinator)
+        coordinator forward planned
+      } catch {
+        case pe: PlanningException => {
+          val errorResult = Result.createErrorResult(pe)
+          log.error("Planning error: " + pe.getMessage + " from sender: " + sender.toString())
+          errorResult.setQueryId(query.getQueryId)
+          sender ! errorResult
+        }
+      }
     }
 
     case query: StorageValidatedQuery => {
@@ -89,8 +87,6 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
           sender ! errorResult
         }
       }
-      /*val ack = ACK(query.getQueryId, QueryStatus.PLANNED)
-      sender ! ack*/
     }
 
     case _ => {

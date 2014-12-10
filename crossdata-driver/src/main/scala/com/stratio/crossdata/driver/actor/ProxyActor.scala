@@ -73,8 +73,6 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
 
   override def receive: Actor.Receive = {
 
-
-
     /* The driver sends the connect message. */
     case c: Connect => {
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
@@ -114,7 +112,7 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
           handler.processError(result)
         }
       } else {
-        logger.warn("Result not expected received for QID: " + result.getQueryId)
+        logger.info("Result not expected received for QID: " + result.getQueryId)
       }
 
     }
