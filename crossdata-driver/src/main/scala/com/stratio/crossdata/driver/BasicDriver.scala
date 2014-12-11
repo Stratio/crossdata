@@ -264,7 +264,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   @throws(classOf[ManifestException])
   def sendManifest(sentence: String): Result = {
     val tokens: Array[String] = sentence.split(" ")
-    if (tokens.length != 3) {
+    if (tokens.length < 3) {
       throw new ManifestException("ERROR: Invalid ADD syntax")
     }
     var typeManifest: Int = 0
