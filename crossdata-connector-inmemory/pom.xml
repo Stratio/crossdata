@@ -91,7 +91,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <crossdata.version>0.2.0-SNAPSHOT</crossdata.version>
         <scala.version>2.10.4</scala.version>
-        <akka.version>2.2.4</akka.version>
         <scala.dep.version>2.10</scala.dep.version>
         <slf4j.version>1.7.7</slf4j.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
