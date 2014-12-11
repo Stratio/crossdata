@@ -87,10 +87,10 @@ class Operation(val queryId: String) extends Serializable
 sealed abstract class StorageOperation(queryId: String) extends Operation(queryId)
 
 case class Insert(override val queryId: String, targetCluster: ClusterName, targetTable: TableMetadata,
-                  row: Row) extends StorageOperation(queryId)
+                  row: Row, ifNotExists: Boolean) extends StorageOperation(queryId)
 
 case class InsertBatch(override val queryId: String, targetCluster: ClusterName, targetTable: TableMetadata,
-                       rows: util.Collection[Row]) extends StorageOperation(queryId)
+                       rows: util.Collection[Row], ifNotExists: Boolean) extends StorageOperation(queryId)
 
 case class DeleteRows(override val queryId: String, targetCluster: ClusterName, targetTable: TableName,
                       whereClauses: util.Collection[Filter]) extends StorageOperation(queryId)

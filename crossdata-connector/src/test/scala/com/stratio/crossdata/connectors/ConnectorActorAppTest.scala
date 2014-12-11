@@ -141,7 +141,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val port = "2561"
     val m = mock[IConnector]
     val ie = mock[IStorageEngine]
-    (ie.insert(_: ClusterName,_:TableMetadata,_:Row)).expects(*,*,*).returning()
+    (ie.insert(_: ClusterName,_:TableMetadata,_:Row,_:Boolean)).expects(*,*,*,*).returning()
     (m.init _).expects(*).returning(None)
     (m.getStorageEngine _).expects().returning(ie)
     (m.getConnectorName _).expects().returning("My New Connector")
@@ -151,7 +151,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
 
 
     val message=Insert("query",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"),
-      options.get, columns.get,indexes.get,clusterRef.get,partitionKey.get,partitionKey.get),new Row())
+      options.get, columns.get,indexes.get,clusterRef.get,partitionKey.get,partitionKey.get),new Row(), false)
     //val future=myReference ? message
     logger.info("\n\nsending insert message to" + myReference + " \n\n")
     val future=myReference ? message

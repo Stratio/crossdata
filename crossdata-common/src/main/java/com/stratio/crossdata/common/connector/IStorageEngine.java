@@ -40,10 +40,11 @@ public interface IStorageEngine {
      * @param targetCluster Target cluster.
      * @param targetTable   Target table metadata including fully qualified including catalog.
      * @param row           The row to be inserted.
+     * @param isNotExists   Insert only if primary key doesn't exist yet.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
      *                            supported by the connector or ExecutionException if the execution fails.
      */
-    void insert(ClusterName targetCluster, TableMetadata targetTable, Row row)
+    void insert(ClusterName targetCluster, TableMetadata targetTable, Row row, boolean isNotExists)
             throws ConnectorException;
 
     /**
@@ -52,10 +53,11 @@ public interface IStorageEngine {
      * @param targetCluster Target cluster.
      * @param targetTable   Target table metadata including fully qualified including catalog.
      * @param rows          Collection of rows to be inserted.
+     * @param isNotExists   Insert only if primary key doesn't exist yet.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
      *                            supported by the connector or ExecutionException if the execution fails.
      */
-    void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows)
+    void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows, boolean isNotExists)
             throws ConnectorException;
 
     /**

@@ -985,6 +985,7 @@ public class Planner {
             storageWorkflow.setClusterName(tableMetadata.getClusterRef());
             storageWorkflow.setTableMetadata(tableMetadata);
             storageWorkflow.setRow(row);
+            storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
 
         } else if (query.getStatement() instanceof DeleteStatement) {
 

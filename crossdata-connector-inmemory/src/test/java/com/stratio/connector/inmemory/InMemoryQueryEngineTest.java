@@ -155,7 +155,7 @@ public class InMemoryQueryEngineTest {
                 row.addCell("text_column", new Cell("text_" + index));
                 row.addCell("int_column", new Cell(index));
                 row.addCell("bool_column", new Cell(index % 2 == 0));
-                connector.getStorageEngine().insert(targetCluster, targetTable, row);
+                connector.getStorageEngine().insert(targetCluster, targetTable, row, false);
             }
         } catch (ConnectorException e) {
             fail("Insertion failed", e);

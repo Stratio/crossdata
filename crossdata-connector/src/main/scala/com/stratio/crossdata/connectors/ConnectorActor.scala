@@ -260,11 +260,11 @@ ActorLogging with IResultHandler{
     try {
       val eng = connector.getStorageEngine()
       storageOp match {
-        case Insert(queryId, clustername, table, row) => {
-          eng.insert(clustername, table, row)
+        case Insert(queryId, clustername, table, row, ifNotExists) => {
+          eng.insert(clustername, table, row, ifNotExists)
         }
-        case InsertBatch(queryId, clustername, table, rows) => {
-          eng.insert(clustername, table, rows)
+        case InsertBatch(queryId, clustername, table, rows, ifNotExists) => {
+          eng.insert(clustername, table, rows, ifNotExists)
         }
         case DeleteRows(queryId, clustername, table, whereClauses) => {
           eng.delete(clustername, table, whereClauses)
