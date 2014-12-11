@@ -24,7 +24,6 @@ import akka.actor.Actor
 import com.stratio.crossdata.communication.HeartbeatSig
 import org.apache.log4j.Logger
 
-
 trait HeartbeatActor extends Actor {
 
   lazy val logger = Logger.getLogger(classOf[HeartbeatActor])
@@ -38,13 +37,12 @@ trait HeartbeatActor extends Actor {
 
   val initialDelay:Long=0
   val period:Long=500
- /** @param command the task to execute
-    *
-  @param initialDelay the time to delay first execution
-    *
-  @param period the period between successive executions
-  *
-  @param unit the time unit of the initialDelay and period parameters.
+
+ /**
+  * command: the task to execute.
+  * initialDelay: the time to delay first execution.
+  * period: the period between successive executions.
+  * unit: the time unit of the initialDelay and period parameters.
   */
   scheduler.scheduleAtFixedRate(callback, initialDelay, period, TimeUnit.MILLISECONDS)
 
@@ -55,6 +53,5 @@ trait HeartbeatActor extends Actor {
   def handleHeartbeat(heartbeat: HeartbeatSig):Unit = {
     logger.debug("HeartbeatActor receives a heartbeat message")
   }
-
 
 }

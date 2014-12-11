@@ -281,7 +281,7 @@ ActorLogging with IResultHandler{
       s ! result
     } catch {
       case ex: Exception => {
-        logger.error(ex)
+        logger.error(ex.getMessage)
         val result = Result.createErrorResult(ex)
         result.setQueryId(qId)
         s ! result
