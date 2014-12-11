@@ -273,7 +273,6 @@ public enum MetadataManager {
         } finally {
             writeLock.unlock();
         }
-
     }
 
     /**

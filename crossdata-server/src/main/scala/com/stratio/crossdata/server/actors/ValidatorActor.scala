@@ -74,9 +74,5 @@ class ValidatorActor(planner: ActorRef, validator: Validator) extends Actor with
       log.error(unknown);
       sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
     }
-    //    case _ => {
-    //      log.error("Unknown message received by ValidatorActor");
-    //      sender ! Result.createUnsupportedOperationErrorResult("Message not recognized")
-    //    }
   }
 }

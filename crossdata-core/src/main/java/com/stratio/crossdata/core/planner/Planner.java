@@ -714,9 +714,14 @@ public class Planner {
             DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) metadataStatement;
 
             CatalogName catalog = dropCatalogStatement.getCatalogName();
-            CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(catalog);
+            CatalogMetadata catalogMetadata = null;
+            if(MetadataManager.MANAGER.exists(catalog)){
+                catalogMetadata = MetadataManager.MANAGER.getCatalog(catalog);
+            }
 
-            if (catalogMetadata.getTables().isEmpty() || catalogMetadata.getTables() == null) {
+            if (catalogMetadata == null ||
+                    catalogMetadata.getTables().isEmpty() ||
+                    catalogMetadata.getTables() == null) {
                 MetadataManager.MANAGER.deleteCatalog(catalog, dropCatalogStatement.isIfExists());
                 // Create MetadataWorkFlow
                 metadataWorkflow = new MetadataWorkflow(queryId, null, ExecutionType.DROP_CATALOG, ResultType.RESULTS);
