@@ -141,9 +141,9 @@ ImplicitSender with BeforeAndAfterAll{
     new TableName(catalogName,tableName1),
     new ClusterName(myClusterName),
 
-    new util.HashMap[ColumnName, ColumnType](),
-    new util.ArrayList[ColumnName](),
-    new util.ArrayList[ColumnName]()
+    new util.LinkedHashMap[ColumnName, ColumnType](),
+    new util.LinkedList[ColumnName](),
+    new util.LinkedList[ColumnName]()
   )
   val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table " + tableName1 + ";",
     new CatalogName(catalogName)),
@@ -160,17 +160,17 @@ ImplicitSender with BeforeAndAfterAll{
     )
   )
   val columnNme= new ColumnName(catalogName,tableName1,columnName)
-  val myList=new java.util.ArrayList[ColumnName]()
+  val myList=new java.util.LinkedList[ColumnName]()
   myList.add(columnNme)
   metadataWorkflow1.setTableMetadata(
     new TableMetadata(
       new TableName(catalogName, tableName1),
       new util.HashMap[Selector, Selector](),
-      new util.HashMap[ColumnName, ColumnMetadata](),
+      new util.LinkedHashMap[ColumnName, ColumnMetadata](),
       new util.HashMap[IndexName, IndexMetadata](),
       new ClusterName(myClusterName),
       myList,
-      new java.util.ArrayList[ColumnName]()
+      new java.util.LinkedList[ColumnName]()
     )
   )
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)

@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,9 +38,9 @@ import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
@@ -693,15 +694,15 @@ public class Planner {
             // Create & add TableMetadata to the MetadataWorkflow
             TableName name = createTableStatement.getTableName();
             Map<Selector, Selector> options = createTableStatement.getProperties();
-            Map<ColumnName, ColumnMetadata> columnMap = new HashMap<>();
+            LinkedHashMap<ColumnName, ColumnMetadata> columnMap = new LinkedHashMap<>();
             for (Map.Entry<ColumnName, ColumnType> c : createTableStatement.getColumnsWithTypes().entrySet()) {
                 ColumnName columnName = c.getKey();
                 ColumnMetadata columnMetadata = new ColumnMetadata(columnName, null, c.getValue());
                 columnMap.put(columnName, columnMetadata);
             }
             ClusterName clusterName = createTableStatement.getClusterName();
-            List<ColumnName> partitionKey = createTableStatement.getPartitionKey();
-            List<ColumnName> clusterKey = createTableStatement.getClusterKey();
+            LinkedList<ColumnName> partitionKey = createTableStatement.getPartitionKey();
+            LinkedList<ColumnName> clusterKey = createTableStatement.getClusterKey();
             Map<IndexName, IndexMetadata> indexes = new HashMap<>();
             TableMetadata tableMetadata = new TableMetadata(name, options, columnMap, indexes,
                     clusterName, partitionKey, clusterKey);

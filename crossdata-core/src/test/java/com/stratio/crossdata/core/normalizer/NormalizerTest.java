@@ -21,16 +21,14 @@ package com.stratio.crossdata.core.normalizer;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -38,6 +36,7 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -81,7 +80,7 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         TableName tableName = new TableName("demo", "tableClients");
         Map<Selector, Selector> options = new HashMap<>();
 
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
 
         ColumnMetadata columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "clientId"),
@@ -121,8 +120,11 @@ public class NormalizerTest extends MetadataManagerTestHelper {
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
         ClusterName clusterRef = new ClusterName("testing");
-        List<ColumnName> partitionKey = Collections.singletonList(new ColumnName("demo", "tableClients", "clientId"));
-        List<ColumnName> clusterKey = new ArrayList<>();
+
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        partitionKey.add(new ColumnName("demo", "tableClients", "clientId"));
+
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
 
         TableMetadata tableMetadata = new TableMetadata(
                 tableName,
@@ -150,7 +152,7 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         tableName = new TableName("myCatalog", "tableCostumers");
         options = new HashMap<>();
 
-        columns = new HashMap<>();
+        columns = new LinkedHashMap<>();
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "assistantId"),
@@ -178,8 +180,10 @@ public class NormalizerTest extends MetadataManagerTestHelper {
 
         indexes = new HashMap<>();
         clusterRef = new ClusterName("myCluster");
-        partitionKey = Collections.singletonList(new ColumnName("myCatalog", "tableCostumers", "assistantId"));
-        clusterKey = new ArrayList<>();
+        partitionKey.clear();
+        partitionKey.add(new ColumnName("myCatalog", "tableCostumers", "assistantId"));
+
+        clusterKey = new LinkedList<>();
 
         tableMetadata = new TableMetadata(
                 tableName,

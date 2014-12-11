@@ -20,6 +20,8 @@ package com.stratio.crossdata.common.metadata;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -40,7 +42,7 @@ public class TableMetadata implements IMetadata {
 
     private Map<Selector, Selector> options;
 
-    private Map<ColumnName, ColumnMetadata> columns;
+    private LinkedHashMap<ColumnName, ColumnMetadata> columns;
 
     private Map<IndexName, IndexMetadata> indexes;
 
@@ -60,9 +62,9 @@ public class TableMetadata implements IMetadata {
      * @param clusterKey The list of columns tha conforms the cluster key.
      */
     public TableMetadata(TableName name, Map<Selector, Selector> options,
-            Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
+            LinkedHashMap<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
             ClusterName clusterRef,
-            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
+            LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
         this.name = name;
 
         this.options = options;
@@ -72,7 +74,7 @@ public class TableMetadata implements IMetadata {
 
         this.columns = columns;
         if(columns == null){
-            this.columns = new HashMap<>();
+            this.columns = new LinkedHashMap<>();
         }
 
         this.indexes = indexes;
@@ -109,7 +111,7 @@ public class TableMetadata implements IMetadata {
      * @return Map with {@link com.stratio.crossdata.common.data.ColumnName},
      * {@link com.stratio.crossdata.common.metadata.ColumnMetadata}.
      */
-    public Map<ColumnName, ColumnMetadata> getColumns() {
+    public LinkedHashMap<ColumnName, ColumnMetadata> getColumns() {
         return columns;
     }
 
@@ -205,7 +207,7 @@ public class TableMetadata implements IMetadata {
         this.options = options;
     }
 
-    public void setColumns(Map<ColumnName, ColumnMetadata> columns) {
+    public void setColumns(LinkedHashMap<ColumnName, ColumnMetadata> columns) {
         this.columns = columns;
     }
 }

@@ -19,19 +19,19 @@
 package com.stratio.crossdata.core.validator.statements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
-import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.query.BaseQuery;
@@ -49,8 +49,8 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     public void createTable() {
         String query = "CREATE TABLE demo.users2 ( name varchar, gender varchar, age int, PRIMARY KEY (name)) ";
 
-        Map<ColumnName, ColumnType> columns = new HashMap<>();
-        List<ColumnName> primaryKey = new ArrayList<>();
+        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
+        LinkedList<ColumnName> primaryKey = new LinkedList<>();
         ColumnName partitionColumn1 = new ColumnName("demo", "users2", "name");
         primaryKey.add(partitionColumn1);
 
@@ -58,7 +58,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         columns.put(new ColumnName(new TableName("demo", "users2"), "gender"), ColumnType.TEXT);
         columns.put(new ColumnName(new TableName("demo", "users2"), "age"), ColumnType.INT);
 
-        List<ColumnName> clusterKey = null;
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "users2"),
                 new ClusterName("cluster"),
                 columns,
@@ -82,8 +82,8 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     @Test
     public void CreateTableWithOptions() {
         String query = "CREATE TABLE demo.users2 ( name varchar, gender varchar, age int, PRIMARY KEY (name)) WITH comment='Users2 table'";
-        Map<ColumnName, ColumnType> columns = new HashMap<>();
-        List<ColumnName> primaryKey = new ArrayList<>();
+        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
+        LinkedList<ColumnName> primaryKey = new LinkedList<>();
         ColumnName partitionColumn1 = new ColumnName("demo", "users2", "name");
         primaryKey.add(partitionColumn1);
 
@@ -91,7 +91,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         columns.put(new ColumnName(new TableName("demo", "users2"), "gender"), ColumnType.TEXT);
         columns.put(new ColumnName(new TableName("demo", "users2"), "age"), ColumnType.INT);
 
-        List<ColumnName> clusterKey = null;
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "users2"),
                 new ClusterName("cluster"),
                 columns,
@@ -117,8 +117,8 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     @Test
     public void CreateTableUnknownCatalog() {
         String query = "CREATE TABLE unknown.users2 ( name varchar, gender varchar, age int, PRIMARY KEY (name))";
-        Map<ColumnName, ColumnType> columns = new HashMap<>();
-        List<ColumnName> primaryKey = new ArrayList<>();
+        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
+        LinkedList<ColumnName> primaryKey = new LinkedList<>();
         ColumnName partitionColumn1 = new ColumnName("unknown", "users2", "name");
         primaryKey.add(partitionColumn1);
 
@@ -153,8 +153,8 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     public void createDuplicateTable() {
         String query = "CREATE TABLE demo.users ( name varchar, gender varchar, age int, PRIMARY KEY (name)) ";
 
-        Map<ColumnName, ColumnType> columns = new HashMap<>();
-        List<ColumnName> primaryKey = new ArrayList<>();
+        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
+        LinkedList<ColumnName> primaryKey = new LinkedList<>();
         ColumnName partitionColumn1 = new ColumnName("demo", "users", "name");
         primaryKey.add(partitionColumn1);
 

@@ -27,7 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -259,7 +259,7 @@ public class MetadataManagerTestHelper {
         Map<Selector, Selector> options = new HashMap<>();
 
         //Create columns
-        Map<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         for (int columnIndex = 0; columnIndex < columnNames.length; columnIndex++) {
             ColumnName columnName = new ColumnName(table, columnNames[columnIndex]);
             ColumnType columnType = columnTypes[columnIndex];
@@ -269,12 +269,12 @@ public class MetadataManagerTestHelper {
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
 
-        List<ColumnName> partitionKey = new ArrayList<>();
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
         for (String pk : partitionKeys) {
             partitionKey.add(new ColumnName(table, pk));
         }
 
-        List<ColumnName> clusterKey = new ArrayList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         for (String ck : clusteringKeys) {
             partitionKey.add(new ColumnName(table, ck));
         }

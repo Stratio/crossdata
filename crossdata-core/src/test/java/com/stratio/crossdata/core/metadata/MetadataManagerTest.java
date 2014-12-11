@@ -21,6 +21,8 @@ import static org.testng.Assert.fail;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,9 +39,9 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.PropertyType;
@@ -443,10 +445,10 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         TableName name = new TableName("catalogTest", "tableTest");
         Map<Selector, Selector> options = new HashMap<>();
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
-        List<ColumnName> partitionKey = new ArrayList<>();
-        List<ColumnName> clusterKey = new ArrayList<>();
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         TableMetadata tableMetadata = new TableMetadata(name, options, columns, indexes, clusterName, partitionKey,
                 clusterKey);
         MetadataManager.MANAGER.createTable(tableMetadata);

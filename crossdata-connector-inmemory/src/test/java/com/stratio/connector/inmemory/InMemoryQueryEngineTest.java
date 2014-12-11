@@ -21,12 +21,10 @@ package com.stratio.connector.inmemory;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.BeforeClass;
@@ -112,9 +110,9 @@ public class InMemoryQueryEngineTest {
     private TableMetadata getTestTableMetadata(ClusterName targetCluster) {
         TableName targetTable = new TableName("test_catalog", "types");
         Map<Selector, Selector> options = new HashMap<>();
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
-        List<ColumnName> partitionKey = new ArrayList<>();
-        List<ColumnName> clusterKey = new ArrayList<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         Object[] parameters = { };
         columns.put(new ColumnName(targetTable, "text_column"),
                 new ColumnMetadata(new ColumnName(targetTable, "text_column"), parameters,

@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -103,10 +105,10 @@ public class BasicValidatorTest {
         TableMetadata tableMetadata;
         TableName targetTable = new TableName("demo", "users");
         Map<Selector, Selector> options = new HashMap<>();
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         ClusterName clusterRef = new ClusterName("cluster");
-        List<ColumnName> partitionKey = new ArrayList<>();
-        List<ColumnName> clusterKey = new ArrayList<>();
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         Object[] parameters = null;
         columns.put(new ColumnName(new TableName("demo", "users"), "name"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "name"), parameters,
@@ -147,10 +149,10 @@ public class BasicValidatorTest {
         TableMetadata tableMetadata;
         TableName targetTable = new TableName("demo", "users_info");
         Map<Selector, Selector> options = new HashMap<>();
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         ClusterName clusterRef = new ClusterName("cluster");
-        List<ColumnName> partitionKey = new ArrayList<>();
-        List<ColumnName> clusterKey = new ArrayList<>();
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         Object[] parameters = null;
         columns.put(new ColumnName(new TableName("demo", "users_info"), "name"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users_info"), "name"), parameters,

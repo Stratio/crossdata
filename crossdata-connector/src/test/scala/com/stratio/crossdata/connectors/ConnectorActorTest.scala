@@ -49,10 +49,10 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
   val mytable:String="mytable"
   val sm2:String="2"
   val a:Option[java.util.Map[Selector, Selector]] = Some(new java.util.HashMap[Selector, Selector]())
-  val b:Option[java.util.Map[ColumnName,ColumnMetadata]] = Some(new java.util.HashMap[ColumnName, ColumnMetadata]())
+  val b:Option[java.util.LinkedHashMap[ColumnName,ColumnMetadata]] = Some(new java.util.LinkedHashMap[ColumnName, ColumnMetadata]())
   val c:Option[java.util.Map[IndexName,IndexMetadata]] = Some(new java.util.HashMap[IndexName, IndexMetadata]())
   val d:Option[ClusterName]= Some(new ClusterName(myluster))
-  val e:Option[java.util.List[ColumnName]]=Some(new java.util.ArrayList[ColumnName]())
+  val e:Option[java.util.LinkedList[ColumnName]]=Some(new java.util.LinkedList[ColumnName]())
 
   test("Send 2 slow MetadataInProgressQuery to two connectors to test concurrency") {
     val queryId = "queryId"
@@ -100,7 +100,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val message2 = CreateTable(queryId + sm2, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))
     /**
-     * @timesleep: time to wait the make the test
+     * Time to wait the make the test
      * */
     val timesleep:Int=3000
     Thread.sleep(timesleep)

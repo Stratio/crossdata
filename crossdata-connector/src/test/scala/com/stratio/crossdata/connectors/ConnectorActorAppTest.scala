@@ -51,12 +51,12 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
   val connector:String="MyConnector"
 
 
-  //val to initialize and dont use null
+  //val to initialize and don't use null
   val options:Option[java.util.Map[Selector,Selector]]=Some(new util.HashMap[Selector,Selector]())
-  val columns:Option[java.util.Map[ColumnName, ColumnMetadata]]=Some(new util.HashMap[ColumnName,ColumnMetadata]())
+  val columns:Option[java.util.LinkedHashMap[ColumnName, ColumnMetadata]]=Some(new util.LinkedHashMap[ColumnName,ColumnMetadata]())
   val indexes:Option[java.util.Map[IndexName,IndexMetadata]]=Some(new util.HashMap[IndexName,IndexMetadata]())
   val clusterRef:Option[ClusterName]=Some(new ClusterName("myCluster"))
-  val partitionKey:Option[java.util.List[ColumnName]]=Some(new java.util.ArrayList[ColumnName]())
+  val partitionKey:Option[java.util.LinkedList[ColumnName]]=Some(new java.util.LinkedList[ColumnName]())
 
 
   test("Basic Connector Mock") {

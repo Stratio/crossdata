@@ -20,10 +20,8 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
-import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -31,8 +29,9 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.structures.TableType;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code CREATE TABLE} statement of the CROSSDATA language.
@@ -51,22 +50,22 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     /**
      * A map with the name of the columns in the table and the associated data type.
      */
-    private Map<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
+    private LinkedHashMap<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
 
     /**
      * The list of columns that are part of the primary key.
      */
-    private List<ColumnName> primaryKey = new LinkedList<>();
+    private LinkedList<ColumnName> primaryKey = new LinkedList<>();
 
     /**
      * The list of columns that are part of the partition key.
      */
-    private List<ColumnName> partitionKey = new LinkedList<>();
+    private LinkedList<ColumnName> partitionKey = new LinkedList<>();
 
     /**
      * The list of columns that are part of the clustering key.
      */
-    private List<ColumnName> clusterKey = new LinkedList<>();
+    private LinkedList<ColumnName> clusterKey = new LinkedList<>();
 
     /**
      * The list of properties of the table.
@@ -95,8 +94,8 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      * @param clusterKey   The list of columns that are part of the clustering key.
      */
     public CreateTableStatement(TableType tableType, TableName tableName, ClusterName clusterName,
-            Map<ColumnName, ColumnType> columns,
-            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
+            LinkedHashMap<ColumnName, ColumnType> columns,
+            LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
         this.command = false;
         this.tableType = tableType;
         this.tableName = tableName;
@@ -121,16 +120,16 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      * @param clusterKey   The list of columns that are part of the clustering key.
      */
     public CreateTableStatement(TableName tableName, ClusterName clusterName,
-            Map<ColumnName, ColumnType> columns,
-            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
+            LinkedHashMap<ColumnName, ColumnType> columns,
+            LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
         this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey);
     }
 
-    public List<ColumnName> getPartitionKey() {
+    public LinkedList<ColumnName> getPartitionKey() {
         return partitionKey;
     }
 
-    public List<ColumnName> getClusterKey() {
+    public LinkedList<ColumnName> getClusterKey() {
         return clusterKey;
     }
 
@@ -138,7 +137,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         return tableType;
     }
 
-    public Map<ColumnName, ColumnType> getColumnsWithTypes() {
+    public LinkedHashMap<ColumnName, ColumnType> getColumnsWithTypes() {
         return columnsWithType;
     }
 
