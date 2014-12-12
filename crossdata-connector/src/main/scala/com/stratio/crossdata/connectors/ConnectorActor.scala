@@ -243,7 +243,7 @@ ActorLogging with IResultHandler{
     } catch {
       case ex: Exception => {
         logger.error("Connector exception: " + ex.getMessage)
-        result = Result.createErrorResult(ex)
+        result = Result.createExecutionErrorResult(ex.getMessage)
       }
       case err: Error => {
         logger.error("Error in ConnectorActor(Receiving CrossdataOperation)")
