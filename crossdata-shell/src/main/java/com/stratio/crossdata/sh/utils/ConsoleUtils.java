@@ -80,11 +80,11 @@ public final class ConsoleUtils {
     private ConsoleUtils() {
     }
 
-    public static String stringResult(Result result, Shell shell){
+    public static String stringResult(Result result, Shell shell) {
         String stringResult = stringResult(result);
-        if(result instanceof CommandResult){
+        if (result instanceof CommandResult) {
             Object objectResult = ((CommandResult) result).getResult();
-            if(objectResult instanceof CatalogName){
+            if (objectResult instanceof CatalogName) {
                 shell.setPrompt(((CatalogName) objectResult).getName());
             }
         }
@@ -120,7 +120,7 @@ public final class ConsoleUtils {
         } else if (result instanceof StorageResult) {
             StorageResult storageResult = (StorageResult) result;
             return storageResult.toString();
-        } else if(result instanceof InProgressResult) {
+        } else if (result instanceof InProgressResult) {
             InProgressResult inProgressResult = (InProgressResult) result;
             return "Query " + inProgressResult.getQueryId() + " in progress";
         } else {
@@ -154,7 +154,7 @@ public final class ConsoleUtils {
         sb.append(bar).append(System.lineSeparator());
         sb.append("| ");
         List<String> columnNames = new ArrayList<>();
-        for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
+        for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
             sb.append(
                     StringUtils.rightPad(columnMetadata.getName().getColumnNameToShow(),
                             colWidths.get(columnMetadata.getName().getColumnNameToShow()) + 1)).append("| ");
@@ -167,7 +167,7 @@ public final class ConsoleUtils {
 
         for (Row row : resultSet) {
             sb.append("| ");
-            for(String columnName : columnNames){
+            for (String columnName : columnNames) {
                 String str = String.valueOf(row.getCell(columnName).getValue());
                 sb.append(StringUtils.rightPad(str, colWidths.get(columnName)));
                 sb.append(" | ");
@@ -189,24 +189,24 @@ public final class ConsoleUtils {
         LinkedHashMap<String, Integer> colWidths = new LinkedHashMap<>();
 
         // Get column names or aliases width
-        for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
+        for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
             colWidths.put(columnMetadata.getName().getColumnNameToShow(),
                     columnMetadata.getName().getColumnNameToShow().length());
         }
 
         // Find widest cell content of every column
-        for (Row row: resultSet) {
+        for (Row row : resultSet) {
             int pos = 0;
-            for (String key: row.getCells().keySet()) {
+            for (String key : row.getCells().keySet()) {
                 String cellContent = String.valueOf(row.getCell(key).getValue());
 
                 int currentWidth;
-                if(colWidths.containsKey(key)){
+                if (colWidths.containsKey(key)) {
                     currentWidth = colWidths.get(key);
                 } else {
                     Iterator<Map.Entry<String, Integer>> iter = colWidths.entrySet().iterator();
                     int limit = 0;
-                    while(limit < pos){
+                    while (limit < pos) {
                         iter.next();
                         limit++;
                     }
