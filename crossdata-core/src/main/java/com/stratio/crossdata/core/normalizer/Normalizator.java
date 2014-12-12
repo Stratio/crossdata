@@ -650,8 +650,8 @@ public class Normalizator {
             if(!indexFound){
                 throw new BadFormatException("No index was found for the MATCH operator.");
             }
-        } else if (operator != Operator.EQ && operator != Operator.GT && operator != Operator.GET
-                && operator != Operator.LT && operator != Operator.LET && operator != Operator.DISTINCT) {
+        } else if ((operator != Operator.EQ) && (operator != Operator.GT) && (operator != Operator.GET)
+                && (operator != Operator.LT) && (operator != Operator.LET) && (operator != Operator.DISTINCT)) {
             throw new BadFormatException("String relations only accept equal operator.");
         }
 
