@@ -139,7 +139,6 @@ language .
 -   \<tablename\> ::= (\<catalog\_name\> '.')? \<identifier\>
 -   \<columnname\> ::= (\<tablename\> '.')? \<identifier\>
 -   \<indexname\> ::= \<tablename\> '.' \<identifier\>
--   \<properties\> ::= \<property\> (AND \<property\>)\*
 -   \<property\> ::= (\<literal\> | \<identifier\> ) '=' ( \<literal\> | \<constant\> )
 -   \<data-types\> = TEXT | BIGINT | INT | DOUBLE | FLOAT | BOOLEAN
 
@@ -219,7 +218,7 @@ Example:
 
 ### DETACH CONNECTOR
 
-DETACH CONNECTOR \<connector-name\> FROM \<cluster-name\> WITH OPTIONS \<JSON\>';'
+DETACH CONNECTOR \<connector-name\> FROM \<cluster-name\>';'
 
 Example:
 
