@@ -40,32 +40,33 @@ public class UpdateTableStatementTest extends ParsingTest {
 
     @Test
     public void updateTableName() {
-        String inputText = "[demo], UPDATE myTable USING 'prop1' = 342 SET ident1 = 'term1', ident2 = 'term2'"
-                + " WHERE ident3 > 25 IF 'replication' = 2;";
+        String inputText = "[demo], UPDATE myTable SET ident1 = 'term1', ident2 = 'term2'"
+                + " WHERE ident3 > 25 WITH {'prop1': 342, 'replication': 2};";
         String expectedText =
-                "UPDATE demo.myTable USING 'prop1' = 342 SET demo.myTable.ident1 = 'term1', demo.myTable.ident2 = 'term2'"
-                        + " WHERE demo.myTable.ident3 > 25 IF 'replication' = 2;";
+                "UPDATE demo.myTable SET demo.myTable.ident1 = 'term1', demo.myTable.ident2 = 'term2'"
+                        + " WHERE demo.myTable.ident3 > 25 WITH {'prop1'=342, 'replication'=2};";
         testRegularStatement(inputText, expectedText, "updateTableName");
     }
 
     @Test
     public void updateWhere() {
-        String inputText = "UPDATE table1 USING 'TTL' = 400 SET field1 = 'value1',"
-                + " field2 = 'value2' WHERE field3 = 'value3' AND field4 = 'value4';";
-        String expectedText = "UPDATE demo.table1 USING 'TTL' = 400 SET demo.table1.field1 = 'value1',"
-                + " demo.table1.field2 = 'value2' WHERE demo.table1.field3 = 'value3' AND demo.table1.field4 = 'value4';";
+        String inputText = "UPDATE table1 SET field1 = 'value1',"
+                + " field2 = 'value2' WHERE field3 = 'value3' AND field4 = 'value4' WITH {'TTL': 400};";
+        String expectedText = "UPDATE demo.table1 SET demo.table1.field1 = 'value1',"
+                + " demo.table1.field2 = 'value2' WHERE demo.table1.field3 = 'value3' AND demo.table1.field4 = 'value4'" +
+                " WITH {'TTL'=400};";
         testRegularStatementSession("demo", inputText, expectedText, "updateWhere");
     }
 
     @Test
     public void updateFull() {
-        String inputText = "UPDATE table1 USING 'TTL' = 400 SET field1 = 'value1',"
+        String inputText = "UPDATE table1 SET field1 = 'value1',"
                 + " field2 = 'value2' WHERE field3 = 'value3' AND field4 = 'value4'"
-                + " IF 'class' = 'transaction_value5';";
+                + " WITH {'TTL': 400, 'class': 'transaction_value5'};";
         String expectedText =
-                "UPDATE test.table1 USING 'TTL' = 400 SET test.table1.field1 = 'value1',"
+                "UPDATE test.table1 SET test.table1.field1 = 'value1',"
                         + " test.table1.field2 = 'value2' WHERE test.table1.field3 = 'value3' AND test.table1.field4 = 'value4'"
-                        + " IF 'class' = 'transaction_value5';";
+                        + " WITH {'TTL'=400, 'class'='transaction_value5'};";
         testRegularStatementSession("test", inputText, expectedText, "updateFull");
     }
 
@@ -83,10 +84,11 @@ public class UpdateTableStatementTest extends ParsingTest {
 
     @Test
     public void updateWhereUsingAnd() {
-        String inputText = "UPDATE demo.table1 USING 'TTL' = 400 AND 'TTL2' = 400 SET field1 = 'value1',"
-                + " field2 = 'value2' WHERE field3 = 'value3' AND field4 = 'value4';";
-        String expectedText = "UPDATE demo.table1 USING 'TTL' = 400 AND 'TTL2' = 400 SET demo.table1.field1 = 'value1',"
-                + " demo.table1.field2 = 'value2' WHERE demo.table1.field3 = 'value3' AND demo.table1.field4 = 'value4';";
+        String inputText = "UPDATE demo.table1 SET field1 = 'value1',"
+                + " field2 = 'value2' WHERE field3 = 'value3' AND field4 = 'value4' WITH {'TTL': 400, 'TTL2': 500};";
+        String expectedText = "UPDATE demo.table1 SET demo.table1.field1 = 'value1',"
+                + " demo.table1.field2 = 'value2' WHERE demo.table1.field3 = 'value3' AND demo.table1.field4 = 'value4'" +
+                " WITH {'TTL'=400, 'TTL2'=500};";
         testRegularStatement(inputText, expectedText, "updateWhereUsingAnd");
     }
 
@@ -132,19 +134,20 @@ public class UpdateTableStatementTest extends ParsingTest {
     @Test
     public void updateTableNameIfAnd1() {
         String inputText = "UPDATE myTable SET ident1 = 'term1', ident2 = 'term2'"
-                + " WHERE ident3 = 34 IF field3 = 86 AND field2 = 25;";
+                + " WHERE ident3 = 34 WITH {field3: 86, field2: 25};";
         String expectedText = "UPDATE demo.myTable SET demo.myTable.ident1 = 'term1', demo.myTable.ident2 = 'term2'"
-                + " WHERE demo.myTable.ident3 = 34 IF demo.myTable.field3 = 86 AND demo.myTable.field2 = 25;";
+                + " WHERE demo.myTable.ident3 = 34 WITH {'field3'=86, 'field2'=25};";
         testRegularStatementSession("demo", inputText, expectedText, "updateTableNameIfAnd1");
     }
 
     @Test
     public void updateTableNameIfAnd2() {
-        String inputText = "UPDATE tester.myTable USING 'prop1' = 342 SET ident1 = 'term1', ident2 = 'term2'"
-                + " WHERE ident3 = 'Big Data' IF field3 = 86 AND field2 = 25;";
+        String inputText = "UPDATE tester.myTable SET ident1 = 'term1', ident2 = 'term2'"
+                + " WHERE ident3 = 'Big Data' WITH {field3: 86, field2: 25};";
         String expectedText =
-                "UPDATE tester.myTable USING 'prop1' = 342 SET tester.myTable.ident1 = 'term1', tester.myTable.ident2 = 'term2'"
-                        + " WHERE tester.myTable.ident3 = 'Big Data' IF tester.myTable.field3 = 86 AND tester.myTable.field2 = 25;";
+                "UPDATE tester.myTable SET tester.myTable.ident1 = 'term1', tester.myTable.ident2 = 'term2'"
+                        + " WHERE tester.myTable.ident3 = 'Big Data' " +
+                        "WITH {'field3'=86, 'field2'=25};";
         testRegularStatementSession("demo", inputText, expectedText, "updateTableNameIfAnd2");
     }
 

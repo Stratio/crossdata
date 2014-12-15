@@ -68,13 +68,6 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     private LinkedList<ColumnName> clusterKey = new LinkedList<>();
 
     /**
-     * The list of properties of the table.
-     */
-    public Map<Selector, Selector> getProperties() {
-        return properties;
-    }
-
-    /**
      * The list of {@link com.stratio.crossdata.core.structures.Property} of the table.
      */
     private Map<Selector, Selector> properties = new LinkedHashMap<>();
@@ -173,6 +166,13 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
 
     public void setIfNotExists(boolean ifNotExists) {
         this.ifNotExists = ifNotExists;
+    }
+
+    /**
+     * The list of properties of the table.
+     */
+    public Map<Selector, Selector> getProperties() {
+        return properties;
     }
 
     @Override

@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.utils;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -72,8 +73,9 @@ public final class StringUtils {
 
     public static Map<Selector, Selector> convertJsonToOptions(String json) {
         if ((json == null) || (json.isEmpty())) {
-            return null;
+            return new HashMap<>();
         }
+        json = json.replaceAll("<[^>]*>\\.", "");
         Map<Selector, Selector> options = new LinkedHashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
