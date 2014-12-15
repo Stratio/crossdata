@@ -42,6 +42,7 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ApiException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
@@ -570,12 +571,21 @@ public class APIManager {
     private Result resetServerdata() {
         Result result = CommandResult.createCommandResult("Crossdata server reset.");
         try {
+            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
             MetadataManager.MANAGER.clear();
             ExecutionManager.MANAGER.clear();
+            for(ConnectorMetadata cm: connectors){
+                if(cm.getStatus() == Status.ONLINE){
+                    ConnectorName connectorName = cm.getName();
+                    String actorRef = cm.getActorRef();
+                    MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+                    MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE);
+                }
+            }
         } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException
-                e) {
-            result = CommandResult.createErrorResult(e);
-            LOG.error(e.getMessage());
+                | ManifestException ex) {
+            result = CommandResult.createErrorResult(ex);
+            LOG.error(ex.getMessage());
         }
         return result;
     }
