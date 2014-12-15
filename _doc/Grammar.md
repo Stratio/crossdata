@@ -274,7 +274,7 @@ ALTER TABLE \<tablename\>
         (ALTER \<column-name\> \<data-types\>
         |ADD \<column-name\> \<data-types\>
         |DROP \<column-name\>
-        |WITH \<JSON\>)) ';'   
+        |WITH \<JSON\>) ';'   
 
 Example:
 
@@ -286,9 +286,7 @@ UPDATE \<tablename\>
     (USING option (AND option)\*)?
     SET assignment (COMMA assignment)\*
     (WHERE \<where-clause\>)?
-    (IF option (AND option)\*)? ';'      
-
-\<option\> ::= \<property\> = \<value\>
+    (WITH \<JSON\>)? ';'      
 
 \<assignment\> ::= \<column-name\> = \<value-assignment\>
 
@@ -332,7 +330,8 @@ Example:
 
 ### INSERT
 
-INSERT INTO \<tablename\> '('\<identifier\> (',' \<identifier\> )\*')' VALUES '('\<data-types\> (',' \<term-or-literal\> )\* ')' (IF NOT EXISTS)? ';'
+INSERT INTO \<tablename\> '('\<identifier\> (',' \<identifier\> )\*')' VALUES '('\<data-types\> (',
+' \<term-or-literal\> )\* ')' (IF NOT EXISTS)? WHEN \<where-clause\> (WITH \<JSON\>)? ';'
 
 Example:
 
@@ -340,8 +339,7 @@ Example:
 
 ### CREATE INDEX
 
-CREATE (\<index-type\>)? INDEX (IF NOT EXISTS)? \<index-name\> ON \<table-name\> '(' \<column-names\> ')' (USING
-\<quoted-literal\>)? (WITH \<JSON\>)? ';'
+CREATE (\<index-type\>)? INDEX (IF NOT EXISTS)? \<index-name\> ON \<table-name\> '(' \<column-names\> ')' (WITH \<JSON\>)? ';'
 
 \<index-type\> ::= DEFAULT | FULL\_TEXT | CUSTOM
 

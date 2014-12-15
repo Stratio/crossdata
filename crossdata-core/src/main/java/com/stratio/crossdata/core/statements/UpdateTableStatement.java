@@ -19,20 +19,18 @@
 package com.stratio.crossdata.core.statements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.stratio.crossdata.common.exceptions.ParsingException;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.common.utils.StringUtils;
-import com.stratio.crossdata.core.structures.Option;
-import com.stratio.crossdata.core.utils.ParserUtils;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ParsingException;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models an {@code UPDATE} statement from the CROSSDATA language.
@@ -45,11 +43,6 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
     private TableName tableName;
 
     /**
-     * The list of options.
-     */
-    private List<Option> options;
-
-    /**
      * The list of assignations.
      */
     private List<Relation> assignations;
@@ -60,34 +53,27 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
     private List<Relation> whereClauses;
 
     /**
-     * Map of conditions.
+     * The list of properties.
      */
-    private Map<Selector, Selector> conditions;
+    private Map<Selector, Selector> properties = new LinkedHashMap<>();
 
     /**
      * Class constructor.
      *
      * @param tableName    The name of the table.
-     * @param options      The list of options.
      * @param assignations The list of assignations.
      * @param whereClauses The list of relations.
-     * @param conditions   The map of conditions.
+     * @param properties   The list of properties.
      */
-    public UpdateTableStatement(TableName tableName, List<Option> options,
+    public UpdateTableStatement(TableName tableName,
             List<Relation> assignations, List<Relation> whereClauses,
-            Map<Selector, Selector> conditions) throws ParsingException {
+            String properties) throws ParsingException {
         this.command = false;
 
         if(tableName.getName().isEmpty()){
             throw new ParsingException("Table name cannot be empty");
         }
         this.tableName = tableName;
-
-        if(options == null){
-            this.options = new ArrayList<>();
-        } else {
-            this.options = options;
-        }
 
         if(assignations == null){
             this.assignations = new ArrayList<>();
@@ -101,50 +87,11 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
             this.whereClauses = whereClauses;
         }
 
-        if(conditions == null){
-            this.conditions = new HashMap<>();
+        if(properties == null){
+            this.properties = new LinkedHashMap<>();
         } else {
-            this.conditions = conditions;
+            this.properties = StringUtils.convertJsonToOptions(properties);
         }
-
-    }
-
-    /**
-     * Class constructor.
-     *
-     * @param tableName    The name of the table.
-     * @param assignations The list of assignations.
-     * @param whereClauses The list of relations.
-     * @param conditions   The map of conditions.
-     */
-    public UpdateTableStatement(TableName tableName, List<Relation> assignations,
-            List<Relation> whereClauses, Map<Selector, Selector> conditions) throws ParsingException {
-        this(tableName, null, assignations, whereClauses, conditions);
-    }
-
-    /**
-     * Class constructor.
-     *
-     * @param tableName    The name of the table.
-     * @param options      The list of options.
-     * @param assignations The list of assignations.
-     * @param whereClauses The list of relations.
-     */
-    public UpdateTableStatement(TableName tableName, List<Option> options,
-            List<Relation> assignations, List<Relation> whereClauses) throws ParsingException {
-        this(tableName, options, assignations, whereClauses, null);
-    }
-
-    /**
-     * Class constructor.
-     *
-     * @param tableName    The name of the table.
-     * @param assignations The list of assignations.
-     * @param whereClauses The list of relations.
-     */
-    public UpdateTableStatement(TableName tableName, List<Relation> assignations,
-            List<Relation> whereClauses) throws ParsingException {
-        this(tableName, null, assignations, whereClauses, null);
     }
 
     public List<Relation> getAssignations() {
@@ -159,21 +106,20 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
     public String toString() {
         StringBuilder sb = new StringBuilder("UPDATE ");
         sb.append(tableName.getQualifiedName());
-        if ((options != null) && (!options.isEmpty())) {
-            sb.append(" ").append("USING ");
-            sb.append(StringUtils.stringList(options, " AND "));
-        }
         sb.append(" ").append("SET ");
         sb.append(StringUtils.stringList(assignations, ", "));
         if ((whereClauses != null) && (!whereClauses.isEmpty())) {
             sb.append(" ").append("WHERE ");
             sb.append(StringUtils.stringList(whereClauses, " AND "));
         }
-        if ((conditions != null) && (!conditions.isEmpty())) {
-            sb.append(" ").append("IF ");
-            sb.append(ParserUtils.stringMap(conditions, " = ", " AND "));
+        if (hasProperties()) {
+            sb.append(" WITH ").append(properties);
         }
         return sb.toString();
+    }
+
+    private boolean hasProperties() {
+        return ((properties != null) && (!properties.isEmpty()));
     }
 
     @Override

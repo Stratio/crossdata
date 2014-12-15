@@ -69,11 +69,6 @@ public class CreateIndexStatement extends IndexStatement {
     private List<ColumnName> targetColumns = null;
 
     /**
-     * The name of the class that implements the secondary index.
-     */
-    private String usingClass = null;
-
-    /**
      * The map of options passed to the index during its creation.
      */
     private Map<Selector, Selector> options = null;
@@ -173,15 +168,6 @@ public class CreateIndexStatement extends IndexStatement {
         targetColumns.add(column);
     }
 
-    /**
-     * Set a USING class that implements the custom index.
-     *
-     * @param using The qualified name of the class.
-     */
-    public void setUsingClass(String using) {
-        usingClass = using;
-    }
-
     public void setOptionsJson(String optionsJson) {
         options = StringUtils.convertJsonToOptions(optionsJson);
     }
@@ -253,15 +239,10 @@ public class CreateIndexStatement extends IndexStatement {
         }
         sb.append(tableName);
         sb.append("(").append(StringUtils.stringList(targetColumns, ", ")).append(")");
-        if (usingClass != null) {
-            sb.append(" USING ");
-            sb.append("'").append(usingClass).append("'");
-        }
         if (!options.isEmpty()) {
             sb.append(" WITH ");
             sb.append(options);
         }
-
         return sb.toString();
     }
 

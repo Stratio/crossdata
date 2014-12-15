@@ -621,8 +621,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         values.add(new StringSelector("'this is the phrase'"));
         values.add(new StringSelector("'mail@mail.com'"));
 
-        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns, values,
-                true);
+        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns,
+                null, values, true, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
 
         BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
 
