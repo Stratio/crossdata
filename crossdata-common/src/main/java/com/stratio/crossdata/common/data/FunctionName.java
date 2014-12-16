@@ -18,18 +18,29 @@
 
 package com.stratio.crossdata.common.data;
 
-public enum NameType {
-    CATALOG,
-    CLUSTER,
-    COLUMN,
-    CONNECTOR,
-    DATASTORE,
-    NODE,
-    TABLE,
-    INDEX,
-    FUNCTION;
+public class FunctionName extends FirstLevelName {
 
-    public String toString() {
-        return name();
+    private static final long serialVersionUID = -2253115989460763299L;
+
+    /**
+     * Function name.
+     */
+    private final String name;
+
+    public FunctionName(String name) {
+        super();
+        this.name = name.toLowerCase();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    @Override public String getQualifiedName() {
+        return QualifiedNames.getFunctionQualifiedName(getName());
+    }
+
+    @Override public NameType getType() {
+        return NameType.FUNCTION;
     }
 }

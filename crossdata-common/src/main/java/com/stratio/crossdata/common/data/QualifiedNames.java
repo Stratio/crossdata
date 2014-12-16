@@ -101,6 +101,10 @@ public final class QualifiedNames {
         return normalize("node." + name);
     }
 
+    public static String getFunctionQualifiedName(String name) {
+        return normalize("function." + name);
+    }
+
     /**
      * Get the qualified name for a datastore.
      *
