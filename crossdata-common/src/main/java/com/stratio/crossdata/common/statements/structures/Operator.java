@@ -34,7 +34,7 @@ public enum Operator {
     },
 
     /**
-     * Substraction operator.
+     * Subtraction operator.
      */
     SUBTRACT(Group.ARITHMETIC) {
         @Override
@@ -144,7 +144,7 @@ public enum Operator {
     },
 
     /**
-     * Less or equal than compartor.
+     * Less or equal than comparator.
      */
     LET(Group.COMPARATOR) {
         @Override

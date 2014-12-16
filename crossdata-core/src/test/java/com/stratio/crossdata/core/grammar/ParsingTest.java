@@ -126,7 +126,6 @@ public class ParsingTest {
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText,
                     new CatalogName(sessionCatalog));
-            //st = parser.parse(sessionCatalog, inputText);
             st = parser.parse(baseQuery);
         } catch (ParsingException e) {
             StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());

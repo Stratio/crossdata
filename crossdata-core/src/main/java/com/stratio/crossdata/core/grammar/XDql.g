@@ -219,6 +219,7 @@ T_SELECT: S E L E C T;
 T_VALUES: V A L U E S;
 T_UPDATE: U P D A T E;
 T_WHERE: W H E R E;
+T_WHEN: W H E N;
 T_IN: I N;
 T_FROM: F R O M;
 T_DELETE: D E L E T E;
@@ -350,7 +351,7 @@ attachClusterStatement returns [AttachClusterStatement acs]
     (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     clusterName=T_IDENT
     T_ON T_DATASTORE dataStoreName=T_IDENT
-    (T_WITH T_OPTIONS j=getJson)?
+    (T_WITH (T_OPTIONS)? j=getJson)?
 ;
 
 detachClusterStatement returns [DetachClusterStatement dcs]
@@ -382,7 +383,7 @@ attachConnectorStatement returns [AttachConnectorStatement acs]
         $acs = new AttachConnectorStatement(new ConnectorName($connectorName.text),
         new ClusterName($clusterName.text), optionsJson);
     }:
-    T_ATTACH T_CONNECTOR connectorName=T_IDENT T_TO clusterName=T_IDENT (T_WITH T_OPTIONS optionsJson=getJson)?
+    T_ATTACH T_CONNECTOR connectorName=T_IDENT T_TO clusterName=T_IDENT (T_WITH (T_OPTIONS)? optionsJson=getJson)?
 ;
 
 detachConnectorStatement returns [DetachConnectorStatement dcs]
@@ -450,8 +451,8 @@ dropIndexStatement returns [DropIndexStatement dis]
 
 //CREATE INDEX myIdx ON table1 (field1, field2);
 //CREATE DEFAULT INDEX ON table1 (field1, field2);
-//CREATE FULL_TEXT INDEX index1 ON table1 (field1, field2) USING com.company.Index.class;
-//CREATE CUSTOM INDEX index1 ON table1 (field1, field2) WITH OPTIONS opt1=val1 AND opt2=val2;
+//CREATE FULL_TEXT INDEX index1 ON table1 (field1, field2) WITH {'class': 'com.company.Index.class'};
+//CREATE CUSTOM INDEX index1 ON table1 (field1, field2) WITH {'opt1': 'val1', 'opt2': 'val2'};
 createIndexStatement returns [CreateIndexStatement cis]
 	@init{
 		$cis = new CreateIndexStatement();
@@ -469,7 +470,6 @@ createIndexStatement returns [CreateIndexStatement cis]
 		field=getColumnName[tablename] {$cis.addColumn(field);}
 	)*
 	T_END_PARENTHESIS
-	(T_USING usingClass=QUOTED_LITERAL {$cis.setUsingClass($usingClass.text);})?
 	(T_WITH j=getJson {$cis.setOptionsJson(j);} )?
 ;
 
@@ -502,30 +502,15 @@ getUnits returns [String newUnit]:
 
 updateTableStatement returns [UpdateTableStatement pdtbst]
     @init{
-        boolean optsInc = false;
-        boolean condsInc = false;
-        ArrayList<Option> options = new ArrayList<>();
         ArrayList<Relation> assignations = new ArrayList<>();
-        Map<Selector, Selector> conditions = new LinkedHashMap<>();
     }:
     T_UPDATE tablename=getTableName
-    (T_USING opt1=getOption[tablename] {optsInc = true; options.add(opt1);} (T_AND optN=getOption[tablename] {options.add(optN);})*)?
     T_SET assig1=getAssignment[tablename] {assignations.add(assig1);} (T_COMMA assigN=getAssignment[tablename] {assignations.add(assigN);})*
     (T_WHERE whereClauses=getWhereClauses[tablename])?
-    (T_IF id1=getSelector[tablename] T_EQUAL term1=getSelector[tablename] {condsInc = true; conditions.put(id1, term1);}
-                    (T_AND idN=getSelector[tablename] T_EQUAL termN=getSelector[tablename] {conditions.put(idN, termN);})*)?
+    (T_WITH j=getJson)?
     {
         if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
-        if(optsInc)
-            if(condsInc)
-                $pdtbst = new UpdateTableStatement(tablename, options, assignations, whereClauses, conditions);
-            else
-                $pdtbst = new UpdateTableStatement(tablename, options, assignations, whereClauses);
-        else
-            if(condsInc)
-                $pdtbst = new UpdateTableStatement(tablename, assignations, whereClauses, conditions);
-            else
-                $pdtbst = new UpdateTableStatement(tablename, assignations, whereClauses);
+        $pdtbst = new UpdateTableStatement(tablename, assignations, whereClauses, j);
     }
 ;
 
@@ -639,8 +624,6 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
         boolean ifNotExists = false;
         int typeValues = InsertIntoStatement.TYPE_VALUES_CLAUSE;
         LinkedList<Selector> cellValues = new LinkedList<>();
-        boolean optsInc = false;
-        LinkedList<Option> options = new LinkedList<>();
     }:
     T_INSERT T_INTO tablename=getTableName
     T_START_PARENTHESIS
@@ -656,26 +639,11 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
         T_END_PARENTHESIS
     )
     (T_IF T_NOT T_EXISTS {ifNotExists=true;} )?
-    (
-        T_USING {optsInc=true;}
-        opt1=getOption[tablename] {
-            options.add(opt1);
-        }
-        (T_AND optN=getOption[tablename] {options.add(optN);})*
-    )?
+    (T_WHEN whereClauses=getWhereClauses[tablename])?
+    (T_WITH j=getJson)?
     {
         if((!ids.isEmpty()) && (!cellValues.isEmpty()) && (ids.size() != cellValues.size())) throwParsingException("Number of columns and number of values differ");
-        if(typeValues==InsertIntoStatement.TYPE_SELECT_CLAUSE)
-            if(optsInc)
-                $nsntst = new InsertIntoStatement(tablename, ids, selectStmnt, ifNotExists, options);
-            else
-                $nsntst = new InsertIntoStatement(tablename, ids, selectStmnt, ifNotExists);
-        else
-            if(optsInc)
-                $nsntst = new InsertIntoStatement(tablename, ids, cellValues, ifNotExists, options);
-            else
-                $nsntst = new InsertIntoStatement(tablename, ids, cellValues, ifNotExists);
-
+        $nsntst = new InsertIntoStatement(tablename, ids, selectStmnt, cellValues, ifNotExists, whereClauses, j, typeValues);
     }
 ;
 
@@ -922,18 +890,6 @@ getIds returns [ArrayList<String> listStrs]
         listStrs = new ArrayList<>();
     }:
     ident1=T_IDENT {listStrs.add($ident1.text);} (T_COMMA identN=T_IDENT {listStrs.add($identN.text);})*
-;
-
-getOptions[TableName tablename] returns [ArrayList<Option> opts]@init{
-        opts = new ArrayList<>();
-    }:
-    opt1=getOption[tablename] {opts.add(opt1);} (optN=getOption[tablename] {opts.add(optN);})*
-;
-
-getOption[TableName tablename] returns [Option opt]:
-    T_COMPACT T_STORAGE {$opt=new Option(Option.OPTION_COMPACT);}
-    | T_CLUSTERING T_ORDER {$opt=new Option(Option.OPTION_CLUSTERING);}
-    | identProp=getSelector[tablename] T_EQUAL valueProp=getSelector[tablename] {$opt=new Option(identProp, valueProp);}
 ;
 
 getSelectors[TableName tablename] returns [ArrayList list]

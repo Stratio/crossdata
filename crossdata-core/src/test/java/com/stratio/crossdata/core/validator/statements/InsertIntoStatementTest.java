@@ -24,11 +24,11 @@ import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
-import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -62,8 +62,8 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         values.add(new StringSelector("'this is the phrase'"));
         values.add(new StringSelector("'mail@mail.com'"));
 
-        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns, values,
-                true);
+        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns,
+                null, values, false, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
@@ -99,7 +99,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         values.add(new StringSelector("'mail@mail.com'"));
 
         StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "unknown"), columns,
-                values, true);
+                null, values, false, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
@@ -136,7 +136,8 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         values.add(new StringSelector("'mail@mail.com'"));
 
         StorageStatement insertIntoStatement =
-                new InsertIntoStatement(new TableName("unknown", "users"), columns, values, true);
+                new InsertIntoStatement(new TableName("unknown", "users"), columns, null,
+                        values, true, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
@@ -151,7 +152,6 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
             Assert.assertTrue(true);
         }
     }
-
 
     @Test
     public void validateErrorTypes() {
@@ -173,8 +173,8 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         values.add(new StringSelector("'this is the phrase'"));
         values.add(new StringSelector("'mail@mail.com'"));
 
-        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns, values,
-                true);
+        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns,
+                null, values, true, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
@@ -189,6 +189,5 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
             Assert.fail(e.getMessage());
         }
     }
-
 
 }
