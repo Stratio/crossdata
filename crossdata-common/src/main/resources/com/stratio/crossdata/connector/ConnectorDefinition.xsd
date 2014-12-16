@@ -27,7 +27,8 @@
             <xs:element type="xs:string" name="Version"/>
             <xs:element type="PropertiesType" name="RequiredProperties" maxOccurs="1" minOccurs="0"/>
             <xs:element type="PropertiesType" name="OptionalProperties" maxOccurs="1" minOccurs="0"/>
-            <xs:element type="SupportedOperationsType" name="SupportedOperations"/>
+            <xs:element type="SupportedOperationsType" name="SupportedOperations" maxOccurs="1" minOccurs="0"/>
+            <xs:element type="FunctionsType" name="Functions" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="PropertiesType">
@@ -43,7 +44,7 @@
     </xs:complexType>
     <xs:complexType name="SupportedOperationsType">
         <xs:sequence>
-            <xs:element type="xs:string" name="operation" maxOccurs="unbounded" minOccurs="1" />
+            <xs:element type="xs:string" name="operation" maxOccurs="unbounded" minOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="DataStoreRefsType">
@@ -51,4 +52,60 @@
             <xs:element type="xs:string" name="DataStoreName" maxOccurs="unbounded" minOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
+    <xs:complexType name="FunctionsType">
+        <xs:sequence>
+            <xs:element type="DefaultType" name="Default" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="CustomType" name="Custom" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="DefaultType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="FunctionName" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="CustomType">
+        <xs:sequence>
+            <xs:element type="FunctionType" name="Function" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="FunctionType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="FunctionName"/>
+            <xs:element type="InputType" name="Input"/>
+            <xs:element type="OutputType" name="Output"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="InputType">
+        <xs:sequence>
+            <xs:element type="ParametersType" name="Parameters"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ParametersType">
+        <xs:sequence>
+            <xs:element type="ParameterType" name="Parameter" maxOccurs="unbounded" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ParameterType">
+        <xs:sequence>
+            <xs:element type="CrossdataType" name="Type"/>
+            <xs:element type="xs:string" name="Description"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="OutputType">
+        <xs:sequence>
+            <xs:element type="ParameterType" name="Parameter"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:simpleType name="CrossdataType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="BIGINT"></xs:enumeration>
+            <xs:enumeration value="BOOLEAN"></xs:enumeration>
+            <xs:enumeration value="DOUBLE"></xs:enumeration>
+            <xs:enumeration value="FLOAT"></xs:enumeration>
+            <xs:enumeration value="INT"></xs:enumeration>
+            <xs:enumeration value="TEXT"></xs:enumeration>
+            <xs:enumeration value="VARCHAR"></xs:enumeration>
+            <xs:enumeration value="ANY"></xs:enumeration>
+        </xs:restriction>
+    </xs:simpleType>
 </xs:schema>
