@@ -38,15 +38,17 @@ public final class CoreUtils {
 
     /**
      * Constructor.
+     *
      * @return An instance of CoreUtils.
      */
-    public static CoreUtils create(){
+    public static CoreUtils create() {
         return new CoreUtils();
     }
 
     /**
      * Convert Selector to Object.
-     * @param selector The Selector
+     *
+     * @param selector   The Selector
      * @param columnName The ColumnName.
      * @return An Object with a Java type according to the parameters.
      * @throws PlanningException
@@ -54,7 +56,7 @@ public final class CoreUtils {
     public static Object convertSelectorToObject(Selector selector, ColumnName columnName) throws PlanningException {
         Object result = null;
         ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
-        switch(columnMetadata.getColumnType()){
+        switch (columnMetadata.getColumnType()) {
         case BIGINT:
             result = convertSelectorToLong(selector);
             break;

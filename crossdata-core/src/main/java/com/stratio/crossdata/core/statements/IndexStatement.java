@@ -27,7 +27,6 @@ public abstract class IndexStatement extends MetadataStatement {
      */
     protected IndexName name = null;
 
-
     /**
      * Get the index name.
      *

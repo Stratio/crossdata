@@ -30,6 +30,10 @@ import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.ConnectorFunctionsType;
+import com.stratio.crossdata.common.manifest.ExcludeType;
+import com.stratio.crossdata.common.manifest.FunctionType;
+import com.stratio.crossdata.common.manifest.FunctionsType;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -43,6 +47,7 @@ public class ConnectorMetadata implements IMetadata {
      * Connector name.
      */
     private final ConnectorName name;
+
 
     /**
      * Connector version.
@@ -90,10 +95,19 @@ public class ConnectorMetadata implements IMetadata {
      */
     private Set<Operations> supportedOperations;
 
+
+    private Set<FunctionType> connectorFunctions;
+
+
+
+    private Set<String> excludedFunctions;
+
+
     /**
      * Whether the manifest of this connector was already added or not
      */
     private boolean manifestAdded = false;
+    //private List<String> excludedFunctions;
 
     /**
      * Class constructor.
@@ -105,13 +119,16 @@ public class ConnectorMetadata implements IMetadata {
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
      * @param supportedOperations The set of supported operations.
+     * @param supportedFunctions  The set of supported functions.
      */
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations) throws ManifestException {
+            Set<Operations> supportedOperations, Set<FunctionsType> supportedFunctions) throws ManifestException {
         this(name, version, dataStoreRefs, clusterProperties, Status.OFFLINE, null, requiredProperties,
                 optionalProperties, supportedOperations);
+
+
     }
 
     /**
@@ -171,7 +188,8 @@ public class ConnectorMetadata implements IMetadata {
      */
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
-            List<String> supportedOperations) throws ManifestException {
+            List<String> supportedOperations, List<FunctionType> connectorFunctions,
+            List<String> excludedFunctions) throws ManifestException {
 
         if(name.getName().isEmpty()){
             throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
@@ -206,6 +224,19 @@ public class ConnectorMetadata implements IMetadata {
             this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
         } else {
             this.supportedOperations = new HashSet<>();
+        }
+
+        if(connectorFunctions!=null){
+            this.connectorFunctions=ManifestHelper.convertManifestFunctionsToMetadataFunctions(connectorFunctions);
+        }else{
+            this.connectorFunctions=new HashSet<>();
+        }
+
+        if(excludedFunctions!=null){
+            this.excludedFunctions=ManifestHelper.convertManifestExcludedFunctionsToMetadataExcludedFunctions
+                    (excludedFunctions);
+        }else{
+            this.connectorFunctions=new HashSet<>();
         }
 
         this.status = Status.OFFLINE;
@@ -417,12 +448,31 @@ public class ConnectorMetadata implements IMetadata {
         this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
     }
 
+    /**
+     * Set the supported Functions.
+     *
+     * @param supportedFunctions A list of supported operations.
+     */
+    public void setSupportedFunctions(FunctionsType supportedFunctions) throws ManifestException {
+        //TODO set supported functions
+        //this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedFunctions);
+    }
+
     public boolean isManifestAdded() {
         return manifestAdded;
     }
 
     public void setManifestAdded(boolean manifestAdded) {
         this.manifestAdded = manifestAdded;
+    }
+
+
+    public Set<FunctionType> getConnectorFunctions() {
+        return connectorFunctions;
+    }
+
+    public void setConnectorFunctions(Set<FunctionType> connectorFunctions) {
+        this.connectorFunctions = connectorFunctions;
     }
 
     /**
@@ -445,10 +495,20 @@ public class ConnectorMetadata implements IMetadata {
         return operations;
     }
 
+    public Set<String> getExcludedFunctions() {
+        return excludedFunctions;
+    }
+
+    public void setExcludedFunctions(Set<String> excludedFunctions) {
+        this.excludedFunctions = excludedFunctions;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Connector: ");
         sb.append(name).append(" status: ").append(status).append(" actorRef: ").append(actorRef);
         return sb.toString();
     }
+
+
 }

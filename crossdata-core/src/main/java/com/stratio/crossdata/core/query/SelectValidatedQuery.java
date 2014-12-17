@@ -21,19 +21,19 @@ package com.stratio.crossdata.core.query;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.stratio.crossdata.common.result.QueryStatus;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.result.QueryStatus;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.core.structures.InnerJoin;
 
 public class SelectValidatedQuery extends SelectParsedQuery implements IValidatedQuery {
 
-    private List<TableMetadata> tableMetadata=new ArrayList<>();
-    private List<ColumnName> columns=new ArrayList<>();
-    private List<Relation> relationships=new ArrayList<>();
-    private List<TableName> tables=new ArrayList<>();
+    private List<TableMetadata> tableMetadata = new ArrayList<>();
+    private List<ColumnName> columns = new ArrayList<>();
+    private List<Relation> relationships = new ArrayList<>();
+    private List<TableName> tables = new ArrayList<>();
     private InnerJoin join;
 
     public SelectValidatedQuery(SelectParsedQuery selectParsedQuery) {

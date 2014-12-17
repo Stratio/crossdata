@@ -30,8 +30,9 @@ public class SelectPlannedQuery extends SelectValidatedQuery implements IPlanned
 
     /**
      * Constructor class.
+     *
      * @param selectValidatedQuery Select Query that was validated
-     * @param executionWorkflow The execution workflow of the query
+     * @param executionWorkflow    The execution workflow of the query
      */
     public SelectPlannedQuery(SelectValidatedQuery selectValidatedQuery, ExecutionWorkflow executionWorkflow) {
         super(selectValidatedQuery);
@@ -41,6 +42,7 @@ public class SelectPlannedQuery extends SelectValidatedQuery implements IPlanned
 
     /**
      * Constructor class.
+     *
      * @param plannedQuery The planned query
      */
     public SelectPlannedQuery(SelectPlannedQuery plannedQuery) {

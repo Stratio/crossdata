@@ -29,9 +29,9 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
@@ -75,6 +75,7 @@ public class Validator {
 
     /**
      * validate a parsed query.
+     *
      * @param parsedQuery The parsed query
      * @return com.stratio.crossdata.core.query.IValidatedQuery;
      * @throws ValidationException
@@ -180,9 +181,9 @@ public class Validator {
         DataStoreName datastoreName = attachClusterStatement.getDatastoreName();
         ClusterName clusterName = attachClusterStatement.getClusterName();
 
-        if (MetadataManager.MANAGER.exists(clusterName)){
+        if (MetadataManager.MANAGER.exists(clusterName)) {
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
-            if(!clusterMetadata.getDataStoreRef().equals(datastoreName)){
+            if (!clusterMetadata.getDataStoreRef().equals(datastoreName)) {
                 throw new BadFormatException("A cluster can be attached to only one data store.");
             }
         }
@@ -190,27 +191,28 @@ public class Validator {
 
     private void validateConnectorAttachedRefs(CrossdataStatement statement) throws ValidationException {
         if (statement instanceof DetachConnectorStatement) {
-            DetachConnectorStatement detachConnectorStatement= (DetachConnectorStatement) statement;
+            DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) statement;
             ConnectorName connectorName = detachConnectorStatement.getConnectorName();
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER
                     .getCluster(detachConnectorStatement.getClusterName());
             Map<ConnectorName, ConnectorAttachedMetadata> refs = clusterMetadata
                     .getConnectorAttachedRefs();
-            Iterator it=refs.entrySet().iterator();
-            boolean found=false;
-            while(it.hasNext()){
-                Map.Entry<ConnectorName, ConnectorMetadata>pairs=(Map.Entry)it.next();
-                if (connectorName.equals(pairs.getKey())){
-                   found=true;
-                   break;
+            Iterator it = refs.entrySet().iterator();
+            boolean found = false;
+            while (it.hasNext()) {
+                Map.Entry<ConnectorName, ConnectorMetadata> pairs = (Map.Entry) it.next();
+                if (connectorName.equals(pairs.getKey())) {
+                    found = true;
+                    break;
                 }
             }
-            if(!found){
+            if (!found) {
                 throw new ConnectionHasNoRefsException("Invalid validation [MUST_EXIST_ATTACH_CONNECTOR_CLUSTER] for " +
                         statement);
             }
         } else {
-            throw new ConnectionHasNoRefsException("Invalid validation [MUST_EXIST_ATTACH_CONNECTOR_CLUSTER] for " + statement);
+            throw new ConnectionHasNoRefsException(
+                    "Invalid validation [MUST_EXIST_ATTACH_CONNECTOR_CLUSTER] for " + statement);
         }
     }
 
@@ -301,7 +303,7 @@ public class Validator {
 
     private void validateClusterProperties(DataStoreName name, Map<Selector, Selector> opts)
             throws ValidationException {
-        if(!MetadataManager.MANAGER.exists(name)){
+        if (!MetadataManager.MANAGER.exists(name)) {
             throw new NotExistNameException(name);
         }
         DataStoreMetadata datastore = MetadataManager.MANAGER.getDataStore(name);
@@ -310,7 +312,7 @@ public class Validator {
 
     private void validateConnectorProperties(ConnectorName name, Map<Selector, Selector> opts)
             throws ValidationException {
-        if(!MetadataManager.MANAGER.exists(name)){
+        if (!MetadataManager.MANAGER.exists(name)) {
             throw new NotExistNameException(name);
         }
         ConnectorMetadata connector = MetadataManager.MANAGER.getConnector(name);
@@ -325,26 +327,26 @@ public class Validator {
 
         // Get property names of the attachment
         Set<String> attProps = new HashSet<>();
-        for(Selector sel: opts.keySet()){
+        for (Selector sel : opts.keySet()) {
             attProps.add(sel.getStringValue().toLowerCase());
         }
 
         // Verify required properties
         Set<String> props = new HashSet<>();
-        for(PropertyType pt: requiredProps){
+        for (PropertyType pt : requiredProps) {
             props.add(pt.getPropertyName().toLowerCase());
         }
-        if(!attProps.containsAll(props)){
+        if (!attProps.containsAll(props)) {
             throw new BadFormatException("Some required properties are missing");
         }
         attProps.removeAll(props);
 
         // Verify optional properties
         props = new HashSet<>();
-        for(PropertyType pt: optProps){
+        for (PropertyType pt : optProps) {
             props.add(pt.getPropertyName().toLowerCase());
         }
-        if(!props.containsAll(attProps)){
+        if (!props.containsAll(attProps)) {
             throw new BadFormatException("Some properties are not found in the manifest");
         }
     }
@@ -440,7 +442,7 @@ public class Validator {
         } else if (stmt instanceof DeleteStatement) {
             DeleteStatement deleteStatement = (DeleteStatement) stmt;
             name = deleteStatement.getTableName();
-        } else  if (stmt instanceof DetachClusterStatement) {
+        } else if (stmt instanceof DetachClusterStatement) {
             DetachClusterStatement detachClusterStatement = (DetachClusterStatement) stmt;
             name = detachClusterStatement.getTableMetadata().getName();
         } else if (stmt instanceof AttachClusterStatement) {
@@ -594,7 +596,6 @@ public class Validator {
         default:
             break;
         }
-
 
         if (notMatchDataTypeException != null) {
             throw notMatchDataTypeException;

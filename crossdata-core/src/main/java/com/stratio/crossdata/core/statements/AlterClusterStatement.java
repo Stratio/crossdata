@@ -24,8 +24,8 @@ import java.util.Map;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.utils.StringUtils;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code ALTER CLUSTER} statement from the CROSSDATA language.
@@ -48,7 +48,7 @@ public class AlterClusterStatement extends MetadataStatement {
      * Alter an existing cluster configuration.
      *
      * @param clusterName The name of the cluster.
-     * @param ifExists whether to check if cluster already exists
+     * @param ifExists    whether to check if cluster already exists
      * @param options     A JSON with the cluster options.
      */
     public AlterClusterStatement(ClusterName clusterName, boolean ifExists, String options) {
@@ -76,7 +76,8 @@ public class AlterClusterStatement extends MetadataStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CLUSTER).add(ValidationTypes.MUST_EXIST_PROPERTIES);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CLUSTER)
+                .add(ValidationTypes.MUST_EXIST_PROPERTIES);
     }
 
     public ClusterName getClusterName() {

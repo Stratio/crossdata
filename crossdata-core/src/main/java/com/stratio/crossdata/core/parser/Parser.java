@@ -49,6 +49,7 @@ public class Parser {
 
     /**
      * Parse incoming query.
+     *
      * @param baseQuery Required information for parsing statement.
      * @return Parsed Query.
      * @throws ParsingException Couldn't be parsed.
@@ -69,8 +70,9 @@ public class Parser {
 
     /**
      * Parse a input text and return the equivalent Statement.
+     *
      * @param sessionCatalog Current catalog of the user.
-     * @param query The input text.
+     * @param query          The input text.
      * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
      */
     public CrossdataStatement parseStatement(String sessionCatalog, String query) throws ParsingException {

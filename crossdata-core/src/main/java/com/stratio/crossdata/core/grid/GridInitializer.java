@@ -114,15 +114,15 @@ public class GridInitializer {
      */
     public void init() {
 
-        if(!Grid.INSTANCE.isInit()) {
+        if (!Grid.INSTANCE.isInit()) {
 
             ChannelService channelService = new ChannelServiceBuilder()
-                .withPort(port)
-                .withListenAddress(listenAddress)
-                .withContactPoints(contactPoints)
-                .withMinInitialMembers(minInitialMembers)
-                .withJoinTimeoutInMs(timeout)
-                .build();
+                    .withPort(port)
+                    .withListenAddress(listenAddress)
+                    .withContactPoints(contactPoints)
+                    .withMinInitialMembers(minInitialMembers)
+                    .withJoinTimeoutInMs(timeout)
+                    .build();
 
             JChannel storeChannel = channelService.build("store");
             JChannel lockChannel = channelService.build("lock");

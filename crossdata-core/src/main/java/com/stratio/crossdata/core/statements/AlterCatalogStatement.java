@@ -20,11 +20,11 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.Map;
 
-import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models an {@code ALTER CATALOG} statement from the CROSSDATA language.
@@ -59,14 +59,15 @@ public class AlterCatalogStatement extends MetadataStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG).add(ValidationTypes.MUST_EXIST_PROPERTIES);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_PROPERTIES);
     }
 
     public Map<Selector, Selector> getOptions() {
         return options;
     }
 
-    public CatalogName getCatalogName(){
+    public CatalogName getCatalogName() {
         return catalog;
     }
 }

@@ -26,6 +26,7 @@ import javax.xml.XMLConstants
 import javax.xml.bind.{JAXBElement, Unmarshaller, JAXBContext}
 import com.stratio.crossdata.common.exceptions.ManifestException
 
+
 object ManifestUtils {
 
   private final val DATASTORE_SCHEMA_PATH: String = "/com/stratio/crossdata/connector/DataStoreDefinition.xsd"

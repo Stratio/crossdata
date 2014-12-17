@@ -45,7 +45,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachClusterNoOptions() {
-        boolean res=true;
+        boolean res = true;
         String query = "ATTACH CLUSTER cluster on DATASTORE Cassandra";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -69,7 +69,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachClusterUnknownDatastore() {
-        boolean res=true;
+        boolean res = true;
         String query = "ATTACH CLUSTER cluster on DATASTORE unknown";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -117,7 +117,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachUnknownClusterWithOptionsIfExists() {
-        boolean res=true;
+        boolean res = true;
         String query = "ATTACH CLUSTER IF EXIST unknown on DATASTORE Cassandra with options " +
                 "{'comment':'attach cluster'}";
 
@@ -136,14 +136,15 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             String errorMsg = System.lineSeparator() +
                     "Expected: Some properties are not found in the datastore manifest" + System.lineSeparator() +
                     "   Found: " + e.getMessage().trim();
-            assertTrue(e.getMessage().trim().equalsIgnoreCase("Some properties are not found in the manifest"), errorMsg);
+            assertTrue(e.getMessage().trim().equalsIgnoreCase("Some properties are not found in the manifest"),
+                    errorMsg);
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
     }
 
     @Test
-    public void attachToADifferentDatastore(){
+    public void attachToADifferentDatastore() {
         // Add ElasticSearch Data Store to Metadata Manager
         HashSet<String> behaviours = new HashSet<>();
         behaviours.add("PROJECT");
