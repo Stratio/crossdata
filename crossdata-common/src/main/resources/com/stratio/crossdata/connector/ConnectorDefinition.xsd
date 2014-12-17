@@ -54,58 +54,20 @@
     </xs:complexType>
     <xs:complexType name="FunctionsType">
         <xs:sequence>
-            <xs:element type="DefaultType" name="Default" minOccurs="0" maxOccurs="1"/>
-            <xs:element type="CustomType" name="Custom" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="FunctionType" name="Function" maxOccurs="unbounded" minOccurs="1"/>
+            <xs:element type="ExcludeType" name="Exclude" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="DefaultType">
+    <xs:complexType name="ExcludeType">
         <xs:sequence>
-            <xs:element type="xs:string" name="FunctionName" minOccurs="1"/>
-        </xs:sequence>
-    </xs:complexType>
-    <xs:complexType name="CustomType">
-        <xs:sequence>
-            <xs:element type="FunctionType" name="Function" minOccurs="1"/>
+            <xs:element type="xs:string" name="FunctionName" maxOccurs="unbounded" minOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="FunctionType">
         <xs:sequence>
             <xs:element type="xs:string" name="FunctionName"/>
-            <xs:element type="InputType" name="Input"/>
-            <xs:element type="OutputType" name="Output"/>
+            <xs:element type="xs:string" name="Signature"/>
+            <xs:element type="xs:string" name="FunctionType"/>
         </xs:sequence>
     </xs:complexType>
-    <xs:complexType name="InputType">
-        <xs:sequence>
-            <xs:element type="ParametersType" name="Parameters"/>
-        </xs:sequence>
-    </xs:complexType>
-    <xs:complexType name="ParametersType">
-        <xs:sequence>
-            <xs:element type="ParameterType" name="Parameter" maxOccurs="unbounded" minOccurs="1"/>
-        </xs:sequence>
-    </xs:complexType>
-    <xs:complexType name="ParameterType">
-        <xs:sequence>
-            <xs:element type="CrossdataType" name="Type"/>
-            <xs:element type="xs:string" name="Description"/>
-        </xs:sequence>
-    </xs:complexType>
-    <xs:complexType name="OutputType">
-        <xs:sequence>
-            <xs:element type="ParameterType" name="Parameter"/>
-        </xs:sequence>
-    </xs:complexType>
-    <xs:simpleType name="CrossdataType">
-        <xs:restriction base="xs:string">
-            <xs:enumeration value="BIGINT"></xs:enumeration>
-            <xs:enumeration value="BOOLEAN"></xs:enumeration>
-            <xs:enumeration value="DOUBLE"></xs:enumeration>
-            <xs:enumeration value="FLOAT"></xs:enumeration>
-            <xs:enumeration value="INT"></xs:enumeration>
-            <xs:enumeration value="TEXT"></xs:enumeration>
-            <xs:enumeration value="VARCHAR"></xs:enumeration>
-            <xs:enumeration value="ANY"></xs:enumeration>
-        </xs:restriction>
-    </xs:simpleType>
 </xs:schema>
