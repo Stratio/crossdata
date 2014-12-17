@@ -6,15 +6,21 @@ Cassandra, and Cassandra and Stratio Deep Connectors.
 
 Requisites
 ============
-Oracle Virtual Box
+[Oracle Virtual Box](https://www.virtualbox.org/wiki/Downloads)
 
-Vagrant
+[Vagrant](https://www.vagrantup.com/downloads.html)
+
+If you are using Windows system you will need:
+[Git Console](http://git-scm.com/download/win)
+or
+[CGYWin](https://cygwin.com/install.html)
 
 How to get the Crossdata sandbox (Vagrant)
 ============================================
 Start with Crossdata is very easy. Just follow this steps:
  
     > mkdir CrossdataSandbox
+    > cd CrossdataSandbox
     > vagrant init stratio/crossdata
     
 At this point we have the vagrant file with the Crossdata configuration ready to start.
@@ -88,7 +94,7 @@ You can insert a few rows by executing:
     xdsh> INSERT INTO catalogTest.tableTest(id, serial, name, rating, email) VALUES (1001, 34539, 'John', 9.3,'crossdata@stratio.com');
 
     xdsh> INSERT INTO catalogTest.tableTest2(id, lastname, age, company) VALUES (999, 'Miller', 23, 'Best Company');
-    xdsh> INSERT INTO catalogTest.tableTest2id, lastname, age, company) VALUES (1000, 'Fernandez', 35, 'Stratio');
+    xdsh> INSERT INTO catalogTest.tableTest2(id, lastname, age, company) VALUES (1000, 'Fernandez', 35, 'Stratio');
     xdsh> INSERT INTO catalogTest.tableTest2(id, lastname, age, company) VALUES (1001, 'Yorke', 42, 'Big Data Company');
 
 You can also insert 900 rows in every table by typing the next command in a system shell:
@@ -113,6 +119,35 @@ Let's create a full text index:
 
     xdsh> CREATE FULL_TEXT INDEX myIndex ON tableTest(email);
     xdsh> SELECT * FROM tabletest WHERE email MATCH '*yahoo*';
+
+
+F.A.Q about the sandbox
+=======================
+
+##### **I am in the same directory that I copy the Vagrant file but I have this error:**
+
+```
+    A Vagrant environment or target machine is required to run this
+    command. Run vagrant init to create a new Vagrant environment. Or,
+    get an ID of a target machine from vagrant global-status to run
+    this command on. A final option is to change to a directory with a
+    Vagrantfile and to try again.
+```
+
+Make sure your file name is Vagrantfile instead of Vagrantfile.txt or VagrantFile.
+
+______________________________________________________________________________________
+
+##### **When I execute vagrant ssh I have this error:**
+
+```
+    ssh executable not found in any directories in the %PATH% variable. Is an
+    SSH client installed? Try installing Cygwin, MinGW or Git, all of which
+    contain an SSH client. Or use your favorite SSH client with the following
+    authentication information shown below:
+```
+
+We need to install [Cygwin](https://cygwin.com/install.html) or [Git for Windows](http://git-scm.com/download/win).
 
 
 
