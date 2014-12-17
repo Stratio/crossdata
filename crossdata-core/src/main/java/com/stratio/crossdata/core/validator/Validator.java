@@ -84,7 +84,6 @@ public class Validator {
         IValidatedQuery validatedQuery = null;
         LOG.info("Validating CrossdataStatements...");
         for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
-
             switch (val) {
             case MUST_NOT_EXIST_CATALOG:
                 validateCatalog(parsedQuery.getStatement(), false);
@@ -167,9 +166,9 @@ public class Validator {
             ((SelectValidatedQuery) validatedQuery).setTableMetadata(fields.getTablesMetadata());
             ((SelectValidatedQuery) validatedQuery).getColumns().addAll(fields.getColumnNames());
             ((SelectValidatedQuery) validatedQuery).getTables().addAll(fields.getTableNames());
-            ((SelectValidatedQuery) validatedQuery).getRelationships().addAll(fields.getWhere());
+            ((SelectValidatedQuery) validatedQuery).getRelations().addAll(fields.getWhere());
             ((SelectValidatedQuery) validatedQuery).setJoin(fields.getJoin());
-
+            ((SelectValidatedQuery) validatedQuery).getSignatures().putAll(fields.getSignatures());
         }
 
         return validatedQuery;

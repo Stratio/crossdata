@@ -18,10 +18,10 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 import com.stratio.crossdata.common.data.TableName;
 
@@ -38,36 +38,20 @@ public class FunctionSelector extends Selector {
     /**
      * List of columns.
      */
-    private List<Selector> functionColumns;
+    private LinkedList<Selector> functionColumns;
 
     /**
      * Class constructor.
      *
      * @param functionName Name of the function.
      */
-    public FunctionSelector(String functionName, List<Selector> functionColumns) {
+    public FunctionSelector(String functionName, LinkedList<Selector> functionColumns) {
         this.functionName = functionName;
         this.functionColumns = functionColumns;
     }
 
     public String getFunctionName() {
         return functionName;
-    }
-
-    /**
-     * This function determines whether the target function could be used with a group by clause.
-     * Allowed functions are: SUM, MAX, MIN, AVG, COUNT.
-     *
-     * @return Whether it could be used or not.
-     */
-    public boolean isGroupByFunction() {
-        String[] funcs = {"sum", "max", "min", "avg", "count"};
-        for (String funcname : funcs) {
-            if (funcname.equalsIgnoreCase(functionName)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -85,9 +69,9 @@ public class FunctionSelector extends Selector {
     }
 
     @Override
-    public Set<TableName> getSelectorTables() {
-        Set<TableName> result = new HashSet<>();
-        for (Selector s : this.functionColumns) {
+    public LinkedHashSet<TableName> getSelectorTables() {
+        LinkedHashSet<TableName> result = new LinkedHashSet<>();
+        for (Selector s: this.functionColumns) {
             result.addAll(s.getSelectorTables());
         }
         return result;

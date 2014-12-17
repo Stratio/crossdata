@@ -39,6 +39,7 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
+import com.stratio.crossdata.common.data.FunctionName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.NameType;
@@ -54,6 +55,7 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.NodeMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
@@ -112,6 +114,9 @@ public enum MetadataManager {
             break;
         case INDEX:
             result = exists((IndexName) name);
+            break;
+        case FUNCTION:
+            result = exists((FunctionName) name);
             break;
         default:
             break;
@@ -544,6 +549,23 @@ public enum MetadataManager {
             }
             beginTransaction();
             metadata.put(nodeMetadata.getName(), nodeMetadata);
+            commitTransaction();
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex);
+        } finally {
+            writeLock.unlock();
+        }
+    }
+
+    public void createFunction(FunctionMetadata functionMetadata, boolean unique) {
+        shouldBeInit();
+        try {
+            writeLock.lock();
+            if (unique) {
+                shouldBeUnique(functionMetadata.getFunctionName());
+            }
+            beginTransaction();
+            metadata.put(functionMetadata.getFunctionName(), functionMetadata);
             commitTransaction();
         } catch (Exception ex) {
             throw new MetadataManagerException(ex);
@@ -991,6 +1013,12 @@ public enum MetadataManager {
         shouldBeInit();
         shouldExist(name);
         return (NodeMetadata) metadata.get(name);
+    }
+
+    public FunctionMetadata getFunction(FunctionName name) {
+        shouldBeInit();
+        shouldExist(name);
+        return (FunctionMetadata) metadata.get(name);
     }
 
     public NodeMetadata getNodeIfExists(NodeName name) {

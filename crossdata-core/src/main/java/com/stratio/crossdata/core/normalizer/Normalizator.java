@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.FunctionName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ValidationException;
@@ -38,23 +39,25 @@ import com.stratio.crossdata.common.exceptions.validation.NotValidColumnExceptio
 import com.stratio.crossdata.common.exceptions.validation.YodaConditionException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
-import com.stratio.crossdata.common.statements.structures.OrderByClause;
 
 /**
  * Normalizator Class.
@@ -221,7 +224,6 @@ public class Normalizator {
      */
     public void normalizeSelectExpression(SelectExpression selectExpression)
             throws ValidationException {
-        fields.setDistinctSelect(selectExpression.isDistinct());
         List<Selector> normalizeSelectors = checkListSelector(selectExpression.getSelectorList());
         fields.getSelectors().addAll(normalizeSelectors);
     }
@@ -494,6 +496,8 @@ public class Normalizator {
                 FunctionSelector functionSelector = (FunctionSelector) selector;
                 checkFunctionSelector(functionSelector);
                 result.add(functionSelector);
+                String signature = createSignature(functionSelector);
+                fields.addSignature(functionSelector.getFunctionName(), signature);
                 break;
             case COLUMN:
                 ColumnSelector columnSelector = (ColumnSelector) selector;
@@ -510,6 +514,64 @@ public class Normalizator {
         return result;
     }
 
+    private void checkSignature(FunctionSelector functionSelector, String signature) throws BadFormatException {
+        FunctionName functionName = new FunctionName(functionSelector.getFunctionName());
+        FunctionMetadata function = MetadataManager.MANAGER.getFunction(functionName);
+        String storedSignature = function.getSignature();
+        if(!storedSignature.equalsIgnoreCase(signature)){
+            throw new BadFormatException("Signature of " + functionName + " is wrong: " + signature +
+                    System.lineSeparator() + "Expected: " + storedSignature);
+        }
+    }
+
+    private String createSignature(FunctionSelector functionSelector) throws BadFormatException {
+        StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
+        sb.append("(");
+        Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
+        while(iter.hasNext()){
+            Selector selector = iter.next();
+            switch(selector.getType()){
+                case FUNCTION:
+
+                    break;
+                case COLUMN:
+                    ColumnSelector cs = (ColumnSelector) selector;
+                    ColumnName columnName = cs.getName();
+                    ColumnMetadata column = MetadataManager.MANAGER.getColumn(columnName);
+                    ColumnType columnType = column.getColumnType();
+                    Class clazz = StringUtils.convertXdTypeToJavaType(columnType);
+                    String clazzName = clazz.getSimpleName().toLowerCase();
+                    sb.append(clazzName);
+                    break;
+                case ASTERISK:
+
+                    break;
+                case BOOLEAN:
+
+                    break;
+                case STRING:
+
+                    break;
+                case INTEGER:
+
+                    break;
+                case FLOATING_POINT:
+
+                    break;
+                case RELATION:
+
+                    break;
+            }
+            if(iter.hasNext()){
+                sb.append(", ");
+            }
+        }
+        sb.append(")");
+        String result = sb.toString();
+        checkSignature(functionSelector, result);
+        return result;
+    }
+
     /**
      * Validate the Functions Selectors of a parsed query.
      * @param functionSelector The function Selector to validate.
@@ -521,9 +583,6 @@ public class Normalizator {
         List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());
         functionSelector.getFunctionColumns().clear();
         functionSelector.getFunctionColumns().addAll(normalizeSelector);
-        // Check returning type
-        //TODO: This should be updated with information from the MetadataManager
-        functionSelector.setReturningType(ColumnType.INT);
     }
 
     private void checkRightSelector(ColumnName name, Operator operator, Selector rightTerm)

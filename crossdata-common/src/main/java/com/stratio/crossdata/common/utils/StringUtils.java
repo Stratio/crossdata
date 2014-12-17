@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -32,6 +33,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
@@ -154,4 +156,67 @@ public final class StringUtils {
         return null;
     }
 
+    public static Class convertXdTypeToJavaType(ColumnType ct){
+        Class clazz = null;
+        switch (ct){
+            case BIGINT:
+                clazz = Long.class;
+                break;
+            case BOOLEAN:
+                clazz = Boolean.class;
+                break;
+            case DOUBLE:
+                clazz = Double.class;
+                break;
+            case FLOAT:
+                clazz = Float.class;
+                break;
+            case INT:
+                clazz = Integer.class;
+                break;
+            case TEXT:
+                clazz = String.class;
+                break;
+            case VARCHAR:
+                clazz = String.class;
+                break;
+            case NATIVE:
+                clazz = null;
+                break;
+            case SET:
+                clazz = Set.class;
+                break;
+            case LIST:
+                clazz = List.class;
+                break;
+            case MAP:
+                clazz = Map.class;
+                break;
+            }
+        return clazz;
+    }
+
+    public static ColumnType convertJavaTypeToXdType(String javaType) {
+        ColumnType ct = ColumnType.NATIVE;
+        if(javaType.equalsIgnoreCase("Long")){
+            ct = ColumnType.BIGINT;
+        } else if(javaType.equalsIgnoreCase("Boolean")){
+            ct = ColumnType.BOOLEAN;
+        } else if(javaType.equalsIgnoreCase("Double")){
+            ct = ColumnType.DOUBLE;
+        } else if(javaType.equalsIgnoreCase("Float")){
+            ct = ColumnType.DOUBLE;
+        } else if(javaType.equalsIgnoreCase("Integer")){
+            ct = ColumnType.INT;
+        } else if(javaType.equalsIgnoreCase("String")){
+            ct = ColumnType.TEXT;
+        } else if(javaType.equalsIgnoreCase("Set")){
+            ct = ColumnType.SET;
+        } else if(javaType.equalsIgnoreCase("List")){
+            ct = ColumnType.LIST;
+        } else if(javaType.equalsIgnoreCase("MAP")){
+            ct = ColumnType.MAP;
+        }
+        return ct;
+    }
 }

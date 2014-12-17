@@ -357,7 +357,7 @@ public class SelectStatementTest extends ParsingTest {
         String inputText =
                 "SELECT newtb.ident1, myfunction(newtb.innerIdent, newtb.anotherIdent) LIKE ident1 FROM newks.newtb;";
         testParserFails(inputText, "selectWrongLikeWord");
-  }
+    }
 
     @Test
     public void selectSelectors() {

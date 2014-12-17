@@ -68,7 +68,7 @@ Filter
 ------
 
 The *Filter* operator specifies a filtering operation that should be applied to all the rows retrieved before that 
-filtering element. In a *SELECT* statement *Filter* operator are associated with the relationships found in the where
+filtering element. In a *SELECT* statement *Filter* operator are associated with the relations found in the where
  clause. A *Filter* includes the left and right parts of the relationship as well as the *Operator* to be applied.
 
 Select

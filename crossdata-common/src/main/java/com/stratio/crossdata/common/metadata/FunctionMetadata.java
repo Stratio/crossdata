@@ -18,32 +18,29 @@
 
 package com.stratio.crossdata.common.metadata;
 
-import com.stratio.crossdata.common.data.Status;
-import com.stratio.crossdata.common.data.NodeName;
+import com.stratio.crossdata.common.data.FunctionName;
 
-public class NodeMetadata implements IMetadata {
+public class FunctionMetadata implements IMetadata {
 
-    private final NodeName name;
-    private Status status;
+    final private FunctionName functionName;
+    final private String signature;
+    final private String returningType;
 
-    public NodeMetadata(NodeName name, Status status) {
-        this.name = name;
-        this.status = status;
+    public FunctionMetadata(FunctionName functionName, String signature, String returningType) {
+        this.functionName = functionName;
+        this.signature = signature;
+        this.returningType = returningType;
     }
 
-    public NodeMetadata(NodeName name) {
-        this(name, Status.OFFLINE);
+    public FunctionName getFunctionName() {
+        return functionName;
     }
 
-    public NodeName getName() {
-        return name;
+    public String getSignature() {
+        return signature;
     }
 
-    public Status getStatus() {
-        return status;
-    }
-
-    public void setStatus(Status status) {
-        this.status = status;
+    public String getReturningType() {
+        return returningType;
     }
 }

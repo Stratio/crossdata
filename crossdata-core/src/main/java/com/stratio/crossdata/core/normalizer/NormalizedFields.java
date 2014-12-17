@@ -40,9 +40,8 @@ public class NormalizedFields {
     private Set<ColumnName> columnNames = new HashSet<>();
     private Set<TableName> tableNames = new HashSet<>();
     private Set<CatalogName> catalogNames = new HashSet<>();
-    // It can includes functions, column names, asterisks...
+    // It can include functions, column names, asterisks...
     private List<Selector> selectors = new ArrayList<>();
-    private boolean distinctSelect = false;
     // Join relations
     private InnerJoin join ;
     private List<Relation> where = new ArrayList<>();
@@ -61,9 +60,9 @@ public class NormalizedFields {
      */
     private Map<String, ColumnName> columnNameAlias = new HashMap<>();
 
+    private Map<String, String> signatures = new HashMap<>();
 
     public NormalizedFields() {
-
     }
 
     public void addColumnName(ColumnName columnName, String alias){
@@ -114,14 +113,6 @@ public class NormalizedFields {
 
     public void setSelectors(List<Selector> selectors) {
         this.selectors = selectors;
-    }
-
-    public boolean isDistinctSelect() {
-        return distinctSelect;
-    }
-
-    public void setDistinctSelect(boolean distinctSelect) {
-        this.distinctSelect = distinctSelect;
     }
 
     public InnerJoin getJoin() {
@@ -200,4 +191,11 @@ public class NormalizedFields {
         return columnNameAlias.get(alias);
     }
 
+    public Map<String, String> getSignatures() {
+        return signatures;
+    }
+
+    public void addSignature(String functionName, String signature) {
+        signatures.put(functionName, signature);
+    }
 }

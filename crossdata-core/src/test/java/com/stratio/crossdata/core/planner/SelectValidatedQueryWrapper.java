@@ -104,7 +104,7 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
     }
 
     @Override
-    public List<Relation> getRelationships() {
+    public List<Relation> getRelations() {
         return stmt.getWhere();
     }
 

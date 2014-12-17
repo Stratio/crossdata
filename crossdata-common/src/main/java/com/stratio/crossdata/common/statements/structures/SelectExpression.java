@@ -34,22 +34,12 @@ public class SelectExpression implements Serializable {
      */
     private final List<Selector> selectorList;
 
-    private boolean distinct = false;
-
     public SelectExpression(List<Selector> selectorList) {
         this.selectorList = selectorList;
     }
 
     public List<Selector> getSelectorList() {
         return selectorList;
-    }
-
-    public boolean isDistinct() {
-        return distinct;
-    }
-
-    public void setDistinct(boolean distinct) {
-        this.distinct = distinct;
     }
 
     @Override

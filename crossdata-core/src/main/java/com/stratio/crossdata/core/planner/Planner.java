@@ -38,6 +38,7 @@ import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.data.FunctionName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.data.Status;
@@ -70,6 +71,7 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
@@ -519,7 +521,7 @@ public class Planner {
         String selectTable = query.getStatement().getTableName().getQualifiedName();
 
         //Add filters
-        if (query.getRelationships() != null) {
+        if (query.getRelations() != null) {
             processed = addFilter(processed, tableMetadataMap, query);
         }
 
@@ -582,7 +584,7 @@ public class Planner {
         //Add window
 
         //Add SELECT operator
-        Select finalSelect = generateSelect(ss, tableMetadataMap);
+        Select finalSelect = generateSelect(ss, tableMetadataMap, query.getSignatures());
         last.setNextStep(finalSelect);
         finalSelect.setPrevious(last);
 
@@ -1183,7 +1185,7 @@ public class Planner {
         LogicalStep previous;
         TableMetadata tm;
         Selector s;
-        for (Relation r : query.getRelationships()) {
+        for (Relation r : query.getRelations()) {
             s = r.getLeftTerm();
             //TODO Support left-side functions that contain columns of several tables.
             tm = tableMetadataMap.get(s.getSelectorTablesAsString());
@@ -1269,11 +1271,14 @@ public class Planner {
     /**
      * Generate a select operand.
      *
+     *
      * @param selectStatement  The source select statement.
      * @param tableMetadataMap A map with the table metadata indexed by table name.
+     * @param signatures
      * @return A {@link com.stratio.crossdata.common.logicalplan.Select}.
      */
-    protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap)
+    protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap,
+            Map<String, String> signatures)
             throws PlanningException {
         Map<ColumnName, String> aliasMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
@@ -1306,24 +1311,27 @@ public class Planner {
                 }
             } else if(FunctionSelector.class.isInstance(s)) {
                 FunctionSelector fs = FunctionSelector.class.cast(s);
+                FunctionName functionName = new FunctionName(fs.getFunctionName());
+                FunctionMetadata function = MetadataManager.MANAGER.getFunction(functionName);
+                ColumnType ct = StringUtils.convertJavaTypeToXdType(function.getReturningType());
                 if (s.getAlias() != null) {
                     aliasMap.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
                             fs.getAlias());
 
                     typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
-                            fs.getReturningType());
+                            ct);
 
                     typeMap.put(fs.getAlias(),
-                            fs.getReturningType());
+                            ct);
                 } else {
                     aliasMap.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
                             fs.getFunctionName());
 
                     typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
-                            fs.getReturningType());
+                            ct);
 
                     typeMap.put(fs.getFunctionName(),
-                            fs.getReturningType());
+                            ct);
                 }
             } else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
