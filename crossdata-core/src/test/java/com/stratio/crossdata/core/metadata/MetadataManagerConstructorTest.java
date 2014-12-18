@@ -22,7 +22,7 @@ public class MetadataManagerConstructorTest {
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
         DataStoreMetadata dataStore = new DataStoreMetadata(name, version, requiredProperties, othersProperties,
-                behaviors);
+                behaviors, null);
         try {
             MetadataManager.MANAGER.createDataStore(dataStore);
         } catch (MetadataManagerException me) {

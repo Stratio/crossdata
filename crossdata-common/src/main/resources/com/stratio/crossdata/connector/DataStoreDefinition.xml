@@ -43,4 +43,16 @@
         <Behavior>UPSERT_ON_INSERT</Behavior>
         <Behavior>FAKE_BEHAVIOR</Behavior>
     </Behaviors>
+    <Functions>
+        <Function>
+            <FunctionName>getYear</FunctionName>
+            <Signature>getYear(Tuple<Integer>):Any</Signature>
+            <FunctionType>simple</FunctionType>
+        </Function>
+        <Function>
+            <FunctionName>trim</FunctionName>
+            <Signature>trim(Tuple<Text>):Any</Signature>
+            <FunctionType>simple</FunctionType>
+        </Function>
+    </Functions>
 </DataStore>

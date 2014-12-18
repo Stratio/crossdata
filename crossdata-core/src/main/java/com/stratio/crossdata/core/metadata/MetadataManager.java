@@ -47,6 +47,7 @@ import com.stratio.crossdata.common.data.NodeName;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -57,6 +58,7 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.metadata.IMetadata;
+import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.NodeMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
@@ -806,6 +808,24 @@ public enum MetadataManager {
         return tablesMetadata;
     }
 
+    public List<IndexMetadata> getIndexes() {
+        List<IndexMetadata> indexesMetadata = new ArrayList<>();
+        for (TableMetadata table: getTables()) {
+            indexesMetadata.addAll(table.getIndexes().values());
+        }
+        return indexesMetadata;
+    }
+
+    public List<FunctionMetadata> getFunctions() {
+        List<FunctionMetadata> functionsMetadata = new ArrayList<>();
+        for (Name name : metadata.keySet()) {
+            if (name.getType() == NameType.FUNCTION) {
+                functionsMetadata.add(getFunction((FunctionName) name));
+            }
+        }
+        return functionsMetadata;
+    }
+
     /**
      * Return all columns.
      *
@@ -1066,6 +1086,51 @@ public enum MetadataManager {
         shouldBeInit();
         shouldExist(name);
         return (FunctionMetadata) metadata.get(name);
+    }
+
+    public Set<FunctionType> getSupportedFunctions(ConnectorName cn){
+        Set<FunctionType> functions = new HashSet<>();
+        ConnectorMetadata connector = getConnector(cn);
+        functions.addAll(connector.getConnectorFunctions());
+        for(DataStoreName dsn: connector.getDataStoreRefs()){
+            DataStoreMetadata datastore = MetadataManager.MANAGER.getDataStore(dsn);
+            functions.addAll(datastore.getFunctions());
+        }
+        functions.removeAll(connector.getExcludedFunctions());
+        return functions;
+    }
+
+    public Map<ConnectorName, Set<FunctionType>> getMapOfFunctions(){
+        Map<ConnectorName, Set<FunctionType>> mapOfFunctions = new HashMap<>();
+        for(ConnectorMetadata connector: getConnectors()){
+            Set<FunctionType> connectorFunctions = getSupportedFunctions(connector.getName());
+            mapOfFunctions.put(connector.getName(), connectorFunctions);
+        }
+        return mapOfFunctions;
+    }
+
+    public Set<FunctionType> getFunctionsFromManifests(){
+        Set<FunctionType> functions = new HashSet<>();
+        Map<ConnectorName, Set<FunctionType>> mapOfFunction = getMapOfFunctions();
+        for(Set<FunctionType> setOfFunctions: mapOfFunction.values()){
+            functions.addAll(setOfFunctions);
+        }
+        return functions;
+    }
+
+    public FunctionMetadata getFunctionFromManifests(FunctionName functionName){
+        Set<FunctionType> functions = getFunctionsFromManifests();
+        FunctionMetadata foundFunction = null;
+        for(FunctionType function: functions){
+            if(function.getFunctionName().equalsIgnoreCase(functionName.getName())){
+                foundFunction = new FunctionMetadata(
+                        new FunctionName(function.getFunctionName()),
+                        function.getSignature(),
+                        function.getFunctionType());
+                break;
+            }
+        }
+        return foundFunction;
     }
 
     public NodeMetadata getNodeIfExists(NodeName name) {

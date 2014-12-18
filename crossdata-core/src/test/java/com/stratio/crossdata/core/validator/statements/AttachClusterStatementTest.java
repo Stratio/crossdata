@@ -153,7 +153,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
                 "1.0",
                 new HashSet<PropertyType>(),
                 new HashSet<PropertyType>(),
-                behaviours);
+                behaviours, null);
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
 
         // Create & send query

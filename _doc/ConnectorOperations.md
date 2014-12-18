@@ -84,7 +84,7 @@ The column type is identified by Crossdata during the query analysis with the fo
 | PK | The column is part of the primary key. |
 | INDEXED | The column is indexed. |
 | NON_INDEXED | The column is not indexed. |
-| FUNCTION | A function is associated with the column. |
+| FUNCTION | A includes is associated with the column. |
 
 With respect to the relationship, Crossdata supports:
 

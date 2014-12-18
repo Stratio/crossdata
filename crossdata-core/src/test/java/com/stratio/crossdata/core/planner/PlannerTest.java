@@ -160,6 +160,16 @@ public class PlannerTest extends PlannerBaseTest {
     }
 
     @Test
+    public void selectWithFunction() {
+        String inputText = "SELECT getYear(demo.table1.id) FROM demo.table1;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "selectWithFunction", false, table1);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        assertEquals(queryWorkflow.getActorRef(), connector1.getActorRef(), "Wrong target actor");
+    }
+
+    @Test
     public void selectJoinMultipleColumns() {
         String inputText = "SELECT demo.table1.id, demo.table1.user, demo.table2.id, demo.table2.email"
                 + " FROM demo.table1"

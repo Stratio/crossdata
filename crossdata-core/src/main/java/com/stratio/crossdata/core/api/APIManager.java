@@ -55,11 +55,10 @@ import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorFunctionsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
+import com.stratio.crossdata.common.manifest.DataStoreFunctionsType;
 import com.stratio.crossdata.common.manifest.DataStoreRefsType;
 import com.stratio.crossdata.common.manifest.DataStoreType;
-import com.stratio.crossdata.common.manifest.ExcludeType;
 import com.stratio.crossdata.common.manifest.FunctionType;
-import com.stratio.crossdata.common.manifest.FunctionsType;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertiesType;
 import com.stratio.crossdata.common.manifest.PropertyType;
@@ -647,7 +646,7 @@ public class APIManager {
         BehaviorsType behaviorsType = dataStoreType.getBehaviors();
 
         // DATASTORE FUNCTIONS
-        FunctionsType datastoreFunctions= dataStoreType.getFunctions();
+        DataStoreFunctionsType datastoreFunctions = dataStoreType.getFunctions();
 
         // Create Metadata
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(
@@ -690,9 +689,12 @@ public class APIManager {
         ConnectorFunctionsType connectorFunctions = connectorType.getFunctions();
 
         // EXCLUDED FUNCTIONS
-        ExcludeType excludedFunctions = connectorType.getFunctions().getExclude();
-
-
+        List<String> excludedFunctions = new ArrayList<>();
+        if(connectorFunctions != null){
+            Set<String> convertedExcludes = ManifestHelper.convertManifestExcludedFunctionsToMetadataExcludedFunctions(
+                    connectorFunctions.getExclude());
+            excludedFunctions.addAll(convertedExcludes);
+        }
 
         // Create Metadata
         ConnectorMetadata connectorMetadata;
@@ -725,10 +727,7 @@ public class APIManager {
 
             connectorMetadata.setExcludedFunctions((excludedFunctions == null) ?
                     new HashSet<String>():
-                    ManifestHelper.convertManifestExcludedFunctionsToMetadataExcludedFunctions(excludedFunctions
-                            .getFunctionName()));
-
-
+                    new HashSet<>(excludedFunctions));
         } else {
             connectorMetadata = new ConnectorMetadata(
                     name,
@@ -738,9 +737,8 @@ public class APIManager {
                     (optionalProperties == null) ? new ArrayList<PropertyType>() : optionalProperties.getProperty(),
                     (supportedOperations == null) ? new ArrayList<String>() : supportedOperations.getOperation(),
                     (connectorFunctions==null) ? new ArrayList<FunctionType>(): connectorFunctions.getFunction(),
-                    (excludedFunctions==null) ? new ArrayList<String>(): excludedFunctions.getFunctionName()
+                    (excludedFunctions==null) ? new ArrayList<String>(): excludedFunctions
             );
-
         }
 
         connectorMetadata.setManifestAdded(true);

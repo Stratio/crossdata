@@ -32,11 +32,9 @@ import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.FunctionName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
@@ -48,7 +46,6 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
-import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.IValidatedQuery;
@@ -1290,10 +1287,6 @@ public class SelectStatementTest extends BasicValidatorTest {
 
     @Test
     public void simpleFunction(){
-
-        FunctionMetadata function = new FunctionMetadata(new FunctionName("getYear"), "getYear(integer)", "integer");
-        MetadataManager.MANAGER.createFunction(function, true);
-
         String inputText = "SELECT getYear(users.age) FROM demo.users";
         String expectedText = "SELECT getYear(demo.users.age) FROM demo.users";
 

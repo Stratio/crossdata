@@ -24,8 +24,8 @@ import java.util.List;
 
 /**
  * Class that contains the list of elements requested by the user in a SELECT statement. For
- * example, given the following statement: SELECT a, b as z, function(c) FROM t this class contains
- * a list with a, b as z, function(c).
+ * example, given the following statement: SELECT a, b as z, includes(c) FROM t this class contains
+ * a list with a, b as z, includes(c).
  */
 public class SelectExpression implements Serializable {
 

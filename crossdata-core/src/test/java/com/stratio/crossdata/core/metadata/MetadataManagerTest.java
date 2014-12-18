@@ -414,7 +414,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
         DataStoreMetadata dataStore = new DataStoreMetadata(name, version, requiredProperties, othersProperties,
-                behaviors);
+                behaviors, null);
         MetadataManager.MANAGER.createDataStore(dataStore);
         fail();
     }
@@ -489,7 +489,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(name, version, requiredProperties,
-                othersProperties, behaviors);
+                othersProperties, behaviors, null);
 
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
         fail();

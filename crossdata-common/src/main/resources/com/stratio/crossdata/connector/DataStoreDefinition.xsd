@@ -27,7 +27,7 @@
             <xs:element type="PropertiesType" name="RequiredProperties" maxOccurs="1" minOccurs="0"/>
             <xs:element type="PropertiesType" name="OptionalProperties" maxOccurs="1" minOccurs="0"/>
             <xs:element type="BehaviorsType" name="Behaviors" maxOccurs="1" minOccurs="0"/>
-            <xs:element type="FunctionsType" name="Functions" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="DataStoreFunctionsType" name="Functions" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="PropertiesType">
@@ -46,8 +46,7 @@
             <xs:element type="xs:string" name="Behavior" maxOccurs="unbounded" minOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
-
-    <xs:complexType name="FunctionsType">
+    <xs:complexType name="DataStoreFunctionsType">
         <xs:sequence>
             <xs:element type="FunctionType" name="Function" maxOccurs="unbounded" minOccurs="1"/>
         </xs:sequence>

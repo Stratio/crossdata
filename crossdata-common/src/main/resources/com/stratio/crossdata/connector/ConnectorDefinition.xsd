@@ -54,13 +54,13 @@
     </xs:complexType>
     <xs:complexType name="ConnectorFunctionsType">
         <xs:sequence>
-            <xs:element type="FunctionType" name="Function" maxOccurs="unbounded" minOccurs="1"/>
-            <xs:element type="ExcludeType" name="Exclude" minOccurs="0" maxOccurs="1"/>
+            <xs:element type="FunctionType" name="Function" maxOccurs="unbounded" minOccurs="0"/>
+            <xs:element type="ExcludeType" name="Exclude" maxOccurs="unbounded" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="ExcludeType">
         <xs:sequence>
-            <xs:element type="xs:string" name="FunctionName" maxOccurs="unbounded" minOccurs="1"/>
+            <xs:element type="xs:string" name="FunctionName"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="FunctionType">

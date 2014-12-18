@@ -277,7 +277,7 @@ public class Normalizator {
             ColumnName name = ((ColumnSelector) selector).getName();
             if (!columnNames.contains(name)) {
                 throw new BadFormatException(
-                        "All columns in the select clause must be in the group by or it must be aggregation function.");
+                        "All columns in the select clause must be in the group by or it must be aggregation includes.");
             }
             break;
         case ASTERISK:
@@ -538,7 +538,7 @@ public class Normalizator {
 
     private void checkSignature(FunctionSelector functionSelector, String signature) throws BadFormatException {
         FunctionName functionName = new FunctionName(functionSelector.getFunctionName());
-        FunctionMetadata function = MetadataManager.MANAGER.getFunction(functionName);
+        FunctionMetadata function = MetadataManager.MANAGER.getFunctionFromManifests(functionName);
         String storedSignature = function.getSignature();
         if(!storedSignature.equalsIgnoreCase(signature)){
             throw new BadFormatException("Signature of " + functionName + " is wrong: " + signature +
@@ -548,7 +548,7 @@ public class Normalizator {
 
     private String createSignature(FunctionSelector functionSelector) throws BadFormatException {
         StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
-        sb.append("(");
+        sb.append("(Tuple<");
         Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
         while(iter.hasNext()){
             Selector selector = iter.next();
@@ -588,7 +588,7 @@ public class Normalizator {
                 sb.append(", ");
             }
         }
-        sb.append(")");
+        sb.append(">):Tuple<Any>");
         String result = sb.toString();
         checkSignature(functionSelector, result);
         return result;
@@ -597,7 +597,7 @@ public class Normalizator {
     /**
      * Validate the Functions Selectors of a parsed query.
      *
-     * @param functionSelector The function Selector to validate.
+     * @param functionSelector The includes Selector to validate.
      * @throws ValidationException
      */
     public void checkFunctionSelector(FunctionSelector functionSelector)

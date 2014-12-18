@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.core.api;
 
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -299,7 +300,17 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         String expectedAnswer = "Crossdata server reset.";
         assertTrue(str.equals(expectedAnswer), System.lineSeparator() + "Expected: " + expectedAnswer +
                 System.lineSeparator() + "   Found: " + str);
-        assertTrue(MetadataManager.MANAGER.isEmpty(), "MetadataManager should be empty");
+
+        assertTrue(MetadataManager.MANAGER.getCatalogs().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getClusters().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getColumns().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getDatastores().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getNodes().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getTables().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getIndexes().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getFunctions().isEmpty());
+
+        assertFalse(MetadataManager.MANAGER.getConnectors().isEmpty());
     }
 
     @Test

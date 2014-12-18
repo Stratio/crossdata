@@ -42,7 +42,7 @@ public class DataStoreMetadata implements IMetadata {
     private Set<FunctionType> functions;
 
     public DataStoreMetadata(DataStoreName name, String version, Set<PropertyType> requiredProperties,
-            Set<PropertyType> othersProperties, Set<String> behaviors) {
+            Set<PropertyType> othersProperties, Set<String> behaviors, Set<FunctionType> functions) {
         this.name = name;
         this.version = version;
         this.requiredProperties = (requiredProperties == null) ? new HashSet<PropertyType>() : requiredProperties;

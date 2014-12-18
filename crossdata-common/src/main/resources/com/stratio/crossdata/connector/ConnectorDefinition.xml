@@ -47,4 +47,14 @@
         <operation>DELETE</operation>
         <operation>PROJECT</operation>
     </SupportedOperations>
+    <Functions>
+        <Function>
+            <FunctionName>capitalize</FunctionName>
+            <Signature>capitalize(Tuple<Text>):Any</Signature>
+            <FunctionType>simple</FunctionType>
+        </Function>
+        <Exclude>
+            <FunctionName>trim</FunctionName>
+        </Exclude>
+    </Functions>
 </Connector>

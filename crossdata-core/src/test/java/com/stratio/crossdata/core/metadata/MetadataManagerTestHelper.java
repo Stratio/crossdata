@@ -48,6 +48,7 @@ import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -106,8 +107,14 @@ public class MetadataManagerTestHelper {
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
 
+        FunctionType function = new FunctionType();
+        function.setFunctionName("getYear");
+        function.setFunctionType("simple");
+        function.setSignature("getYear(Tuple<Integer>)Integer");
+        Set<FunctionType> functions = new HashSet<>(Collections.singleton(function));
+
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
-                requiredPropertiesForDataStore, othersProperties, behaviors);
+                requiredPropertiesForDataStore, othersProperties, behaviors, functions);
 
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs = new HashMap<>();
         clusterAttachedRefs.put(new ClusterName(cluster), new ClusterAttachedMetadata(new ClusterName(cluster),

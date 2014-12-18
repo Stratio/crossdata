@@ -24,12 +24,12 @@ public class FunctionMetadata implements IMetadata {
 
     final private FunctionName functionName;
     final private String signature;
-    final private String returningType;
+    final private String functionType;
 
-    public FunctionMetadata(FunctionName functionName, String signature, String returningType) {
+    public FunctionMetadata(FunctionName functionName, String signature, String functionType) {
         this.functionName = functionName;
         this.signature = signature;
-        this.returningType = returningType;
+        this.functionType = functionType;
     }
 
     public FunctionName getFunctionName() {
@@ -37,10 +37,18 @@ public class FunctionMetadata implements IMetadata {
     }
 
     public String getSignature() {
+        String signature = this.signature;
+        if(functionType.equalsIgnoreCase("aggregation")){
+            signature = signature.replace("(", "(List<").replace(")", ">)");
+        }
         return signature;
     }
 
+    public String getFunctionType() {
+        return functionType;
+    }
+
     public String getReturningType() {
-        return returningType;
+        return signature.substring(signature.indexOf(":"), signature.length());
     }
 }

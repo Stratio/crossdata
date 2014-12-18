@@ -33,7 +33,6 @@ import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.ConnectorFunctionsType;
 import com.stratio.crossdata.common.manifest.ExcludeType;
 import com.stratio.crossdata.common.manifest.FunctionType;
-import com.stratio.crossdata.common.manifest.FunctionsType;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -95,13 +94,9 @@ public class ConnectorMetadata implements IMetadata {
      */
     private Set<Operations> supportedOperations;
 
-
     private Set<FunctionType> connectorFunctions;
 
-
-
     private Set<String> excludedFunctions;
-
 
     /**
      * Whether the manifest of this connector was already added or not
@@ -119,16 +114,14 @@ public class ConnectorMetadata implements IMetadata {
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
      * @param supportedOperations The set of supported operations.
-     * @param supportedFunctions  The set of supported functions.
+     * @param functions           The set of supported functions.
      */
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations, Set<FunctionsType> supportedFunctions) throws ManifestException {
+            Set<Operations> supportedOperations, ConnectorFunctionsType functions) throws ManifestException {
         this(name, version, dataStoreRefs, clusterProperties, Status.OFFLINE, null, requiredProperties,
-                optionalProperties, supportedOperations);
-
-
+                optionalProperties, supportedOperations, functions);
     }
 
     /**
@@ -138,7 +131,7 @@ public class ConnectorMetadata implements IMetadata {
      * @param version             The connector version.
      * @param dataStoreRefs       The set of datastores the connector may access.
      * @param clusterProperties   The map of clusters associated with this connector and their associated properties.
-     * @param status     The connector status.
+     * @param status              The connector status.
      * @param actorRef            The actor Akka reference.
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
@@ -150,7 +143,8 @@ public class ConnectorMetadata implements IMetadata {
             String actorRef,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations) throws ManifestException {
+            Set<Operations> supportedOperations,
+            ConnectorFunctionsType functions) throws ManifestException {
 
         if(name.getName().isEmpty()){
             throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
@@ -172,6 +166,23 @@ public class ConnectorMetadata implements IMetadata {
         this.requiredProperties = (requiredProperties!=null)?requiredProperties:new HashSet<PropertyType>();
         this.optionalProperties = (optionalProperties!=null)?optionalProperties:new HashSet<PropertyType>();
         this.supportedOperations = (supportedOperations!=null)?supportedOperations:new HashSet<Operations>();
+        if(functions==null){
+            this.connectorFunctions = new HashSet<>();
+            this.excludedFunctions = new HashSet<>();
+        } else {
+            List<FunctionType> includes = functions.getFunction();
+            this.connectorFunctions = new HashSet<>();
+            if(includes != null){
+                this.connectorFunctions.addAll(includes);
+            }
+            List<ExcludeType> excludes = functions.getExclude();
+            this.excludedFunctions = new HashSet<>();
+            if(excludes != null){
+                for(ExcludeType exclude: excludes){
+                    this.excludedFunctions.add(exclude.getFunctionName());
+                }
+            }
+        }
         this.status = status;
         this.actorRef = actorRef;
     }
@@ -233,9 +244,8 @@ public class ConnectorMetadata implements IMetadata {
         }
 
         if(excludedFunctions!=null){
-            this.excludedFunctions=ManifestHelper.convertManifestExcludedFunctionsToMetadataExcludedFunctions
-                    (excludedFunctions);
-        }else{
+            this.excludedFunctions=new HashSet<>(excludedFunctions);
+        } else {
             this.connectorFunctions=new HashSet<>();
         }
 
@@ -453,9 +463,8 @@ public class ConnectorMetadata implements IMetadata {
      *
      * @param supportedFunctions A list of supported operations.
      */
-    public void setSupportedFunctions(FunctionsType supportedFunctions) throws ManifestException {
-        //TODO set supported functions
-        //this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedFunctions);
+    public void setSupportedFunctions(ConnectorFunctionsType supportedFunctions) throws ManifestException {
+       this.connectorFunctions = new HashSet<>(supportedFunctions.getFunction());
     }
 
     public boolean isManifestAdded() {

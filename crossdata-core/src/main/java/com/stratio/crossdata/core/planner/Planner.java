@@ -584,7 +584,7 @@ public class Planner {
         //Add window
 
         //Add SELECT operator
-        Select finalSelect = generateSelect(ss, tableMetadataMap, query.getSignatures());
+        Select finalSelect = generateSelect(ss, tableMetadataMap);
         last.setNextStep(finalSelect);
         finalSelect.setPrevious(last);
 
@@ -1273,13 +1273,12 @@ public class Planner {
      * Generate a select operand.
      *
      *
+     *
      * @param selectStatement  The source select statement.
      * @param tableMetadataMap A map with the table metadata indexed by table name.
-     * @param signatures
      * @return A {@link com.stratio.crossdata.common.logicalplan.Select}.
      */
-    protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap,
-            Map<String, String> signatures)
+    protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap)
             throws PlanningException {
         Map<ColumnName, String> aliasMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
@@ -1316,7 +1315,7 @@ public class Planner {
             } else if (FunctionSelector.class.isInstance(s)) {
                 FunctionSelector fs = FunctionSelector.class.cast(s);
                 FunctionName functionName = new FunctionName(fs.getFunctionName());
-                FunctionMetadata function = MetadataManager.MANAGER.getFunction(functionName);
+                FunctionMetadata function = MetadataManager.MANAGER.getFunctionFromManifests(functionName);
                 ColumnType ct = StringUtils.convertJavaTypeToXdType(function.getReturningType());
                 if (s.getAlias() != null) {
                     aliasMap.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),

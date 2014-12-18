@@ -29,6 +29,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
@@ -47,6 +48,7 @@ import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
@@ -176,17 +178,22 @@ public class BasicValidatorTest {
         ConnectorMetadata connectorMetadata = null;
         try {
             connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
-                    dataStoreRefs, null, null, supportedOperations,null,null);
+                    dataStoreRefs, null, null, supportedOperations, null, null);
         } catch (ManifestException e) {
             fail(e.getMessage());
         }
         return connectorMetadata;
-
     }
 
     private static DataStoreMetadata createDataStoreMetadata() {
+        Set<FunctionType> functions = new HashSet<>();
+        FunctionType function = new FunctionType();
+        function.setFunctionName("getYear");
+        function.setSignature("getYear(Tuple<Integer>):Tuple<Any>");
+        function.setFunctionType("simple");
+        functions.add(function);
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(new DataStoreName("Cassandra"), "1.0",
-                new HashSet<PropertyType>(), new HashSet<PropertyType>(), null);
+                new HashSet<PropertyType>(), new HashSet<PropertyType>(), null, functions);
         return dataStoreMetadata;
     }
 

@@ -26,12 +26,12 @@ import java.util.List;
 import com.stratio.crossdata.common.data.TableName;
 
 /**
- * Selector composed by a function and the list of columns required by the function.
+ * Selector composed by a includes and the list of columns required by the includes.
  */
 public class FunctionSelector extends Selector {
 
     /**
-     * Name of the function.
+     * Name of the includes.
      */
     private final String functionName;
 
@@ -43,7 +43,7 @@ public class FunctionSelector extends Selector {
     /**
      * Class constructor.
      *
-     * @param functionName Name of the function.
+     * @param functionName Name of the includes.
      */
     public FunctionSelector(String functionName, LinkedList<Selector> functionColumns) {
         this.functionName = functionName;
@@ -55,7 +55,7 @@ public class FunctionSelector extends Selector {
     }
 
     /**
-     * Get the list of columns required by the function.
+     * Get the list of columns required by the includes.
      *
      * @return A list of {@link com.stratio.crossdata.common.statements.structures.Selector}.
      */
