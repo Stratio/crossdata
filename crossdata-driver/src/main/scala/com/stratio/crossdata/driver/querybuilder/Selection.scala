@@ -23,31 +23,66 @@ import scala.collection.JavaConverters.collectionAsScalaIterableConverter
 /**
  * Selection builder
  */
-//object Selection {
-//
-//  def select(columnName: String) : Selection = {
-//    new Selection(List(columnName))
-//  }
-//
-//  @annotation.varargs
-//  def select(columnNames : String*) : Selection = {
-//    new Selection(columnNames.toList)
-//  }
-//
-//  def select(columnNames : java.util.List[String]) : Selection = {
-//    new Selection(columnNames.asScala.toList)
-//  }
-//
-//}
+class Selection(){
 
-class Selection(selectionList : List[String]){
+  /**
+   * String builder with the selected columns.
+   */
+  val selected : StringBuilder = new StringBuilder
 
-  def selectAs(columnName : String, alias : String) : Selection = {
-    new Selection(selectionList ++ List(columnName + " AS " + alias))
+  /**
+   * Class constructor.
+   * @param columnName The first column to be selected.
+   */
+  def this(columnName : String){
+    this()
+    selected.append(columnName)
   }
 
+  /**
+   * Class constructor.
+   * @param selectionList The list of columns to be selected.
+   */
+  def this(selectionList : List[String]){
+    this()
+    selected.append(selectionList.mkString(", "))
+  }
+
+  /**
+   * Add a new column.
+   * @param columnName The column name.
+   * @return The resulting Selection.
+   */
+  def and(columnName : String) : Selection = {
+    addSeparator()
+    selected.append(columnName)
+    this
+  }
+
+  /**
+   * Add a new column with an alias.
+   * @param columnName The column name.
+   * @param alias The alias.
+   * @return The resulting Selection.
+   */
+  def and(columnName : String, alias : String) : Selection = {
+    addSeparator()
+    selected.append(columnName + " AS " + alias)
+    this
+  }
+
+  /**
+   * Get the string representation of the selected columns.
+   * @return A String.
+   */
   def asString() : String = {
-    selectionList.mkString(", ")
+    selected.toString
+  }
+
+  private def addSeparator() : Unit = {
+    if(selected.size > 0){
+      selected.append(", ");
+    }
   }
 
 }

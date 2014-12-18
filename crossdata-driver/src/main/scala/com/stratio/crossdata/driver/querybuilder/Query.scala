@@ -19,8 +19,8 @@
 package com.stratio.crossdata.driver.querybuilder
 
 /**
- * Created by dhiguero on 12/12/14.
+ * Base trait for all queries.
  */
-class Query {
+trait Query {
 
 }

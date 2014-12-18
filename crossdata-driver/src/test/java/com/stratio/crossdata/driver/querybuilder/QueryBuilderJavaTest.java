@@ -44,6 +44,14 @@ public class QueryBuilderJavaTest {
     }
 
     @Test
+    public void selectSelection(){
+        String expected = "SELECT col1, col2, col3 AS alias3 FROM table";
+        Selection selection = new Selection("col1").and("col2").and("col3", "alias3");
+        Select s = QueryBuilder.select(selection).from("table");
+        assertEquals(s.toString(), expected, "Query does not match");
+    }
+
+    @Test
     public void selectFromWhere(){
         String expected = "SELECT * FROM table WHERE id = 42";
         Query s = QueryBuilder.selectAll().from("table").where("id = 42");
@@ -64,17 +72,6 @@ public class QueryBuilderJavaTest {
         assertEquals(s.toString(), expected, "Query does not match");
     }
 
-    //SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = c.t2.aa WHERE c.t1.a = 'y';
-
-//    String inputText = "[test], " +
-//            "SELECT colSales, colRevenues FROM tableClients "
-//            + "INNER JOIN tableCostumers ON AssistantId = clientId "
-//            + "WHERE colCity = 'Madrid' "
-//            + "ORDER BY age "
-//            + "GROUP BY gender;";
-
-    //Select with alias
-
     @Test
     public void selectJoin(){
         String expected = "SELECT * FROM table1 "
@@ -85,5 +82,33 @@ public class QueryBuilderJavaTest {
                 .where("name = 'crossdata'");
         assertEquals(s.toString(), expected, "Query does not match");
     }
+
+    @Test
+    public void selectInnerJoin(){
+        String expected = "SELECT * FROM table1 "
+                + "INNER JOIN table2 ON id1 = id2 "
+                + "WHERE name = 'crossdata'";
+        Query s = QueryBuilder.selectAll().from("table1")
+                .innerJoin("table2").on("id1 = id2")
+                .where("name = 'crossdata'");
+        assertEquals(s.toString(), expected, "Query does not match");
+    }
+
+    @Test
+    public void selectComplex(){
+        String expected = "SELECT col1, col2 FROM table1 "
+                + "INNER JOIN table2 ON id1 = id2 "
+                + "WHERE col1 = 'value1' "
+                + "ORDER BY col3 "
+                + "GROUP BY col4";
+        Query s = QueryBuilder.select("col1", "col2")
+                .from("table1")
+                .join("table2").on("id1 = id2")
+                .where("col1 = 'value1'")
+                .orderBy("col3")
+                .groupBy("col4");
+        assertEquals(s.toString(), expected, "Query does not match");
+    }
+
 
 }

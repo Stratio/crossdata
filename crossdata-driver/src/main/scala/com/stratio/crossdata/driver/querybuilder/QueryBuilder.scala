@@ -41,5 +41,14 @@ object QueryBuilder {
   def select(columnNames : String*) : Select = {
     new Select(columnNames)
   }
+
+  /**
+   * Create a Select statement that will return a sequence of columns from a table.
+   * @param selection The Selection.
+   * @return A Select statement.
+   */
+  def select(selection : Selection) : Select = {
+    new Select(selection)
+  }
 }
 

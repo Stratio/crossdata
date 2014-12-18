@@ -23,18 +23,35 @@ package com.stratio.crossdata.driver.querybuilder
  */
 class Where (parent : Select) extends SelectQuery(parent) {
 
+  /**
+   * String builder with the where clauses.
+   */
   val clauses : StringBuilder = new StringBuilder
 
+  /**
+   * Class constructor.
+   * @param clause The initial clause.
+   * @param parent The parent select statement.
+   */
   def this(clause : String, parent : Select){
     this(parent)
     clauses.append(clause)
   }
 
-  def and(clause : String) : Where = {
-    clauses.append(" AND ").append(clause)
+  /**
+   * Add another where clause.
+   * @param whereClause The where clause.
+   * @return The current where object.
+   */
+  def and(whereClause : String) : Where = {
+    clauses.append(" AND ").append(whereClause)
     this
   }
 
+  /**
+   * Get the string representation of the selected columns.
+   * @return A String.
+   */
   def asString() : String = {
     clauses.toString
   }

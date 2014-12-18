@@ -33,6 +33,12 @@ class Join (parent : Select) extends SelectQuery(parent) {
    */
   var tableName : String = ""
 
+  /**
+   * Class constructor.
+   * @param table The target table.
+   * @param joinType The type of join.
+   * @param parent The parent select statement.
+   */
   def this(table : String, joinType : String = "INNER",  parent : Select){
     this(parent)
     tableName = table

@@ -19,7 +19,8 @@
 package com.stratio.crossdata.driver.querybuilder
 
 /**
- * Created by dhiguero on 15/12/14.
+ * Select query class that enables specific clauses to access
+ * parent methods on the Select statement.
  */
 class SelectQuery (parent : Select) extends Select{
 
@@ -29,6 +30,14 @@ class SelectQuery (parent : Select) extends Select{
 
   override def where(clause : String) : Where = {
     parent.where(clause)
+  }
+
+  override def groupBy(clause : String) : Select = {
+    parent.groupBy(clause)
+  }
+
+  override def orderBy(clause : String) : Select = {
+    parent.orderBy(clause)
   }
 
   override def toString() : String = {
