@@ -149,6 +149,17 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @param callback The callback object.
    */
   @throws(classOf[ConnectionException])
+  def asyncExecuteQuery(query: com.stratio.crossdata.driver.querybuilder.Query,
+                        callback: IDriverResultHandler): Result = {
+    asyncExecuteQuery(query.toString, callback)
+  }
+
+  /**
+   * Execute a query in the Crossdata server asynchronously.
+   * @param query The query.
+   * @param callback The callback object.
+   */
+  @throws(classOf[ConnectionException])
   def asyncExecuteQuery(query: String, callback: IDriverResultHandler): Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
@@ -165,6 +176,20 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       throw new ConnectionException("You must connect to cluster")
     }
     proxyActor.ask(message)(5 second)
+  }
+
+  /**
+   * Launch query in Crossdata Server
+   * @param query Launched query
+   * @return QueryResult
+   */
+  @throws(classOf[ConnectionException])
+  @throws(classOf[ParsingException])
+  @throws(classOf[ValidationException])
+  @throws(classOf[ExecutionException])
+  @throws(classOf[UnsupportedException])
+  def executeQuery(query: com.stratio.crossdata.driver.querybuilder.Query): Result = {
+    executeQuery(query.toString)
   }
 
   /**
