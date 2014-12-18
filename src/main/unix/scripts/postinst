@@ -3,33 +3,9 @@
 #
 # This scripts moves the files to the package generation servers
 
-#function packageCode ()
-#{
-#   cd $WORK_DIR
-#   chmod +x ./opt/sds/crossdata/bin/*
-#   chmod 755 ./etc/init.d/crossdata
-#
-#   # Eliminamos binarios antiguos de helio
-#   echo "Eliminando binarios antiguos de helio..." >>$LOG_FILE 2>&1
-#   ssh -i /var/lib/jenkins/.ssh/id_rsa_stratio stratio@helio.stratio.com "rm -rf /var/packages/sds/stratio-crossdata/deb/etc" >>$LOG_FILE 2>&1
-#   ssh -i /var/lib/jenkins/.ssh/id_rsa_stratio stratio@helio.stratio.com "rm -rf /var/packages/sds/stratio-crossdata/deb/opt" >>$LOG_FILE 2>&1
-#   ssh -i /var/lib/jenkins/.ssh/id_rsa_stratio stratio@helio.stratio.com "rm -rf /var/packages/sds/stratio-crossdata/deb/var" >>$LOG_FILE 2>&1
-#   # Copiamos binarios a helio
-#   echo "Copiando binarios a helio..." >>$LOG_FILE 2>&1
-#   scp -r -i /var/lib/jenkins/.ssh/id_rsa_stratio $WORK_DIR/* stratio@helio.stratio.com:/var/packages/sds/stratio-crossdata/deb >>$LOG_FILE 2>&1
-#
-#   # Necesario para que funcione en RedHat
-#   echo "Moviendo scripts de arranque a paths de RedHat" >>$LOG_FILE 2>&1
-#   mkdir -p $WORK_DIR/etc/rc.d
-#   mv $WORK_DIR/etc/init.d $WORK_DIR/etc/rc.d
-#
-#   # Eliminamos binarios antiguos de litio
-#   echo "Eliminando binarios antiguos de litio..." >>$LOG_FILE 2>&1
-#   ssh -i /var/lib/jenkins/.ssh/id_rsa_stratio stratio@litio.stratio.com "rm -rf /var/rpmbuild/BUILD/stratio-crossdata-${MODRELEASE}-1.x86_64/*" >>$LOG_FILE 2>&1
-#   # Copiamos binarios a litio
-#   echo "Copiando binarios a litio..." >>$LOG_FILE 2>&1
-#   ssh -i /var/lib/jenkins/.ssh/id_rsa_stratio stratio@litio.stratio.com "mkdir -p /var/rpmbuild/BUILD/stratio-crossdata-${MODRELEASE}-1.x86_64/" >>$LOG_FILE 2>&1
-#   scp -r -i /var/lib/jenkins/.ssh/id_rsa_stratio $WORK_DIR/* stratio@litio.stratio.com:/var/rpmbuild/BUILD/stratio-crossdata-${MODRELEASE}-1.x86_64/ >>$LOG_FILE 2>&1
-#
-#   return 0
-#}
+#cd $WORK_DIR
+#chmod +x /opt/sds/crossdata/bin/*
+chmod 755 /etc/init.d/crossdata
+chmod +x /opt/sds/crossdata/crossdata-sh
+export CROSSDATA_LIB=/opt/sds/crossdata
+

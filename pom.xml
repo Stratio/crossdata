@@ -126,18 +126,55 @@
                         <group>stratio</group>
                     </rpm>
                     <assembly>
+			<mkdirs>
+  			<paths>
+    			<path>etc/init.d</path>
+    			<path>etc/conf</path>
+    			<!--<path>/var/opt/jetty/log</path>-->
+  			</paths>
+			<!--
+  			<attributes>
+    			<user>jetty</user>
+    			<group>jetty</group>
+  			</attributes>
+			-->
+			</mkdirs>
                         <copyDirectory>
                             <from>crossdata-dist/target/crossdata-dist-0.2.0-SNAPSHOT/bin</from>
                             <to>opt/sds/crossdata</to>
                         </copyDirectory>
                         <copyDirectory>
                             <from>crossdata-dist/target/crossdata-dist-0.2.0-SNAPSHOT/conf</from>
-                            <to>etc/sds/crossdata</to>
+                            <to>etc/conf</to>
                         </copyDirectory>
                         <copyDirectory>
                             <from>crossdata-dist/target/crossdata-dist-0.2.0-SNAPSHOT/lib</from>
                             <to>opt/sds/crossdata</to>
                         </copyDirectory>
+            		<copyFile>
+				<path>crossdata-dist/src/main/include/README.md</path>
+				<toFile>opt/sds/crossdata/README.md</toFile>
+            		</copyFile>
+            		<copyFile>
+				<path>crossdata-dist/target/crossdata-dist-${project.version}/bin/crossdata-server-daemon</path>
+				<toFile>etc/init.d/crossdata</toFile>
+              			<attributes>
+					<!--
+                			<user>root</user>
+                			<group>root</group>
+					-->
+                			<mode>0755</mode>
+              			</attributes>
+            		</copyFile>
+                        <copyFile>
+                            <path>crossdata-dist/target/crossdata-dist-0.2.0-SNAPSHOT/LICENSE</path>
+                            <toFile>opt/sds/crossdata/LICENSE</toFile>
+                        </copyFile>
+                        <copyFile>
+                            <path>crossdata-dist/target/crossdata-dist-0.2.0-SNAPSHOT/NOTICE</path>
+                            <toFile>opt/sds/crossdata/NOTICE</toFile>
+                        </copyFile>
+	
                     </assembly>
                 </configuration>
             </plugin>
@@ -154,31 +191,6 @@
                     </formats>
                     <aggregate>true</aggregate>
                     <check/>
-		    <assembly>
-            		<copyArtifact>
-				<artifact>README.md</artifact>
-				<toFile>target/unix/root-deb/assembly/opt/sds/crossdata/README.md</toFile>
-				<!--
-              			<attributes>
-                			<user>hudson</user>
-                			<group>hudson</group>
-                			<mode>0666</mode>
-              			</attributes>
-				-->
-            		</copyArtifact>
-            		<copyArtifact>
-				<artifact>crossdata-dist/target/crossdata-dist-${project.version}/bin/crossdata-server-daemon</artifact>
-				<toFile>target/unix/root-deb/assembly/etc/init.d/crossdata</toFile>
-            		</copyArtifact>
-                        <copyFile>
-                            <artifact>crossdata-dist/target/crossdata-dist-0.2.0-SNAPSHOT/LICENSE</artifact>
-                            <toFile>target/unix/root-deb/assembly/opt/sds/crossdata/LICENSE</toFile>
-                        </copyFile>
-                        <copyFile>
-                            <artifact>crossdata-dist/target/crossdata-dist-0.2.0-SNAPSHOT/NOTICE</artifact>
-                            <toFile>target/unix/root-deb/assembly/opt/sds/crossdata/NOTICE</toFile>
-                        </copyFile>
-		    </assembly>
                 </configuration>
             </plugin>
 

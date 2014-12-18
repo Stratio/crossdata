@@ -1,13 +1,6 @@
 # This function should be modified with what the user wants to do previous to
 # the compilation.
 # For instance, untar the code.
-function preProcess ()
-{
-   return 0
-}
-
-
-preProcess
 
 ## directory/to/be/created
 #etc/init.d
