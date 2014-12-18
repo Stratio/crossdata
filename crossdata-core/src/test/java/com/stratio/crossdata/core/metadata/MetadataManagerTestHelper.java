@@ -107,11 +107,17 @@ public class MetadataManagerTestHelper {
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
 
+        Set<FunctionType> functions = new HashSet<>();
         FunctionType function = new FunctionType();
         function.setFunctionName("getYear");
         function.setFunctionType("simple");
-        function.setSignature("getYear(Tuple<Integer>)Integer");
-        Set<FunctionType> functions = new HashSet<>(Collections.singleton(function));
+        function.setSignature("getYear(Tuple<Integer>):Any");
+        functions.add(function);
+        function = new FunctionType();
+        function.setFunctionName("shorten");
+        function.setFunctionType("simple");
+        function.setSignature("shorten(Tuple<Text>):Any");
+        functions.add(function);
 
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
                 requiredPropertiesForDataStore, othersProperties, behaviors, functions);

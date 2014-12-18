@@ -246,7 +246,7 @@ public class ConnectorMetadata implements IMetadata {
         if(excludedFunctions!=null){
             this.excludedFunctions=new HashSet<>(excludedFunctions);
         } else {
-            this.connectorFunctions=new HashSet<>();
+            this.excludedFunctions=new HashSet<>();
         }
 
         this.status = Status.OFFLINE;
