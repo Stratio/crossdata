@@ -155,10 +155,6 @@
                     <aggregate>true</aggregate>
                     <check/>
 		    <assembly>
-			<!--
-				bin/crossdata-server-daemon=etc/init.d/crossdata
-				README.md=opt/sds/crossdata/
-			-->
             		<copyArtifact>
 				<artifact>README.md</artifact>
 				<toFile>target/unix/root-deb/assembly/opt/sds/crossdata/README.md</toFile>
