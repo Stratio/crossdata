@@ -23,7 +23,6 @@ package com.stratio.crossdata.core.metadata;
  */
 public class MetadataManagerException extends RuntimeException {
 
-
     /**
      * Constructs a new Exception with a specific cause.
      *

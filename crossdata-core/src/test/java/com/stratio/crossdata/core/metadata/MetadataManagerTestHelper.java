@@ -147,7 +147,8 @@ public class MetadataManagerTestHelper {
         ConnectorMetadata connectorMetadata = null;
         try {
             connectorMetadata = new ConnectorMetadata(connectorName, version,
-                    dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
+                    dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(),
+                    new ArrayList<String>(), null,null);
         } catch (ManifestException e) {
             fail(e.getMessage());
         }
@@ -170,7 +171,8 @@ public class MetadataManagerTestHelper {
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), new HashSet<Operations>());
+                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(),
+                new HashSet<Operations>(),null);
         connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
@@ -192,7 +194,7 @@ public class MetadataManagerTestHelper {
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options);
+                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, null);
         connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
@@ -223,13 +225,13 @@ public class MetadataManagerTestHelper {
      * @param name          The name of the cluster.
      * @param dataStoreName The backend dataStore.
      */
-    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName ... connectorNames)
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName... connectorNames)
             throws ManifestException {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-        for(ConnectorName connectorName : connectorNames) {
+        for (ConnectorName connectorName : connectorNames) {
             connectorAttachedRefs.put(connectorName,
                     new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
         }

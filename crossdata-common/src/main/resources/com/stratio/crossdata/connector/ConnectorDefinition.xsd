@@ -27,7 +27,8 @@
             <xs:element type="xs:string" name="Version"/>
             <xs:element type="PropertiesType" name="RequiredProperties" maxOccurs="1" minOccurs="0"/>
             <xs:element type="PropertiesType" name="OptionalProperties" maxOccurs="1" minOccurs="0"/>
-            <xs:element type="SupportedOperationsType" name="SupportedOperations"/>
+            <xs:element type="SupportedOperationsType" name="SupportedOperations" maxOccurs="1" minOccurs="0"/>
+            <xs:element type="ConnectorFunctionsType" name="Functions" minOccurs="0" maxOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="PropertiesType">
@@ -43,12 +44,30 @@
     </xs:complexType>
     <xs:complexType name="SupportedOperationsType">
         <xs:sequence>
-            <xs:element type="xs:string" name="operation" maxOccurs="unbounded" minOccurs="1" />
+            <xs:element type="xs:string" name="operation" maxOccurs="unbounded" minOccurs="1"/>
         </xs:sequence>
     </xs:complexType>
     <xs:complexType name="DataStoreRefsType">
         <xs:sequence>
             <xs:element type="xs:string" name="DataStoreName" maxOccurs="unbounded" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ConnectorFunctionsType">
+        <xs:sequence>
+            <xs:element type="FunctionType" name="Function" maxOccurs="unbounded" minOccurs="1"/>
+            <xs:element type="ExcludeType" name="Exclude" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="ExcludeType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="FunctionName" maxOccurs="unbounded" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="FunctionType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="FunctionName"/>
+            <xs:element type="xs:string" name="Signature"/>
+            <xs:element type="xs:string" name="FunctionType"/>
         </xs:sequence>
     </xs:complexType>
 </xs:schema>

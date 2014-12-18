@@ -17,17 +17,19 @@
   ~ under the License.
   -->
 
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:element name="DataStore" type="DataStoreType"/>
-  <xs:complexType name="DataStoreType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="Name"/>
-      <xs:element type="xs:string" name="Version"/>
-      <xs:element type="PropertiesType" name="RequiredProperties" maxOccurs="1" minOccurs="0"/>
-      <xs:element type="PropertiesType" name="OptionalProperties" maxOccurs="1" minOccurs="0"/>
-      <xs:element type="BehaviorsType" name="Behaviors" maxOccurs="1" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="DataStore" type="DataStoreType"/>
+    <xs:complexType name="DataStoreType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="Name"/>
+            <xs:element type="xs:string" name="Version"/>
+            <xs:element type="PropertiesType" name="RequiredProperties" maxOccurs="1" minOccurs="0"/>
+            <xs:element type="PropertiesType" name="OptionalProperties" maxOccurs="1" minOccurs="0"/>
+            <xs:element type="BehaviorsType" name="Behaviors" maxOccurs="1" minOccurs="0"/>
+            <xs:element type="FunctionsType" name="Functions" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
     <xs:complexType name="PropertiesType">
         <xs:sequence>
             <xs:element type="PropertyType" name="Property" maxOccurs="unbounded" minOccurs="1"/>
@@ -39,9 +41,22 @@
             <xs:element type="xs:string" name="Description"/>
         </xs:sequence>
     </xs:complexType>
-  <xs:complexType name="BehaviorsType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="Behavior" maxOccurs="unbounded" minOccurs="1"/>
-    </xs:sequence>
-  </xs:complexType>
+    <xs:complexType name="BehaviorsType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="Behavior" maxOccurs="unbounded" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="FunctionsType">
+        <xs:sequence>
+            <xs:element type="FunctionType" name="Function" maxOccurs="unbounded" minOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+    <xs:complexType name="FunctionType">
+        <xs:sequence>
+            <xs:element type="xs:string" name="FunctionName"/>
+            <xs:element type="xs:string" name="Signature"/>
+            <xs:element type="xs:string" name="FunctionType"/>
+        </xs:sequence>
+    </xs:complexType>
 </xs:schema>

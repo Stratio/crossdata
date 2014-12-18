@@ -30,31 +30,31 @@ import java.util.List;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.FunctionName;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.metadata.FunctionMetadata;
-import com.stratio.crossdata.common.statements.structures.FunctionSelector;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.query.IParsedQuery;
-import com.stratio.crossdata.core.query.IValidatedQuery;
-import com.stratio.crossdata.core.structures.InnerJoin;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.OrderDirection;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
+import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
-import com.stratio.crossdata.common.statements.structures.OrderByClause;
-import com.stratio.crossdata.common.statements.structures.OrderDirection;
+import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -954,8 +954,6 @@ public class SelectStatementTest extends BasicValidatorTest {
         }
     }
 
-
-
     @Test
     public void validateInnerJoinWhereOk() {
         String query =
@@ -1007,7 +1005,6 @@ public class SelectStatementTest extends BasicValidatorTest {
             fail(e.getMessage());
         }
     }
-
 
     /*
     @Test
@@ -1163,7 +1160,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<OrderByClause> orderByClauseClauses = new ArrayList<>();
-        Selector selectorOrderBy = new ColumnSelector(new ColumnName("demo","users","age"));
+        Selector selectorOrderBy = new ColumnSelector(new ColumnName("demo", "users", "age"));
         orderByClauseClauses.add(new OrderByClause(OrderDirection.ASC, selectorOrderBy));
 
         selectStatement.setOrderByClauses(orderByClauseClauses);
@@ -1199,8 +1196,8 @@ public class SelectStatementTest extends BasicValidatorTest {
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<OrderByClause> orderByClauseClauses = new ArrayList<>();
-        Selector selectorOrderBy1 = new ColumnSelector(new ColumnName("demo","users","gender"));
-        Selector selectorOrderBy2 = new ColumnSelector(new ColumnName("demo","users","age"));
+        Selector selectorOrderBy1 = new ColumnSelector(new ColumnName("demo", "users", "gender"));
+        Selector selectorOrderBy2 = new ColumnSelector(new ColumnName("demo", "users", "age"));
         orderByClauseClauses.add(new OrderByClause(OrderDirection.DESC, selectorOrderBy1));
         orderByClauseClauses.add(new OrderByClause(OrderDirection.ASC, selectorOrderBy2));
 
@@ -1222,7 +1219,6 @@ public class SelectStatementTest extends BasicValidatorTest {
         }
     }
 
-
     @Test
     public void testValidateSimpleOrderByUnknownFieldFail() {
 
@@ -1239,7 +1235,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<OrderByClause> orderByClauseClauses = new ArrayList<>();
-        Selector selectorOrderBy = new ColumnSelector(new ColumnName("demo","users","unknown"));
+        Selector selectorOrderBy = new ColumnSelector(new ColumnName("demo", "users", "unknown"));
 
         orderByClauseClauses.add(new OrderByClause(OrderDirection.ASC, selectorOrderBy));
 
@@ -1262,7 +1258,7 @@ public class SelectStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void simpleFromAlias(){
+    public void simpleFromAlias() {
         String inputText = "SELECT t.name, t.age FROM demo.users t";
         String expectedText = "SELECT demo.users.name, demo.users.age FROM demo.users AS t";
         Selector selector1 = new ColumnSelector(new ColumnName("demo", "t", "name"));
@@ -1370,7 +1366,7 @@ public class SelectStatementTest extends BasicValidatorTest {
     }
 
     @Test
-    public void simpleJoinAlias(){
+    public void simpleJoinAlias() {
         String inputText =
                 "SELECT u.name AS n, u.age, ui.info FROM demo.users u "
                         + "INNER JOIN demo.users_info ui ON n=ui.name "
@@ -1428,8 +1424,6 @@ public class SelectStatementTest extends BasicValidatorTest {
         assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
 
     }
-
-
 
     /*
     @Test

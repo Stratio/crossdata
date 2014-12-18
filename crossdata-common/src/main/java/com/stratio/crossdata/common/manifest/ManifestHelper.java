@@ -207,4 +207,28 @@ public final class ManifestHelper implements Serializable {
         }
         return metadataBehaviors;
     }
+
+    /**
+     * Conversion method (Manifest Functions to Metadata Functions).
+     *
+     * @param connectorFunctions The list of connector functions.
+     * @return Set<PropertyType> A set of {@link com.stratio.crossdata.common.manifest.FunctionsType}.
+     */
+    public static Set<FunctionType> convertManifestFunctionsToMetadataFunctions(
+            List<FunctionType> connectorFunctions) {
+        Set<FunctionType> metadataFunctions = new HashSet<>();
+        for (FunctionType functionType : connectorFunctions) {
+            metadataFunctions.add(functionType);
+        }
+        return metadataFunctions;
+    }
+
+    public static Set<String> convertManifestExcludedFunctionsToMetadataExcludedFunctions(List<String> excludedFunctions) {
+
+            Set<String> metadataExcludedFunctions = new HashSet<>();
+            for (String excludeFunction : excludedFunctions) {
+                metadataExcludedFunctions.add(excludeFunction);
+            }
+            return metadataExcludedFunctions;
+        }
 }

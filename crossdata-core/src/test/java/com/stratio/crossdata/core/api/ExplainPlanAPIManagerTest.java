@@ -52,7 +52,7 @@ import com.stratio.crossdata.core.validator.Validator;
 /**
  * Explain plan tests using the API manager
  */
-public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
+public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
 
     private final Parser parser = new Parser();
     private final Validator validator = new Validator();
@@ -85,7 +85,8 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
         operationsC1.add(Operations.FILTER_PK_EQ);
         operationsC1.add(Operations.SELECT_INNER_JOIN);
 
-        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(),operationsC1, "actorRef1");
+        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
+                "actorRef1");
         clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName());
 
         CatalogName catalogName = createTestCatalog("demo");
@@ -100,11 +101,9 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
         table2 = createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes, partitionKeys,
                 clusteringKeys);
 
-
     }
 
-
-    private Command getCommand(String statement){
+    private Command getCommand(String statement) {
         List<Object> params = new ArrayList<>();
         params.add(statement);
         params.add("demo");
@@ -112,7 +111,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
     }
 
     @Test
-    public void invalidExplainRequest(){
+    public void invalidExplainRequest() {
         List<Object> params = new ArrayList<>();
         Command cmd = new Command("QID", APICommand.EXPLAIN_PLAN(), params);
         Result r = manager.processRequest(cmd);
@@ -123,7 +122,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
     }
 
     @Test
-    public void explainQualifiedSelect(){
+    public void explainQualifiedSelect() {
         String inputText = "SELECT demo.table1.id FROM demo.table1;";
         Command cmd = getCommand(inputText);
         Result r = manager.processRequest(cmd);
@@ -136,7 +135,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
     }
 
     @Test
-    public void explainNonQualifiedSelect(){
+    public void explainNonQualifiedSelect() {
         String inputText = "SELECT id FROM table1;";
         Command cmd = getCommand(inputText);
         Result r = manager.processRequest(cmd);
@@ -149,7 +148,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
     }
 
     @Test
-    public void explainInsert(){
+    public void explainInsert() {
         String inputText = "INSERT INTO table1(id, user) VALUES (1, 'user1');";
         Command cmd = getCommand(inputText);
         Result r = manager.processRequest(cmd);
@@ -162,7 +161,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
     }
 
     @Test
-    public void explainCreateTable(){
+    public void explainCreateTable() {
         String inputText = "CREATE TABLE new_table ON CLUSTER TestCluster1" +
                 " (id int PRIMARY KEY, name text);";
         Command cmd = getCommand(inputText);
@@ -176,7 +175,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
     }
 
     @Test
-    public void explainNotSupportedSelect(){
+    public void explainNotSupportedSelect() {
         String inputText = "SELECT id FROM table1 WHERE id > 5;";
         Command cmd = getCommand(inputText);
         Result r = manager.processRequest(cmd);
@@ -189,7 +188,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
     }
 
     @Test
-    public void explainInvalidSelect(){
+    public void explainInvalidSelect() {
         String inputText = "SELECT id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
         Result r = manager.processRequest(cmd);
@@ -202,7 +201,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper{
     }
 
     @Test
-    public void explainUnrecognized(){
+    public void explainUnrecognized() {
         String inputText = "SELL id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
         Result r = manager.processRequest(cmd);

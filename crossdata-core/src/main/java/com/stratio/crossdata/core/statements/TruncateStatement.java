@@ -20,8 +20,8 @@ package com.stratio.crossdata.core.statements;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * TruncateStatement class.
@@ -35,6 +35,7 @@ public class TruncateStatement extends StorageStatement implements ITableStateme
 
     /**
      * Class Constructor.
+     *
      * @param tableName The table name of the truncate statement.
      */
     public TruncateStatement(TableName tableName) {
@@ -52,6 +53,7 @@ public class TruncateStatement extends StorageStatement implements ITableStateme
 
     /**
      * Specified if the catalog is included.
+     *
      * @return boolean
      */
     public boolean isCatalogInc() {
@@ -60,6 +62,7 @@ public class TruncateStatement extends StorageStatement implements ITableStateme
 
     /**
      * Set if the catalog is included.
+     *
      * @param catalogInc
      */
     public void setCatalogInc(boolean catalogInc) {
@@ -68,6 +71,7 @@ public class TruncateStatement extends StorageStatement implements ITableStateme
 
     /**
      * Get the catalog of the truncate statement.
+     *
      * @return com.stratio.crossdata.common.data.CatalogName
      */
     public CatalogName getCatalog() {
@@ -76,6 +80,7 @@ public class TruncateStatement extends StorageStatement implements ITableStateme
 
     /**
      * Set the catalog name of the truncate statement.
+     *
      * @param catalog The name.
      */
     public void setCatalog(CatalogName catalog) {
@@ -84,6 +89,7 @@ public class TruncateStatement extends StorageStatement implements ITableStateme
 
     /**
      * Get the table name of the truncate statement.
+     *
      * @return com.stratio.crossdata.common.data.TableName
      */
     public TableName getTablename() {
@@ -92,13 +98,13 @@ public class TruncateStatement extends StorageStatement implements ITableStateme
 
     /**
      * Set the table name of a truncate statement
+     *
      * @param tableName
      */
     public void setTablename(TableName tableName) {
         this.tableName = tableName;
     }
 
-  
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("TRUNCATE ");
@@ -111,7 +117,8 @@ public class TruncateStatement extends StorageStatement implements ITableStateme
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE).add(ValidationTypes.MUST_EXIST_CATALOG);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE)
+                .add(ValidationTypes.MUST_EXIST_CATALOG);
     }
 
 }

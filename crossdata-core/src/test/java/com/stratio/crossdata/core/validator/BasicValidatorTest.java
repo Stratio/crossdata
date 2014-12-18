@@ -167,7 +167,6 @@ public class BasicValidatorTest {
         return tableMetadata;
     }
 
-
     private static ConnectorMetadata createConnectorMetadata() {
         DataStoreName dataStoreName = new DataStoreName("Cassandra");
         List<String> dataStoreRefs = Arrays.asList(dataStoreName.getName());
@@ -177,7 +176,7 @@ public class BasicValidatorTest {
         ConnectorMetadata connectorMetadata = null;
         try {
             connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
-                    dataStoreRefs, null, null, supportedOperations);
+                    dataStoreRefs, null, null, supportedOperations,null,null);
         } catch (ManifestException e) {
             fail(e.getMessage());
         }

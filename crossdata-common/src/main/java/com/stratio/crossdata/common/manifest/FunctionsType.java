@@ -18,16 +18,17 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for BehaviorsType complex type.
+ * <p>Java class for FunctionsType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="BehaviorsType">
+ * &lt;complexType name="FunctionsType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
- *         &lt;element name="Behavior" type="{http://www.w3.org/2001/XMLSchema}string" maxOccurs="unbounded"/>
+ *         &lt;element name="Function" type="{}FunctionType" maxOccurs="unbounded"/>
+ *         &lt;element name="Exclude" type="{}ExcludeType" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
@@ -37,45 +38,69 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "BehaviorsType", propOrder = {
-    "behavior"
+@XmlType(name = "FunctionsType", propOrder = {
+    "function",
+    "exclude"
 })
-public class BehaviorsType implements Serializable{
+public class FunctionsType implements Serializable {
 
-    private static final long serialVersionUID = -2758540451582410391L;
-    @XmlElement(name = "Behavior", required = true)
-    protected List<String> behavior;
+    private static final long serialVersionUID = 7999332031001127446L;
+    @XmlElement(name = "Function", required = true)
+    protected List<FunctionType> function;
+    @XmlElement(name = "Exclude")
+    protected ExcludeType exclude;
 
     /**
-     * Gets the value of the behavior property.
+     * Gets the value of the function property.
      * 
      * <p>
      * This accessor method returns a reference to the live list,
      * not a snapshot. Therefore any modification you make to the
      * returned list will be present inside the JAXB object.
-     * This is why there is not a <CODE>set</CODE> method for the behavior property.
+     * This is why there is not a <CODE>set</CODE> method for the function property.
      * 
      * <p>
      * For example, to add a new item, do as follows:
      * <pre>
-     *    getBehavior().add(newItem);
+     *    getFunction().add(newItem);
      * </pre>
      * 
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link String }
+     * {@link FunctionType }
      * 
      * 
      */
-    public List<String> getBehavior() {
-        if (behavior == null) {
-            behavior = new ArrayList<String>();
+    public List<FunctionType> getFunction() {
+        if (function == null) {
+            function = new ArrayList<FunctionType>();
         }
-        return this.behavior;
+        return this.function;
     }
 
-    public void setBehavior(List<String> behavior) {
-        this.behavior = behavior;
+    /**
+     * Gets the value of the exclude property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link ExcludeType }
+     *     
+     */
+    public ExcludeType getExclude() {
+        return exclude;
     }
+
+    /**
+     * Sets the value of the exclude property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link ExcludeType }
+     *     
+     */
+    public void setExclude(ExcludeType value) {
+        this.exclude = value;
+    }
+
 }

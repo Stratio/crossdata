@@ -18,8 +18,8 @@
 
 package com.stratio.crossdata.core.statements;
 
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 public class DropDataStoreStatement extends MetadataStatement {
 

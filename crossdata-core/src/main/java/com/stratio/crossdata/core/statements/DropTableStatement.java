@@ -20,8 +20,8 @@ package com.stratio.crossdata.core.statements;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code DROP TABLE} statement from the CROSSDATA language.
@@ -78,14 +78,15 @@ public class DropTableStatement extends MetadataStatement {
     }
 
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG).add(ValidationTypes.MUST_EXIST_TABLE);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_TABLE);
     }
 
     public boolean isIfExists() {
         return ifExists;
     }
 
-    public CatalogName getCatalogName(){
+    public CatalogName getCatalogName() {
         return tableName.getCatalogName();
     }
 }

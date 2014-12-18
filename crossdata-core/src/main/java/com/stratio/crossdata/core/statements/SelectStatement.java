@@ -25,15 +25,15 @@ import java.util.Map;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.window.Window;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
-import com.stratio.crossdata.common.statements.structures.OrderByClause;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code SELECT} statement from the CROSSDATA language.
@@ -341,7 +341,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     }
 
     public void setOrderByClauses(List<OrderByClause> orderByClauseClauses) {
-        if((orderByClauseClauses != null) && (!orderByClauseClauses.isEmpty())){
+        if ((orderByClauseClauses != null) && (!orderByClauseClauses.isEmpty())) {
             this.orderInc = true;
             this.orderByClauseClauses = orderByClauseClauses;
         }

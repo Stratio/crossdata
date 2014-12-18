@@ -58,7 +58,7 @@ public class InsertIntoStatementTest extends ParsingTest {
     public void insertInto2() {
         String inputText = "[test], " +
                 "INSERT INTO tablename (column1, column2) VALUES ('value1', 60)"
-                        + " IF NOT EXISTS WHEN column2 > 10;";
+                + " IF NOT EXISTS WHEN column2 > 10;";
         String expectText =
                 "INSERT INTO test.tablename (test.tablename.column1, test.tablename.column2) VALUES ('value1', 60)"
                         + " IF NOT EXISTS WHEN test.tablename.column2 > 10;";
