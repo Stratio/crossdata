@@ -28,7 +28,10 @@ import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
+import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.data.NameType;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.DataStoreRefsType;
@@ -295,7 +298,8 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         String expectedAnswer = "Crossdata server reset.";
         assertTrue(str.equals(expectedAnswer), System.lineSeparator() + "Expected: " + expectedAnswer +
                 System.lineSeparator() + "   Found: " + str);
-        assertTrue(MetadataManager.MANAGER.isEmpty(), "MetadataManager should be empty");
+        Name n = new ConnectorName("connectorTest2");
+        assertTrue(MetadataManager.MANAGER.exists(n), "MetadataManager should maintain the connector basic info");
     }
 
     @Test
