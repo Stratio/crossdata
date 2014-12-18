@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -48,6 +49,7 @@ import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.ConnectorFunctionsType;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
@@ -111,12 +113,12 @@ public class MetadataManagerTestHelper {
         FunctionType function = new FunctionType();
         function.setFunctionName("getYear");
         function.setFunctionType("simple");
-        function.setSignature("getYear(Tuple<Integer>):Any");
+        function.setSignature("getYear(Tuple<Integer>):Tuple<Any>");
         functions.add(function);
         function = new FunctionType();
         function.setFunctionName("shorten");
         function.setFunctionType("simple");
-        function.setSignature("shorten(Tuple<Text>):Any");
+        function.setSignature("shorten(Tuple<Text>):Tuple<Any>");
         functions.add(function);
 
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
@@ -206,8 +208,16 @@ public class MetadataManagerTestHelper {
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
+        ConnectorFunctionsType functions = new ConnectorFunctionsType();
+        List<FunctionType> functionsList = new ArrayList<>();
+        FunctionType functionType = new FunctionType();
+        functionType.setFunctionName("concat");
+        functionType.setSignature("concat(Tuple<Text, Text>):Tuple<Text>");
+        functionType.setFunctionType("simple");
+        functionsList.add(functionType);
+        functions.setFunction(functionsList);
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, null);
+                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
         connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
