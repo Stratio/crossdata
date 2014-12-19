@@ -24,10 +24,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
-
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
@@ -154,46 +152,6 @@ public final class StringUtils {
             return object.toString().replace("Actor[", "").replace("]", "").split("\\$")[0].split("#")[0];
         }
         return null;
-    }
-
-    public static Class convertXdTypeToJavaType(ColumnType ct){
-        Class clazz = null;
-        switch (ct){
-            case BIGINT:
-                clazz = Long.class;
-                break;
-            case BOOLEAN:
-                clazz = Boolean.class;
-                break;
-            case DOUBLE:
-                clazz = Double.class;
-                break;
-            case FLOAT:
-                clazz = Float.class;
-                break;
-            case INT:
-                clazz = Integer.class;
-                break;
-            case TEXT:
-                clazz = String.class;
-                break;
-            case VARCHAR:
-                clazz = String.class;
-                break;
-            case NATIVE:
-                clazz = null;
-                break;
-            case SET:
-                clazz = Set.class;
-                break;
-            case LIST:
-                clazz = List.class;
-                break;
-            case MAP:
-                clazz = Map.class;
-                break;
-            }
-        return clazz;
     }
 
     public static ColumnType convertJavaTypeToXdType(String javaType) {

@@ -37,6 +37,15 @@
     <Behaviors>
         <Behavior>EPHEMERAL</Behavior>
     </Behaviors>
+
+    <!-- Functions -->
+    <Functions>
+        <Function>
+            <FunctionName>dateOf</FunctionName>
+            <Signature>dateOf(Tuple&lt;Text&gt;):Tuple&lt;Any&gt;</Signature>
+            <FunctionType>simple</FunctionType>
+        </Function>
+    </Functions>
 </DataStore>
 
 
