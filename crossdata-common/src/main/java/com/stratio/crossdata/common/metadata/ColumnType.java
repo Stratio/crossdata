@@ -187,9 +187,9 @@ public enum ColumnType {
         return clazz;
     }
 
-    public static String getCrossdataType(ColumnType ct){
+    public String getCrossdataType(){
         String clazz = null;
-        switch (ct){
+        switch (this){
         case BIGINT:
             clazz = "BigInt";
             break;

@@ -51,7 +51,6 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
-import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
@@ -561,9 +560,7 @@ public class Normalizator {
                     ColumnName columnName = cs.getName();
                     ColumnMetadata column = MetadataManager.MANAGER.getColumn(columnName);
                     ColumnType columnType = column.getColumnType();
-                    Class clazz = StringUtils.convertXdTypeToJavaType(columnType);
-                    String clazzName = clazz.getSimpleName().toLowerCase();
-                    sb.append(clazzName);
+                    sb.append(columnType.getCrossdataType().toLowerCase());
                     break;
                 case ASTERISK:
 

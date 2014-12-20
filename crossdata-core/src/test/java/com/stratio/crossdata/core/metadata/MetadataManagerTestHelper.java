@@ -113,7 +113,7 @@ public class MetadataManagerTestHelper {
         FunctionType function = new FunctionType();
         function.setFunctionName("getYear");
         function.setFunctionType("simple");
-        function.setSignature("getYear(Tuple<Integer>):Tuple<Any>");
+        function.setSignature("getYear(Tuple<Int>):Tuple<Any>");
         functions.add(function);
         function = new FunctionType();
         function.setFunctionName("shorten");
