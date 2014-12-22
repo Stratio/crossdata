@@ -461,8 +461,9 @@ public class Planner {
 
         while (!exit) {
             //Evaluate the connectors
-            for (ConnectorMetadata connector : availableConnectors) {
-                if (!connector.supports(current.getOperation())) {
+            for (ConnectorMetadata connector : availableConnectors) { // TODO: If select, check selector functions
+                if (!connector.supports(current.getOperation())) { // TODO: If filter & function,
+                // check selector functions
                     toRemove.add(connector);
                 }
             }
