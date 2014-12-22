@@ -39,6 +39,7 @@ case "$1" in
   ;;
 esac    
 
+#config, postinst, postrm, preinst, and prerm control files should use mode 0755; all other control files should use 0644.
 chmod 755 /etc/init.d/crossdata
 chmod +x /opt/sds/crossdata/bin/crossdata-sh
 chmod +x /etc/default/crossdata
