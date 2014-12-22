@@ -185,8 +185,8 @@ public class Planner {
                 .getAttachedConnectors(Status.ONLINE, tables);
 
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
-        for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()) {
-            for (ConnectorMetadata cm : tableEntry.getValue()) {
+        for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry: candidatesConnectors.entrySet()) {
+            for (ConnectorMetadata cm: tableEntry.getValue()) {
                 sb.append("table: ").append(tableEntry.getKey().toString()).append(" ")
                         .append(cm.getName()).append(" ").append(cm.getActorRef()).append(System.lineSeparator());
             }
@@ -196,7 +196,7 @@ public class Planner {
         List<ExecutionPath> executionPaths = new ArrayList<>();
         Map<UnionStep, Set<ExecutionPath>> unionSteps = new HashMap<>();
         //Iterate through the initial steps and build valid execution paths
-        for (LogicalStep step : workflow.getInitialSteps()) {
+        for (LogicalStep step: workflow.getInitialSteps()) {
             TableName targetTable = ((Project) step).getTableName();
             LOG.info("Table: " + targetTable);
             ExecutionPath ep = defineExecutionPath(step, candidatesConnectors.get(targetTable));
@@ -219,7 +219,7 @@ public class Planner {
             executionPaths.add(ep);
         }
 
-        for (ExecutionPath ep : executionPaths) {
+        for (ExecutionPath ep: executionPaths) {
             LOG.info("ExecutionPaths: " + ep);
         }
 
@@ -252,7 +252,7 @@ public class Planner {
         //Find first UnionStep
         UnionStep mergeStep = null;
         ExecutionPath[] paths = null;
-        for (Map.Entry<UnionStep, Set<ExecutionPath>> entry : unionSteps.entrySet()) {
+        for (Map.Entry<UnionStep, Set<ExecutionPath>> entry: unionSteps.entrySet()) {
             paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
             if (paths.length == 2
                     && TransformationStep.class.isInstance(paths[0].getLast())
@@ -284,7 +284,7 @@ public class Planner {
             toMerge.clear();
             for (int index = 0; index < paths.length; index++) {
                 toRemove.clear();
-                for (ConnectorMetadata connector : paths[index].getAvailableConnectors()) {
+                for (ConnectorMetadata connector: paths[index].getAvailableConnectors()) {
                     LOG.info("op: " + mergeStep.getOperation() + " -> " + connector.supports(mergeStep.getOperation()));
                     if (!connector.supports(mergeStep.getOperation())) {
                         toRemove.add(connector);
@@ -397,7 +397,7 @@ public class Planner {
 
         //Define the list of initial steps.
         List<LogicalStep> initialSteps = new ArrayList<>(executionPaths.size());
-        for (ExecutionPath path : executionPaths) {
+        for (ExecutionPath path: executionPaths) {
             initialSteps.add(path.getInitial());
         }
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
@@ -426,7 +426,7 @@ public class Planner {
 
         //Define the list of initial steps.
         List<LogicalStep> initialSteps = new ArrayList<>(executionPaths.size());
-        for (ExecutionPath path : executionPaths) {
+        for (ExecutionPath path: executionPaths) {
             initialSteps.add(path.getInitial());
             path.getLast().setNextStep(mergePath.getInitial());
         }
@@ -460,14 +460,40 @@ public class Planner {
         LOG.info("Available connectors: " + availableConnectors);
 
         while (!exit) {
-            //Evaluate the connectors
-            for (ConnectorMetadata connector : availableConnectors) { // TODO: If select, check selector functions
-                if (!connector.supports(current.getOperation())) { // TODO: If filter & function,
-                // check selector functions
+            // Evaluate the connectors
+            for (ConnectorMetadata connector: availableConnectors) {
+                if (!connector.supports(current.getOperation())) {
+                // Check selector functions
                     toRemove.add(connector);
+                } else {
+                /*
+                 * This connector support the operation but we also have to check if support for a specific
+                 * function is required support.
+                 */
+                    if(current.getOperation().getOperationsStr().toLowerCase().contains("function")){
+                        Set<String> sFunctions = MetadataManager.MANAGER
+                                .getSupportedFunctionNames(connector.getName());
+                        switch(current.getOperation()){
+                            case SELECT_FUNCTIONS:
+                                Select select = (Select) current;
+                                Set<Selector> cols = select.getColumnMap().keySet();
+                                for(Selector selector: cols){
+                                    if(selector instanceof FunctionSelector){
+                                        FunctionSelector fSelector = (FunctionSelector) selector;
+                                        if(!sFunctions.contains(fSelector.getFunctionName().toLowerCase())){
+                                            toRemove.add(connector);
+                                            break;
+                                        }
+                                    }
+                                }
+                                break;
+                            default:
+                                throw new PlanningException(current.getOperation() + " not supported yet.");
+                        }
+                    }
                 }
             }
-            //Remove invalid connectors
+            // Remove invalid connectors
             if (toRemove.size() == availableConnectors.size()) {
                 throw new PlanningException(
                         "Cannot determine execution path as no connector supports " + current.toString());
@@ -495,7 +521,7 @@ public class Planner {
      */
     protected List<TableName> getInitialSteps(List<LogicalStep> initialSteps) {
         List<TableName> tables = new ArrayList<>(initialSteps.size());
-        for (LogicalStep ls : initialSteps) {
+        for (LogicalStep ls: initialSteps) {
             tables.add(Project.class.cast(ls).getTableName());
         }
         return tables;
@@ -511,7 +537,7 @@ public class Planner {
      */
     protected LogicalWorkflow buildWorkflow(SelectValidatedQuery query) throws PlanningException {
         Map<String, TableMetadata> tableMetadataMap = new HashMap<>();
-        for (TableMetadata tm : query.getTableMetadata()) {
+        for (TableMetadata tm: query.getTableMetadata()) {
             tableMetadataMap.put(tm.getName().getQualifiedName(), tm);
         }
         //Define the list of projects
@@ -539,7 +565,7 @@ public class Planner {
         //Prepare the result.
         List<LogicalStep> initialSteps = new ArrayList<>();
         LogicalStep initial = null;
-        for (LogicalStep ls : processed.values()) {
+        for (LogicalStep ls: processed.values()) {
             if (!UnionStep.class.isInstance(ls)) {
                 initial = ls;
                 //Go to the first element of the workflow
@@ -698,7 +724,7 @@ public class Planner {
             TableName name = createTableStatement.getTableName();
             Map<Selector, Selector> options = createTableStatement.getProperties();
             LinkedHashMap<ColumnName, ColumnMetadata> columnMap = new LinkedHashMap<>();
-            for (Map.Entry<ColumnName, ColumnType> c : createTableStatement.getColumnsWithTypes().entrySet()) {
+            for (Map.Entry<ColumnName, ColumnType> c: createTableStatement.getColumnsWithTypes().entrySet()) {
                 ColumnName columnName = c.getKey();
                 ColumnMetadata columnMetadata = new ColumnMetadata(columnName, null, c.getValue());
                 columnMap.put(columnName, columnMetadata);
@@ -765,7 +791,7 @@ public class Planner {
 
             Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
             List<ColumnName> targetColumns = createIndexStatement.getTargetColumns();
-            for (ColumnName columnName : targetColumns) {
+            for (ColumnName columnName: targetColumns) {
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
                 columns.put(columnName, columnMetadata);
             }
@@ -1007,7 +1033,7 @@ public class Planner {
             if ((relations == null) || (relations.isEmpty())) {
                 requiredOperations.add(Operations.DELETE_NO_FILTERS);
             } else {
-                for (Relation relation : deleteStatement.getWhereClauses()) {
+                for (Relation relation: deleteStatement.getWhereClauses()) {
                     Operations operation = getFilterOperation(
                             tableMetadata,
                             "DELETE",
@@ -1047,7 +1073,7 @@ public class Planner {
             if ((relations == null) || (relations.isEmpty())) {
                 requiredOperations.add(Operations.UPDATE_NO_FILTERS);
             } else {
-                for (Relation relation : updateTableStatement.getWhereClauses()) {
+                for (Relation relation: updateTableStatement.getWhereClauses()) {
                     Operations operation = getFilterOperation(
                             tableMetadata,
                             "UPDATE",
@@ -1139,7 +1165,7 @@ public class Planner {
      * @param query        The query to be planned.
      */
     private void addProjectedColumns(Map<String, LogicalStep> projectSteps, SelectValidatedQuery query) {
-        for (ColumnName cn : query.getColumns()) {
+        for (ColumnName cn: query.getColumns()) {
             Project.class.cast(projectSteps.get(cn.getTableName().getQualifiedName())).addColumn(cn);
         }
     }
@@ -1187,7 +1213,7 @@ public class Planner {
         LogicalStep previous;
         TableMetadata tm;
         Selector s;
-        for (Relation r : query.getRelations()) {
+        for (Relation r: query.getRelations()) {
             s = r.getLeftTerm();
             //TODO Support left-side functions that contain columns of several tables.
             tm = tableMetadataMap.get(s.getSelectorTablesAsString());
@@ -1262,7 +1288,7 @@ public class Planner {
     protected Map<String, LogicalStep> getProjects(SelectValidatedQuery query,
             Map<String, TableMetadata> tableMetadataMap) {
         Map<String, LogicalStep> projects = new HashMap<>();
-        for (TableName tn : query.getTables()) {
+        for (TableName tn: query.getTables()) {
             Project p = new Project(Operations.PROJECT, tn,
                     tableMetadataMap.get(tn.getQualifiedName()).getClusterRef());
             projects.put(tn.getQualifiedName(), p);
@@ -1281,19 +1307,20 @@ public class Planner {
      */
     protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap)
             throws PlanningException {
-        Map<ColumnName, String> aliasMap = new LinkedHashMap<>();
-        Map<String, ColumnType> typeMap = new LinkedHashMap<>();
-        LinkedHashMap<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
+        LinkedHashMap<Selector, String> aliasMap = new LinkedHashMap<>();
+        LinkedHashMap<String, ColumnType> typeMap = new LinkedHashMap<>();
+        LinkedHashMap<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
         boolean addAll = false;
-        for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
+        Operations currentOperation = Operations.SELECT_OPERATOR;
+        for (Selector s: selectStatement.getSelectExpression().getSelectorList()) {
             if (AsteriskSelector.class.isInstance(s)) {
                 addAll = true;
             } else if (ColumnSelector.class.isInstance(s)) {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
                 if (cs.getAlias() != null) {
-                    aliasMap.put(cs.getName(), cs.getAlias());
+                    aliasMap.put(cs, cs.getAlias());
 
-                    typeMapFromColumnName.put(cs.getName(),
+                    typeMapFromColumnName.put(cs,
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName())
                                     .getColumnType());
 
@@ -1301,10 +1328,9 @@ public class Planner {
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().
                                     get(cs.getName()).getColumnType());
                 } else {
-                    aliasMap.put(cs.getName(),
-                            cs.getName().getName());
+                    aliasMap.put(cs, cs.getName().getName());
 
-                    typeMapFromColumnName.put(cs.getName(),
+                    typeMapFromColumnName.put(cs,
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName())
                                     .getColumnType());
 
@@ -1314,25 +1340,21 @@ public class Planner {
                     );
                 }
             } else if (FunctionSelector.class.isInstance(s)) {
+                currentOperation = Operations.SELECT_FUNCTIONS;
                 FunctionSelector fs = FunctionSelector.class.cast(s);
                 FunctionName functionName = new FunctionName(fs.getFunctionName());
                 FunctionMetadata function = MetadataManager.MANAGER.getFunctionFromManifests(functionName);
                 ColumnType ct = StringUtils.convertJavaTypeToXdType(function.getReturningType());
                 if (s.getAlias() != null) {
-                    aliasMap.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
-                            fs.getAlias());
+                    aliasMap.put(fs, fs.getAlias());
 
-                    typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
-                            ct);
+                    typeMapFromColumnName.put(fs, ct);
 
-                    typeMap.put(fs.getAlias(),
-                            ct);
+                    typeMap.put(fs.getAlias(), ct);
                 } else {
-                    aliasMap.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
-                            fs.getFunctionName());
+                    aliasMap.put(fs, fs.getFunctionName());
 
-                    typeMapFromColumnName.put(new ColumnName(selectStatement.getTableName(), fs.getFunctionName()),
-                            ct);
+                    typeMapFromColumnName.put(fs, ct);
 
                     typeMap.put(fs.getFunctionName(),
                             ct);
@@ -1344,29 +1366,29 @@ public class Planner {
 
         if (addAll) {
             TableMetadata metadata = tableMetadataMap.get(selectStatement.getTableName().getQualifiedName());
-            for (Map.Entry<ColumnName, ColumnMetadata> column : metadata.getColumns().entrySet()) {
-                aliasMap.put(column.getKey(), column.getKey().getName());
+            for (Map.Entry<ColumnName, ColumnMetadata> column: metadata.getColumns().entrySet()) {
+                ColumnSelector cs = new ColumnSelector(column.getKey());
+                aliasMap.put(cs, column.getKey().getName());
 
-                typeMapFromColumnName.put(column.getKey(),
-                        column.getValue().getColumnType());
+                typeMapFromColumnName.put(cs, column.getValue().getColumnType());
 
                 typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
             }
             if (selectStatement.getJoin() != null) {
                 TableMetadata metadataJoin = tableMetadataMap.get(selectStatement.getJoin().getTablename()
                         .getQualifiedName());
-                for (Map.Entry<ColumnName, ColumnMetadata> column : metadataJoin.getColumns().entrySet()) {
-                    aliasMap.put(column.getKey(), column.getKey().getName());
+                for (Map.Entry<ColumnName, ColumnMetadata> column: metadataJoin.getColumns().entrySet()) {
+                    ColumnSelector cs = new ColumnSelector(column.getKey());
+                    aliasMap.put(cs, column.getKey().getName());
 
-                    typeMapFromColumnName.put(column.getKey(),
-                            column.getValue().getColumnType());
+                    typeMapFromColumnName.put(cs, column.getValue().getColumnType());
 
                     typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
                 }
             }
         }
 
-        return new Select(Operations.SELECT_OPERATOR, aliasMap, typeMap, typeMapFromColumnName);
+        return new Select(currentOperation, aliasMap, typeMap, typeMapFromColumnName);
     }
 
     private String findAnyActorRef(

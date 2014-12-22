@@ -26,6 +26,7 @@ import java.util.Map;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * Select operator that specifies the list of columns that should be returned with their expected name. Notice that this
@@ -36,14 +37,14 @@ public class Select extends TransformationStep {
     /**
      * Map of columns associating the name given in the Project logical steps with the name expected in the results.
      */
-    private final Map<ColumnName, String> columnMap;
+    private final Map<Selector, String> columnMap;
 
     /**
      * Map of {@link com.stratio.crossdata.common.metadata.ColumnType} associated with each column.
      */
     private final Map<String, ColumnType> typeMap;
 
-    private final Map<ColumnName, ColumnType> typeMapFromColumnName;
+    private final Map<Selector, ColumnType> typeMapFromColumnName;
 
     /**
      * Class constructor.
@@ -56,15 +57,15 @@ public class Select extends TransformationStep {
      * @param typeMap
      *            The mapping of column types.
      */
-    public Select(Operations operation, Map<ColumnName, String> columnMap, Map<String, ColumnType> typeMap,
-            Map<ColumnName, ColumnType> typeMapFromColumnName) {
+    public Select(Operations operation, Map<Selector, String> columnMap, Map<String, ColumnType> typeMap,
+            Map<Selector, ColumnType> typeMapFromColumnName) {
         super(operation);
         this.columnMap = columnMap;
         this.typeMap = typeMap;
         this.typeMapFromColumnName = typeMapFromColumnName;
     }
 
-    public Map<ColumnName, String> getColumnMap() {
+    public Map<Selector, String> getColumnMap() {
         return columnMap;
     }
 
@@ -72,7 +73,7 @@ public class Select extends TransformationStep {
         return typeMap;
     }
 
-    public Map<ColumnName, ColumnType> getTypeMapFromColumnName() {
+    public Map<Selector, ColumnType> getTypeMapFromColumnName() {
         return typeMapFromColumnName;
     }
 
@@ -82,8 +83,8 @@ public class Select extends TransformationStep {
      */
     public List<ColumnName> getColumnOrder(){
         List<ColumnName> results = new ArrayList<>();
-        for(ColumnName columnName : columnMap.keySet()){
-            results.add(columnName);
+        for(Selector selector: columnMap.keySet()){
+            results.add(selector.getColumnName());
         }
         return results;
     }
@@ -91,11 +92,11 @@ public class Select extends TransformationStep {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("SELECT (");
-        Iterator<Map.Entry<ColumnName, String>> it = columnMap.entrySet().iterator();
-        Map.Entry<ColumnName, String> entry;
+        Iterator<Map.Entry<Selector, String>> it = columnMap.entrySet().iterator();
+        Map.Entry<Selector, String> entry;
         while (it.hasNext()) {
             entry = it.next();
-            sb.append(entry.getKey().getQualifiedName()).append(" AS ").append(entry.getValue());
+            sb.append(entry.getKey().getColumnName().getQualifiedName()).append(" AS ").append(entry.getValue());
             if (it.hasNext()) {
                 sb.append(", ");
             }

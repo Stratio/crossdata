@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 
 /**
@@ -75,6 +76,10 @@ public class FunctionSelector extends Selector {
             result.addAll(s.getSelectorTables());
         }
         return result;
+    }
+
+    @Override public ColumnName getColumnName() {
+        return new ColumnName(functionColumns.get(0).getColumnName().getTableName(), functionName);
     }
 
     @Override

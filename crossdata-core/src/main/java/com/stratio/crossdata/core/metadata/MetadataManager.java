@@ -1088,6 +1088,24 @@ public enum MetadataManager {
         return (FunctionMetadata) metadata.get(name);
     }
 
+    public Set<String> getSupportedFunctionNames(ConnectorName cn){
+        Set<String> functions = new HashSet<>();
+        ConnectorMetadata connector = getConnector(cn);
+
+        for(FunctionType ft: connector.getConnectorFunctions()){
+            functions.add(ft.getFunctionName().toLowerCase());
+        }
+
+        for(DataStoreName dsn: connector.getDataStoreRefs()){
+            DataStoreMetadata datastore = MetadataManager.MANAGER.getDataStore(dsn);
+            for(FunctionType ft: datastore.getFunctions()){
+                functions.add(ft.getFunctionName().toLowerCase());
+            }
+        }
+        functions.removeAll(connector.getExcludedFunctions());
+        return functions;
+    }
+
     public Set<FunctionType> getSupportedFunctions(ConnectorName cn){
         Set<FunctionType> functions = new HashSet<>();
         ConnectorMetadata connector = getConnector(cn);

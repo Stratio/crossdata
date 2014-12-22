@@ -99,6 +99,7 @@ public class PlannerTest extends PlannerBaseTest {
         Set<Operations> operationsC1 = new HashSet<>();
         operationsC1.add(Operations.PROJECT);
         operationsC1.add(Operations.SELECT_OPERATOR);
+        operationsC1.add(Operations.SELECT_FUNCTIONS);
         operationsC1.add(Operations.SELECT_WINDOW);
         operationsC1.add(Operations.SELECT_GROUP_BY);
         operationsC1.add(Operations.DELETE_PK_EQ);

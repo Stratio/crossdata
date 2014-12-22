@@ -128,13 +128,14 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     public Select getSelect(ColumnName[] columns, ColumnType[] types) {
         Operations operation = Operations.SELECT_OPERATOR;
-        Map<ColumnName, String> columnMap = new LinkedHashMap<>();
+        Map<Selector, String> columnMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
-        Map<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
+        Map<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
 
         for (int index = 0; index < columns.length; index++) {
-            columnMap.put(columns[index], columns[index].getName());
-            typeMapFromColumnName.put(columns[index], types[index]);
+            ColumnSelector cs = new ColumnSelector(columns[index]);
+            columnMap.put(cs, columns[index].getName());
+            typeMapFromColumnName.put(cs, types[index]);
             typeMap.put(columns[index].getName(), types[index]);
         }
         Select select = new Select(operation, columnMap, typeMap, typeMapFromColumnName);

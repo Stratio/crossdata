@@ -505,7 +505,11 @@ public class ConnectorMetadata implements IMetadata {
     }
 
     public Set<String> getExcludedFunctions() {
-        return excludedFunctions;
+        HashSet<String> exFunctionsLowercase = new HashSet<>();
+        for(String function: excludedFunctions){
+            exFunctionsLowercase.add(function);
+        }
+        return exFunctionsLowercase;
     }
 
     public void setExcludedFunctions(Set<String> excludedFunctions) {
