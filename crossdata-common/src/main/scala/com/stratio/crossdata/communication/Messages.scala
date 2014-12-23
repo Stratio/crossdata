@@ -29,6 +29,13 @@ import com.stratio.crossdata.common.result.QueryStatus
 import com.stratio.crossdata.common.security.ICredentials
 import com.stratio.crossdata.common.statements.structures.{Relation, Selector}
 
+/**
+ * Parent class for all operations to be executed on CONNECTOR Actors.
+ * @param queryId The query identifier.
+ */
+@SerialVersionUID(-4155642367894752659L)
+class Operation(val queryId: String) extends Serializable
+
 @SerialVersionUID(-4155622367894752659L)
 case class ACK(queryId: String, status: QueryStatus) extends Serializable
 
@@ -42,7 +49,7 @@ case class Reply(msg: String) extends Serializable
 case class Disconnect(userId: String) extends Serializable
 
 @SerialVersionUID(-3815643667894592648L)
-case class DisconnectFromCluster(clusterName: String) extends Serializable
+case class DisconnectFromCluster(override val queryId: String, clusterName: String) extends Operation(queryId)
 
 //CONNECTOR messages
 @SerialVersionUID(-4155642367894222659L)
@@ -71,13 +78,6 @@ case class replyConnectorName(name: String) extends Serializable
 
 @SerialVersionUID(-6655642367894752659L)
 case class getConnectorName() extends Serializable
-
-/**
- * Parent class for all operations to be executed on CONNECTOR Actors.
- * @param queryId The query identifier.
- */
-@SerialVersionUID(-4155642367894752659L)
-class Operation(val queryId: String) extends Serializable
 
 // ============================================================================
 //                                IStorageEngine

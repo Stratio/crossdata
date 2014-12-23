@@ -254,7 +254,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
 
             val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(workflow1.getActorRef()))
-            connectorSelection ! new DisconnectFromCluster(connectorClusterConfig.getName.getName)
+            connectorSelection ! new DisconnectFromCluster(queryId, connectorClusterConfig.getName.getName)
 
             val executionInfo = new ExecutionInfo()
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)

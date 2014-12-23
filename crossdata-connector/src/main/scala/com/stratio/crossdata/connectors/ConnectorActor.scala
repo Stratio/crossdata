@@ -113,9 +113,19 @@ ActorLogging with IResultHandler{
     case disconnectRequest: com.stratio.crossdata.communication.DisconnectFromCluster => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received disconnectFromCluster command")
-      connector.close(new ClusterName(disconnectRequest.clusterName))
+      var result: Result = null
+      try {
+        connector.close(new ClusterName(disconnectRequest.clusterName))
+        result = ConnectResult.createConnectResult(
+          "Disconnected successfully from " + disconnectRequest.clusterName)
+      } catch {
+        case ex: ConnectionException => {
+          result = Result.createConnectionErrorResult("Cannot disconnect from " + disconnectRequest.clusterName)
+        }
+      }
+      result.setQueryId(disconnectRequest.queryId)
       this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
-      sender ! ConnectResult.createConnectResult("Connected successfully"); //TODO once persisted sessionId,
+      sender ! result //TODO once persisted sessionId,
     }
     case _: com.stratio.crossdata.communication.Shutdown => {
       logger.debug("->" + "Receiving Shutdown")
