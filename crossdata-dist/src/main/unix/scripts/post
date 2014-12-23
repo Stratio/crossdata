@@ -1,0 +1,49 @@
+#!/bin/sh
+
+set -e
+
+GROUP='stratio'
+USER='stratio'
+DIR_INSTALL='/opt/sds/crossdata'
+DIR_CONF='/etc/sds/crossdata'
+DIR_LOG='/var/log/sds/crossdata'
+
+case "$1" in
+  configure)
+
+  # Add stratio group if it doesn't already exists
+  if ! getent group $GROUP >/dev/null 2>&1; then
+    groupadd ${GROUP} 
+  fi
+
+  # Add stratio user if it doesn't already exists
+  if ! getent passwd $USER >/dev/null 2>&1; then
+    [ -d /opt ] || mkdir /opt
+    useradd -M -d /opt/sds -g ${GROUP} -s /bin/bash ${USER}
+  else
+    usermod -G $GROUP $USER
+  fi
+
+  chown -R ${USER}:${GROUP} /opt/sds /etc/sds
+  chown root:root /etc/init.d/crossdata
+ 
+  chown -R ${USER}:${GROUP} $DIR_INSTALL
+  chown -R ${USER}:${GROUP} $DIR_CONF
+  chown -R ${USER}:${GROUP} $DIR_LOG
+  chmod 775 $DIR_INSTALL
+  chmod 775 $DIR_CONF
+  chmod 775 $DIR_LOG
+  
+  update-rc.d crossdata defaults
+
+  ;;
+esac    
+
+chmod 755 /etc/init.d/crossdata
+chmod +x /opt/sds/crossdata/bin/crossdata-sh
+chmod +x /etc/default/crossdata
+export CROSSDATA_LIB=/opt/sds/crossdata
+export CROSSDATA_CONF="/etc/sds/crossdata"
+
+exit 0
+

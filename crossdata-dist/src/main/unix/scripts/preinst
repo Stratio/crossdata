@@ -1,0 +1,12 @@
+# This function should be modified with what the user wants to do previous to
+# the compilation.
+# For instance, untar the code.
+
+## directory/to/be/created
+#etc/init.d
+#etc/sds
+#etc/default
+#opt/sds/crossdata
+#var/log/sds/crossdata
+#var/sds/crossdata
+#var/sds/crossdata/crossdata-store
