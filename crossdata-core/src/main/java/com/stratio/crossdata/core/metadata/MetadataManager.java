@@ -428,12 +428,30 @@ public enum MetadataManager {
             writeLock.unlock();
         }
     }
+
     /**
      * Persist this cluster in MetadataStore and attach with the datastore. Must be unique.
      * @param clusterMetadata Metadata information that you want persist.
      */
     public void createCluster(ClusterMetadata clusterMetadata) {
         createCluster(clusterMetadata, true);
+    }
+
+    public void deleteCluster(ClusterName clusterName, boolean ifExist) {
+        shouldBeInit();
+        writeLock.lock();
+        if (!ifExist) {
+            shouldExist(clusterName);
+        }
+        try {
+            beginTransaction();
+            metadata.remove(clusterName);
+            commitTransaction();
+        } catch (Exception ex) {
+            throw new MetadataManagerException(ex);
+        } finally {
+            writeLock.unlock();
+        }
     }
 
     /**

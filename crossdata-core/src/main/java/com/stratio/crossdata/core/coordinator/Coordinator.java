@@ -202,6 +202,9 @@ public class Coordinator implements Serializable {
         datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
 
         MetadataManager.MANAGER.createDataStore(datastoreMetadata, false);
+
+        MetadataManager.MANAGER.deleteCluster(clusterName, false);
+
         return CommandResult.createCommandResult("CLUSTER detached successfully");
     }
 
