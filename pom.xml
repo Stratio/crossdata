@@ -110,6 +110,7 @@
 
     <build>
         <plugins>
+		<!--
 	     <plugin>
                 <groupId>com.stratio.mojo.unix</groupId>
                 <artifactId>unix-maven-plugin</artifactId>
@@ -131,7 +132,6 @@
     			<path>etc/init.d</path>
     			<path>etc/sds/crossdata</path>
     			<path>etc/default</path>
-    			<!--<path>/var/opt/jetty/log</path>-->
   			</paths>
   			<attributes>
     			<user>stratio</user>
@@ -188,6 +188,7 @@
                     </assembly>
                 </configuration>
             </plugin>
+		-->
 
 
             <plugin>
