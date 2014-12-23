@@ -111,7 +111,7 @@
     <build>
         <plugins>
 	     <plugin>
-                <groupId>org.codehaus.mojo.unix</groupId>
+                <groupId>com.stratio.mojo.unix</groupId>
                 <artifactId>unix-maven-plugin</artifactId>
                 <version>1.0-alpha-7-SNAPSHOT</version>
                 <extensions>true</extensions>
