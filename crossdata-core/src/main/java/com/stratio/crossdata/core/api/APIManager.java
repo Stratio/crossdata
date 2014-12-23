@@ -738,7 +738,13 @@ public class APIManager {
             if(!MetadataManager.MANAGER.exists(connectorName)){
                 throw new ApiException(new ExecutionException(connectorName + " doesn't exist"));
             }
+            ConnectorMetadata cm = MetadataManager.MANAGER.getConnector(connectorName);
             MetadataManager.MANAGER.deleteConnector(connectorName);
+            if(cm.getStatus() == Status.ONLINE){
+                String actorRef = cm.getActorRef();
+                MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+                MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE);
+            }
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
                 RollbackException | MetadataManagerException e) {
             throw new ApiException(e);
