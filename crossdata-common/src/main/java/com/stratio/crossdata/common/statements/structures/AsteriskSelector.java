@@ -43,10 +43,6 @@ public class AsteriskSelector extends Selector {
 
         AsteriskSelector that = (AsteriskSelector) o;
 
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
-
         return true;
     }
 

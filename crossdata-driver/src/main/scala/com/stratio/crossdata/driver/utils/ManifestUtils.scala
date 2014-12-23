@@ -38,7 +38,7 @@ object ManifestUtils {
    * @param path The XML path.
    * @return A { @link com.stratio.crossdata.common.manifest.CrossdataManifest}.
    * @throws ManifestException If the XML is not valid.
-   * @throws FileNotFoundException If the XML file does not exists.
+   * @throws FileNotFoundException If the XML file does not exist.
    */
   @throws(classOf[ManifestException])
   def parseFromXmlToManifest(manifestType: Int, path: String): CrossdataManifest = {

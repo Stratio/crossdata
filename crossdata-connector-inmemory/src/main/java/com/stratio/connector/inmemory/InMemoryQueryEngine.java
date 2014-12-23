@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
@@ -49,6 +48,7 @@ import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -89,10 +89,10 @@ public class InMemoryQueryEngine implements IQueryEngine{
     @Override
     public QueryResult execute(LogicalWorkflow workflow) throws ConnectorException {
 
-        List<Object[]> results = null;
+        List<Object[]> results;
 
-        Project projectStep = null;
-        Select selectStep = null;
+        Project projectStep;
+        Select selectStep;
 
         //Get the project and select steps.
         try {
@@ -110,11 +110,17 @@ public class InMemoryQueryEngine implements IQueryEngine{
         InMemoryDatastore datastore = connector.getDatastore(projectStep.getClusterName());
         if(datastore != null){
             List<String> outputColumns = new ArrayList<>();
-            for(ColumnName name : selectStep.getColumnOrder()){
+            for(ColumnName name: selectStep.getColumnOrder()){
                 outputColumns.add(name.getName());
             }
+            List<FunctionSelector> functions = new ArrayList<>();
+            for(Selector selector: selectStep.getColumnMap().keySet()){
+                if(selector instanceof FunctionSelector){
+                    functions.add((FunctionSelector) selector);
+                }
+            }
             try {
-                results = datastore.search(catalogName, tableName, relations, outputColumns);
+                results = datastore.search(catalogName, tableName, relations, functions, outputColumns);
             } catch (Exception e) {
                 throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
             }
@@ -140,10 +146,13 @@ public class InMemoryQueryEngine implements IQueryEngine{
         List<ColumnMetadata> columnMetadataList = new ArrayList<>();
 
         for(ColumnName columnName : outputColumns){
-            columnAlias.add(selectStep.getColumnMap().get(columnName));
-            columnName.setAlias(selectStep.getColumnMap().get(columnName));
+            ColumnSelector selector = new ColumnSelector(columnName);
+            String alias = selectStep.getColumnMap().get(selector);
+            columnAlias.add(alias);
+            columnName.setAlias(alias);
+            ColumnType columnType = selectStep.getTypeMapFromColumnName().get(selector);
             ColumnMetadata metadata = new ColumnMetadata(
-                    columnName, null, selectStep.getTypeMapFromColumnName().get(columnName));
+                    columnName, null, columnType);
             columnMetadataList.add(metadata);
         }
 

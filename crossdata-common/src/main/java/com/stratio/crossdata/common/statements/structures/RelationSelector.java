@@ -67,9 +67,6 @@ public class RelationSelector extends Selector {
 
         RelationSelector that = (RelationSelector) o;
 
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
         if (!relation.equals(that.relation)) {
             return false;
         }

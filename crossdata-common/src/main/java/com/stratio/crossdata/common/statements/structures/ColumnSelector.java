@@ -95,9 +95,6 @@ public class ColumnSelector extends Selector {
 
         ColumnSelector that = (ColumnSelector) o;
 
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
         if (!name.equals(that.name)) {
             return false;
         }

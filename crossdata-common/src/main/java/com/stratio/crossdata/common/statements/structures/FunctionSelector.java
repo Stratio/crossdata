@@ -111,9 +111,6 @@ public class FunctionSelector extends Selector {
 
         FunctionSelector that = (FunctionSelector) o;
 
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
         if (!functionColumns.equals(that.functionColumns)) {
             return false;
         }

@@ -23,6 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+
 /**
  * This class provides a basic abstraction of a database-like table stored in memory.
  */
@@ -156,7 +158,10 @@ public class InMemoryTable {
      * @param outputColumns The output columns in order.
      * @return A list with the matching columns.
      */
-    public List<Object[]> fullScanSearch(List<InMemoryRelation> relations, List<String> outputColumns){
+    public List<Object[]> fullScanSearch(
+            List<InMemoryRelation> relations,
+            List<FunctionSelector> functions,
+            List<String> outputColumns){
         List<Object[]> results = new ArrayList<>();
         boolean toAdd = true;
         for(Object [] row : rows.values()){
@@ -165,11 +170,19 @@ public class InMemoryTable {
                 Object o = row[columnIndex.get(relation.getColumnName())];
                 toAdd &= relation.getRelation().compare(o, relation.getRightPart());
             }
+            if((functions!= null) && (!functions.isEmpty())){
+                row = checkFunction(row, functions, outputColumns);
+            }
+
             if(toAdd){
                 results.add(projectColumns(row, outputColumns));
             }
         }
         return results;
+    }
+
+    private Object[] checkFunction(Object[] row, List<FunctionSelector> functions, List<String> outputColumns) {
+        return row;
     }
 
     /**

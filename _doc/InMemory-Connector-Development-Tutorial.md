@@ -77,7 +77,7 @@ connect and close methods.
         if(clusters.get(name) != null) {
             clusters.remove(name);
         }else{
-            throw new ConnectionException("Cluster " + name + "does not exists");
+            throw new ConnectionException("Cluster " + name + "does not exist");
         }
     }
 ```
