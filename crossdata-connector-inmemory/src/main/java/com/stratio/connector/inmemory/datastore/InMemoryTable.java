@@ -23,7 +23,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * This class provides a basic abstraction of a database-like table stored in memory.
@@ -170,19 +172,57 @@ public class InMemoryTable {
                 Object o = row[columnIndex.get(relation.getColumnName())];
                 toAdd &= relation.getRelation().compare(o, relation.getRightPart());
             }
-            if((functions!= null) && (!functions.isEmpty())){
-                row = checkFunction(row, functions, outputColumns);
-            }
 
             if(toAdd){
-                results.add(projectColumns(row, outputColumns));
+                if((functions!= null) && (!functions.isEmpty())){
+                    row = checkFunction(row, functions, outputColumns);
+                    results.add(row);
+                } else {
+                    results.add(projectColumns(row, outputColumns));
+                }
             }
         }
         return results;
     }
 
     private Object[] checkFunction(Object[] row, List<FunctionSelector> functions, List<String> outputColumns) {
-        return row;
+        Object[] finalRow = new Object[row.length];
+
+        Map<String, FunctionSelector> functionSelectors = new HashMap<>();
+        for(FunctionSelector fs: functions){
+            functionSelectors.put(fs.getFunctionName().toLowerCase(), fs);
+        }
+
+        for(int i=0; i<outputColumns.size(); i++){
+            Object obj = row[i];
+            String column = outputColumns.get(i);
+            if(functionSelectors.containsKey(column.toLowerCase())){
+                finalRow[i] = executeFunction(functionSelectors.get(column.toLowerCase()), row);
+            } else {
+                finalRow[i] = obj;
+            }
+        }
+        return finalRow;
+    }
+
+    private Object executeFunction(FunctionSelector fs, Object[] row) {
+        StringBuilder sb = new StringBuilder("Mock_");
+        sb.append(fs.getFunctionName()).append(":");
+        for(Selector selector: fs.getFunctionColumns()){
+            sb.append("_");
+            ColumnSelector cs = (ColumnSelector) selector;
+            String functionParam = cs.getColumnName().getName();
+            int pos = -1;
+            for(int i=0; i<columnNames.length; i++){
+                String colName = columnNames[i];
+                if(colName.equalsIgnoreCase(functionParam)){
+                    pos = i;
+                    break;
+                }
+            }
+            sb.append(row[pos]);
+        }
+        return sb.toString();
     }
 
     /**

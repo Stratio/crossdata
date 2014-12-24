@@ -148,6 +148,9 @@ public class InMemoryQueryEngine implements IQueryEngine{
         for(ColumnName columnName : outputColumns){
             ColumnSelector selector = new ColumnSelector(columnName);
             String alias = selectStep.getColumnMap().get(selector);
+            if(alias == null){
+                alias = columnName.getName();
+            }
             columnAlias.add(alias);
             columnName.setAlias(alias);
             ColumnType columnType = selectStep.getTypeMapFromColumnName().get(selector);
