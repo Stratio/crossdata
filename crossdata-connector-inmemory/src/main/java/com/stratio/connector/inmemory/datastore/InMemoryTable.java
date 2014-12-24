@@ -20,6 +20,7 @@ package com.stratio.connector.inmemory.datastore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -174,53 +175,36 @@ public class InMemoryTable {
             }
 
             if(toAdd){
+                Map<String, Object> functionResults = new HashMap<>();
                 if((functions!= null) && (!functions.isEmpty())){
-                    row = checkFunction(row, functions, outputColumns);
-                    results.add(row);
-                } else {
-                    results.add(projectColumns(row, outputColumns));
+                    functionResults = checkFunctions(row, functions);
                 }
+                results.add(projectColumns(row, functionResults, outputColumns));
             }
         }
         return results;
     }
 
-    private Object[] checkFunction(Object[] row, List<FunctionSelector> functions, List<String> outputColumns) {
-        Object[] finalRow = new Object[row.length];
+    private Map<String, Object> checkFunctions(Object[] row, List<FunctionSelector> functions) {
+        Map<String, Object> results = new HashMap<>();
 
-        Map<String, FunctionSelector> functionSelectors = new HashMap<>();
         for(FunctionSelector fs: functions){
-            functionSelectors.put(fs.getFunctionName().toLowerCase(), fs);
-        }
-
-        for(int i=0; i<outputColumns.size(); i++){
-            Object obj = row[i];
-            String column = outputColumns.get(i);
-            if(functionSelectors.containsKey(column.toLowerCase())){
-                finalRow[i] = executeFunction(functionSelectors.get(column.toLowerCase()), row);
-            } else {
-                finalRow[i] = obj;
+            List<Object> params = new LinkedList<>();
+            for(Selector column: fs.getFunctionColumns()){
+                ColumnSelector cs = (ColumnSelector) column;
+                //params.add(row[columnIndex.get(cs.getColumnName().getName())]);
+                params.add(row[columnIndex.get(cs.getAlias())]);
             }
+            results.put(fs.getFunctionName(), executeFunction(fs.getFunctionName(), params));
         }
-        return finalRow;
+        return results;
     }
 
-    private Object executeFunction(FunctionSelector fs, Object[] row) {
+    private Object executeFunction(String fs, List<Object> params) {
         StringBuilder sb = new StringBuilder("Mock_");
-        sb.append(fs.getFunctionName()).append(":");
-        for(Selector selector: fs.getFunctionColumns()){
-            sb.append("_");
-            ColumnSelector cs = (ColumnSelector) selector;
-            String functionParam = cs.getColumnName().getName();
-            int pos = -1;
-            for(int i=0; i<columnNames.length; i++){
-                String colName = columnNames[i];
-                if(colName.equalsIgnoreCase(functionParam)){
-                    pos = i;
-                    break;
-                }
-            }
-            sb.append(row[pos]);
+        sb.append(fs).append(":");
+        for(Object param: params){
+            sb.append("_").append(param);
         }
         return sb.toString();
     }
@@ -228,14 +212,20 @@ public class InMemoryTable {
     /**
      * Project a set of columns given a complete row.
      * @param row The source row.
-     * @param outputColumns The set of output columns.
-     * @return A row with the projected columns.
+     * @param functionResults
+     *@param outputColumns The set of output columns.  @return A row with the projected columns.
      */
-    private Object[] projectColumns(final Object [] row, final List<String> outputColumns){
+    private Object[] projectColumns(final Object[] row, Map<String, Object> functionResults,
+            final List<String> outputColumns){
         Object [] result = new Object[outputColumns.size()];
         int index = 0;
-        for(String output : outputColumns){
-            result[index] = row[columnIndex.get(output)];
+        for(String output: outputColumns){
+            int pos = columnIndex.get(output);
+            if(pos>=0){
+                result[index] = row[pos];
+            } else {
+                result[index] = functionResults.get(output);
+            }
             index++;
         }
         return result;
