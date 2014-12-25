@@ -220,8 +220,8 @@ public class InMemoryTable {
         Object [] result = new Object[outputColumns.size()];
         int index = 0;
         for(String output: outputColumns){
-            int pos = columnIndex.get(output);
-            if(pos>=0){
+            Integer pos = columnIndex.get(output);
+            if((pos != null) && (pos >= 0)){
                 result[index] = row[pos];
             } else {
                 result[index] = functionResults.get(output);
