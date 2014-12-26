@@ -230,8 +230,6 @@ T_INNER: I N N E R;
 T_JOIN: J O I N;
 T_BY: B Y;
 T_LIMIT: L I M I T;
-T_DISTINCT: D I S T I N C T;
-T_COUNT: C O U N T;
 T_AS: A S;
 T_BETWEEN: B E T W E E N;
 T_ASC: A S C;
@@ -268,11 +266,7 @@ T_SLASH: '/';
 T_INTERROGATION: '?';
 T_ASTERISK: '*';
 T_GROUP: G R O U P;
-T_AGGREGATION: A G G R E G A T I O N;
-T_SUM: S U M;
-T_MAX: M A X;
 T_MIN: M I N;
-T_AVG: A V G;
 T_GT: '>';
 T_LT: '<';
 T_GTE: '>' '='; 
@@ -789,49 +783,32 @@ getTimeUnit returns [TimeUnit unit]:
 
 getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
     @init{
-        boolean distinct = false;
         List<Selector> selectors = new ArrayList<>();
     }
     @after{
         se = new SelectExpression(selectors);
-        se.setDistinct(distinct);
     }:
-    (T_DISTINCT {distinct = true;})?
-    (
-        T_ASTERISK { if(distinct) throwParsingException("Selector DISTINCT doesn't accept '*'");
-                     s = new AsteriskSelector(); selectors.add(s);}
-        | s=getSelector[null] { if(s == null) throwParsingException("Column name not found");}
-                (T_AS alias1=getGenericID {
-                    s.setAlias(alias1);
-                    fieldsAliasesMap.put(alias1, s.toString());}
-                )? {selectors.add(s);}
-            (T_COMMA s=getSelector[null] { if(s == null) throwParsingException("Column name not found");}
-                    (T_AS aliasN=getGenericID {
-                        s.setAlias(aliasN);
-                        fieldsAliasesMap.put(aliasN, s.toString());}
-                    )? {selectors.add(s);})*
-    )
+    s=getSelector[null] { if(s == null) throwParsingException("Column name not found");}
+        (T_AS alias1=getGenericID {
+            s.setAlias(alias1);
+            fieldsAliasesMap.put(alias1, s.toString());})? {selectors.add(s);}
+    (T_COMMA s=getSelector[null] { if(s == null) throwParsingException("Column name not found");}
+        (T_AS aliasN=getGenericID {
+            s.setAlias(aliasN);
+            fieldsAliasesMap.put(aliasN, s.toString());})? {selectors.add(s);})*
 ;
 
 getSelector[TableName tablename] returns [Selector s]
     @init{
-        List<Selector> params = new ArrayList<>();
+        LinkedList<Selector> params = new LinkedList<>();
         String name = null;
     }:
     (
-        (functionName=T_SUM
-            | functionName=T_MAX
-            | functionName=T_MIN
-            | functionName=T_AVG
-            | functionName=T_COUNT
-            | functionName=T_IDENT
-        )
+        functionName=getFunctionName
         T_START_PARENTHESIS
-            (select1=getSelector[tablename] {params.add(select1);}
-            | T_ASTERISK {params.add(new AsteriskSelector());}
-            )?
-        T_END_PARENTHESIS { String functionStr = $functionName.text;
-                            if(functionStr.equalsIgnoreCase("count") && (!params.toString().equalsIgnoreCase("[*]")) && (!params.toString().equalsIgnoreCase("[1]"))) throwParsingException("COUNT function only accepts '*' or '1'");
+            (select1=getSelector[tablename] {params.add(select1);})*
+        T_END_PARENTHESIS { String functionStr = functionName;
+                            if(functionStr.equalsIgnoreCase("count") && (!params.toString().equalsIgnoreCase("[*]")) && (!params.toString().equalsIgnoreCase("[1]"))) throwParsingException("COUNT includes only accepts '*' or '1'");
                             s = new FunctionSelector(functionStr, params);}
         |
         (
@@ -840,6 +817,7 @@ getSelector[TableName tablename] returns [Selector s]
             | constant=T_CONSTANT {s = new IntegerSelector($constant.text);}
             | T_FALSE {s = new BooleanSelector(false);}
             | T_TRUE {s = new BooleanSelector(true);}
+            | T_ASTERISK {s = new AsteriskSelector();}
             | qLiteral=QUOTED_LITERAL {s = new StringSelector($qLiteral.text);}
         )
     )
@@ -906,6 +884,11 @@ getAliasedTableID[Map tablesAliasesMap] returns [TableName result]:
 	{result = tableN;}
 ;
 
+getFunctionName returns [String functionName]:
+    ( ident1=T_IDENT {$functionName = $ident1.text;}
+    | allowedReservedWord=getAllowedReservedWord {$functionName = allowedReservedWord;})
+;
+
 getColumnName[TableName tablename] returns [ColumnName columnName]:
     ( ident1=T_IDENT {$columnName = normalizeColumnName(tablename, $ident1.text);}
     | ident2=T_KS_AND_TN {$columnName = normalizeColumnName(tablename, $ident2.text);}
@@ -924,6 +907,7 @@ getAllowedReservedWord returns [String str]:
     | T_SECS
     | T_SECOND
     | T_SECONDS
+    | T_MIN
     | T_MINS
     | T_MINUTE
     | T_MINUTES

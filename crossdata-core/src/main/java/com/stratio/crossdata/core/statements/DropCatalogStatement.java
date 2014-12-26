@@ -19,8 +19,8 @@
 package com.stratio.crossdata.core.statements;
 
 import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code DROP CATALOG} statement from the CROSSDATA language.
@@ -57,7 +57,7 @@ public class DropCatalogStatement extends MetadataStatement {
 
     public ValidationRequirements getValidationRequirements() {
         ValidationRequirements validationRequirements = new ValidationRequirements();
-        if(!ifExists){
+        if (!ifExists) {
             validationRequirements = validationRequirements.add(ValidationTypes.MUST_EXIST_CATALOG);
         }
         return validationRequirements;
@@ -67,7 +67,7 @@ public class DropCatalogStatement extends MetadataStatement {
         return ifExists;
     }
 
-    public CatalogName getCatalogName(){
+    public CatalogName getCatalogName() {
         return catalog;
     }
 }

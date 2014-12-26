@@ -18,7 +18,6 @@
 
 package com.stratio.crossdata.core.statements;
 
-
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 
@@ -36,12 +35,14 @@ public interface ITableStatement {
 
     /**
      * Set the table name.
+     *
      * @param tableName The name.
      */
     void setTableName(TableName tableName);
 
     /**
      * Get the catalog associated with the table.
+     *
      * @return A {@link com.stratio.crossdata.common.data.CatalogName}.
      */
     CatalogName getEffectiveCatalog();

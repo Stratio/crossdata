@@ -96,10 +96,10 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         this.columnsWithType = columns;
         this.partitionKey = partitionKey;
         this.clusterKey = clusterKey;
-        if (partitionKey!=null){
+        if (partitionKey != null) {
             this.primaryKey.addAll(partitionKey);
         }
-        if (clusterKey!=null) {
+        if (clusterKey != null) {
             this.primaryKey.addAll(clusterKey);
         }
     }
@@ -178,7 +178,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("CREATE ");
-        if(tableType != TableType.DATABASE){
+        if (tableType != TableType.DATABASE) {
             sb.append(tableType);
         }
         sb.append("TABLE ");

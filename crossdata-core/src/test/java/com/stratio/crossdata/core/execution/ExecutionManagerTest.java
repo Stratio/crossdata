@@ -27,7 +27,7 @@ public class ExecutionManagerTest extends MetadataManagerTestHelper {
     @Test
     public void testExist() throws Exception {
         ExecutionManager.MANAGER.createEntry("key", "pruebaKey");
-        ExecutionManager.MANAGER.createEntry("key", "pruebaKey",true);
+        ExecutionManager.MANAGER.createEntry("key", "pruebaKey", true);
         Assert.assertTrue(ExecutionManager.MANAGER.exists("key"));
 
     }
@@ -38,7 +38,6 @@ public class ExecutionManagerTest extends MetadataManagerTestHelper {
         ExecutionManager.MANAGER.clear();
         Assert.assertFalse(ExecutionManager.MANAGER.exists("key"));
     }
-
 
     @Test
     public void testClearWithDelete() throws Exception {

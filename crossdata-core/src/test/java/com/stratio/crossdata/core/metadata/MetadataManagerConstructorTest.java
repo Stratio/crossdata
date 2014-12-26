@@ -15,13 +15,14 @@ import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 public class MetadataManagerConstructorTest {
 
     @BeforeTest
-    public void testShouldBeInitException(){
+    public void testShouldBeInitException() {
         DataStoreName name = new DataStoreName("dataStoreTest");
         String version = "0.1.1";
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
-        DataStoreMetadata dataStore = new DataStoreMetadata(name, version, requiredProperties, othersProperties, behaviors);
+        DataStoreMetadata dataStore = new DataStoreMetadata(name, version, requiredProperties, othersProperties,
+                behaviors, null);
         try {
             MetadataManager.MANAGER.createDataStore(dataStore);
         } catch (MetadataManagerException me) {
@@ -31,7 +32,7 @@ public class MetadataManagerConstructorTest {
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
-    public void testConstructorException(){
+    public void testConstructorException() {
         MetadataManager.MANAGER.init(null, null, null);
         fail();
     }

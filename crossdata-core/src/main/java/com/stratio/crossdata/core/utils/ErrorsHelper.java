@@ -29,7 +29,8 @@ public class ErrorsHelper {
 
     /**
      * Build a more friendly message for the user when a parsing exception arises.
-     * @param ae {@link com.stratio.crossdata.core.utils.AntlrError}.
+     *
+     * @param ae    {@link com.stratio.crossdata.core.utils.AntlrError}.
      * @param query Additional information about the exception.
      * @return Additional information about the exception.
      */
@@ -47,6 +48,7 @@ public class ErrorsHelper {
 
     /**
      * Add a new error coming from the parser.
+     *
      * @param antlrError {@link com.stratio.crossdata.core.utils.AntlrError}.
      */
     public void addError(AntlrError antlrError) {
@@ -55,6 +57,7 @@ public class ErrorsHelper {
 
     /**
      * Find out if specific information about the parsing error is provided.
+     *
      * @return whether specific information about the exception is provided.
      */
     public boolean isEmpty() {
@@ -63,6 +66,7 @@ public class ErrorsHelper {
 
     /**
      * Get list with parsing errors.
+     *
      * @return List with {@link com.stratio.crossdata.core.utils.AntlrError} objects.
      */
     public List<AntlrError> getAntlrErrors() {
@@ -71,6 +75,7 @@ public class ErrorsHelper {
 
     /**
      * Convert information in this object into a String.
+     *
      * @param query original query.
      * @return String with all the information of this object.
      */
@@ -85,6 +90,7 @@ public class ErrorsHelper {
 
     /**
      * Get a List of messages with additional information about errors.
+     *
      * @param query original query.
      * @return List of errors information.
      */
@@ -100,6 +106,7 @@ public class ErrorsHelper {
 
     /**
      * Get the message with information about the parsing exception.
+     *
      * @return String with error message.
      */
     public String getMessage() {
@@ -108,6 +115,7 @@ public class ErrorsHelper {
 
     /**
      * Set a message about the parsing exception.
+     *
      * @param message information about the error.
      */
     public void setMessage(String message) {

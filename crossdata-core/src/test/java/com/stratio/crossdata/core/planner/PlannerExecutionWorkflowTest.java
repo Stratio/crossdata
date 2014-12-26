@@ -128,13 +128,14 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     public Select getSelect(ColumnName[] columns, ColumnType[] types) {
         Operations operation = Operations.SELECT_OPERATOR;
-        Map<ColumnName, String> columnMap = new LinkedHashMap<>();
+        Map<Selector, String> columnMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
-        Map<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
+        Map<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
 
         for (int index = 0; index < columns.length; index++) {
-            columnMap.put(columns[index], columns[index].getName());
-            typeMapFromColumnName.put(columns[index], types[index]);
+            ColumnSelector cs = new ColumnSelector(columns[index]);
+            columnMap.put(cs, columns[index].getName());
+            typeMapFromColumnName.put(cs, types[index]);
             typeMap.put(columns[index].getName(), types[index]);
         }
         Select select = new Select(operation, columnMap, typeMap, typeMapFromColumnName);
@@ -659,10 +660,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
-
     @Test
     public void alterCatalogWorkflowTest() {
-        String options="{comment:'the new comment'}";
+        String options = "{comment:'the new comment'}";
         AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("demo2"), options);
         String query = "ALTER CATALOG demo2 WITH {comment:'the new comment'};";
         BaseQuery baseQuery = new BaseQuery("alterId", query, new CatalogName("demo2"));
@@ -673,7 +673,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         try {
             ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
             Assert.assertTrue(MetadataManager.MANAGER.exists(new CatalogName("demo2")));
-            CatalogMetadata catalogMetadata=MetadataManager.MANAGER.getCatalog(new CatalogName("demo2"));
+            CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(new CatalogName("demo2"));
             Assert.assertEquals(catalogMetadata.getOptions(), alterCatalogStatement.getOptions());
         } catch (PlanningException e) {
             Assert.fail(e.getMessage());
@@ -681,15 +681,14 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
-
     @Test
     public void alterTableWorkflowTest() {
         Object[] parameters = { };
-        ColumnMetadata columnMetadata=new ColumnMetadata(new ColumnName(new TableName("demo", "table3"),
+        ColumnMetadata columnMetadata = new ColumnMetadata(new ColumnName(new TableName("demo", "table3"),
                 "email"), parameters, ColumnType.VARCHAR);
-        AlterOptions alterOptions=new AlterOptions(AlterOperation.ALTER_COLUMN,null,columnMetadata);
+        AlterOptions alterOptions = new AlterOptions(AlterOperation.ALTER_COLUMN, null, columnMetadata);
 
-        AlterTableStatement alterTableStatement =new AlterTableStatement(columnMetadata.getName().getTableName(),
+        AlterTableStatement alterTableStatement = new AlterTableStatement(columnMetadata.getName().getTableName(),
                 columnMetadata.getName(), ColumnType.VARCHAR, null, AlterOperation.ALTER_COLUMN);
         String query = "ALTER TABLE demo.table3 ALTER table3.email TYPE varchar;";
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
@@ -699,8 +698,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Planner planner = new Planner();
         try {
             ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
-            Assert.assertTrue(MetadataManager.MANAGER.exists(new ColumnName("demo","table3","email")));
-            ColumnMetadata columnMetadataModified=MetadataManager.MANAGER.getColumn(new ColumnName("demo","table3",
+            Assert.assertTrue(MetadataManager.MANAGER.exists(new ColumnName("demo", "table3", "email")));
+            ColumnMetadata columnMetadataModified = MetadataManager.MANAGER.getColumn(new ColumnName("demo", "table3",
                     "email"));
             Assert.assertEquals(columnMetadataModified.getColumnType(), ColumnType.VARCHAR);
         } catch (PlanningException e) {
@@ -708,6 +707,5 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         }
 
     }
-
 
 }

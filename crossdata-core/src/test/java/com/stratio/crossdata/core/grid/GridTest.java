@@ -84,7 +84,7 @@ public class GridTest {
      */
     @Test
     public void testGridLock() throws Exception {
-        boolean res=true;
+        boolean res = true;
         Lock lock = Grid.INSTANCE.lock("testGridLock");
         lock.lock();
         lock.unlock();

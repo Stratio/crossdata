@@ -75,7 +75,7 @@ public enum Grid implements Closeable {
             this.channelService = channelService;
             this.lockService = lockService;
             this.storeService = storeService;
-            init=true;
+            init = true;
         }
     }
 
@@ -131,6 +131,7 @@ public enum Grid implements Closeable {
 
     /**
      * Determine whether the singleton has been initialized.
+     *
      * @return Whether it is initialized.
      */
     public boolean isInit() {
@@ -146,7 +147,7 @@ public enum Grid implements Closeable {
         storeService.close();
         lockService.close();
         channelService.close();
-        init=false;
+        init = false;
     }
 
 }

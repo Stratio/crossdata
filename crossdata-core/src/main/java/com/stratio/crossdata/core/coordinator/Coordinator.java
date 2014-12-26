@@ -168,8 +168,8 @@ public class Coordinator implements Serializable {
     /**
      * Persists new options' cluster in Metadata manager.
      *
-     * @param clusterName   The cluster name.
-     * @param options       A set of cluster options.
+     * @param clusterName The cluster name.
+     * @param options     A set of cluster options.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistAlterCluster(ClusterName clusterName,
@@ -186,7 +186,7 @@ public class Coordinator implements Serializable {
     /**
      * Detaches cluster from Metadata Manager.
      *
-     * @param clusterName   The cluster name.
+     * @param clusterName The cluster name.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistDetachCluster(ClusterName clusterName) {
@@ -211,15 +211,15 @@ public class Coordinator implements Serializable {
     /**
      * Persists catalog data in Metadata Manager.
      *
-     * @param catalog The catalog metadata to be stored.
+     * @param catalog     The catalog metadata to be stored.
      * @param ifNotExists If Catalog doesn't exist.
      */
     public void persistCreateCatalog(CatalogMetadata catalog, boolean ifNotExists) {
         boolean persistOperation = true;
-        if(ifNotExists && (MetadataManager.MANAGER.exists(catalog.getName()))){
+        if (ifNotExists && (MetadataManager.MANAGER.exists(catalog.getName()))) {
             persistOperation = false;
         }
-        if(persistOperation){
+        if (persistOperation) {
             MetadataManager.MANAGER.createCatalog(catalog);
         }
     }

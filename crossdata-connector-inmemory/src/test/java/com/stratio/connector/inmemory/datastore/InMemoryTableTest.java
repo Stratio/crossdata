@@ -124,7 +124,7 @@ public class InMemoryTableTest {
         int indexToFind = (INSERT_TEST_SIZE-1);
         InMemoryRelation relation = new InMemoryRelation(columnNames[0], InMemoryOperations.EQ,
                 columnNames[0]+indexToFind);
-        List<Object[]> result = table.fullScanSearch(Arrays.asList(relation), primaryKey);
+        List<Object[]> result = table.fullScanSearch(Arrays.asList(relation), null, primaryKey);
         assertEquals(result.size(), 1, "Invalid size");
         Object[] row = result.get(0);
         assertEquals(row.length, 1, "Invalid number of columns returned.");

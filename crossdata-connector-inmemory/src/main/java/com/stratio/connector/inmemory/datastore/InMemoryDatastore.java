@@ -19,12 +19,13 @@
 package com.stratio.connector.inmemory.datastore;
 
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 
 /**
  * This class provides a proof-of-concept implementation of an in-memory datastore for
@@ -42,6 +43,8 @@ public class InMemoryDatastore {
      */
     private final Map<String, InMemoryCatalog> catalogs = new HashMap<>();
 
+    private final LinkedHashSet<String> functions = new LinkedHashSet<>();
+
     /**
      * Class logger.
      */
@@ -54,6 +57,14 @@ public class InMemoryDatastore {
     public InMemoryDatastore(int tableRowLimit){
         TABLE_ROW_LIMIT = tableRowLimit;
         LOG.info("InMemoryDatastore created with row limit: " + TABLE_ROW_LIMIT);
+    }
+
+    public LinkedHashSet<String> getFunctions() {
+        return functions;
+    }
+
+    public void addFunction(String function){
+        functions.add(function);
     }
 
     /**
@@ -74,7 +85,7 @@ public class InMemoryDatastore {
      */
     private void catalogShouldExist(String catalogName) throws Exception{
         if(!catalogs.containsKey(catalogName)){
-            throw new Exception("Catalog " + catalogName + " does not exists");
+            throw new Exception("Catalog " + catalogName + " does not exist");
         }
     }
 
@@ -96,7 +107,7 @@ public class InMemoryDatastore {
     /**
      * Drop an existing catalog.
      * @param catalogName The name of the catalog.
-     * @throws Exception If the catalog does not exists or it still have tables in it.
+     * @throws Exception If the catalog does not exist or it still have tables in it.
      */
     public void dropCatalog(String catalogName) throws Exception{
         catalogShouldExist(catalogName);
@@ -109,7 +120,7 @@ public class InMemoryDatastore {
      * Drop an existing table.
      * @param catalogName The name of the catalog.
      * @param tableName The name of the table.
-     * @throws Exception If the table does not exists.
+     * @throws Exception If the table does not exist.
      */
     public void dropTable(String catalogName, String tableName) throws Exception{
         catalogShouldExist(catalogName);
@@ -144,15 +155,16 @@ public class InMemoryDatastore {
      * @param catalogName The name of the catalog.
      * @param tableName The name of the table.
      * @param relations The list of {@link InMemoryRelation} to be satisfied.
+     * @param functions Functions included in the selectors.
      * @param columnOrder The column order.
      * @return A list of rows.
      * @throws Exception If search cannot be performed.
      */
     public List<Object[]> search(String catalogName, String tableName, List<InMemoryRelation> relations,
-            List<String> columnOrder)
+            List<FunctionSelector> functions, List<String> columnOrder)
             throws Exception {
         catalogShouldExist(catalogName);
-        return catalogs.get(catalogName).search(tableName, relations, columnOrder);
+        return catalogs.get(catalogName).search(tableName, relations, functions, columnOrder);
     }
 
     /**

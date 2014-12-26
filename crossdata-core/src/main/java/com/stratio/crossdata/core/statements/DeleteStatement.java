@@ -20,12 +20,12 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.List;
 
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code SELECT} statement from the CROSSDATA language. This class recognizes the
@@ -82,7 +82,8 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG).add(ValidationTypes.MUST_EXIST_TABLE)
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_TABLE)
                 .add(ValidationTypes.MUST_EXIST_COLUMN);
     }
 

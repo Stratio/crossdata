@@ -62,15 +62,6 @@ public class ColumnSelector extends Selector {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(name.toString());
-        if (this.alias != null) {
-            sb.append(" AS ").append(alias);
-        }
-        return sb.toString();
-    }
-
-    @Override
     public SelectorType getType() {
         return SelectorType.COLUMN;
     }
@@ -78,6 +69,19 @@ public class ColumnSelector extends Selector {
     @Override
     public Set<TableName> getSelectorTables() {
         return new HashSet(Arrays.asList(this.name.getTableName()));
+    }
+
+    @Override public ColumnName getColumnName() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(name.toString());
+        if (this.alias != null) {
+            sb.append(" AS ").append(alias);
+        }
+        return sb.toString();
     }
 
     @Override
@@ -91,9 +95,6 @@ public class ColumnSelector extends Selector {
 
         ColumnSelector that = (ColumnSelector) o;
 
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
         if (!name.equals(that.name)) {
             return false;
         }

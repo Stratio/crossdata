@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -48,6 +49,8 @@ import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.ConnectorFunctionsType;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -106,8 +109,20 @@ public class MetadataManagerTestHelper {
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
 
+        Set<FunctionType> functions = new HashSet<>();
+        FunctionType function = new FunctionType();
+        function.setFunctionName("getYear");
+        function.setFunctionType("simple");
+        function.setSignature("getYear(Tuple<Int>):Tuple<Any>");
+        functions.add(function);
+        function = new FunctionType();
+        function.setFunctionName("shorten");
+        function.setFunctionType("simple");
+        function.setSignature("shorten(Tuple<Text>):Tuple<Any>");
+        functions.add(function);
+
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
-                requiredPropertiesForDataStore, othersProperties, behaviors);
+                requiredPropertiesForDataStore, othersProperties, behaviors, functions);
 
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs = new HashMap<>();
         clusterAttachedRefs.put(new ClusterName(cluster), new ClusterAttachedMetadata(new ClusterName(cluster),
@@ -147,7 +162,8 @@ public class MetadataManagerTestHelper {
         ConnectorMetadata connectorMetadata = null;
         try {
             connectorMetadata = new ConnectorMetadata(connectorName, version,
-                    dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(), new ArrayList<String>());
+                    dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(),
+                    new ArrayList<String>(), null,null);
         } catch (ManifestException e) {
             fail(e.getMessage());
         }
@@ -170,7 +186,8 @@ public class MetadataManagerTestHelper {
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), new HashSet<Operations>());
+                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(),
+                new HashSet<Operations>(),null);
         connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
@@ -191,8 +208,16 @@ public class MetadataManagerTestHelper {
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
+        ConnectorFunctionsType functions = new ConnectorFunctionsType();
+        List<FunctionType> functionsList = new ArrayList<>();
+        FunctionType functionType = new FunctionType();
+        functionType.setFunctionName("concat");
+        functionType.setSignature("concat(Tuple<Text, Text>):Tuple<Text>");
+        functionType.setFunctionType("simple");
+        functionsList.add(functionType);
+        functions.setFunction(functionsList);
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options);
+                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
         connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
@@ -223,13 +248,13 @@ public class MetadataManagerTestHelper {
      * @param name          The name of the cluster.
      * @param dataStoreName The backend dataStore.
      */
-    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName ... connectorNames)
+    public ClusterName createTestCluster(String name, DataStoreName dataStoreName, ConnectorName... connectorNames)
             throws ManifestException {
         // Create & add Cluster
         ClusterName clusterName = new ClusterName(name);
         Map<Selector, Selector> options = new HashMap<>();
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-        for(ConnectorName connectorName : connectorNames) {
+        for (ConnectorName connectorName : connectorNames) {
             connectorAttachedRefs.put(connectorName,
                     new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
         }

@@ -30,8 +30,9 @@ public class StoragePlannedQuery extends StorageValidatedQuery implements IPlann
 
     /**
      * Connector Class.
+     *
      * @param storageValidatedQuery the validated query
-     * @param executionWorkflow the execution workflow
+     * @param executionWorkflow     the execution workflow
      */
     public StoragePlannedQuery(StorageValidatedQuery storageValidatedQuery, ExecutionWorkflow executionWorkflow) {
         super(storageValidatedQuery);
@@ -41,6 +42,7 @@ public class StoragePlannedQuery extends StorageValidatedQuery implements IPlann
 
     /**
      * Connector Class.
+     *
      * @param storagePlannedQuery The planned Query
      */
     public StoragePlannedQuery(StoragePlannedQuery storagePlannedQuery) {

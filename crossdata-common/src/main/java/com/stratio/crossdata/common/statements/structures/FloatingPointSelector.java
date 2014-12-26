@@ -79,9 +79,6 @@ public class FloatingPointSelector extends Selector {
         if (Double.compare(that.value, value) != 0) {
             return false;
         }
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
 
         return true;
     }

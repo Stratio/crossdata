@@ -16,32 +16,31 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.query;
+package com.stratio.crossdata.common.data;
 
-import com.stratio.crossdata.common.result.QueryStatus;
+public class FunctionName extends FirstLevelName {
 
-/**
- * Metadata validate query with a previously parsed query.
- */
-public class MetadataValidatedQuery extends MetadataParsedQuery implements IValidatedQuery {
+    private static final long serialVersionUID = -2253115989460763299L;
 
     /**
-     * Contructor Class.
-     *
-     * @param metadataParsedQuery The metadata parsed query
+     * Function name.
      */
-    public MetadataValidatedQuery(MetadataParsedQuery metadataParsedQuery) {
-        super(metadataParsedQuery);
-        setQueryStatus(QueryStatus.VALIDATED);
+    private final String name;
+
+    public FunctionName(String name) {
+        super();
+        this.name = name.toLowerCase();
     }
 
-    /**
-     * Constructor Class.
-     *
-     * @param metadataValidatedQuery
-     */
-    public MetadataValidatedQuery(MetadataValidatedQuery metadataValidatedQuery) {
-        this((MetadataParsedQuery) metadataValidatedQuery);
+    public String getName() {
+        return name;
     }
 
+    @Override public String getQualifiedName() {
+        return QualifiedNames.getFunctionQualifiedName(getName());
+    }
+
+    @Override public NameType getType() {
+        return NameType.FUNCTION;
+    }
 }

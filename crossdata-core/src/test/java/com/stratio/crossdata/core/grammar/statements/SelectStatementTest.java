@@ -120,7 +120,7 @@ public class SelectStatementTest extends ParsingTest {
     public void testSimpleQueryWithAliasesOk() {
         String inputText = "SELECT demo.users.gender as genero FROM demo.users;";
         Assert.assertNotNull(testRegularStatement(inputText,
-                "testSimpleGroupQueryWithAliasesOk"),"regular statement error");
+                "testSimpleGroupQueryWithAliasesOk"), "regular statement error");
     }
 
     @Test
@@ -235,7 +235,7 @@ public class SelectStatementTest extends ParsingTest {
             String expectedText =
                     "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + w
                             + " WHERE newks.newtb.ident1 LIKE 'whatever';";
-            testRegularStatement(inputText,expectedText, "selectStatementWindows");
+            testRegularStatement(inputText, expectedText, "selectStatementWindows");
         }
 
         // TODO: add "S","M","H","D","s","m","h" and "d"
@@ -248,7 +248,7 @@ public class SelectStatementTest extends ParsingTest {
                 String expectedText =
                         "SELECT newks.newtb.ident1 FROM newks.newtb WITH WINDOW " + i + " " + t
                                 + " WHERE newks.newtb.ident1 LIKE 'whatever';";
-                testRegularStatement(inputText, expectedText,"selectStatementWindows");
+                testRegularStatement(inputText, expectedText, "selectStatementWindows");
             }
 
         }
@@ -264,7 +264,7 @@ public class SelectStatementTest extends ParsingTest {
                 "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = c.t2.aa WHERE c.t1.a = \"y\";";
         String expectedText =
                 "SELECT c.t1.a, c.t2.b FROM c.t1 INNER JOIN c.t2 ON c.t1.a = c.t2.aa WHERE c.t1.a = 'y';";
-        testRegularStatement(inputText, expectedText,"selectStatementJoins");
+        testRegularStatement(inputText, expectedText, "selectStatementJoins");
     }
 
     @Test
@@ -307,7 +307,6 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatement(inputText, expectedText, "selectStatementAliasedColumnsJoin");
     }
 
-
     @Test
     public void selectStatementAliasedInversedColumnsJoins() {
         String inputText = "[test], " +
@@ -340,9 +339,9 @@ public class SelectStatementTest extends ParsingTest {
 
     @Test
     public void selectStatementCombineOrderby() {
-        for (String s : new String[] {" ASC", " DESC", " ASC, demo.b.extracol ASC",
+        for (String s : new String[] { " ASC", " DESC", " ASC, demo.b.extracol ASC",
                 " ASC, demo.b.extracol DESC", " DESC, demo.b.extracol DESC",
-                " DESC, demo.b.extracol ASC"}) {
+                " DESC, demo.b.extracol ASC" }) {
             String inputText =
                     "SELECT demo.b.a FROM demo.b ORDER BY demo.b.id1 " + s + " GROUP BY demo.b.col1 LIMIT 50;";
             String expectedText =
@@ -357,7 +356,7 @@ public class SelectStatementTest extends ParsingTest {
         String inputText =
                 "SELECT newtb.ident1, myfunction(newtb.innerIdent, newtb.anotherIdent) LIKE ident1 FROM newks.newtb;";
         testParserFails(inputText, "selectWrongLikeWord");
-  }
+    }
 
     @Test
     public void selectSelectors() {

@@ -40,7 +40,7 @@ The META architecture is composed of two main elements: client and server.
 The client is in charge of receiving user requests either from the MetaSh or from the API. Once a request is 
 received, the client performs an initial validation and sends the command to the server in order to execute the query itself.
 
-![Meta Overview](images/about-function-overview.png)
+![Meta Overview](images/about-includes-overview.png)
 
 The META server receives user requests and processes them in several steps: Parsing, Validation, Planning and Execution.
 

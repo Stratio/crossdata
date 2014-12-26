@@ -52,9 +52,9 @@ public class EngineConfig {
      */
     private String gridPersistencePath;
 
-
     /**
      * returns the address where infinispan is listening.
+     *
      * @return A String representation of the address.
      */
     public String getGridListenAddress() {
@@ -63,6 +63,7 @@ public class EngineConfig {
 
     /**
      * sets the address where infinispan is listening.
+     *
      * @param gridListenAddress The address.
      */
     public void setGridListenAddress(String gridListenAddress) {
@@ -71,6 +72,7 @@ public class EngineConfig {
 
     /**
      * returns the hosts where infinispan is working.
+     *
      * @return An array of host addresses.
      */
     public String[] getGridContactHosts() {
@@ -79,6 +81,7 @@ public class EngineConfig {
 
     /**
      * sets the hosts where infinispan is working.
+     *
      * @param gridContactHosts The array of contact hosts.
      */
     public void setGridContactHosts(String[] gridContactHosts) {
@@ -87,6 +90,7 @@ public class EngineConfig {
 
     /**
      * returns the port infinispan is listening to.
+     *
      * @return The port.
      */
     public int getGridPort() {
@@ -95,6 +99,7 @@ public class EngineConfig {
 
     /**
      * returns the port infinispan is listening to.
+     *
      * @param gridPort The port.
      */
     public void setGridPort(int gridPort) {
@@ -103,6 +108,7 @@ public class EngineConfig {
 
     /**
      * returns server-application.conf's crossdata-server.config.grid.min-initial-members value.
+     *
      * @return The minimum number of initial members.
      */
     public int getGridMinInitialMembers() {
@@ -111,6 +117,7 @@ public class EngineConfig {
 
     /**
      * overrides server-application.conf's crossdata-server.config.grid.min-initial-members value.
+     *
      * @param gridMinInitialMembers The minimum number of initial members.
      */
     public void setGridMinInitialMembers(int gridMinInitialMembers) {
@@ -119,6 +126,7 @@ public class EngineConfig {
 
     /**
      * returns server-application.conf's crossdata-server.config.grid.join-timeout value.
+     *
      * @return The timeout.
      */
     public long getGridJoinTimeout() {
@@ -134,6 +142,7 @@ public class EngineConfig {
 
     /**
      * Returns the path where infinispan stores its data.
+     *
      * @return The persistence path.
      */
     public String getGridPersistencePath() {
@@ -142,6 +151,7 @@ public class EngineConfig {
 
     /**
      * Sets the path where infinispan stores its data.
+     *
      * @param gridPersistencePath The persistence path.
      */
     public void setGridPersistencePath(String gridPersistencePath) {

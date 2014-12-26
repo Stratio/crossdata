@@ -205,11 +205,11 @@ public class CreateTableStatementTest extends ParsingTest {
         String inputText =
                 "CREATE TABLE key_space1.wallet ON CLUSTER siliconValley (day text, key varchar, latitude double, longitude double, name text, "
                         + "address text, tags map<text,boolean>, lucene text, PRIMARY KEY (day, key)) WITH {'COMPACT STORAGE': true, "
-                        +"'read_repair_chance': 1.0};";
+                        + "'read_repair_chance': 1.0};";
         String expectedText =
                 "CREATE TABLE key_space1.wallet ON CLUSTER cluster.siliconValley(key_space1.wallet.day=text, key_space1.wallet.key=varchar, key_space1.wallet.latitude=double, key_space1.wallet.longitude=double, key_space1.wallet.name=text, "
                         + "key_space1.wallet.address=text, key_space1.wallet.tags=map<text, boolean>, key_space1.wallet.lucene=text, PRIMARY KEY((key_space1.wallet.day), key_space1.wallet.key)) WITH {'COMPACT STORAGE'=true, "
-                        +"'read_repair_chance'=1.0};";
+                        + "'read_repair_chance'=1.0};";
         testRegularStatementSession("demo", inputText, expectedText, "createTableWithOptions");
     }
 

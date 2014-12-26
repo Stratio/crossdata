@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.FunctionName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ValidationException;
@@ -38,13 +39,15 @@ import com.stratio.crossdata.common.exceptions.validation.NotValidColumnExceptio
 import com.stratio.crossdata.common.exceptions.validation.YodaConditionException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
@@ -54,7 +57,6 @@ import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
-import com.stratio.crossdata.common.statements.structures.OrderByClause;
 
 /**
  * Normalizator Class.
@@ -66,6 +68,7 @@ public class Normalizator {
 
     /**
      * Class Constructor
+     *
      * @param parsedQuery The parsed query.
      */
     public Normalizator(SelectParsedQuery parsedQuery) {
@@ -74,6 +77,7 @@ public class Normalizator {
 
     /**
      * Get the obtained fields normalized.
+     *
      * @return com.stratio.crossdata.core.normalizer.NormalizerFields
      */
     public NormalizedFields getFields() {
@@ -82,6 +86,7 @@ public class Normalizator {
 
     /**
      * Get the parsed query to Normalize.
+     *
      * @return com.stratio.crossdata.core.query.IParsedQuery;
      */
     public IParsedQuery getParsedQuery() {
@@ -90,6 +95,7 @@ public class Normalizator {
 
     /**
      * execute the normalization of a parsed query.
+     *
      * @throws ValidationException
      */
     public void execute() throws ValidationException {
@@ -103,6 +109,7 @@ public class Normalizator {
 
     /**
      * Normalize the tables of a query.
+     *
      * @throws ValidationException
      */
     public void normalizeTables() throws ValidationException {
@@ -114,6 +121,7 @@ public class Normalizator {
 
     /**
      * Normalize the "from" tables of a parsed query.
+     *
      * @param fromTables List of the from clause tables of a parsed query
      * @throws ValidationException
      */
@@ -127,6 +135,7 @@ public class Normalizator {
 
     /**
      * Normalize all the joins of a parsed query.
+     *
      * @throws ValidationException
      */
     public void normalizeJoins()
@@ -140,6 +149,7 @@ public class Normalizator {
 
     /**
      * Normalize a specific inner join of a parsed query
+     *
      * @param innerJoin The inner join
      * @throws ValidationException
      */
@@ -164,6 +174,7 @@ public class Normalizator {
 
     /**
      * Normalize the order by clause of a parsed query.
+     *
      * @throws ValidationException
      */
     public void normalizeOrderBy()
@@ -179,12 +190,13 @@ public class Normalizator {
 
     /**
      * Normalize an specific order by of a parsed query.
+     *
      * @param orderByClauseClauses The order by
      * @throws ValidationException
      */
     public void normalizeOrderBy(List<OrderByClause> orderByClauseClauses)
             throws ValidationException {
-        for (OrderByClause orderBy: orderByClauseClauses) {
+        for (OrderByClause orderBy : orderByClauseClauses) {
             Selector selector = orderBy.getSelector();
             switch (selector.getType()) {
             case COLUMN:
@@ -204,6 +216,7 @@ public class Normalizator {
 
     /**
      * Normalize de select clause of a parsed query.
+     *
      * @throws ValidationException
      */
     public void normalizeSelectExpression()
@@ -216,18 +229,19 @@ public class Normalizator {
 
     /**
      * Normalize an specific select expression.
+     *
      * @param selectExpression The select expression
      * @throws ValidationException
      */
     public void normalizeSelectExpression(SelectExpression selectExpression)
             throws ValidationException {
-        fields.setDistinctSelect(selectExpression.isDistinct());
         List<Selector> normalizeSelectors = checkListSelector(selectExpression.getSelectorList());
         fields.getSelectors().addAll(normalizeSelectors);
     }
 
     /**
      * Normalize the group by of a parsed query.
+     *
      * @throws ValidationException
      */
     public void normalizeGroupBy() throws ValidationException {
@@ -262,7 +276,7 @@ public class Normalizator {
             ColumnName name = ((ColumnSelector) selector).getName();
             if (!columnNames.contains(name)) {
                 throw new BadFormatException(
-                        "All columns in the select clause must be in the group by or it must be aggregation function.");
+                        "All columns in the select clause must be in the group by or it must be aggregation includes.");
             }
             break;
         case ASTERISK:
@@ -272,6 +286,7 @@ public class Normalizator {
 
     /**
      * Normalize an specific group by of a parsed query.
+     *
      * @param groupByClause
      * @throws ValidationException
      */
@@ -288,6 +303,7 @@ public class Normalizator {
 
     /**
      * Validate the joins of a parsed query.
+     *
      * @param relations A list of Relation to check.
      * @throws ValidationException
      */
@@ -312,6 +328,7 @@ public class Normalizator {
 
     /**
      * Validate the where clause of a parsed query.
+     *
      * @param relations The list of Relation that contains the where clause to check
      * @throws ValidationException
      */
@@ -323,6 +340,7 @@ public class Normalizator {
 
     /**
      * Validate the relation of a parsed query.
+     *
      * @param relation The relation of the query.
      * @throws ValidationException
      */
@@ -373,6 +391,7 @@ public class Normalizator {
 
     /**
      * Validate the table of a parsed query.
+     *
      * @param tableName The table name to validate
      * @throws ValidationException
      */
@@ -387,6 +406,7 @@ public class Normalizator {
 
     /**
      * Validate the column selectors.
+     *
      * @param selector The selector
      * @throws ValidationException
      */
@@ -405,13 +425,13 @@ public class Normalizator {
 
     }
 
-    private ColumnName applyAlias(ColumnName columnName){
+    private ColumnName applyAlias(ColumnName columnName) {
         ColumnName result = columnName;
-        if(columnName.getTableName() != null && fields.existTableAlias(columnName.getTableName().getName())){
+        if (columnName.getTableName() != null && fields.existTableAlias(columnName.getTableName().getName())) {
             columnName.setTableName(fields.getTableName(columnName.getTableName().getName()));
         }
 
-        if(fields.existColumnAlias(columnName.getName())){
+        if (fields.existColumnAlias(columnName.getName())) {
             result = fields.getColumnName(columnName.getName());
         }
         return result;
@@ -419,6 +439,7 @@ public class Normalizator {
 
     /**
      * Search a table using a column name.
+     *
      * @param columnName The column name
      * @return com.stratio.crossdata.common.data.ColumnName
      * @throws ValidationException
@@ -465,6 +486,7 @@ public class Normalizator {
 
     /**
      * Validate the conditions that have an asterisk.
+     *
      * @return List of ColumnSelector
      */
     public List<ColumnSelector> checkAsteriskSelector() {
@@ -482,6 +504,7 @@ public class Normalizator {
 
     /**
      * Obtain a list of selectors that were validated.
+     *
      * @param selectors The list of selectors to validate.
      * @return List of Selectors
      * @throws ValidationException
@@ -494,6 +517,8 @@ public class Normalizator {
                 FunctionSelector functionSelector = (FunctionSelector) selector;
                 checkFunctionSelector(functionSelector);
                 result.add(functionSelector);
+                String signature = createSignature(functionSelector);
+                fields.addSignature(functionSelector.getFunctionName(), signature);
                 break;
             case COLUMN:
                 ColumnSelector columnSelector = (ColumnSelector) selector;
@@ -510,9 +535,89 @@ public class Normalizator {
         return result;
     }
 
+    private void checkSignature(FunctionSelector functionSelector, String signature) throws BadFormatException {
+        FunctionName functionName = new FunctionName(functionSelector.getFunctionName());
+        FunctionMetadata function = MetadataManager.MANAGER.getFunctionFromManifests(functionName);
+        if(function.getFunctionType().equals("aggregation")){
+            signature = signature.replace("(", "(List<").replace(")", ">)");
+        }
+        String storedSignature = function.getSignature();
+        if(!storedSignature.equalsIgnoreCase(signature)){
+            if(!checkSignatureCompatibility(storedSignature, signature)){
+                throw new BadFormatException("Signature of " + functionName + " is wrong: " + signature +
+                        System.lineSeparator() + "Expected: " + storedSignature);
+            }
+
+        }
+    }
+
+    private boolean checkSignatureCompatibility(String storedSignature, String querySignature) {
+        boolean result = false;
+        if(storedSignature.contains("Any*>")){
+            String typesInStoresSignature = storedSignature.substring(
+                    storedSignature.indexOf("Tuple<"),
+                    storedSignature.indexOf(">")+1);
+            querySignature = querySignature.replaceFirst("Tuple<[^>]*>", typesInStoresSignature);
+        }
+        if(storedSignature.endsWith(":Tuple<Any>")){
+            querySignature = querySignature.replaceAll(":Tuple<[^>]*>", ":Tuple<Any>");
+        }
+        if(storedSignature.equalsIgnoreCase(querySignature)){
+            result = true;
+        }
+        return result;
+    }
+
+    private String createSignature(FunctionSelector functionSelector) throws BadFormatException {
+        StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
+        sb.append("(Tuple<");
+        Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
+        while(iter.hasNext()){
+            Selector selector = iter.next();
+            switch(selector.getType()){
+                case FUNCTION:
+
+                    break;
+                case COLUMN:
+                    ColumnSelector cs = (ColumnSelector) selector;
+                    ColumnName columnName = cs.getName();
+                    ColumnMetadata column = MetadataManager.MANAGER.getColumn(columnName);
+                    ColumnType columnType = column.getColumnType();
+                    sb.append(columnType.getCrossdataType().toLowerCase());
+                    break;
+                case ASTERISK:
+
+                    break;
+                case BOOLEAN:
+
+                    break;
+                case STRING:
+
+                    break;
+                case INTEGER:
+
+                    break;
+                case FLOATING_POINT:
+
+                    break;
+                case RELATION:
+
+                    break;
+            }
+            if(iter.hasNext()){
+                sb.append(", ");
+            }
+        }
+        sb.append(">):Tuple<Any>");
+        String result = sb.toString();
+        checkSignature(functionSelector, result);
+        return result;
+    }
+
     /**
      * Validate the Functions Selectors of a parsed query.
-     * @param functionSelector The function Selector to validate.
+     *
+     * @param functionSelector The includes Selector to validate.
      * @throws ValidationException
      */
     public void checkFunctionSelector(FunctionSelector functionSelector)
@@ -521,9 +626,6 @@ public class Normalizator {
         List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());
         functionSelector.getFunctionColumns().clear();
         functionSelector.getFunctionColumns().addAll(normalizeSelector);
-        // Check returning type
-        //TODO: This should be updated with information from the MetadataManager
-        functionSelector.setReturningType(ColumnType.INT);
     }
 
     private void checkRightSelector(ColumnName name, Operator operator, Selector rightTerm)
@@ -580,17 +682,17 @@ public class Normalizator {
             throws ValidationException {
         switch (column.getColumnType()) {
         case BOOLEAN:
-            checkBooleanCompatibility(column,operator,valueType);
+            checkBooleanCompatibility(column, operator, valueType);
             break;
         case INT:
         case BIGINT:
         case DOUBLE:
         case FLOAT:
-            checkNumericCompatibility(column,valueType);
+            checkNumericCompatibility(column, valueType);
             break;
         case TEXT:
         case VARCHAR:
-            checkStringCompatibility(column,operator,valueType);
+            checkStringCompatibility(column, operator, valueType);
             break;
         case NATIVE:
         case SET:
@@ -623,31 +725,32 @@ public class Normalizator {
             throw new NotMatchDataTypeException(column.getName());
         }
 
-        if(operator == Operator.MATCH){
-            if(valueType != SelectorType.STRING){
+        if (operator == Operator.MATCH) {
+            if (valueType != SelectorType.STRING) {
                 throw new BadFormatException("MATCH operator only accepts comparison with string literals.");
             }
 
             TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(column.getName().getTableName());
             Map<IndexName, IndexMetadata> indexes = tableMetadata.getIndexes();
-            if(indexes == null || indexes.isEmpty()){
-                throw new BadFormatException("Table "+column.getName().getTableName() + " doesn't contain any index.");
+            if (indexes == null || indexes.isEmpty()) {
+                throw new BadFormatException(
+                        "Table " + column.getName().getTableName() + " doesn't contain any index.");
             }
 
             boolean indexFound = false;
             Collection<IndexMetadata> indexesMetadata = indexes.values();
             Iterator<IndexMetadata> iter = indexesMetadata.iterator();
-            while(iter.hasNext() && !indexFound){
+            while (iter.hasNext() && !indexFound) {
                 IndexMetadata indexMetadata = iter.next();
-                if(indexMetadata.getColumns().containsKey(column.getName())){
-                    if(indexMetadata.getType() != IndexType.FULL_TEXT){
+                if (indexMetadata.getColumns().containsKey(column.getName())) {
+                    if (indexMetadata.getType() != IndexType.FULL_TEXT) {
                         throw new BadFormatException("MATCH operator can be only applied to FULL_TEXT indexes.");
                     } else {
                         indexFound = true;
                     }
                 }
             }
-            if(!indexFound){
+            if (!indexFound) {
                 throw new BadFormatException("No index was found for the MATCH operator.");
             }
         } else if ((operator != Operator.EQ) && (operator != Operator.GT) && (operator != Operator.GET)

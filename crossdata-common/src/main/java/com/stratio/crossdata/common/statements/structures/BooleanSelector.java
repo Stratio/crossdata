@@ -79,9 +79,6 @@ public class BooleanSelector extends Selector {
         if (value != that.value) {
             return false;
         }
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
 
         return true;
     }

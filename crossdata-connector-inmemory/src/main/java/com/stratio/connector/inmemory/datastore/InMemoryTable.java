@@ -20,8 +20,13 @@ package com.stratio.connector.inmemory.datastore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * This class provides a basic abstraction of a database-like table stored in memory.
@@ -156,7 +161,10 @@ public class InMemoryTable {
      * @param outputColumns The output columns in order.
      * @return A list with the matching columns.
      */
-    public List<Object[]> fullScanSearch(List<InMemoryRelation> relations, List<String> outputColumns){
+    public List<Object[]> fullScanSearch(
+            List<InMemoryRelation> relations,
+            List<FunctionSelector> functions,
+            List<String> outputColumns){
         List<Object[]> results = new ArrayList<>();
         boolean toAdd = true;
         for(Object [] row : rows.values()){
@@ -165,24 +173,58 @@ public class InMemoryTable {
                 Object o = row[columnIndex.get(relation.getColumnName())];
                 toAdd &= relation.getRelation().compare(o, relation.getRightPart());
             }
+
             if(toAdd){
-                results.add(projectColumns(row, outputColumns));
+                Map<String, Object> functionResults = new HashMap<>();
+                if((functions!= null) && (!functions.isEmpty())){
+                    functionResults = checkFunctions(row, functions);
+                }
+                results.add(projectColumns(row, functionResults, outputColumns));
             }
         }
         return results;
     }
 
+    private Map<String, Object> checkFunctions(Object[] row, List<FunctionSelector> functions) {
+        Map<String, Object> results = new HashMap<>();
+
+        for(FunctionSelector fs: functions){
+            List<Object> params = new LinkedList<>();
+            for(Selector column: fs.getFunctionColumns()){
+                ColumnSelector cs = (ColumnSelector) column;
+                params.add(row[columnIndex.get(cs.getColumnName().getName())]);
+            }
+            results.put(fs.getFunctionName().toLowerCase(), executeFunction(fs.getFunctionName(), params));
+        }
+        return results;
+    }
+
+    private Object executeFunction(String fs, List<Object> params) {
+        StringBuilder sb = new StringBuilder("Mock_");
+        sb.append(fs).append(":");
+        for(Object param: params){
+            sb.append("_").append(param);
+        }
+        return sb.toString();
+    }
+
     /**
      * Project a set of columns given a complete row.
      * @param row The source row.
-     * @param outputColumns The set of output columns.
-     * @return A row with the projected columns.
+     * @param functionResults
+     *@param outputColumns The set of output columns.  @return A row with the projected columns.
      */
-    private Object[] projectColumns(final Object [] row, final List<String> outputColumns){
+    private Object[] projectColumns(final Object[] row, Map<String, Object> functionResults,
+            final List<String> outputColumns){
         Object [] result = new Object[outputColumns.size()];
         int index = 0;
-        for(String output : outputColumns){
-            result[index] = row[columnIndex.get(output)];
+        for(String output: outputColumns){
+            Integer pos = columnIndex.get(output);
+            if((pos != null) && (pos >= 0)){
+                result[index] = row[pos];
+            } else {
+                result[index] = functionResults.get(output.toLowerCase());
+            }
             index++;
         }
         return result;

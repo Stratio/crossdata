@@ -84,7 +84,7 @@ The column type is identified by Crossdata during the query analysis with the fo
 | PK | The column is part of the primary key. |
 | INDEXED | The column is indexed. |
 | NON_INDEXED | The column is not indexed. |
-| FUNCTION | A function is associated with the column. |
+| FUNCTION | A includes is associated with the column. |
 
 With respect to the relationship, Crossdata supports:
 
@@ -115,9 +115,9 @@ Storage
 -------
 
 * **INSERT**: Insert a new row in the datastore. By default inserts are considered upsert operations.
-* **INSERT_IF_NOT_EXISTS**: Insert a new row in the datastore if that row does not exists without the upsert behaviour.
-* **DELETE_<column_type>_<relationship>**: Delete rows for the given type of columns and relationships.
-* **UPDATE_<column_type>_<relationship>**: Update rows for the give type of columns and relationships. 
+* **INSERT_IF_NOT_EXISTS**: Insert a new row in the datastore if that row does not exist without the upsert behaviour.
+* **DELETE_<column_type>_<relationship>**: Delete rows for the given type of columns and relations.
+* **UPDATE_<column_type>_<relationship>**: Update rows for the give type of columns and relations.
 * **TRUNCATE_TABLE**: Truncate the contents of an existing table.
 
 
