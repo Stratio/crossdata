@@ -19,41 +19,18 @@
 package com.stratio.crossdata.connectors
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
+import com.stratio.crossdata.common.data.ClusterName
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.communication._
+import com.stratio.crossdata.communication.{ACK, AlterTable, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DeleteRows, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, Truncate, Update, getConnectorName, replyConnectorName, _}
 import org.apache.log4j.Logger
+
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
-import com.stratio.crossdata.communication.CreateCatalog
-import com.stratio.crossdata.communication.CreateIndex
-import com.stratio.crossdata.communication.replyConnectorName
-import com.stratio.crossdata.communication.Update
-import akka.cluster.ClusterEvent.MemberRemoved
-import com.stratio.crossdata.communication.IAmAlive
-import com.stratio.crossdata.communication.Execute
-import akka.cluster.ClusterEvent.MemberUp
-import com.stratio.crossdata.communication.ACK
-import com.stratio.crossdata.communication.getConnectorName
-import com.stratio.crossdata.communication.CreateTableAndCatalog
-import com.stratio.crossdata.communication.AlterTable
-import scala.Some
-import com.stratio.crossdata.communication.Truncate
-import com.stratio.crossdata.communication.DropIndex
-import com.stratio.crossdata.communication.CreateTable
-import com.stratio.crossdata.communication.InsertBatch
-import akka.cluster.ClusterEvent.CurrentClusterState
-import com.stratio.crossdata.communication.AsyncExecute
-import com.stratio.crossdata.communication.DeleteRows
-import akka.cluster.ClusterEvent.UnreachableMember
-import com.stratio.crossdata.communication.HeartbeatSig
-import com.stratio.crossdata.communication.DropTable
-import com.stratio.crossdata.communication.Insert
-import com.stratio.crossdata.common.data.ClusterName
 
 object State extends Enumeration {
   type state = Value
@@ -250,6 +227,7 @@ ActorLogging with IResultHandler{
       qId = abc._1
       metadataOperation = abc._2
       result = MetadataResult.createSuccessMetadataResult(metadataOperation)
+      //TODO: create result.set_tercer(_3)_parámetro
     } catch {
       case ex: Exception => {
         logger.error("Connector exception: " + ex.getMessage)
@@ -305,6 +283,8 @@ ActorLogging with IResultHandler{
     }
   }
 
+  //TODO: add object in result tupple
+  //
   private def methodOpc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
 
     opclass(opclass.length - 1) match {
@@ -326,8 +306,8 @@ ActorLogging with IResultHandler{
         (metadataOp.asInstanceOf[AlterCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG)
       }
       case "CreateIndex" => {
-       eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
-        metadataOp.asInstanceOf[CreateIndex].indexMetadata)
+        eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
+          metadataOp.asInstanceOf[CreateIndex].indexMetadata)
         (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX)
       }
       case "DropCatalog" => {
@@ -336,12 +316,12 @@ ActorLogging with IResultHandler{
         (metadataOp.asInstanceOf[DropCatalog].queryId, MetadataResult.OPERATION_DROP_CATALOG)
       }
       case "DropIndex" => {
-       eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
-       (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX)
+        eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
+        (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX)
       }
       case "DropTable" => {
         eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
-       (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE)
+        (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE)
       }
       case "AlterTable" => {
         eng.alterTable(metadataOp.asInstanceOf[AlterTable].targetCluster, metadataOp.asInstanceOf[AlterTable]
@@ -355,6 +335,22 @@ ActorLogging with IResultHandler{
           metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
         (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE)
       }
+        /*
+      case "ProvideMetadata" => {
+        //List<CatalogMetadata> provideMetadata(ClusterName clusterName) throws ConnectorException;
+        //TODO: create OPERATION_PROVIDE_METADATA
+        //(metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_PROVIDE_METADATA)
+
+      }
+      case "ProvideCatalogMetadata" => {
+        //CatalogMetadata provideCatalogMetadata(ClusterName clusterName, CatalogName catalogName) throws  ConnectorException;
+        //TODO: create OPERATION_PROVIDE_CATALOG_METADATA
+      }
+      case "ProvideTableMetadata" => {
+        //TableMetadata provideTableMetadata(ClusterName clusterName, TableName tableName) throws ConnectorException;
+        //TODO: create OPERATION_PROVIDE_TABLE_METADATA
+      }
+      */
     }
   }
 
