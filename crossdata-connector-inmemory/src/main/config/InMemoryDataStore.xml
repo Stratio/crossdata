@@ -45,6 +45,11 @@
             <Signature>dateOf(Tuple&lt;Text&gt;):Tuple&lt;Any&gt;</Signature>
             <FunctionType>simple</FunctionType>
         </Function>
+        <Function>
+            <FunctionName>count</FunctionName>
+            <Signature>count(Tuple&lt;Any*&gt;):Tuple&lt;Any&gt;</Signature>
+            <FunctionType>aggregation</FunctionType>
+        </Function>
     </Functions>
 </DataStore>
 

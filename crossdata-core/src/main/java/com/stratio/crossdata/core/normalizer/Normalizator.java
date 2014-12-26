@@ -538,11 +538,34 @@ public class Normalizator {
     private void checkSignature(FunctionSelector functionSelector, String signature) throws BadFormatException {
         FunctionName functionName = new FunctionName(functionSelector.getFunctionName());
         FunctionMetadata function = MetadataManager.MANAGER.getFunctionFromManifests(functionName);
+        if(function.getFunctionType().equals("aggregation")){
+            signature = signature.replace("(", "(List<").replace(")", ">)");
+        }
         String storedSignature = function.getSignature();
         if(!storedSignature.equalsIgnoreCase(signature)){
-            throw new BadFormatException("Signature of " + functionName + " is wrong: " + signature +
-                    System.lineSeparator() + "Expected: " + storedSignature);
+            if(!checkSignatureCompatibility(storedSignature, signature)){
+                throw new BadFormatException("Signature of " + functionName + " is wrong: " + signature +
+                        System.lineSeparator() + "Expected: " + storedSignature);
+            }
+
         }
+    }
+
+    private boolean checkSignatureCompatibility(String storedSignature, String querySignature) {
+        boolean result = false;
+        if(storedSignature.contains("Any*>")){
+            String typesInStoresSignature = storedSignature.substring(
+                    storedSignature.indexOf("Tuple<"),
+                    storedSignature.indexOf(">")+1);
+            querySignature = querySignature.replaceFirst("Tuple<[^>]*>", typesInStoresSignature);
+        }
+        if(storedSignature.endsWith(":Tuple<Any>")){
+            querySignature = querySignature.replaceAll(":Tuple<[^>]*>", ":Tuple<Any>");
+        }
+        if(storedSignature.equalsIgnoreCase(querySignature)){
+            result = true;
+        }
+        return result;
     }
 
     private String createSignature(FunctionSelector functionSelector) throws BadFormatException {
