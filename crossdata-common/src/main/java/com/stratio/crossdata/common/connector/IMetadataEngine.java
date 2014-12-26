@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.connector;
 
+import java.util.List;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.AlterOptions;
@@ -113,5 +114,11 @@ public interface IMetadataEngine {
      */
     void dropIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
             throws ConnectorException;
+
+    List<CatalogMetadata> provideMetadata(ClusterName clusterName) throws ConnectorException;
+
+    CatalogMetadata provideCatalogMetadata(ClusterName clusterName, CatalogName catalogName) throws ConnectorException;
+
+    TableMetadata provideTableMetadata(ClusterName clusterName, TableName tableName) throws ConnectorException;
 
 }

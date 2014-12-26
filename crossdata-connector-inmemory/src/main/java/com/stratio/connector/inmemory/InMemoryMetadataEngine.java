@@ -163,4 +163,21 @@ public class InMemoryMetadataEngine implements IMetadataEngine{
     public void dropIndex(ClusterName targetCluster, IndexMetadata indexMetadata) throws ConnectorException {
         throw new UnsupportedException("Deleting indexes is not supported.");
     }
+
+    @Override
+    public List<CatalogMetadata> provideMetadata(ClusterName clusterName) throws ConnectorException {
+        return null;
+    }
+
+    @Override
+    public CatalogMetadata provideCatalogMetadata(ClusterName clusterName, CatalogName catalogName)
+            throws ConnectorException {
+        return null;
+    }
+
+    @Override
+    public TableMetadata provideTableMetadata(ClusterName clusterName, TableName tableName)
+            throws ConnectorException {
+        return null;
+    }
 }

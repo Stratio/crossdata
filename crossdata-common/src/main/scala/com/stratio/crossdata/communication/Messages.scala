@@ -164,3 +164,12 @@ case class AttachConnector(override val queryId: String, targetCluster: ClusterN
 
 case class DetachConnector(override val queryId: String, targetCluster: ClusterName,
                            connectorName: ConnectorName) extends ManagementOperation(queryId)
+
+case class ProvideMetadata(override val queryId: String, targetCluster: ClusterName) extends ManagementOperation(queryId)
+
+case class ProvideCatalogMetadata(override val queryId: String, targetCluster: ClusterName,
+                                 catalogName: CatalogName) extends ManagementOperation(queryId)
+
+case class ProvideTableMetadata(override val queryId: String, targetCluster: ClusterName,
+                               tableName: TableName) extends ManagementOperation(queryId)
+
