@@ -57,4 +57,17 @@ class DummyIMetadataEngine extends IMetadataEngine{
                             options: java.util.Map[Selector, Selector]): Unit = {}
 
   override def alterTable(targetCluster: ClusterName, name: TableName, alterOptions: AlterOptions): Unit = {}
+
+  override def provideMetadata(clusterName: ClusterName): java.util.List[CatalogMetadata] = {
+    return null
+  }
+
+  override def provideCatalogMetadata(clusterName: ClusterName, catalogName: CatalogName): CatalogMetadata = {
+    return null
+  }
+
+  override def provideTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+    return null
+  }
+
 }

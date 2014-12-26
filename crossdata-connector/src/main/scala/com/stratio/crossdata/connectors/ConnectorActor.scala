@@ -140,7 +140,7 @@ ActorLogging with IResultHandler{
       methodAsyncExecute(aex, sender)
     }
     case metadataOp: MetadataOperation => {
-      method1(metadataOp, sender)
+      methodMetadataOp(metadataOp, sender)
     }
     case result: Result =>
       logger.debug("connectorActor receives Result with ID=" + result.getQueryId())
@@ -237,7 +237,7 @@ ActorLogging with IResultHandler{
     }
   }
 
-  private def method1(metadataOp: MetadataOperation, s: ActorRef): Unit = {
+  private def methodMetadataOp(metadataOp: MetadataOperation, s: ActorRef): Unit = {
     var qId: String = metadataOp.queryId
     var metadataOperation: Int = 0
     logger.info("Received queryId = " + qId)
