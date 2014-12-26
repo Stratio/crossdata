@@ -192,10 +192,9 @@ public class InMemoryTable {
             List<Object> params = new LinkedList<>();
             for(Selector column: fs.getFunctionColumns()){
                 ColumnSelector cs = (ColumnSelector) column;
-                //params.add(row[columnIndex.get(cs.getColumnName().getName())]);
-                params.add(row[columnIndex.get(cs.getAlias())]);
+                params.add(row[columnIndex.get(cs.getColumnName().getName())]);
             }
-            results.put(fs.getFunctionName(), executeFunction(fs.getFunctionName(), params));
+            results.put(fs.getFunctionName().toLowerCase(), executeFunction(fs.getFunctionName(), params));
         }
         return results;
     }
@@ -224,7 +223,7 @@ public class InMemoryTable {
             if((pos != null) && (pos >= 0)){
                 result[index] = row[pos];
             } else {
-                result[index] = functionResults.get(output);
+                result[index] = functionResults.get(output.toLowerCase());
             }
             index++;
         }
