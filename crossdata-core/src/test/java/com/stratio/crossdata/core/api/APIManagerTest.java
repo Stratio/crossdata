@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.core.api;
 
+import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -93,14 +94,16 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         Command cmd = new Command("QID", APICommand.ADD_MANIFEST(), params);
 
-        String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
-                "Name: dataStoreTest" + System.lineSeparator()
-                + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
-                "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
-                System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
-                System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
-                "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
-                "Behaviors: " + System.lineSeparator() + "\tBehavior: Test" + System.lineSeparator();
+        String expectedResult =
+                "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
+                        "Name: dataStoreTest" + System.lineSeparator()
+                        + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                        "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
+                        System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()
+                        + "Optional properties: " +
+                        System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
+                        "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
+                        "Behaviors: " + System.lineSeparator() + "\tBehavior: Test" + System.lineSeparator();
 
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
 
@@ -147,14 +150,16 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         Command cmd = new Command("QID", APICommand.ADD_MANIFEST(), params);
 
-        String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
-                "Name: dataStoreTest" + System.lineSeparator()
-                + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
-                "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
-                System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
-                System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
-                "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
-                "Behaviors: " + System.lineSeparator() + "\tBehavior: Test" + System.lineSeparator();
+        String expectedResult =
+                "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
+                        "Name: dataStoreTest" + System.lineSeparator()
+                        + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                        "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
+                        System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()
+                        + "Optional properties: " +
+                        System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
+                        "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
+                        "Behaviors: " + System.lineSeparator() + "\tBehavior: Test" + System.lineSeparator();
 
         Result result = ApiManager.processRequest(cmd);
 
@@ -207,7 +212,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
                 + "DataStores: " + System.lineSeparator()
                 + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                 "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
-                System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
+                System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() + "Optional properties: " +
                 System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
                 "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
                 "Supported operations: " + System.lineSeparator() + "\tOperation: PROJECT" + System.lineSeparator();
@@ -264,7 +269,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
                 + "DataStores: " + System.lineSeparator()
                 + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                 "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
-                System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()+ "Optional properties: " +
+                System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() + "Optional properties: " +
                 System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
                 "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
                 "Supported operations: " + System.lineSeparator() + "\tOperation: PROJECT" + System.lineSeparator();
@@ -298,6 +303,16 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         String expectedAnswer = "Crossdata server reset.";
         assertTrue(str.equals(expectedAnswer), System.lineSeparator() + "Expected: " + expectedAnswer +
                 System.lineSeparator() + "   Found: " + str);
+
+        assertTrue(MetadataManager.MANAGER.getCatalogs().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getClusters().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getColumns().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getDatastores().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getNodes().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getTables().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getIndexes().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getFunctions().isEmpty());
+
         Name n = new ConnectorName("connectorTest2");
         assertTrue(MetadataManager.MANAGER.exists(n), "MetadataManager should maintain the connector basic info");
     }
@@ -320,7 +335,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         PropertyType prop = new PropertyType();
         prop.setPropertyName("DefaultLimit");
         prop.setDescription("Description");
-        List<PropertyType> list=new ArrayList<>();
+        List<PropertyType> list = new ArrayList<>();
         list.add(prop);
         propertiesType.setProperty(list);
         dataStoreType.setRequiredProperties(propertiesType);

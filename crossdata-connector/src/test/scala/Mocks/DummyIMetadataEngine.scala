@@ -31,7 +31,7 @@ class DummyIMetadataEngine extends IMetadataEngine{
   override def createCatalog(targetCluster: ClusterName, catalogMetadata: CatalogMetadata): Unit = {}
 
   override def createTable(targetCluster: ClusterName, tableMetadata: TableMetadata): Unit = {
-      logger.debug("very slow function")
+      logger.debug("very slow includes")
       for (i <- 1 to 5) {
         val a:Int=1000
 

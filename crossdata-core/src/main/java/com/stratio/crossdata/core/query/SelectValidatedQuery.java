@@ -19,22 +19,25 @@
 package com.stratio.crossdata.core.query;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import com.stratio.crossdata.common.result.QueryStatus;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.result.QueryStatus;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.core.structures.InnerJoin;
 
 public class SelectValidatedQuery extends SelectParsedQuery implements IValidatedQuery {
 
-    private List<TableMetadata> tableMetadata=new ArrayList<>();
-    private List<ColumnName> columns=new ArrayList<>();
-    private List<Relation> relationships=new ArrayList<>();
-    private List<TableName> tables=new ArrayList<>();
+    private List<TableMetadata> tableMetadata = new ArrayList<>();
+    private List<ColumnName> columns = new ArrayList<>();
+    private List<Relation> relations = new ArrayList<>();
+    private List<TableName> tables = new ArrayList<>();
     private InnerJoin join;
+    private Map<String, String> signatures = new HashMap<>();
 
     public SelectValidatedQuery(SelectParsedQuery selectParsedQuery) {
         super(selectParsedQuery);
@@ -61,12 +64,12 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
         this.columns = columns;
     }
 
-    public List<Relation> getRelationships() {
-        return relationships;
+    public List<Relation> getRelations() {
+        return relations;
     }
 
-    public void setRelationships(List<Relation> relationships) {
-        this.relationships = relationships;
+    public void setRelations(List<Relation> relations) {
+        this.relations = relations;
     }
 
     public List<TableName> getTables() {
@@ -85,5 +88,12 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
         this.join = join;
     }
 
+    public Map<String, String> getSignatures() {
+        return signatures;
+    }
+
+    public void setSignatures(Map<String, String> signatures) {
+        this.signatures = signatures;
+    }
 }
 

@@ -25,26 +25,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.core.structures.GroupByClause;
-import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.core.structures.GroupByClause;
+import com.stratio.crossdata.core.structures.InnerJoin;
 
 public class NormalizedFields {
     private Set<ColumnName> columnNames = new HashSet<>();
     private Set<TableName> tableNames = new HashSet<>();
     private Set<CatalogName> catalogNames = new HashSet<>();
-    // It can includes functions, column names, asterisks...
+    // It can include functions, column names, asterisks...
     private List<Selector> selectors = new ArrayList<>();
-    private boolean distinctSelect = false;
     // Join relations
-    private InnerJoin join ;
+    private InnerJoin join;
     private List<Relation> where = new ArrayList<>();
     private List<OrderByClause> orderByClauseClauses = new ArrayList<>();
     private GroupByClause groupByClause = new GroupByClause();
@@ -61,14 +60,14 @@ public class NormalizedFields {
      */
     private Map<String, ColumnName> columnNameAlias = new HashMap<>();
 
+    private Map<String, String> signatures = new HashMap<>();
 
     public NormalizedFields() {
-
     }
 
-    public void addColumnName(ColumnName columnName, String alias){
+    public void addColumnName(ColumnName columnName, String alias) {
         this.columnNames.add(columnName);
-        if(alias != null){
+        if (alias != null) {
             this.columnNameAlias.put(alias, columnName);
         }
     }
@@ -83,11 +82,12 @@ public class NormalizedFields {
 
     /**
      * Add a table name to the list. If an alias is found the alias mapping is also stored.
+     *
      * @param tableName A {@link com.stratio.crossdata.common.data.TableName}.
      */
-    public void addTableName(TableName tableName){
+    public void addTableName(TableName tableName) {
         this.tableNames.add(tableName);
-        if(tableName.getAlias() != null){
+        if (tableName.getAlias() != null) {
             tableAlias.put(tableName.getAlias(), tableName);
         }
     }
@@ -116,20 +116,12 @@ public class NormalizedFields {
         this.selectors = selectors;
     }
 
-    public boolean isDistinctSelect() {
-        return distinctSelect;
-    }
-
-    public void setDistinctSelect(boolean distinctSelect) {
-        this.distinctSelect = distinctSelect;
-    }
-
     public InnerJoin getJoin() {
         return join;
     }
 
     public void setJoin(InnerJoin join) {
-        this.join =join ;
+        this.join = join;
     }
 
     public List<Relation> getWhere() {
@@ -158,7 +150,7 @@ public class NormalizedFields {
 
     public List<TableMetadata> getTablesMetadata() {
         //recover all Metadata about a tableName
-        for (TableName tableName:tableNames){
+        for (TableName tableName : tableNames) {
             tablesMetadata.add(MetadataManager.MANAGER.getTable(tableName));
         }
         return tablesMetadata;
@@ -166,38 +158,49 @@ public class NormalizedFields {
 
     /**
      * Get whether an alias for a given table name exists.
+     *
      * @param name The alias name.
      * @return Whether it exists or not.
      */
-    public boolean existTableAlias(final String name){
+    public boolean existTableAlias(final String name) {
         return tableAlias.containsKey(name);
     }
 
     /**
      * Get whether an alias for a given column name exists.
+     *
      * @param name The alias name.
      * @return Whether it exists or not.
      */
-    public boolean existColumnAlias(final String name){
+    public boolean existColumnAlias(final String name) {
         return columnNameAlias.containsKey(name);
     }
 
     /**
      * Get the table name associated with an alias.
+     *
      * @param alias The alias.
      * @return A {@link com.stratio.crossdata.common.data.TableName} or null if not exists.
      */
-    public TableName getTableName(final String alias){
+    public TableName getTableName(final String alias) {
         return tableAlias.get(alias);
     }
 
     /**
      * Get the column name associated with an alias.
+     *
      * @param alias The alias.
      * @return A {@link com.stratio.crossdata.common.data.ColumnName} or null if not exists.
      */
-    public ColumnName getColumnName(final String alias){
+    public ColumnName getColumnName(final String alias) {
         return columnNameAlias.get(alias);
     }
 
+    public Map<String, String> getSignatures() {
+        return signatures;
+    }
+
+    public void addSignature(String functionName, String signature) {
+        signatures.put(functionName, signature);
+    }
 }

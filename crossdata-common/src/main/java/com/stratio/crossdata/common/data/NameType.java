@@ -26,7 +26,8 @@ public enum NameType {
     DATASTORE,
     NODE,
     TABLE,
-    INDEX;
+    INDEX,
+    FUNCTION;
 
     public String toString() {
         return name();

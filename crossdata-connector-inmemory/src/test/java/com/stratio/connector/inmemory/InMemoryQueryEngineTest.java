@@ -175,15 +175,16 @@ public class InMemoryQueryEngineTest {
             project.addColumn(new ColumnName(tableMetadata.getName(), columnName));
         }
 
-        Map<ColumnName, String> columnMap = new LinkedHashMap<>();
+        Map<Selector, String> columnMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
-        Map<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
+        Map<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
 
         int index = 0;
         for(ColumnName column : project.getColumnList()){
-            columnMap.put(column, column.getName());
+            ColumnSelector cs = new ColumnSelector(column);
+            columnMap.put(cs, column.getName());
             typeMap.put(column.getName(), types[index]);
-            typeMapFromColumnName.put(column, types[index]);
+            typeMapFromColumnName.put(cs, types[index]);
             index++;
         }
         Select select = new Select(Operations.SELECT_OPERATOR, columnMap, typeMap, typeMapFromColumnName);

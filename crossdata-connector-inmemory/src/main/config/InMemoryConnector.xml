@@ -49,6 +49,7 @@
         <operation>INSERT</operation>
         <operation>PROJECT</operation>
         <operation>SELECT_OPERATOR</operation>
+        <operation>SELECT_FUNCTIONS</operation>
         <operation>SELECT_LIMIT</operation>
         <operation>FILTER_PK_EQ</operation>
         <operation>FILTER_PK_GT</operation>

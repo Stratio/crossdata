@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+
 /**
  * Catalog abstraction containing a set of tables.
  */
@@ -70,18 +72,18 @@ public class InMemoryCatalog {
     /**
      * Check that a table exists.
      * @param tableName The name of the table.
-     * @throws Exception If the table does not exists.
+     * @throws Exception If the table does not exist.
      */
     private void tableShouldExists(String tableName) throws Exception{
         if(!tables.containsKey(tableName)){
-            throw new Exception("Table " + tableName + " does not exists in the selected catalog");
+            throw new Exception("Table " + tableName + " does not exist in the selected catalog");
         }
     }
 
     /**
      * Drop a table from the current catalog.
      * @param tableName The name of the table.
-     * @throws Exception If the table does not exists.
+     * @throws Exception If the table does not exist.
      */
     public void dropTable(String tableName) throws Exception {
         tableShouldExists(tableName);
@@ -117,8 +119,9 @@ public class InMemoryCatalog {
      * @return A list of rows.
      * @throws Exception If the search cannot be executed.
      */
-    public List<Object[]> search(String tableName, List<InMemoryRelation> relations, List<String> columnOrder) throws Exception {
+    public List<Object[]> search(String tableName, List<InMemoryRelation> relations,
+            List<FunctionSelector> functions, List<String> columnOrder) throws Exception {
         tableShouldExists(tableName);
-        return tables.get(tableName).fullScanSearch(relations, columnOrder);
+        return tables.get(tableName).fullScanSearch(relations, functions, columnOrder);
     }
 }

@@ -24,7 +24,6 @@ import com.stratio.crossdata.common.data.NodeName;
 public class NodeMetadata implements IMetadata {
 
     private final NodeName name;
-
     private Status status;
 
     public NodeMetadata(NodeName name, Status status) {

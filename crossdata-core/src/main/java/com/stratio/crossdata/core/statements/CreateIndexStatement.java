@@ -23,14 +23,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code CREATE INDEX} statement of the CROSSDATA language. This class recognizes
@@ -98,15 +98,14 @@ public class CreateIndexStatement extends IndexStatement {
         createIfNotExists = true;
     }
 
-
     /**
      * Set the name of the index from a column name as both have the same attributes.
      *
      * @param columnName The column name.
      */
     public void setName(ColumnName columnName) {
-        tableName=columnName.getTableName();
-        if (tableName!=null) {
+        tableName = columnName.getTableName();
+        if (tableName != null) {
             catalog = columnName.getTableName().getCatalogName();
         }
         this.name = new IndexName(columnName.getTableName(), columnName.getName());
@@ -163,8 +162,8 @@ public class CreateIndexStatement extends IndexStatement {
      * @param column The name of the column.
      */
     public void addColumn(ColumnName column) {
-        tableName=column.getTableName();
-        catalog=column.getTableName().getCatalogName();
+        tableName = column.getTableName();
+        catalog = column.getTableName().getCatalogName();
         targetColumns.add(column);
     }
 
@@ -180,7 +179,6 @@ public class CreateIndexStatement extends IndexStatement {
     public Map<Selector, Selector> getOptions() {
         return options;
     }
-
 
     public boolean isCreateIfNotExists() {
         return createIfNotExists;
@@ -217,7 +215,7 @@ public class CreateIndexStatement extends IndexStatement {
         return result;
     }
 
-    public void normalizeIndexName(){
+    public void normalizeIndexName() {
         this.name = new IndexName(tableName, this.name.getName());
     }
 
@@ -247,12 +245,13 @@ public class CreateIndexStatement extends IndexStatement {
     }
 
     public IndexName getName() {
-        return new IndexName(catalog.getName(),tableName.getName(),getIndexName());
+        return new IndexName(catalog.getName(), tableName.getName(), getIndexName());
     }
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_NOT_EXIST_INDEX).add(ValidationTypes.MUST_EXIST_TABLE)
+        return new ValidationRequirements().add(ValidationTypes.MUST_NOT_EXIST_INDEX)
+                .add(ValidationTypes.MUST_EXIST_TABLE)
                 .add(ValidationTypes.MUST_EXIST_COLUMN);
     }
 }

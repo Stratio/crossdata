@@ -100,7 +100,7 @@ public class InsertIntoStatement extends StorageStatement {
      * @param cellValues      List of
      *                        {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
      * @param ifNotExists     Boolean that indicates if IF NOT EXISTS clause is included in the query.
-     * @param conditions         Query options.
+     * @param conditions      Query options.
      * @param typeValues      Integer that indicates if values come from insert or select.
      */
     public InsertIntoStatement(TableName tableName, List<ColumnName> ids,
@@ -112,12 +112,12 @@ public class InsertIntoStatement extends StorageStatement {
         this.selectStatement = selectStatement;
         this.cellValues = cellValues;
         this.ifNotExists = ifNotExists;
-        if(conditions != null){
+        if (conditions != null) {
             this.conditions = conditions;
         } else {
             this.conditions = new ArrayList<>();
         }
-        if(options != null){
+        if (options != null) {
             this.options = StringUtils.convertJsonToOptions(options);
         } else {
             this.options = new HashMap<>();
@@ -155,8 +155,9 @@ public class InsertIntoStatement extends StorageStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG).add(ValidationTypes.MUST_EXIST_TABLE).add
-                (ValidationTypes.VALIDATE_TYPES);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_TABLE).add
+                        (ValidationTypes.VALIDATE_TYPES);
     }
 
     public TableName getTableName() {
@@ -167,7 +168,7 @@ public class InsertIntoStatement extends StorageStatement {
         return ifNotExists;
     }
 
-    public CatalogName getCatalogName(){
+    public CatalogName getCatalogName() {
         return tableName.getCatalogName();
     }
 

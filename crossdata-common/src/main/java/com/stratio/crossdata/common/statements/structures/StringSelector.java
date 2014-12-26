@@ -74,9 +74,6 @@ public class StringSelector extends Selector {
 
         StringSelector that = (StringSelector) o;
 
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
         if (!value.equals(that.value)) {
             return false;
         }

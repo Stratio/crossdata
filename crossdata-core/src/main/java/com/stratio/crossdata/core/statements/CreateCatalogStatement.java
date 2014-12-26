@@ -20,11 +20,11 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.Map;
 
-import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code CREATE CATALOG} statement from the CROSSDATA language. CATALOG
@@ -74,7 +74,7 @@ public class CreateCatalogStatement extends MetadataStatement {
 
     public ValidationRequirements getValidationRequirements() {
         ValidationRequirements validationRequirements = new ValidationRequirements();
-        if(!ifNotExists){
+        if (!ifNotExists) {
             validationRequirements = validationRequirements.add(ValidationTypes.MUST_NOT_EXIST_CATALOG);
         }
         return validationRequirements;

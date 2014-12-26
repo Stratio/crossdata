@@ -98,8 +98,8 @@ public class InMemoryConnector implements IConnector{
         //This method usually closes the session with the given cluster and removes any relevant data.
         if(clusters.get(name) != null) {
             clusters.remove(name);
-        }else{
-            throw new ConnectionException("Cluster " + name + "does not exists");
+        } else {
+            throw new ConnectionException("Cluster " + name + "does not exist");
         }
     }
 

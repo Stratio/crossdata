@@ -93,7 +93,6 @@ public class ChannelService implements Closeable {
         tcpping.setNumInitialMembers(minInitialMembers);
         tcpping.setTimeout(timeout);
 
-
         NAKACK nakack = new NAKACK();
         nakack.setUseMcastXmit(false);
         nakack.setDiscardDeliveredMsgs(false);

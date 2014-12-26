@@ -34,6 +34,7 @@ public class GridException extends RuntimeException {
 
     /**
      * Constructor.
+     *
      * @param e Exception.
      */
     public GridException(Exception e) {
@@ -42,6 +43,7 @@ public class GridException extends RuntimeException {
 
     /**
      * Constructor.
+     *
      * @param message String.
      */
     public GridException(String message) {
@@ -50,8 +52,9 @@ public class GridException extends RuntimeException {
 
     /**
      * Constructor.
+     *
      * @param message String.
-     * @param cause Exception.
+     * @param cause   Exception.
      */
     public GridException(String message, Throwable cause) {
         super(message, cause);
@@ -59,6 +62,7 @@ public class GridException extends RuntimeException {
 
     /**
      * Constructor.
+     *
      * @param cause Exception.
      */
     public GridException(Throwable cause) {

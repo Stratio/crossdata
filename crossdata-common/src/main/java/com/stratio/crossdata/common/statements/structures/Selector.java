@@ -23,6 +23,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 
 /**
@@ -84,6 +85,10 @@ public abstract class Selector implements Serializable {
 
     public String getStringValue(){
         return toString();
+    }
+
+    public ColumnName getColumnName(){
+        return null;
     }
 
     @Override

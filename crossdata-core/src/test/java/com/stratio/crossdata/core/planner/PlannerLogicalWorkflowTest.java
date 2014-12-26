@@ -48,10 +48,10 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         String inputText = "SELECT demo.t1.a FROM demo.t1;";
         String[] expectedColumns = { "demo.t1.a" };
 
-        String[] columnsT1 = { "a"};
-        ColumnType [] columnTypes1 = {ColumnType.INT};
-        String [] partitionKeys1 = {"a"};
-        String [] clusteringKeys1 = {};
+        String[] columnsT1 = { "a" };
+        ColumnType[] columnTypes1 = { ColumnType.INT };
+        String[] partitionKeys1 = { "a" };
+        String[] clusteringKeys1 = { };
         TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
@@ -71,10 +71,10 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t1.c FROM demo.t1;";
         String[] expectedColumns = { "demo.t1.a", "demo.t1.b", "demo.t1.c" };
 
-        String[] columnsT1 = { "a", "b", "c"};
-        ColumnType [] columnTypes1 = {ColumnType.INT, ColumnType.INT, ColumnType.INT};
-        String [] partitionKeys1 = {"a"};
-        String [] clusteringKeys1 = {};
+        String[] columnsT1 = { "a", "b", "c" };
+        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.INT };
+        String[] partitionKeys1 = { "a" };
+        String[] clusteringKeys1 = { };
         TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
@@ -93,10 +93,10 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         String inputText = "SELECT demo.t1.a AS a, demo.t1.b AS b, demo.t1.c AS c FROM demo.t1;";
         String[] expectedColumns = { "demo.t1.a", "demo.t1.b", "demo.t1.c" };
 
-        String[] columnsT1 = { "a", "b", "c"};
-        ColumnType [] columnTypes1 = {ColumnType.INT, ColumnType.INT, ColumnType.INT};
-        String [] partitionKeys1 = {"a"};
-        String [] clusteringKeys1 = {};
+        String[] columnsT1 = { "a", "b", "c" };
+        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.INT };
+        String[] partitionKeys1 = { "a" };
+        String[] clusteringKeys1 = { };
         TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
@@ -117,16 +117,16 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
                 " INNER JOIN demo.t2 ON demo.t1.aa = demo.t2.aa;";
 
         String[] columnsT1 = { "a", "b", "aa" };
-        ColumnType [] columnTypes1 = {ColumnType.INT, ColumnType.INT, ColumnType.TEXT};
-        String [] partitionKeys1 = {"a"};
-        String [] clusteringKeys1 = {};
+        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.TEXT };
+        String[] partitionKeys1 = { "a" };
+        String[] clusteringKeys1 = { };
         TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
         String[] columnsT2 = { "c", "d", "aa" };
-        ColumnType [] columnTypes2 = {ColumnType.INT, ColumnType.INT, ColumnType.TEXT};
-        String [] partitionKeys2 = {"c"};
-        String [] clusteringKeys2 = {};
+        ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.INT, ColumnType.TEXT };
+        String[] partitionKeys2 = { "c" };
+        String[] clusteringKeys2 = { };
         TableMetadata t2 = defineTable(new ClusterName("c"), "demo", "t2", columnsT2, columnTypes2,
                 partitionKeys2, clusteringKeys2);
 
@@ -154,16 +154,16 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
                 " ON demo.t1.aa = demo.t2.aa WHERE demo.t1.b > 10 AND demo.t2.d < 10;";
 
         String[] columnsT1 = { "a", "b", "aa" };
-        ColumnType [] columnTypes1 = {ColumnType.INT, ColumnType.INT, ColumnType.TEXT};
-        String [] partitionKeys1 = {"a"};
-        String [] clusteringKeys1 = {};
+        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.TEXT };
+        String[] partitionKeys1 = { "a" };
+        String[] clusteringKeys1 = { };
         TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
         String[] columnsT2 = { "c", "d", "aa" };
-        ColumnType [] columnTypes2 = {ColumnType.INT, ColumnType.INT, ColumnType.TEXT};
-        String [] partitionKeys2 = {"c"};
-        String [] clusteringKeys2 = {};
+        ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.INT, ColumnType.TEXT };
+        String[] partitionKeys2 = { "c" };
+        String[] clusteringKeys2 = { };
         TableMetadata t2 = defineTable(new ClusterName("c"), "demo", "t2", columnsT2, columnTypes2,
                 partitionKeys2, clusteringKeys2);
 
@@ -191,9 +191,9 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
     public void selectBasicWhere() {
         String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t1.c FROM demo.t1 WHERE demo.t1.a = 3;";
         String[] columns1 = { "a", "b", "c" };
-        ColumnType [] columnTypes1 = {ColumnType.INT, ColumnType.INT, ColumnType.INT};
-        String [] partitionKeys1 = {"a"};
-        String [] clusteringKeys1 = {};
+        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.INT };
+        String[] partitionKeys1 = { "a" };
+        String[] clusteringKeys1 = { };
         TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columns1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
@@ -215,9 +215,9 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
                 " WITH WINDOW 5 SECONDS WHERE demo.t1.a = 3;";
 
         String[] columns1 = { "a", "b", "c" };
-        ColumnType [] columnTypes1 = {ColumnType.INT, ColumnType.INT, ColumnType.INT};
-        String [] partitionKeys1 = {"a"};
-        String [] clusteringKeys1 = {};
+        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.INT };
+        String[] partitionKeys1 = { "a" };
+        String[] clusteringKeys1 = { };
         TableMetadata t1 = defineTable(new ClusterName("c"), "demo", "t1", columns1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 

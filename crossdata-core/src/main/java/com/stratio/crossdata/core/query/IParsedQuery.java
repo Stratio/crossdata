@@ -18,8 +18,8 @@
 
 package com.stratio.crossdata.core.query;
 
-import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.core.statements.CrossdataStatement;
 
 /**
@@ -29,30 +29,35 @@ public interface IParsedQuery {
 
     /**
      * Get the query to parse.
+     *
      * @return String
      */
     String getQuery();
 
     /**
      * Get the queryId of a query.
+     *
      * @return Query identification.
      */
     String getQueryId();
 
     /**
      * Get the status of a query.
+     *
      * @return String
      */
     QueryStatus getStatus();
 
     /**
      * Get the Catalog of a query-
+     *
      * @return com.stratio.crossdata.common.data.CatalogName
      */
     CatalogName getDefaultCatalog();
 
     /**
      * Get the statement of a query.
+     *
      * @return com.stratio.crossdata.core.statements.CrossdataStatement
      */
     CrossdataStatement getStatement();

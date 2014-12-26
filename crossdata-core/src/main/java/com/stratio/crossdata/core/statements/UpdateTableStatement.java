@@ -70,24 +70,24 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
             String properties) throws ParsingException {
         this.command = false;
 
-        if(tableName.getName().isEmpty()){
+        if (tableName.getName().isEmpty()) {
             throw new ParsingException("Table name cannot be empty");
         }
         this.tableName = tableName;
 
-        if(assignations == null){
+        if (assignations == null) {
             this.assignations = new ArrayList<>();
         } else {
             this.assignations = assignations;
         }
 
-        if(whereClauses == null){
+        if (whereClauses == null) {
             this.whereClauses = new ArrayList<>();
         } else {
             this.whereClauses = whereClauses;
         }
 
-        if(properties == null){
+        if (properties == null) {
             this.properties = new LinkedHashMap<>();
         } else {
             this.properties = StringUtils.convertJsonToOptions(properties);
@@ -124,7 +124,8 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG).add(ValidationTypes.MUST_EXIST_TABLE)
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_TABLE)
                 .add(ValidationTypes.MUST_EXIST_COLUMN);
     }
 

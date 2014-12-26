@@ -21,11 +21,11 @@ package com.stratio.crossdata.core.validator.statements;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
-import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;

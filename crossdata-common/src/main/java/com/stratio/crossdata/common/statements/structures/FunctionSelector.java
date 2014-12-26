@@ -18,47 +18,37 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.metadata.ColumnType;
 
 /**
- * Selector composed by a function and the list of columns required by the function.
+ * Selector composed by a includes and the list of columns required by the includes.
  */
 public class FunctionSelector extends Selector {
 
     /**
-     * Name of the function.
+     * Name of the includes.
      */
     private final String functionName;
 
     /**
      * List of columns.
      */
-    private List<Selector> functionColumns;
-
-    private ColumnType returningType;
+    private LinkedList<Selector> functionColumns;
 
     /**
      * Class constructor.
      *
-     * @param functionName Name of the function.
+     * @param functionName Name of the includes.
      */
-    public FunctionSelector(String functionName, List<Selector> functionColumns) {
+    public FunctionSelector(String functionName, LinkedList<Selector> functionColumns) {
         this.functionName = functionName;
         this.functionColumns = functionColumns;
-    }
-
-    public ColumnType getReturningType() {
-        return returningType;
-    }
-
-    public void setReturningType(ColumnType returningType) {
-        this.returningType = returningType;
     }
 
     public String getFunctionName() {
@@ -66,23 +56,7 @@ public class FunctionSelector extends Selector {
     }
 
     /**
-     * This function determines whether the target function could be used with a group by clause.
-     * Allowed functions are: SUM, MAX, MIN, AVG, COUNT.
-     *
-     * @return Whether it could be used or not.
-     */
-    public boolean isGroupByFunction() {
-        String[] funcs = { "sum", "max", "min", "avg", "count" };
-        for (String funcname : funcs) {
-            if (funcname.equalsIgnoreCase(functionName)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Get the list of columns required by the function.
+     * Get the list of columns required by the includes.
      *
      * @return A list of {@link com.stratio.crossdata.common.statements.structures.Selector}.
      */
@@ -96,12 +70,16 @@ public class FunctionSelector extends Selector {
     }
 
     @Override
-    public Set<TableName> getSelectorTables() {
-        Set<TableName> result = new HashSet<>();
-        for (Selector s : this.functionColumns) {
+    public LinkedHashSet<TableName> getSelectorTables() {
+        LinkedHashSet<TableName> result = new LinkedHashSet<>();
+        for (Selector s: this.functionColumns) {
             result.addAll(s.getSelectorTables());
         }
         return result;
+    }
+
+    @Override public ColumnName getColumnName() {
+        return new ColumnName(functionColumns.get(0).getColumnName().getTableName(), functionName);
     }
 
     @Override
@@ -133,9 +111,6 @@ public class FunctionSelector extends Selector {
 
         FunctionSelector that = (FunctionSelector) o;
 
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
         if (!functionColumns.equals(that.functionColumns)) {
             return false;
         }

@@ -21,12 +21,12 @@ package com.stratio.crossdata.core.statements;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 public class AttachConnectorStatement extends MetadataStatement {
 
@@ -80,6 +80,7 @@ public class AttachConnectorStatement extends MetadataStatement {
 
     @Override
     public String toString() {
-        return "ATTACH CONNECTOR " + connectorName + " TO " + clusterName + " WITH OPTIONS " + getStringFromOptions(options);
+        return "ATTACH CONNECTOR " + connectorName + " TO " + clusterName + " WITH OPTIONS " + getStringFromOptions(
+                options);
     }
 }

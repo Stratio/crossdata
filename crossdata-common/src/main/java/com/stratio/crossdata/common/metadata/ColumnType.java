@@ -18,6 +18,10 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Types of columns supported by CROSSDATA with their equivalence in ODBC data types. Notice that a
  * NATIVE type has been added to map those types that are not generic and database dependant.
@@ -142,5 +146,86 @@ public enum ColumnType {
     public ColumnType getDBInnerValueType() {
         return dbInnerValueType;
     }
+
+    public Class getJavaType(){
+        Class clazz = null;
+        switch (this){
+        case BIGINT:
+            clazz = Long.class;
+            break;
+        case BOOLEAN:
+            clazz = Boolean.class;
+            break;
+        case DOUBLE:
+            clazz = Double.class;
+            break;
+        case FLOAT:
+            clazz = Float.class;
+            break;
+        case INT:
+            clazz = Integer.class;
+            break;
+        case TEXT:
+            clazz = String.class;
+            break;
+        case VARCHAR:
+            clazz = String.class;
+            break;
+        case NATIVE:
+            clazz = null;
+            break;
+        case SET:
+            clazz = Set.class;
+            break;
+        case LIST:
+            clazz = List.class;
+            break;
+        case MAP:
+            clazz = Map.class;
+            break;
+        }
+        return clazz;
+    }
+
+    public String getCrossdataType(){
+        String clazz = null;
+        switch (this){
+        case BIGINT:
+            clazz = "BigInt";
+            break;
+        case BOOLEAN:
+            clazz = "Boolean";
+            break;
+        case DOUBLE:
+            clazz = "Double";
+            break;
+        case FLOAT:
+            clazz = "Float";
+            break;
+        case INT:
+            clazz = "Int";
+            break;
+        case TEXT:
+            clazz = "Text";
+            break;
+        case VARCHAR:
+            clazz = "Varchar";
+            break;
+        case NATIVE:
+            clazz = "Native";
+            break;
+        case SET:
+            clazz = "Set";
+            break;
+        case LIST:
+            clazz = "List";
+            break;
+        case MAP:
+            clazz = "Map";
+            break;
+        }
+        return clazz;
+    }
+
 
 }

@@ -28,11 +28,11 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 /**
  * Planner wrapper to test protected methods
  */
-public class PlannerWrapper extends Planner{
+public class PlannerWrapper extends Planner {
 
     @Override
     public ExecutionPath defineExecutionPath(LogicalStep initial,
-            List<ConnectorMetadata> availableConnectors) throws PlanningException{
+            List<ConnectorMetadata> availableConnectors) throws PlanningException {
         return super.defineExecutionPath(initial, availableConnectors);
     }
 }

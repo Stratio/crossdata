@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
@@ -154,4 +154,27 @@ public final class StringUtils {
         return null;
     }
 
+    public static ColumnType convertJavaTypeToXdType(String javaType) {
+        ColumnType ct = ColumnType.NATIVE;
+        if(javaType.equalsIgnoreCase("Long")){
+            ct = ColumnType.BIGINT;
+        } else if(javaType.equalsIgnoreCase("Boolean")){
+            ct = ColumnType.BOOLEAN;
+        } else if(javaType.equalsIgnoreCase("Double")){
+            ct = ColumnType.DOUBLE;
+        } else if(javaType.equalsIgnoreCase("Float")){
+            ct = ColumnType.DOUBLE;
+        } else if(javaType.equalsIgnoreCase("Integer")){
+            ct = ColumnType.INT;
+        } else if(javaType.equalsIgnoreCase("String")){
+            ct = ColumnType.TEXT;
+        } else if(javaType.equalsIgnoreCase("Set")){
+            ct = ColumnType.SET;
+        } else if(javaType.equalsIgnoreCase("List")){
+            ct = ColumnType.LIST;
+        } else if(javaType.equalsIgnoreCase("MAP")){
+            ct = ColumnType.MAP;
+        }
+        return ct;
+    }
 }
