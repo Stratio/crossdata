@@ -299,6 +299,10 @@ T_VARCHAR: V A R C H A R;
 T_TEXT: T E X T;
 T_BIGINT: B I G I N T;
 
+T_IMPORT: I M P O R T;
+T_DISCOVER: D I S C O V E R;
+T_METADATA: M E T A D A T A;
+
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
 
@@ -652,10 +656,37 @@ dropTableStatement returns [DropTableStatement drtbst]
 ;
 
 truncateStatement returns [TruncateStatement trst]:
-	T_TRUNCATE
-        tablename=getTableName {
-            $trst = new TruncateStatement(tablename);
+	T_TRUNCATE tablename=getTableName
+    {
+        $trst = new TruncateStatement(tablename);
 	}
+;
+
+// ========================================================
+// IMPORTS
+// ========================================================
+
+// DISCOVER METADATA ON CLUSTER cluster_name;
+// IMPORT CATALOGS FROM CLUSTER cluster_name;
+// IMPORT CATALOG catalog_name FROM CLUSTER cluster_name;
+// IMPORT TABLE catalog_name.table_name FROM CLUSTER cluster_name;
+importMetadataStatement returns [ImportMetadataStatement imst]
+    @init{
+        boolean discover = false;
+        CatalogName catalog = null;
+    }:
+    (T_DISCOVER { discover = true; } T_METADATA T_ON
+    | T_IMPORT
+        ( T_CATALOGS
+        | T_CATALOG catalogName=T_IDENT { catalog = new CatalogName($catalogName.text); }
+        | T_TABLE table=getTableName)
+      T_FROM
+    )
+    T_CLUSTER clusterName=T_IDENT
+    {
+        //ImportMetadataStatement(clusterName, catalogName, tableName, discover);
+        $imst = new ImportMetadataStatement(new ClusterName($clusterName.text), catalog, table, discover);
+    }
 ;
 
 crossdataStatement returns [CrossdataStatement st]:
@@ -679,7 +710,8 @@ crossdataStatement returns [CrossdataStatement st]:
     | st_atcn = attachConnectorStatement { $st = st_atcn;}
     | st_decn = detachConnectorStatement { $st = st_decn;}
     | st_cixs = createIndexStatement { $st = st_cixs; }
-    | st_dixs = dropIndexStatement { $st = st_dixs; })
+    | st_dixs = dropIndexStatement { $st = st_dixs; }
+    | st_imst = importMetadataStatement { $st = st_imst; })
 ;
 
 query returns [CrossdataStatement st]:
@@ -915,7 +947,6 @@ getAllowedReservedWord returns [String str]:
     | T_HOURS
     | T_DAY
     | T_DAYS
-    | T_COUNT
     | T_PLAN
     | T_TYPE
     | T_LIMIT

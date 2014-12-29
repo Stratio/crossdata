@@ -344,7 +344,7 @@ public class Shell {
                         showHelp(sb.toString());
                     } else {
                         try {
-                            Result result = crossdataDriver.executeRawQuery(toExecute, resultHandler);
+                            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler);
                             LOG.info(ConsoleUtils.stringResult(result, this));
                         } catch (Exception ex) {
                             LOG.error("Execution failed: ", ex);
@@ -406,7 +406,7 @@ public class Shell {
                 if (query.length() > 0 && !query.startsWith("#")) {
                     LOG.info("Executing: "+query);
                     if(useAsync){
-                        result = crossdataDriver.executeRawQuery(query, resultHandler);
+                        result = crossdataDriver.executeAsyncRawQuery(query, resultHandler);
                         Thread.sleep(1000);
                     } else {
                         result = crossdataDriver.executeRawQuery(query);

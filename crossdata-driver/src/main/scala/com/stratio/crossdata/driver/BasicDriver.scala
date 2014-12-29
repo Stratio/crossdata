@@ -216,10 +216,10 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   def executeRawQuery(command: String): Result = {
-    executeRawQuery(command, null)
+    executeAsyncRawQuery(command, null)
   }
 
-  def executeRawQuery(command: String, callback: IDriverResultHandler): Result = {
+  def executeAsyncRawQuery(command: String, callback: IDriverResultHandler): Result = {
     var result:Result = null.asInstanceOf[Result]
     if(command.toLowerCase.startsWith("use ")){
       result = updateCatalog(command)
@@ -276,10 +276,6 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       result = dropManifest(CrossdataManifest.TYPE_CONNECTOR, command.toLowerCase.replace("drop connector ", "").replace(";", "").trim)
     } else if (command.toLowerCase.startsWith(EXPLAIN_PLAN_TOKEN)) {
       result = explainPlan(command)
-    } else if(command.toLowerCase.startsWith("discover metadata on cluster ")){
-      result = discoverMetadata(command.toLowerCase.replace("discover metadata on cluster ", "").replace(";", ""));
-    } else if(command.toLowerCase.startsWith("import ")){
-      result = importMetadata(command.toLowerCase.replace("import ", "").replace(";", ""));
     }
     return result
   }
@@ -288,98 +284,28 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
-    val queryId = UUID.randomUUID().toString
-    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
-    params.add(new ClusterName(clusterName))
-    val result = retryPolitics.askRetry(
-      proxyActor,
-      new Command(queryId, APICommand.DISCOVER_METADATA, params),
-      30 second,
-      retry = 2)
-    if(result.isInstanceOf[CommandResult]){
-      result.asInstanceOf[CommandResult]
-    } else {
-      result.asInstanceOf[ErrorResult]
-    }
-  }
-
-  def importMetadata(sentence: String): Result = {
-    var result: Result = null
-    if(sentence.startsWith("catalogs from cluster ")){
-      result = importCatalogs(sentence.replace("catalogs from cluster ", ""));
-    } else if (sentence.startsWith("catalog ") && sentence.contains(" from cluster ")){
-      val catalogName: String = sentence.substring(sentence.indexOf("catalog ")+8, sentence.indexOf(" from cluster"))
-      val clusterName: String = sentence.substring(sentence.indexOf(" from cluster ")+14)
-      result = importCatalog(clusterName, catalogName);
-    } else if (sentence.startsWith("table ") && sentence.contains(" from cluster ")){
-      val tableName: String = sentence.substring(sentence.indexOf("table ")+6, sentence.indexOf(" from cluster"))
-      val clusterName: String = sentence.substring(sentence.indexOf(" from cluster ")+14)
-      result = importTable(clusterName, tableName);
-    }
-    result
+    executeQuery("DISCOVER METADATA ON CLUSTER " + clusterName + ";");
   }
 
   def importCatalogs(clusterName: String): Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
-    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
-    params.add(new ClusterName(clusterName))
-    val queryId = UUID.randomUUID().toString
-    val result = retryPolitics.askRetry(
-      proxyActor,
-      new Command(queryId, APICommand.IMPORT_CATALOGS, params),
-      30 second,
-      retry = 2)
-    if(result.isInstanceOf[MetadataResult]){
-      result.asInstanceOf[MetadataResult]
-    } else {
-      result.asInstanceOf[ErrorResult]
-    }
+    executeQuery("IMPORT CATALOGS FROM CLUSTER " + clusterName + ";")
   }
 
   def importCatalog(clusterName: String, catalogName: String): Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
-    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
-    params.add(new ClusterName(clusterName))
-    params.add(new CatalogName(catalogName))
-    val queryId = UUID.randomUUID().toString
-    val result = retryPolitics.askRetry(
-      proxyActor,
-      new Command(queryId, APICommand.IMPORT_CATALOG, params),
-      30 second,
-      retry = 2)
-    if(result.isInstanceOf[MetadataResult]){
-      result.asInstanceOf[MetadataResult]
-    } else {
-      result.asInstanceOf[ErrorResult]
-    }
+    executeQuery("IMPORT CATALOG " + catalogName + " FROM CLUSTER " + clusterName + ";")
   }
 
   def importTable(clusterName: String, tableName: String): Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
-    val catalogAndTable: Array[String] = tableName.split("\\.")
-    if(catalogAndTable.length != 2){
-      throw new IllegalArgumentException("Catalog and Table have to be specified")
-    }
-    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
-    params.add(new ClusterName(clusterName))
-    params.add(new TableName(catalogAndTable(0), catalogAndTable(1)))
-    val queryId = UUID.randomUUID().toString
-    val result = retryPolitics.askRetry(
-      proxyActor,
-      new Command(queryId, APICommand.IMPORT_TABLE, params),
-      30 second,
-      retry = 2)
-    if(result.isInstanceOf[MetadataResult]){
-      result.asInstanceOf[MetadataResult]
-    } else {
-      result.asInstanceOf[ErrorResult]
-    }
+    executeQuery("IMPORT TABLE " + tableName + " FROM CLUSTER " + clusterName + ";")
   }
 
   /**
