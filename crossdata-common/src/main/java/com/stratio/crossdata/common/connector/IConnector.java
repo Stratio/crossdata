@@ -24,6 +24,7 @@ import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.communication.MetadataStruct;
 
 /**
  * Common interface for CROSSDATA connectors. A connector provides implementations for storage and query
@@ -108,4 +109,11 @@ public interface IConnector {
      * @throws UnsupportedException If the connector does not provide this functionality.
      */
     IMetadataEngine getMetadataEngine() throws UnsupportedException;
+
+    /**
+     * Updates the connector's metadata.
+     *
+     * @return true if everything is correct; false otherwise
+     */
+    boolean UpdateMetadata(MetadataStruct metadata);
 }

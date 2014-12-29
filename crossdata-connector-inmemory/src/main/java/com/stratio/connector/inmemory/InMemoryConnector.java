@@ -36,6 +36,7 @@ import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.security.ICredentials;
+import com.stratio.crossdata.communication.MetadataStruct;
 import com.stratio.crossdata.connectors.ConnectorApp;
 
 /**
@@ -126,6 +127,11 @@ public class InMemoryConnector implements IConnector{
     @Override
     public IMetadataEngine getMetadataEngine() throws UnsupportedException {
         return new InMemoryMetadataEngine(this);
+    }
+
+    @Override public boolean UpdateMetadata(MetadataStruct metadata) {
+        //TODO: implement proper method
+        return true;
     }
 
     /**

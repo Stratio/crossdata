@@ -23,6 +23,7 @@ import com.stratio.crossdata.common.connector.{IStorageEngine, ConnectorClusterC
 IQueryEngine, IMetadataEngine}
 import com.stratio.crossdata.common.data.ClusterName
 import com.stratio.crossdata.common.security.ICredentials
+import com.stratio.crossdata.communication.MetadataStruct
 
 class DummyIConnector extends IConnector{
   override def getConnectorName: String = "myDummyConnector"
@@ -38,4 +39,5 @@ class DummyIConnector extends IConnector{
   override def connect(credentials: ICredentials, config: ConnectorClusterConfig): Unit = {}
   val c:Option[IStorageEngine]=None
   override def getStorageEngine: IStorageEngine = c.get
+  override def UpdateMetadata(metadata: MetadataStruct): Boolean = true
 }
