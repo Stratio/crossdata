@@ -84,9 +84,24 @@ public final class MetadataResult extends Result {
     public static final int OPERATION_ALTER_TABLE = 11;
 
     /**
+     * Operation identifier to PROVIDE METADATA.
+     */
+    public static final int OPERATION_PROVIDE_METADATA = 12;
+
+    /**
+     * Operation identifier to PROVIDE TABLE METADATA.
+     */
+    public static final int OPERATION_PROVIDE_TABLE_METADATA = 13;
+
+    /**
+     * Operation identifier to PROVIDE CATALOG METADATA.
+     */
+    public static final int OPERATION_PROVIDE_CATALOG_METADATA = 14;
+
+    /**
      * Unknown Operation.
      */
-    public static final int OPERATION_UNKNOWN = 12;
+    public static final int OPERATION_UNKNOWN = 15;
 
 
     /**
@@ -147,7 +162,7 @@ public final class MetadataResult extends Result {
     }
 
     /**
-     * Set the catalog list.
+     *java.lang.Object Set the catalog list.
      *
      * @param catalogList The list.
      */
@@ -215,4 +230,7 @@ public final class MetadataResult extends Result {
         }
 
     }
+
+
+
 }

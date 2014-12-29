@@ -223,10 +223,13 @@ ActorLogging with IResultHandler{
       val opclass = metadataOp.getClass().toString().split('.')
       val eng = connector.getMetadataEngine()
 
-      val abc = methodOpc(opclass,  metadataOp, eng)
+      val abc = methodOpMetadata(opclass,  metadataOp, eng)
       qId = abc._1
       metadataOperation = abc._2
       result = MetadataResult.createSuccessMetadataResult(metadataOperation)
+      if(abc._3!=null){
+        result.setMetadataData(abc._3)
+      }
       //TODO: create result.set_tercer(_3)_parámetro
     } catch {
       case ex: Exception => {
@@ -283,75 +286,78 @@ ActorLogging with IResultHandler{
     }
   }
 
+
   //TODO: add object in result tupple
   //
-  private def methodOpc(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine): (String, Int) = {
-
+  private def methodOpMetadata(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine):
+  (String,  Int, Object) = {
     opclass(opclass.length - 1) match {
       case "CreateTable" => {
         logger.debug("creating table from  " + self.path)
         eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
           metadataOp.asInstanceOf[CreateTable].tableMetadata)
-        (metadataOp.asInstanceOf[CreateTable].queryId, MetadataResult.OPERATION_CREATE_TABLE)
+        (metadataOp.asInstanceOf[CreateTable].queryId, MetadataResult.OPERATION_CREATE_TABLE,null)
       }
       case "CreateCatalog" => {
         eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-        (metadataOp.asInstanceOf[CreateCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG)
+        (metadataOp.asInstanceOf[CreateCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG,null)
       }
       case "AlterCatalog" => {
         eng.alterCatalog(metadataOp.asInstanceOf[AlterCatalog].targetCluster,
           metadataOp.asInstanceOf[AlterCatalog].catalogMetadata.getName,
           metadataOp.asInstanceOf[AlterCatalog].catalogMetadata.getOptions)
-        (metadataOp.asInstanceOf[AlterCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG)
+        (metadataOp.asInstanceOf[AlterCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG,null)
       }
       case "CreateIndex" => {
         eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
           metadataOp.asInstanceOf[CreateIndex].indexMetadata)
-        (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX)
+        (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX,null)
       }
       case "DropCatalog" => {
         eng.dropCatalog(metadataOp.asInstanceOf[DropCatalog].targetCluster,
           metadataOp.asInstanceOf[DropCatalog].catalogName)
-        (metadataOp.asInstanceOf[DropCatalog].queryId, MetadataResult.OPERATION_DROP_CATALOG)
+        (metadataOp.asInstanceOf[DropCatalog].queryId, MetadataResult.OPERATION_DROP_CATALOG,null)
       }
       case "DropIndex" => {
         eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
-        (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX)
+        (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX,null)
       }
       case "DropTable" => {
         eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
-        (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE)
+        (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE,null)
       }
       case "AlterTable" => {
         eng.alterTable(metadataOp.asInstanceOf[AlterTable].targetCluster, metadataOp.asInstanceOf[AlterTable]
           .tableName, metadataOp.asInstanceOf[AlterTable].alterOptions)
-        (metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_ALTER_TABLE)
+        (metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_ALTER_TABLE,null)
       }
       case "CreateTableAndCatalog" => {
         eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
         eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
-        (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE)
+        (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE,null)
       }
-        /*
       case "ProvideMetadata" => {
-        //List<CatalogMetadata> provideMetadata(ClusterName clusterName) throws ConnectorException;
-        //TODO: create OPERATION_PROVIDE_METADATA
-        //(metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_PROVIDE_METADATA)
+        val listmetadata=eng.provideMetadata(metadataOp.asInstanceOf[ProvideMetadata].targetCluster)
+        (metadataOp.asInstanceOf[ProvideMetadata].queryId, MetadataResult.OPERATION_PROVIDE_METADATA,listmetadata)
 
       }
       case "ProvideCatalogMetadata" => {
-        //CatalogMetadata provideCatalogMetadata(ClusterName clusterName, CatalogName catalogName) throws  ConnectorException;
-        //TODO: create OPERATION_PROVIDE_CATALOG_METADATA
+        val listmetadata=eng.provideCatalogMetadata(metadataOp.asInstanceOf[ProvideCatalogMetadata].targetCluster,
+          metadataOp.asInstanceOf[ProvideCatalogMetadata].catalogName)
+        (metadataOp.asInstanceOf[ProvideCatalogMetadata].queryId, MetadataResult.OPERATION_PROVIDE_CATALOG_METADATA,
+          listmetadata)
       }
       case "ProvideTableMetadata" => {
-        //TableMetadata provideTableMetadata(ClusterName clusterName, TableName tableName) throws ConnectorException;
-        //TODO: create OPERATION_PROVIDE_TABLE_METADATA
+        val listmetadata=eng.provideTableMetadata(metadataOp.asInstanceOf[ProvideTableMetadata].targetCluster,
+          metadataOp.asInstanceOf[ProvideTableMetadata].tableName)
+        (metadataOp.asInstanceOf[ProvideTableMetadata].queryId, MetadataResult.OPERATION_PROVIDE_TABLE_METADATA,
+          listmetadata)
       }
-      */
     }
   }
+
 
 }
