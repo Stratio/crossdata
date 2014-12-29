@@ -216,10 +216,10 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   def executeRawQuery(command: String): Result = {
-    executeRawQuery(command, null)
+    executeAsyncRawQuery(command, null)
   }
 
-  def executeRawQuery(command: String, callback: IDriverResultHandler): Result = {
+  def executeAsyncRawQuery(command: String, callback: IDriverResultHandler): Result = {
     var result:Result = null.asInstanceOf[Result]
     if(command.toLowerCase.startsWith("use ")){
       result = updateCatalog(command)
@@ -278,6 +278,34 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       result = explainPlan(command)
     }
     return result
+  }
+
+  def discoverMetadata(clusterName: String): Result = {
+    if (userId.isEmpty) {
+      throw new ConnectionException("You must connect to cluster")
+    }
+    executeQuery("DISCOVER METADATA ON CLUSTER " + clusterName + ";");
+  }
+
+  def importCatalogs(clusterName: String): Result = {
+    if (userId.isEmpty) {
+      throw new ConnectionException("You must connect to cluster")
+    }
+    executeQuery("IMPORT CATALOGS FROM CLUSTER " + clusterName + ";")
+  }
+
+  def importCatalog(clusterName: String, catalogName: String): Result = {
+    if (userId.isEmpty) {
+      throw new ConnectionException("You must connect to cluster")
+    }
+    executeQuery("IMPORT CATALOG " + catalogName + " FROM CLUSTER " + clusterName + ";")
+  }
+
+  def importTable(clusterName: String, tableName: String): Result = {
+    if (userId.isEmpty) {
+      throw new ConnectionException("You must connect to cluster")
+    }
+    executeQuery("IMPORT TABLE " + tableName + " FROM CLUSTER " + clusterName + ";")
   }
 
   /**
