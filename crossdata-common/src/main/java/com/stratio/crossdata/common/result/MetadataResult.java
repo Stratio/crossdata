@@ -168,7 +168,7 @@ public final class MetadataResult extends Result {
     }
 
     /**
-     * Set the catalog list.
+     *java.lang.Object Set the catalog list.
      *
      * @param catalogList The list.
      */
@@ -263,4 +263,7 @@ public final class MetadataResult extends Result {
         }
         return null;
     }
+
+
+
 }

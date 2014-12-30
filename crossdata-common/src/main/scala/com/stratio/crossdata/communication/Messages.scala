@@ -151,6 +151,9 @@ case class ProvideCatalogMetadata(override val queryId: String, targetCluster: C
 
 case class ProvideTableMetadata(override val queryId: String, targetCluster: ClusterName,
                                tableName: TableName) extends MetadataOperation(queryId)
+
+
+case class SMetadata(override val queryId: String, targetCluster: ClusterName) extends MetadataOperation(queryId)
 // ============================================================================
 //                                ManagementOperation
 // ============================================================================
