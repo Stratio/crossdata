@@ -53,6 +53,8 @@ public enum Operations {
      */
     DROP_TABLE("DROP_TABLE"),
 
+    IMPORT_METADATA("IMPORT_METADATA"),
+
     /**
      * The engine supports unconditional updates.
      */

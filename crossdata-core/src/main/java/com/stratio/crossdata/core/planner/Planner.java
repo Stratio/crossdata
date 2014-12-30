@@ -90,25 +90,7 @@ import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
-import com.stratio.crossdata.core.statements.AlterCatalogStatement;
-import com.stratio.crossdata.core.statements.AlterClusterStatement;
-import com.stratio.crossdata.core.statements.AlterTableStatement;
-import com.stratio.crossdata.core.statements.AttachClusterStatement;
-import com.stratio.crossdata.core.statements.AttachConnectorStatement;
-import com.stratio.crossdata.core.statements.CreateCatalogStatement;
-import com.stratio.crossdata.core.statements.CreateIndexStatement;
-import com.stratio.crossdata.core.statements.CreateTableStatement;
-import com.stratio.crossdata.core.statements.DeleteStatement;
-import com.stratio.crossdata.core.statements.DetachClusterStatement;
-import com.stratio.crossdata.core.statements.DetachConnectorStatement;
-import com.stratio.crossdata.core.statements.DropCatalogStatement;
-import com.stratio.crossdata.core.statements.DropIndexStatement;
-import com.stratio.crossdata.core.statements.DropTableStatement;
-import com.stratio.crossdata.core.statements.InsertIntoStatement;
-import com.stratio.crossdata.core.statements.MetadataStatement;
-import com.stratio.crossdata.core.statements.SelectStatement;
-import com.stratio.crossdata.core.statements.TruncateStatement;
-import com.stratio.crossdata.core.statements.UpdateTableStatement;
+import com.stratio.crossdata.core.statements.*;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.utils.CoreUtils;
 
@@ -634,6 +616,7 @@ public class Planner {
         metadataStatements.add(AlterTableStatement.class.toString());
         metadataStatements.add(CreateIndexStatement.class.toString());
         metadataStatements.add(DropIndexStatement.class.toString());
+        metadataStatements.add(ImportMetadataStatement.class.toString());
 
         Set<String> managementStatements = new HashSet<>();
         managementStatements.add(AttachClusterStatement.class.toString());
@@ -887,6 +870,33 @@ public class Planner {
             metadataWorkflow.setTableName(tableMetadata.getName());
             metadataWorkflow.setAlterOptions(alterOptions);
             metadataWorkflow.setClusterName(clusterMetadata.getName());
+
+        } else if(metadataStatement instanceof ImportMetadataStatement) {
+
+            ImportMetadataStatement importMetadataStatement = (ImportMetadataStatement) metadataStatement;
+
+            ExecutionType executionType = ExecutionType.DISCOVER_METADATA;
+            if(!importMetadataStatement.isDiscover()){
+                executionType = ExecutionType.IMPORT_CATALOGS;
+                if(importMetadataStatement.getClusterName() != null){
+                    executionType = ExecutionType.IMPORT_TABLE;
+                } else if(importMetadataStatement.getCatalogName() != null){
+                    executionType = ExecutionType.IMPORT_CATALOG;
+                }
+            }
+
+            ResultType type = ResultType.RESULTS;
+
+            ClusterName clusterName = importMetadataStatement.getClusterName();
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+
+            String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.IMPORT_METADATA);
+
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
+
+            metadataWorkflow.setClusterName(clusterName);
+            metadataWorkflow.setCatalogName(importMetadataStatement.getCatalogName());
+            metadataWorkflow.setTableName(importMetadataStatement.getTableName());
 
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());

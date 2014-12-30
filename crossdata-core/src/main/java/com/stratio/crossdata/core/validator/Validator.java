@@ -26,12 +26,14 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.Status;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
@@ -266,38 +268,32 @@ public class Validator {
 
     private void validateCluster(CrossdataStatement stmt, boolean exist) throws IgnoreQueryException,
             NotExistNameException, ExistNameException {
-        Name name = null;
+        ClusterName clusterName = null;
         boolean hasIfExists = false;
 
         if (stmt instanceof AlterClusterStatement) {
-            name = ((AlterClusterStatement) stmt).getClusterName();
+            clusterName = ((AlterClusterStatement) stmt).getClusterName();
             hasIfExists = ((AlterClusterStatement) stmt).isIfExists();
-        }
-
-        if (stmt instanceof AttachClusterStatement) {
-            name = (((AttachClusterStatement) stmt).getClusterName());
+        } else if (stmt instanceof AttachClusterStatement) {
+            clusterName = (((AttachClusterStatement) stmt).getClusterName());
             hasIfExists = ((AttachClusterStatement) stmt).isIfNotExists();
-        }
-
-        if (stmt instanceof DetachClusterStatement) {
-            name = new ClusterName(((DetachClusterStatement) stmt).getClusterName());
-        }
-
-        if (stmt instanceof AttachConnectorStatement) {
-            name = (((AttachConnectorStatement) stmt).getClusterName());
-        }
-
-        if (stmt instanceof CreateTableStatement) {
+        } else if (stmt instanceof DetachClusterStatement) {
+            clusterName = new ClusterName(((DetachClusterStatement) stmt).getClusterName());
+        } else if (stmt instanceof AttachConnectorStatement) {
+            clusterName = (((AttachConnectorStatement) stmt).getClusterName());
+        } else if (stmt instanceof CreateTableStatement) {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
-            name = createTableStatement.getClusterName();
+            clusterName = createTableStatement.getClusterName();
             hasIfExists = createTableStatement.isIfNotExists();
-        }
-        if (stmt instanceof DetachConnectorStatement) {
+        } else if (stmt instanceof DetachConnectorStatement) {
             DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) stmt;
-            name = detachConnectorStatement.getClusterName();
+            clusterName = detachConnectorStatement.getClusterName();
+        } else if (stmt instanceof ImportMetadataStatement) {
+            ImportMetadataStatement importMetadataStatement = (ImportMetadataStatement) stmt;
+            clusterName = importMetadataStatement.getClusterName();
         }
 
-        validateName(exist, name, hasIfExists);
+        validateName(exist, clusterName, hasIfExists);
     }
 
     private void validateClusterProperties(DataStoreName name, Map<Selector, Selector> opts)
@@ -422,77 +418,83 @@ public class Validator {
 
     private void validateTable(CrossdataStatement stmt, boolean exist)
             throws NotExistNameException, IgnoreQueryException, ExistNameException {
-        Name name;
+        TableName tableName;
         boolean hasIfExists = false;
 
         if (stmt instanceof AlterTableStatement) {
-            name = ((AlterTableStatement) stmt).getTableName();
+            tableName = ((AlterTableStatement) stmt).getTableName();
         } else if (stmt instanceof DropTableStatement) {
-            name = ((DropTableStatement) stmt).getTableName();
+            tableName = ((DropTableStatement) stmt).getTableName();
             hasIfExists = ((DropTableStatement) stmt).isIfExists();
         } else if (stmt instanceof CreateTableStatement) {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
-            name = createTableStatement.getTableName();
+            tableName = createTableStatement.getTableName();
             hasIfExists = createTableStatement.isIfNotExists();
         } else if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
-            name = insertIntoStatement.getTableName();
+            tableName = insertIntoStatement.getTableName();
             hasIfExists = insertIntoStatement.isIfNotExists();
         } else if (stmt instanceof DeleteStatement) {
             DeleteStatement deleteStatement = (DeleteStatement) stmt;
-            name = deleteStatement.getTableName();
+            tableName = deleteStatement.getTableName();
         } else if (stmt instanceof DetachClusterStatement) {
             DetachClusterStatement detachClusterStatement = (DetachClusterStatement) stmt;
-            name = detachClusterStatement.getTableMetadata().getName();
+            tableName = detachClusterStatement.getTableMetadata().getName();
         } else if (stmt instanceof AttachClusterStatement) {
             AttachClusterStatement attachClusterStatement = (AttachClusterStatement) stmt;
-            name = attachClusterStatement.getTableMetadata().getName();
+            tableName = attachClusterStatement.getTableMetadata().getName();
             hasIfExists = attachClusterStatement.isIfNotExists();
         } else if (stmt instanceof CreateIndexStatement) {
             CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
-            name = createIndexStatement.getTableName();
+            tableName = createIndexStatement.getTableName();
             hasIfExists = createIndexStatement.isCreateIfNotExists();
         } else if (stmt instanceof UpdateTableStatement) {
             UpdateTableStatement updateTableStatement = (UpdateTableStatement) stmt;
-            name = updateTableStatement.getTableName();
+            tableName = updateTableStatement.getTableName();
         } else if (stmt instanceof TruncateStatement) {
             TruncateStatement truncateStatement = (TruncateStatement) stmt;
-            name = truncateStatement.getTableName();
+            tableName = truncateStatement.getTableName();
+        } else if (stmt instanceof ImportMetadataStatement) {
+            ImportMetadataStatement importMetadataStatement = (ImportMetadataStatement) stmt;
+            tableName = importMetadataStatement.getTableName();
         } else {
             throw new IgnoreQueryException(stmt.getClass().getCanonicalName() + " not supported yet.");
         }
 
-        validateName(exist, name, hasIfExists);
+        validateName(exist, tableName, hasIfExists);
     }
 
     private void validateCatalog(CrossdataStatement stmt, boolean exist)
             throws IgnoreQueryException, ExistNameException, NotExistNameException {
-        Name name = null;
+        CatalogName catalogName = null;
         boolean validate = true;
         boolean hasIfExists = false;
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
-            name = alterCatalogStatement.getCatalogName();
+            catalogName = alterCatalogStatement.getCatalogName();
         } else if (stmt instanceof CreateCatalogStatement) {
             CreateCatalogStatement createCatalogStatement = (CreateCatalogStatement) stmt;
             hasIfExists = createCatalogStatement.isIfNotExists();
-            name = createCatalogStatement.getCatalogName();
+            catalogName = createCatalogStatement.getCatalogName();
         } else if (stmt instanceof DropCatalogStatement) {
             DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) stmt;
             hasIfExists = dropCatalogStatement.isIfExists();
-            name = dropCatalogStatement.getCatalogName();
+            catalogName = dropCatalogStatement.getCatalogName();
         } else if (stmt instanceof CreateTableStatement) {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
-            name = createTableStatement.getEffectiveCatalog();
+            catalogName = createTableStatement.getEffectiveCatalog();
             hasIfExists = createTableStatement.isIfNotExists();
         } else if (stmt instanceof DropTableStatement) {
             DropTableStatement dropTableStatement = (DropTableStatement) stmt;
-            name = dropTableStatement.getCatalogName();
+            catalogName = dropTableStatement.getCatalogName();
             hasIfExists = dropTableStatement.isIfExists();
         } else if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
-            name = insertIntoStatement.getCatalogName();
+            catalogName = insertIntoStatement.getCatalogName();
             hasIfExists = insertIntoStatement.isIfNotExists();
+        } else if (stmt instanceof ImportMetadataStatement) {
+            ImportMetadataStatement importMetadataStatement = (ImportMetadataStatement) stmt;
+            catalogName = importMetadataStatement.getCatalogName();
         } else {
             //TODO: should through exception?
             //Correctness - Method call passes null for nonnull parameter
@@ -500,7 +502,7 @@ public class Validator {
         }
 
         if (validate) {
-            validateName(exist, name, hasIfExists);
+            validateName(exist, catalogName, hasIfExists);
         }
     }
 

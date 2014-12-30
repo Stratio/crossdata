@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.coordinator;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -41,6 +42,7 @@ import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.communication.AlterCluster;
@@ -67,7 +69,7 @@ public class Coordinator implements Serializable {
      *
      * @param metadataWorkflow The metadata workflow.
      */
-    public void persist(MetadataWorkflow metadataWorkflow) {
+    public void persist(MetadataWorkflow metadataWorkflow, MetadataResult result) {
 
         switch (metadataWorkflow.getExecutionType()) {
         case CREATE_CATALOG:
@@ -94,6 +96,15 @@ public class Coordinator implements Serializable {
             break;
         case DROP_TABLE:
             persistDropTable(metadataWorkflow.getTableName());
+            break;
+        case IMPORT_CATALOGS:
+            persistImportCatalogs(result.getCatalogMetadataList());
+            break;
+        case IMPORT_CATALOG:
+            persistImportCatalogs(result.getCatalogMetadataList());
+            break;
+        case IMPORT_TABLE:
+            persistTable(metadataWorkflow.getTableMetadata());
             break;
         default:
             LOG.info("unknown statement detected");
@@ -341,4 +352,16 @@ public class Coordinator implements Serializable {
 
         return CommandResult.createCommandResult("CONNECTOR detached successfully");
     }
+
+    private void persistImportCatalogs(List<CatalogMetadata> catalogMetadataList) {
+        for(CatalogMetadata catalog: catalogMetadataList){
+            MetadataManager.MANAGER.createCatalog(catalog);
+        }
+    }
+
+    private void persistTable(TableMetadata tableMetadata) {
+        MetadataManager.MANAGER.createTable(tableMetadata);
+    }
+
+
 }
