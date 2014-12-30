@@ -261,7 +261,7 @@ public final class MetadataResult extends Result {
         for(CatalogMetadata cm: catalogMetadataList){
             catalogNames.add(cm.getName());
         }
-        return null;
+        return catalogNames;
     }
 
 

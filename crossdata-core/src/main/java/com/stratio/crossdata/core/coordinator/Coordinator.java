@@ -70,7 +70,6 @@ public class Coordinator implements Serializable {
      * @param metadataWorkflow The metadata workflow.
      */
     public void persist(MetadataWorkflow metadataWorkflow, MetadataResult result) {
-
         switch (metadataWorkflow.getExecutionType()) {
         case CREATE_CATALOG:
             persistCreateCatalog(metadataWorkflow.getCatalogMetadata(), metadataWorkflow.isIfNotExists());
@@ -104,7 +103,7 @@ public class Coordinator implements Serializable {
             persistImportCatalogs(result.getCatalogMetadataList());
             break;
         case IMPORT_TABLE:
-            persistTable(metadataWorkflow.getTableMetadata());
+            persistTables(result.getTableList(), metadataWorkflow.getClusterName());
             break;
         default:
             LOG.info("unknown statement detected");
@@ -359,9 +358,19 @@ public class Coordinator implements Serializable {
         }
     }
 
-    private void persistTable(TableMetadata tableMetadata) {
-        MetadataManager.MANAGER.createTable(tableMetadata);
+    private void persistTables(List<TableMetadata> tableMetadataList, ClusterName clusterName) {
+        for(TableMetadata table: tableMetadataList){
+            CatalogName catalogName = table.getName().getCatalogName();
+            if(!MetadataManager.MANAGER.exists(catalogName)){
+                CatalogMetadata catalogMetadata = new CatalogMetadata(
+                        catalogName,
+                        new HashMap<Selector, Selector>(),
+                        new HashMap<TableName, TableMetadata>());
+                MetadataManager.MANAGER.createCatalog(catalogMetadata);
+            }
+            table.setClusterRef(clusterName);
+            MetadataManager.MANAGER.createTable(table);
+        }
     }
-
 
 }

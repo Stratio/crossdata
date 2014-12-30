@@ -878,7 +878,7 @@ public class Planner {
             ExecutionType executionType = ExecutionType.DISCOVER_METADATA;
             if(!importMetadataStatement.isDiscover()){
                 executionType = ExecutionType.IMPORT_CATALOGS;
-                if(importMetadataStatement.getClusterName() != null){
+                if(importMetadataStatement.getTableName() != null){
                     executionType = ExecutionType.IMPORT_TABLE;
                 } else if(importMetadataStatement.getCatalogName() != null){
                     executionType = ExecutionType.IMPORT_CATALOG;

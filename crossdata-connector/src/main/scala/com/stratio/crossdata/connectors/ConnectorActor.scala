@@ -17,6 +17,9 @@
  */
 
 package com.stratio.crossdata.connectors
+
+import java.util
+
 import akka.actor.{ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
@@ -25,6 +28,7 @@ import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
 import com.stratio.crossdata.common.data.ClusterName
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
+import com.stratio.crossdata.common.metadata.{TableMetadata, CatalogMetadata}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication.{ACK, AlterTable, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DeleteRows, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, Truncate, Update, getConnectorName, replyConnectorName, _}
 import org.apache.log4j.Logger
@@ -228,12 +232,24 @@ ActorLogging with IResultHandler{
       val opclass = metadataOp.getClass().toString().split('.')
       val eng = connector.getMetadataEngine()
 
-      val abc = methodOpMetadata(opclass,  metadataOp, eng)
-      qId = abc._1
-      metadataOperation = abc._2
+      val answer = methodOpMetadata(opclass, metadataOp, eng)
+      qId = answer._1
+      metadataOperation = answer._2
       result = MetadataResult.createSuccessMetadataResult(metadataOperation)
-      if(abc._3!=null){
-        result.setMetadataData(abc._3)
+      if(answer._3!=null){
+        if(metadataOperation == MetadataResult.OPERATION_DISCOVER_METADATA
+           || metadataOperation == MetadataResult.OPERATION_IMPORT_CATALOGS) {
+          result.asInstanceOf[MetadataResult].setCatalogMetadataList(
+            answer._3.asInstanceOf[java.util.List[CatalogMetadata]])
+        } else if(metadataOperation == MetadataResult.OPERATION_IMPORT_CATALOG){
+          val catalogList: util.ArrayList[CatalogMetadata] = new util.ArrayList[CatalogMetadata]()
+          catalogList.add(answer._3.asInstanceOf[CatalogMetadata])
+          result.asInstanceOf[MetadataResult].setCatalogMetadataList(catalogList)
+        } else if (metadataOperation == MetadataResult.OPERATION_IMPORT_TABLE){
+          val tableList: util.ArrayList[TableMetadata] = new util.ArrayList[TableMetadata]()
+          tableList.add(answer._3.asInstanceOf[TableMetadata])
+          result.asInstanceOf[MetadataResult].setTableList(tableList)
+        }
       }
       //TODO: create result.set_tercer(_3)_parámetro
     } catch {
@@ -291,7 +307,6 @@ ActorLogging with IResultHandler{
     }
   }
 
-
   //TODO: add object in result tupple
   //
   private def methodOpMetadata(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine):
@@ -346,19 +361,24 @@ ActorLogging with IResultHandler{
       }
       case "ProvideMetadata" => {
         val listmetadata=eng.provideMetadata(metadataOp.asInstanceOf[ProvideMetadata].targetCluster)
-        (metadataOp.asInstanceOf[ProvideMetadata].queryId, MetadataResult.OPERATION_PROVIDE_METADATA,listmetadata)
+        (metadataOp.asInstanceOf[ProvideMetadata].queryId, MetadataResult.OPERATION_DISCOVER_METADATA,listmetadata)
 
+      }
+      case "ProvideCatalogsMetadata" => {
+        val listmetadata=eng.provideMetadata(metadataOp.asInstanceOf[ProvideCatalogsMetadata].targetCluster)
+        (metadataOp.asInstanceOf[ProvideCatalogsMetadata].queryId, MetadataResult.OPERATION_IMPORT_CATALOGS,
+          listmetadata)
       }
       case "ProvideCatalogMetadata" => {
         val listmetadata=eng.provideCatalogMetadata(metadataOp.asInstanceOf[ProvideCatalogMetadata].targetCluster,
           metadataOp.asInstanceOf[ProvideCatalogMetadata].catalogName)
-        (metadataOp.asInstanceOf[ProvideCatalogMetadata].queryId, MetadataResult.OPERATION_PROVIDE_CATALOG_METADATA,
+        (metadataOp.asInstanceOf[ProvideCatalogMetadata].queryId, MetadataResult.OPERATION_IMPORT_CATALOG,
           listmetadata)
       }
       case "ProvideTableMetadata" => {
         val listmetadata=eng.provideTableMetadata(metadataOp.asInstanceOf[ProvideTableMetadata].targetCluster,
           metadataOp.asInstanceOf[ProvideTableMetadata].tableName)
-        (metadataOp.asInstanceOf[ProvideTableMetadata].queryId, MetadataResult.OPERATION_PROVIDE_TABLE_METADATA,
+        (metadataOp.asInstanceOf[ProvideTableMetadata].queryId, MetadataResult.OPERATION_IMPORT_TABLE,
           listmetadata)
       }
     }

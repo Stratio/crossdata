@@ -36,6 +36,7 @@ import com.stratio.crossdata.communication.DropIndex;
 import com.stratio.crossdata.communication.DropTable;
 import com.stratio.crossdata.communication.MetadataOperation;
 import com.stratio.crossdata.communication.ProvideCatalogMetadata;
+import com.stratio.crossdata.communication.ProvideCatalogsMetadata;
 import com.stratio.crossdata.communication.ProvideMetadata;
 import com.stratio.crossdata.communication.ProvideTableMetadata;
 
@@ -182,7 +183,7 @@ public class MetadataWorkflow extends ExecutionWorkflow {
             result = new ProvideMetadata(queryId, this.clusterName);
             break;
         case IMPORT_CATALOGS:
-            result = new ProvideMetadata(queryId, this.clusterName);
+            result = new ProvideCatalogsMetadata(queryId, this.clusterName);
             break;
         case IMPORT_CATALOG:
             result = new ProvideCatalogMetadata(queryId, this.clusterName, this.catalogName);
