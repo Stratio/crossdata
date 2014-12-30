@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.communication
 
+import com.stratio.crossdata.common.metadata.IMetadata
+
 //CONNECTOR messages
 case class Start()
 
@@ -28,3 +30,5 @@ case class HeartbeatSig()
 case class IAmAlive(queryId:String)
 
 case class Stop()
+
+case class UpdateMetadata(metadata:IMetadata)

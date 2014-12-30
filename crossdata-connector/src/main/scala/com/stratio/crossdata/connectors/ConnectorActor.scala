@@ -66,6 +66,11 @@ ActorLogging with IResultHandler{
   }
 
   override def receive: Receive = super.receive orElse {
+
+    case u: UpdateMetadata=> {
+      val res=connector.UpdateMetadata(u.metadata)
+      sender ! res
+    }
     case _: com.stratio.crossdata.communication.Start => {
       parentActorRef = Some(sender)
     }

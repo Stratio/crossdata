@@ -25,7 +25,7 @@ import com.stratio.crossdata.common.data.{ClusterName, ColumnName, IndexName, Ta
 import com.stratio.crossdata.common.metadata.{ColumnMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.MetadataResult
 import com.stratio.crossdata.common.statements.structures.Selector
-import com.stratio.crossdata.communication.CreateTable
+import com.stratio.crossdata.communication.{UpdateMetadata, CreateTable}
 import com.stratio.crossdata.connectors.ConnectorActor
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import org.apache.log4j.Logger
@@ -118,6 +118,16 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     logger.debug("result.getQueryId()= " + result2.getQueryId())
     assert(result2.getQueryId() == queryId + sm2)
 
+  }
+  
+  test("Send UpdateMetadata to Connector") {
+    val m=new DummyIConnector()
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m))
+    val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
+    //ca1 ! UpdateMetadata(table)
+    var future1 = ask(ca1, UpdateMetadata(table) )
+    val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
+    assert(result == true)
   }
 
 

@@ -22,6 +22,7 @@ import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
+import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.communication.MetadataStruct;
@@ -115,5 +116,6 @@ public interface IConnector {
      *
      * @return true if everything is correct; false otherwise
      */
-    boolean UpdateMetadata(MetadataStruct metadata);
+    //boolean UpdateMetadata(MetadataStruct metadata);
+    boolean UpdateMetadata(IMetadata metadata);
 }
