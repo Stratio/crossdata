@@ -26,8 +26,9 @@ import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, Membe
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
-import com.stratio.crossdata.common.data.ClusterName
+import com.stratio.crossdata.common.data.{ClusterName, FirstLevelName}
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
+import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.metadata.{TableMetadata, CatalogMetadata}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication.{ACK, AlterTable, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DeleteRows, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, Truncate, Update, getConnectorName, replyConnectorName, _}
@@ -48,6 +49,7 @@ class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatA
 ActorLogging with IResultHandler{
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
+  val metadata: util.Map[FirstLevelName, IMetadata]=new util.HashMap[FirstLevelName,IMetadata]()
 
   logger.info("Lifting connector actor")
 
@@ -70,8 +72,54 @@ ActorLogging with IResultHandler{
   }
 
   override def receive: Receive = super.receive orElse {
-
+    
     case u: UpdateMetadata=> {
+      val pathOfClass=u.metadata.getClass().toString.split('.')
+      val classname=pathOfClass(pathOfClass.length-1)
+      var receivedmetadata:IMetadata=null
+      classname match{
+        case "CatalogMetadata" => {
+          metadata.put(receivedmetadata.asInstanceOf[CatalogMetadata].getName,receivedmetadata)
+        }
+        case "ClusterMetadata" => {
+          metadata.put(receivedmetadata.asInstanceOf[ClusterMetadata].getName,receivedmetadata)
+        }
+        case "ConnectorMetadata" => {
+          metadata.put(receivedmetadata.asInstanceOf[ConnectorMetadata].getName,receivedmetadata)
+        }
+        case "DataStoreMetadata" =>{
+          metadata.put(receivedmetadata.asInstanceOf[DataStoreMetadata].getName,receivedmetadata)
+        }
+        case "NodeMetadata" =>{
+          metadata.put(receivedmetadata.asInstanceOf[NodeMetadata].getName,receivedmetadata)
+        }
+        case "TableMetadata" => {
+          var tablename=receivedmetadata.asInstanceOf[TableMetadata].getName
+          var catalogname=tablename.getCatalogName
+          metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.put(
+            tablename,receivedmetadata.asInstanceOf[TableMetadata]
+          )
+        }
+        case "ColumnMetadata" => {
+          var columname=receivedmetadata.asInstanceOf[ColumnMetadata].getName
+          var tablename=columname.getTableName
+          var catalogname=tablename.getCatalogName
+          metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getColumns.put(
+            columname,receivedmetadata.asInstanceOf[ColumnMetadata]
+          )
+        }
+        case "IndexMetadata" => {
+          var indexname=receivedmetadata.asInstanceOf[IndexMetadata].getName
+          var tablename=indexname.getTableName
+          var catalogname=tablename.getCatalogName
+          metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getIndexes.put(
+            indexname,receivedmetadata.asInstanceOf[IndexMetadata]
+          )
+        }
+        case "FunctionMetadata" => {
+          //TODO:
+        }
+      }
       val res=connector.UpdateMetadata(u.metadata)
       sender ! res
     }
@@ -94,7 +142,6 @@ ActorLogging with IResultHandler{
           sender ! result
         }
       }
-
     }
     case disconnectRequest: com.stratio.crossdata.communication.DisconnectFromCluster => {
       logger.debug("->" + "Receiving MetadataRequest")
