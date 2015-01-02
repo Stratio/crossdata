@@ -409,7 +409,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testShouldBeUniqueException() {
         DataStoreName name = createTestDatastore();
-        String version = "0.1.1";
+        String version = "0.2.0";
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
@@ -484,7 +484,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         createTestDatastore();
 
         DataStoreName name = new DataStoreName("dataStoreTest");
-        String version = "0.1.1";
+        String version = "0.2.0";
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
@@ -502,7 +502,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String actorRef = "akkaRefTest";
         createTestConnector(name, dataStoreName, actorRef);
 
-        String version = "0.1.1";
+        String version = "0.2.0";
         List<String> dataStoreRefs = new ArrayList<>();
         List<PropertyType> requiredProperties = new ArrayList<>();
         List<PropertyType> optionalProperties = new ArrayList<>();

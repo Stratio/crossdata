@@ -21,7 +21,7 @@
     <DataStores>
         <DataStoreName>cassandra</DataStoreName>
     </DataStores>
-    <Version>0.1.1</Version>
+    <Version>0.2.0</Version>
     <RequiredProperties>
         <Property>
             <PropertyName>Host</PropertyName>

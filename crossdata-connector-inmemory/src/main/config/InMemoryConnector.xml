@@ -61,5 +61,6 @@
         <operation>FILTER_NON_INDEXED_LT</operation>
         <operation>FILTER_NON_INDEXED_GET</operation>
         <operation>FILTER_NON_INDEXED_LET</operation>
+        <operation>IMPORT_METADATA</operation>
     </SupportedOperations>
 </Connector>

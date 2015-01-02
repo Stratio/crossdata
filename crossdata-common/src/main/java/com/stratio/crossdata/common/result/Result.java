@@ -39,11 +39,6 @@ public abstract class Result implements Serializable {
     private static final long serialVersionUID = 8596330240278204430L;
 
     /**
-     * Object to store different metaData result types.
-     */
-    private  Object metadataData=null;
-
-    /**
      * Whether an error occurred during the execution of an action.
      */
     protected boolean error = false;
@@ -151,24 +146,4 @@ public abstract class Result implements Serializable {
         return error;
     }
 
-
-    /**
-     * Set the Metadata's data.
-     *
-     * @param data The data.
-     */
-    public void setMetadataData(Object data) {
-        this.metadataData=data;
-
-    }
-
-    /**
-     * Get the Metadata's data.
-     *
-     * @return Object with the metadata's Data
-     */
-    public Object getMetadataData() {
-        return this.metadataData;
-
-    }
 }

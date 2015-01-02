@@ -42,6 +42,22 @@ public class ImportMetadataStatement extends MetadataStatement {
         this.discover = discover;
     }
 
+    public ClusterName getClusterName() {
+        return clusterName;
+    }
+
+    public CatalogName getCatalogName() {
+        return catalogName;
+    }
+
+    public TableName getTableName() {
+        return tableName;
+    }
+
+    public boolean isDiscover() {
+        return discover;
+    }
+
     @Override public String toString() {
         StringBuilder sb = new StringBuilder();
         if(discover){

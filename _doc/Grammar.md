@@ -4,7 +4,7 @@ CROSSDATA Grammar
 
 Language definition
 
-Version: 0.1.1
+Version: 0.2.0
 
 Date: 14, Nov, 2014
 

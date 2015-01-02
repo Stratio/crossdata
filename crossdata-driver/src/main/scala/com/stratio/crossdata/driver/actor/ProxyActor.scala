@@ -34,7 +34,7 @@ import scala.concurrent.duration._
  */
 object ProxyActor {
   /**
-   * Initial path for actor's indentify.
+   * Initial path for actor's identify.
    */
   val INIT_PATH = "/user/"
 

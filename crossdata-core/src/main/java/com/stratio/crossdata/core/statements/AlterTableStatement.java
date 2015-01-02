@@ -112,7 +112,9 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
             sb.append("BAD OPTION");
             break;
         }
-
+        if((option != AlterOperation.ALTER_OPTIONS) && (properties != null) && (!properties.isEmpty())){
+            sb.append(" WITH ").append(properties);
+        }
         return sb.toString();
     }
 
@@ -137,7 +139,7 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
                     .add(ValidationTypes.MUST_EXIST_PROPERTIES);
             break;
         default:
-            validationRequirements = new ValidationRequirements();
+            validationRequirements = new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE);
         }
         return validationRequirements;
     }

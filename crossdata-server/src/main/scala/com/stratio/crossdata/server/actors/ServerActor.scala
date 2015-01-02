@@ -20,7 +20,7 @@ package com.stratio.crossdata.server.actors
 
 import java.util.UUID
 
-import akka.actor.{Address, Actor, Props, ReceiveTimeout}
+import akka.actor.{Actor, Props, ReceiveTimeout}
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
 import com.stratio.crossdata.common.result.{DisconnectResult, ConnectResult, Result}
@@ -28,9 +28,6 @@ import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import scala.collection.immutable.HashMap
-import akka.cluster.ClusterEvent.MemberUp
-import java.util
 
 object ServerActor {
   def props(engine: Engine): Props = Props(new ServerActor(engine))

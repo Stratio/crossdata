@@ -140,6 +140,34 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             log.info("ActorRef: " + actorRef.toString())
             actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
 
+          } else if (workflow1.getExecutionType == ExecutionType.DISCOVER_METADATA){
+
+            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+            executionInfo.setPersistOnSuccess(false)
+            executionInfo.setRemoveOnSuccess(true)
+            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+            executionInfo.setWorkflow(workflow1)
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+
+            val actorRef = context.actorSelection(workflow1.getActorRef)
+            log.info("ActorRef: " + actorRef.toString())
+            actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+
+          } else if (workflow1.getExecutionType == ExecutionType.IMPORT_CATALOGS
+                    || workflow1.getExecutionType == ExecutionType.IMPORT_CATALOG
+                    || workflow1.getExecutionType == ExecutionType.IMPORT_TABLE) {
+
+              executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+              executionInfo.setPersistOnSuccess(true)
+              executionInfo.setRemoveOnSuccess(true)
+              executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+              executionInfo.setWorkflow(workflow1)
+              ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+
+              val actorRef = context.actorSelection(workflow1.getActorRef)
+              log.info("ActorRef: " + actorRef.toString())
+              actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+
           } else if (workflow1.getExecutionType == ExecutionType.CREATE_CATALOG ||
                 workflow1.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG ||
                 workflow1.getExecutionType == ExecutionType.CREATE_TABLE) {
@@ -340,7 +368,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
             val storedWorkflow = executionInfo.asInstanceOf[ExecutionInfo].getWorkflow
             if(storedWorkflow.isInstanceOf[MetadataWorkflow]){
-              coordinator.persist(storedWorkflow.asInstanceOf[MetadataWorkflow])
+              coordinator.persist(storedWorkflow.asInstanceOf[MetadataWorkflow], result.asInstanceOf[MetadataResult])
             } else if (storedWorkflow.isInstanceOf[ManagementWorkflow]) {
               coordinator.executeManagementOperation(storedWorkflow.asInstanceOf[ManagementWorkflow].createManagementOperationMessage())
             }

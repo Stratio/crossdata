@@ -146,6 +146,8 @@ MetadataOperation(queryId)
 
 case class ProvideMetadata(override val queryId: String, targetCluster: ClusterName) extends MetadataOperation(queryId)
 
+case class ProvideCatalogsMetadata(override val queryId: String, targetCluster: ClusterName) extends MetadataOperation(queryId)
+
 case class ProvideCatalogMetadata(override val queryId: String, targetCluster: ClusterName,
                                  catalogName: CatalogName) extends MetadataOperation(queryId)
 

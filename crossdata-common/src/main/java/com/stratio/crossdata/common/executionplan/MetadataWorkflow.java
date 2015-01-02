@@ -35,6 +35,10 @@ import com.stratio.crossdata.communication.DropCatalog;
 import com.stratio.crossdata.communication.DropIndex;
 import com.stratio.crossdata.communication.DropTable;
 import com.stratio.crossdata.communication.MetadataOperation;
+import com.stratio.crossdata.communication.ProvideCatalogMetadata;
+import com.stratio.crossdata.communication.ProvideCatalogsMetadata;
+import com.stratio.crossdata.communication.ProvideMetadata;
+import com.stratio.crossdata.communication.ProvideTableMetadata;
 
 /**
  * Execute a {@link com.stratio.crossdata.common.connector.IMetadataEngine} operation.
@@ -174,6 +178,18 @@ public class MetadataWorkflow extends ExecutionWorkflow {
             break;
         case DROP_INDEX:
             result = new DropIndex(queryId, this.clusterName, this.indexMetadata);
+            break;
+        case DISCOVER_METADATA:
+            result = new ProvideMetadata(queryId, this.clusterName);
+            break;
+        case IMPORT_CATALOGS:
+            result = new ProvideCatalogsMetadata(queryId, this.clusterName);
+            break;
+        case IMPORT_CATALOG:
+            result = new ProvideCatalogMetadata(queryId, this.clusterName, this.catalogName);
+            break;
+        case IMPORT_TABLE:
+            result = new ProvideTableMetadata(queryId, this.clusterName, this.tableName);
             break;
         default:
             break;
