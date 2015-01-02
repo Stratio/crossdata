@@ -18,7 +18,6 @@
 
 package com.stratio.crossdata.core.api;
 
-import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
@@ -32,7 +31,6 @@ import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
-import com.stratio.crossdata.common.data.NameType;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.DataStoreRefsType;
@@ -63,7 +61,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         dataStoreType.setName("dataStoreTest");
 
-        dataStoreType.setVersion("0.1.1");
+        dataStoreType.setVersion("0.2.0");
 
         PropertiesType requiredProperties = new PropertiesType();
         List<PropertyType> property = new ArrayList<>();
@@ -97,7 +95,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         String expectedResult =
                 "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
                         "Name: dataStoreTest" + System.lineSeparator()
-                        + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                        + "Version: 0.2.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                         "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                         System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()
                         + "Optional properties: " +
@@ -119,7 +117,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         DataStoreType dataStoreType = new DataStoreType();
 
-        dataStoreType.setVersion("0.1.1");
+        dataStoreType.setVersion("0.2.0");
 
         PropertiesType requiredProperties = new PropertiesType();
         List<PropertyType> property = new ArrayList<>();
@@ -153,7 +151,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         String expectedResult =
                 "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
                         "Name: dataStoreTest" + System.lineSeparator()
-                        + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                        + "Version: 0.2.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                         "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                         System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()
                         + "Optional properties: " +
@@ -174,7 +172,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         connectorType.setConnectorName("connectorTest");
 
-        connectorType.setVersion("0.1.1");
+        connectorType.setVersion("0.2.0");
 
         connectorType.setDataStores(new DataStoreRefsType());
 
@@ -210,7 +208,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "CONNECTOR" +
                 System.lineSeparator() + "ConnectorName: connectorTest" + System.lineSeparator()
                 + "DataStores: " + System.lineSeparator()
-                + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                + "Version: 0.2.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                 "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                 System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() + "Optional properties: " +
                 System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
@@ -231,7 +229,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         ConnectorType connectorType = new ConnectorType();
 
-        connectorType.setVersion("0.1.1");
+        connectorType.setVersion("0.2.0");
 
         connectorType.setDataStores(new DataStoreRefsType());
 
@@ -267,7 +265,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "CONNECTOR" +
                 System.lineSeparator() + "ConnectorName: connectorTest" + System.lineSeparator()
                 + "DataStores: " + System.lineSeparator()
-                + "Version: 0.1.1" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                + "Version: 0.2.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                 "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                 System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() + "Optional properties: " +
                 System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +

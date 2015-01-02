@@ -131,7 +131,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
 
         // Create and add a test connector metadata to the metadatamanager
         ConnectorName connectorName = new ConnectorName("connectorTest");
-        String connectorVersion = "0.1.1";
+        String connectorVersion = "0.2.0";
         Set<DataStoreName> dataStoreRefs = new HashSet<>();
         com.stratio.com.stratio.crossdata.common.api.generated.connectorOld.RequiredPropertiesType connectorRequiredProperties =
                 null;
@@ -256,7 +256,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         String catalog = "catalogTest4";
         String tableString = "tableTest";
 
-        createTestDatastoreAndPersist(datastore, "0.1.1");
+        createTestDatastoreAndPersist(datastore, "0.2.0");
         createTestClusterAndPersist(cluster, datastore);
         createTestsCatalogAndPersist(catalog);
 
@@ -308,7 +308,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         String catalog = "catalogTest5";
         String table = "tableTest";
 
-        createTestDatastoreAndPersist(datastore, "0.1.1");
+        createTestDatastoreAndPersist(datastore, "0.2.0");
         createTestClusterAndPersist(cluster, datastore);
         createTestsCatalogAndPersist(catalog);
         createTestTableAndPersist(cluster, catalog, table);
@@ -431,7 +431,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
     //
     //        // Create and add a test connector metadata to the metadatamanager
     //        ConnectorName connectorName = new ConnectorName("connectorTest");
-    //        String connectorVersion = "0.1.1";
+    //        String connectorVersion = "0.2.0";
     //        Set<DataStoreName> dataStoreRefs = new HashSet<>();
     //        com.stratio.com.stratio.crossdata.common.api.generated.connector.RequiredPropertiesType connectorRequiredProperties =
     //                null;
@@ -556,7 +556,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
     //        String catalog = "catalogTest4";
     //        String tableString = "tableTest";
     //
-    //        createTestDatastoreAndPersist(datastore, "0.1.1");
+    //        createTestDatastoreAndPersist(datastore, "0.2.0");
     //        createTestClusterAndPersist(cluster, datastore);
     //        createTestsCatalogAndPersist(catalog);
     //
@@ -608,7 +608,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
     //        String catalog = "catalogTest5";
     //        String table = "tableTest";
     //
-    //        createTestDatastoreAndPersist(datastore, "0.1.1");
+    //        createTestDatastoreAndPersist(datastore, "0.2.0");
     //        createTestClusterAndPersist(cluster, datastore);
     //        createTestsCatalogAndPersist(catalog);
     //        createTestTableAndPersist(cluster, catalog, table);
