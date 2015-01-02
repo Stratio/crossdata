@@ -18,7 +18,11 @@
 
 package com.stratio.crossdata.common.utils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -176,5 +180,34 @@ public final class StringUtils {
             ct = ColumnType.MAP;
         }
         return ct;
+    }
+
+    public static Object DeserializeObjectFromString(String serializedObject) {
+        Object obj=null;
+        // deserialize the object
+        try {
+            byte b[] = serializedObject.getBytes();
+            ByteArrayInputStream bi = new ByteArrayInputStream(b);
+            ObjectInputStream si = new ObjectInputStream(bi);
+            obj = (Object) si.readObject();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return obj;
+    }
+    public static String SerializeObject2String(Object obj) {
+        String serializedObject = "";
+
+        // serialize the object
+        try {
+            ByteArrayOutputStream bo = new ByteArrayOutputStream();
+            ObjectOutputStream so = new ObjectOutputStream(bo);
+            so.writeObject(obj);
+            so.flush();
+            serializedObject = bo.toString();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return serializedObject;
     }
 }
