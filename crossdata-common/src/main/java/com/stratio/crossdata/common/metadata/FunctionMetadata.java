@@ -20,7 +20,7 @@ package com.stratio.crossdata.common.metadata;
 
 import com.stratio.crossdata.common.data.FunctionName;
 
-public class FunctionMetadata implements IMetadata {
+public class FunctionMetadata {
 
     final private FunctionName functionName;
     final private String signature;

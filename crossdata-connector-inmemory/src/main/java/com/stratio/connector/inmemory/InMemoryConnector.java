@@ -130,7 +130,7 @@ public class InMemoryConnector implements IConnector{
         return new InMemoryMetadataEngine(this);
     }
 
-    @Override public boolean UpdateMetadata(IMetadata metadata) {
+    @Override public boolean updateMetadata(IMetadata metadata) {
         //TODO: implement proper method
         return true;
     }

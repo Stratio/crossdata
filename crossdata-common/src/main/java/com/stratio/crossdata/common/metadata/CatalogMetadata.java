@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.CatalogName;
@@ -36,7 +37,12 @@ public class CatalogMetadata implements IMetadata {
             Map<TableName, TableMetadata> tables) {
         this.name = name;
         this.options = options;
-        this.tables = tables;
+        if(tables == null){
+            this.tables = new HashMap<>();
+        } else {
+            this.tables = tables;
+        }
+
     }
 
     public final CatalogName getName() {

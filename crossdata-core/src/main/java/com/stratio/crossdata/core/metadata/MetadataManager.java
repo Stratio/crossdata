@@ -602,23 +602,6 @@ public enum MetadataManager {
         }
     }
 
-    public void createFunction(FunctionMetadata functionMetadata, boolean unique) {
-        shouldBeInit();
-        try {
-            writeLock.lock();
-            if (unique) {
-                shouldBeUnique(functionMetadata.getFunctionName());
-            }
-            beginTransaction();
-            metadata.put(functionMetadata.getFunctionName(), functionMetadata);
-            commitTransaction();
-        } catch (Exception ex) {
-            throw new MetadataManagerException(ex);
-        } finally {
-            writeLock.unlock();
-        }
-    }
-
     /**
      * Save in the metadata store a new node. Must be unique.
      *

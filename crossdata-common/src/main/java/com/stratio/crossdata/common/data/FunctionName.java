@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.common.data;
 
-public class FunctionName extends FirstLevelName {
+public class FunctionName extends Name {
 
     private static final long serialVersionUID = -2253115989460763299L;
 
@@ -34,6 +34,10 @@ public class FunctionName extends FirstLevelName {
 
     public String getName() {
         return name;
+    }
+
+    @Override public boolean isCompletedName() {
+        return name != null;
     }
 
     @Override public String getQualifiedName() {

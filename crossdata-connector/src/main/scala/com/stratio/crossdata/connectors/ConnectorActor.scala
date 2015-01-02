@@ -120,7 +120,7 @@ ActorLogging with IResultHandler{
           //TODO:
         }
       }
-      val res=connector.UpdateMetadata(u.metadata)
+      val res=connector.updateMetadata(u.metadata)
       sender ! res
     }
     case _: com.stratio.crossdata.communication.Start => {

@@ -23,7 +23,7 @@ import com.stratio.crossdata.common.data.ColumnName;
 /**
  * ColumnMetadata class.
  */
-public class ColumnMetadata implements IMetadata {
+public class ColumnMetadata {
     private final ColumnName name;
     private final Object[] parameters;
     private final ColumnType columnType;

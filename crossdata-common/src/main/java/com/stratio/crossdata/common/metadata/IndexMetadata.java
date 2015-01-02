@@ -24,7 +24,7 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
-public class IndexMetadata implements IMetadata {
+public class IndexMetadata {
     private final IndexName name;
     private final Map<ColumnName, ColumnMetadata> columns;
     private final IndexType type;

@@ -18,14 +18,13 @@
 
 package com.stratio.crossdata.common.connector;
 
+import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.security.ICredentials;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.communication.MetadataStruct;
 
 /**
  * Common interface for CROSSDATA connectors. A connector provides implementations for storage and query
@@ -116,6 +115,6 @@ public interface IConnector {
      *
      * @return true if everything is correct; false otherwise
      */
-    //boolean UpdateMetadata(MetadataStruct metadata);
-    boolean UpdateMetadata(IMetadata metadata);
+    //boolean updateMetadata(MetadataStruct metadata);
+    boolean updateMetadata(IMetadata metadata);
 }

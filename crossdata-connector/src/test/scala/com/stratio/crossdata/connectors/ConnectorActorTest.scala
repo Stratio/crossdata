@@ -21,8 +21,8 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.routing.RoundRobinRouter
 import akka.util.Timeout
-import com.stratio.crossdata.common.data.{ClusterName, ColumnName, IndexName, TableName}
-import com.stratio.crossdata.common.metadata.{ColumnMetadata, IndexMetadata, TableMetadata}
+import com.stratio.crossdata.common.data._
+import com.stratio.crossdata.common.metadata.{CatalogMetadata, ColumnMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.MetadataResult
 import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.common.utils.StringUtils
@@ -121,13 +121,15 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
 
   }
   
-  test("Send UpdateMetadata to Connector") {
+  test("Send updateMetadata to Connector") {
     //TODO: this test is not complete (still a Proof Of Concept)
     val m=new DummyIConnector()
     val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m))
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
-    //ca1 ! UpdateMetadata(table)
-    var future1 = ask(ca1, UpdateMetadata(table) )
+    val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
+    catalog.getTables.put(table.getName,table)
+    //ca1 ! updateMetadata(table)
+    var future1 = ask(ca1, UpdateMetadata(catalog))
     val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
     assert(result == true)
 

@@ -37,7 +37,7 @@ class DummyIConnector extends IConnector{
   override def connect(credentials: ICredentials, config: ConnectorClusterConfig): Unit = {}
   val c:Option[IStorageEngine]=None
   override def getStorageEngine: IStorageEngine = c.get
-  override def UpdateMetadata(metadata: IMetadata): Boolean = {
+  override def updateMetadata(metadata: IMetadata): Boolean = {
     true
   }
 }
