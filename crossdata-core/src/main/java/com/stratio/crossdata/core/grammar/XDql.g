@@ -558,12 +558,12 @@ alterTableStatement returns [AlterTableStatement altast]
         AlterOperation option= null;
     }:
     T_ALTER T_TABLE tablename=getTableName
-    (T_ALTER column=getColumnName[tablename] T_TYPE dataType=getDataType {option=AlterOperation.ALTER_COLUMN;}
+    ((T_ALTER column=getColumnName[tablename] T_TYPE dataType=getDataType {option=AlterOperation.ALTER_COLUMN;}
         |T_ADD column=getColumnName[tablename] dataType=getDataType {option=AlterOperation.ADD_COLUMN;}
         |T_DROP column=getColumnName[tablename] {option=AlterOperation.DROP_COLUMN;}
-        |(T_WITH {option=AlterOperation.ALTER_OPTIONS;} j=getJson)?
-    )
-    {$altast = new AlterTableStatement(tablename, column, dataType, j, option);  }
+    ) (T_WITH j=getJson)?
+    | T_WITH {option=AlterOperation.ALTER_OPTIONS;} j=getJson)
+    { $altast = new AlterTableStatement(tablename, column, dataType, j, option); }
 ;
 
 selectStatement returns [SelectStatement slctst]

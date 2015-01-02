@@ -406,8 +406,7 @@ public class Validator {
                 throw new BadFormatException("AlterCatalog options can't be empty");
             }
 
-        }
-        if (stmt instanceof AlterClusterStatement) {
+        } else if (stmt instanceof AlterClusterStatement) {
             AlterClusterStatement alterClusterStatement = (AlterClusterStatement) stmt;
             if (alterClusterStatement.getOptions() == null || alterClusterStatement.getOptions().isEmpty()) {
                 throw new BadFormatException("AlterCluster options can't be empty");

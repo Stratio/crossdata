@@ -80,6 +80,13 @@ public class AlterTableStatementTest extends ParsingTest {
     }
 
     @Test
+    public void alterTableWithOptionAndProperties() {
+        String inputText = "ALTER TABLE demo.myTable DROP column1 WITH {column1: 'force'};";
+        String expectedText = "ALTER TABLE demo.myTable DROP demo.myTable.column1 WITH {'column1'='force'};";
+        testRegularStatement(inputText, expectedText, "alterTableWithOptionAndProperties");
+    }
+
+    @Test
     public void alterTableBasic3() {
         String inputText = "ALTER TABLE demo.myTable WITH {'property1': 'value1', 'property2': 2, 'property3': 3.0};";
         String expectedText = "ALTER TABLE demo.myTable WITH {'property1'='value1', 'property2'=2, 'property3'=3.0};";
