@@ -23,7 +23,9 @@ import com.stratio.crossdata.common.data.ColumnName;
 /**
  * ColumnMetadata class.
  */
-public class ColumnMetadata {
+public class ColumnMetadata implements IMetadata {
+
+    private static final long serialVersionUID = 4648404086101059817L;
     private final ColumnName name;
     private final Object[] parameters;
     private final ColumnType columnType;
