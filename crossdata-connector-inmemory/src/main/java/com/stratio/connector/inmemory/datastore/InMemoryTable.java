@@ -20,9 +20,11 @@ package com.stratio.connector.inmemory.datastore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
@@ -200,10 +202,21 @@ public class InMemoryTable {
     }
 
     private Object executeFunction(String fs, List<Object> params) {
-        StringBuilder sb = new StringBuilder("Mock_");
-        sb.append(fs).append(":");
-        for(Object param: params){
-            sb.append("_").append(param);
+        Set<String> supportedFunctions = new HashSet<String>(){};
+        supportedFunctions.add("concat");
+        StringBuilder sb = new StringBuilder();
+        if(supportedFunctions.contains(fs.toLowerCase())) {
+            if(fs.equalsIgnoreCase("concat") && (params != null) && (params.size() > 1)){
+                sb.append(params.get(0)).append(" ").append(params.get(1));
+            } else {
+                sb.append(fs + " failed");
+            }
+        } else {
+            sb = new StringBuilder("Mock_");
+            sb.append(fs).append(":");
+            for(Object param: params){
+                sb.append("_").append(param);
+            }
         }
         return sb.toString();
     }

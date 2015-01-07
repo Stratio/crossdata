@@ -41,10 +41,10 @@
     <!-- Functions -->
     <Functions>
         <Function>
-            <FunctionName>dateOf</FunctionName>
-            <Signature>dateOf(Tuple[Text]):Tuple[Any]</Signature>
+            <FunctionName>concat</FunctionName>
+            <Signature>concat(Tuple[Text, Text]):Tuple[Text]</Signature>
             <FunctionType>simple</FunctionType>
-            <Description>Mocking function</Description>
+            <Description>Concat the content of two columns</Description>
         </Function>
         <Function>
             <FunctionName>count</FunctionName>
