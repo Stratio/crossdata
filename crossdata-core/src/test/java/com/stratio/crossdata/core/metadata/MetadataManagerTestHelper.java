@@ -113,12 +113,12 @@ public class MetadataManagerTestHelper {
         FunctionType function = new FunctionType();
         function.setFunctionName("getYear");
         function.setFunctionType("simple");
-        function.setSignature("getYear(Tuple<Int>):Tuple<Any>");
+        function.setSignature("getYear(Tuple[Int]):Tuple[Any]");
         functions.add(function);
         function = new FunctionType();
         function.setFunctionName("shorten");
         function.setFunctionType("simple");
-        function.setSignature("shorten(Tuple<Text>):Tuple<Any>");
+        function.setSignature("shorten(Tuple[Text]):Tuple[Any]");
         functions.add(function);
 
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
@@ -212,7 +212,7 @@ public class MetadataManagerTestHelper {
         List<FunctionType> functionsList = new ArrayList<>();
         FunctionType functionType = new FunctionType();
         functionType.setFunctionName("concat");
-        functionType.setSignature("concat(Tuple<Text, Text>):Tuple<Text>");
+        functionType.setSignature("concat(Tuple[Text, Text]):Tuple[Text]");
         functionType.setFunctionType("simple");
         functionsList.add(functionType);
         functions.setFunction(functionsList);

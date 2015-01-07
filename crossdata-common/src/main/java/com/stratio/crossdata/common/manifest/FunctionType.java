@@ -18,9 +18,9 @@ import javax.xml.bind.annotation.XmlType;
 
 /**
  * <p>Java class for FunctionType complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType name="FunctionType">
  *   &lt;complexContent>
@@ -29,19 +29,21 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="FunctionName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="Signature" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="FunctionType" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="Description" type="{http://www.w3.org/2001/XMLSchema}string" minOccurs="0"/>
  *       &lt;/sequence>
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
+ *
+ *
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "FunctionType", propOrder = {
     "functionName",
     "signature",
-    "functionType"
+    "functionType",
+    "description"
 })
 public class FunctionType implements Serializable {
 
@@ -52,6 +54,8 @@ public class FunctionType implements Serializable {
     protected String signature;
     @XmlElement(name = "FunctionType", required = true)
     protected String functionType;
+    @XmlElement(name = "Description")
+    protected String description;
 
     /**
      * Gets the value of the functionName property.
@@ -123,6 +127,30 @@ public class FunctionType implements Serializable {
      */
     public void setFunctionType(String value) {
         this.functionType = value;
+    }
+
+    /**
+     * Gets the value of the description property.
+     *
+     * @return
+     *     possible object is
+     *     {@link String }
+     *
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the value of the description property.
+     *
+     * @param value
+     *     allowed object is
+     *     {@link String }
+     *
+     */
+    public void setDescription(String value) {
+        this.description = value;
     }
 
 }

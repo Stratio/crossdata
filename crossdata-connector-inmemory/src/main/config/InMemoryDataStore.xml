@@ -42,13 +42,15 @@
     <Functions>
         <Function>
             <FunctionName>dateOf</FunctionName>
-            <Signature>dateOf(Tuple&lt;Text&gt;):Tuple&lt;Any&gt;</Signature>
+            <Signature>dateOf(Tuple[Text]):Tuple[Any]</Signature>
             <FunctionType>simple</FunctionType>
+            <Description>Mocking function</Description>
         </Function>
         <Function>
             <FunctionName>count</FunctionName>
-            <Signature>count(Tuple&lt;Any*&gt;):Tuple&lt;Any&gt;</Signature>
+            <Signature>count(Tuple[Any*]):Tuple[Int]</Signature>
             <FunctionType>aggregation</FunctionType>
+            <Description>Rows count</Description>
         </Function>
     </Functions>
 </DataStore>

@@ -68,6 +68,7 @@
             <xs:element type="xs:string" name="FunctionName"/>
             <xs:element type="xs:string" name="Signature"/>
             <xs:element type="xs:string" name="FunctionType"/>
+            <xs:element type="xs:string" name="Description" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
 </xs:schema>

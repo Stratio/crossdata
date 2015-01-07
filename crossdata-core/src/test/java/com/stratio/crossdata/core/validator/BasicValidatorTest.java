@@ -189,7 +189,7 @@ public class BasicValidatorTest {
         Set<FunctionType> functions = new HashSet<>();
         FunctionType function = new FunctionType();
         function.setFunctionName("getYear");
-        function.setSignature("getYear(Tuple<Int>):Tuple<Any>");
+        function.setSignature("getYear(Tuple[Int]):Tuple[Any]");
         function.setFunctionType("simple");
         functions.add(function);
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(new DataStoreName("Cassandra"), "1.0",

@@ -39,7 +39,7 @@ public class FunctionSelector extends Selector {
     /**
      * List of columns.
      */
-    private LinkedList<Selector> functionColumns;
+    private List<Selector> functionColumns;
 
     /**
      * Class constructor.

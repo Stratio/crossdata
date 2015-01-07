@@ -544,23 +544,25 @@ public class Normalizator {
         String storedSignature = function.getSignature();
         if(!storedSignature.equalsIgnoreCase(signature)){
             if(!checkSignatureCompatibility(storedSignature, signature)){
-                throw new BadFormatException("Signature of " + functionName + " is wrong: " + signature +
-                        System.lineSeparator() + "Expected: " + storedSignature);
+                throw new BadFormatException("The query generated a incompatible signature of " + functionName
+                        + ": " + signature + System.lineSeparator() + "Declared signature: " + storedSignature);
             }
-
         }
     }
 
     private boolean checkSignatureCompatibility(String storedSignature, String querySignature) {
         boolean result = false;
-        if(storedSignature.contains("Any*>")){
+        if(storedSignature.contains("Any*]")){
             String typesInStoresSignature = storedSignature.substring(
-                    storedSignature.indexOf("Tuple<"),
-                    storedSignature.indexOf(">")+1);
-            querySignature = querySignature.replaceFirst("Tuple<[^>]*>", typesInStoresSignature);
+                    storedSignature.indexOf("Tuple["),
+                    storedSignature.indexOf("]")+1);
+            querySignature = querySignature.replaceFirst("Tuple\\[[^\\]]*]", typesInStoresSignature);
         }
-        if(storedSignature.endsWith(":Tuple<Any>")){
-            querySignature = querySignature.replaceAll(":Tuple<[^>]*>", ":Tuple<Any>");
+        if(storedSignature.endsWith(":Tuple[Any]")){
+            querySignature = querySignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
+        }
+        if(querySignature.endsWith(":Tuple[Any]")){
+            storedSignature = storedSignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
         }
         if(storedSignature.equalsIgnoreCase(querySignature)){
             result = true;
@@ -570,7 +572,7 @@ public class Normalizator {
 
     private String createSignature(FunctionSelector functionSelector) throws BadFormatException {
         StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
-        sb.append("(Tuple<");
+        sb.append("(Tuple[");
         Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
         while(iter.hasNext()){
             Selector selector = iter.next();
@@ -608,7 +610,7 @@ public class Normalizator {
                 sb.append(", ");
             }
         }
-        sb.append(">):Tuple<Any>");
+        sb.append("]):Tuple[Any]");
         String result = sb.toString();
         checkSignature(functionSelector, result);
         return result;
