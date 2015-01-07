@@ -212,16 +212,7 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
-	<!--
-        <dependency>
-	        <groupId>com.googlecode.java-diff-utils</groupId>
-	        <artifactId>diffutils</artifactId>
-            <scope>test</scope>
-	        <version>1.2.1</version>
-        </dependency>
-	-->
-
-    </dependencies>
+   </dependencies>
     <build>
 
 

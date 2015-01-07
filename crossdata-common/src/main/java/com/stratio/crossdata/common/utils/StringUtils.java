@@ -18,11 +18,9 @@
 
 package com.stratio.crossdata.common.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -34,6 +32,7 @@ import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
@@ -41,6 +40,10 @@ import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+
+import difflib.DiffUtils;
+import difflib.Patch;
+import difflib.PatchFailedException;
 
 /**
  * Utility class for String transformation operations.
@@ -182,32 +185,41 @@ public final class StringUtils {
         return ct;
     }
 
-    public static Object DeserializeObjectFromString(String serializedObject) {
-        Object obj=null;
-        // deserialize the object
-        try {
-            byte b[] = serializedObject.getBytes();
-            ByteArrayInputStream bi = new ByteArrayInputStream(b);
-            ObjectInputStream si = new ObjectInputStream(bi);
-            obj = (Object) si.readObject();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-        return obj;
+    public static difflib.Patch objectDiff(Object oa, Object ob){
+        String[] a = serializeObject2String(oa).split("\n");
+        String[] b = serializeObject2String(ob).split("\n");
+        ArrayList<String> lista = new ArrayList<String>(Arrays.asList(a));
+        ArrayList<String> listb = new ArrayList<String>(Arrays.asList(b));
+        return DiffUtils.diff(lista, listb);
     }
-    public static String SerializeObject2String(Object obj) {
-        String serializedObject = "";
-
-        // serialize the object
+    
+    public static String patchObject(ArrayList<String> a, Patch diff) throws PatchFailedException {
+        String[] lista = StringUtils.serializeObject2String(a).split("\n"); //apply patch to a
+        List<String> partialresult = (List<String>) diff.applyTo(Arrays.asList(lista));
+        String jsonresult="";
+        for(String res:partialresult){ jsonresult+=res; }
+        return jsonresult;
+    }
+    
+    public static Object deserializeObjectFromString(String serializedObject, Class objectsClass) {
+        ObjectMapper mapper = new ObjectMapper();
         try {
-            ByteArrayOutputStream bo = new ByteArrayOutputStream();
-            ObjectOutputStream so = new ObjectOutputStream(bo);
-            so.writeObject(obj);
-            so.flush();
-            serializedObject = bo.toString();
-        } catch (Exception e) {
-            System.out.println(e);
+            return mapper.readValue(mapper.readTree(serializedObject), ArrayList.class);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return serializedObject;
+        return null;
+    }
+    public static String serializeObject2String(Object obj) {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable( SerializationConfig.Feature.INDENT_OUTPUT );
+        mapper.enable( SerializationConfig.Feature.SORT_PROPERTIES_ALPHABETICALLY);
+        String serialized = null;
+        try {
+            serialized = mapper.writeValueAsString(obj);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return serialized;
     }
 }
