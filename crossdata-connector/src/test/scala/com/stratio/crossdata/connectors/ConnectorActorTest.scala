@@ -22,11 +22,10 @@ import akka.pattern.ask
 import akka.routing.RoundRobinRouter
 import akka.util.Timeout
 import com.stratio.crossdata.common.data._
-import com.stratio.crossdata.common.metadata.{CatalogMetadata, ColumnMetadata, IndexMetadata, TableMetadata}
+import com.stratio.crossdata.common.metadata.{ColumnMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.MetadataResult
 import com.stratio.crossdata.common.statements.structures.Selector
-import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{CreateTable, UpdateMetadata}
+import com.stratio.crossdata.communication.CreateTable
 import com.stratio.crossdata.connectors.ConnectorActor
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import org.apache.log4j.Logger
@@ -120,33 +119,18 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     assert(result2.getQueryId() == queryId + sm2)
 
   }
-  
+
   test("Send updateMetadata to Connector") {
     //TODO: this test is not complete (still a Proof Of Concept)
+    /*
     val m=new DummyIConnector()
     val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m))
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
     val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
     catalog.getTables.put(table.getName,table)
-    //ca1 ! updateMetadata(table)
     var future1 = ask(ca1, UpdateMetadata(catalog))
     val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
     assert(result == true)
-
-    val a=new java.util.ArrayList[String]();
-    val b=new java.util.ArrayList[String]();
-    a.add("hola1hola2")
-    a.add("hola1hola3")
-    a.add("hola1hola4")
-    b.add("hola3hola4")
-    /*
-    println("-->>>>"+StringUtils.SerializeObject2String(a))
-    val diff=DiffUtils.diff(a,b)
-    for( d <- diff.getDeltas.toArray() ){
-      println(d)
-    }
-    val undiff=diff.applyTo(a)
-    println(undiff.get(0))
     */
 
   }
