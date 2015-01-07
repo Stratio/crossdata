@@ -18,12 +18,14 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.io.Serializable;
+
 import com.stratio.crossdata.common.data.ColumnName;
 
 /**
  * ColumnMetadata class.
  */
-public class ColumnMetadata implements IMetadata {
+public class ColumnMetadata implements Serializable {
 
     private static final long serialVersionUID = 4648404086101059817L;
     private final ColumnName name;

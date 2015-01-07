@@ -18,13 +18,14 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
-public class IndexMetadata implements IMetadata {
+public class IndexMetadata implements Serializable {
 
     private static final long serialVersionUID = -3324957892171791688L;
     private final IndexName name;
