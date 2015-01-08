@@ -85,6 +85,34 @@ public class OrderByClause implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        OrderByClause that = (OrderByClause) o;
+
+        if (direction != that.direction) {
+            return false;
+        }
+        if (selector != null ? !selector.equals(that.selector) : that.selector != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = selector != null ? selector.hashCode() : 0;
+        result = 31 * result + (direction != null ? direction.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
 

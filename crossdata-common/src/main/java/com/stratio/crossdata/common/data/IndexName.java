@@ -99,7 +99,8 @@ public class IndexName extends Name {
         return result;
     }
 
-    @Override public NameType getType() {
+    @Override
+    public NameType getType() {
         return NameType.INDEX;
     }
 

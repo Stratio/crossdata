@@ -43,6 +43,29 @@ public class SelectExpression implements Serializable {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        SelectExpression that = (SelectExpression) o;
+
+        if (selectorList != null ? !selectorList.equals(that.selectorList) : that.selectorList != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return selectorList != null ? selectorList.hashCode() : 0;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
         Iterator<Selector> selectors = selectorList.iterator();
