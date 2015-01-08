@@ -18,10 +18,12 @@
 
 package com.stratio.connector.inmemory.datastore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -43,7 +45,9 @@ public class InMemoryDatastore {
      */
     private final Map<String, InMemoryCatalog> catalogs = new HashMap<>();
 
-    private final LinkedHashSet<String> functions = new LinkedHashSet<>();
+    private final Set<String> simpleFunctions = new HashSet<>();
+
+    private final Set<String> aggregationFunctions = new HashSet<>();
 
     /**
      * Class logger.
@@ -55,16 +59,26 @@ public class InMemoryDatastore {
      * @param tableRowLimit The maximum number of rows per table.
      */
     public InMemoryDatastore(int tableRowLimit){
+        simpleFunctions.add("concat");
+        aggregationFunctions.add("count");
         TABLE_ROW_LIMIT = tableRowLimit;
         LOG.info("InMemoryDatastore created with row limit: " + TABLE_ROW_LIMIT);
     }
 
-    public LinkedHashSet<String> getFunctions() {
-        return functions;
+    public Set<String> getSimpleFunctions() {
+        return simpleFunctions;
     }
 
-    public void addFunction(String function){
-        functions.add(function);
+    public void addSimpleFunction(String function){
+        simpleFunctions.add(function);
+    }
+
+    public Set<String> getAggregationFunctions() {
+        return aggregationFunctions;
+    }
+
+    public void addAggregationFunction(String function){
+        aggregationFunctions.add(function);
     }
 
     /**
@@ -161,10 +175,36 @@ public class InMemoryDatastore {
      * @throws Exception If search cannot be performed.
      */
     public List<Object[]> search(String catalogName, String tableName, List<InMemoryRelation> relations,
-            List<FunctionSelector> functions, List<String> columnOrder)
-            throws Exception {
+            List<FunctionSelector> functions, List<String> columnOrder) throws Exception {
         catalogShouldExist(catalogName);
-        return catalogs.get(catalogName).search(tableName, relations, functions, columnOrder);
+        List<Object[]> result;
+
+        boolean includesAggr = false;
+        FunctionSelector aggrFunction = null;
+        for(FunctionSelector fn: functions){
+            if(aggregationFunctions.contains(fn.getFunctionName().toLowerCase())){
+                includesAggr = true;
+                aggrFunction = fn;
+                break;
+            }
+        }
+
+        result = catalogs.get(catalogName).search(tableName, relations, functions, columnOrder);
+
+        if(includesAggr){
+            result = executeAggregationFunction(result, aggrFunction);
+        }
+
+        return result;
+    }
+
+    private List<Object[]> executeAggregationFunction(List<Object[]> rows, FunctionSelector aggrFunction) {
+        List<Object[]> result = rows;
+        if(aggrFunction.getFunctionName().toLowerCase().equalsIgnoreCase("count")){
+            result = new ArrayList<>();
+            result.add(new Object[]{rows.size()});
+        }
+        return result;
     }
 
     /**

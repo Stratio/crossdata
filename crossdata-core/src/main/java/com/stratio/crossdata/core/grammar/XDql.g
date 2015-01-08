@@ -838,7 +838,9 @@ getSelector[TableName tablename] returns [Selector s]
     (
         functionName=getFunctionName
         T_START_PARENTHESIS
-            (select1=getSelector[tablename] {params.add(select1);})*
+            (select1=getSelector[tablename] {params.add(select1);}
+                (T_COMMA selectN=getSelector[tablename] {params.add(selectN);})*
+            )?
         T_END_PARENTHESIS { String functionStr = functionName;
                             if(functionStr.equalsIgnoreCase("count") && (!params.toString().equalsIgnoreCase("[*]")) && (!params.toString().equalsIgnoreCase("[1]"))) throwParsingException("COUNT includes only accepts '*' or '1'");
                             s = new FunctionSelector(functionStr, params);}

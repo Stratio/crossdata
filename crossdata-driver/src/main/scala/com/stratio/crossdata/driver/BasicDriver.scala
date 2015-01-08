@@ -352,9 +352,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       result = describeConnector(new ConnectorName(connector))
     } else if (command.toLowerCase.startsWith("describe catalogs")) {
       result = listCatalogs
-    } else if (command.toLowerCase.startsWith("describe catalog ")) {
-      val catalog = command.toLowerCase.replace("describe catalog ", "").replace(";", "").trim
-      result = describeCatalog(new CatalogName(catalog))
+    } else if (command.toLowerCase.startsWith("describe catalog")) {
+      val catalog = command.toLowerCase.replace("describe catalog", "").replace(";", "").trim
+      var catalogName: CatalogName = new CatalogName(catalog)
+      if(catalog.isEmpty){
+        catalogName = new CatalogName(getCurrentCatalog)
+      }
+      result = describeCatalog(catalogName)
     } else if (command.toLowerCase.startsWith("describe tables")) {
       if (command.toLowerCase.startsWith("describe tables from ")) {
         val catalog = command.toLowerCase.replace("describe tables from ", "").replace(";", "").trim
@@ -373,8 +377,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
         val tokens: Array[String] = table.split("\\.")
         result = describeTable(new TableName(tokens(0), tokens(1)))
       } else if (!getCurrentCatalog.isEmpty) {
-        val table = getCurrentCatalog + "." +
-          command.toLowerCase.replace("describe table ", "").replace(";", "").trim
+        val table = command.toLowerCase.replace("describe table ", "").replace(";", "").trim
         result = describeTable(new TableName(getCurrentCatalog, table))
       } else {
         result = Result.createErrorResult(new Exception("Catalog not specified"))
