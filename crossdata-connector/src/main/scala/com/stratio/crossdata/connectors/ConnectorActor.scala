@@ -25,8 +25,8 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
 import akka.util.Timeout
 import com.stratio.crossdata
-import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
-import com.stratio.crossdata.common.data.{ClusterName, FirstLevelName}
+import com.stratio.crossdata.common.connector.{IConnectorApp, IConnector, IMetadataEngine, IResultHandler}
+import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
 import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.metadata.{TableMetadata, CatalogMetadata}
@@ -37,6 +37,36 @@ import org.apache.log4j.Logger
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
 import scala.collection.mutable
+import com.stratio.crossdata.communication.CreateIndex
+import com.stratio.crossdata.communication.Update
+import akka.cluster.ClusterEvent.MemberRemoved
+import com.stratio.crossdata.communication.IAmAlive
+import com.stratio.crossdata.communication.ACK
+import com.stratio.crossdata.communication.CreateTableAndCatalog
+import com.stratio.crossdata.communication.AlterTable
+import com.stratio.crossdata.communication.Truncate
+import com.stratio.crossdata.communication.CreateTable
+import com.stratio.crossdata.communication.AlterCatalog
+import com.stratio.crossdata.communication.InsertBatch
+import com.stratio.crossdata.communication.AsyncExecute
+import akka.cluster.ClusterEvent.UnreachableMember
+import com.stratio.crossdata.communication.ProvideCatalogMetadata
+import com.stratio.crossdata.communication.ProvideCatalogsMetadata
+import com.stratio.crossdata.communication.CreateCatalog
+import com.stratio.crossdata.communication.ProvideTableMetadata
+import com.stratio.crossdata.communication.replyConnectorName
+import com.stratio.crossdata.communication.Execute
+import akka.cluster.ClusterEvent.MemberUp
+import com.stratio.crossdata.communication.getConnectorName
+import com.stratio.crossdata.communication.ProvideMetadata
+import com.stratio.crossdata.communication.DropIndex
+import com.stratio.crossdata.communication.UpdateMetadata
+import akka.cluster.ClusterEvent.CurrentClusterState
+import com.stratio.crossdata.communication.DeleteRows
+import com.stratio.crossdata.communication.DropCatalog
+import com.stratio.crossdata.communication.HeartbeatSig
+import com.stratio.crossdata.communication.DropTable
+import com.stratio.crossdata.communication.Insert
 
 object State extends Enumeration {
   type state = Value
@@ -47,7 +77,7 @@ object ConnectorActor {
   (connectorName, connector))
 }
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with
-ActorLogging with IResultHandler{
+ActorLogging with IResultHandler with IConnectorApp {
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
   val metadata: util.Map[FirstLevelName, IMetadata]=new util.HashMap[FirstLevelName,IMetadata]()
@@ -60,7 +90,7 @@ ActorLogging with IResultHandler{
   val connector = conn
   var state = State.Stopped
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
-  var connectedServers: Set[ActorRef] = new mutable.HashSet[ActorRef]()
+  var connectedServers: Set[ActorRef] = Set()
 
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
     runningJobs.foreach {
@@ -70,6 +100,18 @@ ActorLogging with IResultHandler{
 
   override def preStart(): Unit = {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
+  }
+
+  override def getTableMetadata(tablename: TableName): TableMetadata = ???
+
+  override def getCatalogMetadata(catalogname: CatalogName): TableMetadata = ???
+
+  override def getConnectionStatus(): ConnectionStatus = {
+    var status: ConnectionStatus = ConnectionStatus.CONNECTED
+    if (connectedServers.isEmpty){
+      status = ConnectionStatus.DISCONNECTED
+    }
+    status
   }
 
   override def receive: Receive = super.receive orElse {
@@ -203,6 +245,7 @@ ActorLogging with IResultHandler{
       logger.info("Receiving anything else")
     }
   }
+
   def shutdown(): Unit = {
     logger.debug("ConnectorActor is shutting down")
     this.state = State.Stopping
@@ -297,7 +340,6 @@ ActorLogging with IResultHandler{
           result.asInstanceOf[MetadataResult].setTableList(tableList)
         }
       }
-      //TODO: create result.set_tercer(_3)_parámetro
     } catch {
       case ex: Exception => {
         logger.error("Connector exception: " + ex.getMessage)
@@ -353,7 +395,7 @@ ActorLogging with IResultHandler{
     }
   }
 
-  //TODO: add object in result tupple
+  //TODO: add object in result tuple
   //
   private def methodOpMetadata(metadataOp: MetadataOperation, eng: IMetadataEngine):
   (String,  Int, Object) = {

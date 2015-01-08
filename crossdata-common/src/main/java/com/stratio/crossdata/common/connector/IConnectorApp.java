@@ -19,11 +19,12 @@
 package com.stratio.crossdata.common.connector;
 
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.ConnectionStatus;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
 public interface IConnectorApp {
     TableMetadata getTableMetadata(TableName tablename);
     TableMetadata getCatalogMetadata(CatalogName catalogname);
-    //TODO: create more
+    ConnectionStatus getConnectionStatus();
 }
