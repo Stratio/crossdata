@@ -44,7 +44,6 @@ import com.stratio.crossdata.connectors.ConnectorApp;
  * development tutorial</a>
  */
 public class InMemoryConnector implements IConnector {
-
     /**
      * Class logger.
      */

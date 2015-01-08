@@ -73,34 +73,42 @@ ActorLogging with IResultHandler{
   }
 
   override def receive: Receive = super.receive orElse {
-    
+
+    /*
+    //TODO:
+    case u: PatchMetadata=> {
+      u.metadataClass match{
+        case CatalogMetadata => {
+        }
+      }
+    }
+    */
+
     case u: UpdateMetadata=> {
-      val pathOfClass=u.metadata.getClass().toString.split('.')
-      val classname=pathOfClass(pathOfClass.length-1)
-      classname match{
-        case "CatalogMetadata" => {
+      u.metadata match{
+        case _:CatalogMetadata => {
           metadata.put(u.metadata.asInstanceOf[CatalogMetadata].getName,u.metadata)
         }
-        case "ClusterMetadata" => {
+        case _:ClusterMetadata => {
           metadata.put(u.metadata.asInstanceOf[ClusterMetadata].getName,u.metadata)
         }
-        case "ConnectorMetadata" => {
+        case _:ConnectorMetadata => {
           metadata.put(u.metadata.asInstanceOf[ConnectorMetadata].getName,u.metadata)
         }
-        case "DataStoreMetadata" =>{
+        case _:DataStoreMetadata =>{
           metadata.put(u.metadata.asInstanceOf[DataStoreMetadata].getName,u.metadata)
         }
-        case "NodeMetadata" =>{
+        case _:NodeMetadata =>{
           metadata.put(u.metadata.asInstanceOf[NodeMetadata].getName,u.metadata)
         }
-        case "TableMetadata" => {
+        case _:TableMetadata => {
           val tablename = u.metadata.asInstanceOf[TableMetadata].getName
           val catalogname = tablename.getCatalogName
           metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.put(
             tablename,u.metadata.asInstanceOf[TableMetadata]
           )
         }
-        case "ColumnMetadata" => {
+        case _:ColumnMetadata => {
           val columname = u.metadata.asInstanceOf[ColumnMetadata].getName
           val tablename = columname.getTableName
           val catalogname = tablename.getCatalogName
@@ -108,7 +116,7 @@ ActorLogging with IResultHandler{
             columname,u.metadata.asInstanceOf[ColumnMetadata]
           )
         }
-        case "IndexMetadata" => {
+        case _:IndexMetadata => {
           val indexname = u.metadata.asInstanceOf[IndexMetadata].getName
           val tablename = indexname.getTableName
           val catalogname = tablename.getCatalogName
@@ -117,8 +125,7 @@ ActorLogging with IResultHandler{
           )
         }
       }
-      val res=connector.updateMetadata(u.metadata)
-      sender ! res
+      sender ! true
     }
     case connectRequest: com.stratio.crossdata.communication.Connect => {
       logger.debug("->" + "Receiving MetadataRequest")
@@ -269,10 +276,9 @@ ActorLogging with IResultHandler{
     logger.info("Received queryId = " + qId)
     var result: Result = null
     try {
-      val opclass = metadataOp.getClass().toString().split('.')
       val eng = connector.getMetadataEngine()
 
-      val answer = methodOpMetadata(opclass, metadataOp, eng)
+      val answer = methodOpMetadata( metadataOp, eng)
       qId = answer._1
       metadataOperation = answer._2
       result = MetadataResult.createSuccessMetadataResult(metadataOperation)
@@ -349,73 +355,72 @@ ActorLogging with IResultHandler{
 
   //TODO: add object in result tupple
   //
-  private def methodOpMetadata(opclass: Array[String], metadataOp: MetadataOperation, eng: IMetadataEngine):
+  private def methodOpMetadata(metadataOp: MetadataOperation, eng: IMetadataEngine):
   (String,  Int, Object) = {
-    opclass(opclass.length - 1) match {
-      case "CreateTable" => {
-        logger.debug("creating table from  " + self.path)
+    metadataOp match {
+      case _:CreateTable => {
         eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
           metadataOp.asInstanceOf[CreateTable].tableMetadata)
         (metadataOp.asInstanceOf[CreateTable].queryId, MetadataResult.OPERATION_CREATE_TABLE,null)
       }
-      case "CreateCatalog" => {
+      case _:CreateCatalog => {
         eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
         (metadataOp.asInstanceOf[CreateCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG,null)
       }
-      case "AlterCatalog" => {
+      case _:AlterCatalog => {
         eng.alterCatalog(metadataOp.asInstanceOf[AlterCatalog].targetCluster,
           metadataOp.asInstanceOf[AlterCatalog].catalogMetadata.getName,
           metadataOp.asInstanceOf[AlterCatalog].catalogMetadata.getOptions)
         (metadataOp.asInstanceOf[AlterCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG,null)
       }
-      case "CreateIndex" => {
+      case _:CreateIndex => {
         eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
           metadataOp.asInstanceOf[CreateIndex].indexMetadata)
         (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX,null)
       }
-      case "DropCatalog" => {
+      case _:DropCatalog => {
         eng.dropCatalog(metadataOp.asInstanceOf[DropCatalog].targetCluster,
           metadataOp.asInstanceOf[DropCatalog].catalogName)
         (metadataOp.asInstanceOf[DropCatalog].queryId, MetadataResult.OPERATION_DROP_CATALOG,null)
       }
-      case "DropIndex" => {
+      case _:DropIndex => {
         eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
         (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX,null)
       }
-      case "DropTable" => {
+      case _:DropTable => {
         eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
         (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE,null)
       }
-      case "AlterTable" => {
+      case _:AlterTable => {
         eng.alterTable(metadataOp.asInstanceOf[AlterTable].targetCluster, metadataOp.asInstanceOf[AlterTable]
           .tableName, metadataOp.asInstanceOf[AlterTable].alterOptions)
         (metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_ALTER_TABLE,null)
       }
-      case "CreateTableAndCatalog" => {
+      case _:CreateTableAndCatalog => {
         eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
         eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
         (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE,null)
       }
-      case "ProvideMetadata" => {
+      case _:ProvideMetadata => {
         val listmetadata=eng.provideMetadata(metadataOp.asInstanceOf[ProvideMetadata].targetCluster)
         (metadataOp.asInstanceOf[ProvideMetadata].queryId, MetadataResult.OPERATION_DISCOVER_METADATA,listmetadata)
 
       }
-      case "ProvideCatalogsMetadata" => {
+      case _:ProvideCatalogsMetadata => {
         val listmetadata=eng.provideMetadata(metadataOp.asInstanceOf[ProvideCatalogsMetadata].targetCluster)
         (metadataOp.asInstanceOf[ProvideCatalogsMetadata].queryId, MetadataResult.OPERATION_IMPORT_CATALOGS,
           listmetadata)
       }
-      case "ProvideCatalogMetadata" => {
+      case _:ProvideCatalogMetadata => {
         val listmetadata=eng.provideCatalogMetadata(metadataOp.asInstanceOf[ProvideCatalogMetadata].targetCluster,
           metadataOp.asInstanceOf[ProvideCatalogMetadata].catalogName)
         (metadataOp.asInstanceOf[ProvideCatalogMetadata].queryId, MetadataResult.OPERATION_IMPORT_CATALOG,
           listmetadata)
       }
-      case "ProvideTableMetadata" => {
+      case _:ProvideTableMetadata => {
         val listmetadata=eng.provideTableMetadata(metadataOp.asInstanceOf[ProvideTableMetadata].targetCluster,
           metadataOp.asInstanceOf[ProvideTableMetadata].tableName)
         (metadataOp.asInstanceOf[ProvideTableMetadata].queryId, MetadataResult.OPERATION_IMPORT_TABLE,
@@ -423,6 +428,5 @@ ActorLogging with IResultHandler{
       }
     }
   }
-
 
 }
