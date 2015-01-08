@@ -21,7 +21,7 @@ package com.stratio.crossdata.connectors
 import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.common.data.{ConnectionStatus, TableName, CatalogName}
-import com.stratio.crossdata.common.metadata.TableMetadata
+import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.common.connector.{IConnectorApp, IConfiguration, IConnector}
@@ -59,7 +59,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorClusterNode.asInstanceOf[IConnectorApp].getTableMetadata(tablename)
   }
 
-  override def getCatalogMetadata(catalogname: CatalogName): TableMetadata = {
+  override def getCatalogMetadata(catalogname: CatalogName): CatalogMetadata= {
     actorClusterNode.asInstanceOf[IConnectorApp].getCatalogMetadata(catalogname)
   }
 
