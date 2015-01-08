@@ -20,9 +20,11 @@ package com.stratio.crossdata.connectors
 
 import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import akka.routing.RoundRobinRouter
+import com.stratio.crossdata.common.data.{TableName, CatalogName}
+import com.stratio.crossdata.common.metadata.TableMetadata
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.connectors.config.ConnectConfig
-import com.stratio.crossdata.common.connector.{IConfiguration, IConnector}
+import com.stratio.crossdata.common.connector.{IConnectorApp, IConfiguration, IConnector}
 import com.stratio.crossdata.communication.Shutdown
 import org.apache.log4j.Logger
 
@@ -30,7 +32,7 @@ object ConnectorApp extends App {
   args.length==2
 }
 
-class ConnectorApp extends ConnectConfig {
+class ConnectorApp extends ConnectConfig with IConnectorApp{
 
   type OptionMap = Map[Symbol, String]
   lazy val system = ActorSystem(clusterName, config)
@@ -53,4 +55,7 @@ class ConnectorApp extends ConnectConfig {
     system.actorSelection( StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString()))
   }
 
+  override def getTableMetadata(tablename: TableName): TableMetadata = ???
+
+  override def getCatalogMetadata(catalogname: CatalogName): TableMetadata = ???
 }

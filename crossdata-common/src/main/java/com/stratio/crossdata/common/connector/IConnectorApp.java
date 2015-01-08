@@ -16,24 +16,14 @@
  * under the License.
  */
 
-package com.stratio.crossdata.communication
+package com.stratio.crossdata.common.connector;
 
-import com.stratio.crossdata.common.metadata.IMetadata
-import difflib.Patch
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 
-//CONNECTOR messages
-case class Start()
-
-case class Shutdown()
-
-case class HeartbeatSig()
-
-case class IAmAlive(queryId:String)
-
-case class Stop()
-
-case class UpdateMetadata(metadata:IMetadata)
-
-case class PatchMetadata(diffs:Patch[_],metadataClass:java.lang.Class[_])
-
-
+public interface IConnectorApp {
+    TableMetadata getTableMetadata(TableName tablename);
+    TableMetadata getCatalogMetadata(CatalogName catalogname);
+    //TODO: create more
+}

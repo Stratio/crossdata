@@ -16,24 +16,19 @@
  * under the License.
  */
 
-package com.stratio.crossdata.communication
+package com.stratio.crossdata.common.connector;
 
-import com.stratio.crossdata.common.metadata.IMetadata
-import difflib.Patch
-
-//CONNECTOR messages
-case class Start()
-
-case class Shutdown()
-
-case class HeartbeatSig()
-
-case class IAmAlive(queryId:String)
-
-case class Stop()
-
-case class UpdateMetadata(metadata:IMetadata)
-
-case class PatchMetadata(diffs:Patch[_],metadataClass:java.lang.Class[_])
-
-
+public abstract class AbstractConnector implements IConnector{
+    
+    IConnectorApp connectorApp=null;
+    /*
+    //TODO: ???
+    public AbstractConnector(){
+    }
+     */
+    
+    public void setConnectorMetadata(IConnectorApp connectorApp){
+        this.connectorApp=connectorApp;
+    }
+    
+}
