@@ -76,44 +76,43 @@ ActorLogging with IResultHandler{
     case u: UpdateMetadata=> {
       val pathOfClass=u.metadata.getClass().toString.split('.')
       val classname=pathOfClass(pathOfClass.length-1)
-      var receivedmetadata:IMetadata=null
       classname match{
         case "CatalogMetadata" => {
-          metadata.put(receivedmetadata.asInstanceOf[CatalogMetadata].getName,receivedmetadata)
+          metadata.put(u.metadata.asInstanceOf[CatalogMetadata].getName,u.metadata)
         }
         case "ClusterMetadata" => {
-          metadata.put(receivedmetadata.asInstanceOf[ClusterMetadata].getName,receivedmetadata)
+          metadata.put(u.metadata.asInstanceOf[ClusterMetadata].getName,u.metadata)
         }
         case "ConnectorMetadata" => {
-          metadata.put(receivedmetadata.asInstanceOf[ConnectorMetadata].getName,receivedmetadata)
+          metadata.put(u.metadata.asInstanceOf[ConnectorMetadata].getName,u.metadata)
         }
         case "DataStoreMetadata" =>{
-          metadata.put(receivedmetadata.asInstanceOf[DataStoreMetadata].getName,receivedmetadata)
+          metadata.put(u.metadata.asInstanceOf[DataStoreMetadata].getName,u.metadata)
         }
         case "NodeMetadata" =>{
-          metadata.put(receivedmetadata.asInstanceOf[NodeMetadata].getName,receivedmetadata)
+          metadata.put(u.metadata.asInstanceOf[NodeMetadata].getName,u.metadata)
         }
         case "TableMetadata" => {
-          var tablename=receivedmetadata.asInstanceOf[TableMetadata].getName
+          var tablename=u.metadata.asInstanceOf[TableMetadata].getName
           var catalogname=tablename.getCatalogName
           metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.put(
-            tablename,receivedmetadata.asInstanceOf[TableMetadata]
+            tablename,u.metadata.asInstanceOf[TableMetadata]
           )
         }
         case "ColumnMetadata" => {
-          var columname=receivedmetadata.asInstanceOf[ColumnMetadata].getName
+          var columname=u.metadata.asInstanceOf[ColumnMetadata].getName
           var tablename=columname.getTableName
           var catalogname=tablename.getCatalogName
           metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getColumns.put(
-            columname,receivedmetadata.asInstanceOf[ColumnMetadata]
+            columname,u.metadata.asInstanceOf[ColumnMetadata]
           )
         }
         case "IndexMetadata" => {
-          var indexname=receivedmetadata.asInstanceOf[IndexMetadata].getName
+          var indexname=u.metadata.asInstanceOf[IndexMetadata].getName
           var tablename=indexname.getTableName
           var catalogname=tablename.getCatalogName
           metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getIndexes.put(
-            indexname,receivedmetadata.asInstanceOf[IndexMetadata]
+            indexname,u.metadata.asInstanceOf[IndexMetadata]
           )
         }
         case "FunctionMetadata" => {
