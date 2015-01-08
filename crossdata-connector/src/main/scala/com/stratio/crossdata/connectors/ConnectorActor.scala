@@ -36,6 +36,7 @@ import org.apache.log4j.Logger
 
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
+import scala.collection.mutable
 
 object State extends Enumeration {
   type state = Value
@@ -58,8 +59,8 @@ ActorLogging with IResultHandler{
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
   var state = State.Stopped
-  var parentActorRef: Option[ActorRef] = None
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
+  var connectedServers: Set[ActorRef] = new mutable.HashSet[ActorRef]()
 
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
     runningJobs.foreach {
@@ -93,37 +94,31 @@ ActorLogging with IResultHandler{
           metadata.put(u.metadata.asInstanceOf[NodeMetadata].getName,u.metadata)
         }
         case "TableMetadata" => {
-          var tablename=u.metadata.asInstanceOf[TableMetadata].getName
-          var catalogname=tablename.getCatalogName
+          val tablename = u.metadata.asInstanceOf[TableMetadata].getName
+          val catalogname = tablename.getCatalogName
           metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.put(
             tablename,u.metadata.asInstanceOf[TableMetadata]
           )
         }
         case "ColumnMetadata" => {
-          var columname=u.metadata.asInstanceOf[ColumnMetadata].getName
-          var tablename=columname.getTableName
-          var catalogname=tablename.getCatalogName
+          val columname = u.metadata.asInstanceOf[ColumnMetadata].getName
+          val tablename = columname.getTableName
+          val catalogname = tablename.getCatalogName
           metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getColumns.put(
             columname,u.metadata.asInstanceOf[ColumnMetadata]
           )
         }
         case "IndexMetadata" => {
-          var indexname=u.metadata.asInstanceOf[IndexMetadata].getName
-          var tablename=indexname.getTableName
-          var catalogname=tablename.getCatalogName
+          val indexname = u.metadata.asInstanceOf[IndexMetadata].getName
+          val tablename = indexname.getTableName
+          val catalogname = tablename.getCatalogName
           metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getIndexes.put(
             indexname,u.metadata.asInstanceOf[IndexMetadata]
           )
         }
-        case "FunctionMetadata" => {
-          //TODO:
-        }
       }
       val res=connector.updateMetadata(u.metadata)
       sender ! res
-    }
-    case _: com.stratio.crossdata.communication.Start => {
-      parentActorRef = Some(sender)
     }
     case connectRequest: com.stratio.crossdata.communication.Connect => {
       logger.debug("->" + "Receiving MetadataRequest")
@@ -174,15 +169,12 @@ ActorLogging with IResultHandler{
     case metadataOp: MetadataOperation => {
       methodMetadataOp(metadataOp, sender)
     }
-    case result: Result =>
-      logger.debug("connectorActor receives Result with ID=" + result.getQueryId())
-      parentActorRef.get ! result
-    //TODO:  ManagementWorkflow
     case storageOp: StorageOperation => {
       methodStorageop(storageOp, sender)
     }
     case msg: getConnectorName => {
       logger.info(sender + " asked for my name")
+      connectedServers += sender
       sender ! replyConnectorName(connectorName)
     }
     case MemberUp(member) => {
@@ -193,9 +185,11 @@ ActorLogging with IResultHandler{
       logger.info("Current members: " + state.members.mkString(", "))
     }
     case UnreachableMember(member) => {
+      connectedServers -= sender
       logger.info("Member detected as unreachable: " + member)
     }
     case MemberRemoved(member, previousStatus) => {
+      connectedServers -= sender
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
     }
     case _: MemberEvent => {
