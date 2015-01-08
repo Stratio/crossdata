@@ -20,7 +20,6 @@ package com.stratio.crossdata.common.statements.structures;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.stratio.crossdata.common.data.ColumnName;
@@ -46,7 +45,7 @@ public class FunctionSelector extends Selector {
      *
      * @param functionName Name of the includes.
      */
-    public FunctionSelector(String functionName, LinkedList<Selector> functionColumns) {
+    public FunctionSelector(String functionName, List<Selector> functionColumns) {
         this.functionName = functionName;
         this.functionColumns = functionColumns;
     }

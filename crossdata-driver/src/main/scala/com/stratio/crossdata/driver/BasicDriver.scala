@@ -373,8 +373,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
         val tokens: Array[String] = table.split("\\.")
         result = describeTable(new TableName(tokens(0), tokens(1)))
       } else if (!getCurrentCatalog.isEmpty) {
-        val table = getCurrentCatalog + "." +
-          command.toLowerCase.replace("describe table ", "").replace(";", "").trim
+        val table = command.toLowerCase.replace("describe table ", "").replace(";", "").trim
         result = describeTable(new TableName(getCurrentCatalog, table))
       } else {
         result = Result.createErrorResult(new Exception("Catalog not specified"))
