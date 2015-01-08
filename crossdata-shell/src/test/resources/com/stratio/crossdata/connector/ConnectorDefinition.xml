@@ -47,4 +47,24 @@
         <operation>DELETE</operation>
         <operation>PROJECT</operation>
     </SupportedOperations>
+    <Functions>
+        <Function>
+            <FunctionName>usefulFunction</FunctionName>
+            <Signature>usefulFunction(Tuple[Int, Text]):Tuple[Double]</Signature>
+            <FunctionType>simple</FunctionType>
+            <Description>It's just magic</Description>
+        </Function>
+        <Function>
+            <FunctionName>magicAggregation</FunctionName>
+            <Signature>magicAggregation(Tuple[Any*]):Tuple[Float]</Signature>
+            <FunctionType>aggregation</FunctionType>
+            <Description>Absolutely magic</Description>
+        </Function>
+        <Exclude>
+            <FunctionName>fakeFunction</FunctionName>
+        </Exclude>
+        <Exclude>
+            <FunctionName>almostRealFunction</FunctionName>
+        </Exclude>
+    </Functions>
 </Connector>

@@ -69,4 +69,7 @@ public class ExcludeType implements Serializable {
         this.functionName = value;
     }
 
+    @Override public String toString() {
+        return functionName;
+    }
 }

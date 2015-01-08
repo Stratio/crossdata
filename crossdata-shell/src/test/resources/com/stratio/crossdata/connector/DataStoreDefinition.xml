@@ -43,4 +43,18 @@
         <Behavior>UPSERT_ON_INSERT</Behavior>
         <Behavior>FAKE_BEHAVIOR</Behavior>
     </Behaviors>
+    <Functions>
+        <Function>
+            <FunctionName>fakeFunction</FunctionName>
+            <Signature>fakeFunction(Tuple[Any]):Tuple[Any]</Signature>
+            <FunctionType>simple</FunctionType>
+            <Description>Not a real function</Description>
+        </Function>
+        <Function>
+            <FunctionName>almostRealFunction</FunctionName>
+            <Signature>almostRealFunction(Tuple[Text]):Tuple[Int]</Signature>
+            <FunctionType>aggregation</FunctionType>
+            <Description>Almost a real function</Description>
+        </Function>
+    </Functions>
 </DataStore>

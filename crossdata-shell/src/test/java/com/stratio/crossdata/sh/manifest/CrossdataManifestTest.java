@@ -75,6 +75,21 @@ public class CrossdataManifestTest {
         sb.append("\t").append("Behavior: ").append("UPSERT_ON_INSERT").append(System.lineSeparator());
         sb.append("\t").append("Behavior: ").append("FAKE_BEHAVIOR").append(System.lineSeparator());
 
+        // FUNCTIONS
+        sb.append("Functions: ").append(System.lineSeparator());
+
+        sb.append("\t").append("Function: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Name: fakeFunction").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Signature: fakeFunction(Tuple[Any]):Tuple[Any]").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Type: simple").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: Not a real function").append(System.lineSeparator());
+
+        sb.append("\t").append("Function: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Name: almostRealFunction").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Signature: almostRealFunction(Tuple[Text]):Tuple[Int]").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Type: aggregation").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: Almost a real function").append(System.lineSeparator());
+
         // ERROR MESSAGE
         StringBuilder sbError = new StringBuilder(System.lineSeparator());
         sbError.append("Expecting:  ").append(sb.toString()).append(System.lineSeparator());
@@ -139,6 +154,23 @@ public class CrossdataManifestTest {
         sb.append("\t").append("Operation: ").append("INSERT").append(System.lineSeparator());
         sb.append("\t").append("Operation: ").append("DELETE").append(System.lineSeparator());
         sb.append("\t").append("Operation: ").append("PROJECT").append(System.lineSeparator());
+
+        // FUNCTIONS
+        sb.append("Functions: ").append(System.lineSeparator());
+
+        sb.append("\t").append("Function: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Name: usefulFunction").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Signature: usefulFunction(Tuple[Int, Text]):Tuple[Double]").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Type: simple").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: It's just magic").append(System.lineSeparator());
+
+        sb.append("\t").append("Function: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Name: magicAggregation").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Signature: magicAggregation(Tuple[Any*]):Tuple[Float]").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Type: aggregation").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: Absolutely magic").append(System.lineSeparator());
+
+        sb.append("\t").append("Excludes: fakeFunction, almostRealFunction").append(System.lineSeparator());
 
         // ERROR MESSAGE
         StringBuilder sbError = new StringBuilder(System.lineSeparator());

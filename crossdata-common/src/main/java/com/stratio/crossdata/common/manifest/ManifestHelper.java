@@ -105,6 +105,18 @@ public final class ManifestHelper implements Serializable {
             }
         }
 
+        // FUNCTIONS
+        if (dataStoreType.getFunctions() != null){
+            sb.append("Functions: ").append(System.lineSeparator());
+            for(FunctionType function: dataStoreType.getFunctions().getFunction()){
+                sb.append("\t").append("Function: ").append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Name: " + function.getFunctionName()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Signature: " + function.getSignature()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Type: " + function.getFunctionType()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Description: " + function.getDescription()).append(System.lineSeparator());
+            }
+        }
+
         // RESULT
         return sb.toString();
     }
@@ -159,6 +171,23 @@ public final class ManifestHelper implements Serializable {
         sb.append("Supported operations: ").append(System.lineSeparator());
         for (String operation : connectorType.getSupportedOperations().getOperation()) {
             sb.append("\t").append("Operation: ").append(operation).append(System.lineSeparator());
+        }
+
+        // FUNCTIONS
+        if(connectorType.getFunctions() != null){
+            sb.append("Functions: ").append(System.lineSeparator());
+            // Includes
+            for(FunctionType function: connectorType.getFunctions().getFunction()){
+                sb.append("\t").append("Function: ").append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Name: " + function.getFunctionName()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Signature: " + function.getSignature()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Type: " + function.getFunctionType()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Description: " + function.getDescription()).append(System.lineSeparator());
+            }
+            // Excludes
+            sb.append("\t").append("Excludes: ").append(
+                    connectorType.getFunctions().getExclude().toString().replace("[", "").replace("]", ""));
+            sb.append(System.lineSeparator());
         }
 
         // RESULT
