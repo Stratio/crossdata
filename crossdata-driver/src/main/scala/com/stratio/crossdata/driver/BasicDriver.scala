@@ -352,9 +352,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       result = describeConnector(new ConnectorName(connector))
     } else if (command.toLowerCase.startsWith("describe catalogs")) {
       result = listCatalogs
-    } else if (command.toLowerCase.startsWith("describe catalog ")) {
-      val catalog = command.toLowerCase.replace("describe catalog ", "").replace(";", "").trim
-      result = describeCatalog(new CatalogName(catalog))
+    } else if (command.toLowerCase.startsWith("describe catalog")) {
+      val catalog = command.toLowerCase.replace("describe catalog", "").replace(";", "").trim
+      var catalogName: CatalogName = new CatalogName(catalog)
+      if(catalog.isEmpty){
+        catalogName = new CatalogName(getCurrentCatalog)
+      }
+      result = describeCatalog(catalogName)
     } else if (command.toLowerCase.startsWith("describe tables")) {
       if (command.toLowerCase.startsWith("describe tables from ")) {
         val catalog = command.toLowerCase.replace("describe tables from ", "").replace(";", "").trim
