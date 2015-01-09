@@ -151,12 +151,6 @@
                             <from>crossdata-dist/target/crossdata-dist-${project.version}/lib</from>
                             <to>opt/sds/crossdata/lib</to>
                         </copyDirectory>
-			<!--
-                        <copyDirectory>
-				<from>crossdata-dist/src/main/unix/files_and_dirs/var</from>
-				<to>var</to>
-                        </copyDirectory>
-			-->
                         <copyDirectory>
 				<from>crossdata-dist/src/main/unix/files_and_dirs/etc/default</from>
 				<to>etc/default</to>
