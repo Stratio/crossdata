@@ -41,7 +41,7 @@ public class AttachConnectorStatement extends MetadataStatement {
     public AttachConnectorStatement(ConnectorName connectorName, ClusterName clusterName, String json) {
         this.connectorName = connectorName;
         this.clusterName = clusterName;
-        this.options = StringUtils.convertJsonToOptions(json);
+        this.options = StringUtils.convertJsonToOptions(null, json);
     }
 
     public ValidationRequirements getValidationRequirements() {

@@ -122,15 +122,18 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         ColumnName partitionColumn1 = new ColumnName("unknown", "users2", "name");
         primaryKey.add(partitionColumn1);
 
-        columns.put(new ColumnName(new TableName("unknown", "users2"), "name"), ColumnType.TEXT);
-        columns.put(new ColumnName(new TableName("unknown", "users2"), "gender"), ColumnType.TEXT);
-        columns.put(new ColumnName(new TableName("unknown", "users2"), "age"), ColumnType.INT);
+        TableName tableName = new TableName("unknown", "users2");
+
+        columns.put(new ColumnName(tableName, "name"), ColumnType.TEXT);
+        columns.put(new ColumnName(tableName, "gender"), ColumnType.TEXT);
+        columns.put(new ColumnName(tableName, "age"), ColumnType.INT);
 
         CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("unknown", "users2"),
                 new ClusterName("cluster"), columns, primaryKey, null);
 
         List<Property> properties = new ArrayList<>();
-        Property prop = new PropertyNameValue(new StringSelector("comment"), new StringSelector("Users2 table"));
+        Property prop = new PropertyNameValue(new StringSelector(tableName, "comment"),
+                new StringSelector(tableName, "Users2 table"));
         properties.add(prop);
 
         createTableStatement.setProperties(properties.toString());

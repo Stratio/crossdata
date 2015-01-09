@@ -179,18 +179,20 @@ public class SelectStatementTest extends BasicValidatorTest {
     public void validateBasicWhereOk() {
         String query = "SELECT users.name, users.age FROM demo.users WHERE users.name = 'name_5';";
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<Relation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
-        Selector right = new StringSelector("name_5");
+        Selector right = new StringSelector(tablename, "name_5");
         Relation relation = new Relation(left, Operator.EQ, right);
         where.add(relation);
 
@@ -217,22 +219,24 @@ public class SelectStatementTest extends BasicValidatorTest {
         String query =
                 "SELECT users.name, users.age FROM demo.users WHERE users.name = 'name_5' AND users.age = 15;";
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<Relation> where = new ArrayList<>();
-        Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
-        Selector right = new StringSelector("name_5");
+        Selector left = new ColumnSelector(new ColumnName(tablename, "name"));
+        Selector right = new StringSelector(tablename, "name_5");
         Relation relation = new Relation(left, Operator.EQ, right);
 
-        Selector left2 = new ColumnSelector(new ColumnName("demo", "users", "age"));
-        Selector right2 = new IntegerSelector("15");
+        Selector left2 = new ColumnSelector(new ColumnName(tablename, "age"));
+        Selector right2 = new IntegerSelector(tablename, "15");
         Relation relation2 = new Relation(left2, Operator.EQ, right2);
 
         where.add(relation);
@@ -261,22 +265,24 @@ public class SelectStatementTest extends BasicValidatorTest {
         String query =
                 "SELECT users.name, users.age FROM demo.users WHERE users.unknown = 'name_5' AND users.age = 15;";
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<Relation> where = new ArrayList<>();
-        Selector left = new ColumnSelector(new ColumnName("demo", "users", "unknown"));
-        Selector right = new StringSelector("name_5");
+        Selector left = new ColumnSelector(new ColumnName(tablename, "unknown"));
+        Selector right = new StringSelector(tablename, "name_5");
         Relation relation = new Relation(left, Operator.EQ, right);
 
-        Selector left2 = new ColumnSelector(new ColumnName("demo", "users", "age"));
-        Selector right2 = new IntegerSelector("15");
+        Selector left2 = new ColumnSelector(new ColumnName(tablename, "age"));
+        Selector right2 = new IntegerSelector(tablename, "15");
         Relation relation2 = new Relation(left2, Operator.EQ, right2);
 
         where.add(relation);
@@ -305,22 +311,24 @@ public class SelectStatementTest extends BasicValidatorTest {
         String query =
                 "SELECT users.name, users.age FROM demo.users WHERE users.name = 'name_5' AND users.age = '15';";
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<Relation> where = new ArrayList<>();
-        Selector left = new ColumnSelector(new ColumnName("demo", "users", "unknown"));
-        Selector right = new StringSelector("name_5");
+        Selector left = new ColumnSelector(new ColumnName(tablename, "unknown"));
+        Selector right = new StringSelector(tablename, "name_5");
         Relation relation = new Relation(left, Operator.EQ, right);
 
-        Selector left2 = new ColumnSelector(new ColumnName("demo", "users", "age"));
-        Selector right2 = new StringSelector("15");
+        Selector left2 = new ColumnSelector(new ColumnName(tablename, "age"));
+        Selector right2 = new StringSelector(tablename, "15");
         Relation relation2 = new Relation(left2, Operator.EQ, right2);
 
         where.add(relation);
@@ -350,22 +358,24 @@ public class SelectStatementTest extends BasicValidatorTest {
                 "SELECT users.name, users.age FROM demo.users WHERE users.name = 15 AND users.age = 15;";
 
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<Relation> where = new ArrayList<>();
-        Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
-        Selector right = new IntegerSelector(15);
+        Selector left = new ColumnSelector(new ColumnName(tablename, "name"));
+        Selector right = new IntegerSelector(tablename, 15);
         Relation relation = new Relation(left, Operator.EQ, right);
 
-        Selector left2 = new ColumnSelector(new ColumnName("demo", "users", "age"));
-        Selector right2 = new IntegerSelector("15");
+        Selector left2 = new ColumnSelector(new ColumnName(tablename, "age"));
+        Selector right2 = new IntegerSelector(tablename, "15");
         Relation relation2 = new Relation(left2, Operator.EQ, right2);
 
         where.add(relation);
@@ -394,18 +404,20 @@ public class SelectStatementTest extends BasicValidatorTest {
         String[] operators = { ">", "<", ">=", "<=" };
 
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<Relation> where = new ArrayList<>();
-        Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
-        Selector right = new StringSelector("name_5");
+        Selector left = new ColumnSelector(new ColumnName(tablename, "name"));
+        Selector right = new StringSelector(tablename, "name_5");
         Relation relation = null;
 
         for (String operator : operators) {
@@ -455,18 +467,20 @@ public class SelectStatementTest extends BasicValidatorTest {
         String[] operators = { ">", "<", ">=", "<=" };
 
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<Relation> where = new ArrayList<>();
-        Selector left = new ColumnSelector(new ColumnName("demo", "users", "bool"));
-        Selector right = new BooleanSelector(true);
+        Selector left = new ColumnSelector(new ColumnName(tablename, "bool"));
+        Selector right = new BooleanSelector(tablename, true);
         Relation relation = null;
         for (String operator : operators) {
             String query =
@@ -517,18 +531,20 @@ public class SelectStatementTest extends BasicValidatorTest {
                 "SELECT users.name, users.age FROM demo.users WHERE users.email <> 'name_1@domain.com';";
 
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<Relation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "email"));
-        Selector right = new StringSelector("name_1@domain.com");
+        Selector right = new StringSelector(tablename, "name_1@domain.com");
         Relation relation = new Relation(left, Operator.DISTINCT, right);
         where.add(relation);
 
@@ -929,7 +945,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<Relation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("demo", "users", "name"));
-        Selector rightWh = new StringSelector("name_3");
+        Selector rightWh = new StringSelector(new TableName("demo", "users"), "name_3");
         Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
         where.add(relationWh);
 
@@ -981,7 +997,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<Relation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("demo", "users", "name"));
-        Selector rightWh = new StringSelector("name_3");
+        Selector rightWh = new StringSelector(new TableName("demo", "users"), "name_3");
         Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
         where.add(relationWh);
 
@@ -1147,17 +1163,19 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         String query = "SELECT * FROM demo.users ORDER BY users.age;";
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<OrderByClause> orderByClauseClauses = new ArrayList<>();
-        Selector selectorOrderBy = new ColumnSelector(new ColumnName("demo", "users", "age"));
+        Selector selectorOrderBy = new ColumnSelector(new ColumnName(tablename, "age"));
         orderByClauseClauses.add(new OrderByClause(OrderDirection.ASC, selectorOrderBy));
 
         selectStatement.setOrderByClauses(orderByClauseClauses);
@@ -1183,18 +1201,20 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         String query = "SELECT * FROM demo.users ORDER BY users.gender, users.age;";
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<OrderByClause> orderByClauseClauses = new ArrayList<>();
-        Selector selectorOrderBy1 = new ColumnSelector(new ColumnName("demo", "users", "gender"));
-        Selector selectorOrderBy2 = new ColumnSelector(new ColumnName("demo", "users", "age"));
+        Selector selectorOrderBy1 = new ColumnSelector(new ColumnName(tablename, "gender"));
+        Selector selectorOrderBy2 = new ColumnSelector(new ColumnName(tablename, "age"));
         orderByClauseClauses.add(new OrderByClause(OrderDirection.DESC, selectorOrderBy1));
         orderByClauseClauses.add(new OrderByClause(OrderDirection.ASC, selectorOrderBy2));
 
@@ -1222,17 +1242,19 @@ public class SelectStatementTest extends BasicValidatorTest {
         String query = "SELECT * FROM demo.users ORDER BY users.unknown;";
 
         List<Selector> selectorList = new ArrayList<>();
-        Selector selector = new StringSelector("name");
-        Selector selector2 = new StringSelector("age");
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
         selectorList.add(selector);
         selectorList.add(selector2);
         SelectExpression selectExpression = new SelectExpression(selectorList);
-        TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
         List<OrderByClause> orderByClauseClauses = new ArrayList<>();
-        Selector selectorOrderBy = new ColumnSelector(new ColumnName("demo", "users", "unknown"));
+        Selector selectorOrderBy = new ColumnSelector(new ColumnName(tablename, "unknown"));
 
         orderByClauseClauses.add(new OrderByClause(OrderDirection.ASC, selectorOrderBy));
 
@@ -1291,7 +1313,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         String expectedText = "SELECT getYear(demo.users.age) FROM demo.users";
 
         ColumnName col1 = new ColumnName(null, "users", "age");
-        Selector selector1 = new FunctionSelector("getYear", new LinkedList<Selector>(
+        Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
                 Collections.singleton(new ColumnSelector(col1))));
         List<Selector> selectorList = new ArrayList<>();
         selectorList.add(selector1);
@@ -1336,7 +1358,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<Relation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
-        Selector rightWh = new StringSelector("name_1");
+        Selector rightWh = new StringSelector(new TableName("demo", "users"), "name_1");
         Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
         where.add(relationWh);
 
@@ -1395,7 +1417,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<Relation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
-        Selector rightWh = new StringSelector("name_1");
+        Selector rightWh = new StringSelector(new TableName("demo", "users"), "name_1");
         Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
         where.add(relationWh);
 

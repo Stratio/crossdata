@@ -34,6 +34,7 @@ import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
@@ -78,7 +79,7 @@ public final class StringUtils {
         }
     }
 
-    public static Map<Selector, Selector> convertJsonToOptions(String json) {
+    public static Map<Selector, Selector> convertJsonToOptions(TableName tableName, String json) {
         if ((json == null) || (json.isEmpty())) {
             return new HashMap<>();
         }
@@ -95,8 +96,8 @@ public final class StringUtils {
             Iterator<Map.Entry<String, JsonNode>> iter = root.getFields();
             while (iter.hasNext()) {
                 Map.Entry<String, JsonNode> entry = iter.next();
-                Selector selector = convertJsonNodeToCrossdataParserType(entry.getValue());
-                options.put(new StringSelector(entry.getKey()), selector);
+                Selector selector = convertJsonNodeToCrossdataParserType(tableName, entry.getValue());
+                options.put(new StringSelector(tableName, entry.getKey()), selector);
             }
         } catch (IOException e) {
             LOG.error(e);
@@ -126,16 +127,16 @@ public final class StringUtils {
         return options;
     }
 
-    private static Selector convertJsonNodeToCrossdataParserType(JsonNode jsonNode) {
+    private static Selector convertJsonNodeToCrossdataParserType(TableName tableName, JsonNode jsonNode) {
         Selector selector;
         if (jsonNode.isBigDecimal() || jsonNode.isDouble()) {
-            selector = new FloatingPointSelector(jsonNode.getDoubleValue());
+            selector = new FloatingPointSelector(tableName, jsonNode.getDoubleValue());
         } else if (jsonNode.isBoolean()) {
-            selector = new BooleanSelector(jsonNode.getBooleanValue());
+            selector = new BooleanSelector(tableName, jsonNode.getBooleanValue());
         } else if (jsonNode.isInt() || jsonNode.isBigInteger() || jsonNode.isLong()) {
-            selector = new IntegerSelector(jsonNode.getIntValue());
+            selector = new IntegerSelector(tableName, jsonNode.getIntValue());
         } else {
-            selector = new StringSelector(jsonNode.getTextValue());
+            selector = new StringSelector(tableName, jsonNode.getTextValue());
         }
         return selector;
     }

@@ -48,19 +48,22 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         String query = "Insert into demo.users(name,gender,age,bool,phrase,email) values ('pepe','male',23,true,'this is the phrase','mail@mail.com';";
         List<ColumnName> columns = new ArrayList<>();
         List<Selector> values = new ArrayList<>();
-        columns.add(new ColumnName(new TableName("demo", "users"), "name"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "gender"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "age"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "bool"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "phrase"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "email"));
 
-        values.add(new StringSelector("'pepe'"));
-        values.add(new StringSelector("'male'"));
-        values.add(new IntegerSelector(23));
-        values.add(new BooleanSelector(true));
-        values.add(new StringSelector("'this is the phrase'"));
-        values.add(new StringSelector("'mail@mail.com'"));
+        TableName tableName = new TableName("demo", "users");
+
+        columns.add(new ColumnName(tableName, "name"));
+        columns.add(new ColumnName(tableName, "gender"));
+        columns.add(new ColumnName(tableName, "age"));
+        columns.add(new ColumnName(tableName, "bool"));
+        columns.add(new ColumnName(tableName, "phrase"));
+        columns.add(new ColumnName(tableName, "email"));
+
+        values.add(new StringSelector(tableName, "'pepe'"));
+        values.add(new StringSelector(tableName, "'male'"));
+        values.add(new IntegerSelector(tableName, 23));
+        values.add(new BooleanSelector(tableName, true));
+        values.add(new StringSelector(tableName, "'this is the phrase'"));
+        values.add(new StringSelector(tableName, "'mail@mail.com'"));
 
         StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns,
                 null, values, false, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
@@ -84,19 +87,22 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         String query = "Insert into demo.unknown(name,gender,age,bool,phrase,email) values ('pepe','male',23,true,'this is the phrase','mail@mail.com';";
         List<ColumnName> columns = new ArrayList<>();
         List<Selector> values = new ArrayList<>();
-        columns.add(new ColumnName(new TableName("demo", "unknown"), "name"));
-        columns.add(new ColumnName(new TableName("demo", "unknown"), "gender"));
-        columns.add(new ColumnName(new TableName("demo", "unknown"), "age"));
-        columns.add(new ColumnName(new TableName("demo", "unknown"), "bool"));
-        columns.add(new ColumnName(new TableName("demo", "unknown"), "phrase"));
-        columns.add(new ColumnName(new TableName("demo", "unknown"), "email"));
 
-        values.add(new StringSelector("'pepe'"));
-        values.add(new StringSelector("'male'"));
-        values.add(new IntegerSelector(23));
-        values.add(new BooleanSelector(true));
-        values.add(new StringSelector("'this is the phrase'"));
-        values.add(new StringSelector("'mail@mail.com'"));
+        TableName tableName = new TableName("demo", "unknown");
+
+        columns.add(new ColumnName(tableName, "name"));
+        columns.add(new ColumnName(tableName, "gender"));
+        columns.add(new ColumnName(tableName, "age"));
+        columns.add(new ColumnName(tableName, "bool"));
+        columns.add(new ColumnName(tableName, "phrase"));
+        columns.add(new ColumnName(tableName, "email"));
+
+        values.add(new StringSelector(tableName, "'pepe'"));
+        values.add(new StringSelector(tableName, "'male'"));
+        values.add(new IntegerSelector(tableName, 23));
+        values.add(new BooleanSelector(tableName, true));
+        values.add(new StringSelector(tableName, "'this is the phrase'"));
+        values.add(new StringSelector(tableName, "'mail@mail.com'"));
 
         StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "unknown"), columns,
                 null, values, false, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
@@ -121,19 +127,22 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
                 "Insert into unknown.users(name,gender,age,bool,phrase,email) values ('pepe','male',23,true,'this is the phrase','mail@mail.com';";
         List<ColumnName> columns = new ArrayList<>();
         List<Selector> values = new ArrayList<>();
-        columns.add(new ColumnName(new TableName("unknown", "users"), "name"));
-        columns.add(new ColumnName(new TableName("unknown", "users"), "gender"));
-        columns.add(new ColumnName(new TableName("unknown", "users"), "age"));
-        columns.add(new ColumnName(new TableName("unknown", "users"), "bool"));
-        columns.add(new ColumnName(new TableName("unknown", "users"), "phrase"));
-        columns.add(new ColumnName(new TableName("unknown", "users"), "email"));
 
-        values.add(new StringSelector("'pepe'"));
-        values.add(new StringSelector("'male'"));
-        values.add(new IntegerSelector(23));
-        values.add(new BooleanSelector(true));
-        values.add(new StringSelector("'this is the phrase'"));
-        values.add(new StringSelector("'mail@mail.com'"));
+        TableName tableName = new TableName("demo", "unknown");
+
+        columns.add(new ColumnName(tableName, "name"));
+        columns.add(new ColumnName(tableName, "gender"));
+        columns.add(new ColumnName(tableName, "age"));
+        columns.add(new ColumnName(tableName, "bool"));
+        columns.add(new ColumnName(tableName, "phrase"));
+        columns.add(new ColumnName(tableName, "email"));
+
+        values.add(new StringSelector(tableName, "'pepe'"));
+        values.add(new StringSelector(tableName, "'male'"));
+        values.add(new IntegerSelector(tableName, 23));
+        values.add(new BooleanSelector(tableName, true));
+        values.add(new StringSelector(tableName, "'this is the phrase'"));
+        values.add(new StringSelector(tableName, "'mail@mail.com'"));
 
         StorageStatement insertIntoStatement =
                 new InsertIntoStatement(new TableName("unknown", "users"), columns, null,
@@ -158,20 +167,23 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         String query = "Insert into demo.users(name,gender,age,bool,phrase,email) values ('pepe','male',23,true,'this is the phrase','mail@mail.com';";
         List<ColumnName> columns = new ArrayList<>();
         List<Selector> values = new ArrayList<>();
-        columns.add(new ColumnName(new TableName("demo", "users"), "name"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "gender"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "age"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "bool"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "phrase"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "email"));
+
+        TableName tableName = new TableName("demo", "users");
+
+        columns.add(new ColumnName(tableName, "name"));
+        columns.add(new ColumnName(tableName, "gender"));
+        columns.add(new ColumnName(tableName, "age"));
+        columns.add(new ColumnName(tableName, "bool"));
+        columns.add(new ColumnName(tableName, "phrase"));
+        columns.add(new ColumnName(tableName, "email"));
 
         //ERROR TYPE
-        values.add(new IntegerSelector(15));
-        values.add(new StringSelector("'male'"));
-        values.add(new IntegerSelector(23));
-        values.add(new BooleanSelector(true));
-        values.add(new StringSelector("'this is the phrase'"));
-        values.add(new StringSelector("'mail@mail.com'"));
+        values.add(new IntegerSelector(tableName, 15));
+        values.add(new StringSelector(tableName, "'male'"));
+        values.add(new IntegerSelector(tableName, 23));
+        values.add(new BooleanSelector(tableName, true));
+        values.add(new StringSelector(tableName, "'this is the phrase'"));
+        values.add(new StringSelector(tableName, "'mail@mail.com'"));
 
         StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns,
                 null, values, true, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);

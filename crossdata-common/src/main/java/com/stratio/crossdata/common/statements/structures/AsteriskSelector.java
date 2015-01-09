@@ -18,10 +18,20 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.TableName;
+
 /**
  * Asterisk selector.
  */
 public class AsteriskSelector extends Selector {
+
+    public AsteriskSelector() {
+        this(null);
+    }
+
+    public AsteriskSelector(TableName tableName) {
+        super(tableName);
+    }
 
     @Override
     public String toString() {
