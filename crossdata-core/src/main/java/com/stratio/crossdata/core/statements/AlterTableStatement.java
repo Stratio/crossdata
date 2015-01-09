@@ -81,7 +81,7 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
         this.tableName = tableName;
         this.column = column;
         this.type = type;
-        this.properties = StringUtils.convertJsonToOptions(properties);
+        this.properties = StringUtils.convertJsonToOptions(tableName, properties);
         this.option = option;
         Object[] parameters = { };
         this.columnMetadata = new ColumnMetadata(column, parameters, type);

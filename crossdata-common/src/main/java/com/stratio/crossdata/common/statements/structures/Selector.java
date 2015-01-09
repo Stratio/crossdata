@@ -37,6 +37,12 @@ public abstract class Selector implements Serializable {
      */
     protected String alias = null;
 
+    protected TableName tableName;
+
+    protected Selector(TableName tableName) {
+        this.tableName = tableName;
+    }
+
     /**
      * Get the column alias.
      *
@@ -44,6 +50,14 @@ public abstract class Selector implements Serializable {
      */
     public String getAlias() {
         return alias;
+    }
+
+    public TableName getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(TableName tableName) {
+        this.tableName = tableName;
     }
 
     /**
@@ -88,7 +102,7 @@ public abstract class Selector implements Serializable {
     }
 
     public ColumnName getColumnName(){
-        return null;
+        return new ColumnName(tableName, alias);
     }
 
     @Override

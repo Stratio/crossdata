@@ -168,7 +168,7 @@ public class CreateIndexStatement extends IndexStatement {
     }
 
     public void setOptionsJson(String optionsJson) {
-        options = StringUtils.convertJsonToOptions(optionsJson);
+        options = StringUtils.convertJsonToOptions(tableName, optionsJson);
     }
 
     /**

@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.TableName;
+
 /**
  * Integer value selector.
  */
@@ -26,16 +28,7 @@ public class IntegerSelector extends Selector {
     /**
      * The integer value with long precision.
      */
-    private final long value;
-
-    /**
-     * Class constructor.
-     *
-     * @param value The integer/long value.
-     */
-    public IntegerSelector(String value) {
-        this.value = Long.parseLong(value);
-    }
+    private final int value;
 
     /**
      * Class constructor.
@@ -43,7 +36,35 @@ public class IntegerSelector extends Selector {
      * @param value An integer value.
      */
     public IntegerSelector(int value) {
+        this(null, value);
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param value The integer/long value.
+     */
+    public IntegerSelector(String value) {
+        this(null, Integer.parseInt(value));
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param value An integer value.
+     */
+    public IntegerSelector(TableName tableName, int value) {
+        super(tableName);
         this.value = value;
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param value The integer/long value.
+     */
+    public IntegerSelector(TableName tableName, String value) {
+        this(tableName, Integer.parseInt(value));
     }
 
     /**
@@ -89,7 +110,7 @@ public class IntegerSelector extends Selector {
         if (alias != null) {
             result = alias.hashCode();
         }
-        result = 31 * result + (int) (value ^ (value >>> 32));
+        result = 31 * result + (value ^ (value >>> 32));
         return result;
     }
 }

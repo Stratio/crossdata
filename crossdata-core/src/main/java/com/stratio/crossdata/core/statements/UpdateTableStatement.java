@@ -90,7 +90,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
         if (properties == null) {
             this.properties = new LinkedHashMap<>();
         } else {
-            this.properties = StringUtils.convertJsonToOptions(properties);
+            this.properties = StringUtils.convertJsonToOptions(tableName, properties);
         }
     }
 
