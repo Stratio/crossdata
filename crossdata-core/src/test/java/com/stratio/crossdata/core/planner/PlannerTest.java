@@ -249,7 +249,7 @@ public class PlannerTest extends PlannerBaseTest {
         whereClauses.add(new Filter(Operations.DELETE_PK_EQ, new Relation(
                 new ColumnSelector(new ColumnName("demo", "table1", "id")),
                 Operator.EQ,
-                new IntegerSelector(3))));
+                new IntegerSelector(new TableName("demo", "table1"), 3))));
 
         assertEquals(storageWorkflow.getWhereClauses().size(), whereClauses.size(), "Where clauses size differs");
 
@@ -384,7 +384,7 @@ public class PlannerTest extends PlannerBaseTest {
 
         List<Relation> relations = new ArrayList<>();
         Selector leftSelector = new ColumnSelector(new ColumnName("demo", "table1", "user"));
-        Selector rightTerm = new StringSelector("DataHub");
+        Selector rightTerm = new StringSelector(new TableName("demo", "table1"), "DataHub");
         relations.add(new Relation(leftSelector, Operator.ASSIGN, rightTerm));
         assertEquals(storageWorkflow.getAssignments().size(), 1, "Wrong assignments size");
         assertEquals(storageWorkflow.getAssignments().size(), relations.size(), "Assignments sizes differ");
@@ -394,7 +394,7 @@ public class PlannerTest extends PlannerBaseTest {
 
         List<Filter> filters = new ArrayList<>();
         ColumnSelector firstSelector = new ColumnSelector(new ColumnName("demo", "table1", "id"));
-        IntegerSelector secondSelector = new IntegerSelector(1);
+        IntegerSelector secondSelector = new IntegerSelector(new TableName("demo", "table1"), 1);
         Relation relation = new Relation(firstSelector, Operator.EQ, secondSelector);
         filters.add(new Filter(Operations.UPDATE_PK_EQ, relation));
         assertEquals(storageWorkflow.getWhereClauses().size(), 1, "Wrong where clauses size");

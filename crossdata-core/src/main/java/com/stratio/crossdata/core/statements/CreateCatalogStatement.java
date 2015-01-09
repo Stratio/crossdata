@@ -21,6 +21,7 @@ package com.stratio.crossdata.core.statements;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
@@ -56,7 +57,7 @@ public class CreateCatalogStatement extends MetadataStatement {
         this.catalogInc = true;
         this.command = false;
         this.ifNotExists = ifNotExists;
-        this.options = StringUtils.convertJsonToOptions(options);
+        this.options = StringUtils.convertJsonToOptions(new TableName(catalogName.getName(), null), options);
     }
 
     @Override

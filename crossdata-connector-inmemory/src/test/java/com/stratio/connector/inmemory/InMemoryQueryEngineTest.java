@@ -252,7 +252,7 @@ public class InMemoryQueryEngineTest {
         Project project = generateProjectAndSelect(columnNames, types);
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        StringSelector right = new StringSelector("text_42");
+        StringSelector right = new StringSelector(project.getTableName(), "text_42");
         Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
 
         Select s = Select.class.cast(project.getNextStep());
@@ -282,7 +282,7 @@ public class InMemoryQueryEngineTest {
         Project project = generateProjectAndSelect(columnNames, types);
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        BooleanSelector right = new BooleanSelector(true);
+        BooleanSelector right = new BooleanSelector(project.getTableName(), true);
         Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
 
         Select s = Select.class.cast(project.getNextStep());
@@ -312,7 +312,7 @@ public class InMemoryQueryEngineTest {
         Project project = generateProjectAndSelect(columnNames, types);
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        IntegerSelector right = new IntegerSelector(42);
+        IntegerSelector right = new IntegerSelector(project.getTableName(), 42);
         Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
 
         Select s = Select.class.cast(project.getNextStep());
@@ -342,7 +342,7 @@ public class InMemoryQueryEngineTest {
         Project project = generateProjectAndSelect(columnNames, types);
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        IntegerSelector right = new IntegerSelector(NUM_ROWS/2);
+        IntegerSelector right = new IntegerSelector(project.getTableName(), NUM_ROWS/2);
         Filter filter = new Filter(Operations.FILTER_NON_INDEXED_GT, new Relation(left, Operator.GT, right));
 
         Select s = Select.class.cast(project.getNextStep());

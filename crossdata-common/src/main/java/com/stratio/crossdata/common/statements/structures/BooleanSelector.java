@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.TableName;
+
 /**
  * Boolean selector.
  */
@@ -34,7 +36,7 @@ public class BooleanSelector extends Selector {
      * @param value The boolean value.
      */
     public BooleanSelector(boolean value) {
-        this.value = value;
+        this(null, value);
     }
 
     /**
@@ -43,7 +45,26 @@ public class BooleanSelector extends Selector {
      * @param value A String representation of a boolean value.
      */
     public BooleanSelector(String value) {
-        this.value = Boolean.valueOf(value);
+        this(null, Boolean.valueOf(value));
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param value The boolean value.
+     */
+    public BooleanSelector(TableName tableName, boolean value) {
+        super(tableName);
+        this.value = value;
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param value A String representation of a boolean value.
+     */
+    public BooleanSelector(TableName tableName, String value) {
+        this(tableName, Boolean.valueOf(value));
     }
 
     /**

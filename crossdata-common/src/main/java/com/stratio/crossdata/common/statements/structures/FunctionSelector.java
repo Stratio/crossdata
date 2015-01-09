@@ -22,7 +22,6 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 
 /**
@@ -38,7 +37,7 @@ public class FunctionSelector extends Selector {
     /**
      * List of columns.
      */
-    private List<Selector> functionColumns;
+    private final List<Selector> functionColumns;
 
     /**
      * Class constructor.
@@ -46,6 +45,16 @@ public class FunctionSelector extends Selector {
      * @param functionName Name of the includes.
      */
     public FunctionSelector(String functionName, List<Selector> functionColumns) {
+        this(null, functionName, functionColumns);
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param functionName Name of the includes.
+     */
+    public FunctionSelector(TableName tableName, String functionName, List<Selector> functionColumns) {
+        super(tableName);
         this.functionName = functionName;
         this.functionColumns = functionColumns;
     }
@@ -77,8 +86,8 @@ public class FunctionSelector extends Selector {
         return result;
     }
 
-    @Override public ColumnName getColumnName() {
-        return new ColumnName(functionColumns.get(0).getColumnName().getTableName(), functionName);
+    public TableName getTableName() {
+        return tableName;
     }
 
     @Override
@@ -110,10 +119,13 @@ public class FunctionSelector extends Selector {
 
         FunctionSelector that = (FunctionSelector) o;
 
-        if (!functionColumns.equals(that.functionColumns)) {
+        if (functionColumns != null ? !functionColumns.equals(that.functionColumns) : that.functionColumns != null) {
             return false;
         }
-        if (!functionName.equals(that.functionName)) {
+        if (functionName != null ? !functionName.equals(that.functionName) : that.functionName != null) {
+            return false;
+        }
+        if (tableName != null ? !tableName.equals(that.tableName) : that.tableName != null) {
             return false;
         }
 
@@ -122,12 +134,10 @@ public class FunctionSelector extends Selector {
 
     @Override
     public int hashCode() {
-        int result = 1;
-        if (alias != null) {
-            result = alias.hashCode();
-        }
-        result = 31 * result + functionName.hashCode();
-        result = 31 * result + functionColumns.hashCode();
+        int result = functionName != null ? functionName.hashCode() : 0;
+        result = 31 * result + (functionColumns != null ? functionColumns.hashCode() : 0);
+        result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
         return result;
     }
+
 }

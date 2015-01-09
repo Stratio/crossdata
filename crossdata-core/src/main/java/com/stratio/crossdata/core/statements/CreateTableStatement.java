@@ -161,7 +161,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      * @param properties The list.
      */
     public void setProperties(String properties) {
-        this.properties = StringUtils.convertJsonToOptions(properties);
+        this.properties = StringUtils.convertJsonToOptions(tableName, properties);
     }
 
     public void setIfNotExists(boolean ifNotExists) {

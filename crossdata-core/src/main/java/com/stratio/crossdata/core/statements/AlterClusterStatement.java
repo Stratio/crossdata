@@ -58,7 +58,7 @@ public class AlterClusterStatement extends MetadataStatement {
         if ((options == null) || options.isEmpty()) {
             this.options = new HashMap<>();
         } else {
-            this.options = StringUtils.convertJsonToOptions(options);
+            this.options = StringUtils.convertJsonToOptions(null, options);
         }
 
     }

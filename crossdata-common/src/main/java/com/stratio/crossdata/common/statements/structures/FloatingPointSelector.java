@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.TableName;
+
 /**
  * A floating point selector.
  */
@@ -33,8 +35,8 @@ public class FloatingPointSelector extends Selector {
      *
      * @param value A double value.
      */
-    public FloatingPointSelector(String value) {
-        this.value = Double.valueOf(value);
+    public FloatingPointSelector(double value) {
+        this(null, value);
     }
 
     /**
@@ -42,8 +44,27 @@ public class FloatingPointSelector extends Selector {
      *
      * @param value A double value.
      */
-    public FloatingPointSelector(double value) {
+    public FloatingPointSelector(String value) {
+        this(null, Double.valueOf(value));
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param value A double value.
+     */
+    public FloatingPointSelector(TableName tableName, double value) {
+        super(tableName);
         this.value = value;
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param value A double value.
+     */
+    public FloatingPointSelector(TableName tableName, String value) {
+        this(tableName, Double.valueOf(value));
     }
 
     /**

@@ -843,16 +843,16 @@ getSelector[TableName tablename] returns [Selector s]
             )?
         T_END_PARENTHESIS { String functionStr = functionName;
                             if(functionStr.equalsIgnoreCase("count") && (!params.toString().equalsIgnoreCase("[*]")) && (!params.toString().equalsIgnoreCase("[1]"))) throwParsingException("COUNT includes only accepts '*' or '1'");
-                            s = new FunctionSelector(functionStr, params);}
+                            s = new FunctionSelector(tablename, functionStr, params);}
         |
         (
             columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);}
-            | floatingNumber=T_FLOATING {s = new FloatingPointSelector($floatingNumber.text);}
-            | constant=T_CONSTANT {s = new IntegerSelector($constant.text);}
-            | T_FALSE {s = new BooleanSelector(false);}
-            | T_TRUE {s = new BooleanSelector(true);}
-            | T_ASTERISK {s = new AsteriskSelector();}
-            | qLiteral=QUOTED_LITERAL {s = new StringSelector($qLiteral.text);}
+            | floatingNumber=T_FLOATING {s = new FloatingPointSelector(tablename, $floatingNumber.text);}
+            | constant=T_CONSTANT {s = new IntegerSelector(tablename, $constant.text);}
+            | T_FALSE {s = new BooleanSelector(tablename, false);}
+            | T_TRUE {s = new BooleanSelector(tablename, true);}
+            | T_ASTERISK {s = new AsteriskSelector(tablename);}
+            | qLiteral=QUOTED_LITERAL {s = new StringSelector(tablename, $qLiteral.text);}
         )
     )
 ;
@@ -871,7 +871,7 @@ getRightTermInAssignment[TableName tablename] returns [Selector leftSelector]
     }
     @after{
         if(relationSelector)
-            $leftSelector = new RelationSelector(new Relation(firstSel, operator, secondSel));
+            $leftSelector = new RelationSelector(tablename, new Relation(firstSel, operator, secondSel));
         else
             $leftSelector = firstSel;
     }:

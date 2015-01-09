@@ -118,7 +118,7 @@ public class InsertIntoStatement extends StorageStatement {
             this.conditions = new ArrayList<>();
         }
         if (options != null) {
-            this.options = StringUtils.convertJsonToOptions(options);
+            this.options = StringUtils.convertJsonToOptions(tableName, options);
         } else {
             this.options = new HashMap<>();
         }
