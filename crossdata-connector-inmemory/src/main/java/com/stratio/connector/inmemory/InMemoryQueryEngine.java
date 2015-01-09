@@ -40,6 +40,7 @@ import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.Limit;
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
+import com.stratio.crossdata.common.logicalplan.OrderBy;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -92,13 +93,24 @@ public class InMemoryQueryEngine implements IQueryEngine{
         List<Object[]> results;
 
         Project projectStep;
+        OrderBy orderByStep = null;
         Select selectStep;
 
         //Get the project and select steps.
         try {
             projectStep = Project.class.cast(workflow.getInitialSteps().get(0));
+
+            LogicalStep currentStep = projectStep;
+            while(currentStep != null){
+                if(currentStep instanceof OrderBy){
+                    orderByStep = OrderBy.class.cast(currentStep);
+                    break;
+                }
+                currentStep = currentStep.getNextStep();
+            }
+
             selectStep = Select.class.cast(workflow.getLastStep());
-        } catch(ClassCastException e){
+        } catch(ClassCastException e) {
             throw new ExecutionException("Invalid workflow received", e);
         }
 
@@ -127,6 +139,11 @@ public class InMemoryQueryEngine implements IQueryEngine{
         } else {
             throw new ExecutionException("No datastore connected to " + projectStep.getClusterName());
         }
+
+        if(orderByStep != null){
+            results = orderResult(selectStep, results);
+        }
+
         return toCrossdataResults(selectStep, limit, results);
     }
 
