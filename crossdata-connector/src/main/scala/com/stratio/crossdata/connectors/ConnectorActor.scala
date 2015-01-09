@@ -206,11 +206,15 @@ ActorLogging with IResultHandler with IConnectorApp {
       logger.info("Current members: " + state.members.mkString(", "))
     }
     case UnreachableMember(member) => {
-      connectedServers -= sender
+      if(member.hasRole("server")){
+        connectedServers -= sender
+      }
       logger.info("Member detected as unreachable: " + member)
     }
     case MemberRemoved(member, previousStatus) => {
-      connectedServers -= sender
+      if(member.hasRole("server")){
+        connectedServers -= sender
+      }
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
     }
     case _: MemberEvent => {
@@ -367,8 +371,6 @@ ActorLogging with IResultHandler with IConnectorApp {
     }
   }
 
-  //TODO: add object in result tuple
-  //
   private def methodOpMetadata(metadataOp: MetadataOperation, eng: IMetadataEngine):
   (String,  Int, Object) = {
     metadataOp match {
@@ -440,6 +442,7 @@ ActorLogging with IResultHandler with IConnectorApp {
         (metadataOp.asInstanceOf[ProvideTableMetadata].queryId, MetadataResult.OPERATION_IMPORT_TABLE,
           listmetadata)
       }
+      case _ => ???
     }
   }
 

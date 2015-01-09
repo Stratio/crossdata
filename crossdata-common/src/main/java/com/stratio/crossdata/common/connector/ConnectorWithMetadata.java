@@ -18,17 +18,15 @@
 
 package com.stratio.crossdata.common.connector;
 
-public abstract class AbstractConnector implements IConnector{
+public abstract class ConnectorWithMetadata implements IConnector {
     
-    IConnectorApp connectorApp=null;
-    /*
-    //TODO: ???
-    public AbstractConnector(){
+    private final IConnectorApp connectorApp;
+
+    public ConnectorWithMetadata(IConnectorApp connectorApp){
+        this.connectorApp = connectorApp;
     }
-     */
-    
-    public void setConnectorMetadata(IConnectorApp connectorApp){
-        this.connectorApp=connectorApp;
+
+    public IConnectorApp getConnectorMetadata() {
+        return connectorApp;
     }
-    
 }
