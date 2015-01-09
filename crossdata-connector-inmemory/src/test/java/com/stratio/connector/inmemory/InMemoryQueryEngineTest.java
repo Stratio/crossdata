@@ -74,7 +74,7 @@ public class InMemoryQueryEngineTest {
 
     private TableMetadata tableMetadata = null;
 
-    private IConnector connector = new InMemoryConnector();
+    private IConnector connector = new InMemoryConnector(null);
 
     private static final int NUM_ROWS = 100;
 

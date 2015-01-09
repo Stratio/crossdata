@@ -98,7 +98,7 @@ public class InMemoryQueryEngine implements IQueryEngine{
         try {
             projectStep = Project.class.cast(workflow.getInitialSteps().get(0));
             selectStep = Select.class.cast(workflow.getLastStep());
-        }catch(ClassCastException e){
+        } catch(ClassCastException e){
             throw new ExecutionException("Invalid workflow received", e);
         }
 
@@ -124,7 +124,7 @@ public class InMemoryQueryEngine implements IQueryEngine{
             } catch (Exception e) {
                 throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
             }
-        }else{
+        } else {
             throw new ExecutionException("No datastore connected to " + projectStep.getClusterName());
         }
         return toCrossdataResults(selectStep, limit, results);
