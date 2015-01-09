@@ -71,7 +71,8 @@ ActorLogging with IResultHandler with IConnectorApp {
   }
 
   override def getTableMetadata(tablename: TableName): TableMetadata = {
-    return metadata.get(tablename).asInstanceOf[TableMetadata]
+      val catalogname = tablename.getCatalogName
+      return metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename)
   }
 
   override def getCatalogMetadata(catalogname: CatalogName): CatalogMetadata={
