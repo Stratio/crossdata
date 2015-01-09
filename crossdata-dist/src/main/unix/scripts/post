@@ -40,7 +40,7 @@ case "$1" in
 esac    
 
 chmod 755 /etc/init.d/crossdata
-chmod +x /opt/sds/crossdata/bin/crossdata-sh
+chmod 755 /opt/sds/crossdata/bin/crossdata-sh
 chmod +x /etc/default/crossdata
 export CROSSDATA_LIB=/opt/sds/crossdata
 export CROSSDATA_CONF="/etc/sds/crossdata"
