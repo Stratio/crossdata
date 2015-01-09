@@ -489,12 +489,13 @@ public class Normalizator {
      *
      * @return List of ColumnSelector
      */
-    public List<ColumnSelector> checkAsteriskSelector() {
+    public List<ColumnSelector> checkAsteriskSelector(TableName tableName) {
         List<ColumnSelector> columnSelectors = new ArrayList<>();
         for (TableName table : fields.getTableNames()) {
             TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(table);
             for (ColumnName columnName : tableMetadata.getColumns().keySet()) {
                 ColumnSelector selector = new ColumnSelector(columnName);
+                selector.setTableName(tableName);
                 columnSelectors.add(selector);
                 fields.getColumnNames().add(columnName);
             }
@@ -511,11 +512,13 @@ public class Normalizator {
      */
     public List<Selector> checkListSelector(List<Selector> selectors) throws ValidationException {
         List<Selector> result = new ArrayList<>();
+        TableName firstTableName = fields.getTableNames().iterator().next();
         for (Selector selector : selectors) {
             switch (selector.getType()) {
             case FUNCTION:
                 FunctionSelector functionSelector = (FunctionSelector) selector;
                 checkFunctionSelector(functionSelector);
+                functionSelector.setTableName(firstTableName);
                 result.add(functionSelector);
                 String signature = createSignature(functionSelector);
                 fields.addSignature(functionSelector.getFunctionName(), signature);
@@ -523,12 +526,16 @@ public class Normalizator {
             case COLUMN:
                 ColumnSelector columnSelector = (ColumnSelector) selector;
                 checkColumnSelector(columnSelector);
+                columnSelector.setTableName(firstTableName);
                 result.add(columnSelector);
                 break;
             case ASTERISK:
-                result.addAll(checkAsteriskSelector());
+                result.addAll(checkAsteriskSelector(firstTableName));
                 break;
             default:
+                Selector defaultSelector = selector;
+                defaultSelector.setTableName(firstTableName);
+                result.add(defaultSelector);
                 break;
             }
         }
