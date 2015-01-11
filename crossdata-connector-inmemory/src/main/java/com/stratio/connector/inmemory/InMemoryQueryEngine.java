@@ -33,6 +33,7 @@ import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
@@ -45,6 +46,7 @@ import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
@@ -52,6 +54,7 @@ import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
@@ -120,8 +123,8 @@ public class InMemoryQueryEngine implements IQueryEngine{
         String tableName = projectStep.getTableName().getName();
 
         InMemoryDatastore datastore = connector.getDatastore(projectStep.getClusterName());
+        List<String> outputColumns = new ArrayList<>();
         if(datastore != null){
-            List<String> outputColumns = new ArrayList<>();
             for(ColumnName name: selectStep.getColumnOrder()){
                 outputColumns.add(name.getName());
             }
@@ -141,10 +144,51 @@ public class InMemoryQueryEngine implements IQueryEngine{
         }
 
         if(orderByStep != null){
-            results = orderResult(selectStep, results);
+            results = orderResult(results, outputColumns, orderByStep, projectStep.getTableName());
         }
 
         return toCrossdataResults(selectStep, limit, results);
+    }
+
+    private List<Object[]> orderResult(
+            List<Object[]> results,
+            List<String> outputColumns,
+            OrderBy orderByStep,
+            TableName tableName) {
+        List<Object[]> orderedResult = new ArrayList<>();
+        if((results != null) && (!results.isEmpty())){
+            OrderByClause orderClause = orderByStep.getIds().get(0);
+            int index = outputColumns.indexOf(orderClause.getSelector().getColumnName().getAlias());
+            TableMetadata table = connector.getConnectorMetadata().getTableMetadata(tableName);
+            ColumnMetadata column = table.getColumns().get(orderClause.getSelector().getColumnName());
+            ColumnType columnType = column.getColumnType();
+            for(Object[] row: results){
+                if(orderedResult.isEmpty()){
+                    orderedResult.add(row);
+                } else {
+                    int order = 0;
+                    for(Object[] orderedRow: orderedResult){
+                        /*
+                        if(orderClause.getDirection() == OrderDirection.ASC){
+                            if(row[index] < orderedRow[index]){
+                                break;
+                            }
+                        } else if(orderClause.getDirection() == OrderDirection.DESC){
+                            if(row[index] > orderedRow[index]){
+                                break;
+                            }
+                        }
+                        */
+                        if(compareCells(row[index], orderedRow[index], orderClause.getDirection(), columnType)){
+                            break;
+                        }
+                        order++;
+                    }
+                    orderedResult.add(order, row);
+                }
+            }
+        }
+        return orderedResult;
     }
 
     /**
