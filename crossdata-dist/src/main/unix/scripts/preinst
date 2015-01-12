@@ -10,3 +10,5 @@
 #var/log/sds/crossdata
 #var/sds/crossdata
 #var/sds/crossdata/crossdata-store
+mkdir -p /var/sds/crossdata/crossdata-store
+mkdir -p /var/log/sds/crossdata
