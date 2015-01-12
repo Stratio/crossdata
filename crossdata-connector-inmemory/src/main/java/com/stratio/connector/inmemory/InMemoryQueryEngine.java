@@ -55,6 +55,7 @@ import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.OrderDirection;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
@@ -154,7 +155,7 @@ public class InMemoryQueryEngine implements IQueryEngine{
             List<Object[]> results,
             List<String> outputColumns,
             OrderBy orderByStep,
-            TableName tableName) {
+            TableName tableName) throws ExecutionException {
         List<Object[]> orderedResult = new ArrayList<>();
         if((results != null) && (!results.isEmpty())){
             OrderByClause orderClause = orderByStep.getIds().get(0);
@@ -189,6 +190,66 @@ public class InMemoryQueryEngine implements IQueryEngine{
             }
         }
         return orderedResult;
+    }
+
+    private boolean compareCells(
+            Object toBeOrdered,
+            Object alreadyOrdered,
+            OrderDirection direction,
+            ColumnType columnType) throws ExecutionException {
+        boolean result = false;
+        switch (columnType){
+        case BIGINT:
+            result = compareBigIntCells(toBeOrdered, alreadyOrdered, direction);
+            break;
+        case BOOLEAN:
+            result = compareBooleanCells(toBeOrdered, alreadyOrdered, direction);
+            break;
+        case DOUBLE:
+            result = compareDoubleCells(toBeOrdered, alreadyOrdered, direction);
+            break;
+        case FLOAT:
+            result = compareFloatCells(toBeOrdered, alreadyOrdered, direction);
+            break;
+        case INT:
+            result = compareIntegerCells(toBeOrdered, alreadyOrdered, direction);
+            break;
+        case TEXT:
+            result = compareTextCells(toBeOrdered, alreadyOrdered, direction);
+            break;
+        case VARCHAR:
+            result = compareVarcharCells(toBeOrdered, alreadyOrdered, direction);
+            break;
+        case NATIVE:
+            throw new ExecutionException("Comparisons cannot be applied to native types");
+            break;
+        case SET:
+            throw new ExecutionException("Comparisons cannot be applied to collections");
+            break;
+        case LIST:
+            throw new ExecutionException("Comparisons cannot be applied to collections");
+            break;
+        case MAP:
+            throw new ExecutionException("Comparisons cannot be applied to collections");
+            break;
+        }
+        return result;
+    }
+
+    private boolean compareTextCells(Object toBeOrdered, Object alreadyOrdered, OrderDirection direction) {
+        boolean result = false;
+        String originalCell = (String) toBeOrdered;
+        String resultCell = (String) alreadyOrdered;
+        if(direction == OrderDirection.ASC){
+            result = originalCell.compareTo(resultCell) < 0;
+        } else if(direction == OrderDirection.DESC){
+            result = originalCell.compareTo(resultCell) > 0;
+        }
+        return result;
+    }
+
+    private boolean compareVarcharCells(Object toBeOrdered, Object alreadyOrdered, OrderDirection direction) {
+        return compareTextCells(toBeOrdered, alreadyOrdered, direction);
     }
 
     /**
