@@ -67,7 +67,7 @@ public class ColumnName extends Name {
         }
         if(columnName != null && !columnName.isEmpty()){
             this.name = columnName.toLowerCase();
-        } else {
+        } else { 
             this.name = null;
         }
     }
