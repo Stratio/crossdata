@@ -40,6 +40,7 @@ import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.Limit;
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
+import com.stratio.crossdata.common.logicalplan.OrderBy;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -51,6 +52,8 @@ import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.OrderDirection;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
@@ -92,13 +95,24 @@ public class InMemoryQueryEngine implements IQueryEngine{
         List<Object[]> results;
 
         Project projectStep;
+        OrderBy orderByStep = null;
         Select selectStep;
 
         //Get the project and select steps.
         try {
             projectStep = Project.class.cast(workflow.getInitialSteps().get(0));
+
+            LogicalStep currentStep = projectStep;
+            while(currentStep != null){
+                if(currentStep instanceof OrderBy){
+                    orderByStep = OrderBy.class.cast(currentStep);
+                    break;
+                }
+                currentStep = currentStep.getNextStep();
+            }
+
             selectStep = Select.class.cast(workflow.getLastStep());
-        }catch(ClassCastException e){
+        } catch(ClassCastException e) {
             throw new ExecutionException("Invalid workflow received", e);
         }
 
@@ -108,8 +122,8 @@ public class InMemoryQueryEngine implements IQueryEngine{
         String tableName = projectStep.getTableName().getName();
 
         InMemoryDatastore datastore = connector.getDatastore(projectStep.getClusterName());
+        List<String> outputColumns = new ArrayList<>();
         if(datastore != null){
-            List<String> outputColumns = new ArrayList<>();
             for(ColumnName name: selectStep.getColumnOrder()){
                 outputColumns.add(name.getName());
             }
@@ -124,10 +138,73 @@ public class InMemoryQueryEngine implements IQueryEngine{
             } catch (Exception e) {
                 throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
             }
-        }else{
+        } else {
             throw new ExecutionException("No datastore connected to " + projectStep.getClusterName());
         }
+
+        if(orderByStep != null){
+            results = orderResult(results, outputColumns, orderByStep);
+        }
+
         return toCrossdataResults(selectStep, limit, results);
+    }
+
+    private List<Object[]> orderResult(
+            List<Object[]> results,
+            List<String> outputColumns,
+            OrderBy orderByStep) throws ExecutionException {
+        List<Object[]> orderedResult = new ArrayList<>();
+        if((results != null) && (!results.isEmpty())){
+            for(Object[] row: results){
+                if(orderedResult.isEmpty()){
+                    orderedResult.add(row);
+                } else {
+                    int order = 0;
+                    for(Object[] orderedRow: orderedResult){
+                        if(compareRows(row, orderedRow, outputColumns, orderByStep)){
+                            break;
+                        }
+                        order++;
+                    }
+                    orderedResult.add(order, row);
+                }
+            }
+        }
+        return orderedResult;
+    }
+
+    private boolean compareRows(
+            Object[] candidateRow,
+            Object[] orderedRow,
+            List<String> outputColumns,
+            OrderBy orderByStep) {
+        boolean result = false;
+        for(OrderByClause clause: orderByStep.getIds()){
+            int index = outputColumns.indexOf(clause.getSelector().getColumnName().getName());
+            int comparison = compareCells(candidateRow[index], orderedRow[index], clause.getDirection());
+            if(comparison != 0){
+                result = (comparison > 0);
+                break;
+            }
+        }
+        return result;
+    }
+
+    private int compareCells(Object toBeOrdered, Object alreadyOrdered, OrderDirection direction) {
+        int result = -1;
+        InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered);
+        if(InMemoryOperations.EQ.compare(toBeOrdered, alreadyOrdered)){
+            result = 0;
+        } else if(direction == OrderDirection.ASC){
+            if(InMemoryOperations.LT.compare(toBeOrdered, alreadyOrdered)){
+                result = 1;
+            }
+        } else if(direction == OrderDirection.DESC){
+            if(InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered)){
+                result = 1;
+            }
+        }
+        return result;
     }
 
     /**
@@ -237,7 +314,7 @@ public class InMemoryQueryEngine implements IQueryEngine{
     private InMemoryRelation toInMemoryRelation(Filter f) throws ExecutionException {
         ColumnSelector left = ColumnSelector.class.cast(f.getRelation().getLeftTerm());
         String columnName = left.getName().getName();
-        InMemoryOperations relation = null;
+        InMemoryOperations relation;
 
         if(operationsTransformations.containsKey(f.getRelation().getOperator())){
             relation = operationsTransformations.get(f.getRelation().getOperator());

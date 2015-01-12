@@ -315,7 +315,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
 
             actorSelection.asInstanceOf[ActorSelection] ! operation
-            log.info("\nMessage sent to" + actorRef.toString())
+            log.info("\nMessage sent to " + actorRef.toString())
 
           } else if (ResultType.TRIGGER_EXECUTION.equals(workflow1.getResultType)) {
 
@@ -336,7 +336,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo)
 
             actorSelection.asInstanceOf[ActorSelection] ! operation
-            log.info("\nMessage sent to" + actorRef.toString())
+            log.info("\nMessage sent to " + actorRef.toString())
 
           }
         }

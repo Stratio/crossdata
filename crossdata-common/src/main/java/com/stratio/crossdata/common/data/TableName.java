@@ -39,8 +39,7 @@ public class TableName extends Name {
         } else {
             this.catalogName = new CatalogName(catalogName);
         }
-
-        if (tableName == null || tableName.isEmpty()) {
+        if(tableName == null || tableName.isEmpty()){
             this.name = null;
         } else {
             this.name = tableName.toLowerCase();
