@@ -47,9 +47,9 @@ public class ColumnName extends Name {
             this.tableName = null;
         }
         if(columnName != null && !columnName.isEmpty()){
-            this.name = null;
-        } else {
             this.name = columnName.toLowerCase();
+        } else {
+            this.name = null;
         }
     }
 
@@ -67,7 +67,7 @@ public class ColumnName extends Name {
         }
         if(columnName != null && !columnName.isEmpty()){
             this.name = columnName.toLowerCase();
-        } else { 
+        } else {
             this.name = null;
         }
     }
