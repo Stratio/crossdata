@@ -198,6 +198,15 @@ public class InMemoryQueryEngine implements IQueryEngine{
             OrderDirection direction,
             ColumnType columnType) throws ExecutionException {
         boolean result = false;
+
+        InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered);
+        if(direction == OrderDirection.ASC){
+            result = InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered);
+        } else if(direction == OrderDirection.DESC){
+            result = InMemoryOperations.LT.compare(toBeOrdered, alreadyOrdered);
+        }
+
+        /*
         switch (columnType){
         case BIGINT:
             result = compareBigIntCells(toBeOrdered, alreadyOrdered, direction);
@@ -233,6 +242,20 @@ public class InMemoryQueryEngine implements IQueryEngine{
             throw new ExecutionException("Comparisons cannot be applied to collections");
             break;
         }
+        */
+        return result;
+    }
+
+    /*
+    private boolean compareIntegerCells(Object toBeOrdered, Object alreadyOrdered, OrderDirection direction) {
+        boolean result = false;
+        int originalCell = (int) toBeOrdered;
+        int resultCell = (int) alreadyOrdered;
+        if(direction == OrderDirection.ASC){
+            result = originalCell < resultCell;
+        } else if(direction == OrderDirection.DESC){
+            result = originalCell > resultCell;
+        }
         return result;
     }
 
@@ -251,6 +274,7 @@ public class InMemoryQueryEngine implements IQueryEngine{
     private boolean compareVarcharCells(Object toBeOrdered, Object alreadyOrdered, OrderDirection direction) {
         return compareTextCells(toBeOrdered, alreadyOrdered, direction);
     }
+    */
 
     /**
      * Transform a set of results into a Crossdata query result.
@@ -359,7 +383,7 @@ public class InMemoryQueryEngine implements IQueryEngine{
     private InMemoryRelation toInMemoryRelation(Filter f) throws ExecutionException {
         ColumnSelector left = ColumnSelector.class.cast(f.getRelation().getLeftTerm());
         String columnName = left.getName().getName();
-        InMemoryOperations relation = null;
+        InMemoryOperations relation;
 
         if(operationsTransformations.containsKey(f.getRelation().getOperator())){
             relation = operationsTransformations.get(f.getRelation().getOperator());
