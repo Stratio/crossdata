@@ -18,7 +18,12 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.TableName;
 
 /**
  * Single column selector.
@@ -66,6 +71,12 @@ public class ColumnSelector extends Selector {
     public ColumnName getColumnName() {
         return name;
     }
+
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return new HashSet(Arrays.asList(this.name.getTableName()));
+    }
+
 
     @Override
     public String toString() {

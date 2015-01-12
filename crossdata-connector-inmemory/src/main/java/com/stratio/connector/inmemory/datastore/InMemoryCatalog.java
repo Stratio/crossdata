@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 
 /**
  * Catalog abstraction containing a set of tables.
@@ -120,8 +120,20 @@ public class InMemoryCatalog {
      * @throws Exception If the search cannot be executed.
      */
     public List<Object[]> search(String tableName, List<InMemoryRelation> relations,
-            List<FunctionSelector> functions, List<String> columnOrder) throws Exception {
+            List<InMemorySelector> columnOrder) throws Exception {
         tableShouldExists(tableName);
-        return tables.get(tableName).fullScanSearch(relations, functions, columnOrder);
+        return tables.get(tableName).fullScanSearch(relations, columnOrder);
+    }
+
+    /**
+     * Get a table from the datastore.
+     * @param tableName The name of the table.
+     * @return An {@link com.stratio.connector.inmemory.datastore.InMemoryTable}.
+     * @throws Exception If the table does not exits.
+     */
+    //TODO: Change this method to return InMemoryTableMetadata.
+    public InMemoryTable getTable(String tableName) throws Exception {
+        tableShouldExists(tableName);
+        return tables.get(tableName);
     }
 }
