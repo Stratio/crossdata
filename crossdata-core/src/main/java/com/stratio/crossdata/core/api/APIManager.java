@@ -402,40 +402,44 @@ public class APIManager {
     private Result describeTable(TableName name) {
         Result result;
 
-        CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name.getCatalogName());
-        TableMetadata table = catalog.getTables().get(name);
-        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+        try{
+            CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name.getCatalogName());
+            TableMetadata table = catalog.getTables().get(name);
+            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
 
-        sb.append("Table: ").append(table.getName()).append(System.lineSeparator());
+            sb.append("Table: ").append(table.getName()).append(System.lineSeparator());
 
-        sb.append("Cluster: ").append(table.getClusterRef()).append(System.lineSeparator());
+            sb.append("Cluster: ").append(table.getClusterRef()).append(System.lineSeparator());
 
-        sb.append("Columns: ").append(System.lineSeparator());
-        Map<ColumnName, ColumnMetadata> columns = table.getColumns();
-        for (Map.Entry<ColumnName, ColumnMetadata> entry : columns.entrySet()) {
-            sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue().getColumnType())
-                    .append(System.lineSeparator());
+            sb.append("Columns: ").append(System.lineSeparator());
+            Map<ColumnName, ColumnMetadata> columns = table.getColumns();
+            for (Map.Entry<ColumnName, ColumnMetadata> entry : columns.entrySet()) {
+                sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue().getColumnType())
+                        .append(System.lineSeparator());
+            }
+
+            sb.append("Partition key: ").append(table.getPartitionKey()).append(System.lineSeparator());
+
+            sb.append("Cluster key: ").append(table.getClusterKey()).append(System.lineSeparator());
+
+            sb.append("Indexes: ").append(System.lineSeparator());
+            Map<IndexName, IndexMetadata> indexes = table.getIndexes();
+            for (Map.Entry<IndexName, IndexMetadata> idx : indexes.entrySet()) {
+                sb.append("\t").append(idx.getKey()).append(": ").append(idx.getValue().getColumns().keySet())
+                        .append(System.lineSeparator());
+            }
+
+            sb.append("Options: ").append(System.lineSeparator());
+            Map<Selector, Selector> options = table.getOptions();
+            for (Map.Entry<Selector, Selector> opt : options.entrySet()) {
+                sb.append("\t").append(opt.getKey()).append(": ").append(opt.getValue())
+                        .append(System.lineSeparator());
+            }
+
+            result = CommandResult.createCommandResult(sb.toString());
+        } catch (MetadataManagerException mme) {
+            result = ErrorResult.createErrorResult(mme);
         }
-
-        sb.append("Partition key: ").append(table.getPartitionKey()).append(System.lineSeparator());
-
-        sb.append("Cluster key: ").append(table.getClusterKey()).append(System.lineSeparator());
-
-        sb.append("Indexes: ").append(System.lineSeparator());
-        Map<IndexName, IndexMetadata> indexes = table.getIndexes();
-        for (Map.Entry<IndexName, IndexMetadata> idx : indexes.entrySet()) {
-            sb.append("\t").append(idx.getKey()).append(": ").append(idx.getValue().getColumns().keySet())
-                    .append(System.lineSeparator());
-        }
-
-        sb.append("Options: ").append(System.lineSeparator());
-        Map<Selector, Selector> options = table.getOptions();
-        for (Map.Entry<Selector, Selector> opt : options.entrySet()) {
-            sb.append("\t").append(opt.getKey()).append(": ").append(opt.getValue())
-                    .append(System.lineSeparator());
-        }
-
-        result = CommandResult.createCommandResult(sb.toString());
 
         return result;
     }

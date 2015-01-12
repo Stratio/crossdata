@@ -23,7 +23,7 @@ import com.stratio.crossdata.common.data.ColumnName;
 
 public class NotMatchDataTypeException extends ValidationException {
     public NotMatchDataTypeException(ColumnName name) {
-        super(name + " don't match data type");
+        super(name + " doesn't match data type");
     }
 
 }
