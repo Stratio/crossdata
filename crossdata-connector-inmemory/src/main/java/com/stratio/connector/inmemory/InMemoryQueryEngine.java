@@ -155,15 +155,13 @@ public class InMemoryQueryEngine implements IQueryEngine{
             OrderBy orderByStep) throws ExecutionException {
         List<Object[]> orderedResult = new ArrayList<>();
         if((results != null) && (!results.isEmpty())){
-            OrderByClause orderClause = orderByStep.getIds().get(0);
-            int index = outputColumns.indexOf(orderClause.getSelector().getColumnName().getName());
             for(Object[] row: results){
                 if(orderedResult.isEmpty()){
                     orderedResult.add(row);
                 } else {
                     int order = 0;
                     for(Object[] orderedRow: orderedResult){
-                        if(compareCells(row[index], orderedRow[index], orderClause.getDirection())){
+                        if(compareRows(row, orderedRow, outputColumns, orderByStep)){
                             break;
                         }
                         order++;
@@ -175,13 +173,36 @@ public class InMemoryQueryEngine implements IQueryEngine{
         return orderedResult;
     }
 
-    private boolean compareCells(Object toBeOrdered, Object alreadyOrdered, OrderDirection direction) throws ExecutionException {
+    private boolean compareRows(
+            Object[] candidateRow,
+            Object[] orderedRow,
+            List<String> outputColumns,
+            OrderBy orderByStep) {
         boolean result = false;
+        for(OrderByClause clause: orderByStep.getIds()){
+            int index = outputColumns.indexOf(clause.getSelector().getColumnName().getName());
+            int comparison = compareCells(candidateRow[index], orderedRow[index], clause.getDirection());
+            if(comparison != 0){
+                result = (comparison > 0);
+                break;
+            }
+        }
+        return result;
+    }
+
+    private int compareCells(Object toBeOrdered, Object alreadyOrdered, OrderDirection direction) {
+        int result = -1;
         InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered);
-        if(direction == OrderDirection.ASC){
-            result = InMemoryOperations.LET.compare(toBeOrdered, alreadyOrdered);
+        if(InMemoryOperations.EQ.compare(toBeOrdered, alreadyOrdered)){
+            result = 0;
+        } else if(direction == OrderDirection.ASC){
+            if(InMemoryOperations.LT.compare(toBeOrdered, alreadyOrdered)){
+                result = 1;
+            }
         } else if(direction == OrderDirection.DESC){
-            result = InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered);
+            if(InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered)){
+                result = 1;
+            }
         }
         return result;
     }
