@@ -56,6 +56,7 @@ public class FunctionSelector extends Selector {
     public FunctionSelector(TableName tableName, String functionName, List<Selector> functionColumns) {
         super(tableName);
         this.functionName = functionName;
+        this.alias = functionName;
         this.functionColumns = functionColumns;
     }
 

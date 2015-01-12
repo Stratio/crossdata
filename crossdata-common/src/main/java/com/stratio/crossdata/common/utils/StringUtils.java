@@ -223,4 +223,31 @@ public final class StringUtils {
         }
         return serialized;
     }
+
+    public static ColumnType convertXdTypeToColumnType(String xdType) {
+        ColumnType ct = ColumnType.NATIVE;
+        String stringType = xdType.replace("Tuple", "").replace("[", "").replace("]", "").trim();
+        if(stringType.equalsIgnoreCase("BigInt")){
+            ct = ColumnType.BIGINT;
+        } else if (stringType.equalsIgnoreCase("Bool") || stringType.equalsIgnoreCase("Boolean")) {
+            ct = ColumnType.BOOLEAN;
+        } else if (stringType.equalsIgnoreCase("Double")){
+            ct = ColumnType.DOUBLE;
+        } else if (stringType.equalsIgnoreCase("Float")){
+            ct = ColumnType.FLOAT;
+        } else if (stringType.equalsIgnoreCase("Int") || stringType.equalsIgnoreCase("Integer")){
+            ct = ColumnType.INT;
+        } else if (stringType.equalsIgnoreCase("Text")){
+            ct = ColumnType.TEXT;
+        } else if (stringType.equalsIgnoreCase("Varchar")){
+            ct = ColumnType.VARCHAR;
+        } else if (stringType.equalsIgnoreCase("Set")){
+            ct = ColumnType.SET;
+        } else if (stringType.equalsIgnoreCase("List")){
+            ct = ColumnType.LIST;
+        } else if (stringType.equalsIgnoreCase("Map")){
+            ct = ColumnType.MAP;
+        }
+        return ct;
+    }
 }
