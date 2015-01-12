@@ -46,7 +46,11 @@ public class ColumnName extends Name {
         } else {
             this.tableName = null;
         }
-        this.name = columnName.toLowerCase();
+        if(columnName != null && !columnName.isEmpty()){
+            this.name = columnName.toLowerCase();
+        } else {
+            this.name = null;
+        }
     }
 
     /**
@@ -56,8 +60,16 @@ public class ColumnName extends Name {
      * @param columnName Name of the column.
      */
     public ColumnName(TableName tableName, String columnName) {
-        this.tableName = tableName;
-        this.name = columnName.toLowerCase();
+        if (tableName != null) {
+            this.tableName = tableName;
+        } else {
+            this.tableName = null;
+        }
+        if(columnName != null && !columnName.isEmpty()){
+            this.name = columnName.toLowerCase();
+        } else {
+            this.name = null;
+        }
     }
 
     public TableName getTableName() {

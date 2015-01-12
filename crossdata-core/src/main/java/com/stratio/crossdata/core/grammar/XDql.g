@@ -294,6 +294,7 @@ T_FLOAT: F L O A T;
 T_MAP: M A P;
 T_INT: I N T;
 T_INTEGER: I N T E G E R;
+T_BOOL: B O O L;
 T_BOOLEAN: B O O L E A N;
 T_VARCHAR: V A R C H A R;
 T_TEXT: T E X T;
@@ -729,6 +730,7 @@ getDataType returns [ColumnType dataType]:
 
 getBasicType returns [ColumnType dataType]:
     T_BIGINT { $dataType=ColumnType.BIGINT; }
+    | T_BOOL { $dataType=ColumnType.BOOLEAN; }
     | T_BOOLEAN { $dataType=ColumnType.BOOLEAN; }
     | T_DOUBLE { $dataType=ColumnType.DOUBLE; }
     | T_FLOAT { $dataType=ColumnType.FLOAT; }
@@ -958,6 +960,7 @@ getAllowedReservedWord returns [String str]:
     | T_CATALOG
     | T_MAP
     | T_INT
+    | T_BOOL
     | T_BOOLEAN
     | T_TEXT
     | T_LUCENE

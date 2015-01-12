@@ -49,6 +49,6 @@ public class FunctionMetadata {
     }
 
     public String getReturningType() {
-        return signature.substring(signature.indexOf(":"), signature.length());
+        return signature.substring(signature.indexOf(":")+1, signature.length());
     }
 }

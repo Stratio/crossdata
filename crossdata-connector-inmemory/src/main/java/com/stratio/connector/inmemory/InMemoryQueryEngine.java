@@ -163,17 +163,6 @@ public class InMemoryQueryEngine implements IQueryEngine{
                 } else {
                     int order = 0;
                     for(Object[] orderedRow: orderedResult){
-                        /*
-                        if(orderClause.getDirection() == OrderDirection.ASC){
-                            if(row[index] < orderedRow[index]){
-                                break;
-                            }
-                        } else if(orderClause.getDirection() == OrderDirection.DESC){
-                            if(row[index] > orderedRow[index]){
-                                break;
-                            }
-                        }
-                        */
                         if(compareCells(row[index], orderedRow[index], orderClause.getDirection())){
                             break;
                         }

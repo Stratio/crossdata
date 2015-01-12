@@ -1354,7 +1354,7 @@ public class Planner {
                 FunctionSelector fs = FunctionSelector.class.cast(s);
                 FunctionName functionName = new FunctionName(fs.getFunctionName());
                 FunctionMetadata function = MetadataManager.MANAGER.getFunctionFromManifests(functionName);
-                ColumnType ct = StringUtils.convertJavaTypeToXdType(function.getReturningType());
+                ColumnType ct = StringUtils.convertXdTypeToColumnType(function.getReturningType());
                 if (s.getAlias() != null) {
                     aliasMap.put(fs, fs.getAlias());
 
