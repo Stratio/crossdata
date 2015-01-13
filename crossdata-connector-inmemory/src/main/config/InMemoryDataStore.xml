@@ -52,6 +52,12 @@
             <FunctionType>aggregation</FunctionType>
             <Description>Rows count</Description>
         </Function>
+        <Function>
+            <FunctionName>now</FunctionName>
+            <Signature>now(Tuple[]):Tuple[Text]</Signature>
+            <FunctionType>simple</FunctionType>
+            <Description>Current timestamp</Description>
+        </Function>
     </Functions>
 </DataStore>
 

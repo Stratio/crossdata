@@ -831,27 +831,29 @@ public class Planner {
 
             TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(alterTableStatement.getTableName());
 
+            /*
             ColumnName columnName = new ColumnName(alterTableStatement.getEffectiveCatalog().getName(),
                     alterTableStatement.getTableName().getName(), alterTableStatement.getColumn().getName());
+            */
 
             ColumnMetadata alterColumnMetadata = alterTableStatement.getColumnMetadata();
 
             AlterOptions alterOptions;
             switch (alterTableStatement.getOption()) {
             case ADD_COLUMN:
-                tableMetadata.getColumns().put(columnName, alterColumnMetadata);
+                //tableMetadata.getColumns().put(columnName, alterColumnMetadata);
                 alterOptions = new AlterOptions(AlterOperation.ADD_COLUMN, null, alterColumnMetadata);
                 break;
             case ALTER_COLUMN:
-                tableMetadata.getColumns().put(columnName, alterColumnMetadata);
+                //tableMetadata.getColumns().put(columnName, alterColumnMetadata);
                 alterOptions = new AlterOptions(AlterOperation.ALTER_COLUMN, null, alterColumnMetadata);
                 break;
             case DROP_COLUMN:
-                tableMetadata.getColumns().remove(columnName);
+                //tableMetadata.getColumns().remove(columnName);
                 alterOptions = new AlterOptions(AlterOperation.DROP_COLUMN, null, alterColumnMetadata);
                 break;
             case ALTER_OPTIONS:
-                tableMetadata.setOptions(alterTableStatement.getProperties());
+                //tableMetadata.setOptions(alterTableStatement.getProperties());
                 alterOptions = new AlterOptions(AlterOperation.ALTER_OPTIONS, alterTableStatement.getProperties(),
                         alterColumnMetadata);
                 break;
@@ -866,7 +868,7 @@ public class Planner {
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
-            metadataWorkflow.setTableMetadata(tableMetadata);
+            //metadataWorkflow.setTableMetadata(tableMetadata);
             metadataWorkflow.setTableName(tableMetadata.getName());
             metadataWorkflow.setAlterOptions(alterOptions);
             metadataWorkflow.setClusterName(clusterMetadata.getName());
