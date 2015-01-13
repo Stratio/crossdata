@@ -71,6 +71,7 @@ import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
@@ -318,6 +319,7 @@ public class APIManager {
             Set<DataStoreName> datastores = connector.getDataStoreRefs();
             Set<ClusterName> clusters = connector.getClusterRefs();
             Map<ClusterName, Map<Selector, Selector>> properties = connector.getClusterProperties();
+            Set<Operations> supportedOperations=connector.getSupportedOperations();
 
             stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
                     .append("\t").append(System.getProperty("line.separator"));
@@ -344,6 +346,12 @@ public class APIManager {
             stringBuilder.append("\t").append("Clusters: ").append(System.getProperty("line.separator"));
             for (ClusterName cluster : clusters) {
                 stringBuilder.append("\t\t").append(cluster.getName().toString())
+                        .append(System.getProperty("line.separator"));
+            }
+
+            stringBuilder.append("\t").append("Supported Operations: ").append(System.getProperty("line.separator"));
+            for (Operations operation : supportedOperations) {
+                stringBuilder.append("\t\t").append(operation.getOperationsStr())
                         .append(System.getProperty("line.separator"));
             }
 
