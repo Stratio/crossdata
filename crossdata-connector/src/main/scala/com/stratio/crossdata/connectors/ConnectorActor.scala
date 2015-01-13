@@ -89,15 +89,18 @@ ActorLogging with IResultHandler with IConnectorApp {
 
   override def receive: Receive = super.receive orElse {
 
-    /*
     //TODO:
     case u: PatchMetadata=> {
       u.metadataClass match{
-        case CatalogMetadata => {
+        //case tmd:com.stratio.crossdata.common.metadata.TableMetadata => {
+        case clss:Class[TableMetadata]=> {
+          System.out.println("++>>>>>>>>>")
+        }
+        case _=> {
+          System.out.println("-->>>>>>>>>")
         }
       }
     }
-    */
 
     case u: UpdateMetadata=> {
       u.metadata match{
@@ -118,6 +121,7 @@ ActorLogging with IResultHandler with IConnectorApp {
         }
         case _:TableMetadata => {
           val tablename = u.metadata.asInstanceOf[TableMetadata].getName
+          //val clusterref = u.metadata.asInstanceOf[TableMetadata].getClusterRef
           val catalogname = tablename.getCatalogName
           metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.put(
             tablename,u.metadata.asInstanceOf[TableMetadata]

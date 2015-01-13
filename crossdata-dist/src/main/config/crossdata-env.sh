@@ -4,9 +4,13 @@
 # JAVA_OPTS
 # JSVCCMD
 # JAVA_HOME
-#CROSSDATA_HOME=$(pwd)
-CROSSDATA_LOGS=/var/logs/sds/crossdata
-CROSSDATA_HOME=/opt/sds/crossdata
+if [ -z $CROSSDATA_HOME ];then
+	CROSSDATA_HOME=$(pwd)
+	#CROSSDATA_HOME=/opt/sds/crossdata
+fi 
+if [ -z $CROSSDATA_LOGS ];then
+	CROSSDATA_LOGS=$(pwd)
+fi 
 # CROSSDATA_LIB
 CROSSDATA_LIB="${CROSSDATA_HOME}/lib"
 # CROSSDATA_BIN
