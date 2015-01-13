@@ -35,6 +35,8 @@ import org.apache.log4j.Logger
 
 import scala.collection.mutable.{ListMap, Map}
 import scala.concurrent.duration.DurationInt
+import com.codahale.metrics.{MetricRegistry, Gauge}
+import com.stratio.crossdata.common.utils.Metrics
 
 object State extends Enumeration {
   type state = Value
@@ -60,6 +62,16 @@ ActorLogging with IResultHandler {
   var state = State.Stopped
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
   var connectedServers: Set[ActorRef] = Set()
+  Metrics.getRegistry.register(MetricRegistry.name(self.path.name, connectorName, "connection", "status"),
+    new Gauge[Boolean] {
+    override def getValue: Boolean = {
+      var status: Boolean = false
+      if (getConnectionStatus eq ConnectionStatus.CONNECTED) {
+        status = true
+      }
+      return status
+    }
+  })
 
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
     runningJobs.foreach {
