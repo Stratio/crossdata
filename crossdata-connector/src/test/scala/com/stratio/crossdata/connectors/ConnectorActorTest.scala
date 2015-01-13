@@ -25,7 +25,7 @@ import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, ColumnMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.MetadataResult
 import com.stratio.crossdata.common.statements.structures.Selector
-import com.stratio.crossdata.communication.{CreateTable, UpdateMetadata}
+import com.stratio.crossdata.communication.{PatchMetadata, CreateTable, UpdateMetadata}
 import com.stratio.crossdata.connectors.ConnectorActor
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import org.apache.log4j.Logger
@@ -131,7 +131,6 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     assert(result == true)
   }
   
-  /*
   test("Send patched updateMetadata to Connector") {
     //TODO: this test is not complete (still a Proof Of Concept)
     val m=new DummyIConnector()
@@ -145,7 +144,6 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     assert(result == true)
 
   }
-  */
 
 
 }
