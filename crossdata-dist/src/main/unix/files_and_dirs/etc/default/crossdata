@@ -1,1 +1,3 @@
 export CROSSDATA_CONF="/etc/sds/crossdata"
+export CROSSDATA_HOME="/opt/sds/crossdata"
+export CROSSDATA_LOGS="/var/logs/sds/crossdata"
