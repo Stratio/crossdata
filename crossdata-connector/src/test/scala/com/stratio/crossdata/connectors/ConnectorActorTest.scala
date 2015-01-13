@@ -130,7 +130,8 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
     assert(result == true)
   }
-  
+
+  /*
   test("Send patched updateMetadata to Connector") {
     //TODO: this test is not complete (still a Proof Of Concept)
     val m=new DummyIConnector()
@@ -145,7 +146,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
 
   }
 
-
+*/
 }
 
 

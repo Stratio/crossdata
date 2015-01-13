@@ -162,7 +162,7 @@ public class PlannerTest extends PlannerBaseTest {
 
     @Test
     public void selectWithFunction() {
-        String inputText = "SELECT getYear(demo.table1.id) FROM demo.table1;";
+        String inputText = "SELECT getYear(demo.table1.id) AS getYear FROM demo.table1;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "selectWithFunction", false, table1);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
@@ -432,7 +432,7 @@ public class PlannerTest extends PlannerBaseTest {
     @Test
     public void selectGroupBy() {
         String inputText =
-                "SELECT demo.table1.id, shorten(demo.table1.user) FROM demo.table1 GROUP BY demo.table1.id;";
+                "SELECT demo.table1.id, shorten(demo.table1.user) AS shorten FROM demo.table1 GROUP BY demo.table1.id;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "selectGroupBy", false, table1);

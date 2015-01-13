@@ -40,6 +40,7 @@ public class NameTest {
         Assert.assertFalse(name1.equals(name3));
     }
 
+    /*
     @Test
     public void tableNameEqualsWithAliasTest() {
         Name name1 = new TableName("catalog", "table");
@@ -50,6 +51,7 @@ public class NameTest {
         ((TableName)name2).setAlias("Alias");
         Assert.assertTrue(name1.equals(name2));
     }
+    */
 
     @Test
     public void columnNameEqualsTest() {
@@ -64,6 +66,7 @@ public class NameTest {
         Assert.assertFalse(name1.equals(name5));
     }
 
+    /*
     @Test
     public void columnNameEqualsWithAliasTest() {
         Name name1 = new ColumnName("catalog", "table", "column");
@@ -77,6 +80,8 @@ public class NameTest {
 
 
     }
+*/
+
 
     @Test
     public void clusterNameTest() {
@@ -130,7 +135,7 @@ public class NameTest {
         Assert.assertTrue(name1.equals(name2));
 
     }
-
+/*
     @Test
     public void indexNameWithAliasTest(){
         TableName tablename=new TableName("catalog","table");
@@ -140,7 +145,7 @@ public class NameTest {
         Assert.assertFalse(name1.equals(name2));
 
     }
-
+*/
 
 
 

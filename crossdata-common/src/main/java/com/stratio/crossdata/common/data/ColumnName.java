@@ -122,7 +122,7 @@ public class ColumnName extends Name {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof ColumnName)) {
             return false;
         }
         if (!super.equals(o)) {
@@ -146,7 +146,6 @@ public class ColumnName extends Name {
         int result = super.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
-        result = 31 * result + (alias != null ? alias.hashCode() : 0);
         return result;
     }
 

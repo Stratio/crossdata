@@ -1299,7 +1299,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         try {
             validatedQuery = validator.validate(parsedQuery);
         } catch (ValidationException | IgnoreQueryException e) {
-            fail("Cannot validate valid statement", e);
+            fail("Cannot validate statement", e);
         }
 
         assertNotNull(validatedQuery, "Expecting validated query");
@@ -1310,7 +1310,7 @@ public class SelectStatementTest extends BasicValidatorTest {
     @Test
     public void simpleFunction(){
         String inputText = "SELECT getYear(users.age) FROM demo.users";
-        String expectedText = "SELECT getYear(demo.users.age) FROM demo.users";
+        String expectedText = "SELECT getYear(demo.users.age) AS getYear FROM demo.users";
 
         ColumnName col1 = new ColumnName(null, "users", "age");
         Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(

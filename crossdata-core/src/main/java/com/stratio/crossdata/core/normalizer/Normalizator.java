@@ -142,9 +142,9 @@ public class Normalizator {
             throws ValidationException {
         InnerJoin innerJoin = ((SelectStatement) parsedQuery.getStatement()).getJoin();
         if (innerJoin != null) {
-            if(fields.getTableNames().contains(innerJoin.getTablename())){
+            /*if(fields.getTableNames().contains(innerJoin.getTablename())){
                throw new BadFormatException("Select statements with join clause must contain different tables");
-            }
+            }*/
             normalizeJoins(innerJoin);
             fields.setJoin(innerJoin);
         }

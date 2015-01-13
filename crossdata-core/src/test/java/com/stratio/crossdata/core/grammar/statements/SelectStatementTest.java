@@ -65,14 +65,14 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void functionSingleColumn() {
         String inputText = "SELECT sum(newtb.lucene) FROM newks.newtb;";
-        String expectedText = "SELECT sum(<unknown_name>.newtb.lucene) FROM newks.newtb;";
+        String expectedText = "SELECT sum(<unknown_name>.newtb.lucene) AS sum FROM newks.newtb;";
         testRegularStatement(inputText, expectedText, "functionSingleColumn");
     }
 
     @Test
     public void function2SingleColumn() {
         String inputText = "SELECT myfunction(newtb.lucene) FROM newks.newtb;";
-        String expectedText = "SELECT myfunction(<unknown_name>.newtb.lucene) FROM newks.newtb;";
+        String expectedText = "SELECT myfunction(<unknown_name>.newtb.lucene) AS myfunction FROM newks.newtb;";
         testRegularStatement(inputText, expectedText, "function2SingleColumn");
     }
 
@@ -358,19 +358,26 @@ public class SelectStatementTest extends ParsingTest {
         testParserFails(inputText, "selectWrongLikeWord");
     }
 
+
     @Test
-    public void selectSelectors() {
-        for (String c : new String[] { "COUNT(*)", "myUDF(c.table0.field0)", "c.table0.field0", "COUNT(1)" }) {
-            String inputText = "SELECT " + c + " from c.table0;";
+    public void selectSelectorsCOUNT() {
+        for (String c : new String[] { "COUNT(*)", "COUNT(1)", "COUNT(c.table0.col25)"}) {
+            String inputText = "SELECT " + c + " AS COUNT from c.table0;";
             testRegularStatement(inputText, "selectSelectors");
         }
     }
 
     @Test
-    public void selectSelectorsWrongCount() {
-        String inputText = "SELECT COUNT(col25) from c.table0;";
-        testParserFails("demo", inputText, "selectSelectorsWrongCount");
+    public void selectSelectorsUDF() {
+        for (String c : new String[] { "myUDF(c.table0.field0)", "myUDF(c.table0.field0, c.table0.field1)" }) {
+            String inputText = "SELECT " + c + " AS myUDF from c.table0;";
+            testRegularStatement(inputText, "selectSelectors");
+        }
     }
+
+
+
+
 
   /*
   @Test
@@ -423,7 +430,7 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void selectGroupedWithCountOk() {
         String inputText = "SELECT users.gender, COUNT(*) FROM demo.users GROUP BY users.gender;";
-        String expectedText = "SELECT <unknown_name>.users.gender, COUNT(*) FROM demo.users " +
+        String expectedText = "SELECT <unknown_name>.users.gender, COUNT(*) AS COUNT FROM demo.users " +
                 "GROUP BY <unknown_name>.users.gender;";
         testRegularStatement(inputText, expectedText, "selectGroupedWithCountOk");
     }

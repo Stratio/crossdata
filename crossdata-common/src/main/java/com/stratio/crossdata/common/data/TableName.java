@@ -96,11 +96,9 @@ public class TableName extends Name {
     @Override
     public int hashCode() {
         String code;
-        if (alias!=null) {
-            code = getType() + getQualifiedName() + getAlias();
-        }else{
-            code = getType() + getQualifiedName();
-        }
+
+        code = getType() + getQualifiedName();
+
         return code.hashCode();
     }
 

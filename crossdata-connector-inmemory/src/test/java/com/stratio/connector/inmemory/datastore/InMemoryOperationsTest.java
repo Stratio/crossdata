@@ -62,7 +62,7 @@ public class InMemoryOperationsTest {
 
         assertFalse(InMemoryOperations.GT.compare(b1, b1), "GT fail on true = true");
         assertFalse(InMemoryOperations.GT.compare(b2, b1), "GT fail on false = true");
-        assertFalse(InMemoryOperations.GT.compare(b1, b2), "GT fail on true = false");
+        assertTrue(InMemoryOperations.GT.compare(b1, b2), "GT fail on true = false");
 
         assertFalse(InMemoryOperations.GT.compare(s1, s1), "GT fail on aaaa = zzzz");
         assertTrue(InMemoryOperations.GT.compare(s2, s1), "GT fail on zzzz = aaaa");
