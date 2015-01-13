@@ -78,9 +78,24 @@ public class Select extends TransformationStep {
     }
 
     /**
-     * Get the columns in the expected order.
+     * Get the selectors that must be returned as a result of executing the query
+     * in the expected order.
+     * @return A list of {@link com.stratio.crossdata.common.statements.structures.Selector}.
+     */
+    public List<Selector> getOutputSelectorOrder(){
+        List<Selector> result = new ArrayList<>();
+        for(Selector selector : columnMap.keySet()){
+            result.add(selector);
+        }
+        return result;
+    }
+
+    /**
+     * Get the columns in the expected order. With the introduction of function support
+     * this method is marked as Deprecated in favour of #getOutputSelectorOrder().
      * @return A list of {@link com.stratio.crossdata.common.data.ColumnName}.
      */
+    @Deprecated
     public List<ColumnName> getColumnOrder(){
         List<ColumnName> results = new ArrayList<>();
         for(Selector selector: columnMap.keySet()){
