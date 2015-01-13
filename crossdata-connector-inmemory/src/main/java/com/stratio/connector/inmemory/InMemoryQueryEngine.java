@@ -23,10 +23,15 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
 import com.stratio.connector.inmemory.datastore.InMemoryRelation;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryLiteralSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 import com.stratio.crossdata.common.connector.IQueryEngine;
 import com.stratio.crossdata.common.connector.IResultHandler;
 import com.stratio.crossdata.common.data.Cell;
@@ -109,18 +114,9 @@ public class InMemoryQueryEngine implements IQueryEngine{
 
         InMemoryDatastore datastore = connector.getDatastore(projectStep.getClusterName());
         if(datastore != null){
-            List<String> outputColumns = new ArrayList<>();
-            for(ColumnName name: selectStep.getColumnOrder()){
-                outputColumns.add(name.getName());
-            }
-            List<FunctionSelector> functions = new ArrayList<>();
-            for(Selector selector: selectStep.getColumnMap().keySet()){
-                if(selector instanceof FunctionSelector){
-                    functions.add((FunctionSelector) selector);
-                }
-            }
+            List<InMemorySelector> outputColumns = transformIntoSelectors(selectStep.getColumnMap().keySet());
             try {
-                results = datastore.search(catalogName, tableName, relations, functions, outputColumns);
+                results = datastore.search(catalogName, tableName, relations, outputColumns);
             } catch (Exception e) {
                 throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
             }
@@ -128,6 +124,43 @@ public class InMemoryQueryEngine implements IQueryEngine{
             throw new ExecutionException("No datastore connected to " + projectStep.getClusterName());
         }
         return toCrossdataResults(selectStep, limit, results);
+    }
+
+    /**
+     * Transform a set of crossdata selectors into in-memory ones.
+     * @param selectors The set of crossdata selectors.
+     * @return A list of in-memory selectors.
+     */
+    private List<InMemorySelector> transformIntoSelectors(Set<Selector> selectors) {
+        List<InMemorySelector> result = new ArrayList<>();
+        for(Selector s: selectors){
+            result.add(transformCrossdataSelector(s));
+        }
+        return result;
+    }
+
+    /**
+     * Transform a Crossdata selector into an InMemory one.
+     * @param selector The Crossdata selector.
+     * @return The equivalent InMemory selector.
+     */
+    private InMemorySelector transformCrossdataSelector(Selector selector){
+        InMemorySelector result = null;
+        if(FunctionSelector.class.isInstance(selector)){
+            FunctionSelector xdFunction = FunctionSelector.class.cast(selector);
+            String name = xdFunction.getFunctionName();
+            List<InMemorySelector> arguments = new ArrayList<>();
+            for(Selector arg : xdFunction.getFunctionColumns()){
+                arguments.add(transformCrossdataSelector(arg));
+            }
+            result = new InMemoryFunctionSelector(name, arguments);
+        }else if(ColumnSelector.class.isInstance(selector)){
+            ColumnSelector cs = ColumnSelector.class.cast(selector);
+            result = new InMemoryColumnSelector(cs.getName().getName());
+        }else{
+            result = new InMemoryLiteralSelector(selector.getStringValue());
+        }
+        return result;
     }
 
     /**
@@ -141,9 +174,23 @@ public class InMemoryQueryEngine implements IQueryEngine{
         ResultSet crossdataResults = new ResultSet();
 
         final List<String> columnAlias = new ArrayList<>();
-        final List<ColumnName> outputColumns = selectStep.getColumnOrder();
+        final List<ColumnMetadata> columnMetadataList = new ArrayList<>();
+        for(Selector outputSelector : selectStep.getOutputSelectorOrder()){
+            //ColumnSelector selector = new ColumnSelector(outputSelector.getColumnName());
+            ColumnName columnName = outputSelector.getColumnName();
+            String alias = selectStep.getColumnMap().get(outputSelector);
+            if(alias == null){
+                alias = columnName.getName();
+            }
+            columnAlias.add(alias);
+            columnName.setAlias(alias);
+            ColumnType columnType = selectStep.getTypeMapFromColumnName().get(outputSelector);
+            ColumnMetadata metadata = new ColumnMetadata(
+                    columnName, null, columnType);
+            columnMetadataList.add(metadata);
+        }
 
-        List<ColumnMetadata> columnMetadataList = new ArrayList<>();
+        /*final List<ColumnName> outputColumns = selectStep.getColumnOrder();
 
         for(ColumnName columnName : outputColumns){
             ColumnSelector selector = new ColumnSelector(columnName);
@@ -157,7 +204,7 @@ public class InMemoryQueryEngine implements IQueryEngine{
             ColumnMetadata metadata = new ColumnMetadata(
                     columnName, null, columnType);
             columnMetadataList.add(metadata);
-        }
+        }*/
 
         //Store the metadata information
         crossdataResults.setColumnMetadata(columnMetadataList);

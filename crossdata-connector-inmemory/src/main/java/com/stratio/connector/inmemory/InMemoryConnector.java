@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
 
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
-import com.stratio.crossdata.common.connector.ConnectorWithMetadata;
+import com.stratio.crossdata.common.connector.AbstractExtendedConnector;
 import com.stratio.crossdata.common.connector.IConfiguration;
 import com.stratio.crossdata.common.connector.IConnectorApp;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
@@ -39,12 +39,15 @@ import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.connectors.ConnectorApp;
 
+import akka.cluster.Cluster;
+
 /**
  * InMemory connector that demonstrates the internals of a crossdata connector.
  * @see <a href="https://github.com/Stratio/crossdata/_doc/InMemory-Connector-Development-Tutorial.md">InMemory Connector
  * development tutorial</a>
  */
-public class InMemoryConnector extends ConnectorWithMetadata {
+public class InMemoryConnector extends AbstractExtendedConnector {
+
     /**
      * Class logger.
      */
@@ -95,6 +98,9 @@ public class InMemoryConnector extends ConnectorWithMetadata {
         }else{
             throw new ConnectionException("Invalid options, expecting TableRowLimit");
         }
+
+        //Try to restore existing schema
+        restoreSchema(targetCluster);
     }
 
     @Override
@@ -139,6 +145,11 @@ public class InMemoryConnector extends ConnectorWithMetadata {
      */
     protected InMemoryDatastore getDatastore(ClusterName cluster){
         return this.clusters.get(cluster);
+    }
+
+
+    private void restoreSchema(ClusterName cluster){
+
     }
 
     /**

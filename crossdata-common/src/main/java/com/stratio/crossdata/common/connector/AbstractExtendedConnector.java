@@ -28,9 +28,23 @@ import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
 /**
- * Connector app interface to provided extended connector information.
+ * Abstract class to provided IConnector implementations an easy access to the parent
+ * {@link com.stratio.crossdata.common.connector.IConnectorApp}.
  */
-public interface IConnectorApp {
+public abstract class AbstractExtendedConnector implements IConnector {
+
+    /**
+     * Parent connector application.
+     */
+    private final IConnectorApp connectorApp;
+
+    /**
+     * Class constructor.
+     * @param connectorApp parent connector app.
+     */
+    public AbstractExtendedConnector(IConnectorApp connectorApp){
+        this.connectorApp = connectorApp;
+    }
 
     /**
      * Get the table metadata.
@@ -38,7 +52,9 @@ public interface IConnectorApp {
      * @param tableName target tablename.
      * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata}.
      */
-    TableMetadata getTableMetadata(ClusterName cluster, TableName tableName);
+    public TableMetadata getTableMetadata(ClusterName cluster, TableName tableName){
+        return connectorApp.getTableMetadata(cluster, tableName);
+    }
 
     /**
      * Get the catalog metadata.
@@ -46,18 +62,24 @@ public interface IConnectorApp {
      * @param catalogName target catalog.
      * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    CatalogMetadata getCatalogMetadata(ClusterName cluster, CatalogName catalogName);
+    public CatalogMetadata getCatalogMetadata(ClusterName cluster, CatalogName catalogName){
+        return connectorApp.getCatalogMetadata(cluster, catalogName);
+    }
 
     /**
      * Get the list of existing catalogs in a cluster.
      * @param cluster target cluster.
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    List<CatalogMetadata> getCatalogs(ClusterName cluster);
+    public List<CatalogMetadata> getCatalogs(ClusterName cluster){
+        return connectorApp.getCatalogs(cluster);
+    }
 
     /**
      * Get the connection status with the Crossdata server.
      * @return A {@link com.stratio.crossdata.common.data.ConnectionStatus}.
      */
-    ConnectionStatus getConnectionStatus();
+    public ConnectionStatus getConnectionStatus(){
+        return connectorApp.getConnectionStatus();
+    }
 }

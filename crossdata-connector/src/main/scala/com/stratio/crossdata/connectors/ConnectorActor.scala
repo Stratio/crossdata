@@ -44,8 +44,9 @@ object ConnectorActor {
   def props(connectorName: String, connector: IConnector): Props = Props(new ConnectorActor
   (connectorName, connector))
 }
+
 class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with
-ActorLogging with IResultHandler with IConnectorApp {
+ActorLogging with IResultHandler {
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
   val metadata: util.Map[FirstLevelName, IMetadata]=new util.HashMap[FirstLevelName,IMetadata]()
@@ -70,16 +71,21 @@ ActorLogging with IResultHandler with IConnectorApp {
     Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
   }
 
-  override def getTableMetadata(tablename: TableName): TableMetadata = {
-      val catalogname = tablename.getCatalogName
-      return metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename)
+  def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+      val catalogname = tableName.getCatalogName
+      return metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tableName)
   }
 
-  override def getCatalogMetadata(catalogname: CatalogName): CatalogMetadata={
-    return metadata.get(catalogname).asInstanceOf[CatalogMetadata]
+  def getCatalogMetadata(clusterName: ClusterName, catalogName: CatalogName): CatalogMetadata={
+    return metadata.get(catalogName).asInstanceOf[CatalogMetadata]
   }
 
-  override def getConnectionStatus(): ConnectionStatus = {
+  def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
+    //TODO: Return the list of catalogs.
+    return null;
+  }
+
+  def getConnectionStatus(): ConnectionStatus = {
     var status: ConnectionStatus = ConnectionStatus.CONNECTED
     if (connectedServers.isEmpty){
       status = ConnectionStatus.DISCONNECTED

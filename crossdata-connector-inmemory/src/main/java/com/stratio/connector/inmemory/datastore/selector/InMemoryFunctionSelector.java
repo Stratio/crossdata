@@ -38,6 +38,9 @@ public class InMemoryFunctionSelector extends InMemorySelector{
      */
     private final List<InMemorySelector> arguments;
 
+    /**
+     * Map of functions associating function name and implementing class.
+     */
     private static final Map<String, Class> functions = new HashMap<>();
 
     static {
@@ -53,12 +56,18 @@ public class InMemoryFunctionSelector extends InMemorySelector{
      * Class constructor.
      *
      * @param name The selector name.
+     * @param arguments The function arguments.
      */
     public InMemoryFunctionSelector(String name, List<InMemorySelector> arguments) {
         super(name);
         this.arguments = arguments;
     }
 
+    /**
+     * Get the implementing function.
+     * @return A {@link com.stratio.connector.inmemory.datastore.functions.AbstractInMemoryFunction}.
+     * @throws Exception If the function cannot be defined.
+     */
     public AbstractInMemoryFunction getFunction() throws Exception{
         AbstractInMemoryFunction f = ((AbstractInMemoryFunction) functions.get(this.getName()).newInstance());
         f.setArguments(this.arguments);
