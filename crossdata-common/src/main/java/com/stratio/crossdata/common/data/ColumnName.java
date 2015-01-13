@@ -146,6 +146,7 @@ public class ColumnName extends Name {
         int result = super.hashCode();
         result = 31 * result + (name != null ? name.hashCode() : 0);
         result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
+        result = 31 * result + (alias != null ? alias.hashCode() : 0);
         return result;
     }
 
@@ -156,4 +157,6 @@ public class ColumnName extends Name {
     public String getAlias() {
         return alias;
     }
+
+
 }

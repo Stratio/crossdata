@@ -16,17 +16,19 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.connector;
+package com.stratio.connector.inmemory.datastore.selector;
 
-public abstract class ConnectorWithMetadata implements IConnector {
-    
-    private final IConnectorApp connectorApp;
+/**
+ * In-memory column selector.
+ */
+public class InMemoryColumnSelector extends InMemorySelector{
 
-    public ConnectorWithMetadata(IConnectorApp connectorApp){
-        this.connectorApp = connectorApp;
-    }
-
-    public IConnectorApp getConnectorMetadata() {
-        return connectorApp;
+    /**
+     * Class constructor.
+     *
+     * @param name The selector name.
+     */
+    public InMemoryColumnSelector(String name) {
+        super(name);
     }
 }

@@ -16,24 +16,27 @@
  * under the License.
  */
 
-package com.stratio.crossdata.communication
+package com.stratio.connector.inmemory.datastore.selector;
 
-import com.stratio.crossdata.common.metadata.IMetadata
-import difflib.Patch
+/**
+ * Class definition of a generic selector for the in-memory datastore.
+ */
+public class InMemorySelector {
 
-//CONNECTOR messages
-case class Start()
+    /**
+     * Name of the selector.
+     */
+    private final String name;
 
-case class Shutdown()
+    /**
+     * Class constructor.
+     * @param name The selector name.
+     */
+    public InMemorySelector(String name){
+        this.name = name;
+    }
 
-case class HeartbeatSig()
-
-case class IAmAlive(queryId:String)
-
-case class Stop()
-
-case class UpdateMetadata(metadata:IMetadata)
-
-case class PatchMetadata(diffs:Patch,metadataClass:java.lang.Class[_])
-
-
+    public String getName() {
+        return name;
+    }
+}

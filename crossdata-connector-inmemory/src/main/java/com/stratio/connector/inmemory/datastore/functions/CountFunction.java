@@ -16,24 +16,26 @@
  * under the License.
  */
 
-package com.stratio.crossdata.communication
+package com.stratio.connector.inmemory.datastore.functions;
 
-import com.stratio.crossdata.common.metadata.IMetadata
-import difflib.Patch
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
-//CONNECTOR messages
-case class Start()
+/**
+ * Count the number of elements in a list of rows.
+ */
+public class CountFunction extends AbstractInMemoryFunction {
 
-case class Shutdown()
+    public CountFunction(){
+        this.rowFunction = false;
+    }
 
-case class HeartbeatSig()
-
-case class IAmAlive(queryId:String)
-
-case class Stop()
-
-case class UpdateMetadata(metadata:IMetadata)
-
-case class PatchMetadata(diffs:Patch,metadataClass:java.lang.Class[_])
-
-
+    @Override public List<Object[]> apply(Map<String, Integer> columnIndex, List<Object[]> rows) throws Exception {
+        Object [] size = {rows.size()};
+        List<Object []> result = new ArrayList<>();
+        result.add(size);
+        return result;
+    }
+}

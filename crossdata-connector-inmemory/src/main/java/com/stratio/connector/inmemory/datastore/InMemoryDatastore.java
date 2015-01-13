@@ -18,16 +18,16 @@
 
 package com.stratio.connector.inmemory.datastore;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.connector.inmemory.datastore.functions.AbstractInMemoryFunction;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 
 /**
  * This class provides a proof-of-concept implementation of an in-memory datastore for
@@ -45,10 +45,6 @@ public class InMemoryDatastore {
      */
     private final Map<String, InMemoryCatalog> catalogs = new HashMap<>();
 
-    private final Set<String> simpleFunctions = new HashSet<>();
-
-    private final Set<String> aggregationFunctions = new HashSet<>();
-
     /**
      * Class logger.
      */
@@ -59,26 +55,8 @@ public class InMemoryDatastore {
      * @param tableRowLimit The maximum number of rows per table.
      */
     public InMemoryDatastore(int tableRowLimit){
-        simpleFunctions.add("concat");
-        aggregationFunctions.add("count");
         TABLE_ROW_LIMIT = tableRowLimit;
         LOG.info("InMemoryDatastore created with row limit: " + TABLE_ROW_LIMIT);
-    }
-
-    public Set<String> getSimpleFunctions() {
-        return simpleFunctions;
-    }
-
-    public void addSimpleFunction(String function){
-        simpleFunctions.add(function);
-    }
-
-    public Set<String> getAggregationFunctions() {
-        return aggregationFunctions;
-    }
-
-    public void addAggregationFunction(String function){
-        aggregationFunctions.add(function);
     }
 
     /**
@@ -169,41 +147,32 @@ public class InMemoryDatastore {
      * @param catalogName The name of the catalog.
      * @param tableName The name of the table.
      * @param relations The list of {@link InMemoryRelation} to be satisfied.
-     * @param functions Functions included in the selectors.
-     * @param columnOrder The column order.
+     * @param outputColumns The output columns in order.
      * @return A list of rows.
      * @throws Exception If search cannot be performed.
      */
-    public List<Object[]> search(String catalogName, String tableName, List<InMemoryRelation> relations,
-            List<FunctionSelector> functions, List<String> columnOrder) throws Exception {
+    public List<Object[]> search(String catalogName, String tableName,
+            List<InMemoryRelation> relations,
+            List<InMemorySelector> outputColumns) throws Exception {
         catalogShouldExist(catalogName);
         List<Object[]> result;
 
-        boolean includesAggr = false;
-        FunctionSelector aggrFunction = null;
-        for(FunctionSelector fn: functions){
-            if(aggregationFunctions.contains(fn.getFunctionName().toLowerCase())){
-                includesAggr = true;
-                aggrFunction = fn;
-                break;
+        result = catalogs.get(catalogName).search(tableName, relations, outputColumns);
+
+        //Execute the required aggregation functions.
+
+        for(int index = 0; index < outputColumns.size(); index++){
+            if(InMemoryFunctionSelector.class.isInstance(outputColumns.get(index))){
+                AbstractInMemoryFunction f = InMemoryFunctionSelector.class
+                        .cast(outputColumns.get(index))
+                        .getFunction();
+                if(!f.isRowFunction()){
+                    InMemoryTable table = catalogs.get(catalogName).getTable(tableName);
+                    result = f.apply(table.getColumnIndex(), result);
+                }
             }
         }
 
-        result = catalogs.get(catalogName).search(tableName, relations, functions, columnOrder);
-
-        if(includesAggr){
-            result = executeAggregationFunction(result, aggrFunction);
-        }
-
-        return result;
-    }
-
-    private List<Object[]> executeAggregationFunction(List<Object[]> rows, FunctionSelector aggrFunction) {
-        List<Object[]> result = rows;
-        if(aggrFunction.getFunctionName().toLowerCase().equalsIgnoreCase("count")){
-            result = new ArrayList<>();
-            result.add(new Object[]{rows.size()});
-        }
         return result;
     }
 

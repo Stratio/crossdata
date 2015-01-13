@@ -92,4 +92,20 @@ public class TableName extends Name {
         sb.append(" AS ").append(alias);
         return sb.toString();
     }
+
+    @Override
+    public int hashCode() {
+        String code;
+        if (alias!=null) {
+            code = getType() + getQualifiedName() + getAlias();
+        }else{
+            code = getType() + getQualifiedName();
+        }
+        return code.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return (this == o) || ((o instanceof TableName) && (this.hashCode() == o.hashCode()));
+    }
 }

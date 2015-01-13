@@ -42,7 +42,7 @@
     <Functions>
         <Function>
             <FunctionName>concat</FunctionName>
-            <Signature>concat(Tuple[Text, Text]):Tuple[Text]</Signature>
+            <Signature>concat(Tuple[Any*]):Tuple[Text]</Signature>
             <FunctionType>simple</FunctionType>
             <Description>Concat the content of two columns</Description>
         </Function>

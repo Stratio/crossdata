@@ -16,24 +16,17 @@
  * under the License.
  */
 
-package com.stratio.crossdata.communication
+package com.stratio.connector.inmemory.datastore.functions;
 
-import com.stratio.crossdata.common.metadata.IMetadata
-import difflib.Patch
+import java.util.Date;
+import java.util.Map;
 
-//CONNECTOR messages
-case class Start()
+/**
+ * Return the current time stamp.
+ */
+public class NowFunction extends AbstractInMemoryFunction{
 
-case class Shutdown()
-
-case class HeartbeatSig()
-
-case class IAmAlive(queryId:String)
-
-case class Stop()
-
-case class UpdateMetadata(metadata:IMetadata)
-
-case class PatchMetadata(diffs:Patch,metadataClass:java.lang.Class[_])
-
-
+    @Override public Object apply(Map<String, Integer> columnIndex, Object[] row) throws Exception {
+        return new Date();
+    }
+}
