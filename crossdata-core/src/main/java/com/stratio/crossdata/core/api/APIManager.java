@@ -570,9 +570,9 @@ public class APIManager {
         StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
 
         for (ClusterMetadata cluster : clusters) {
-
-            sb.append("Cluster: ").append(cluster.getName()).append(System.lineSeparator());
-
+            sb.append("Clusters List:").append(System.lineSeparator());
+            sb.append("\t").append(cluster.getName()).append(System.lineSeparator());
+            /*
             sb.append("Datastore: ").append(cluster.getDataStoreRef()).append(System.lineSeparator());
 
             sb.append("Options: ").append(System.lineSeparator());
@@ -585,6 +585,7 @@ public class APIManager {
                     .append(System.lineSeparator());
 
             sb = sb.append(System.getProperty("line.separator"));
+            */
         }
         result = CommandResult.createCommandResult(sb.toString());
         return result;
