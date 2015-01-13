@@ -25,8 +25,10 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
@@ -36,6 +38,7 @@ import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
@@ -86,6 +89,9 @@ public class Coordinator implements Serializable {
             break;
         case ALTER_CATALOG:
             persistAlterCatalog(metadataWorkflow.getCatalogMetadata());
+            break;
+        case ALTER_TABLE:
+            persistAlterTable(metadataWorkflow.getTableName(), metadataWorkflow.getAlterOptions());
             break;
         case DROP_CATALOG:
             persistDropCatalog(metadataWorkflow.getCatalogName(), true);
@@ -236,6 +242,30 @@ public class Coordinator implements Serializable {
 
     public void persistAlterCatalog(CatalogMetadata catalog) {
         MetadataManager.MANAGER.createCatalog(catalog, false);
+    }
+
+    private void persistAlterTable(TableName tableName, AlterOptions alterOptions) {
+        TableMetadata storedTable = MetadataManager.MANAGER.getTable(tableName);
+        switch(alterOptions.getOption()){
+        case ALTER_COLUMN:
+            ColumnName columnName = alterOptions.getColumnMetadata().getName();
+            ColumnMetadata column = storedTable.getColumns().get(columnName);
+            column.setColumnType(alterOptions.getColumnMetadata().getColumnType());
+            storedTable.getColumns().put(columnName, column);
+            break;
+        case ADD_COLUMN:
+            columnName = alterOptions.getColumnMetadata().getName();
+            storedTable.getColumns().put(columnName, alterOptions.getColumnMetadata());
+            break;
+        case DROP_COLUMN:
+            columnName = alterOptions.getColumnMetadata().getName();
+            storedTable.getColumns().remove(columnName);
+            break;
+        case ALTER_OPTIONS:
+            storedTable.setOptions(alterOptions.getProperties());
+            break;
+        }
+        MetadataManager.MANAGER.createTable(storedTable, false);
     }
 
     public void persistCreateCatalogInCluster(CatalogName catalog, ClusterName clusterName) {
