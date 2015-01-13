@@ -86,7 +86,7 @@ public class Validator {
     public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
         IValidatedQuery validatedQuery = null;
         LOG.info("Validating CrossdataStatements...");
-        for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
+        for (ValidationTypes val: parsedQuery.getStatement().getValidationRequirements().getValidations()) {
             switch (val) {
             case MUST_NOT_EXIST_CATALOG:
                 validateCatalog(parsedQuery.getStatement(), false);
@@ -432,7 +432,6 @@ public class Validator {
         } else if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
             tableName = insertIntoStatement.getTableName();
-            hasIfExists = insertIntoStatement.isIfNotExists();
         } else if (stmt instanceof DeleteStatement) {
             DeleteStatement deleteStatement = (DeleteStatement) stmt;
             tableName = deleteStatement.getTableName();
@@ -490,13 +489,12 @@ public class Validator {
         } else if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
             catalogName = insertIntoStatement.getCatalogName();
-            hasIfExists = insertIntoStatement.isIfNotExists();
         } else if (stmt instanceof ImportMetadataStatement) {
             ImportMetadataStatement importMetadataStatement = (ImportMetadataStatement) stmt;
             catalogName = importMetadataStatement.getCatalogName();
         } else {
             //TODO: should through exception?
-            //Correctness - Method call passes null for nonnull parameter
+            //Correctness - Method call passes null for notnull parameter
             validate = false;
         }
 
