@@ -62,16 +62,6 @@ ActorLogging with IResultHandler {
   var state = State.Stopped
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
   var connectedServers: Set[ActorRef] = Set()
-  Metrics.getRegistry.register(MetricRegistry.name(self.path.name, connectorName, "connection", "status"),
-    new Gauge[Boolean] {
-    override def getValue: Boolean = {
-      var status: Boolean = false
-      if (getConnectionStatus eq ConnectionStatus.CONNECTED) {
-        status = true
-      }
-      return status
-    }
-  })
 
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
     runningJobs.foreach {
@@ -108,17 +98,17 @@ ActorLogging with IResultHandler {
   override def receive: Receive = super.receive orElse {
 
     //TODO:
-    case u: PatchMetadata=> {
-      u.metadataClass match{
-        //case tmd:com.stratio.crossdata.common.metadata.TableMetadata => {
-        case clss:Class[TableMetadata]=> {
-          System.out.println("++>>>>>>>>>")
-        }
-        case _=> {
-          System.out.println("-->>>>>>>>>")
-        }
-      }
-    }
+//    case u: PatchMetadata=> {
+//      u.metadataClass match{
+//        //case tmd:com.stratio.crossdata.common.metadata.TableMetadata => {
+//        case clss:Class[TableMetadata]=> {
+//          System.out.println("++>>>>>>>>>")
+//        }
+//        case _=> {
+//          System.out.println("-->>>>>>>>>")
+//        }
+//      }
+//    }
 
     case u: UpdateMetadata=> {
       u.metadata match{

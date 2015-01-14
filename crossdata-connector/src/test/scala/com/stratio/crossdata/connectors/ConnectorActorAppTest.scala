@@ -72,7 +72,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val c = new ConnectorApp()
     val myReference = c.startup(m)
     assertNotNull(myReference, "Null reference returned")
-    c.shutdown()
+    c.stop()
   }
 
 
@@ -88,10 +88,10 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
 
     val c = new ConnectorApp()
     val myReference = c.startup(m)
-    var steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
+    val steps: java.util.ArrayList[LogicalStep] = new java.util.ArrayList[LogicalStep]()
     val step = new TransformationStep(Operations.SELECT_OPERATOR)
     steps.add(step)
-    var workflow = new LogicalWorkflow(steps)
+    val workflow = new LogicalWorkflow(steps)
     within(6000 millis) {
       myReference ! Execute(queryId, workflow)
       fishForMessage(6 seconds) {
