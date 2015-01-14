@@ -40,7 +40,6 @@ import org.testng.Assert.{assertNotNull}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-
 //class ConnectorActorAppTest extends FunSuite with MockFactory {
 class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with MockFactory with ImplicitSender {
   this:Suite =>
@@ -49,7 +48,6 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
   implicit val timeout = Timeout(3 seconds)
 
   val connector:String="MyConnector"
-
 
   //val to initialize and don't use null
   val options:Option[java.util.Map[Selector,Selector]]=Some(new util.HashMap[Selector,Selector]())
@@ -67,6 +65,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
 
   test("Basic Connector App listening on a given port does not break") {
     val m = mock[IConnector]
+    (m.getConnectorName _).expects().returning(connector)
     (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning(connector)
     val c = new ConnectorApp()
@@ -75,12 +74,12 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     c.stop()
   }
 
-
   test("Send SelectInProgressQuery to Connector") {
     val m = mock[IConnector]
     val qe = mock[IQueryEngine]
     (m.getQueryEngine _).expects().returning(qe)
     (qe.execute(_:LogicalWorkflow)).expects(*).returning(QueryResult.createSuccessQueryResult())
+    (m.getConnectorName _).expects().returning(connector)
     (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning(connector)
 
@@ -114,6 +113,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val me = mock[IMetadataEngine]
     (me.createTable _).expects(*,*).returning(QueryResult.createSuccessQueryResult())
     (m.getMetadataEngine _).expects().returning(me)
+    (m.getConnectorName _).expects().returning("My New Connector")
     (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
@@ -134,7 +134,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
       val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
       logger.debug("receive->" + result + " after sending Metadata query")
     }
-    c.shutdown()
+    c.stop()
   }
 
   test("Send StorageInProgressQuery to Connector") {
@@ -142,13 +142,13 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val m = mock[IConnector]
     val ie = mock[IStorageEngine]
     (ie.insert(_: ClusterName,_:TableMetadata,_:Row,_:Boolean)).expects(*,*,*,*).returning()
+    (m.getConnectorName _).expects().returning("My New Connector")
     (m.init _).expects(*).returning(None)
     (m.getStorageEngine _).expects().returning(ie)
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
     val myReference = c.startup(m)
-
 
     val message=Insert("query",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"),
       options.get, columns.get,indexes.get,clusterRef.get,partitionKey.get,partitionKey.get),new Row(), false)
@@ -157,7 +157,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val future=myReference ? message
     val result = Await.result(future, 6 seconds).asInstanceOf[StorageResult]
     logger.info("receiving->" + result + " after sending insert query")
-    c.shutdown()
+    c.stop()
   }
 
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE
