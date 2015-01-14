@@ -61,7 +61,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   val connector = conn
   var state = State.Stopped
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
-  var connectedServers: Set[ActorRef] = Set()
 
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
     runningJobs.foreach {
