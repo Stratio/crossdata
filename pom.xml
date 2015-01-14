@@ -24,7 +24,7 @@
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>crossdata-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.2.0-RC1</version>
     <name>Stratio Crossdata parent</name>
     <description>Stratio Crossdata parent</description>
     <url>http://stratio.github.io/crossdata/</url>
@@ -173,11 +173,11 @@
 				<toFile>etc/init.d/crossdata</toFile>
             		</copyFile>
                         <copyFile>
-                            <path>crossdata-dist/target/crossdata-dist-0.2.0-SNAPSHOT/LICENSE</path>
+                            <path>crossdata-dist/target/crossdata-dist-0.2.0-RC1/LICENSE</path>
                             <toFile>opt/sds/crossdata/LICENSE</toFile>
                         </copyFile>
                         <copyFile>
-                            <path>crossdata-dist/target/crossdata-dist-0.2.0-SNAPSHOT/NOTICE</path>
+                            <path>crossdata-dist/target/crossdata-dist-0.2.0-RC1/NOTICE</path>
                             <toFile>opt/sds/crossdata/NOTICE</toFile>
                         </copyFile>
             			
