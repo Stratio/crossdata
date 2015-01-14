@@ -40,7 +40,6 @@ import org.testng.Assert.{assertNotNull}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
-
 //class ConnectorActorAppTest extends FunSuite with MockFactory {
 class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with MockFactory with ImplicitSender {
   this:Suite =>
@@ -49,7 +48,6 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
   implicit val timeout = Timeout(3 seconds)
 
   val connector:String="MyConnector"
-
 
   //val to initialize and don't use null
   val options:Option[java.util.Map[Selector,Selector]]=Some(new util.HashMap[Selector,Selector]())
@@ -134,7 +132,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
       val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
       logger.debug("receive->" + result + " after sending Metadata query")
     }
-    c.shutdown()
+    c.stop()
   }
 
   test("Send StorageInProgressQuery to Connector") {
@@ -149,7 +147,6 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val c = new ConnectorApp()
     val myReference = c.startup(m)
 
-
     val message=Insert("query",new ClusterName("cluster"),new TableMetadata(new TableName("catalog","mytable"),
       options.get, columns.get,indexes.get,clusterRef.get,partitionKey.get,partitionKey.get),new Row(), false)
     //val future=myReference ? message
@@ -157,7 +154,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val future=myReference ? message
     val result = Await.result(future, 6 seconds).asInstanceOf[StorageResult]
     logger.info("receiving->" + result + " after sending insert query")
-    c.shutdown()
+    c.stop()
   }
 
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE

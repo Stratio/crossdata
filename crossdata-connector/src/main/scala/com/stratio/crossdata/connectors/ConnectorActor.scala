@@ -35,19 +35,17 @@ import org.apache.log4j.Logger
 
 import scala.collection.mutable.{ListMap, Map, Set}
 import scala.concurrent.duration.DurationInt
-import com.codahale.metrics.{MetricRegistry, Gauge}
-import com.stratio.crossdata.common.utils.Metrics
 
 object State extends Enumeration {
   type state = Value
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector, connectedServers: Set[ActorRef]):
+  def props(connectorName: String, connector: IConnector, connectedServers: Set[String]):
       Props = Props(new ConnectorActor(connectorName, connector, connectedServers))
 }
 
-class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[ActorRef])
+class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String])
   extends HeartbeatActor with ActorLogging with IResultHandler {
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
@@ -84,14 +82,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
     //TODO: Return the list of catalogs.
     return null;
-  }
-
-  def getConnectionStatus(): ConnectionStatus = {
-    var status: ConnectionStatus = ConnectionStatus.CONNECTED
-    if (connectedServers.isEmpty){
-      status = ConnectionStatus.DISCONNECTED
-    }
-    status
   }
 
   override def receive: Receive = super.receive orElse {
@@ -207,7 +197,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
     case msg: getConnectorName => {
       logger.info(sender + " asked for my name")
-      connectedServers += sender
+      connectedServers += sender.path.address.toString
+      logger.info("Connected to Servers: " + connectedServers)
       sender ! replyConnectorName(connectorName)
     }
     case MemberUp(member) => {
@@ -219,13 +210,14 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
     case UnreachableMember(member) => {
       if(member.hasRole("server")){
-        connectedServers -= sender
+        connectedServers -= member.address.toString
+        logger.info("Connected to Servers: " + connectedServers)
       }
       logger.info("Member detected as unreachable: " + member)
     }
     case MemberRemoved(member, previousStatus) => {
       if(member.hasRole("server")){
-        connectedServers -= sender
+        connectedServers -= member.address.toString
       }
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
     }
