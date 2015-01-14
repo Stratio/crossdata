@@ -25,7 +25,7 @@ import akka.cluster.Cluster
 import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
 import akka.util.Timeout
 import com.stratio.crossdata
-import com.stratio.crossdata.common.connector.{IConnector, IConnectorApp, IMetadataEngine, IResultHandler}
+import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata, _}
@@ -33,7 +33,7 @@ import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication.{ACK, AlterCatalog, AlterTable, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DeleteRows, DropCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, ProvideCatalogMetadata, ProvideCatalogsMetadata, ProvideMetadata, ProvideTableMetadata, Truncate, Update, UpdateMetadata, getConnectorName, replyConnectorName, _}
 import org.apache.log4j.Logger
 
-import scala.collection.mutable.{ListMap, Map}
+import scala.collection.mutable.{ListMap, Map, Set}
 import scala.concurrent.duration.DurationInt
 import com.codahale.metrics.{MetricRegistry, Gauge}
 import com.stratio.crossdata.common.utils.Metrics
@@ -43,12 +43,12 @@ object State extends Enumeration {
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector): Props = Props(new ConnectorActor
-  (connectorName, connector))
+  def props(connectorName: String, connector: IConnector, connectedServers: Set[ActorRef]):
+      Props = Props(new ConnectorActor(connectorName, connector, connectedServers))
 }
 
-class ConnectorActor(connectorName: String, conn: IConnector) extends HeartbeatActor with
-ActorLogging with IResultHandler {
+class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[ActorRef])
+  extends HeartbeatActor with ActorLogging with IResultHandler {
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
   val metadata: util.Map[FirstLevelName, IMetadata]=new util.HashMap[FirstLevelName,IMetadata]()
@@ -98,17 +98,17 @@ ActorLogging with IResultHandler {
   override def receive: Receive = super.receive orElse {
 
     //TODO:
-//    case u: PatchMetadata=> {
-//      u.metadataClass match{
-//        //case tmd:com.stratio.crossdata.common.metadata.TableMetadata => {
-//        case clss:Class[TableMetadata]=> {
-//          System.out.println("++>>>>>>>>>")
-//        }
-//        case _=> {
-//          System.out.println("-->>>>>>>>>")
-//        }
-//      }
-//    }
+    case u: PatchMetadata=> {
+      u.metadataClass match{
+        //case tmd:com.stratio.crossdata.common.metadata.TableMetadata => {
+        case clss:Class[TableMetadata]=> {
+          System.out.println("++>>>>>>>>>")
+        }
+        case _=> {
+          System.out.println("-->>>>>>>>>")
+        }
+      }
+    }
 
     case u: UpdateMetadata=> {
       u.metadata match{
