@@ -29,6 +29,7 @@ import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.common.connector.{IConnectorApp, IConfiguration, IConnector}
 import com.stratio.crossdata.communication.Shutdown
 import org.apache.log4j.Logger
+import scala.collection.mutable.Set
 
 object ConnectorApp extends App {
   args.length==2
@@ -38,6 +39,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   type OptionMap = Map[Symbol, String]
   lazy val system = ActorSystem(clusterName, config)
+  val connectedServers: Set[ActorRef] = Set()
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
 
   var actorClusterNode: Option[ActorRef] = None
@@ -52,7 +54,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   def startup(connector: IConnector): ActorSelection= {
     actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
-      connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
+      connector, connectedServers).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
     connector.init(new IConfiguration {})
     system.actorSelection(StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString()))
   }
@@ -72,6 +74,5 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   override def getConnectionStatus(): ConnectionStatus = {
     actorClusterNode.asInstanceOf[ConnectorActor].getConnectionStatus
   }
-
 
 }

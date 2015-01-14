@@ -25,13 +25,14 @@ import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, ColumnMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.MetadataResult
 import com.stratio.crossdata.common.statements.structures.Selector
-import com.stratio.crossdata.communication.{PatchMetadata, CreateTable, UpdateMetadata}
+import com.stratio.crossdata.communication.{CreateTable, UpdateMetadata}
 import com.stratio.crossdata.connectors.ConnectorActor
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import org.apache.log4j.Logger
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuite, Suite}
 
+import scala.collection.mutable.Set
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
@@ -60,8 +61,8 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val m = new DummyIConnector()
     val m2 =new DummyIConnector()
 
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m))
-    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2))
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set()))
+    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, Set()))
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))
@@ -88,10 +89,10 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val queryId = "queryId"
     val m=new DummyIConnector()
     val m2=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m))
-    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2))
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set()))
+    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, Set()))
     val routees = Vector[ActorRef](ca1, ca2)
-    val connectorActor = system1.actorOf(ConnectorActor.props(myconnector, m).withRouter(RoundRobinRouter(routees
+    val connectorActor = system1.actorOf(ConnectorActor.props(myconnector, m, Set()).withRouter(RoundRobinRouter(routees
     = routees)))
 
 
@@ -105,9 +106,9 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val timesleep:Int=3000
     Thread.sleep(timesleep)
     logger.debug("sending message 1")
-    var future = ask(connectorActor, message)
+    val future = ask(connectorActor, message)
     logger.debug("sending message 2")
-    var future2 = ask(connectorActor, message2)
+    val future2 = ask(connectorActor, message2)
     logger.debug("messages sent")
 
     val result = Await.result(future, 12 seconds).asInstanceOf[MetadataResult]
@@ -122,7 +123,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
 
   test("Send updateMetadata to Connector") {
     val m=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m))
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set()))
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
     val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
     catalog.getTables.put(table.getName,table)
