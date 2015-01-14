@@ -65,6 +65,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
 
   test("Basic Connector App listening on a given port does not break") {
     val m = mock[IConnector]
+    (m.getConnectorName _).expects().returning(connector)
     (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning(connector)
     val c = new ConnectorApp()
@@ -73,12 +74,12 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     c.stop()
   }
 
-
   test("Send SelectInProgressQuery to Connector") {
     val m = mock[IConnector]
     val qe = mock[IQueryEngine]
     (m.getQueryEngine _).expects().returning(qe)
     (qe.execute(_:LogicalWorkflow)).expects(*).returning(QueryResult.createSuccessQueryResult())
+    (m.getConnectorName _).expects().returning(connector)
     (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning(connector)
 
@@ -112,6 +113,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val me = mock[IMetadataEngine]
     (me.createTable _).expects(*,*).returning(QueryResult.createSuccessQueryResult())
     (m.getMetadataEngine _).expects().returning(me)
+    (m.getConnectorName _).expects().returning("My New Connector")
     (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
@@ -140,6 +142,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val m = mock[IConnector]
     val ie = mock[IStorageEngine]
     (ie.insert(_: ClusterName,_:TableMetadata,_:Row,_:Boolean)).expects(*,*,*,*).returning()
+    (m.getConnectorName _).expects().returning("My New Connector")
     (m.init _).expects(*).returning(None)
     (m.getStorageEngine _).expects().returning(ie)
     (m.getConnectorName _).expects().returning("My New Connector")
