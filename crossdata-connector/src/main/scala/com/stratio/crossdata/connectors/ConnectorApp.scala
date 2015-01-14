@@ -24,12 +24,13 @@ import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.common.data.{ClusterName, ConnectionStatus, TableName, CatalogName}
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata}
-import com.stratio.crossdata.common.utils.StringUtils
+import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.common.connector.{IConnectorApp, IConfiguration, IConnector}
 import com.stratio.crossdata.communication.Shutdown
 import org.apache.log4j.Logger
 import scala.collection.mutable.Set
+import com.codahale.metrics.{Gauge, MetricRegistry}
 
 object ConnectorApp extends App {
   args.length==2
@@ -39,24 +40,38 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   type OptionMap = Map[Symbol, String]
   lazy val system = ActorSystem(clusterName, config)
-  val connectedServers: Set[ActorRef] = Set()
+  val connectedServers: Set[String] = Set()
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
 
   var actorClusterNode: Option[ActorRef] = None
 
-  def shutdown() :Unit= {
-  }
+  var metricName: String = "connector"
 
   def stop():Unit = {
     actorClusterNode.get ! Shutdown()
     system.shutdown()
+    Metrics.getRegistry.remove(metricName)
   }
 
   def startup(connector: IConnector): ActorSelection= {
     actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
       connector, connectedServers).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
     connector.init(new IConfiguration {})
-    system.actorSelection(StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString()))
+    val actorSelection = system.actorSelection(StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString()))
+
+    metricName = MetricRegistry.name(connector.getConnectorName, "connection", "status")
+    Metrics.getRegistry.register(metricName,
+      new Gauge[Boolean] {
+        override def getValue: Boolean = {
+          var status: Boolean = true
+          if (connectedServers.isEmpty) {
+            status = false
+          }
+          return status
+        }
+      })
+
+    actorSelection
   }
 
   override def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
@@ -72,7 +87,11 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   }
 
   override def getConnectionStatus(): ConnectionStatus = {
-    actorClusterNode.asInstanceOf[ConnectorActor].getConnectionStatus
+    var status: ConnectionStatus = ConnectionStatus.CONNECTED
+    if (connectedServers.isEmpty){
+      status = ConnectionStatus.DISCONNECTED
+    }
+    status
   }
 
 }
