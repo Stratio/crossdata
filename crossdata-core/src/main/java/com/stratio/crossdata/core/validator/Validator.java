@@ -540,11 +540,14 @@ public class Validator {
 
             for (int i = 0; i < columnNameList.size(); i++) {
                 ColumnName columnName = columnNameList.get(i);
-                Selector valueSelector = selectorList.get(i);
+                //Selector valueSelector = selectorList.get(i);
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
 
-                validateColumnType(columnMetadata, valueSelector);
+                adaptColumnType(columnMetadata, selectorList);
             }
+
+            insertIntoStatement.setCellValues(selectorList);
+
         }
     }
 
