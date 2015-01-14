@@ -35,8 +35,6 @@ import org.apache.log4j.Logger
 
 import scala.collection.mutable.{ListMap, Map, Set}
 import scala.concurrent.duration.DurationInt
-import com.codahale.metrics.{MetricRegistry, Gauge}
-import com.stratio.crossdata.common.utils.Metrics
 
 object State extends Enumeration {
   type state = Value
@@ -74,16 +72,34 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
       val catalogname = tableName.getCatalogName
-      return metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tableName)
+      val catalogmetadata=metadata.get(catalogname).asInstanceOf[CatalogMetadata]
+      val tablemetadata=catalogmetadata.getTables.get(tableName)
+      if(tablemetadata.getClusterRef==clusterName)
+        return tablemetadata
+      else
+        return null
   }
 
-  def getCatalogMetadata(clusterName: ClusterName, catalogName: CatalogName): CatalogMetadata={
+  def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata={
     return metadata.get(catalogName).asInstanceOf[CatalogMetadata]
   }
 
   def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
-    //TODO: Return the list of catalogs.
-    return null;
+    val r=new util.HashMap[CatalogName,CatalogMetadata]()
+    for((k,v) <- metadata.entrySet()){
+      k match {
+        case name:CatalogName=>{
+          val catalogmetadata=metadata.get(k).asInstanceOf[CatalogMetadata]
+          val tables=catalogmetadata.getTables
+          for((tablename,tablemetadata) <- tables){
+            if(tables.get(tablename).getClusterRef==cluster){
+              r.put(name,catalogmetadata)
+            }
+          }
+        }
+      }
+    }
+    return new util.ArrayList(r.values())
   }
 
   def getConnectionStatus(): ConnectionStatus = {

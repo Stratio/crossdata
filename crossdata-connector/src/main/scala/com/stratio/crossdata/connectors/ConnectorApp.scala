@@ -63,8 +63,8 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorClusterNode.asInstanceOf[ConnectorActor].getTableMetadata(clusterName, tableName)
   }
 
-  override def getCatalogMetadata(clusterName: ClusterName, catalogName: CatalogName): CatalogMetadata= {
-    actorClusterNode.asInstanceOf[ConnectorActor].getCatalogMetadata(clusterName, catalogName)
+  override def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata= {
+    actorClusterNode.asInstanceOf[ConnectorActor].getCatalogMetadata(catalogName)
   }
 
   override def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {

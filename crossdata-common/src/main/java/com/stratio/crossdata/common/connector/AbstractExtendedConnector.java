@@ -58,12 +58,11 @@ public abstract class AbstractExtendedConnector implements IConnector {
 
     /**
      * Get the catalog metadata.
-     * @param cluster target cluster.
      * @param catalogName target catalog.
      * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    public CatalogMetadata getCatalogMetadata(ClusterName cluster, CatalogName catalogName){
-        return connectorApp.getCatalogMetadata(cluster, catalogName);
+    public CatalogMetadata getCatalogMetadata(CatalogName catalogName){
+        return connectorApp.getCatalogMetadata(catalogName);
     }
 
     /**
