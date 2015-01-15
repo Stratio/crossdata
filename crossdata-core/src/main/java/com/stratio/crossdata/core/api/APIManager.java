@@ -738,8 +738,9 @@ public class APIManager {
                     ManifestHelper.convertManifestFunctionsToMetadataFunctions(
                             connectorFunctions.getFunction()));
 
-            connectorMetadata.setExcludedFunctions((excludedFunctions == null) ?
-                    new HashSet<String>():
+            connectorMetadata.setExcludedFunctions(
+                    //(excludedFunctions == null) ?
+                    //new HashSet<String>():
                     new HashSet<>(excludedFunctions));
         } else {
             connectorMetadata = new ConnectorMetadata(
