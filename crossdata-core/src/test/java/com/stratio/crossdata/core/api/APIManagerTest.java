@@ -309,7 +309,6 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         assertTrue(MetadataManager.MANAGER.getNodes().isEmpty());
         assertTrue(MetadataManager.MANAGER.getTables().isEmpty());
         assertTrue(MetadataManager.MANAGER.getIndexes().isEmpty());
-        assertTrue(MetadataManager.MANAGER.getFunctions().isEmpty());
 
         Name n = new ConnectorName("connectorTest2");
         assertTrue(MetadataManager.MANAGER.exists(n), "MetadataManager should maintain the connector basic info");

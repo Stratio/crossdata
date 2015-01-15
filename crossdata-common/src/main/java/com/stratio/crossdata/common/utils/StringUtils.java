@@ -250,4 +250,11 @@ public final class StringUtils {
         }
         return ct;
     }
+
+    public static String getReturningTypeFromSignature(String signature) {
+        return signature.substring(signature.indexOf(':')+1)
+                .replace("Tuple[", "")
+                .replace("]", "")
+                .trim();
+    }
 }

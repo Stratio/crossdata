@@ -40,7 +40,6 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
-import com.stratio.crossdata.common.data.FunctionName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.NameType;
@@ -58,7 +57,6 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
-import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.NodeMetadata;
@@ -122,9 +120,6 @@ public enum MetadataManager {
         case INDEX:
             result = exists((IndexName) name);
             break;
-        case FUNCTION:
-            result = exists((FunctionName) name);
-            break;
         default:
             break;
         }
@@ -158,10 +153,6 @@ public enum MetadataManager {
 
     private boolean exists(FirstLevelName name) {
         return metadata.containsKey(name);
-    }
-
-    public boolean exists(FunctionName name) throws MetadataManagerException {
-        throw new MetadataManagerException(name + " cannot be searched");
     }
 
     /**
@@ -824,16 +815,6 @@ public enum MetadataManager {
         return indexesMetadata;
     }
 
-    public List<FunctionMetadata> getFunctions() {
-        List<FunctionMetadata> functionsMetadata = new ArrayList<>();
-        for (Name name : metadata.keySet()) {
-            if (name.getType() == NameType.FUNCTION) {
-                functionsMetadata.add(getFunction((FunctionName) name));
-            }
-        }
-        return functionsMetadata;
-    }
-
     /**
      * Return all columns.
      *
@@ -1090,12 +1071,6 @@ public enum MetadataManager {
         return (NodeMetadata) metadata.get(name);
     }
 
-    public FunctionMetadata getFunction(FunctionName name) {
-        shouldBeInit();
-        shouldExist(name);
-        return (FunctionMetadata) metadata.get(name);
-    }
-
     public Set<String> getSupportedFunctionNames(ConnectorName cn){
         Set<String> functions = new HashSet<>();
         ConnectorMetadata connector = getConnector(cn);
@@ -1138,7 +1113,7 @@ public enum MetadataManager {
         return result;
     }
 
-    private FunctionType getFunction(ConnectorName connectorName, String functionName) {
+    public FunctionType getFunction(ConnectorName connectorName, String functionName) {
         FunctionType result = null;
         Set<FunctionType> candidateFunctions = getSupportedFunctions(connectorName);
         for(FunctionType ft: candidateFunctions){

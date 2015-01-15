@@ -384,13 +384,46 @@ public class Planner {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         //Select an actor
-        //TODO Improve actor selection based on cost analysis.
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectors.get(0).getActorRef());
+        ConnectorMetadata connectorMetadata = bestConnector(connectors);
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+
+        updateFunctionsFromSelect(workflow, connectorMetadata.getName());
+
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
+    private ConnectorMetadata bestConnector(List<ConnectorMetadata> connectors) {
+        //TODO: Add logic to this method according to native or not
+        //TODO: Add logic to this method according to statistics
+        return connectors.get(0);
+    }
+
+    private void updateFunctionsFromSelect(LogicalWorkflow workflow, ConnectorName connectorName) {
+        Select selectStep = Select.class.cast(workflow.getLastStep());
+
+        Map<String, ColumnType> typeMap = selectStep.getTypeMap();
+
+        Map<Selector, ColumnType> typeMapFromColumnName = selectStep.getTypeMapFromColumnName();
+
+        for(Selector s: typeMapFromColumnName.keySet()){
+            if(FunctionSelector.class.isInstance(s)){
+                FunctionSelector fs = FunctionSelector.class.cast(s);
+                String functionName = fs.getFunctionName();
+                FunctionType ft = MetadataManager.MANAGER.getFunction(connectorName, functionName);
+                String returningType = StringUtils.getReturningTypeFromSignature(ft.getSignature());
+                ColumnType ct = StringUtils.convertXdTypeToColumnType(returningType);
+                typeMapFromColumnName.put(fs, ct);
+                String stringKey = fs.getFunctionName();
+                if(fs.getAlias() != null){
+                    stringKey = fs.getAlias();
+                }
+                typeMap.put(stringKey, ct);
+            }
+        }
+    }
+
     /**
-     * Define a query worflow composed by several execution paths merging in a
+     * Define a query workflow composed by several execution paths merging in a
      * {@link com.stratio.crossdata.common.executionplan.ExecutionPath} that starts with a UnionStep.
      *
      * @param queryId        The query identifier.
@@ -416,8 +449,8 @@ public class Planner {
 
         //Select an actor
         //TODO Improve actor selection based on cost analysis.
-        String selectedActorUri = StringUtils
-                .getAkkaActorRefUri(mergePath.getAvailableConnectors().get(0).getActorRef());
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(
+                mergePath.getAvailableConnectors().get(0).getActorRef());
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
@@ -469,7 +502,6 @@ public class Planner {
                                                 toRemove.add(connector);
                                                 break;
                                             }
-
                                         }
                                     }
                                 }
@@ -1360,7 +1392,7 @@ public class Planner {
                 currentOperation = Operations.SELECT_FUNCTIONS;
                 FunctionSelector fs = FunctionSelector.class.cast(s);
                 ColumnType ct = null;
-                if (s.getAlias() != null) {
+                if (fs.getAlias() != null) {
                     aliasMap.put(fs, fs.getAlias());
                     typeMapFromColumnName.put(fs, ct);
                     typeMap.put(fs.getAlias(), ct);
