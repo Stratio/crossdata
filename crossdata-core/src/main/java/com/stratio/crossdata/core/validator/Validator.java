@@ -54,7 +54,6 @@ import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.SelectorType;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
 import com.stratio.crossdata.core.normalizer.NormalizedFields;
@@ -590,7 +589,7 @@ public class Validator {
                 if(tryConversion){
                     resultingSelector = convertIntegerSelector(
                             (IntegerSelector) querySelector,
-                            SelectorType.FLOATING_POINT,
+                            columnMetadata.getColumnType(),
                             columnMetadata.getName());
                 } else {
                     notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
@@ -618,10 +617,10 @@ public class Validator {
         return resultingSelector;
     }
 
-    private Selector convertIntegerSelector(IntegerSelector querySelector, SelectorType selectorType, ColumnName name)
+    private Selector convertIntegerSelector(IntegerSelector querySelector, ColumnType columnType, ColumnName name)
             throws NotMatchDataTypeException {
         Selector resultingSelector;
-        if(selectorType == SelectorType.FLOATING_POINT){
+        if(columnType == ColumnType.DOUBLE || columnType == ColumnType.FLOAT){
             resultingSelector = new FloatingPointSelector(querySelector.getTableName(), querySelector.getValue());
         } else {
             throw new NotMatchDataTypeException(name);
