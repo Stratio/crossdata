@@ -18,5 +18,42 @@
 
 package com.stratio.crossdata.core.statements;
 
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+
+
 public abstract class StorageStatement extends CrossdataStatement {
+    /**
+     * The name of the table.
+     */
+    protected TableName tableName;
+
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_TABLE)
+                .add(ValidationTypes.MUST_EXIST_COLUMN);
+    }
+    public TableName getTableName() {
+        return tableName;
+    }
+    public void setTableName(TableName tableName) {
+        this.tableName = tableName;
+    }
+    
+    @Override
+    public CatalogName getEffectiveCatalog() {
+        CatalogName effective;
+        if (tableName != null) {
+            effective = tableName.getCatalogName();
+        } else {
+            effective = catalog;
+        }
+        if (sessionCatalog != null) {
+            effective = sessionCatalog;
+        }
+        return effective;
+    }
 }
