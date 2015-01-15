@@ -110,7 +110,7 @@ public class IntegerSelector extends Selector {
         if (alias != null) {
             result = alias.hashCode();
         }
-        result+=(value+"").hashCode();
+        result+=value;
         return result;
     }
 }
