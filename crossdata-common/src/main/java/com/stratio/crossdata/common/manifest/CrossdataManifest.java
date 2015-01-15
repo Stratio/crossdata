@@ -28,6 +28,8 @@ public abstract class CrossdataManifest implements Serializable {
    * - update ManifestHelper if necessary
    * - the rest of created classes must implement Serializable
    * - Create some getters and setters
+   * - Override some equals() and hashCode()
+   * - Add Stratio license
    */
 
     public static final int TYPE_DATASTORE = 1;

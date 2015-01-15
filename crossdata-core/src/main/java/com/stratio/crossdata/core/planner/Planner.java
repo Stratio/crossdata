@@ -38,7 +38,6 @@ import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.FunctionName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.data.Status;
@@ -65,13 +64,13 @@ import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.TransformationStep;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Window;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
-import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
@@ -465,6 +464,12 @@ public class Planner {
                                         if(!sFunctions.contains(fSelector.getFunctionName().toLowerCase())){
                                             toRemove.add(connector);
                                             break;
+                                        } else {
+                                            if(!MetadataManager.MANAGER.checkSignature(fSelector, connector.getName())){
+                                                toRemove.add(connector);
+                                                break;
+                                            }
+
                                         }
                                     }
                                 }
@@ -1354,22 +1359,15 @@ public class Planner {
             } else if (FunctionSelector.class.isInstance(s)) {
                 currentOperation = Operations.SELECT_FUNCTIONS;
                 FunctionSelector fs = FunctionSelector.class.cast(s);
-                FunctionName functionName = new FunctionName(fs.getFunctionName());
-                FunctionMetadata function = MetadataManager.MANAGER.getFunctionFromManifests(functionName);
-                ColumnType ct = StringUtils.convertXdTypeToColumnType(function.getReturningType());
+                ColumnType ct = null;
                 if (s.getAlias() != null) {
                     aliasMap.put(fs, fs.getAlias());
-
                     typeMapFromColumnName.put(fs, ct);
-
                     typeMap.put(fs.getAlias(), ct);
                 } else {
                     aliasMap.put(fs, fs.getFunctionName());
-
                     typeMapFromColumnName.put(fs, ct);
-
-                    typeMap.put(fs.getFunctionName(),
-                            ct);
+                    typeMap.put(fs.getFunctionName(), ct);
                 }
             } else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
@@ -1381,9 +1379,7 @@ public class Planner {
             for (Map.Entry<ColumnName, ColumnMetadata> column: metadata.getColumns().entrySet()) {
                 ColumnSelector cs = new ColumnSelector(column.getKey());
                 aliasMap.put(cs, column.getKey().getName());
-
                 typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-
                 typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
             }
             if (selectStatement.getJoin() != null) {
@@ -1392,9 +1388,7 @@ public class Planner {
                 for (Map.Entry<ColumnName, ColumnMetadata> column: metadataJoin.getColumns().entrySet()) {
                     ColumnSelector cs = new ColumnSelector(column.getKey());
                     aliasMap.put(cs, column.getKey().getName());
-
                     typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-
                     typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
                 }
             }
