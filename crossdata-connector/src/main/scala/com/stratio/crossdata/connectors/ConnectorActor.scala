@@ -115,7 +115,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   val patchFunctionHash=new java.util.HashMap[String,(Patch,Name)=>Boolean]()
   //TODO: could it be more generic?
   patchFunctionHash.put(class2String(classOf[CatalogMetadata]),(diff:Patch,catalogname:Name)=>{
-    println("\n\n\n"+catalogname+"\n\n\n")
     val name=catalogname.asInstanceOf[CatalogName]
     val catalog=metadata.get(catalogname).asInstanceOf[CatalogMetadata]
     val jsonresult = StringUtils.patchObject(catalog, diff); // patch object
@@ -126,7 +125,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   })
   patchFunctionHash.put(class2String(classOf[ClusterMetadata]),(diff:Patch,clustername:Name)=>{
     val name=clustername.asInstanceOf[ClusterName]
-    println("\n\n\n"+name+"\n\n\n")
     val cluster=metadata.get(clustername).asInstanceOf[ClusterMetadata]
     val jsonresult = StringUtils.patchObject(cluster, diff); // patch object
     val result= //deserialize
@@ -136,7 +134,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   })
   patchFunctionHash.put(class2String(classOf[DataStoreMetadata]),(diff:Patch,datastorename:Name)=>{
     val name=datastorename.asInstanceOf[DataStoreName]
-    println("\n\n\n"+name+"\n\n\n")
     val datastore=metadata.get(datastorename).asInstanceOf[DataStoreMetadata]
     val jsonresult = StringUtils.patchObject(datastore, diff); // patch object
     val result= //deserialize
@@ -145,7 +142,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
    true
   })
   patchFunctionHash.put(class2String(classOf[TableMetadata]),(diff:Patch,tablename:Name)=>{
-    println("\n\n\n"+tablename+"\n\n\n")
     val name=tablename.asInstanceOf[TableName]
     val catalogname = name.getCatalogName
     val table=metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(name)
@@ -157,9 +153,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     )
     true
   })
-  patchFunctionHash.put(class2String(classOf[TableMetadata]),(diff:Patch,columnname:Name)=>{
+  patchFunctionHash.put(class2String(classOf[ColumnMetadata]),(diff:Patch,columnname:Name)=>{
     val name = columnname.asInstanceOf[ColumnName]
-    println("\n\n\n"+name+"\n\n\n")
     val tablename = name.getTableName
     val catalogname = tablename.getCatalogName
     val table=metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename)
@@ -171,9 +166,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       .put( name,result.asInstanceOf[ColumnMetadata] )
     true
   })
-  patchFunctionHash.put(class2String(classOf[TableMetadata]),(diff:Patch,indexname:Name)=>{
+  patchFunctionHash.put(class2String(classOf[IndexMetadata]),(diff:Patch,indexname:Name)=>{
     val name = indexname.asInstanceOf[IndexName]
-    println("\n\n\n"+name+"\n\n\n")
     val tablename = name.getTableName
     val catalogname = tablename.getCatalogName
     val table=metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename)
