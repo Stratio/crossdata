@@ -745,12 +745,12 @@ public class APIManager {
             connectorMetadata = new ConnectorMetadata(
                     name,
                     version,
-                    (dataStoreRefs == null) ? new ArrayList<String>() : dataStoreRefs.getDataStoreName(),
+                    (dataStoreRefs == null) ? new ArrayList<String>() :  dataStoreRefs.getDataStoreName(),
                     (requiredProperties == null) ? new ArrayList<PropertyType>() : requiredProperties.getProperty(),
                     (optionalProperties == null) ? new ArrayList<PropertyType>() : optionalProperties.getProperty(),
                     (supportedOperations == null) ? new ArrayList<String>() : supportedOperations.getOperation(),
                     (connectorFunctions==null) ? new ArrayList<FunctionType>(): connectorFunctions.getFunction(),
-                    (excludedFunctions==null) ? new ArrayList<String>(): excludedFunctions
+                    excludedFunctions
             );
         }
 
