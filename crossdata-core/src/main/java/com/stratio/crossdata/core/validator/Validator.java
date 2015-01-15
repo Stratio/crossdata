@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.core.validator;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -50,7 +51,10 @@ import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.SelectorType;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
 import com.stratio.crossdata.core.normalizer.NormalizedFields;
@@ -538,32 +542,33 @@ public class Validator {
             List<ColumnName> columnNameList = insertIntoStatement.getIds();
             List<Selector> selectorList = insertIntoStatement.getCellValues();
 
+            List<Selector> resultingList = new ArrayList<>();
             for (int i = 0; i < columnNameList.size(); i++) {
                 ColumnName columnName = columnNameList.get(i);
-                //Selector valueSelector = selectorList.get(i);
+                Selector valueSelector = selectorList.get(i);
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
 
-                adaptColumnType(columnMetadata, selectorList);
+                Selector resultingSelector = validateColumnType(columnMetadata, valueSelector, true);
+                resultingList.add(resultingSelector);
             }
-
-            insertIntoStatement.setCellValues(selectorList);
-
+            insertIntoStatement.setCellValues(resultingList);
         }
     }
 
-    private void validateColumnType(ColumnMetadata columnMetadata, Selector right)
+    private Selector validateColumnType(ColumnMetadata columnMetadata, Selector querySelector, boolean tryConversion)
             throws BadFormatException, NotMatchDataTypeException {
         NotMatchDataTypeException notMatchDataTypeException = null;
         BadFormatException badFormatException = null;
-        switch (right.getType()) {
+        Selector resultingSelector = querySelector;
+        switch (querySelector.getType()) {
         case FUNCTION:
-            LOG.info("Function is not validate yet");
+            LOG.info("Functions are not supported yet for this statement.");
             break;
         case COLUMN:
-            ColumnName rightColumnName = ((ColumnSelector) right).getName();
-            ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
+            ColumnName queryColumnName = ((ColumnSelector) querySelector).getName();
+            ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(queryColumnName);
             if (columnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
-                notMatchDataTypeException = new NotMatchDataTypeException(rightColumnName);
+                notMatchDataTypeException = new NotMatchDataTypeException(queryColumnName);
             }
             break;
         case ASTERISK:
@@ -582,7 +587,14 @@ public class Validator {
         case INTEGER:
             if (columnMetadata.getColumnType() != ColumnType.INT &&
                     columnMetadata.getColumnType() != ColumnType.BIGINT) {
-                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
+                if(tryConversion){
+                    resultingSelector = convertIntegerSelector(
+                            (IntegerSelector) querySelector,
+                            SelectorType.FLOATING_POINT,
+                            columnMetadata.getName());
+                } else {
+                    notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
+                }
             }
             break;
         case FLOATING_POINT:
@@ -603,6 +615,18 @@ public class Validator {
         } else if (badFormatException != null) {
             throw badFormatException;
         }
+        return resultingSelector;
+    }
+
+    private Selector convertIntegerSelector(IntegerSelector querySelector, SelectorType selectorType, ColumnName name)
+            throws NotMatchDataTypeException {
+        Selector resultingSelector;
+        if(selectorType == SelectorType.FLOATING_POINT){
+            resultingSelector = new FloatingPointSelector(querySelector.getTableName(), querySelector.getValue());
+        } else {
+            throw new NotMatchDataTypeException(name);
+        }
+        return resultingSelector;
     }
 
 }
