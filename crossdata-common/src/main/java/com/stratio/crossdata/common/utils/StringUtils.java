@@ -194,7 +194,7 @@ public final class StringUtils {
         return DiffUtils.diff(lista, listb);
     }
     
-    public static String patchObject(ArrayList<String> a, Patch diff) throws PatchFailedException {
+    public static String patchObject(Object a, Patch diff) throws PatchFailedException {
         String[] lista = StringUtils.serializeObject2String(a).split("\n"); //apply patch to a
         List<String> partialresult = (List<String>) diff.applyTo(Arrays.asList(lista));
         String jsonresult="";

@@ -25,7 +25,7 @@ import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, ColumnMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.MetadataResult
 import com.stratio.crossdata.common.statements.structures.Selector
-import com.stratio.crossdata.communication.{CreateTable, UpdateMetadata}
+import com.stratio.crossdata.communication.{PatchMetadata, CreateTable, UpdateMetadata}
 import com.stratio.crossdata.connectors.ConnectorActor
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import org.apache.log4j.Logger
@@ -132,21 +132,19 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     assert(result == true)
   }
 
-  /*
   test("Send patched updateMetadata to Connector") {
     //TODO: this test is not complete (still a Proof Of Concept)
     val m=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m))
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m,null))
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
     val classTableMetadata=table.getClass
     val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
     catalog.getTables.put(table.getName,table)
-    val future1 = ask(ca1, PatchMetadata(null, metadataClass = classTableMetadata))
+    val future1 = ask(ca1, PatchMetadata(null, metadataClass = classTableMetadata,table.getName))
     val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
     assert(result == true)
   }
-  */
-  
+
 }
 
 
