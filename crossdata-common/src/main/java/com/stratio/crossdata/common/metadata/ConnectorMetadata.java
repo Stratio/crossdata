@@ -215,10 +215,6 @@ public class ConnectorMetadata implements IMetadata {
         }
 
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
-        //this never going to be null
-        //if(this.dataStoreRefs == null){
-            this.dataStoreRefs = new HashSet<>();
-        //}
 
         if (requiredProperties != null) {
             this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
