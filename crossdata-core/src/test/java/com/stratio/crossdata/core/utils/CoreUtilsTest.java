@@ -59,7 +59,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
     @Test
     public void testConstructor() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        assertNotNull(coreUtils);
+        assertNotNull(coreUtils, "CoreUtils instance should be null");
     }
 
     @Test
@@ -68,7 +68,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         Selector selector = new IntegerSelector(table, 25);
         ColumnName columnName = new ColumnName(table, "BigIntColumn");
         Object result = coreUtils.convertSelectorToObject(selector, columnName);
-        assertTrue(result instanceof Long);
+        assertTrue(result instanceof Long, "Result should be a Long. Found: " + result.getClass().getCanonicalName());
     }
 
     @Test
@@ -77,7 +77,8 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         Selector selector = new FloatingPointSelector(table, 25.7);
         ColumnName columnName = new ColumnName(table, "DoubleColumn");
         Object result = coreUtils.convertSelectorToObject(selector, columnName);
-        assertTrue(result instanceof Double);
+        assertTrue(result instanceof Double,
+                "Result should be a Double. Found: " + result.getClass().getCanonicalName());
     }
 
     @Test
@@ -86,7 +87,8 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         Selector selector = new FloatingPointSelector(table, 25.7);
         ColumnName columnName = new ColumnName(table, "FloatColumn");
         Object result = coreUtils.convertSelectorToObject(selector, columnName);
-        assertTrue(result instanceof Float);
+        assertTrue(result instanceof Float,
+                "Result should be a Float. Found: " + result.getClass().getCanonicalName());
     }
 
     @Test(expectedExceptions = PlanningException.class)

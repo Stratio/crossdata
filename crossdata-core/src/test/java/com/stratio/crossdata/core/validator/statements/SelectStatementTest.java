@@ -453,7 +453,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
             try {
                 IValidatedQuery validationResult = validator.validate(parsedQuery);
-                assertNotNull(validationResult);
+                assertNotNull(validationResult, "Validation Result shouldn't be null");
             } catch (ValidationException e) {
                 fail();
             } catch (IgnoreQueryException e) {
