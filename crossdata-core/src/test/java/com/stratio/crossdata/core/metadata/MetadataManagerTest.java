@@ -88,20 +88,23 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         // Create and add a test dataStore and cluster to the MetadataManager
         DataStoreName dataStoreRef = createTestDatastore();
         ClusterName clusterName = new ClusterName("clusterTest");
-        Set<ClusterName> clusterList = new HashSet<ClusterName>();
+        Set<ClusterName> clusterList = new HashSet<>();
         clusterList.add(clusterName);
-        // Create and add a test connectormanager metadata to the MetadataManager
+        // Create and add a test ConnectorManager metadata to the MetadataManager
         ConnectorName connectorName = createTestConnector("testConnector", dataStoreRef, clusterList,
                 "coordinatorActorRef");
         createTestCluster(clusterName.getName(), dataStoreRef, connectorName);
 
-        // Check persistence of connectormanager
+        // Check persistence of ConnectorManager
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-        assertEquals(connectorName, connectorMetadata.getName());
+        assertEquals(connectorName, connectorMetadata.getName(), "Expected name: " + connectorName +
+                System.lineSeparator() + "Result name:   " + connectorMetadata.getName());
 
         // Check that changes persisted in the MetadataManager ("clusterTest" cluster)
         ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
-        assertEquals(clusterMetadata.getConnectorAttachedRefs().get(connectorName).getConnectorRef(), connectorName);
+        assertEquals(clusterMetadata.getConnectorAttachedRefs().get(connectorName).getConnectorRef(), connectorName,
+                "Expected: " + connectorName + System.lineSeparator() +
+                "Found:    " + clusterMetadata.getConnectorAttachedRefs().get(connectorName).getConnectorRef());
 
     }
 
@@ -117,7 +120,9 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         CatalogName catalogName = createTestCatalog("testCatalog");
 
         //Check catalog persistence
-        assertEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), catalogName);
+        assertEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), catalogName,
+                "Expected: " + catalogName + System.lineSeparator() +
+                "Found:    " + MetadataManager.MANAGER.getCatalog(catalogName).getName());
     }
 
     // CREATE TABLE
@@ -140,7 +145,9 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
                 partitionKeys1,
                 clusteringKeys1);
 
-        assertEquals(MetadataManager.MANAGER.getTable(table.getName()).getName(), table.getName());
+        assertEquals(MetadataManager.MANAGER.getTable(table.getName()).getName(), table.getName(),
+                "Expected: " + table.getName() + System.lineSeparator() +
+                "Found:    " + MetadataManager.MANAGER.getTable(table.getName()).getName());
     }
 
     @Test
@@ -161,9 +168,16 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         ConnectorName connectorName = new ConnectorName(name);
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
 
-        assertEquals(connectorMetadata.getName(), connectorName);
-        assertTrue(connectorMetadata.getActorRef().equalsIgnoreCase(actorRef));
-        assertEquals(connectorMetadata.getDataStoreRefs().iterator().next(), dataStoreName);
+        assertEquals(connectorMetadata.getName(), connectorName,
+                "Expected: " + connectorName + System.lineSeparator() +
+                "Found:    " + connectorMetadata.getName());
+        assertTrue(connectorMetadata.getActorRef().equalsIgnoreCase(actorRef),
+                "Expected: " + actorRef + System.lineSeparator() +
+                        "Found:    " + connectorMetadata.getActorRef());
+        DataStoreName found = connectorMetadata.getDataStoreRefs().iterator().next();
+        assertEquals(found, dataStoreName,
+                "Expected: " + dataStoreName + System.lineSeparator() +
+                "Found:    " + found);
     }
 
     @Test
@@ -181,7 +195,9 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
             fail();
         }
 
-        assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef().equalsIgnoreCase(actorRef));
+        assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef().equalsIgnoreCase(actorRef),
+                "Expected: " + actorRef + System.lineSeparator() +
+                "Found:    " + MetadataManager.MANAGER.getConnector(connectorName).getActorRef());
     }
 
     @Test
@@ -201,7 +217,9 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
             fail();
         }
 
-        assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef().equalsIgnoreCase(actorRef));
+        assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef().equalsIgnoreCase(actorRef),
+                "Expected: " + actorRef + System.lineSeparator() +
+                "Found:    " + MetadataManager.MANAGER.getConnector(connectorName).getActorRef());
     }
 
     @Test
@@ -218,7 +236,9 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         MetadataManager.MANAGER.setConnectorStatus(names, status);
 
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-        assertEquals(connectorMetadata.getStatus(), status);
+        assertEquals(connectorMetadata.getStatus(), status,
+                "Expected: " + status + System.lineSeparator() +
+                "Found:    " + connectorMetadata.getStatus());
     }
 
     @Test
@@ -236,7 +256,9 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String actorRef = "akkActorRefTest";
         createTestConnector(name, dataStoreName, actorRef);
 
-        assertTrue(MetadataManager.MANAGER.getConnectorRef(new ConnectorName(name)).equalsIgnoreCase(actorRef));
+        assertTrue(MetadataManager.MANAGER.getConnectorRef(new ConnectorName(name)).equalsIgnoreCase(actorRef),
+                "Expected: " + actorRef + System.lineSeparator() +
+                "Found:    " + MetadataManager.MANAGER.getConnectorRef(new ConnectorName(name)));
     }
 
     @Test
@@ -273,8 +295,13 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         List<ConnectorMetadata> attachedConnectors = MetadataManager.MANAGER
                 .getAttachedConnectors(status, clusterName);
 
-        assertTrue(attachedConnectors.size() == 1);
-        assertEquals(attachedConnectors.get(0).getName(), connectorName);
+        assertTrue(attachedConnectors.size() == 1,
+                "Number of attached connectors is wrong." + System.lineSeparator() +
+                "Expected: " + 1 + System.lineSeparator() +
+                "Found:    " + attachedConnectors.size());
+        assertEquals(attachedConnectors.get(0).getName(), connectorName,
+                "Expected: " + connectorName + System.lineSeparator() +
+                "Found:    " + attachedConnectors.get(0).getName());
     }
 
     @Test
@@ -290,7 +317,8 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         Status status = Status.INITIALIZING;
         MetadataManager.MANAGER.setConnectorStatus(names, status);
 
-        assertTrue(MetadataManager.MANAGER.checkConnectorStatus(connectorName, status));
+        assertTrue(MetadataManager.MANAGER.checkConnectorStatus(connectorName, status),
+                connectorName + " shoud have the status : " + status);
     }
 
     @Test
@@ -300,8 +328,13 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         List<CatalogMetadata> catalogs = MetadataManager.MANAGER.getCatalogs();
 
-        assertTrue(catalogs.size() == 1);
-        assertTrue(catalogs.get(0).getName().getName().equalsIgnoreCase(catalog));
+        assertTrue(catalogs.size() == 1,
+                "Catalogs size is wrong." + System.lineSeparator() +
+                "Expected: " + 1 + System.lineSeparator() +
+                "Found:    " + catalogs.size());
+        assertTrue(catalogs.get(0).getName().getName().equalsIgnoreCase(catalog),
+                "Expected: " + catalog + System.lineSeparator() +
+                "Found:    " + catalogs.get(0).getName().getName());
     }
 
     @Test
@@ -322,8 +355,13 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         List<TableMetadata> tables = MetadataManager.MANAGER.getTables();
 
-        assertTrue(tables.size() == 1);
-        assertTrue(tables.get(0).getName().getName().equalsIgnoreCase("testTable"));
+        assertTrue(tables.size() == 1,
+                "Tables size is wrong." + System.lineSeparator() +
+                "Expected: " + 1 + System.lineSeparator() +
+                "Found:    " + tables.size());
+        assertTrue(tables.get(0).getName().getName().equalsIgnoreCase("testTable"),
+                "Expected: " + "testTable" + System.lineSeparator() +
+                "Found:    " + tables.get(0).getName().getName());
     }
 
     @Test
@@ -336,9 +374,16 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         List<ColumnMetadata> columns = MetadataManager.MANAGER.getColumns();
 
-        assertTrue(columns.size() == 2);
-        assertTrue(columns.get(0).getName().getName().equalsIgnoreCase("id"));
-        assertTrue(columns.get(1).getName().getName().equalsIgnoreCase("user"));
+        assertTrue(columns.size() == 2,
+                "Columns size is wrong." + System.lineSeparator() +
+                "Expected: " + 2 + System.lineSeparator() +
+                "Found:    " + columns.size());
+        assertTrue(columns.get(0).getName().getName().equalsIgnoreCase("id"),
+                "Expected: " + "id" + System.lineSeparator() +
+                "Found:    " + columns.get(0).getName().getName());
+        assertTrue(columns.get(1).getName().getName().equalsIgnoreCase("user"),
+                "Expected: " + "user" + System.lineSeparator() +
+                "Found:    " + columns.get(1).getName().getName());
     }
 
     @Test
@@ -351,7 +396,9 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         List<TableMetadata> tablesMetadata = MetadataManager.MANAGER.getTablesByCatalogName("testCatalog");
 
-        assertTrue(tablesMetadata.get(0).getName().getName().equalsIgnoreCase("testTable"));
+        assertTrue(tablesMetadata.get(0).getName().getName().equalsIgnoreCase("testTable"),
+                "Expected: " + "testTable" + System.lineSeparator() +
+                "Found:    " + tablesMetadata.get(0).getName().getName());
     }
 
     @Test
@@ -364,9 +411,16 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         List<ColumnMetadata> columnsMetadata = MetadataManager.MANAGER.getColumnByTable("testCatalog", "testTable");
 
-        assertTrue(columnsMetadata.size() == 2);
-        assertTrue(columnsMetadata.get(0).getName().getName().equals("id"));
-        assertTrue(columnsMetadata.get(1).getName().getName().equals("user"));
+        assertTrue(columnsMetadata.size() == 2,
+                "Size of the Metadata of columns is wrong." + System.lineSeparator() +
+                "Expected: " + 2 + System.lineSeparator() +
+                "Found:    " + columnsMetadata.size());
+        assertTrue(columnsMetadata.get(0).getName().getName().equals("id"),
+                "Expected: " + "id" + System.lineSeparator() +
+                "Found:    " + columnsMetadata.get(0).getName().getName());
+        assertTrue(columnsMetadata.get(1).getName().getName().equals("user"),
+                "Expected: " + "user" + System.lineSeparator() +
+                "Found:    " + columnsMetadata.get(1).getName().getName());
     }
 
     @Test
@@ -384,8 +438,13 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         Status status = Status.ONLINE;
         List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors(status);
 
-        assertTrue(connectors.size() == 1);
-        assertTrue(connectors.get(0).getStatus() == status);
+        assertTrue(connectors.size() == 1,
+                "Connectors size is wrong." + System.lineSeparator() +
+                "Expected: " + 1 + System.lineSeparator() +
+                "Found:    " + connectors.size());
+        assertTrue(connectors.get(0).getStatus() == status,
+                "Expected: " + status + System.lineSeparator() +
+                "Found:    " + connectors.get(0).getStatus());
     }
 
     @Test
@@ -402,8 +461,13 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
         List<ConnectorName> connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE);
 
-        assertTrue(connectors.size() == 1);
-        assertTrue(connectors.get(0).getName().equalsIgnoreCase("connectorTest"));
+        assertTrue(connectors.size() == 1,
+                "Connectors size is wrong." + System.lineSeparator() +
+                "Expected: " + 1 + System.lineSeparator() +
+                "Found:    " + connectors.size());
+        assertTrue(connectors.get(0).getName().equalsIgnoreCase("connectorTest"),
+                "Expected: " + "connectorTest" + System.lineSeparator() +
+                "Found:    " + connectors.get(0).getName());
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
