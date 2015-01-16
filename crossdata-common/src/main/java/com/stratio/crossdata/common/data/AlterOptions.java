@@ -26,6 +26,9 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 
 public class AlterOptions implements Serializable {
 
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
     private static final long serialVersionUID = -2447041205006360889L;
 
     /**
@@ -33,10 +36,23 @@ public class AlterOptions implements Serializable {
      */
     private AlterOperation option;
 
+    /**
+     * Target column metadata.
+     */
     private ColumnMetadata columnMetadata;
 
+    /**
+     * The set of properties.
+     */
     private Map<Selector, Selector> properties = new HashMap<>();
 
+    /**
+     * Class constructor.
+     *
+     * @param option         Type of operation to be carried out.
+     * @param properties     Map of {@link com.stratio.crossdata.common.statements.structures.Selector} properties.
+     * @param columnMetadata Target column metadata.
+     */
     public AlterOptions(AlterOperation option,
             Map<Selector, Selector> properties,
             ColumnMetadata columnMetadata) {
@@ -45,26 +61,56 @@ public class AlterOptions implements Serializable {
         this.properties = properties;
     }
 
+    /**
+     * Get the operation to be executed.
+     *
+     * @return A {@link com.stratio.crossdata.common.data.AlterOperation}.
+     */
     public AlterOperation getOption() {
         return option;
     }
 
+    /**
+     * Set the operation to be executed.
+     *
+     * @param option The {@link com.stratio.crossdata.common.data.AlterOperation}.
+     */
     public void setOption(AlterOperation option) {
         this.option = option;
     }
 
+    /**
+     * Get the target column.
+     *
+     * @return A {@link com.stratio.crossdata.common.metadata.ColumnMetadata}.
+     */
     public ColumnMetadata getColumnMetadata() {
         return columnMetadata;
     }
 
+    /**
+     * Set the target column.
+     *
+     * @param columnMetadata A {@link com.stratio.crossdata.common.metadata.ColumnMetadata}.
+     */
     public void setColumnMetadata(ColumnMetadata columnMetadata) {
         this.columnMetadata = columnMetadata;
     }
 
+    /**
+     * Get the map of properties.
+     *
+     * @return A map of {@link com.stratio.crossdata.common.statements.structures.Selector}.
+     */
     public Map<Selector, Selector> getProperties() {
         return properties;
     }
 
+    /**
+     * Set the map of properties.
+     *
+     * @param properties A map of {@link com.stratio.crossdata.common.statements.structures.Selector}.
+     */
     public void setProperties(Map<Selector, Selector> properties) {
         this.properties = properties;
     }
