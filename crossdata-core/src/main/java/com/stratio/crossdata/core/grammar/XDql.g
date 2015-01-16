@@ -175,7 +175,6 @@ fragment EXPONENT : ('e'|'E') ('+'|'-')? ('0'..'9')+ ;
 fragment POINT: '.';
 
 // Case-insensitive keywords
-T_DESCRIBE: D E S C R I B E;
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_ALTER: A L T E R;

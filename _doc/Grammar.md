@@ -45,10 +45,15 @@ Table of contents
         -   [RESET SERVERDATA](#reset-serverdata)
         -   [CLEAN METADATA](#clean-metadata)
         -   [DESCRIBE SYSTEM](#describe-system)
+        -   [DESCRIBE DATASTORES](#describe-datastores)
         -   [DESCRIBE DATASTORE](#describe-datastore)
+        -   [DESCRIBE CLUSTERS](#describe-clusters)
+        -   [DESCRIBE CLUSTER](#describe-cluster)
         -   [DESCRIBE CONNECTORS](#describe-connectors)
         -   [DESCRIBE CONNECTOR](#describe-connector)
         -   [DESCRIBE CATALOGS](#describe-catalogs)
+        -   [DESCRIBE CATALOG](#describe-catalog)
+        -   [DESCRIBE TABLE](#describe-table)
 -   [Shell features] (#shell-features)
 
 * * * * *
@@ -428,6 +433,16 @@ Example:
 
     DESCRIBE SYSTEM;
 
+### DESCRIBE DATASTORES
+
+Describe all the datastores registered in the system.
+
+DESCRIBE DATASTORES;
+
+Example:
+
+    DESCRIBE DATASTORES;
+
 ### DESCRIBE DATASTORE
 
 Describe information related to a specific datastore.
@@ -437,6 +452,26 @@ DESCRIBE DATASTORE \<datastore-name\>;
 Example:
 
     DESCRIBE DATASTORE cassandra;
+
+### DESCRIBE CLUSTERS
+
+Describe all the clusters registered in the system.
+
+DESCRIBE CLUSTERS;
+
+Example:
+
+    DESCRIBE CLUSTERS;
+
+### DESCRIBE CLUSTER
+
+Describe information related to a specific cluster.
+
+DESCRIBE CLUSTER \<cluster-name\>;
+
+Example:
+
+    DESCRIBE CLUSTER production;
 
 ### DESCRIBE CONNECTORS
 
@@ -467,6 +502,26 @@ DESCRIBE CATALOGS;
 Example:
 
     DESCRIBE CATALOGS;
+
+### DESCRIBE CATALOG
+
+Describe the specified catalog.
+
+DESCRIBE CATALOG \<catalog-name\>;
+
+Example:
+
+    DESCRIBE CATALOG catalog1;
+
+### DESCRIBE TABLE
+
+Describe the specified table.
+
+DESCRIBE TABLE \<table-name\>;
+
+Example:
+
+    DESCRIBE TABLE catalog1.table;
 
 * * * * *
 
