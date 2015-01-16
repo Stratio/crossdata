@@ -136,17 +136,17 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
   test("Send patched updateMetadata to Connector") {
     //TODO: this test is not complete (still a Proof Of Concept)
     val m=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m))
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m,null))
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
     val classTableMetadata=table.getClass
     val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
     catalog.getTables.put(table.getName,table)
-    val future1 = ask(ca1, PatchMetadata(null, metadataClass = classTableMetadata))
+    val future1 = ask(ca1, PatchMetadata(null, metadataClass = classTableMetadata,table.getName))
     val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
     assert(result == true)
   }
   */
-  
+
 }
 
 

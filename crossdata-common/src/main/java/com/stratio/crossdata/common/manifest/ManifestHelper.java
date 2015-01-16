@@ -217,7 +217,10 @@ public final class ManifestHelper implements Serializable {
      */
     public static Set<DataStoreName> convertManifestDataStoreNamesToMetadataDataStoreNames(List<String> dataStoreRefs) {
         Set<DataStoreName> dataStoreNames = new HashSet<>();
-        for (String name : dataStoreRefs) {
+        if(dataStoreRefs == null){
+            return dataStoreNames;
+        }
+        for (String name: dataStoreRefs) {
             dataStoreNames.add(new DataStoreName(name));
         }
         return dataStoreNames;

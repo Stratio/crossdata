@@ -88,7 +88,7 @@ public class GridTest {
         Lock lock = Grid.INSTANCE.lock("testGridLock");
         lock.lock();
         lock.unlock();
-        assertTrue(res);
+        assertTrue(res, "Grid Lock test failed.");
     }
 
     /**

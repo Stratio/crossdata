@@ -50,9 +50,7 @@ public class AsteriskSelector extends Selector {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
-        AsteriskSelector that = (AsteriskSelector) o;
-
+        //AsteriskSelector that = (AsteriskSelector) o;
         return true;
     }
 

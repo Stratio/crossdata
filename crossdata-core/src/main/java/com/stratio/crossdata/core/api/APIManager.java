@@ -738,19 +738,20 @@ public class APIManager {
                     ManifestHelper.convertManifestFunctionsToMetadataFunctions(
                             connectorFunctions.getFunction()));
 
-            connectorMetadata.setExcludedFunctions((excludedFunctions == null) ?
-                    new HashSet<String>():
+            connectorMetadata.setExcludedFunctions(
+                    //(excludedFunctions == null) ?
+                    //new HashSet<String>():
                     new HashSet<>(excludedFunctions));
         } else {
             connectorMetadata = new ConnectorMetadata(
                     name,
                     version,
-                    (dataStoreRefs == null) ? new ArrayList<String>() : dataStoreRefs.getDataStoreName(),
+                    (dataStoreRefs == null) ? new ArrayList<String>() :  dataStoreRefs.getDataStoreName(),
                     (requiredProperties == null) ? new ArrayList<PropertyType>() : requiredProperties.getProperty(),
                     (optionalProperties == null) ? new ArrayList<PropertyType>() : optionalProperties.getProperty(),
                     (supportedOperations == null) ? new ArrayList<String>() : supportedOperations.getOperation(),
                     (connectorFunctions==null) ? new ArrayList<FunctionType>(): connectorFunctions.getFunction(),
-                    (excludedFunctions==null) ? new ArrayList<String>(): excludedFunctions
+                    excludedFunctions
             );
         }
 
