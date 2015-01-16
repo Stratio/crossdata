@@ -42,9 +42,9 @@ public class Select extends TransformationStep {
     /**
      * Map of {@link com.stratio.crossdata.common.metadata.ColumnType} associated with each column.
      */
-    private final Map<String, ColumnType> typeMap;
+    private Map<String, ColumnType> typeMap;
 
-    private final Map<Selector, ColumnType> typeMapFromColumnName;
+    private Map<Selector, ColumnType> typeMapFromColumnName;
 
     /**
      * Class constructor.
@@ -75,6 +75,14 @@ public class Select extends TransformationStep {
 
     public Map<Selector, ColumnType> getTypeMapFromColumnName() {
         return typeMapFromColumnName;
+    }
+
+    public void setTypeMap(Map<String, ColumnType> typeMap) {
+        this.typeMap = typeMap;
+    }
+
+    public void setTypeMapFromColumnName(Map<Selector, ColumnType> typeMapFromColumnName) {
+        this.typeMapFromColumnName = typeMapFromColumnName;
     }
 
     /**

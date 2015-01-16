@@ -32,6 +32,7 @@ import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata, _}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication.{ACK, AlterCatalog, AlterTable, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DeleteRows, DropCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, ProvideCatalogMetadata, ProvideCatalogsMetadata, ProvideMetadata, ProvideTableMetadata, Truncate, Update, UpdateMetadata, getConnectorName, replyConnectorName, _}
 import org.apache.log4j.Logger
+import scala.collection.JavaConversions._
 
 import scala.collection.mutable.{ListMap, Map, Set}
 import scala.concurrent.duration.DurationInt
@@ -72,16 +73,35 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
       val catalogname = tableName.getCatalogName
-      return metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tableName)
+      val catalogmetadata=metadata.get(catalogname).asInstanceOf[CatalogMetadata]
+      val tablemetadata=catalogmetadata.getTables.get(tableName)
+      if(tablemetadata.getClusterRef==clusterName)
+        return tablemetadata
+      else
+        return null
   }
 
-  def getCatalogMetadata(clusterName: ClusterName, catalogName: CatalogName): CatalogMetadata={
+  def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata={
     return metadata.get(catalogName).asInstanceOf[CatalogMetadata]
   }
 
   def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
-    //TODO: Return the list of catalogs.
-    return null;
+    val r=new util.HashMap[CatalogName,CatalogMetadata]()
+    //for(entry:java.util.Map.Entry[FirstLevelName,IMetadata] <- metadata.entrySet()){
+    for((k,v) <- metadata){
+       k match {
+        case name:CatalogName=>{
+          val catalogmetadata=metadata.get(k).asInstanceOf[CatalogMetadata]
+          val tables=catalogmetadata.getTables
+          for((tablename,tablemetadata) <- tables){
+            if(tables.get(tablename).getClusterRef==cluster){
+              r.put(name,catalogmetadata)
+            }
+          }
+        }
+      }
+    }
+    return new util.ArrayList(r.values())
   }
 
   override def receive: Receive = super.receive orElse {
