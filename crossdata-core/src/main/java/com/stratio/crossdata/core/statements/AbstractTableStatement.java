@@ -27,7 +27,7 @@ public abstract class AbstractTableStatement implements ITableStatement {
      */
     protected TableName tableName;
     
-    private CatalogName catalog;
+    protected CatalogName catalog;
     protected CatalogName sessionCatalog = null;
     
     public TableName getTableName() {
