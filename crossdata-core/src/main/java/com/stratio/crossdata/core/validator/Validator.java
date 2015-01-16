@@ -174,7 +174,6 @@ public class Validator {
             ((SelectValidatedQuery) validatedQuery).getTables().addAll(fields.getTableNames());
             ((SelectValidatedQuery) validatedQuery).getRelations().addAll(fields.getWhere());
             ((SelectValidatedQuery) validatedQuery).setJoin(fields.getJoin());
-            ((SelectValidatedQuery) validatedQuery).getSignatures().putAll(fields.getSignatures());
         }
 
         return validatedQuery;

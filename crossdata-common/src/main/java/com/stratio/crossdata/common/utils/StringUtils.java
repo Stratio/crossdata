@@ -225,7 +225,7 @@ public final class StringUtils {
     }
 
     public static ColumnType convertXdTypeToColumnType(String xdType) {
-        ColumnType ct = ColumnType.NATIVE;
+        ColumnType ct = null;
         String stringType = xdType.replace("Tuple", "").replace("[", "").replace("]", "").trim();
         if(stringType.equalsIgnoreCase("BigInt")){
             ct = ColumnType.BIGINT;
@@ -249,5 +249,12 @@ public final class StringUtils {
             ct = ColumnType.MAP;
         }
         return ct;
+    }
+
+    public static String getReturningTypeFromSignature(String signature) {
+        return signature.substring(signature.indexOf(':')+1)
+                .replace("Tuple[", "")
+                .replace("]", "")
+                .trim();
     }
 }

@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.FunctionName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ValidationException;
@@ -39,7 +38,6 @@ import com.stratio.crossdata.common.exceptions.validation.NotValidColumnExceptio
 import com.stratio.crossdata.common.exceptions.validation.YodaConditionException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
@@ -516,15 +514,13 @@ public class Normalizator {
     public List<Selector> checkListSelector(List<Selector> selectors) throws ValidationException {
         List<Selector> result = new ArrayList<>();
         TableName firstTableName = fields.getTableNames().iterator().next();
-        for (Selector selector : selectors) {
+        for (Selector selector: selectors) {
             switch (selector.getType()) {
             case FUNCTION:
                 FunctionSelector functionSelector = (FunctionSelector) selector;
                 checkFunctionSelector(functionSelector);
                 functionSelector.setTableName(firstTableName);
                 result.add(functionSelector);
-                String signature = createSignature(functionSelector);
-                fields.addSignature(functionSelector.getFunctionName(), signature);
                 break;
             case COLUMN:
                 ColumnSelector columnSelector = (ColumnSelector) selector;
@@ -542,87 +538,6 @@ public class Normalizator {
                 break;
             }
         }
-        return result;
-    }
-
-    private void checkSignature(FunctionSelector functionSelector, String signature) throws BadFormatException {
-        FunctionName functionName = new FunctionName(functionSelector.getFunctionName());
-        FunctionMetadata function = MetadataManager.MANAGER.getFunctionFromManifests(functionName);
-        if(function.getFunctionType().equals("aggregation")){
-            signature = signature.replace("(", "(List<").replace(")", ">)");
-        }
-        String storedSignature = function.getSignature();
-        if(!storedSignature.equalsIgnoreCase(signature)){
-            if(!checkSignatureCompatibility(storedSignature, signature)){
-                throw new BadFormatException("The query generated a incompatible signature of " + functionName
-                        + ": " + signature + System.lineSeparator() + "Declared signature: " + storedSignature);
-            }
-        }
-    }
-
-    private boolean checkSignatureCompatibility(String storedSignature, String querySignature) {
-        boolean result = false;
-        if(storedSignature.contains("Any*]")){
-            String typesInStoresSignature = storedSignature.substring(
-                    storedSignature.indexOf("Tuple["),
-                    storedSignature.indexOf("]")+1);
-            querySignature = querySignature.replaceFirst("Tuple\\[[^\\]]*]", typesInStoresSignature);
-        }
-        if(storedSignature.endsWith(":Tuple[Any]")){
-            querySignature = querySignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
-        }
-        if(querySignature.endsWith(":Tuple[Any]")){
-            storedSignature = storedSignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
-        }
-        if(storedSignature.equalsIgnoreCase(querySignature)){
-            result = true;
-        }
-        return result;
-    }
-
-    private String createSignature(FunctionSelector functionSelector) throws BadFormatException {
-        StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
-        sb.append("(Tuple[");
-        Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
-        while(iter.hasNext()){
-            Selector selector = iter.next();
-            switch(selector.getType()){
-                case FUNCTION:
-
-                    break;
-                case COLUMN:
-                    ColumnSelector cs = (ColumnSelector) selector;
-                    ColumnName columnName = cs.getName();
-                    ColumnMetadata column = MetadataManager.MANAGER.getColumn(columnName);
-                    ColumnType columnType = column.getColumnType();
-                    sb.append(columnType.getCrossdataType().toLowerCase());
-                    break;
-                case ASTERISK:
-
-                    break;
-                case BOOLEAN:
-
-                    break;
-                case STRING:
-
-                    break;
-                case INTEGER:
-
-                    break;
-                case FLOATING_POINT:
-
-                    break;
-                case RELATION:
-
-                    break;
-            }
-            if(iter.hasNext()){
-                sb.append(", ");
-            }
-        }
-        sb.append("]):Tuple[Any]");
-        String result = sb.toString();
-        checkSignature(functionSelector, result);
         return result;
     }
 
