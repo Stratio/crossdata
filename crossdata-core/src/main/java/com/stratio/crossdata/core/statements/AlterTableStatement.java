@@ -36,11 +36,9 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
  */
 public class AlterTableStatement extends MetadataStatement implements ITableStatement {
 
-    /**
-     * The target table.
-     */
-    private TableName tableName;
-
+    private class InnerAlterStatement extends AbstractTableStatement{   }
+    InnerAlterStatement tableStatement=new InnerAlterStatement();
+    
     /**
      * Type of alter.
      */
@@ -78,7 +76,7 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
     public AlterTableStatement(TableName tableName, ColumnName column, ColumnType type,
             String properties, AlterOperation option) {
         this.command = false;
-        this.tableName = tableName;
+        this.tableStatement.setTableName(tableName);
         this.column = column;
         this.type = type;
         this.properties = StringUtils.convertJsonToOptions(tableName, properties);
@@ -90,7 +88,7 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
-        sb.append(tableName.getQualifiedName());
+        sb.append(tableStatement.getTableName().getQualifiedName());
         switch (option) {
         case ALTER_COLUMN:
             sb.append(" ALTER ").append(column.getQualifiedName());
@@ -144,27 +142,12 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
         return validationRequirements;
     }
 
-    public TableName getTableName() {
-        return tableName;
-    }
+    public TableName getTableName() { return tableStatement.getTableName(); }
 
-    public void setTableName(TableName tableName) {
-        this.tableName = tableName;
-    }
+    public void setTableName(TableName tableName) { this.tableStatement.setTableName(tableName); }
 
     @Override
-    public CatalogName getEffectiveCatalog() {
-        CatalogName effective;
-        if (tableName != null) {
-            effective = tableName.getCatalogName();
-        } else {
-            effective = catalog;
-        }
-        if (sessionCatalog != null) {
-            effective = sessionCatalog;
-        }
-        return effective;
-    }
+    public CatalogName getEffectiveCatalog() { return tableStatement.getEffectiveCatalog(); }
 
     public ColumnName getColumn() {
         return column;

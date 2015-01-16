@@ -40,10 +40,9 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
 
     private TableType tableType = TableType.DATABASE;
 
-    /**
-     * The name of the target table.
-     */
-    private TableName tableName;
+    private class InnerCreateTableStatement extends AbstractTableStatement{   }
+    InnerCreateTableStatement tableStatement=new InnerCreateTableStatement();
+
 
     private ClusterName clusterName;
 
@@ -91,7 +90,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
             LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
         this.command = false;
         this.tableType = tableType;
-        this.tableName = tableName;
+        this.tableStatement.setTableName(tableName);
         this.clusterName = clusterName;
         this.columnsWithType = columns;
         this.partitionKey = partitionKey;
@@ -135,11 +134,11 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     }
 
     public TableName getTableName() {
-        return tableName;
+        return tableStatement.getTableName();
     }
 
     public void setTableName(TableName tableName) {
-        this.tableName = tableName;
+        this.tableStatement.setTableName(tableName);
     }
 
     public ClusterName getClusterName() {
@@ -161,7 +160,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      * @param properties The list.
      */
     public void setProperties(String properties) {
-        this.properties = StringUtils.convertJsonToOptions(tableName, properties);
+        this.properties = StringUtils.convertJsonToOptions(tableStatement.getTableName(), properties);
     }
 
     public void setIfNotExists(boolean ifNotExists) {
@@ -185,7 +184,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         if (ifNotExists) {
             sb.append("IF NOT EXISTS ");
         }
-        sb.append(tableName.getQualifiedName());
+        sb.append(tableStatement.getTableName().getQualifiedName());
         sb.append(" ON CLUSTER ").append(clusterName);
 
         sb.append("(");
@@ -213,18 +212,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     }
 
     @Override
-    public CatalogName getEffectiveCatalog() {
-        CatalogName effective;
-        if (tableName != null) {
-            effective = tableName.getCatalogName();
-        } else {
-            effective = catalog;
-        }
-        if (sessionCatalog != null) {
-            effective = sessionCatalog;
-        }
-        return effective;
-    }
+    public CatalogName getEffectiveCatalog() {return tableStatement.getEffectiveCatalog(); }
 
     public boolean isIfNotExists() {
         return ifNotExists;
