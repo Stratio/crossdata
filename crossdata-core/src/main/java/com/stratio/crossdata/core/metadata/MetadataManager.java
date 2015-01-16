@@ -21,6 +21,7 @@ package com.stratio.crossdata.core.metadata;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +40,6 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
-import com.stratio.crossdata.common.data.FunctionName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.NameType;
@@ -53,15 +53,17 @@ import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
-import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.NodeMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
@@ -117,9 +119,6 @@ public enum MetadataManager {
             break;
         case INDEX:
             result = exists((IndexName) name);
-            break;
-        case FUNCTION:
-            result = exists((FunctionName) name);
             break;
         default:
             break;
@@ -816,16 +815,6 @@ public enum MetadataManager {
         return indexesMetadata;
     }
 
-    public List<FunctionMetadata> getFunctions() {
-        List<FunctionMetadata> functionsMetadata = new ArrayList<>();
-        for (Name name : metadata.keySet()) {
-            if (name.getType() == NameType.FUNCTION) {
-                functionsMetadata.add(getFunction((FunctionName) name));
-            }
-        }
-        return functionsMetadata;
-    }
-
     /**
      * Return all columns.
      *
@@ -1082,12 +1071,6 @@ public enum MetadataManager {
         return (NodeMetadata) metadata.get(name);
     }
 
-    public FunctionMetadata getFunction(FunctionName name) {
-        shouldBeInit();
-        shouldExist(name);
-        return (FunctionMetadata) metadata.get(name);
-    }
-
     public Set<String> getSupportedFunctionNames(ConnectorName cn){
         Set<String> functions = new HashSet<>();
         ConnectorMetadata connector = getConnector(cn);
@@ -1097,7 +1080,7 @@ public enum MetadataManager {
         }
 
         for(DataStoreName dsn: connector.getDataStoreRefs()){
-            DataStoreMetadata datastore = MetadataManager.MANAGER.getDataStore(dsn);
+            DataStoreMetadata datastore = getDataStore(dsn);
             for(FunctionType ft: datastore.getFunctions()){
                 functions.add(ft.getFunctionName().toLowerCase());
             }
@@ -1111,44 +1094,112 @@ public enum MetadataManager {
         ConnectorMetadata connector = getConnector(cn);
         functions.addAll(connector.getConnectorFunctions());
         for(DataStoreName dsn: connector.getDataStoreRefs()){
-            DataStoreMetadata datastore = MetadataManager.MANAGER.getDataStore(dsn);
-            functions.addAll(datastore.getFunctions());
-        }
-        functions.removeAll(connector.getExcludedFunctions());
-        return functions;
-    }
-
-    public Map<ConnectorName, Set<FunctionType>> getMapOfFunctions(){
-        Map<ConnectorName, Set<FunctionType>> mapOfFunctions = new HashMap<>();
-        for(ConnectorMetadata connector: getConnectors()){
-            Set<FunctionType> connectorFunctions = getSupportedFunctions(connector.getName());
-            mapOfFunctions.put(connector.getName(), connectorFunctions);
-        }
-        return mapOfFunctions;
-    }
-
-    public Set<FunctionType> getFunctionsFromManifests(){
-        Set<FunctionType> functions = new HashSet<>();
-        Map<ConnectorName, Set<FunctionType>> mapOfFunction = getMapOfFunctions();
-        for(Set<FunctionType> setOfFunctions: mapOfFunction.values()){
-            functions.addAll(setOfFunctions);
+            DataStoreMetadata datastore = getDataStore(dsn);
+            for(FunctionType df: datastore.getFunctions()){
+                if(!connector.getExcludedFunctions().contains(df.getFunctionName().toLowerCase())){
+                    functions.add(df);
+                }
+            }
         }
         return functions;
     }
 
-    public FunctionMetadata getFunctionFromManifests(FunctionName functionName){
-        Set<FunctionType> functions = getFunctionsFromManifests();
-        FunctionMetadata foundFunction = null;
-        for(FunctionType function: functions){
-            if(function.getFunctionName().equalsIgnoreCase(functionName.getName())){
-                foundFunction = new FunctionMetadata(
-                        new FunctionName(function.getFunctionName()),
-                        function.getSignature(),
-                        function.getFunctionType());
+    public boolean checkSignature(FunctionSelector fSelector, ConnectorName connectorName){
+        boolean result = false;
+        FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
+        if(ft != null){
+            result = checkSignature(fSelector, ft);
+        }
+        return result;
+    }
+
+    public FunctionType getFunction(ConnectorName connectorName, String functionName) {
+        FunctionType result = null;
+        Set<FunctionType> candidateFunctions = getSupportedFunctions(connectorName);
+        for(FunctionType ft: candidateFunctions){
+            if(ft.getFunctionName().equalsIgnoreCase(functionName)){
+                result = ft;
                 break;
             }
         }
-        return foundFunction;
+        return result;
+    }
+
+    public boolean checkSignature(FunctionSelector functionSelector, FunctionType functionConnector){
+        boolean result = false;
+        String signatureFromSelector = createSignature(functionSelector);
+        String storedSignature = functionConnector.getSignature();
+        if(storedSignature.equalsIgnoreCase(signatureFromSelector)){
+            result = true;
+        } else if(checkSignatureCompatibility(storedSignature, signatureFromSelector)){
+            result = true;
+        }
+        return result;
+    }
+
+    private boolean checkSignatureCompatibility(String storedSignature, String querySignature) {
+        boolean result = false;
+        if(storedSignature.contains("Any*]")){
+            String typesInStoresSignature = storedSignature.substring(
+                    storedSignature.indexOf("Tuple["),
+                    storedSignature.indexOf("]")+1);
+            querySignature = querySignature.replaceFirst("Tuple\\[[^\\]]*]", typesInStoresSignature);
+        }
+        if(storedSignature.endsWith(":Tuple[Any]")){
+            querySignature = querySignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
+        }
+        if(querySignature.endsWith(":Tuple[Any]")){
+            storedSignature = storedSignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
+        }
+        if(storedSignature.equalsIgnoreCase(querySignature)){
+            result = true;
+        }
+        return result;
+    }
+
+    public String createSignature(FunctionSelector functionSelector) {
+        StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
+        sb.append("(Tuple[");
+        Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
+        while(iter.hasNext()){
+            Selector selector = iter.next();
+            switch(selector.getType()){
+            case FUNCTION:
+
+                break;
+            case COLUMN:
+                ColumnSelector cs = (ColumnSelector) selector;
+                ColumnName columnName = cs.getName();
+                ColumnMetadata column = getColumn(columnName);
+                ColumnType columnType = column.getColumnType();
+                sb.append(columnType.getCrossdataType().toLowerCase());
+                break;
+            case ASTERISK:
+
+                break;
+            case BOOLEAN:
+
+                break;
+            case STRING:
+
+                break;
+            case INTEGER:
+
+                break;
+            case FLOATING_POINT:
+
+                break;
+            case RELATION:
+
+                break;
+            }
+            if(iter.hasNext()){
+                sb.append(", ");
+            }
+        }
+        sb.append("]):Tuple[Any]");
+        String result = sb.toString();
+        return result;
     }
 
     public NodeMetadata getNodeIfExists(NodeName name) {

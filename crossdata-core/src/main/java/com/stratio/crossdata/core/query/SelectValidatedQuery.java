@@ -19,9 +19,7 @@
 package com.stratio.crossdata.core.query;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
@@ -37,7 +35,6 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     private List<Relation> relations = new ArrayList<>();
     private List<TableName> tables = new ArrayList<>();
     private InnerJoin join;
-    private Map<String, String> signatures = new HashMap<>();
 
     public SelectValidatedQuery(SelectParsedQuery selectParsedQuery) {
         super(selectParsedQuery);
@@ -88,12 +85,5 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
         this.join = join;
     }
 
-    public Map<String, String> getSignatures() {
-        return signatures;
-    }
-
-    public void setSignatures(Map<String, String> signatures) {
-        this.signatures = signatures;
-    }
 }
 

@@ -38,7 +38,6 @@ import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.FunctionName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.data.Status;
@@ -65,13 +64,13 @@ import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.TransformationStep;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Window;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
-import com.stratio.crossdata.common.metadata.FunctionMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
@@ -385,13 +384,51 @@ public class Planner {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         //Select an actor
-        //TODO Improve actor selection based on cost analysis.
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectors.get(0).getActorRef());
+        ConnectorMetadata connectorMetadata = bestConnector(connectors);
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+
+        updateFunctionsFromSelect(workflow, connectorMetadata.getName());
+
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
+    private ConnectorMetadata bestConnector(List<ConnectorMetadata> connectors) {
+        //TODO: Add logic to this method according to native or not
+        //TODO: Add logic to this method according to statistics
+        return connectors.get(0);
+    }
+
+    private void updateFunctionsFromSelect(LogicalWorkflow workflow, ConnectorName connectorName) {
+
+        if(!Select.class.isInstance(workflow.getLastStep())){
+            return;
+        }
+
+        Select selectStep = Select.class.cast(workflow.getLastStep());
+
+        Map<String, ColumnType> typeMap = selectStep.getTypeMap();
+
+        Map<Selector, ColumnType> typeMapFromColumnName = selectStep.getTypeMapFromColumnName();
+
+        for(Selector s: typeMapFromColumnName.keySet()){
+            if(FunctionSelector.class.isInstance(s)){
+                FunctionSelector fs = FunctionSelector.class.cast(s);
+                String functionName = fs.getFunctionName();
+                FunctionType ft = MetadataManager.MANAGER.getFunction(connectorName, functionName);
+                String returningType = StringUtils.getReturningTypeFromSignature(ft.getSignature());
+                ColumnType ct = StringUtils.convertXdTypeToColumnType(returningType);
+                typeMapFromColumnName.put(fs, ct);
+                String stringKey = fs.getFunctionName();
+                if(fs.getAlias() != null){
+                    stringKey = fs.getAlias();
+                }
+                typeMap.put(stringKey, ct);
+            }
+        }
+    }
+
     /**
-     * Define a query worflow composed by several execution paths merging in a
+     * Define a query workflow composed by several execution paths merging in a
      * {@link com.stratio.crossdata.common.executionplan.ExecutionPath} that starts with a UnionStep.
      *
      * @param queryId        The query identifier.
@@ -417,8 +454,8 @@ public class Planner {
 
         //Select an actor
         //TODO Improve actor selection based on cost analysis.
-        String selectedActorUri = StringUtils
-                .getAkkaActorRefUri(mergePath.getAvailableConnectors().get(0).getActorRef());
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(
+                mergePath.getAvailableConnectors().get(0).getActorRef());
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
@@ -465,6 +502,11 @@ public class Planner {
                                         if(!sFunctions.contains(fSelector.getFunctionName().toLowerCase())){
                                             toRemove.add(connector);
                                             break;
+                                        } else {
+                                            if(!MetadataManager.MANAGER.checkSignature(fSelector, connector.getName())){
+                                                toRemove.add(connector);
+                                                break;
+                                            }
                                         }
                                     }
                                 }
@@ -1354,22 +1396,15 @@ public class Planner {
             } else if (FunctionSelector.class.isInstance(s)) {
                 currentOperation = Operations.SELECT_FUNCTIONS;
                 FunctionSelector fs = FunctionSelector.class.cast(s);
-                FunctionName functionName = new FunctionName(fs.getFunctionName());
-                FunctionMetadata function = MetadataManager.MANAGER.getFunctionFromManifests(functionName);
-                ColumnType ct = StringUtils.convertXdTypeToColumnType(function.getReturningType());
-                if (s.getAlias() != null) {
+                ColumnType ct = null;
+                if (fs.getAlias() != null) {
                     aliasMap.put(fs, fs.getAlias());
-
                     typeMapFromColumnName.put(fs, ct);
-
                     typeMap.put(fs.getAlias(), ct);
                 } else {
                     aliasMap.put(fs, fs.getFunctionName());
-
                     typeMapFromColumnName.put(fs, ct);
-
-                    typeMap.put(fs.getFunctionName(),
-                            ct);
+                    typeMap.put(fs.getFunctionName(), ct);
                 }
             } else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
@@ -1381,9 +1416,7 @@ public class Planner {
             for (Map.Entry<ColumnName, ColumnMetadata> column: metadata.getColumns().entrySet()) {
                 ColumnSelector cs = new ColumnSelector(column.getKey());
                 aliasMap.put(cs, column.getKey().getName());
-
                 typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-
                 typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
             }
             if (selectStatement.getJoin() != null) {
@@ -1392,9 +1425,7 @@ public class Planner {
                 for (Map.Entry<ColumnName, ColumnMetadata> column: metadataJoin.getColumns().entrySet()) {
                     ColumnSelector cs = new ColumnSelector(column.getKey());
                     aliasMap.put(cs, column.getKey().getName());
-
                     typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-
                     typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
                 }
             }

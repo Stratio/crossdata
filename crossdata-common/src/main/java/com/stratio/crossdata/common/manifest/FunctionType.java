@@ -164,4 +164,39 @@ public class FunctionType implements Serializable {
         this.description = value;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        FunctionType that = (FunctionType) o;
+
+        if (description != null ? !description.equals(that.description) : that.description != null) {
+            return false;
+        }
+        if (functionName != null ? !functionName.equals(that.functionName) : that.functionName != null) {
+            return false;
+        }
+        if (functionType != null ? !functionType.equals(that.functionType) : that.functionType != null) {
+            return false;
+        }
+        if (signature != null ? !signature.equals(that.signature) : that.signature != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = functionName != null ? functionName.hashCode() : 0;
+        result = 31 * result + (signature != null ? signature.hashCode() : 0);
+        result = 31 * result + (functionType != null ? functionType.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        return result;
+    }
 }

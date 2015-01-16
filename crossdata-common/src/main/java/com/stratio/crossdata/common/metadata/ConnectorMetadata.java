@@ -523,6 +523,4 @@ public class ConnectorMetadata implements IMetadata {
         sb.append(name).append(" status: ").append(status).append(" actorRef: ").append(actorRef);
         return sb.toString();
     }
-
-
 }
