@@ -399,6 +399,11 @@ public class Planner {
     }
 
     private void updateFunctionsFromSelect(LogicalWorkflow workflow, ConnectorName connectorName) {
+
+        if(!Select.class.isInstance(workflow.getLastStep())){
+            return;
+        }
+
         Select selectStep = Select.class.cast(workflow.getLastStep());
 
         Map<String, ColumnType> typeMap = selectStep.getTypeMap();

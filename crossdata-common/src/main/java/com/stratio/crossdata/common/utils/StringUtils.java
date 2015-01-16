@@ -225,7 +225,7 @@ public final class StringUtils {
     }
 
     public static ColumnType convertXdTypeToColumnType(String xdType) {
-        ColumnType ct = ColumnType.NATIVE;
+        ColumnType ct = null;
         String stringType = xdType.replace("Tuple", "").replace("[", "").replace("]", "").trim();
         if(stringType.equalsIgnoreCase("BigInt")){
             ct = ColumnType.BIGINT;
