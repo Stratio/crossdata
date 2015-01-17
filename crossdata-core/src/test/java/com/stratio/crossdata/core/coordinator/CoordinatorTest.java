@@ -78,7 +78,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
     }
 
     /**
-     * Testing an API operation (detaching a cluster to a datastore)
+     * Testing an API operation (detaching a cluster to a datastore).
      *
      * @throws Exception
      */
@@ -111,7 +111,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
                 break;
             }
         }
-        assertFalse(found);
+        assertFalse(found, "Cluster detachment failed.");
     }
 
     /*@Test

@@ -45,10 +45,7 @@ public class StringUtilsTest {
                 (ArrayList<String>) StringUtils.deserializeObjectFromString(jsonresult,ArrayList.class);
         
         //test
-        assertTrue(result.equals(b));
-
-
-        
+        assertTrue(result.equals(b), result + "should be equals to " + b);
     }
 
 
