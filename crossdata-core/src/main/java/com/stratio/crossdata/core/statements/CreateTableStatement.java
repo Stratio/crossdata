@@ -36,12 +36,9 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 /**
  * Class that models a {@code CREATE TABLE} statement of the CROSSDATA language.
  */
-public class CreateTableStatement extends MetadataStatement implements ITableStatement {
+public class CreateTableStatement extends AbstractMetadataTableStatement implements ITableStatement {
 
     private TableType tableType = TableType.DATABASE;
-
-    private class InnerCreateTableStatement extends AbstractTableStatement{   }
-    InnerCreateTableStatement tableStatement=new InnerCreateTableStatement();
 
 
     private ClusterName clusterName;
@@ -133,13 +130,6 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         return columnsWithType;
     }
 
-    public TableName getTableName() {
-        return tableStatement.getTableName();
-    }
-
-    public void setTableName(TableName tableName) {
-        this.tableStatement.setTableName(tableName);
-    }
 
     public ClusterName getClusterName() {
         return clusterName;
@@ -211,8 +201,6 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
                 .add(ValidationTypes.MUST_NOT_EXIST_TABLE);
     }
 
-    @Override
-    public CatalogName getEffectiveCatalog() {return tableStatement.getEffectiveCatalog(); }
 
     public boolean isIfNotExists() {
         return ifNotExists;

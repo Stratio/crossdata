@@ -40,7 +40,6 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
     private List<Relation> whereClauses;
 
     public DeleteStatement(TableName tableName, List<Relation> whereClauses) {
-        this.tableName = tableName;
         this.whereClauses = whereClauses;
     }
 
@@ -64,7 +63,7 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
         if (catalogInc) {
             sb.append(catalog).append(".");
         }
-        sb.append(tableName);
+        sb.append(tableStatement.getTableName());
         if (!whereClauses.isEmpty()) {
             sb.append(" WHERE ");
             sb.append(StringUtils.stringList(whereClauses, " AND "));

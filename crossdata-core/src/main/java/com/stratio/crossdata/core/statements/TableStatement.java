@@ -21,7 +21,7 @@ package com.stratio.crossdata.core.statements;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 
-public abstract class AbstractTableStatement implements ITableStatement {
+public class TableStatement implements ITableStatement {
     /**
      * The name of the table.
      */

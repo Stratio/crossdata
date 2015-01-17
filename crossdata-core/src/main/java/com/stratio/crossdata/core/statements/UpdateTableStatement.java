@@ -65,7 +65,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
         if (tableName.getName().isEmpty()) {
             throw new ParsingException("Table name cannot be empty");
         }
-        this.tableName = tableName;
+        tableStatement.setTableName(tableName);
 
         if (assignations == null) {
             this.assignations = new ArrayList<>();
@@ -97,7 +97,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("UPDATE ");
-        sb.append(tableName.getQualifiedName());
+        sb.append(tableStatement.getTableName().getQualifiedName());
         sb.append(" ").append("SET ");
         sb.append(StringUtils.stringList(assignations, ", "));
         if ((whereClauses != null) && (!whereClauses.isEmpty())) {

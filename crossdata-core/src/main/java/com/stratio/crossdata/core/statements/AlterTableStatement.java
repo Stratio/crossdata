@@ -21,7 +21,6 @@ package com.stratio.crossdata.core.statements;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.AlterOperation;
-import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -34,11 +33,9 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 /**
  * Class that models an {@code ALTER TABLE} statement from the CROSSDATA language.
  */
-public class AlterTableStatement extends MetadataStatement implements ITableStatement {
+public class AlterTableStatement extends AbstractMetadataTableStatement implements ITableStatement {
 
-    private class InnerAlterStatement extends AbstractTableStatement{   }
-    InnerAlterStatement tableStatement=new InnerAlterStatement();
-    
+
     /**
      * Type of alter.
      */
@@ -142,12 +139,6 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
         return validationRequirements;
     }
 
-    public TableName getTableName() { return tableStatement.getTableName(); }
-
-    public void setTableName(TableName tableName) { this.tableStatement.setTableName(tableName); }
-
-    @Override
-    public CatalogName getEffectiveCatalog() { return tableStatement.getEffectiveCatalog(); }
 
     public ColumnName getColumn() {
         return column;
