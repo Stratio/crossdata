@@ -20,9 +20,9 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -57,17 +57,17 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     /**
      * The list of columns that are part of the primary key.
      */
-    private List<ColumnName> primaryKey = new LinkedList<>();
+    private Set<ColumnName> primaryKey = new LinkedHashSet<>();
 
     /**
      * The list of columns that are part of the partition key.
      */
-    private List<ColumnName> partitionKey = new LinkedList<>();
+    private Set<ColumnName> partitionKey = new LinkedHashSet<>();
 
     /**
      * The list of columns that are part of the clustering key.
      */
-    private List<ColumnName> clusterKey = new LinkedList<>();
+    private Set<ColumnName> clusterKey = new LinkedHashSet<>();
 
     /**
      * The list of {@link com.stratio.crossdata.core.structures.Property} of the table.
@@ -90,7 +90,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      */
     public CreateTableStatement(TableType tableType, TableName tableName, ClusterName clusterName,
             LinkedHashMap<ColumnName, ColumnType> columns,
-            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
+            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey) {
         this.command = false;
         this.tableType = tableType;
         this.tableName = tableName;
@@ -116,15 +116,15 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      */
     public CreateTableStatement(TableName tableName, ClusterName clusterName,
             LinkedHashMap<ColumnName, ColumnType> columns,
-            LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
+            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey) {
         this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey);
     }
 
-    public List<ColumnName> getPartitionKey() {
+    public Set<ColumnName> getPartitionKey() {
         return partitionKey;
     }
 
-    public List<ColumnName> getClusterKey() {
+    public Set<ColumnName> getClusterKey() {
         return clusterKey;
     }
 

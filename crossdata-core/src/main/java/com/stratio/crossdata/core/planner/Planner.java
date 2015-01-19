@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -756,8 +757,10 @@ public class Planner {
                 columnMap.put(columnName, columnMetadata);
             }
             ClusterName clusterName = createTableStatement.getClusterName();
-            List<ColumnName> partitionKey = createTableStatement.getPartitionKey();
-            List<ColumnName> clusterKey = createTableStatement.getClusterKey();
+            List<ColumnName> partitionKey = new LinkedList<>();
+            partitionKey.addAll(createTableStatement.getPartitionKey());
+            List<ColumnName> clusterKey = new LinkedList<>();
+            clusterKey.addAll(createTableStatement.getClusterKey());
             Map<IndexName, IndexMetadata> indexes = new HashMap<>();
             TableMetadata tableMetadata = new TableMetadata(name, options, columnMap, indexes,
                     clusterName, partitionKey, clusterKey);
