@@ -127,11 +127,18 @@ public final class MetadataResult extends Result {
      */
     private List<ColumnMetadata> columnList = null;
 
+    private boolean ifNotExists = false;
+
     /**
      * Private constructor of the factory.
      */
     private MetadataResult(final int operation) {
+        this(operation, false);
+    }
+
+    private MetadataResult(final int operation, boolean ifNotExists) {
         this.operation = operation;
+        this.ifNotExists = ifNotExists;
     }
 
     /**
@@ -141,8 +148,11 @@ public final class MetadataResult extends Result {
      * @return A {@link com.stratio.crossdata.common.result.MetadataResult}.
      */
     public static MetadataResult createSuccessMetadataResult(final int operation) {
-        return new MetadataResult
-                (operation);
+        return new MetadataResult(operation);
+    }
+
+    public static MetadataResult createSuccessMetadataResult(final int operation, boolean ifNotExists) {
+        return new MetadataResult(operation, ifNotExists);
     }
 
     public List<String> getCatalogList() {
@@ -214,7 +224,11 @@ public final class MetadataResult extends Result {
         case MetadataResult.OPERATION_CREATE_CATALOG:
             return "CATALOG created successfully";
         case MetadataResult.OPERATION_CREATE_TABLE:
-            return "TABLE created successfully";
+            if(ifNotExists){
+                return "TABLE IF NOT EXISTS created successfully";
+            } else {
+                return "TABLE created successfully";
+            }
         case MetadataResult.OPERATION_CREATE_INDEX:
             return "INDEX created successfully";
         case MetadataResult.OPERATION_DROP_CATALOG:

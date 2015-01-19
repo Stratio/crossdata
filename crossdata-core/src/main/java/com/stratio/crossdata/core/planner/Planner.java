@@ -720,6 +720,8 @@ public class Planner {
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
+            metadataWorkflow.setIfNotExists(createTableStatement.isIfNotExists());
+
             if (!existsCatalogInCluster(
                     createTableStatement.getTableName().getCatalogName(),
                     createTableStatement.getClusterName())) {

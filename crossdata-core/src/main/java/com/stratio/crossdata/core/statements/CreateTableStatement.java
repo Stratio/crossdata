@@ -209,9 +209,13 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     }
 
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_CLUSTER)
-                .add(ValidationTypes.MUST_NOT_EXIST_TABLE);
+        ValidationRequirements requirements = new ValidationRequirements()
+                .add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_CLUSTER);
+        if(!isIfNotExists()){
+            requirements = requirements.add(ValidationTypes.MUST_NOT_EXIST_TABLE);
+        }
+        return requirements;
     }
 
     @Override
