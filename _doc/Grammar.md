@@ -6,7 +6,7 @@ Language definition
 
 Version: 0.2.0
 
-Date: 14, Nov, 2014
+Date: 19, Jan, 2015
 
 
 * * * * *
@@ -53,7 +53,12 @@ Table of contents
         -   [DESCRIBE CONNECTOR](#describe-connector)
         -   [DESCRIBE CATALOGS](#describe-catalogs)
         -   [DESCRIBE CATALOG](#describe-catalog)
+        -   [DESCRIBE TABLES](#describe-tables)
         -   [DESCRIBE TABLE](#describe-table)
+        -   [DISCOVER METADATA] (#discover-metadata)
+        -   [IMPORT CATALOGS] (#import-catalogs)
+        -   [IMPORT CATALOG] (#import-catalog)
+        -   [IMPORT TABLE] (#import-table)
 -   [Shell features] (#shell-features)
 
 * * * * *
@@ -278,8 +283,8 @@ Example:
 ALTER TABLE \<tablename\>
         (ALTER \<column-name\> \<data-types\>
         |ADD \<column-name\> \<data-types\>
-        |DROP \<column-name\>
-        |WITH \<JSON\>) ';'   
+        |DROP \<column-name\>)?
+        (WITH \<JSON\>)?';'   
 
 Example:
 
@@ -323,7 +328,7 @@ Example:
 
 ### DELETE
 
-DELETE FROM \<tablename\> WHERE \<where-clause\> ';'
+DELETE FROM \<tablename\> (WHERE \<where-clause\>)? ';'
 
 \<where-clause\> ::= \<relation\> ( AND \<relation\> )\*
 
@@ -362,7 +367,7 @@ Example:
 
 ### SELECT
 
-SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)? (INNER JOIN
+SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)? ((INNER)? JOIN
 \<tablename\> (AS \<identifier\>) ON \<field1\>=\<field2\>)? (WHERE \<where-clause\>)? (ORDER BY \<select-list\>)?
 (GROUP BY \<select-list\>)? (LIMIT \<integer\>)? ';'
 
@@ -392,11 +397,22 @@ Example:
 
     SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;
 
+Implicit joins are also supported:
+
+SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? ',' \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)? ON
+\<field1\>=\<field2\> (WHERE \<where-clause\>)? (ORDER BY \<select-list\>)? (GROUP BY \<select-list\>)? (LIMIT
+\<integer\>)? ';'
+
+Example:
+
+    SELECT * FROM demo.clients, demo.sales ON clients.identifier = sales.codeID;
+
+
 ### EXPLAIN PLAN
 
 Explain plan for a specific command according to the current state of the system.
 
-EXPLAIN PLAN FOR \<crossdata-statement\>;
+EXPLAIN PLAN FOR \<crossdata-statement\> ';'
 
 Example:
 
@@ -405,9 +421,9 @@ Example:
 ### RESET SERVERDATA
 
 Remove all data stored in the system (in all servers), including information related to datastores, clusters and connectors.
-This command shows a warning message and requires to answer a security question.
+Connectors status are the only metadata kept by the system after issuing this command.
 
-RESET SERVERDATA;
+RESET SERVERDATA ';'
 
 Example:
 
@@ -415,9 +431,9 @@ Example:
 
 ### CLEAN METADATA
 
-Remove all apiManager related to catalogs, tables, indexes and columns.
+Remove all metadata related to catalogs, tables, indexes and columns.
 
-CLEAN METADATA;
+CLEAN METADATA ';'
 
 Example:
 
@@ -427,7 +443,7 @@ Example:
 
 Describe all the information related to datastores, clusters and connectors.
 
-DESCRIBE SYSTEM;
+DESCRIBE SYSTEM ';'
 
 Example:
 
@@ -437,7 +453,7 @@ Example:
 
 Describe all the datastores registered in the system.
 
-DESCRIBE DATASTORES;
+DESCRIBE DATASTORES ';'
 
 Example:
 
@@ -447,7 +463,7 @@ Example:
 
 Describe information related to a specific datastore.
 
-DESCRIBE DATASTORE \<datastore-name\>;
+DESCRIBE DATASTORE \<datastore-name\> ';'
 
 Example:
 
@@ -457,7 +473,7 @@ Example:
 
 Describe all the clusters registered in the system.
 
-DESCRIBE CLUSTERS;
+DESCRIBE CLUSTERS ';'
 
 Example:
 
@@ -467,7 +483,7 @@ Example:
 
 Describe information related to a specific cluster.
 
-DESCRIBE CLUSTER \<cluster-name\>;
+DESCRIBE CLUSTER \<cluster-name\> ';'
 
 Example:
 
@@ -487,7 +503,7 @@ Example:
 
 Describe the specified connector.
 
-DESCRIBE CONNECTOR \<connector-name\>;
+DESCRIBE CONNECTOR \<connector-name\> ';'
 
 Example:
 
@@ -497,7 +513,7 @@ Example:
 
 List of the catalogs created in the system.
 
-DESCRIBE CATALOGS;
+DESCRIBE CATALOGS ';'
 
 Example:
 
@@ -507,21 +523,76 @@ Example:
 
 Describe the specified catalog.
 
-DESCRIBE CATALOG \<catalog-name\>;
+DESCRIBE CATALOG \<catalog-name\> ';'
 
 Example:
 
     DESCRIBE CATALOG catalog1;
 
+### DESCRIBE TABLES
+
+List of the tables created in a specific catalog.
+
+DESCRIBE TABLES (FROM \<catalog-name\>)? ';'
+
+Example:
+
+    DESCRIBE TABLES FROM myCatalog;
+
+
 ### DESCRIBE TABLE
 
 Describe the specified table.
 
-DESCRIBE TABLE \<table-name\>;
+DESCRIBE TABLE \<table-name\> ';'
 
 Example:
 
     DESCRIBE TABLE catalog1.table;
+
+### DISCOVER METADATA
+
+Discover metadata from a specified cluster. This command provides information about catalogs and tables already
+existent on a cluster.
+
+DISCOVER METADATA FROM \<cluster-name\> ';'
+
+Example:
+
+    DISCOVER METADATA FROM productionCluster;
+
+### IMPORT CATALOGS
+
+Import all the metadata from a specific cluster. This command incorporates to the Crossdata servers all the catalogs
+metadata and their underlying metadata.
+
+IMPORT CATALOGS FROM CLUSTER \<cluster-name\> ';'
+
+Example:
+
+    IMPORT CATALOGS FROM CLUSTER cluster_name;
+
+### IMPORT CATALOGS
+
+Import all the metadata from a specific catalog. This command incorporates to the the Crossdata servers a
+catalog metadata and its underlying metadata.
+
+IMPORT CATALOG \<catalog-name\> FROM CLUSTER \<cluster-name\> ';'
+
+Example:
+
+    IMPORT CATALOGS FROM CLUSTER cluster_name;
+
+### IMPORT TABLE
+
+Import metadata of a specific table. This command incorporates to the the Crossdata servers a
+table metadata and its underlying metadata.
+
+IMPORT TABLE \<table-name\> FROM CLUSTER \<cluster-name\> ';'
+
+Example:
+
+    IMPORT TABLE myCatalog.myTable FROM CLUSTER myCluster;
 
 * * * * *
 
