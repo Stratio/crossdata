@@ -63,8 +63,7 @@ public class TableMetadata implements Serializable {
      */
     public TableMetadata(TableName name, Map<Selector, Selector> options,
             LinkedHashMap<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
-            ClusterName clusterRef,
-            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
+            ClusterName clusterRef, List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
         this.name = name;
 
         this.options = options;
