@@ -72,7 +72,7 @@ public interface IConnector {
     void close(ClusterName name) throws ConnectionException;
 
     /**
-     * Shuts down and then close all cluster's connections
+     * Shuts down and then close all cluster's connections.
      *
      * @throws ExecutionException If the shutdown operation cannot be performed.
      */

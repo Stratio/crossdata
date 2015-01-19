@@ -18,8 +18,10 @@
 
 package com.stratio.crossdata.core.statements;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.CatalogName;
@@ -50,22 +52,22 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     /**
      * A map with the name of the columns in the table and the associated data type.
      */
-    private LinkedHashMap<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
+    private HashMap<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
 
     /**
      * The list of columns that are part of the primary key.
      */
-    private LinkedList<ColumnName> primaryKey = new LinkedList<>();
+    private List<ColumnName> primaryKey = new LinkedList<>();
 
     /**
      * The list of columns that are part of the partition key.
      */
-    private LinkedList<ColumnName> partitionKey = new LinkedList<>();
+    private List<ColumnName> partitionKey = new LinkedList<>();
 
     /**
      * The list of columns that are part of the clustering key.
      */
-    private LinkedList<ColumnName> clusterKey = new LinkedList<>();
+    private List<ColumnName> clusterKey = new LinkedList<>();
 
     /**
      * The list of {@link com.stratio.crossdata.core.structures.Property} of the table.
@@ -88,7 +90,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      */
     public CreateTableStatement(TableType tableType, TableName tableName, ClusterName clusterName,
             LinkedHashMap<ColumnName, ColumnType> columns,
-            LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
+            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
         this.command = false;
         this.tableType = tableType;
         this.tableName = tableName;
@@ -118,11 +120,11 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey);
     }
 
-    public LinkedList<ColumnName> getPartitionKey() {
+    public List<ColumnName> getPartitionKey() {
         return partitionKey;
     }
 
-    public LinkedList<ColumnName> getClusterKey() {
+    public List<ColumnName> getClusterKey() {
         return clusterKey;
     }
 
@@ -130,7 +132,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         return tableType;
     }
 
-    public LinkedHashMap<ColumnName, ColumnType> getColumnsWithTypes() {
+    public HashMap<ColumnName, ColumnType> getColumnsWithTypes() {
         return columnsWithType;
     }
 
