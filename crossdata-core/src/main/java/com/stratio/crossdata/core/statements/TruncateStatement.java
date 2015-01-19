@@ -97,7 +97,7 @@ public class TruncateStatement extends StorageStatement implements ITableStateme
     }
 
     /**
-     * Set the table name of a truncate statement
+     * Set the table name of a truncate statement.
      *
      * @param tableName
      */

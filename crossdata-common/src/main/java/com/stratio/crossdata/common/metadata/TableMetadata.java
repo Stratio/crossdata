@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -43,7 +42,7 @@ public class TableMetadata implements Serializable {
 
     private Map<Selector, Selector> options;
 
-    private LinkedHashMap<ColumnName, ColumnMetadata> columns;
+    private HashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
 
     private Map<IndexName, IndexMetadata> indexes;
 
@@ -65,7 +64,7 @@ public class TableMetadata implements Serializable {
     public TableMetadata(TableName name, Map<Selector, Selector> options,
             LinkedHashMap<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
             ClusterName clusterRef,
-            LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
+            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
         this.name = name;
 
         this.options = options;
@@ -112,7 +111,7 @@ public class TableMetadata implements Serializable {
      * @return Map with {@link com.stratio.crossdata.common.data.ColumnName},
      * {@link com.stratio.crossdata.common.metadata.ColumnMetadata}.
      */
-    public LinkedHashMap<ColumnName, ColumnMetadata> getColumns() {
+    public HashMap<ColumnName, ColumnMetadata> getColumns() {
         return columns;
     }
 

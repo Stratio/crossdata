@@ -65,7 +65,7 @@ public class Normalizator {
     private IParsedQuery parsedQuery;
 
     /**
-     * Class Constructor
+     * Class Constructor.
      *
      * @param parsedQuery The parsed query.
      */
@@ -140,16 +140,13 @@ public class Normalizator {
             throws ValidationException {
         InnerJoin innerJoin = ((SelectStatement) parsedQuery.getStatement()).getJoin();
         if (innerJoin != null) {
-            /*if(fields.getTableNames().contains(innerJoin.getTablename())){
-               throw new BadFormatException("Select statements with join clause must contain different tables");
-            }*/
             normalizeJoins(innerJoin);
             fields.setJoin(innerJoin);
         }
     }
 
     /**
-     * Normalize a specific inner join of a parsed query
+     * Normalize a specific inner join of a parsed query.
      *
      * @param innerJoin The inner join
      * @throws ValidationException

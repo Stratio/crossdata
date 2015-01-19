@@ -95,7 +95,7 @@ public class Shell {
     private boolean useAsync = false;
 
     /**
-     * Default String for the Crossdata prompt
+     * Default String for the Crossdata prompt.
      */
     private static final String DEFAULT_PROMPT = "xdsh:";
 
