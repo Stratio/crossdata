@@ -40,6 +40,7 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
     private List<Relation> whereClauses;
 
     public DeleteStatement(TableName tableName, List<Relation> whereClauses) {
+        this.tableStatement.setTableName(tableName);
         this.whereClauses = whereClauses;
     }
 
