@@ -34,6 +34,7 @@ public class CrossdatashTestIT {
                 .getResource("com/stratio/crossdata/connector/DataStoreDefinition.xml");
         String result = url.getPath();
         assertNotNull(result, "testSendManifest returns NULL");
+        xdsh.closeConsole();
     }
 
 }

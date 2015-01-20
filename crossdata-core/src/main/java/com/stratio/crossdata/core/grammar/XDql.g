@@ -466,7 +466,10 @@ createIndexStatement returns [CreateIndexStatement cis]
 	T_START_PARENTHESIS
         firstField=getColumnName[tablename] {$cis.addColumn(firstField);}
 	(T_COMMA
-		field=getColumnName[tablename] {$cis.addColumn(field);}
+		field=getColumnName[tablename] {
+		    if(!$cis.addColumn(field))
+		        throwParsingException("Identifier " + field + " is repeated.");
+		}
 	)*
 	T_END_PARENTHESIS
 	(T_WITH j=getJson {$cis.setOptionsJson(j);} )?
