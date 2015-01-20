@@ -21,6 +21,7 @@ package com.stratio.crossdata.common.executionplan;
 import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
@@ -56,6 +57,8 @@ public class MetadataWorkflow extends ExecutionWorkflow {
     private TableMetadata tableMetadata = null;
 
     private IndexMetadata indexMetadata = null;
+
+    private IndexName indexName = null;
 
     private AlterOptions alterOptions = null;
 
@@ -122,6 +125,14 @@ public class MetadataWorkflow extends ExecutionWorkflow {
 
     public IndexMetadata getIndexMetadata() {
         return indexMetadata;
+    }
+
+    public IndexName getIndexName() {
+        return indexName;
+    }
+
+    public void setIndexName(IndexName indexName) {
+        this.indexName = indexName;
     }
 
     public AlterOptions getAlterOptions() {
