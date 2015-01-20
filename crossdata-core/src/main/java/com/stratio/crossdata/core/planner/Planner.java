@@ -819,7 +819,7 @@ public class Planner {
             IndexName name = createIndexStatement.getName();
 
             Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
-            List<ColumnName> targetColumns = createIndexStatement.getTargetColumns();
+            Set<ColumnName> targetColumns = createIndexStatement.getTargetColumns();
             for (ColumnName columnName: targetColumns) {
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
                 columns.put(columnName, columnMetadata);
