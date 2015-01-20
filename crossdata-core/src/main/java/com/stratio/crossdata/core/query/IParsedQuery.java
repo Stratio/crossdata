@@ -49,7 +49,7 @@ public interface IParsedQuery {
     QueryStatus getStatus();
 
     /**
-     * Get the Catalog of a query-
+     * Get the Catalog of a query.
      *
      * @return com.stratio.crossdata.common.data.CatalogName
      */

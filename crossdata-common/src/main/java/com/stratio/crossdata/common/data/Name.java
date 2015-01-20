@@ -65,7 +65,7 @@ public abstract class Name implements Serializable {
     }
 
     /**
-     * Method equals
+     * Method equals.
      * @param o Object to be compared
      * @return whether Object o is equal to this object
      */

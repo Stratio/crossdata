@@ -172,40 +172,50 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                 workflow1.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG ||
                 workflow1.getExecutionType == ExecutionType.CREATE_TABLE) {
 
-            if(workflow1.getActorRef != null && workflow1.getActorRef.length() > 0){
-
-              val actorRef = context.actorSelection(workflow1.getActorRef)
-              executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
-              executionInfo.setPersistOnSuccess(true)
-              ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-              log.info("ActorRef: " + actorRef.toString())
-
-              actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
-
-            } else {
-
-              var result:MetadataResult = null
-
-              if(workflow1.getExecutionType == ExecutionType.CREATE_CATALOG){
-                coordinator.persistCreateCatalog(workflow1.getCatalogMetadata, workflow1.isIfNotExists)
-                executionInfo.setQueryStatus(QueryStatus.PLANNED)
-                ExecutionManager.MANAGER.createEntry(workflow1.getCatalogMetadata.getName.toString, queryId, true)
-                ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-                result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG)
-              } else if(workflow1.getExecutionType == ExecutionType.CREATE_TABLE
-                        || workflow1.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG){
-                coordinator.persistCreateTable(workflow1.getTableMetadata)
-                executionInfo.setQueryStatus(QueryStatus.PLANNED)
-                ExecutionManager.MANAGER.createEntry(workflow1.getTableMetadata.getName.toString, queryId, true)
-                ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-                result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_TABLE)
-              } else {
-                throw new CoordinationException("Invalid operation");
-              }
-
+            if(workflow1.getExecutionType != ExecutionType.CREATE_CATALOG
+                && workflow1.isIfNotExists
+                && MetadataManager.MANAGER.exists(workflow1.getTableName)){
+              val result:MetadataResult = MetadataResult.createSuccessMetadataResult(
+                MetadataResult.OPERATION_CREATE_TABLE, workflow1.isIfNotExists)
               result.setQueryId(queryId)
               sender ! result
 
+            } else {
+              if(workflow1.getActorRef != null && workflow1.getActorRef.length() > 0){
+
+                val actorRef = context.actorSelection(workflow1.getActorRef)
+                executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+                executionInfo.setPersistOnSuccess(true)
+                ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+                log.info("ActorRef: " + actorRef.toString())
+
+                actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+
+              } else {
+
+                var result:MetadataResult = null
+
+                if(workflow1.getExecutionType == ExecutionType.CREATE_CATALOG){
+                  coordinator.persistCreateCatalog(workflow1.getCatalogMetadata, workflow1.isIfNotExists)
+                  executionInfo.setQueryStatus(QueryStatus.PLANNED)
+                  ExecutionManager.MANAGER.createEntry(workflow1.getCatalogMetadata.getName.toString, queryId, true)
+                  ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+                  result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG)
+                } else if(workflow1.getExecutionType == ExecutionType.CREATE_TABLE
+                  || workflow1.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG){
+                  coordinator.persistCreateTable(workflow1.getTableMetadata)
+                  executionInfo.setQueryStatus(QueryStatus.PLANNED)
+                  ExecutionManager.MANAGER.createEntry(workflow1.getTableMetadata.getName.toString, queryId, true)
+                  ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+                  result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_TABLE)
+                } else {
+                  throw new CoordinationException("Invalid operation");
+                }
+
+                result.setQueryId(queryId)
+                sender ! result
+
+              }
             }
 
           } else {

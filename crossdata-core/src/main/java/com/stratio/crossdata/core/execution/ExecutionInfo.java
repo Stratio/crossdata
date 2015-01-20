@@ -32,12 +32,12 @@ public class ExecutionInfo implements Serializable {
     private QueryStatus queryStatus = QueryStatus.NONE;
 
     /**
-     * Persist in MetadataManager
+     * Persist in MetadataManager.
      */
     private boolean persistOnSuccess = false;
 
     /**
-     * Remove from ExecutionManager
+     * Remove from ExecutionManager.
      */
     private boolean removeOnSuccess = true;
 

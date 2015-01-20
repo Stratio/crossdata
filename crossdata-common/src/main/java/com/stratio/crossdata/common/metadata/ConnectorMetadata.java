@@ -99,10 +99,9 @@ public class ConnectorMetadata implements IMetadata {
     private Set<String> excludedFunctions;
 
     /**
-     * Whether the manifest of this connector was already added or not
+     * Whether the manifest of this connector was already added or not.
      */
     private boolean manifestAdded = false;
-    //private List<String> excludedFunctions;
 
     /**
      * Class constructor.

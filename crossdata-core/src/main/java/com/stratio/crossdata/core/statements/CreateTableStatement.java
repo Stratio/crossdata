@@ -18,9 +18,11 @@
 
 package com.stratio.crossdata.core.statements;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -46,22 +48,22 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
     /**
      * A map with the name of the columns in the table and the associated data type.
      */
-    private LinkedHashMap<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
+    private HashMap<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
 
     /**
      * The list of columns that are part of the primary key.
      */
-    private LinkedList<ColumnName> primaryKey = new LinkedList<>();
+    private Set<ColumnName> primaryKey = new LinkedHashSet<>();
 
     /**
      * The list of columns that are part of the partition key.
      */
-    private LinkedList<ColumnName> partitionKey = new LinkedList<>();
+    private Set<ColumnName> partitionKey = new LinkedHashSet<>();
 
     /**
      * The list of columns that are part of the clustering key.
      */
-    private LinkedList<ColumnName> clusterKey = new LinkedList<>();
+    private Set<ColumnName> clusterKey = new LinkedHashSet<>();
 
     /**
      * The list of {@link com.stratio.crossdata.core.structures.Property} of the table.
@@ -84,7 +86,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
      */
     public CreateTableStatement(TableType tableType, TableName tableName, ClusterName clusterName,
             LinkedHashMap<ColumnName, ColumnType> columns,
-            LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
+            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey) {
         this.command = false;
         this.tableType = tableType;
         this.tableStatement.setTableName(tableName);
@@ -110,15 +112,15 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
      */
     public CreateTableStatement(TableName tableName, ClusterName clusterName,
             LinkedHashMap<ColumnName, ColumnType> columns,
-            LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
+            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey) {
         this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey);
     }
 
-    public LinkedList<ColumnName> getPartitionKey() {
+    public Set<ColumnName> getPartitionKey() {
         return partitionKey;
     }
 
-    public LinkedList<ColumnName> getClusterKey() {
+    public Set<ColumnName> getClusterKey() {
         return clusterKey;
     }
 
@@ -126,7 +128,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
         return tableType;
     }
 
-    public LinkedHashMap<ColumnName, ColumnType> getColumnsWithTypes() {
+    public HashMap<ColumnName, ColumnType> getColumnsWithTypes() {
         return columnsWithType;
     }
 
@@ -196,9 +198,13 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
     }
 
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_CLUSTER)
-                .add(ValidationTypes.MUST_NOT_EXIST_TABLE);
+        ValidationRequirements requirements = new ValidationRequirements()
+                .add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_CLUSTER);
+        if(!isIfNotExists()){
+            requirements = requirements.add(ValidationTypes.MUST_NOT_EXIST_TABLE);
+        }
+        return requirements;
     }
 
 
