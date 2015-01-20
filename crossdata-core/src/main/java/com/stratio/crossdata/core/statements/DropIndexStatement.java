@@ -75,7 +75,13 @@ public class DropIndexStatement extends IndexStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_INDEX);
+        ValidationRequirements vr = new ValidationRequirements()
+                .add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_TABLE);
+        if(!dropIfExists){
+            vr.add(ValidationTypes.MUST_EXIST_INDEX);
+        }
+        return vr;
     }
 
 }
