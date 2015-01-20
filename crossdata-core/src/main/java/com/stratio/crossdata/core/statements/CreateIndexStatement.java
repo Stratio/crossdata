@@ -253,8 +253,12 @@ public class CreateIndexStatement extends IndexStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_NOT_EXIST_INDEX)
+        ValidationRequirements vr = new ValidationRequirements()
                 .add(ValidationTypes.MUST_EXIST_TABLE)
                 .add(ValidationTypes.MUST_EXIST_COLUMN);
+        if(!createIfNotExists){
+            vr.add(ValidationTypes.MUST_NOT_EXIST_INDEX);
+        }
+        return vr;
     }
 }
