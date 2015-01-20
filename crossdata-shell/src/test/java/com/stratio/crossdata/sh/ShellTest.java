@@ -24,16 +24,16 @@ public class ShellTest {
 
     @Test
     public void testShellConnectWithoutServer()  {
-        Shell crossDatash = new Shell(false);
-        boolean result=crossDatash.connect();
+        Shell crossdataSh = new Shell(false);
+        boolean result=crossdataSh.connect();
         Assert.assertFalse(result);
     }
 
     @Test
     public void testShellDisConnectWithoutServer()  {
-        Shell crossDatash = new Shell(false);
+        Shell crossdataSh = new Shell(false);
         try {
-            crossDatash.closeConsole();
+            crossdataSh.closeConsole();
             Assert.assertTrue(true);
         }catch (Exception e){
             Assert.fail("An error happened in sh");
@@ -41,10 +41,10 @@ public class ShellTest {
     }
 
     @Test
-    public void testPrinln()  {
-        Shell crossDatash = new Shell(false);
+    public void testPrintln()  {
+        Shell crossdataSh = new Shell(false);
         try {
-            crossDatash.println("prueba");
+            crossdataSh.println("test");
             Assert.assertTrue(true);
         }catch (Exception e){
             Assert.fail("An error happened in sh");
