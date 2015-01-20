@@ -446,7 +446,7 @@ public class APIManager {
 
             result = CommandResult.createCommandResult(sb.toString());
         } catch (MetadataManagerException mme) {
-            result = ErrorResult.createErrorResult(mme);
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
         return result;
