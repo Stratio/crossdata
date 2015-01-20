@@ -46,7 +46,7 @@ public final class StorageResult extends Result {
      * @param result The execution result.
      * @return A {@link com.stratio.crossdata.common.result.StorageResult}.
      */
-    public static StorageResult createSuccessFulStorageResult(String result) {
+    public static StorageResult createSuccessfulStorageResult(String result) {
         return new StorageResult(result);
     }
 
