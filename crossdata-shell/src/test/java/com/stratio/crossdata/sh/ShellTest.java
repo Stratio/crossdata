@@ -17,16 +17,48 @@
  */
 package com.stratio.crossdata.sh;
 
+import static org.testng.Assert.assertTrue;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
+import com.stratio.crossdata.common.data.ResultSet;
+import com.stratio.crossdata.common.result.QueryResult;
 
 public class ShellTest {
 
     @Test
+    public void testMain()  {
+        Shell.main(new String[]{"--sync", "--script", "/path/file.xdql"});
+        assertTrue(true, "testMain failed.");
+    }
+
+    @Test
+    public void testFlush()  {
+        Shell shell = new Shell(false);
+        shell.flush();
+        assertTrue(true, "testFlush failed.");
+    }
+
+    @Test
+    public void testSetPrompt()  {
+        Shell shell = new Shell(false);
+        shell.setPrompt("catalogTest");
+        assertTrue(true, "testSetPrompt failed.");
+    }
+
+    @Test
     public void testShellConnectWithoutServer()  {
         Shell crossdataSh = new Shell(false);
-        boolean result=crossdataSh.connect();
-        Assert.assertFalse(result);
+        boolean result = crossdataSh.connect();
+        Assert.assertFalse(result, "testShellConnectWithoutServer failed.");
+    }
+
+    @Test
+    public void testRemoveResultsHandler()  {
+        Shell shell = new Shell(false);
+        shell.removeResultsHandler("queryId25");
+        Assert.assertTrue(true, "testRemoveResultsHandler failed.");
     }
 
     @Test
@@ -34,10 +66,19 @@ public class ShellTest {
         Shell crossdataSh = new Shell(false);
         try {
             crossdataSh.closeConsole();
-            Assert.assertTrue(true);
-        }catch (Exception e){
+            assertTrue(true, "testShellDisConnectWithoutServer failed.");
+        } catch (Exception e) {
             Assert.fail("An error happened in sh");
         }
+    }
+
+    @Test
+    public void testUpdatePrompt()  {
+        Shell shell = new Shell(false);
+        QueryResult result = QueryResult.createQueryResult(new ResultSet());
+        result.setCurrentCatalog("catalogTest");
+        shell.updatePrompt(result);
+        assertTrue(true, "testUpdatePrompt failed.");
     }
 
     @Test
@@ -45,10 +86,17 @@ public class ShellTest {
         Shell crossdataSh = new Shell(false);
         try {
             crossdataSh.println("test");
-            Assert.assertTrue(true);
+            assertTrue(true);
         }catch (Exception e){
             Assert.fail("An error happened in sh");
         }
+    }
+
+    @Test
+    public void testExecuteScript()  {
+        Shell shell = new Shell(false);
+        shell.executeScript("/path/script.xdql");
+        assertTrue(true, "testUpdatePrompt failed.");
     }
 
 }
