@@ -815,6 +815,8 @@ public class Planner {
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.CREATE_INDEX,
                     ResultType.RESULTS);
 
+            metadataWorkflow.setIndexName(createIndexStatement.getName());
+            metadataWorkflow.setIfNotExists(createIndexStatement.isCreateIfNotExists());
             metadataWorkflow.setClusterName(clusterMetadata.getName());
             IndexName name = createIndexStatement.getName();
 
