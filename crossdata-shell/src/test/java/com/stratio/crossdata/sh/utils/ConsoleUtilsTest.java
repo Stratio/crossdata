@@ -23,12 +23,23 @@ import static org.testng.Assert.fail;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.Cell;
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.ResultSet;
+import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.ConnectResult;
+import com.stratio.crossdata.common.result.InProgressResult;
 import com.stratio.crossdata.common.result.MetadataResult;
+import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.result.StorageResult;
 import com.stratio.crossdata.sh.Shell;
@@ -36,17 +47,106 @@ import com.stratio.crossdata.sh.Shell;
 import jline.console.ConsoleReader;
 
 public class ConsoleUtilsTest {
+
     @Test
-    public void testStringResultWithError() throws Exception {
+    public void testStringResultWithErrorResult() throws Exception {
         String errorMessage = "Connection Error";
         Result result = MetadataResult.createConnectionErrorResult(errorMessage);
-        String queryId = "testStringResultWithError";
+        String queryId = "testStringResultWithErrorResult";
         result.setQueryId(queryId);
         String message = ConsoleUtils.stringResult(result);
         String expected = "The operation for query " + queryId + " cannot be executed:" +
                 System.lineSeparator() +
                 errorMessage +
                 System.lineSeparator();
+        assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+    }
+
+    @Test
+    public void testStringResultWithQueryResultEmpty() throws Exception {
+        Result result = QueryResult.createSuccessQueryResult();
+        String queryId = "testStringResultWithQueryResult";
+        result.setQueryId(queryId);
+        String message = ConsoleUtils.stringResult(result);
+        String expected = System.lineSeparator() + "0 results returned";
+        assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+    }
+
+    @Test
+    public void testStringResultWithQueryResult() throws Exception {
+        ResultSet resultSet = new ResultSet();
+        List<ColumnMetadata> columnMetadata = new ArrayList<>();
+        ColumnName firstColumn = new ColumnName("catalogTest", "tableTest", "Id");
+        columnMetadata.add(new ColumnMetadata(firstColumn, new Object[]{}, ColumnType.TEXT));
+        ColumnName secondColumn = new ColumnName("catalogTest", "tableTest", "Number");
+        columnMetadata.add(new ColumnMetadata(secondColumn, new Object[]{}, ColumnType.INT));
+        resultSet.setColumnMetadata(columnMetadata);
+        Row row = new Row();
+        row.addCell("id", new Cell("Stratio"));
+        row.addCell("number", new Cell(25));
+        resultSet.add(row);
+        Result result = QueryResult.createSuccessQueryResult(resultSet, "catalogTest");
+        String queryId = "testStringResultWithQueryResult";
+        result.setQueryId(queryId);
+        String message = ConsoleUtils.stringResult(result);
+        String expected = System.lineSeparator() +
+                "Partial result: true" + System.lineSeparator() +
+                "--------------------" + System.lineSeparator() +
+                "| id      | number | " + System.lineSeparator() +
+                "--------------------" + System.lineSeparator() +
+                "| Stratio | 25     | " + System.lineSeparator() +
+                "--------------------" + System.lineSeparator();
+        assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+    }
+
+    @Test
+    public void testStringResultWithConnectResult() throws Exception {
+        String sessionId = "12345";
+        Result result = ConnectResult.createConnectResult(sessionId);
+        String queryId = "testStringResultWithConnectResult";
+        result.setQueryId(queryId);
+        String message = ConsoleUtils.stringResult(result);
+        String expected = "Connected with SessionId=" + sessionId;
+        assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+    }
+
+    @Test
+    public void testStringResultWithMetadataResult() throws Exception {
+        Result result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG);
+        String queryId = "testStringResultWithMetadataResult";
+        result.setQueryId(queryId);
+        String message = ConsoleUtils.stringResult(result);
+        String expected = "Catalog created successfully";
+        assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+    }
+
+    @Test
+    public void testStringResultWithInProgressResult() throws Exception {
+        String queryId = "testStringResultWithInProgressResult";
+        Result result = InProgressResult.createInProgressResult(queryId);
+        result.setQueryId(queryId);
+        String message = ConsoleUtils.stringResult(result);
+        String expected = "Query " + queryId + " in progress";
         assertTrue(message.equalsIgnoreCase(expected),
                 System.lineSeparator() +
                 "Expected: " + expected +
@@ -67,7 +167,7 @@ public class ConsoleUtilsTest {
 
     @Test
     public void testStringResultWithShellOK() throws Exception {
-        StorageResult result = StorageResult.createSuccessFulStorageResult("Success");
+        StorageResult result = StorageResult.createSuccessfulStorageResult("Success");
         String message = ConsoleUtils.stringResult(result, new Shell(false));
         String expected = "Success";
         assertTrue(message.equalsIgnoreCase(expected),

@@ -136,7 +136,7 @@ public final class ConsoleUtils {
      */
 
     private static String stringQueryResult(QueryResult queryResult) {
-        if (queryResult.getResultSet().isEmpty()) {
+        if ((queryResult.getResultSet() == null ) || queryResult.getResultSet().isEmpty()) {
             return System.lineSeparator() + "0 results returned";
         }
 
@@ -168,8 +168,8 @@ public final class ConsoleUtils {
         for (Row row : resultSet) {
             sb.append("| ");
             for (String columnName: columnNames) {
-                String str = String.valueOf(row.getCell(columnName).getValue());
-                sb.append(StringUtils.rightPad(str, colWidths.get(columnName)));
+                String str = String.valueOf(row.getCell(columnName.toLowerCase()).getValue());
+                sb.append(StringUtils.rightPad(str, colWidths.get(columnName.toLowerCase())));
                 sb.append(" | ");
             }
             sb.append(System.lineSeparator());
