@@ -38,14 +38,10 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 /**
  * Class that models a {@code CREATE TABLE} statement of the CROSSDATA language.
  */
-public class CreateTableStatement extends MetadataStatement implements ITableStatement {
+public class CreateTableStatement extends AbstractMetadataTableStatement implements ITableStatement {
 
     private TableType tableType = TableType.DATABASE;
 
-    /**
-     * The name of the target table.
-     */
-    private TableName tableName;
 
     private ClusterName clusterName;
 
@@ -93,7 +89,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
             LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey) {
         this.command = false;
         this.tableType = tableType;
-        this.tableName = tableName;
+        this.tableStatement.setTableName(tableName);
         this.clusterName = clusterName;
         this.columnsWithType = columns;
         this.partitionKey = partitionKey;
@@ -136,13 +132,6 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         return columnsWithType;
     }
 
-    public TableName getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(TableName tableName) {
-        this.tableName = tableName;
-    }
 
     public ClusterName getClusterName() {
         return clusterName;
@@ -163,7 +152,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      * @param properties The list.
      */
     public void setProperties(String properties) {
-        this.properties = StringUtils.convertJsonToOptions(tableName, properties);
+        this.properties = StringUtils.convertJsonToOptions(tableStatement.getTableName(), properties);
     }
 
     public void setIfNotExists(boolean ifNotExists) {
@@ -187,7 +176,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         if (ifNotExists) {
             sb.append("IF NOT EXISTS ");
         }
-        sb.append(tableName.getQualifiedName());
+        sb.append(tableStatement.getTableName().getQualifiedName());
         sb.append(" ON CLUSTER ").append(clusterName);
 
         sb.append("(");
@@ -218,19 +207,6 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         return requirements;
     }
 
-    @Override
-    public CatalogName getEffectiveCatalog() {
-        CatalogName effective;
-        if (tableName != null) {
-            effective = tableName.getCatalogName();
-        } else {
-            effective = catalog;
-        }
-        if (sessionCatalog != null) {
-            effective = sessionCatalog;
-        }
-        return effective;
-    }
 
     public boolean isIfNotExists() {
         return ifNotExists;

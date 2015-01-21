@@ -20,23 +20,35 @@ package com.stratio.crossdata.core.statements;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
-
-public abstract class StorageStatement extends CrossdataStatement implements ITableStatement{
+public class TableStatement implements ITableStatement {
+    /**
+     * The name of the table.
+     */
+    protected TableName tableName;
     
-    TableStatement tableStatement=new TableStatement();
+    protected CatalogName catalog;
+    protected CatalogName sessionCatalog = null;
+    
+    public TableName getTableName() {
+        return tableName;
+    }
+    public void setTableName(TableName tableName) {
+        this.tableName = tableName;
+    }
     
     @Override
-    public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_TABLE)
-                .add(ValidationTypes.MUST_EXIST_COLUMN);
+    public CatalogName getEffectiveCatalog() {
+        CatalogName effective;
+        if (tableName != null) {
+            effective = tableName.getCatalogName();
+        } else {
+            effective = catalog;
+        }
+        if (sessionCatalog != null) {
+            effective = sessionCatalog;
+        }
+        return effective;
     }
 
-    public TableName getTableName() { return tableStatement.getTableName(); }
-    public void setTableName(TableName tablename) { tableStatement.setTableName(tablename); }
-    @Override
-    public CatalogName getEffectiveCatalog() { return tableStatement.getEffectiveCatalog(); }
 }
