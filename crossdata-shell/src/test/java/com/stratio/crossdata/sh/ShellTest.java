@@ -17,7 +17,9 @@
  */
 package com.stratio.crossdata.sh;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -35,68 +37,102 @@ public class ShellTest {
 
     @Test
     public void testFlush()  {
-        Shell shell = new Shell(false);
-        shell.flush();
-        assertTrue(true, "testFlush failed.");
+        boolean ok=true;
+        try {
+            Shell shell = new Shell(false);
+            shell.flush();
+        }catch (Exception ex){
+            fail("testFlush failed.");
+        }
+        assertEquals(true,ok,"testFlush failed.");
     }
 
     @Test
     public void testSetPrompt()  {
-        Shell shell = new Shell(false);
-        shell.setPrompt("catalogTest");
-        assertTrue(true, "testSetPrompt failed.");
+        boolean ok=true;
+        try {
+            Shell shell = new Shell(false);
+            shell.setPrompt("catalogTest");
+        }catch (Exception e){
+            fail("testSetPrompt failed");
+        }
+        assertEquals(ok, true, "testSetPrompt failed.");
     }
 
     @Test
     public void testShellConnectWithoutServer()  {
-        Shell crossdataSh = new Shell(false);
-        boolean result = crossdataSh.connect();
-        Assert.assertFalse(result, "testShellConnectWithoutServer failed.");
+        boolean ok=false;
+        boolean result=true;
+        try {
+            Shell crossdataSh = new Shell(false);
+            result = crossdataSh.connect();
+        }catch (Exception e){
+            fail("testShellConnectWithoutServer failed.");
+        }
+        Assert.assertEquals(result,ok, "testShellConnectWithoutServer failed.");
     }
 
     @Test
     public void testRemoveResultsHandler()  {
-        Shell shell = new Shell(false);
-        shell.removeResultsHandler("queryId25");
-        Assert.assertTrue(true, "testRemoveResultsHandler failed.");
+        boolean ok=true;
+        try {
+            Shell shell = new Shell(false);
+            shell.removeResultsHandler("queryId25");
+        }catch (Exception e){
+            fail("testRemoveResultsHandler failed.");
+        }
+        Assert.assertEquals(true, ok, "testRemoveResultsHandler failed.");
     }
 
     @Test
     public void testShellDisConnectWithoutServer()  {
+        boolean ok=true;
         Shell crossdataSh = new Shell(false);
         try {
             crossdataSh.closeConsole();
-            assertTrue(true, "testShellDisConnectWithoutServer failed.");
         } catch (Exception e) {
-            Assert.fail("An error happened in sh");
+            fail("An error happened in sh");
         }
+        assertEquals(true, ok, "testShellDisConnectWithoutServer failed.");
     }
 
     @Test
     public void testUpdatePrompt()  {
-        Shell shell = new Shell(false);
-        QueryResult result = QueryResult.createQueryResult(new ResultSet());
-        result.setCurrentCatalog("catalogTest");
-        shell.updatePrompt(result);
-        assertTrue(true, "testUpdatePrompt failed.");
+        boolean ok=true;
+        try {
+            Shell shell = new Shell(false);
+            QueryResult result = QueryResult.createQueryResult(new ResultSet());
+            result.setCurrentCatalog("catalogTest");
+            shell.updatePrompt(result);
+        }catch(Exception e){
+            fail("testUpdatePrompt failed.");
+        }
+        assertEquals(true, ok, "testUpdatePrompt failed.");
     }
 
     @Test
     public void testPrintln()  {
+        boolean ok=true;
         Shell crossdataSh = new Shell(false);
         try {
             crossdataSh.println("test");
-            assertTrue(true);
         }catch (Exception e){
-            Assert.fail("An error happened in sh");
+            fail("An error happened in sh");
         }
+        assertEquals(ok, true);
     }
 
     @Test
     public void testExecuteScript()  {
+        boolean ok=true;
         Shell shell = new Shell(false);
-        shell.executeScript("/path/script.xdql");
-        assertTrue(true, "testUpdatePrompt failed.");
+        try {
+            shell.executeScript("/path/script.xdql");
+        }catch (Exception e) {
+            fail("testUpdatePrompt failed.");
+        }
+        assertEquals(true, ok, "testUpdatePrompt failed.");
+
     }
 
 }

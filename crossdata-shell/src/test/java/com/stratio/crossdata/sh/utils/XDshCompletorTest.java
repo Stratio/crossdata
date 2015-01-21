@@ -75,12 +75,14 @@ public class XDshCompletorTest {
 
     @Test
     public void testCompleteException() throws Exception {
+        boolean ok;
         XDshCompletor completor = new XDshCompletor();
         try {
             completor.complete("", -1, null);
             fail("NullPointerException was expected");
         } catch (NullPointerException npe){
-            assertTrue(true, "NullPointerException was expected");
+            ok=true;
+            assertTrue(ok, "NullPointerException was expected");
         }
 
     }
