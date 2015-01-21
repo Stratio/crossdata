@@ -247,7 +247,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         sender ! result //TODO once persisted sessionId,
       } catch {
         case e: ConnectionException => {
-          val result = Result.createErrorResult(e)
+          logger.error(e.getMessage)
+          val result = Result.createConnectionErrorResult(e.getMessage)
           result.setQueryId(connectRequest.queryId)
           sender ! result
         }
