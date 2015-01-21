@@ -207,7 +207,7 @@ public final class StringUtils {
         try {
             return mapper.readValue(mapper.readTree(serializedObject), List.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.info(e.getMessage(),e);
         }
         return null;
     }
@@ -219,7 +219,7 @@ public final class StringUtils {
         try {
             serialized = mapper.writeValueAsString(obj);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.info(e.getMessage(),e);
         }
         return serialized;
     }

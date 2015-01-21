@@ -192,6 +192,7 @@ public class APIManager {
             try {
                 dropManifest(Integer.parseInt(String.valueOf(cmd.params().get(0))), cmd.params().get(1).toString());
             } catch (ApiException e) {
+                LOG.info(e.getMessage(),e);
                 result = CommandResult.createExecutionErrorResult(e.getMessage());
             }
         } else if (APICommand.RESET_SERVERDATA().equals(cmd.commandType())) {
@@ -273,6 +274,7 @@ public class APIManager {
         try {
             datastore = MetadataManager.MANAGER.getDataStore(dataStoreName);
         } catch (MetadataManagerException mme) {
+            LOG.info(mme.getMessage(),mme);
             result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
@@ -311,6 +313,7 @@ public class APIManager {
         try {
             connector = MetadataManager.MANAGER.getConnector(name);
         } catch (MetadataManagerException mme) {
+            LOG.info(mme.getMessage(),mme);
             result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
@@ -382,6 +385,7 @@ public class APIManager {
             result = CommandResult.createCommandResult(sb.toString());
 
         } catch (MetadataManagerException mme) {
+            LOG.info(mme.getMessage(),mme);
             result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
@@ -402,6 +406,7 @@ public class APIManager {
             result = CommandResult.createCommandResult(sb.toString());
 
         } catch (MetadataManagerException mme) {
+            LOG.info(mme.getMessage(),mme);
             result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
         return result;
@@ -451,6 +456,7 @@ public class APIManager {
 
             result = CommandResult.createCommandResult(sb.toString());
         } catch (MetadataManagerException mme) {
+            LOG.info(mme.getMessage(),mme);
             result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
@@ -479,6 +485,7 @@ public class APIManager {
 
             result = CommandResult.createCommandResult(sb.toString());
         } catch (MetadataManagerException mme) {
+            LOG.info(mme.getMessage(),mme);
             result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
