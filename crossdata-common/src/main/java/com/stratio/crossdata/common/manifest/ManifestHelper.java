@@ -110,10 +110,14 @@ public final class ManifestHelper implements Serializable {
             sb.append("Functions: ").append(System.lineSeparator());
             for(FunctionType function: dataStoreType.getFunctions().getFunction()){
                 sb.append("\t").append("Function: ").append(System.lineSeparator());
-                sb.append("\t").append("\t").append("Name: " + function.getFunctionName()).append(System.lineSeparator());
-                sb.append("\t").append("\t").append("Signature: " + function.getSignature()).append(System.lineSeparator());
-                sb.append("\t").append("\t").append("Type: " + function.getFunctionType()).append(System.lineSeparator());
-                sb.append("\t").append("\t").append("Description: " + function.getDescription()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Name: ").append(function.getFunctionName()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Signature: ").append(function.getSignature()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Type: ").append(function.getFunctionType()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Description: ").append(function.getDescription()).append(System
+                        .lineSeparator());
             }
         }
 
@@ -179,10 +183,14 @@ public final class ManifestHelper implements Serializable {
             // Includes
             for(FunctionType function: connectorType.getFunctions().getFunction()){
                 sb.append("\t").append("Function: ").append(System.lineSeparator());
-                sb.append("\t").append("\t").append("Name: " + function.getFunctionName()).append(System.lineSeparator());
-                sb.append("\t").append("\t").append("Signature: " + function.getSignature()).append(System.lineSeparator());
-                sb.append("\t").append("\t").append("Type: " + function.getFunctionType()).append(System.lineSeparator());
-                sb.append("\t").append("\t").append("Description: " + function.getDescription()).append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Name: ").append(function.getFunctionName()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Signature: ").append(function.getSignature()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Type: ").append(function.getFunctionType()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Description: ").append(function.getDescription()).append(System
+                        .lineSeparator());
             }
             // Excludes
             sb.append("\t").append("Excludes: ").append(
