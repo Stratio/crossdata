@@ -355,7 +355,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       s ! result
     } catch {
       case e: Exception => {
-        val result = Result.createErrorResult(e)
+        val result=Result.createExecutionErrorResult(e.getMessage)
         result.setQueryId(ex.queryId)
         s ! result
       }
