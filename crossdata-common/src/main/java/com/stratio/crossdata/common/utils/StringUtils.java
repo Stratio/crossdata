@@ -205,7 +205,7 @@ public final class StringUtils {
     public static Object deserializeObjectFromString(String serializedObject, Class objectsClass) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(mapper.readTree(serializedObject), ArrayList.class);
+            return mapper.readValue(mapper.readTree(serializedObject), List.class);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.sh.utils;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -180,11 +181,13 @@ public class ConsoleUtilsTest {
     @Test
     public void testStringResultWithShellException() throws Exception {
         CommandResult result = CommandResult.createCommandResult(new CatalogName("catalogTest"));
+        boolean ok=false;
         try {
             ConsoleUtils.stringResult(result, null);
             fail("NullPointerException was expected");
         } catch (NullPointerException npe) {
-            assertTrue(true, "NullPointerException was expected");
+            ok=true;
+            assertEquals(ok, true, "NullPointerException was expected");
         }
     }
 
@@ -214,11 +217,13 @@ public class ConsoleUtilsTest {
 
     @Test
     public void testRetrieveHistoryFail() throws Exception {
+        boolean ok=false;
         try {
             ConsoleUtils.retrieveHistory(null, Shell.dateFormat);
             fail("NullPointerException was expected");
         } catch (NullPointerException npe) {
-            assertTrue(true, "NullPointerException was expected");
+            ok=true;
+            assertEquals(true,ok, "NullPointerException was expected");
         }
     }
 
@@ -230,12 +235,15 @@ public class ConsoleUtilsTest {
     }
 
     @Test
-    public void testSaveHistoryFail() throws Exception {
+    public void testSaveHistoryFail() throws Exception
+    {
+        boolean ok=false;
         try {
             ConsoleUtils.saveHistory(new ConsoleReader(), null, Shell.dateFormat);
             fail("NullPointerException was expected");
         } catch (NullPointerException npe) {
-            assertTrue(true, "NullPointerException was expected");
+            ok=true;
+            assertEquals(ok,true, "NullPointerException was expected");
         }
     }
 }
