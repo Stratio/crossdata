@@ -713,7 +713,7 @@ public class Planner {
             try {
                 actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
             } catch (PlanningException pe) {
-                LOG.debug("No connector was found to execute CREATE_TABLE");
+                LOG.debug("No connector was found to execute CREATE_TABLE", pe);
             }
 
             ExecutionType executionType = ExecutionType.CREATE_TABLE;
@@ -743,7 +743,7 @@ public class Planner {
                             MetadataManager.MANAGER.getCatalog(createTableStatement.getTableName().getCatalogName()));
                 } catch (PlanningException pe) {
                     LOG.debug("Cannot determine any connector for the operation: "
-                            + Operations.CREATE_CATALOG);
+                            + Operations.CREATE_CATALOG, pe);
                 }
             }
 
