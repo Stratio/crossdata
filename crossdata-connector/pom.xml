@@ -166,6 +166,14 @@
                     <artifactId>scala-library</artifactId>
                     <groupId>org.scala-lang</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>leveldbjni</artifactId>
+                    <groupId>org.fusesource.leveldbjni</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
