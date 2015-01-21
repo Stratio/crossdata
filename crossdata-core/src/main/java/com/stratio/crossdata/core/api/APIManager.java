@@ -273,7 +273,7 @@ public class APIManager {
         try {
             datastore = MetadataManager.MANAGER.getDataStore(dataStoreName);
         } catch (MetadataManagerException mme) {
-            result = CommandResult.createExecutionErrorResult(mme.getMessage());
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
         if (datastore != null) {
@@ -311,7 +311,7 @@ public class APIManager {
         try {
             connector = MetadataManager.MANAGER.getConnector(name);
         } catch (MetadataManagerException mme) {
-            result = CommandResult.createExecutionErrorResult(mme.getMessage());
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
         if (connector != null) {
@@ -382,7 +382,7 @@ public class APIManager {
             result = CommandResult.createCommandResult(sb.toString());
 
         } catch (MetadataManagerException mme) {
-            result = new ErrorResult(mme);
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
         return result;
@@ -402,7 +402,7 @@ public class APIManager {
             result = CommandResult.createCommandResult(sb.toString());
 
         } catch (MetadataManagerException mme) {
-            result = ErrorResult.createErrorResult(mme);
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
         return result;
     }
@@ -414,6 +414,10 @@ public class APIManager {
             CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name.getCatalogName());
             TableMetadata table = catalog.getTables().get(name);
             StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+            if(table == null){
+                throw new MetadataManagerException("[" + name + "] doesn't exist yet");
+            }
 
             sb.append("Table: ").append(table.getName()).append(System.lineSeparator());
 
@@ -433,8 +437,9 @@ public class APIManager {
             sb.append("Indexes: ").append(System.lineSeparator());
             Map<IndexName, IndexMetadata> indexes = table.getIndexes();
             for (Map.Entry<IndexName, IndexMetadata> idx : indexes.entrySet()) {
-                sb.append("\t").append(idx.getKey()).append(": ").append(idx.getValue().getColumns().keySet())
-                        .append(System.lineSeparator());
+                sb.append("\t").append(idx.getKey()).append("(").append(idx.getValue().getType()).append(")");
+                sb.append(": ").append(idx.getValue().getColumns().keySet());
+                sb.append(System.lineSeparator());
             }
 
             sb.append("Options: ").append(System.lineSeparator());
