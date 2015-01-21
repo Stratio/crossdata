@@ -455,23 +455,27 @@ public class APIManager {
     private Result describeCluster(ClusterName name) {
         Result result;
 
-        ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(name);
-        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+        try {
+            ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(name);
+            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
 
-        sb.append("Cluster: ").append(cluster.getName()).append(System.lineSeparator());
+            sb.append("Cluster: ").append(cluster.getName()).append(System.lineSeparator());
 
-        sb.append("Datastore: ").append(cluster.getDataStoreRef()).append(System.lineSeparator());
+            sb.append("Datastore: ").append(cluster.getDataStoreRef()).append(System.lineSeparator());
 
-        sb.append("Options: ").append(System.lineSeparator());
-        Map<Selector, Selector> options = cluster.getOptions();
-        for (Map.Entry<Selector, Selector> entry : options.entrySet()) {
-            sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(System.lineSeparator());
+            sb.append("Options: ").append(System.lineSeparator());
+            Map<Selector, Selector> options = cluster.getOptions();
+            for (Map.Entry<Selector, Selector> entry : options.entrySet()) {
+                sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(System.lineSeparator());
+            }
+
+            sb.append("Attached connectors: ").append(cluster.getConnectorAttachedRefs().keySet())
+                    .append(System.lineSeparator());
+
+            result = CommandResult.createCommandResult(sb.toString());
+        } catch (MetadataManagerException mme) {
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
-
-        sb.append("Attached connectors: ").append(cluster.getConnectorAttachedRefs().keySet())
-                .append(System.lineSeparator());
-
-        result = CommandResult.createCommandResult(sb.toString());
 
         return result;
     }
