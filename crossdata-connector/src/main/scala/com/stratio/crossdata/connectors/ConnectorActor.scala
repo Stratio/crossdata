@@ -449,7 +449,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
           eng.truncate(clustername, table)
         }
       }
-      val result = StorageResult.createSuccessFulStorageResult("STORED successfully");
+      val result = StorageResult.createSuccessfulStorageResult("STORED successfully");
       result.setQueryId(qId)
       s ! result
     } catch {

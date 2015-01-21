@@ -127,7 +127,7 @@ public final class MetadataResult extends Result {
      */
     private List<ColumnMetadata> columnList = null;
 
-    private boolean ifNotExists = false;
+    private boolean noOperation = false;
 
     /**
      * Private constructor of the factory.
@@ -136,9 +136,9 @@ public final class MetadataResult extends Result {
         this(operation, false);
     }
 
-    private MetadataResult(final int operation, boolean ifNotExists) {
+    private MetadataResult(final int operation, boolean noOperation) {
         this.operation = operation;
-        this.ifNotExists = ifNotExists;
+        this.noOperation = noOperation;
     }
 
     /**
@@ -151,8 +151,8 @@ public final class MetadataResult extends Result {
         return new MetadataResult(operation);
     }
 
-    public static MetadataResult createSuccessMetadataResult(final int operation, boolean ifNotExists) {
-        return new MetadataResult(operation, ifNotExists);
+    public static MetadataResult createSuccessMetadataResult(final int operation, boolean noOperation) {
+        return new MetadataResult(operation, noOperation);
     }
 
     public List<String> getCatalogList() {
@@ -219,16 +219,15 @@ public final class MetadataResult extends Result {
      */
     @Override
     public String toString() {
+        if(noOperation){
+            return "None operation was necessary";
+        }
         switch (this.operation) {
 
         case MetadataResult.OPERATION_CREATE_CATALOG:
             return "CATALOG created successfully";
         case MetadataResult.OPERATION_CREATE_TABLE:
-            if(ifNotExists){
-                return "TABLE IF NOT EXISTS created successfully";
-            } else {
-                return "TABLE created successfully";
-            }
+            return "TABLE created successfully";
         case MetadataResult.OPERATION_CREATE_INDEX:
             return "INDEX created successfully";
         case MetadataResult.OPERATION_DROP_CATALOG:

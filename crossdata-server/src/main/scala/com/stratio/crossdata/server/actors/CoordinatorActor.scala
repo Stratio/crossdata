@@ -116,29 +116,43 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
           } else if(workflow1.getExecutionType == ExecutionType.CREATE_INDEX) {
 
-            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
-            executionInfo.setPersistOnSuccess(true)
-            executionInfo.setRemoveOnSuccess(true)
-            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
-            executionInfo.setWorkflow(workflow1)
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+            if(workflow1.isIfNotExists && MetadataManager.MANAGER.exists(workflow1.getIndexName)){
+              val result:MetadataResult = MetadataResult.createSuccessMetadataResult(
+                MetadataResult.OPERATION_CREATE_INDEX, workflow1.isIfNotExists)
+              result.setQueryId(queryId)
+              sender ! result
+            } else {
+              executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+              executionInfo.setPersistOnSuccess(true)
+              executionInfo.setRemoveOnSuccess(true)
+              executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+              executionInfo.setWorkflow(workflow1)
+              ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
-            val actorRef = context.actorSelection(workflow1.getActorRef)
-            log.info("ActorRef: " + actorRef.toString())
-            actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+              val actorRef = context.actorSelection(workflow1.getActorRef)
+              log.info("ActorRef: " + actorRef.toString())
+              actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+            }
 
           } else if(workflow1.getExecutionType == ExecutionType.DROP_INDEX) {
 
-            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
-            executionInfo.setPersistOnSuccess(true)
-            executionInfo.setRemoveOnSuccess(true)
-            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
-            executionInfo.setWorkflow(workflow1)
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+            if(workflow1.isIfExists && !MetadataManager.MANAGER.exists(workflow1.getIndexName)){
+              val result:MetadataResult = MetadataResult.createSuccessMetadataResult(
+                MetadataResult.OPERATION_DROP_INDEX, workflow1.isIfExists)
+              result.setQueryId(queryId)
+              sender ! result
+            } else {
+              executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+              executionInfo.setPersistOnSuccess(true)
+              executionInfo.setRemoveOnSuccess(true)
+              executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+              executionInfo.setWorkflow(workflow1)
+              ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
-            val actorRef = context.actorSelection(workflow1.getActorRef)
-            log.info("ActorRef: " + actorRef.toString())
-            actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+              val actorRef = context.actorSelection(workflow1.getActorRef)
+              log.info("ActorRef: " + actorRef.toString())
+              actorRef.asInstanceOf[ActorSelection] ! workflow1.createMetadataOperationMessage()
+            }
 
           } else if (workflow1.getExecutionType == ExecutionType.DISCOVER_METADATA){
 
