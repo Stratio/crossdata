@@ -221,15 +221,16 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
 
   def executeAsyncRawQuery(command: String, callback: IDriverResultHandler): Result = {
     var result:Result = null.asInstanceOf[Result]
-    if(command.toLowerCase.startsWith("use ")){
-      result = updateCatalog(command)
+    val input:String = command.replaceAll("\\s+", " ")
+    if(input.toLowerCase.startsWith("use ")){
+      result = updateCatalog(input)
     } else {
-      result = executeApiCall(command)
+      result = executeApiCall(input)
       if(result.isInstanceOf[EmptyResult]){
         if(callback != null){
-          result = asyncExecuteQuery(command, callback)
+          result = asyncExecuteQuery(input, callback)
         } else {
-          result = executeQuery(command)
+          result = executeQuery(input)
         }
       }
     }

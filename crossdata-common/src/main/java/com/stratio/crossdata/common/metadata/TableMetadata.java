@@ -42,7 +42,7 @@ public class TableMetadata implements Serializable {
 
     private Map<Selector, Selector> options;
 
-    private HashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
+    private Map<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
 
     private Map<IndexName, IndexMetadata> indexes;
 
@@ -110,7 +110,7 @@ public class TableMetadata implements Serializable {
      * @return Map with {@link com.stratio.crossdata.common.data.ColumnName},
      * {@link com.stratio.crossdata.common.metadata.ColumnMetadata}.
      */
-    public HashMap<ColumnName, ColumnMetadata> getColumns() {
+    public Map<ColumnName, ColumnMetadata> getColumns() {
         return columns;
     }
 

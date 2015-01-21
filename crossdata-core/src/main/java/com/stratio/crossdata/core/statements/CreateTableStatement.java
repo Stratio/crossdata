@@ -48,7 +48,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
     /**
      * A map with the name of the columns in the table and the associated data type.
      */
-    private HashMap<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
+    private Map<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
 
     /**
      * The list of columns that are part of the primary key.
@@ -128,7 +128,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
         return tableType;
     }
 
-    public HashMap<ColumnName, ColumnType> getColumnsWithTypes() {
+    public Map<ColumnName, ColumnType> getColumnsWithTypes() {
         return columnsWithType;
     }
 
