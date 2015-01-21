@@ -134,6 +134,16 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-contrib_2.10</artifactId>
             <version>${akka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>leveldbjni</artifactId>
+                    <groupId>org.fusesource.leveldbjni</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
@@ -149,16 +159,28 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-slf4j_${scala.dep.version}</artifactId>
             <version>${akka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-api</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-agent_${scala.dep.version}</artifactId>
             <version>${akka.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>scala-library</artifactId>
+                    <groupId>org.scala-lang</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.typesafe</groupId>
             <artifactId>config</artifactId>
-            <version>1.2.0</version>
+            <version>${config.version}</version>
         </dependency>
 
     </dependencies>

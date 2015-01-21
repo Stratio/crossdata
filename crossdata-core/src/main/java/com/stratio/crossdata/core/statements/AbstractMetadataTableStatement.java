@@ -21,22 +21,31 @@ package com.stratio.crossdata.core.statements;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+
+public abstract class AbstractMetadataTableStatement extends MetadataStatement implements ITableStatement{
+    
+    private class InnerTableStatement extends TableStatement {   }
+    TableStatement tableStatement=new InnerTableStatement();
 
 
-public abstract class StorageStatement extends CrossdataStatement implements ITableStatement{
-    
-    TableStatement tableStatement=new TableStatement();
-    
-    @Override
-    public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_TABLE)
-                .add(ValidationTypes.MUST_EXIST_COLUMN);
+    protected AbstractMetadataTableStatement() {
     }
 
-    public TableName getTableName() { return tableStatement.getTableName(); }
-    public void setTableName(TableName tablename) { tableStatement.setTableName(tablename); }
+
+    @Override public ValidationRequirements getValidationRequirements() {
+        return null;
+    }
+
+    @Override public TableName getTableName() {
+        return tableStatement.getTableName();
+    }
+
+    @Override public void setTableName(TableName tableName) {
+        tableStatement.setTableName(tableName);
+
+    }
+    
     @Override
     public CatalogName getEffectiveCatalog() { return tableStatement.getEffectiveCatalog(); }
+
 }
