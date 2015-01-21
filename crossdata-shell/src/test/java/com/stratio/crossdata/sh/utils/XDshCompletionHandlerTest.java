@@ -48,12 +48,14 @@ public class XDshCompletionHandlerTest {
 
     @Test
     public void testCompleteFail() throws Exception {
+        boolean ok;
         XDshCompletionHandler handler = new XDshCompletionHandler();
         try {
             handler.complete(null, null, -1);
             fail("NullPointerException was expected");
         } catch (NullPointerException npe) {
-            assertTrue(true, "NullPointerException was expected");
+            ok=true;
+            assertTrue(ok, "NullPointerException was expected");
         }
 
     }

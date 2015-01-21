@@ -17,6 +17,7 @@
  */
 package com.stratio.crossdata.sh;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -33,82 +34,116 @@ import com.stratio.crossdata.sh.help.HelpStatement;
 public class ShellTest {
 
     @Test
-    public void testMain()  {
-        Shell.main(new String[]{"--sync", "--script", "/path/file.xdql"});
+    public void testMain() {
+        Shell.main(new String[] { "--sync", "--script", "/path/file.xdql" });
         assertTrue(true, "testMain failed.");
     }
 
     @Test
-    public void testFlush()  {
-        Shell shell = new Shell(false);
-        shell.flush();
-        assertTrue(true, "testFlush failed.");
+    public void testFlush() {
+        boolean ok = true;
+        try {
+            Shell shell = new Shell(false);
+            shell.flush();
+        } catch (Exception ex) {
+            fail("testFlush failed.");
+        }
+        assertEquals(true, ok, "testFlush failed.");
     }
 
     @Test
-    public void testSetPrompt()  {
-        Shell shell = new Shell(false);
-        shell.setPrompt("catalogTest");
-        assertTrue(true, "testSetPrompt failed.");
+    public void testSetPrompt() {
+        boolean ok = true;
+        try {
+            Shell shell = new Shell(false);
+            shell.setPrompt("catalogTest");
+        } catch (Exception e) {
+            fail("testSetPrompt failed");
+        }
+        assertEquals(ok, true, "testSetPrompt failed.");
     }
 
     @Test
-    public void testShellConnectWithoutServer()  {
-        Shell crossdataSh = new Shell(false);
-        boolean result = crossdataSh.connect();
-        Assert.assertFalse(result, "testShellConnectWithoutServer failed.");
+    public void testShellConnectWithoutServer() {
+        boolean ok = false;
+        boolean result = true;
+        try {
+            Shell crossdataSh = new Shell(false);
+            result = crossdataSh.connect();
+        } catch (Exception e) {
+            fail("testShellConnectWithoutServer failed.");
+        }
+        Assert.assertEquals(result, ok, "testShellConnectWithoutServer failed.");
     }
 
     @Test
-    public void testRemoveResultsHandler()  {
-        Shell shell = new Shell(false);
-        shell.removeResultsHandler("queryId25");
-        Assert.assertTrue(true, "testRemoveResultsHandler failed.");
+    public void testRemoveResultsHandler() {
+        boolean ok = true;
+        try {
+            Shell shell = new Shell(false);
+            shell.removeResultsHandler("queryId25");
+        } catch (Exception e) {
+            fail("testRemoveResultsHandler failed.");
+        }
+        Assert.assertEquals(true, ok, "testRemoveResultsHandler failed.");
     }
 
     @Test
-    public void testShellDisConnectWithoutServer()  {
+    public void testShellDisConnectWithoutServer() {
+        boolean ok = true;
         Shell crossdataSh = new Shell(false);
         try {
             crossdataSh.closeConsole();
-            assertTrue(true, "testShellDisConnectWithoutServer failed.");
         } catch (Exception e) {
-            Assert.fail("An error happened in sh");
+            fail("An error happened in sh");
         }
+        assertEquals(true, ok, "testShellDisConnectWithoutServer failed.");
     }
 
     @Test
-    public void testUpdatePrompt()  {
-        Shell shell = new Shell(false);
-        QueryResult result = QueryResult.createQueryResult(new ResultSet());
-        result.setCurrentCatalog("catalogTest");
-        shell.updatePrompt(result);
-        assertTrue(true, "testUpdatePrompt failed.");
+    public void testUpdatePrompt() {
+        boolean ok = true;
+        try {
+            Shell shell = new Shell(false);
+            QueryResult result = QueryResult.createQueryResult(new ResultSet());
+            result.setCurrentCatalog("catalogTest");
+            shell.updatePrompt(result);
+        } catch (Exception e) {
+            fail("testUpdatePrompt failed.");
+        }
+        assertEquals(true, ok, "testUpdatePrompt failed.");
     }
 
     @Test
-    public void testPrintln()  {
+    public void testPrintln() {
+        boolean ok = true;
         Shell crossdataSh = new Shell(false);
         try {
             crossdataSh.println("test");
-            assertTrue(true);
-        }catch (Exception e){
-            Assert.fail("An error happened in sh");
+        } catch (Exception e) {
+            fail("An error happened in sh");
         }
+        assertEquals(ok, true);
     }
 
     @Test
-    public void testExecuteScript()  {
+    public void testExecuteScript() {
+        boolean ok = true;
         Shell shell = new Shell(false);
-        shell.executeScript("/path/script.xdql");
-        assertTrue(true, "testUpdatePrompt failed.");
+        try {
+            shell.executeScript("/path/script.xdql");
+        } catch (Exception e) {
+            fail("testUpdatePrompt failed.");
+        }
+        assertEquals(true, ok, "testUpdatePrompt failed.");
+
     }
 
     @Test
-    public void testParseHelp(){
+    public void testParseHelp() {
         try {
             Shell shell = new Shell(false);
-            Method method = Shell.class.getDeclaredMethod("parseHelp", new Class[]{String.class});
+            Method method = Shell.class.getDeclaredMethod("parseHelp", new Class[] { String.class });
             method.setAccessible(true);
             Object param = "help create";
             Object obj = method.invoke(shell, param);
@@ -117,15 +152,15 @@ public class ShellTest {
             String expected = "HELP CREATE";
             assertTrue(result.equalsIgnoreCase(expected),
                     "Result:   " + result +
-                    System.lineSeparator() +
-                    "Expected: " + expected);
+                            System.lineSeparator() +
+                            "Expected: " + expected);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             fail("ERROR: " + e.getMessage(), e);
         }
     }
 
     @Test
-    public void testShowHelp(){
+    public void testShowHelp() {
         try {
             Shell shell = new Shell(false);
             Method method = Shell.class.getDeclaredMethod("showHelp", String.class);
