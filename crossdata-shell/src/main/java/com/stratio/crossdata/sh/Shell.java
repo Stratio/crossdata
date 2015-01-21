@@ -285,7 +285,7 @@ public class Shell {
             LOG.info(ConsoleUtils.stringResult(connectionResult));
         } catch (ConnectionException ce) {
             result = false;
-            LOG.error(ce.getMessage());
+            LOG.error(ce.getMessage(),ce);
         }
         return result;
     }
