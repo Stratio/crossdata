@@ -123,7 +123,7 @@ public class ShellTest {
         } catch (Exception e) {
             fail("An error happened in sh");
         }
-        assertEquals(ok, true);
+        assertEquals(ok, true, "An error happened in sh");
     }
 
     @Test

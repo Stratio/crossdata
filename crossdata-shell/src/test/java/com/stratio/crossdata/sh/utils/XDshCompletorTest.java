@@ -37,7 +37,7 @@ public class XDshCompletorTest {
         candidates.add("CREATE");
         candidates.add("INSERT");
         int result = completor.complete("CREAT", 5, candidates);
-        assertEquals(result, 0);
+        assertEquals(result, 0, "Error in completor test");
     }
 
     @Test
@@ -48,7 +48,7 @@ public class XDshCompletorTest {
         candidates.add("CREATE");
         candidates.add("INSERT");
         int result = completor.complete("INDE", 4, candidates);
-        assertEquals(result, 0);
+        assertEquals(result, 0, "Complete Fails");
     }
 
     @Test
@@ -59,7 +59,7 @@ public class XDshCompletorTest {
         candidates.add("CREATE");
         candidates.add("INSERT");
         int result = completor.complete("", 2, candidates);
-        assertEquals(result, 0);
+        assertEquals(result, 0, "Complete Fails");
     }
 
     @Test
@@ -70,7 +70,7 @@ public class XDshCompletorTest {
         candidates.add("CREATE");
         candidates.add("INSERT");
         int result = completor.complete("TABLE ", 6, candidates);
-        assertEquals(result, -1);
+        assertEquals(result, -1, "Complete Error");
     }
 
     @Test
