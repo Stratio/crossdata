@@ -81,7 +81,6 @@ public class DropIndexStatementTest extends BasicValidatorTest {
         String query = "DROP INDEX unknown;";
         DropIndexStatement dropIndexStatement = new DropIndexStatement();
         dropIndexStatement.setName(new IndexName("demo", "users", "unknown"));
-        dropIndexStatement.setDropIfExists();
 
         Validator validator = new Validator();
 
@@ -90,11 +89,11 @@ public class DropIndexStatementTest extends BasicValidatorTest {
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("INDEX must exist");
+            Assert.fail("INDEX unknown shouldn't exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.assertTrue(false);
         }
     }
 

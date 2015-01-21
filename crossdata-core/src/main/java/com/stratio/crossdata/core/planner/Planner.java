@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -756,8 +757,10 @@ public class Planner {
                 columnMap.put(columnName, columnMetadata);
             }
             ClusterName clusterName = createTableStatement.getClusterName();
-            List<ColumnName> partitionKey = createTableStatement.getPartitionKey();
-            List<ColumnName> clusterKey = createTableStatement.getClusterKey();
+            List<ColumnName> partitionKey = new LinkedList<>();
+            partitionKey.addAll(createTableStatement.getPartitionKey());
+            List<ColumnName> clusterKey = new LinkedList<>();
+            clusterKey.addAll(createTableStatement.getClusterKey());
             Map<IndexName, IndexMetadata> indexes = new HashMap<>();
             TableMetadata tableMetadata = new TableMetadata(name, options, columnMap, indexes,
                     clusterName, partitionKey, clusterKey);
@@ -812,11 +815,13 @@ public class Planner {
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.CREATE_INDEX,
                     ResultType.RESULTS);
 
+            metadataWorkflow.setIndexName(createIndexStatement.getName());
+            metadataWorkflow.setIfNotExists(createIndexStatement.isCreateIfNotExists());
             metadataWorkflow.setClusterName(clusterMetadata.getName());
             IndexName name = createIndexStatement.getName();
 
             Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
-            List<ColumnName> targetColumns = createIndexStatement.getTargetColumns();
+            Set<ColumnName> targetColumns = createIndexStatement.getTargetColumns();
             for (ColumnName columnName: targetColumns) {
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
                 columns.put(columnName, columnMetadata);
@@ -842,6 +847,8 @@ public class Planner {
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.DROP_INDEX,
                     ResultType.RESULTS);
 
+            metadataWorkflow.setIndexName(dropIndexStatement.getName());
+            metadataWorkflow.setIfExists(dropIndexStatement.isDropIfExists());
             metadataWorkflow.setClusterName(clusterMetadata.getName());
 
             metadataWorkflow.setIndexMetadata(tableMetadata.getIndexes().get(indexName));

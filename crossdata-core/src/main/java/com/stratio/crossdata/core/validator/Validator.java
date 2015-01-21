@@ -448,6 +448,9 @@ public class Validator {
             CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
             tableName = createIndexStatement.getTableName();
             hasIfExists = createIndexStatement.isCreateIfNotExists();
+        } else if(stmt instanceof DropIndexStatement) {
+            DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
+            tableName = dropIndexStatement.getName().getTableName();
         } else if (stmt instanceof UpdateTableStatement) {
             UpdateTableStatement updateTableStatement = (UpdateTableStatement) stmt;
             tableName = updateTableStatement.getTableName();
@@ -494,6 +497,12 @@ public class Validator {
         } else if (stmt instanceof ImportMetadataStatement) {
             ImportMetadataStatement importMetadataStatement = (ImportMetadataStatement) stmt;
             catalogName = importMetadataStatement.getCatalogName();
+        } else if (stmt instanceof CreateIndexStatement) {
+            CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
+            catalogName = createIndexStatement.getTableName().getCatalogName();
+        } else if (stmt instanceof DropIndexStatement){
+            DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
+            catalogName = dropIndexStatement.getName().getTableName().getCatalogName();
         } else {
             //TODO: should through exception?
             //Correctness - Method call passes null for notnull parameter

@@ -160,8 +160,8 @@ public class InsertIntoStatement extends StorageStatement {
     @Override
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_TABLE).add
-                        (ValidationTypes.VALIDATE_TYPES);
+                .add(ValidationTypes.MUST_EXIST_TABLE)
+                .add(ValidationTypes.VALIDATE_TYPES);
     }
 
     public TableName getTableName() {

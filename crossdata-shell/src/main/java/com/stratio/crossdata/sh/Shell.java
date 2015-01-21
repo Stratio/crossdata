@@ -87,7 +87,7 @@ public class Shell {
     /**
      * History date format.
      */
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
+    public static SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
 
     /**
      * Whether the asynchronous interface should be used.

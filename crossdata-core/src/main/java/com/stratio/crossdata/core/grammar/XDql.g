@@ -39,6 +39,7 @@ options {
     import com.stratio.crossdata.common.metadata.structures.*;
     import java.util.LinkedHashMap;
     import java.util.LinkedList;
+    import java.util.LinkedHashSet;
     import java.util.Map;
     import java.util.Set;
     import java.util.HashSet;
@@ -465,7 +466,10 @@ createIndexStatement returns [CreateIndexStatement cis]
 	T_START_PARENTHESIS
         firstField=getColumnName[tablename] {$cis.addColumn(firstField);}
 	(T_COMMA
-		field=getColumnName[tablename] {$cis.addColumn(field);}
+		field=getColumnName[tablename] {
+		    if(!$cis.addColumn(field))
+		        throwParsingException("Identifier " + field + " is repeated.");
+		}
 	)*
 	T_END_PARENTHESIS
 	(T_WITH j=getJson {$cis.setOptionsJson(j);} )?
@@ -515,26 +519,34 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
 createTableStatement returns [CreateTableStatement crtast]
     @init{
         LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
-        LinkedList<ColumnName> partitionKey = new LinkedList<>();
-        LinkedList<ColumnName> clusterKey = new LinkedList<>();
+        LinkedHashSet<ColumnName> partitionKey = new LinkedHashSet<>();
+        LinkedHashSet<ColumnName> clusterKey = new LinkedHashSet<>();
         boolean ifNotExists = false;
     }:
     T_CREATE tableType=getTableType T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     tablename=getTableName { if(!tablename.isCompletedName()) throwParsingException("Catalog is missing") ; }
     T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS
-        id1=getColumnName[tablename] type1=getDataType (T_PRIMARY T_KEY { partitionKey.add(id1); } )? { columns.put(id1, type1);}
-        (T_COMMA idN=getColumnName[tablename] typeN=getDataType { columns.put(idN, typeN); } )*
+        id1=getColumnName[tablename] type1=getDataType (T_PRIMARY T_KEY { if(!partitionKey.add(id1))
+                throwParsingException("Identifier " + id1 + " is repeated."); } )?
+        { columns.put(id1, type1);}
+        (T_COMMA idN=getColumnName[tablename] typeN=getDataType {
+                if(columns.put(idN, typeN) != null) throwParsingException("Identifier " + idN + " is repeated.");
+        } )*
         (T_COMMA T_PRIMARY T_KEY T_START_PARENTHESIS
                 (idPk1=getColumnName[tablename] { if(!partitionKey.isEmpty()) throwParsingException("Partition key was previously defined");
-                                                 partitionKey.add(idPk1); }
+                                                 if(!partitionKey.add(idPk1))
+                                                 throwParsingException("Identifier " + idPk1 + " is repeated.");}
                 | T_START_PARENTHESIS
                     idParK1=getColumnName[tablename] { if(!partitionKey.isEmpty()) throwParsingException("Partition key was previously defined");
-                                                       partitionKey.add(idParK1); }
-                    (T_COMMA idParKN=getColumnName[tablename] { partitionKey.add(idParKN); }
+                                                       if(!partitionKey.add(idParK1))
+                                                       throwParsingException("Identifier " + idParK1 + " is repeated.");}
+                    (T_COMMA idParKN=getColumnName[tablename] { if(!partitionKey.add(idParKN))
+                            throwParsingException("Identifier " + idParKN + " is repeated.");}
                     )*
                 T_END_PARENTHESIS)
-                (T_COMMA idPkN=getColumnName[tablename] { clusterKey.add(idPkN); })*
+                (T_COMMA idPkN=getColumnName[tablename] { if(!clusterKey.add(idPkN))
+                        throwParsingException("Identifier " + idPkN + " is repeated.");})*
         T_END_PARENTHESIS)?
     T_END_PARENTHESIS (T_WITH j=getJson)?
     {
