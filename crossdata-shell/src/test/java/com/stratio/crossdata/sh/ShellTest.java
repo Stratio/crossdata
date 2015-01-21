@@ -18,12 +18,17 @@
 package com.stratio.crossdata.sh;
 
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.result.QueryResult;
+import com.stratio.crossdata.sh.help.HelpStatement;
 
 public class ShellTest {
 
@@ -97,6 +102,39 @@ public class ShellTest {
         Shell shell = new Shell(false);
         shell.executeScript("/path/script.xdql");
         assertTrue(true, "testUpdatePrompt failed.");
+    }
+
+    @Test
+    public void testParseHelp(){
+        try {
+            Shell shell = new Shell(false);
+            Method method = Shell.class.getDeclaredMethod("parseHelp", new Class[]{String.class});
+            method.setAccessible(true);
+            Object param = "help create";
+            Object obj = method.invoke(shell, param);
+            HelpStatement helpStatement = (HelpStatement) obj;
+            String result = helpStatement.toString();
+            String expected = "HELP CREATE";
+            assertTrue(result.equalsIgnoreCase(expected),
+                    "Result:   " + result +
+                    System.lineSeparator() +
+                    "Expected: " + expected);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            fail("ERROR: " + e.getMessage(), e);
+        }
+    }
+
+    @Test
+    public void testShowHelp(){
+        try {
+            Shell shell = new Shell(false);
+            Method method = Shell.class.getDeclaredMethod("showHelp", String.class);
+            method.setAccessible(true);
+            Object param = "help insert";
+            method.invoke(shell, param);
+        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            fail("ERROR: " + e.getMessage(), e);
+        }
     }
 
 }
