@@ -264,14 +264,14 @@ public class MetadataManagerTestHelper {
         return clusterName;
     }
 
-    public CatalogName createTestCatalog(String name) {
+    public CatalogMetadata createTestCatalog(String name) {
         // Create & add Catalog
         CatalogName catalogName = new CatalogName(name);
         Map<TableName, TableMetadata> catalogTables = new HashMap<>();
         Map<Selector, Selector> options = new HashMap<>();
         CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);
         MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
-        return catalogName;
+        return catalogMetadata;
     }
 
     public TableMetadata defineTable(

@@ -22,18 +22,35 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
+import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
+import com.stratio.crossdata.common.manifest.FunctionType;
+import com.stratio.crossdata.common.manifest.PropertyType;
+import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
+import com.stratio.crossdata.common.metadata.ClusterMetadata;
+import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.result.MetadataResult;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.communication.ManagementOperation;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
@@ -114,7 +131,6 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         assertFalse(found, "Cluster detachment failed.");
     }
 
-    /*
     @Test
     public void testAttachConnector() throws Exception {
 
@@ -155,7 +171,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
 
         // Create workflow
         String queryId = "testAttachConnectorId";
-        String actorRef = null;
+        String actorRef = "testAttachConnectorActorRef";
         ExecutionType executionType = ExecutionType.ATTACH_CONNECTOR;
         ResultType type = ResultType.RESULTS;
         ManagementWorkflow managementWorkflow = new ManagementWorkflow(queryId, actorRef, executionType, type);
@@ -167,7 +183,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
 
         Coordinator coordinator = new Coordinator();
 
-        Result result = coordinator.executeManagementOperation(managementWorkflow.createManagementOperationMessage());
+        coordinator.executeManagementOperation(managementWorkflow.createManagementOperationMessage());
 
         // Check that changes persisted in the MetadataManager ("clusterTest" cluster)
         clusterTest = MetadataManager.MANAGER.getCluster(new ClusterName("clusterTest"));
@@ -177,11 +193,11 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
 
         boolean found = false;
 
-        for (ConnectorName connectorNameTest : connectorAttachedRefsTest.keySet()) {
+        for (ConnectorName connectorNameTest: connectorAttachedRefsTest.keySet()) {
             ConnectorAttachedMetadata connectorAttachedMetadataTest =
                     connectorAttachedRefsTest.get(connectorNameTest);
             if (connectorAttachedMetadataTest.getClusterRef().equals(new ClusterName("clusterTest"))) {
-                assertEquals(connectorAttachedMetadata.getClusterRef(), new ClusterName("clusterTest"),
+                assertEquals(connectorAttachedMetadataTest.getConnectorRef(), connectorName,
                         "Wrong attachment for connectorTest");
                 found = true;
                 break;
@@ -189,39 +205,31 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         }
         assertTrue(found, "Attachment not found");
     }
-*/
-
-/*
 
     // CREATE CATALOG
     @Test
     public void testCreateCatalogCheckName() throws Exception {
         CatalogName catalogName = new CatalogName("testCatalog");
+        Map<TableName, TableMetadata> catalogTables = new HashMap<>();
+        Map<Selector, Selector> options = new HashMap<>();
+        CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);
 
-        BaseQuery baseQuery =
-                new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog", catalogName);
-
-        CreateCatalogStatement createCatalogStatement =
-                new CreateCatalogStatement(catalogName, false, "{}");
-
-        MetadataParsedQuery metadataParsedQuery =
-                new MetadataParsedQuery(baseQuery, createCatalogStatement);
-
-        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
-
-        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
+        String queryId = "testCreateCatalogCheckNameId";
+        String actorRef = "testCreateCatalogCheckNameActorRef";
+        ExecutionType executionType = ExecutionType.CREATE_CATALOG;
+        ResultType type = ResultType.RESULTS;
+        MetadataWorkflow metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+        metadataWorkflow.setCatalogName(catalogMetadata.getName());
+        metadataWorkflow.setCatalogMetadata(catalogMetadata);
+        MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG);
 
         Coordinator coordinator = new Coordinator();
-        if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
-            assertTrue(true);
-            coordinator.persist(plannedQuery);
-        } else {
-            fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
-        }
+        coordinator.persist(metadataWorkflow, result);
 
-        assertEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), catalogName);
+        assertEquals(MetadataManager.MANAGER.getCatalog(catalogMetadata.getName()).getName(), catalogMetadata.getName());
     }
 
+    /*
     // CREATE TABLE
     @Test
     public void testCreateTable() throws Exception {
