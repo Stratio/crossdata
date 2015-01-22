@@ -70,7 +70,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
     runningJobs.foreach {
-      keyval: (String, ActorRef) => keyval._2 ! IAmAlive(keyval._1)
+      keyVal: (String, ActorRef) => keyVal._2 ! IAmAlive(keyVal._1)
     }
   }
 
@@ -79,11 +79,11 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   }
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
-      val catalogname = tableName.getCatalogName
-      val catalogmetadata=metadata.get(catalogname).asInstanceOf[CatalogMetadata]
-      val tablemetadata=catalogmetadata.getTables.get(tableName)
-      if(tablemetadata.getClusterRef==clusterName)
-        return tablemetadata
+      val catalogName = tableName.getCatalogName
+      val catalogMetadata = metadata.get(catalogName).asInstanceOf[CatalogMetadata]
+      val tableMetadata = catalogMetadata.getTables.get(tableName)
+      if(tableMetadata.getClusterRef==clusterName)
+        return tableMetadata
       else
         return null
   }
@@ -98,11 +98,11 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     for((k,v) <- metadata){
        k match {
         case name:CatalogName=>{
-          val catalogmetadata=metadata.get(k).asInstanceOf[CatalogMetadata]
-          val tables=catalogmetadata.getTables
-          for((tablename,tablemetadata) <- tables){
-            if(tables.get(tablename).getClusterRef==cluster){
-              r.put(name,catalogmetadata)
+          val catalogMetadata = metadata.get(k).asInstanceOf[CatalogMetadata]
+          val tables = catalogMetadata.getTables
+          for((tableName, tableMetadata) <- tables){
+            if(tables.get(tableName).getClusterRef==cluster){
+              r.put(name,catalogMetadata)
             }
           }
         }
@@ -114,68 +114,68 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   def class2String(clazz:Class[_]):String=clazz.getName
   val patchFunctionHash=new java.util.HashMap[String,(Patch,Name)=>Boolean]()
   //TODO: could it be more generic?
-  patchFunctionHash.put(class2String(classOf[CatalogMetadata]),(diff:Patch,catalogname:Name)=>{
-    val name=catalogname.asInstanceOf[CatalogName]
-    val catalog=metadata.get(catalogname).asInstanceOf[CatalogMetadata]
-    val jsonresult = StringUtils.patchObject(catalog, diff); // patch object
-    val result= //deserialize
-      StringUtils.deserializeObjectFromString(jsonresult,classOf[CatalogMetadata])
+  patchFunctionHash.put(class2String(classOf[CatalogMetadata]),(diff:Patch, catalogName:Name)=>{
+    val name = catalogName.asInstanceOf[CatalogName]
+    val catalog = metadata.get(catalogName).asInstanceOf[CatalogMetadata]
+    val jsonResult = StringUtils.patchObject(catalog, diff); // patch object
+    val result = //deserialize
+      StringUtils.deserializeObjectFromString(jsonResult,classOf[CatalogMetadata])
     metadata.put(name,result.asInstanceOf[CatalogMetadata])
    true
   })
-  patchFunctionHash.put(class2String(classOf[ClusterMetadata]),(diff:Patch,clustername:Name)=>{
-    val name=clustername.asInstanceOf[ClusterName]
-    val cluster=metadata.get(clustername).asInstanceOf[ClusterMetadata]
-    val jsonresult = StringUtils.patchObject(cluster, diff); // patch object
-    val result= //deserialize
-      StringUtils.deserializeObjectFromString(jsonresult,classOf[ClusterMetadata])
+  patchFunctionHash.put(class2String(classOf[ClusterMetadata]),(diff:Patch, clusterName:Name)=>{
+    val name = clusterName.asInstanceOf[ClusterName]
+    val cluster = metadata.get(clusterName).asInstanceOf[ClusterMetadata]
+    val jsonResult = StringUtils.patchObject(cluster, diff); // patch object
+    val result = //deserialize
+      StringUtils.deserializeObjectFromString(jsonResult,classOf[ClusterMetadata])
     metadata.put(name,result.asInstanceOf[ClusterMetadata])
    true
   })
-  patchFunctionHash.put(class2String(classOf[DataStoreMetadata]),(diff:Patch,datastorename:Name)=>{
-    val name=datastorename.asInstanceOf[DataStoreName]
-    val datastore=metadata.get(datastorename).asInstanceOf[DataStoreMetadata]
-    val jsonresult = StringUtils.patchObject(datastore, diff); // patch object
-    val result= //deserialize
-      StringUtils.deserializeObjectFromString(jsonresult,classOf[DataStoreMetadata])
+  patchFunctionHash.put(class2String(classOf[DataStoreMetadata]),(diff:Patch, datastoreName:Name)=>{
+    val name = datastoreName.asInstanceOf[DataStoreName]
+    val datastore = metadata.get(datastoreName).asInstanceOf[DataStoreMetadata]
+    val jsonResult = StringUtils.patchObject(datastore, diff); // patch object
+    val result = //deserialize
+      StringUtils.deserializeObjectFromString(jsonResult,classOf[DataStoreMetadata])
     metadata.put(name,result.asInstanceOf[DataStoreMetadata])
    true
   })
-  patchFunctionHash.put(class2String(classOf[TableMetadata]),(diff:Patch,tablename:Name)=>{
-    val name=tablename.asInstanceOf[TableName]
-    val catalogname = name.getCatalogName
-    val table=metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(name)
-    val jsonresult = StringUtils.patchObject(table, diff); // patch object
-    val result= //deserialize
-      StringUtils.deserializeObjectFromString(jsonresult,classOf[TableMetadata])
-    metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.put(
+  patchFunctionHash.put(class2String(classOf[TableMetadata]),(diff:Patch, tableName:Name)=>{
+    val name = tableName.asInstanceOf[TableName]
+    val catalogName = name.getCatalogName
+    val table = metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(name)
+    val jsonResult = StringUtils.patchObject(table, diff); // patch object
+    val result = //deserialize
+      StringUtils.deserializeObjectFromString(jsonResult,classOf[TableMetadata])
+    metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.put(
       name,result.asInstanceOf[TableMetadata]
     )
     true
   })
-  patchFunctionHash.put(class2String(classOf[ColumnMetadata]),(diff:Patch,columnname:Name)=>{
-    val name = columnname.asInstanceOf[ColumnName]
-    val tablename = name.getTableName
-    val catalogname = tablename.getCatalogName
-    val table=metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename)
-    val column=table.getColumns.get(name)
-    val jsonresult = StringUtils.patchObject(column, diff); // patch object
-    val result= //deserialize
-      StringUtils.deserializeObjectFromString(jsonresult,classOf[TableMetadata])
-    metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getColumns
+  patchFunctionHash.put(class2String(classOf[ColumnMetadata]),(diff:Patch,columnName:Name)=>{
+    val name = columnName.asInstanceOf[ColumnName]
+    val tableName = name.getTableName
+    val catalogName = tableName.getCatalogName
+    val table = metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName)
+    val column = table.getColumns.get(name)
+    val jsonResult = StringUtils.patchObject(column, diff); // patch object
+    val result = //deserialize
+      StringUtils.deserializeObjectFromString(jsonResult,classOf[TableMetadata])
+    metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getColumns
       .put( name,result.asInstanceOf[ColumnMetadata] )
     true
   })
-  patchFunctionHash.put(class2String(classOf[IndexMetadata]),(diff:Patch,indexname:Name)=>{
-    val name = indexname.asInstanceOf[IndexName]
-    val tablename = name.getTableName
-    val catalogname = tablename.getCatalogName
-    val table=metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename)
-    val index=table.getIndexes.get(name)
-    val jsonresult = StringUtils.patchObject(index, diff); // patch object
-    val result= //deserialize
-      StringUtils.deserializeObjectFromString(jsonresult,classOf[TableMetadata])
-    metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getIndexes
+  patchFunctionHash.put(class2String(classOf[IndexMetadata]),(diff:Patch,indexName:Name)=>{
+    val name = indexName.asInstanceOf[IndexName]
+    val tableName = name.getTableName
+    val catalogName = tableName.getCatalogName
+    val table = metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName)
+    val index = table.getIndexes.get(name)
+    val jsonResult = StringUtils.patchObject(index, diff); // patch object
+    val result = //deserialize
+      StringUtils.deserializeObjectFromString(jsonResult,classOf[TableMetadata])
+    metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getIndexes
       .put( name,result.asInstanceOf[IndexMetadata] )
     true
   })
@@ -205,32 +205,27 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         case _:DataStoreMetadata =>{
           metadata.put(u.metadata.asInstanceOf[DataStoreMetadata].getName,u.metadata)
         }
-        /*
-        case _:NodeMetadata =>{
-          metadata.put(u.metadata.asInstanceOf[NodeMetadata].getName,u.metadata)
-        }
-        */
         case _:TableMetadata => {
-          val tablename = u.metadata.asInstanceOf[TableMetadata].getName
-          val catalogname = tablename.getCatalogName
-          metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.put(
-            tablename,u.metadata.asInstanceOf[TableMetadata]
+          val tableName = u.metadata.asInstanceOf[TableMetadata].getName
+          val catalogName = tableName.getCatalogName
+          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.put(
+            tableName,u.metadata.asInstanceOf[TableMetadata]
           )
         }
         case _:ColumnMetadata => {
-          val columname = u.metadata.asInstanceOf[ColumnMetadata].getName
-          val tablename = columname.getTableName
-          val catalogname = tablename.getCatalogName
-          metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getColumns.put(
-            columname,u.metadata.asInstanceOf[ColumnMetadata]
+          val columName = u.metadata.asInstanceOf[ColumnMetadata].getName
+          val tableName = columName.getTableName
+          val catalogName = tableName.getCatalogName
+          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getColumns.put(
+            columName,u.metadata.asInstanceOf[ColumnMetadata]
           )
         }
         case _:IndexMetadata => {
-          val indexname = u.metadata.asInstanceOf[IndexMetadata].getName
-          val tablename = indexname.getTableName
-          val catalogname = tablename.getCatalogName
-          metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getIndexes.put(
-            indexname,u.metadata.asInstanceOf[IndexMetadata]
+          val indexName = u.metadata.asInstanceOf[IndexMetadata].getName
+          val tableName = indexName.getTableName
+          val catalogName = tableName.getCatalogName
+          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getIndexes.put(
+            indexName,u.metadata.asInstanceOf[IndexMetadata]
           )
         }
       }
@@ -287,7 +282,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       methodMetadataOp(metadataOp, sender)
     }
     case storageOp: StorageOperation => {
-      methodStorageop(storageOp, sender)
+      methodStorageOp(storageOp, sender)
     }
     case msg: getConnectorName => {
       logger.info(sender + " asked for my name")
@@ -429,7 +424,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     s ! result
   }
 
-  private def methodStorageop(storageOp: StorageOperation, s: ActorRef): Unit = {
+  private def methodStorageOp(storageOp: StorageOperation, s: ActorRef): Unit = {
     val qId: String = storageOp.queryId
     try {
       val eng = connector.getStorageEngine()
@@ -519,26 +514,26 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE,null)
       }
       case _:ProvideMetadata => {
-        val listmetadata=eng.provideMetadata(metadataOp.asInstanceOf[ProvideMetadata].targetCluster)
-        (metadataOp.asInstanceOf[ProvideMetadata].queryId, MetadataResult.OPERATION_DISCOVER_METADATA,listmetadata)
+        val listMetadata = eng.provideMetadata(metadataOp.asInstanceOf[ProvideMetadata].targetCluster)
+        (metadataOp.asInstanceOf[ProvideMetadata].queryId, MetadataResult.OPERATION_DISCOVER_METADATA,listMetadata)
 
       }
       case _:ProvideCatalogsMetadata => {
-        val listmetadata=eng.provideMetadata(metadataOp.asInstanceOf[ProvideCatalogsMetadata].targetCluster)
+        val listMetadata = eng.provideMetadata(metadataOp.asInstanceOf[ProvideCatalogsMetadata].targetCluster)
         (metadataOp.asInstanceOf[ProvideCatalogsMetadata].queryId, MetadataResult.OPERATION_IMPORT_CATALOGS,
-          listmetadata)
+          listMetadata)
       }
       case _:ProvideCatalogMetadata => {
-        val listmetadata=eng.provideCatalogMetadata(metadataOp.asInstanceOf[ProvideCatalogMetadata].targetCluster,
+        val listMetadata = eng.provideCatalogMetadata(metadataOp.asInstanceOf[ProvideCatalogMetadata].targetCluster,
           metadataOp.asInstanceOf[ProvideCatalogMetadata].catalogName)
         (metadataOp.asInstanceOf[ProvideCatalogMetadata].queryId, MetadataResult.OPERATION_IMPORT_CATALOG,
-          listmetadata)
+          listMetadata)
       }
       case _:ProvideTableMetadata => {
-        val listmetadata=eng.provideTableMetadata(metadataOp.asInstanceOf[ProvideTableMetadata].targetCluster,
+        val listMetadata = eng.provideTableMetadata(metadataOp.asInstanceOf[ProvideTableMetadata].targetCluster,
           metadataOp.asInstanceOf[ProvideTableMetadata].tableName)
         (metadataOp.asInstanceOf[ProvideTableMetadata].queryId, MetadataResult.OPERATION_IMPORT_TABLE,
-          listmetadata)
+          listMetadata)
       }
       case _ => ???
     }
