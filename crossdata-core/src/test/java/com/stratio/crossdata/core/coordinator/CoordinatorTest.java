@@ -43,6 +43,7 @@ import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
+import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
@@ -229,7 +230,6 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         assertEquals(MetadataManager.MANAGER.getCatalog(catalogMetadata.getName()).getName(), catalogMetadata.getName());
     }
 
-    /*
     // CREATE TABLE
     @Test
     public void testCreateTable() throws Exception {
@@ -239,49 +239,40 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         String catalog = "catalogTest4";
         String tableString = "tableTest";
 
-        createTestDatastoreAndPersist(datastore, "0.2.0");
-        createTestClusterAndPersist(cluster, datastore);
-        createTestsCatalogAndPersist(catalog);
+        createTestDatastore();
+        createTestCluster(cluster, new DataStoreName(datastore));
+        createTestCatalog(catalog);
 
-        // Create and add test table to the metadataManager
         TableName tableName = new TableName(catalog, tableString);
-        TableMetadata table =
-                new TableMetadata(tableName, new HashMap<Selector, Selector>(),
-                        new HashMap<ColumnName, ColumnMetadata>(), new HashMap<IndexName, IndexMetadata>(),
-                        new ClusterName(cluster), new ArrayList<ColumnName>(), new ArrayList<ColumnName>());
+        String[] columnNames1 = { "id", "user" };
+        ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
+        String[] partitionKeys = { "id" };
+        String[] clusteringKeys = { };
+        TableMetadata tableMetadata = defineTable(
+                new ClusterName(cluster),
+                catalog,
+                tableString,
+                columnNames1,
+                columnTypes,
+                partitionKeys,
+                clusteringKeys);
 
-        BaseQuery baseQuery =
-                new BaseQuery(UUID.randomUUID().toString(), "CREATE TABLE testTable", new CatalogName(
-                        catalog));
+        String queryId = "testCreateTableQueryId";
+        String actorRef = "testCreateTableActorRef";
+        ExecutionType executionType = ExecutionType.CREATE_TABLE;
+        ResultType type = ResultType.RESULTS;
+        MetadataWorkflow metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+        metadataWorkflow.setTableName(tableName);
+        metadataWorkflow.setTableMetadata(tableMetadata);
 
-        Map<ColumnName, ColumnType> columns = new HashMap<>();
-        for (Map.Entry<ColumnName, ColumnMetadata> c : table.getColumns().entrySet()) {
-            columns.put(c.getKey(), c.getValue().getColumnType());
-        }
-
-        CreateTableStatement createTableStatement =
-                new CreateTableStatement(tableName, table.getClusterRef(), columns, table.getPrimaryKey(),
-                        table.getPartitionKey());
-        createTableStatement.setTableMetadata(table);
-
-        MetadataParsedQuery metadataParsedQuery =
-                new MetadataParsedQuery(baseQuery, createTableStatement);
-
-        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
-
-        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
-
+        MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_TABLE);
         Coordinator coordinator = new Coordinator();
-        if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
-            assertTrue(true);
-            coordinator.persist(plannedQuery);
-        } else {
-            fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
-        }
+        coordinator.persist(metadataWorkflow, result);
 
-        assertEquals(MetadataManager.MANAGER.getTable(tableName), table);
+        assertEquals(MetadataManager.MANAGER.getTable(tableName).getName(), tableMetadata.getName());
     }
 
+    /*
     //CREATE INDEX
     @Test
     public void testCreateIndex() throws Exception {
