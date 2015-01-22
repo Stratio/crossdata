@@ -61,9 +61,9 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             fail("Options are required for ATTACH CLUSTER statement");
         } catch (ValidationException e) {
-            assertTrue(res);
+            assertTrue(res, "Result should be True");
         } catch (IgnoreQueryException e) {
-            assertTrue(res);
+            assertTrue(res, "Result should be True");
         }
     }
 
@@ -84,9 +84,9 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             fail("Datastore must exists before ATTACH CLUSTER statement");
         } catch (ValidationException e) {
-            assertTrue(res);
+            assertTrue(res, "Result should be True");
         } catch (IgnoreQueryException e) {
-            assertTrue(res);
+            assertTrue(res, "Result should be True");
         }
     }
 

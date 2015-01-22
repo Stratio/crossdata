@@ -18,35 +18,37 @@
 
 package com.stratio.crossdata.core.statements;
 
-import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.TableName;
 
-/**
- * Class that models an {@code ADD} statement from the CROSSDATA language.
- */
-public class AddStatement extends MetadataStatement {
-
+public class TableStatement implements ITableStatement {
     /**
-     * The path to load the jar file.
+     * The name of the table.
      */
-    private String jarPath = null;
-
-    /**
-     * Class constructor.
-     *
-     * @param path The path of the jar file.
-     */
-    public AddStatement(String path) {
-        this.command = true;
-        jarPath = path;
+    protected TableName tableName;
+    
+    protected CatalogName catalog;
+    protected CatalogName sessionCatalog;
+    
+    public TableName getTableName() {
+        return tableName;
     }
-
+    public void setTableName(TableName tableName) {
+        this.tableName = tableName;
+    }
+    
     @Override
-    public String toString() {
-        return "ADD " + jarPath;
+    public CatalogName getEffectiveCatalog() {
+        CatalogName effective;
+        if (tableName != null) {
+            effective = tableName.getCatalogName();
+        } else {
+            effective = catalog;
+        }
+        if (sessionCatalog != null) {
+            effective = sessionCatalog;
+        }
+        return effective;
     }
 
-    @Override
-    public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements();
-    }
 }

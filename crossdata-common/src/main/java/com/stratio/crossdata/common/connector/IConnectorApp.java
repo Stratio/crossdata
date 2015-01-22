@@ -42,11 +42,10 @@ public interface IConnectorApp {
 
     /**
      * Get the catalog metadata.
-     * @param cluster target cluster.
      * @param catalogName target catalog.
      * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    CatalogMetadata getCatalogMetadata(ClusterName cluster, CatalogName catalogName);
+    CatalogMetadata getCatalogMetadata(CatalogName catalogName);
 
     /**
      * Get the list of existing catalogs in a cluster.

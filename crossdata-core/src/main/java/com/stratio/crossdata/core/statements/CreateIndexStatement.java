@@ -20,8 +20,9 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
@@ -66,7 +67,7 @@ public class CreateIndexStatement extends IndexStatement {
      * The list of columns covered by the index. Only one column is allowed for {@code DEFAULT}
      * indexes.
      */
-    private List<ColumnName> targetColumns = null;
+    private Set<ColumnName> targetColumns = new LinkedHashSet<>();
 
     /**
      * The map of options passed to the index during its creation.
@@ -78,7 +79,7 @@ public class CreateIndexStatement extends IndexStatement {
      */
     public CreateIndexStatement() {
         this.command = false;
-        targetColumns = new ArrayList<>();
+        targetColumns = new LinkedHashSet<>();
         options = new LinkedHashMap<>();
     }
 
@@ -152,7 +153,7 @@ public class CreateIndexStatement extends IndexStatement {
      *
      * @return List<ColumnName> with the columns targeted by the index.
      */
-    public List<ColumnName> getTargetColumns() {
+    public Set<ColumnName> getTargetColumns() {
         return targetColumns;
     }
 
@@ -161,10 +162,10 @@ public class CreateIndexStatement extends IndexStatement {
      *
      * @param column The name of the column.
      */
-    public void addColumn(ColumnName column) {
+    public boolean addColumn(ColumnName column) {
         tableName = column.getTableName();
         catalog = column.getTableName().getCatalogName();
-        targetColumns.add(column);
+        return targetColumns.add(column);
     }
 
     public void setOptionsJson(String optionsJson) {
@@ -236,7 +237,9 @@ public class CreateIndexStatement extends IndexStatement {
             sb.append(catalog).append(".");
         }
         sb.append(tableName);
-        sb.append("(").append(StringUtils.stringList(targetColumns, ", ")).append(")");
+        sb.append("(");
+        sb.append(StringUtils.stringList(new ArrayList<>(targetColumns), ", "));
+        sb.append(")");
         if (!options.isEmpty()) {
             sb.append(" WITH ");
             sb.append(options);
@@ -250,8 +253,12 @@ public class CreateIndexStatement extends IndexStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_NOT_EXIST_INDEX)
+        ValidationRequirements vr = new ValidationRequirements()
                 .add(ValidationTypes.MUST_EXIST_TABLE)
                 .add(ValidationTypes.MUST_EXIST_COLUMN);
+        if(!createIfNotExists){
+            vr.add(ValidationTypes.MUST_NOT_EXIST_INDEX);
+        }
+        return vr;
     }
 }

@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.grid;
 
 import static org.testng.Assert.assertTrue;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.locks.Lock;
@@ -45,13 +46,14 @@ public class GridTest {
 
     private String syncMessage;
     private String asyncMessage;
+    private String path;
 
     /**
      * Starts the common {@link Grid} used by all its tests.
      */
     @BeforeClass
     public void setUp() {
-        String path = "/tmp/com.stratio.crossdata-test-" + new Random().nextInt(100000);
+        path = "/tmp/com.stratio.crossdata-test-" + new Random().nextInt(100000);
         Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
     }
 
@@ -61,6 +63,8 @@ public class GridTest {
     @AfterClass
     public void tearDown() {
         Grid.INSTANCE.close();
+        File file = new File(path);
+        file.delete();
     }
 
     /**
@@ -88,7 +92,7 @@ public class GridTest {
         Lock lock = Grid.INSTANCE.lock("testGridLock");
         lock.lock();
         lock.unlock();
-        assertTrue(res);
+        assertTrue(res, "Grid Lock test failed.");
     }
 
     /**

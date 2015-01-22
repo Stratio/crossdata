@@ -142,8 +142,8 @@ ImplicitSender with BeforeAndAfterAll{
     new ClusterName(myClusterName),
 
     new util.LinkedHashMap[ColumnName, ColumnType](),
-    new util.LinkedList[ColumnName](),
-    new util.LinkedList[ColumnName]()
+    new util.LinkedHashSet[ColumnName](),
+    new util.LinkedHashSet[ColumnName]()
   )
   val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table " + tableName1 + ";",
     new CatalogName(catalogName)),

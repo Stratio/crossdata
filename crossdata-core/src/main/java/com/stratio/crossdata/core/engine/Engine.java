@@ -170,7 +170,9 @@ public class Engine {
      * Close open connections.
      */
     public void shutdown() {
-        Grid.INSTANCE.close();
+        if(Grid.INSTANCE.isInit()){
+            Grid.INSTANCE.close();
+        }
     }
 
 }

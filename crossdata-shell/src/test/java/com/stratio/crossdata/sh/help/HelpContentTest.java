@@ -16,19 +16,26 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.query;
+package com.stratio.crossdata.sh.help;
 
-import com.stratio.crossdata.common.result.QueryStatus;
+import java.util.HashMap;
+import java.util.Map;
 
-public class StorageExecutedQuery extends StorageInProgressQuery implements ExecutedQuery {
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
-    public StorageExecutedQuery(StorageInProgressQuery storageInProgressQuery) {
-        super(storageInProgressQuery);
-        setQueryStatus(QueryStatus.EXECUTED);
+public class HelpContentTest {
+    @Test
+    public void testSetHelp() throws Exception {
+        boolean ok=false;
+        try {
+            HelpContent helpContent = new HelpContent();
+            Map<HelpType, String> help = new HashMap<>();
+            helpContent.setHelp(help);
+            ok=true;
+        }catch (Exception e){
+            Assert.fail("Error in setHelp");
+        }
+        Assert.assertTrue(ok, "Error in setHelp");
     }
-
-    public StorageExecutedQuery(StorageExecutedQuery storageExecutedQuery) {
-        this((StorageInProgressQuery) storageExecutedQuery);
-    }
-
 }

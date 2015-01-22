@@ -179,30 +179,28 @@ public final class StringUtils {
      * @param objectB The second object.
      * @return A {@link difflib.Patch}.
      */
-    public static difflib.Patch objectDiff(Object objectA, Object objectB) {
-        String[] a = serializeObject2String(objectA).split("\n");
-        String[] b = serializeObject2String(objectB).split("\n");
-        ArrayList<String> lista = new ArrayList<>(Arrays.asList(a));
-        ArrayList<String> listb = new ArrayList<>(Arrays.asList(b));
+    public static difflib.Patch objectDiff(Object oa, Object ob){
+        String[] a = serializeObject2String(oa).split("\n");
+        String[] b = serializeObject2String(ob).split("\n");
+        ArrayList<String> lista = new ArrayList<String>(Arrays.asList(a));
+        ArrayList<String> listb = new ArrayList<String>(Arrays.asList(b));
         return DiffUtils.diff(lista, listb);
     }
-
+    
     public static String patchObject(Object a, Patch diff) throws PatchFailedException {
         String[] lista = StringUtils.serializeObject2String(a).split("\n"); //apply patch to a
         List<String> partialresult = (List<String>) diff.applyTo(Arrays.asList(lista));
-        String jsonresult = "";
-        for (String res : partialresult) {
-            jsonresult += res;
-        }
-        return jsonresult;
+        StringBuffer jsonresult=new StringBuffer();
+        for(String res:partialresult){ jsonresult.append(res); }
+        return jsonresult.toString();
     }
 
     public static Object deserializeObjectFromString(String serializedObject, Class objectsClass) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(mapper.readTree(serializedObject), ArrayList.class);
+            return mapper.readValue(mapper.readTree(serializedObject), List.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.info(e.getMessage(),e);
         }
         return null;
     }
@@ -215,7 +213,7 @@ public final class StringUtils {
         try {
             serialized = mapper.writeValueAsString(obj);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.info(e.getMessage(),e);
         }
         return serialized;
     }
@@ -227,7 +225,7 @@ public final class StringUtils {
      * @return A {@link com.stratio.crossdata.common.metadata.ColumnType}.
      */
     public static ColumnType convertXdTypeToColumnType(String xdType) {
-        ColumnType ct = ColumnType.NATIVE;
+        ColumnType ct = null;
         String stringType = xdType.replace("Tuple", "").replace("[", "").replace("]", "").trim();
         if (stringType.equalsIgnoreCase("BigInt")) {
             ct = ColumnType.BIGINT;
@@ -251,5 +249,12 @@ public final class StringUtils {
             ct = ColumnType.MAP;
         }
         return ct;
+    }
+
+    public static String getReturningTypeFromSignature(String signature) {
+        return signature.substring(signature.indexOf(':')+1)
+                .replace("Tuple[", "")
+                .replace("]", "")
+                .trim();
     }
 }

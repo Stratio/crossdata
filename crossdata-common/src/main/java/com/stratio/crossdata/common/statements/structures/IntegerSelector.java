@@ -110,7 +110,7 @@ public class IntegerSelector extends Selector {
         if (alias != null) {
             result = alias.hashCode();
         }
-        result = 31 * result + (value ^ (value >>> 32));
+        result+=value;
         return result;
     }
 }

@@ -161,7 +161,9 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         Result result = ApiManager.processRequest(cmd);
 
-        assertTrue(result instanceof ErrorResult);
+        assertTrue(result instanceof ErrorResult,
+                "ErrorResult expected." + System.lineSeparator() +
+                "Found: " + result.getClass().getCanonicalName());
     }
 
     @Test
@@ -274,7 +276,9 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
         Result result = ApiManager.processRequest(cmd);
 
-        assertTrue(result instanceof ErrorResult);
+        assertTrue(result instanceof ErrorResult,
+                "ErrorResult expected." + System.lineSeparator() +
+                "Found: " + result.getClass().getCanonicalName());
     }
 
     @Test
@@ -302,14 +306,13 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         assertTrue(str.equals(expectedAnswer), System.lineSeparator() + "Expected: " + expectedAnswer +
                 System.lineSeparator() + "   Found: " + str);
 
-        assertTrue(MetadataManager.MANAGER.getCatalogs().isEmpty());
-        assertTrue(MetadataManager.MANAGER.getClusters().isEmpty());
-        assertTrue(MetadataManager.MANAGER.getColumns().isEmpty());
-        assertTrue(MetadataManager.MANAGER.getDatastores().isEmpty());
-        assertTrue(MetadataManager.MANAGER.getNodes().isEmpty());
-        assertTrue(MetadataManager.MANAGER.getTables().isEmpty());
-        assertTrue(MetadataManager.MANAGER.getIndexes().isEmpty());
-        assertTrue(MetadataManager.MANAGER.getFunctions().isEmpty());
+        assertTrue(MetadataManager.MANAGER.getCatalogs().isEmpty(), "Catalogs should be empty.");
+        assertTrue(MetadataManager.MANAGER.getClusters().isEmpty(), "Clusters should be empty.");
+        assertTrue(MetadataManager.MANAGER.getColumns().isEmpty(), "Columns should be empty");
+        assertTrue(MetadataManager.MANAGER.getDatastores().isEmpty(), "Datastores should be empty");
+        assertTrue(MetadataManager.MANAGER.getNodes().isEmpty(), "Nodes should be empty");
+        assertTrue(MetadataManager.MANAGER.getTables().isEmpty(), "Tables should be empty");
+        assertTrue(MetadataManager.MANAGER.getIndexes().isEmpty(), "Indexes should be empty");
 
         Name n = new ConnectorName("connectorTest2");
         assertTrue(MetadataManager.MANAGER.exists(n), "MetadataManager should maintain the connector basic info");
@@ -318,7 +321,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
     @Test
     public void testConstructor() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
-        assertNotNull(ApiManager);
+        assertNotNull(ApiManager, "ApiManager shouldn't be null");
     }
 
     @Test
@@ -345,6 +348,8 @@ public class APIManagerTest extends MetadataManagerTestHelper {
         CommandResult cmdR = (CommandResult) result;
         String resultStr = (String) cmdR.getResult();
 
-        assertTrue(resultStr.startsWith("CrossdataManifest added"));
+        assertTrue(resultStr.startsWith("CrossdataManifest added"),
+                "Expected: " + "CrossdataManifest added" + System.lineSeparator() +
+                "Found:    " + resultStr);
     }
 }

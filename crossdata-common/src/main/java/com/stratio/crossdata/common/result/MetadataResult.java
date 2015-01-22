@@ -127,11 +127,18 @@ public final class MetadataResult extends Result {
      */
     private List<ColumnMetadata> columnList = null;
 
+    private boolean noOperation = false;
+
     /**
      * Private constructor of the factory.
      */
     private MetadataResult(final int operation) {
+        this(operation, false);
+    }
+
+    private MetadataResult(final int operation, boolean noOperation) {
         this.operation = operation;
+        this.noOperation = noOperation;
     }
 
     /**
@@ -141,8 +148,11 @@ public final class MetadataResult extends Result {
      * @return A {@link com.stratio.crossdata.common.result.MetadataResult}.
      */
     public static MetadataResult createSuccessMetadataResult(final int operation) {
-        return new MetadataResult
-                (operation);
+        return new MetadataResult(operation);
+    }
+
+    public static MetadataResult createSuccessMetadataResult(final int operation, boolean noOperation) {
+        return new MetadataResult(operation, noOperation);
     }
 
     public List<String> getCatalogList() {
@@ -209,6 +219,9 @@ public final class MetadataResult extends Result {
      */
     @Override
     public String toString() {
+        if(noOperation){
+            return "None operation was necessary";
+        }
         switch (this.operation) {
 
         case MetadataResult.OPERATION_CREATE_CATALOG:

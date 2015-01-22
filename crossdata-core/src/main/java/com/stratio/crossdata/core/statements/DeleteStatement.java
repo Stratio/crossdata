@@ -20,12 +20,9 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.List;
 
-import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.utils.StringUtils;
-import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code SELECT} statement from the CROSSDATA language. This class recognizes the
@@ -37,18 +34,13 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 public class DeleteStatement extends StorageStatement implements ITableStatement {
 
     /**
-     * The name of the targe table.
-     */
-    private TableName tableName = null;
-
-    /**
      * The list of {@link com.stratio.crossdata.common.statements.structures.Relation} found
      * in the WHERE clause.
      */
     private List<Relation> whereClauses;
 
     public DeleteStatement(TableName tableName, List<Relation> whereClauses) {
-        this.tableName = tableName;
+        this.tableStatement.setTableName(tableName);
         this.whereClauses = whereClauses;
     }
 
@@ -72,46 +64,12 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
         if (catalogInc) {
             sb.append(catalog).append(".");
         }
-        sb.append(tableName);
+        sb.append(tableStatement.getTableName());
         if (!whereClauses.isEmpty()) {
             sb.append(" WHERE ");
             sb.append(StringUtils.stringList(whereClauses, " AND "));
         }
         return sb.toString();
-    }
-
-    @Override
-    public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_TABLE)
-                .add(ValidationTypes.MUST_EXIST_COLUMN);
-    }
-
-    public TableName getTableName() {
-        return tableName;
-    }
-
-    /**
-     * Set the name of the table.
-     *
-     * @param tableName The name of the table.
-     */
-    public void setTableName(TableName tableName) {
-        this.tableName = tableName;
-    }
-
-    @Override
-    public CatalogName getEffectiveCatalog() {
-        CatalogName effective;
-        if (tableName != null) {
-            effective = tableName.getCatalogName();
-        } else {
-            effective = catalog;
-        }
-        if (sessionCatalog != null) {
-            effective = sessionCatalog;
-        }
-        return effective;
     }
 
 }

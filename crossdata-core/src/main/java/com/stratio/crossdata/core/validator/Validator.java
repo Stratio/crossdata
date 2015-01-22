@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.core.validator;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -50,6 +51,8 @@ import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
@@ -171,7 +174,6 @@ public class Validator {
             ((SelectValidatedQuery) validatedQuery).getTables().addAll(fields.getTableNames());
             ((SelectValidatedQuery) validatedQuery).getRelations().addAll(fields.getWhere());
             ((SelectValidatedQuery) validatedQuery).setJoin(fields.getJoin());
-            ((SelectValidatedQuery) validatedQuery).getSignatures().putAll(fields.getSignatures());
         }
 
         return validatedQuery;
@@ -446,6 +448,9 @@ public class Validator {
             CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
             tableName = createIndexStatement.getTableName();
             hasIfExists = createIndexStatement.isCreateIfNotExists();
+        } else if(stmt instanceof DropIndexStatement) {
+            DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
+            tableName = dropIndexStatement.getName().getTableName();
         } else if (stmt instanceof UpdateTableStatement) {
             UpdateTableStatement updateTableStatement = (UpdateTableStatement) stmt;
             tableName = updateTableStatement.getTableName();
@@ -492,6 +497,12 @@ public class Validator {
         } else if (stmt instanceof ImportMetadataStatement) {
             ImportMetadataStatement importMetadataStatement = (ImportMetadataStatement) stmt;
             catalogName = importMetadataStatement.getCatalogName();
+        } else if (stmt instanceof CreateIndexStatement) {
+            CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
+            catalogName = createIndexStatement.getTableName().getCatalogName();
+        } else if (stmt instanceof DropIndexStatement){
+            DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
+            catalogName = dropIndexStatement.getName().getTableName().getCatalogName();
         } else {
             //TODO: should through exception?
             //Correctness - Method call passes null for notnull parameter
@@ -538,29 +549,33 @@ public class Validator {
             List<ColumnName> columnNameList = insertIntoStatement.getIds();
             List<Selector> selectorList = insertIntoStatement.getCellValues();
 
+            List<Selector> resultingList = new ArrayList<>();
             for (int i = 0; i < columnNameList.size(); i++) {
                 ColumnName columnName = columnNameList.get(i);
                 Selector valueSelector = selectorList.get(i);
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
 
-                validateColumnType(columnMetadata, valueSelector);
+                Selector resultingSelector = validateColumnType(columnMetadata, valueSelector, true);
+                resultingList.add(resultingSelector);
             }
+            insertIntoStatement.setCellValues(resultingList);
         }
     }
 
-    private void validateColumnType(ColumnMetadata columnMetadata, Selector right)
+    private Selector validateColumnType(ColumnMetadata columnMetadata, Selector querySelector, boolean tryConversion)
             throws BadFormatException, NotMatchDataTypeException {
         NotMatchDataTypeException notMatchDataTypeException = null;
         BadFormatException badFormatException = null;
-        switch (right.getType()) {
+        Selector resultingSelector = querySelector;
+        switch (querySelector.getType()) {
         case FUNCTION:
-            LOG.info("Function is not validate yet");
+            LOG.info("Functions are not supported yet for this statement.");
             break;
         case COLUMN:
-            ColumnName rightColumnName = ((ColumnSelector) right).getName();
-            ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
+            ColumnName queryColumnName = ((ColumnSelector) querySelector).getName();
+            ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(queryColumnName);
             if (columnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
-                notMatchDataTypeException = new NotMatchDataTypeException(rightColumnName);
+                notMatchDataTypeException = new NotMatchDataTypeException(queryColumnName);
             }
             break;
         case ASTERISK:
@@ -579,7 +594,14 @@ public class Validator {
         case INTEGER:
             if (columnMetadata.getColumnType() != ColumnType.INT &&
                     columnMetadata.getColumnType() != ColumnType.BIGINT) {
-                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
+                if(tryConversion){
+                    resultingSelector = convertIntegerSelector(
+                            (IntegerSelector) querySelector,
+                            columnMetadata.getColumnType(),
+                            columnMetadata.getName());
+                } else {
+                    notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
+                }
             }
             break;
         case FLOATING_POINT:
@@ -600,6 +622,18 @@ public class Validator {
         } else if (badFormatException != null) {
             throw badFormatException;
         }
+        return resultingSelector;
+    }
+
+    private Selector convertIntegerSelector(IntegerSelector querySelector, ColumnType columnType, ColumnName name)
+            throws NotMatchDataTypeException {
+        Selector resultingSelector;
+        if(columnType == ColumnType.DOUBLE || columnType == ColumnType.FLOAT){
+            resultingSelector = new FloatingPointSelector(querySelector.getTableName(), querySelector.getValue());
+        } else {
+            throw new NotMatchDataTypeException(name);
+        }
+        return resultingSelector;
     }
 
 }

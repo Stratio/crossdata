@@ -28,15 +28,13 @@ import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
 import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{replyConnectorName, getConnectorName,Connect}
-import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
+import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
-import java.util
-import com.stratio.crossdata.common.metadata.NodeMetadata
 import java.util.UUID
 
 object ConnectorManagerActor {

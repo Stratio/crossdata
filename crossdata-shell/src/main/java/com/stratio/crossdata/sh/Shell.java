@@ -87,7 +87,7 @@ public class Shell {
     /**
      * History date format.
      */
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
+    public SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
 
     /**
      * Whether the asynchronous interface should be used.
@@ -95,7 +95,7 @@ public class Shell {
     private boolean useAsync = false;
 
     /**
-     * Default String for the Crossdata prompt
+     * Default String for the Crossdata prompt.
      */
     private static final String DEFAULT_PROMPT = "xdsh:";
 
@@ -285,7 +285,7 @@ public class Shell {
             LOG.info(ConsoleUtils.stringResult(connectionResult));
         } catch (ConnectionException ce) {
             result = false;
-            LOG.error(ce.getMessage());
+            LOG.error(ce.getMessage(),ce);
         }
         return result;
     }

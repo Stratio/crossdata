@@ -18,9 +18,11 @@
 
 package com.stratio.crossdata.core.statements;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -36,36 +38,32 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 /**
  * Class that models a {@code CREATE TABLE} statement of the CROSSDATA language.
  */
-public class CreateTableStatement extends MetadataStatement implements ITableStatement {
+public class CreateTableStatement extends AbstractMetadataTableStatement implements ITableStatement {
 
     private TableType tableType = TableType.DATABASE;
 
-    /**
-     * The name of the target table.
-     */
-    private TableName tableName;
 
     private ClusterName clusterName;
 
     /**
      * A map with the name of the columns in the table and the associated data type.
      */
-    private LinkedHashMap<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
+    private Map<ColumnName, ColumnType> columnsWithType = new LinkedHashMap<>();
 
     /**
      * The list of columns that are part of the primary key.
      */
-    private LinkedList<ColumnName> primaryKey = new LinkedList<>();
+    private Set<ColumnName> primaryKey = new LinkedHashSet<>();
 
     /**
      * The list of columns that are part of the partition key.
      */
-    private LinkedList<ColumnName> partitionKey = new LinkedList<>();
+    private Set<ColumnName> partitionKey = new LinkedHashSet<>();
 
     /**
      * The list of columns that are part of the clustering key.
      */
-    private LinkedList<ColumnName> clusterKey = new LinkedList<>();
+    private Set<ColumnName> clusterKey = new LinkedHashSet<>();
 
     /**
      * The list of {@link com.stratio.crossdata.core.structures.Property} of the table.
@@ -88,10 +86,10 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      */
     public CreateTableStatement(TableType tableType, TableName tableName, ClusterName clusterName,
             LinkedHashMap<ColumnName, ColumnType> columns,
-            LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
+            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey) {
         this.command = false;
         this.tableType = tableType;
-        this.tableName = tableName;
+        this.tableStatement.setTableName(tableName);
         this.clusterName = clusterName;
         this.columnsWithType = columns;
         this.partitionKey = partitionKey;
@@ -114,15 +112,15 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      */
     public CreateTableStatement(TableName tableName, ClusterName clusterName,
             LinkedHashMap<ColumnName, ColumnType> columns,
-            LinkedList<ColumnName> partitionKey, LinkedList<ColumnName> clusterKey) {
+            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey) {
         this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey);
     }
 
-    public LinkedList<ColumnName> getPartitionKey() {
+    public Set<ColumnName> getPartitionKey() {
         return partitionKey;
     }
 
-    public LinkedList<ColumnName> getClusterKey() {
+    public Set<ColumnName> getClusterKey() {
         return clusterKey;
     }
 
@@ -130,17 +128,10 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         return tableType;
     }
 
-    public LinkedHashMap<ColumnName, ColumnType> getColumnsWithTypes() {
+    public Map<ColumnName, ColumnType> getColumnsWithTypes() {
         return columnsWithType;
     }
 
-    public TableName getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(TableName tableName) {
-        this.tableName = tableName;
-    }
 
     public ClusterName getClusterName() {
         return clusterName;
@@ -161,7 +152,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
      * @param properties The list.
      */
     public void setProperties(String properties) {
-        this.properties = StringUtils.convertJsonToOptions(tableName, properties);
+        this.properties = StringUtils.convertJsonToOptions(tableStatement.getTableName(), properties);
     }
 
     public void setIfNotExists(boolean ifNotExists) {
@@ -185,7 +176,7 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
         if (ifNotExists) {
             sb.append("IF NOT EXISTS ");
         }
-        sb.append(tableName.getQualifiedName());
+        sb.append(tableStatement.getTableName().getQualifiedName());
         sb.append(" ON CLUSTER ").append(clusterName);
 
         sb.append("(");
@@ -207,24 +198,15 @@ public class CreateTableStatement extends MetadataStatement implements ITableSta
     }
 
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_CLUSTER)
-                .add(ValidationTypes.MUST_NOT_EXIST_TABLE);
+        ValidationRequirements requirements = new ValidationRequirements()
+                .add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_CLUSTER);
+        if(!isIfNotExists()){
+            requirements = requirements.add(ValidationTypes.MUST_NOT_EXIST_TABLE);
+        }
+        return requirements;
     }
 
-    @Override
-    public CatalogName getEffectiveCatalog() {
-        CatalogName effective;
-        if (tableName != null) {
-            effective = tableName.getCatalogName();
-        } else {
-            effective = catalog;
-        }
-        if (sessionCatalog != null) {
-            effective = sessionCatalog;
-        }
-        return effective;
-    }
 
     public boolean isIfNotExists() {
         return ifNotExists;

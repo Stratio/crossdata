@@ -153,11 +153,15 @@ public class InsertIntoStatement extends StorageStatement {
         return sb.toString();
     }
 
+    public void setCellValues(List<Selector> cellValues) {
+        this.cellValues = cellValues;
+    }
+
     @Override
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_TABLE).add
-                        (ValidationTypes.VALIDATE_TYPES);
+                .add(ValidationTypes.MUST_EXIST_TABLE)
+                .add(ValidationTypes.VALIDATE_TYPES);
     }
 
     public TableName getTableName() {

@@ -111,15 +111,6 @@ public class NameTest {
     }
 
     @Test
-    public void functionNameTest(){
-        Name name1 = new FunctionName("f1");
-        Name name2 = new FunctionName("f1");
-        Name name3 = new FunctionName("f3");
-        Assert.assertTrue(name1.equals(name2));
-        Assert.assertFalse(name1.equals(name3));
-    }
-
-    @Test
     public void indexNameTest(){
         Name name1 = new IndexName(new ColumnName("catalog","table","column"));
         Name name2 = new IndexName(new ColumnName("catalog","table","column"));

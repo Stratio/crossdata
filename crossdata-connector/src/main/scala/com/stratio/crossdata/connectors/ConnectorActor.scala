@@ -30,24 +30,30 @@ import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata, _}
 import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{ACK, AlterCatalog, AlterTable, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DeleteRows, DropCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, ProvideCatalogMetadata, ProvideCatalogsMetadata, ProvideMetadata, ProvideTableMetadata, Truncate, Update, UpdateMetadata, getConnectorName, replyConnectorName, _}
+import difflib.Patch
 import org.apache.log4j.Logger
 
+import scala.collection.JavaConversions._
 import scala.collection.mutable.{ListMap, Map, Set}
 import scala.concurrent.duration.DurationInt
-import com.codahale.metrics.{MetricRegistry, Gauge}
-import com.stratio.crossdata.common.utils.Metrics
+
 
 object State extends Enumeration {
   type state = Value
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector, connectedServers: Set[ActorRef]):
+  def props(connectorName: String, connector: IConnector, connectedServers: Set[String]):
       Props = Props(new ConnectorActor(connectorName, connector, connectedServers))
 }
 
-class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[ActorRef])
+object ClassExtractor{
+ def unapply(myClass:Class[_]):Option[String]=Option(myClass.toString)
+}
+
+class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String])
   extends HeartbeatActor with ActorLogging with IResultHandler {
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
@@ -68,45 +74,121 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
   }
 
-  override def preStart(): Unit = {
-    Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
+  override def preStart():Unit = {
+    Cluster(context.system).subscribe(self,classOf[ClusterDomainEvent])
   }
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
       val catalogname = tableName.getCatalogName
-      return metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tableName)
+      val catalogmetadata=metadata.get(catalogname).asInstanceOf[CatalogMetadata]
+      val tablemetadata=catalogmetadata.getTables.get(tableName)
+      if(tablemetadata.getClusterRef==clusterName)
+        return tablemetadata
+      else
+        return null
   }
 
-  def getCatalogMetadata(clusterName: ClusterName, catalogName: CatalogName): CatalogMetadata={
+  def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata={
     return metadata.get(catalogName).asInstanceOf[CatalogMetadata]
   }
 
   def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
-    //TODO: Return the list of catalogs.
-    return null;
-  }
-
-  def getConnectionStatus(): ConnectionStatus = {
-    var status: ConnectionStatus = ConnectionStatus.CONNECTED
-    if (connectedServers.isEmpty){
-      status = ConnectionStatus.DISCONNECTED
-    }
-    status
-  }
-
-  override def receive: Receive = super.receive orElse {
-
-    //TODO:
-    case u: PatchMetadata=> {
-      u.metadataClass match{
-        //case tmd:com.stratio.crossdata.common.metadata.TableMetadata => {
-        case clss:Class[TableMetadata]=> {
-          System.out.println("++>>>>>>>>>")
-        }
-        case _=> {
-          System.out.println("-->>>>>>>>>")
+    val r=new util.HashMap[CatalogName,CatalogMetadata]()
+    //for(entry:java.util.Map.Entry[FirstLevelName,IMetadata] <- metadata.entrySet()){
+    for((k,v) <- metadata){
+       k match {
+        case name:CatalogName=>{
+          val catalogmetadata=metadata.get(k).asInstanceOf[CatalogMetadata]
+          val tables=catalogmetadata.getTables
+          for((tablename,tablemetadata) <- tables){
+            if(tables.get(tablename).getClusterRef==cluster){
+              r.put(name,catalogmetadata)
+            }
+          }
         }
       }
+    }
+    return new util.ArrayList(r.values())
+  }
+
+  def class2String(clazz:Class[_]):String=clazz.getName
+  val patchFunctionHash=new java.util.HashMap[String,(Patch,Name)=>Boolean]()
+  //TODO: could it be more generic?
+  patchFunctionHash.put(class2String(classOf[CatalogMetadata]),(diff:Patch,catalogname:Name)=>{
+    val name=catalogname.asInstanceOf[CatalogName]
+    val catalog=metadata.get(catalogname).asInstanceOf[CatalogMetadata]
+    val jsonresult = StringUtils.patchObject(catalog, diff); // patch object
+    val result= //deserialize
+      StringUtils.deserializeObjectFromString(jsonresult,classOf[CatalogMetadata])
+    metadata.put(name,result.asInstanceOf[CatalogMetadata])
+   true
+  })
+  patchFunctionHash.put(class2String(classOf[ClusterMetadata]),(diff:Patch,clustername:Name)=>{
+    val name=clustername.asInstanceOf[ClusterName]
+    val cluster=metadata.get(clustername).asInstanceOf[ClusterMetadata]
+    val jsonresult = StringUtils.patchObject(cluster, diff); // patch object
+    val result= //deserialize
+      StringUtils.deserializeObjectFromString(jsonresult,classOf[ClusterMetadata])
+    metadata.put(name,result.asInstanceOf[ClusterMetadata])
+   true
+  })
+  patchFunctionHash.put(class2String(classOf[DataStoreMetadata]),(diff:Patch,datastorename:Name)=>{
+    val name=datastorename.asInstanceOf[DataStoreName]
+    val datastore=metadata.get(datastorename).asInstanceOf[DataStoreMetadata]
+    val jsonresult = StringUtils.patchObject(datastore, diff); // patch object
+    val result= //deserialize
+      StringUtils.deserializeObjectFromString(jsonresult,classOf[DataStoreMetadata])
+    metadata.put(name,result.asInstanceOf[DataStoreMetadata])
+   true
+  })
+  patchFunctionHash.put(class2String(classOf[TableMetadata]),(diff:Patch,tablename:Name)=>{
+    val name=tablename.asInstanceOf[TableName]
+    val catalogname = name.getCatalogName
+    val table=metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(name)
+    val jsonresult = StringUtils.patchObject(table, diff); // patch object
+    val result= //deserialize
+      StringUtils.deserializeObjectFromString(jsonresult,classOf[TableMetadata])
+    metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.put(
+      name,result.asInstanceOf[TableMetadata]
+    )
+    true
+  })
+  patchFunctionHash.put(class2String(classOf[ColumnMetadata]),(diff:Patch,columnname:Name)=>{
+    val name = columnname.asInstanceOf[ColumnName]
+    val tablename = name.getTableName
+    val catalogname = tablename.getCatalogName
+    val table=metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename)
+    val column=table.getColumns.get(name)
+    val jsonresult = StringUtils.patchObject(column, diff); // patch object
+    val result= //deserialize
+      StringUtils.deserializeObjectFromString(jsonresult,classOf[TableMetadata])
+    metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getColumns
+      .put( name,result.asInstanceOf[ColumnMetadata] )
+    true
+  })
+  patchFunctionHash.put(class2String(classOf[IndexMetadata]),(diff:Patch,indexname:Name)=>{
+    val name = indexname.asInstanceOf[IndexName]
+    val tablename = name.getTableName
+    val catalogname = tablename.getCatalogName
+    val table=metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename)
+    val index=table.getIndexes.get(name)
+    val jsonresult = StringUtils.patchObject(index, diff); // patch object
+    val result= //deserialize
+      StringUtils.deserializeObjectFromString(jsonresult,classOf[TableMetadata])
+    metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.get(tablename).getIndexes
+      .put( name,result.asInstanceOf[IndexMetadata] )
+    true
+  })
+
+  override def receive: Receive = super.receive orElse {
+    case u: PatchMetadata=> {
+      //TODO: continue
+      val r=try{
+        patchFunctionHash(class2String(u.metadataClass))(u.diffs,u.name)
+      }catch{
+        case _=>false
+      }
+      println("result="+r)
     }
 
     case u: UpdateMetadata=> {
@@ -123,12 +205,13 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         case _:DataStoreMetadata =>{
           metadata.put(u.metadata.asInstanceOf[DataStoreMetadata].getName,u.metadata)
         }
+        /*
         case _:NodeMetadata =>{
           metadata.put(u.metadata.asInstanceOf[NodeMetadata].getName,u.metadata)
         }
+        */
         case _:TableMetadata => {
           val tablename = u.metadata.asInstanceOf[TableMetadata].getName
-          //val clusterref = u.metadata.asInstanceOf[TableMetadata].getClusterRef
           val catalogname = tablename.getCatalogName
           metadata.get(catalogname).asInstanceOf[CatalogMetadata].getTables.put(
             tablename,u.metadata.asInstanceOf[TableMetadata]
@@ -164,7 +247,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         sender ! result //TODO once persisted sessionId,
       } catch {
         case e: ConnectionException => {
-          val result = Result.createErrorResult(e)
+          logger.error(e.getMessage)
+          val result = Result.createConnectionErrorResult(e.getMessage)
           result.setQueryId(connectRequest.queryId)
           sender ! result
         }
@@ -207,7 +291,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
     case msg: getConnectorName => {
       logger.info(sender + " asked for my name")
-      connectedServers += sender
+      connectedServers += sender.path.address.toString
+      logger.info("Connected to Servers: " + connectedServers)
       sender ! replyConnectorName(connectorName)
     }
     case MemberUp(member) => {
@@ -219,13 +304,14 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
     case UnreachableMember(member) => {
       if(member.hasRole("server")){
-        connectedServers -= sender
+        connectedServers -= member.address.toString
+        logger.info("Connected to Servers: " + connectedServers)
       }
       logger.info("Member detected as unreachable: " + member)
     }
     case MemberRemoved(member, previousStatus) => {
       if(member.hasRole("server")){
-        connectedServers -= sender
+        connectedServers -= member.address.toString
       }
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
     }
@@ -269,7 +355,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       s ! result
     } catch {
       case e: Exception => {
-        val result = Result.createErrorResult(e)
+        val result=Result.createExecutionErrorResult(e.getMessage)
         result.setQueryId(ex.queryId)
         s ! result
       }
@@ -364,7 +450,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
           eng.truncate(clustername, table)
         }
       }
-      val result = StorageResult.createSuccessFulStorageResult("STORED successfully");
+      val result = StorageResult.createSuccessfulStorageResult("STORED successfully");
       result.setQueryId(qId)
       s ! result
     } catch {

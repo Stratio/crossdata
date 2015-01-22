@@ -86,12 +86,12 @@ public class BasicValidatorTest {
         Lock lock = Grid.INSTANCE.lock("crossDatatest");
         TransactionManager tm = Grid.INSTANCE.transactionManager("crossDatatest");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
-        MetadataManager.MANAGER.createDataStore(createDataStoreMetadata());
-        MetadataManager.MANAGER.createConnector(createConnectorMetadata());
-        MetadataManager.MANAGER.createCluster(createClusterMetadata());
-        MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata());
-        MetadataManager.MANAGER.createTable(createTable());
-        MetadataManager.MANAGER.createTable(createJoinTable());
+        MetadataManager.MANAGER.createDataStore(createDataStoreMetadata(), false);
+        MetadataManager.MANAGER.createConnector(createConnectorMetadata(), false);
+        MetadataManager.MANAGER.createCluster(createClusterMetadata(), false);
+        MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata(), false);
+        MetadataManager.MANAGER.createTable(createTable(), false);
+        MetadataManager.MANAGER.createTable(createJoinTable(), false);
     }
 
     private static CatalogMetadata generateCatalogsMetadata() {

@@ -99,10 +99,9 @@ public class ConnectorMetadata implements IMetadata {
     private Set<String> excludedFunctions;
 
     /**
-     * Whether the manifest of this connector was already added or not
+     * Whether the manifest of this connector was already added or not.
      */
     private boolean manifestAdded = false;
-    //private List<String> excludedFunctions;
 
     /**
      * Class constructor.
@@ -215,9 +214,6 @@ public class ConnectorMetadata implements IMetadata {
         }
 
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
-        if(this.dataStoreRefs == null){
-            this.dataStoreRefs = new HashSet<>();
-        }
 
         if (requiredProperties != null) {
             this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
@@ -522,6 +518,4 @@ public class ConnectorMetadata implements IMetadata {
         sb.append(name).append(" status: ").append(status).append(" actorRef: ").append(actorRef);
         return sb.toString();
     }
-
-
 }
