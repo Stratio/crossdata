@@ -31,14 +31,26 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public abstract class Selector implements Serializable {
 
+    /**
+     * Serial version UID in order to be serializable.
+     */
     private static final long serialVersionUID = -2200687442507159727L;
+
     /**
      * The alias to be applied to the current Selector.
      */
     protected String alias = null;
 
+    /**
+     * The associated {@link com.stratio.crossdata.common.data.TableName}.
+     */
     protected TableName tableName;
 
+    /**
+     * Class constructor.
+     *
+     * @param tableName The associated {@link com.stratio.crossdata.common.data.TableName}.
+     */
     protected Selector(TableName tableName) {
         this.tableName = tableName;
     }
@@ -52,10 +64,20 @@ public abstract class Selector implements Serializable {
         return alias;
     }
 
+    /**
+     * Get the associated table name.
+     *
+     * @return A {@link com.stratio.crossdata.common.data.TableName}.
+     */
     public TableName getTableName() {
         return tableName;
     }
 
+    /**
+     * Set the associated table name.
+     *
+     * @param tableName A {@link com.stratio.crossdata.common.data.TableName}.
+     */
     public void setTableName(TableName tableName) {
         this.tableName = tableName;
     }
@@ -81,10 +103,15 @@ public abstract class Selector implements Serializable {
      *
      * @return A set of {@link com.stratio.crossdata.common.data.TableName}.
      */
-    public Set<TableName> getSelectorTables(){
+    public Set<TableName> getSelectorTables() {
         return new HashSet<>();
     }
 
+    /**
+     * Get a string representation of the tables associated with the selector.
+     *
+     * @return A string with the table qualified names separated by -.
+     */
     public String getSelectorTablesAsString() {
         StringBuilder sb = new StringBuilder();
         Iterator<TableName> it = getSelectorTables().iterator();
@@ -97,11 +124,21 @@ public abstract class Selector implements Serializable {
         return sb.toString();
     }
 
-    public String getStringValue(){
+    /**
+     * Get the string value of the current selector.
+     *
+     * @return A string.
+     */
+    public String getStringValue() {
         return toString();
     }
 
-    public ColumnName getColumnName(){
+    /**
+     * Get the column name associated with the selector.
+     *
+     * @return A {@link com.stratio.crossdata.common.data.ColumnName}.
+     */
+    public ColumnName getColumnName() {
         return new ColumnName(tableName, alias);
     }
 
