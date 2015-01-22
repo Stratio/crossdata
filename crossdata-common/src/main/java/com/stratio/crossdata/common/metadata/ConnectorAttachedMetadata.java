@@ -25,6 +25,9 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * ConnectorAttachedMetadata class.
+ */
 public class ConnectorAttachedMetadata implements Serializable {
 
     private static final long serialVersionUID = -2629286778891668361L;
@@ -32,6 +35,12 @@ public class ConnectorAttachedMetadata implements Serializable {
     private final ClusterName clusterRef;
     private final Map<Selector, Selector> properties;
 
+    /**
+     * Constructor class.
+     * @param connectorRef The connector name.
+     * @param clusterRef The cluster where the connector will be attached.
+     * @param properties The properties of the connector.
+     */
     public ConnectorAttachedMetadata(ConnectorName connectorRef, ClusterName clusterRef,
             Map<Selector, Selector> properties) {
         this.connectorRef = connectorRef;

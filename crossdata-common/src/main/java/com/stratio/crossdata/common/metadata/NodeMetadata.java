@@ -21,28 +21,52 @@ package com.stratio.crossdata.common.metadata;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.NodeName;
 
+/**
+ * NodeMetadata class.
+ */
 public class NodeMetadata implements IMetadata {
 
     private final NodeName name;
     private Status status;
 
+    /**
+     * Constructor Class.
+     * @param name The node name.
+     * @param status The status.
+     */
     public NodeMetadata(NodeName name, Status status) {
         this.name = name;
         this.status = status;
     }
 
+    /**
+     * Constructor class.
+     * @param name The Node name.
+     */
     public NodeMetadata(NodeName name) {
         this(name, Status.OFFLINE);
     }
 
+    /**
+     * Get the node name.
+     * @return A {@link com.stratio.crossdata.common.data.NodeName} .
+     */
     public NodeName getName() {
         return name;
     }
 
+    /**
+     * Get the status of the node.
+     * @return A {@link com.stratio.crossdata.common.data.Status} .
+     */
     public Status getStatus() {
         return status;
     }
 
+    /**
+     * Set the status to the node.
+     * @param status The {@link com.stratio.crossdata.common.data.Status} .
+     */
     public void setStatus(Status status) {
         this.status = status;
     }

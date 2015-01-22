@@ -43,6 +43,7 @@ public class FunctionSelector extends Selector {
      * Class constructor.
      *
      * @param functionName Name of the includes.
+     * @param functionColumns A list of selectors with the columns affected.
      */
     public FunctionSelector(String functionName, List<Selector> functionColumns) {
         this(null, functionName, functionColumns);
@@ -51,7 +52,9 @@ public class FunctionSelector extends Selector {
     /**
      * Class constructor.
      *
+     * @param tableName The table name.
      * @param functionName Name of the includes.
+     * @param functionColumns A list of selectors with the columns affected.
      */
     public FunctionSelector(TableName tableName, String functionName, List<Selector> functionColumns) {
         super(tableName);
@@ -60,6 +63,10 @@ public class FunctionSelector extends Selector {
         this.functionColumns = functionColumns;
     }
 
+    /**
+     * Get the function name.
+     * @return A string.
+     */
     public String getFunctionName() {
         return functionName;
     }
@@ -87,6 +94,10 @@ public class FunctionSelector extends Selector {
         return result;
     }
 
+    /**
+     * Get the table name.
+     * @return A {@link com.stratio.crossdata.common.data.TableName} .
+     */
     public TableName getTableName() {
         return tableName;
     }

@@ -25,6 +25,9 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * Cluster attached metadata class to manage the info of the clusters attached.
+ */
 public class ClusterAttachedMetadata implements Serializable {
 
     private static final long serialVersionUID = -6881113312602801635L;
@@ -32,6 +35,12 @@ public class ClusterAttachedMetadata implements Serializable {
     private final DataStoreName dataStoreRef;
     private final Map<Selector, Selector> properties;
 
+    /**
+     * Constructor class.
+     * @param clusterRef The cluster attached.
+     * @param dataStoreRef The datastore that is reffered by the cluster.
+     * @param properties The properties of the attached cluster.
+     */
     public ClusterAttachedMetadata(ClusterName clusterRef,
             DataStoreName dataStoreRef,
             Map<Selector, Selector> properties) {

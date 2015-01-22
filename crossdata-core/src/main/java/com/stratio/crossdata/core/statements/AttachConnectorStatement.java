@@ -28,9 +28,19 @@ import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
+/**
+ * Class that implement the statement logic of Attach connector to crossdata.
+ */
 public class AttachConnectorStatement extends MetadataStatement {
 
+    /**
+     * The connector name.
+     */
     private ConnectorName connectorName;
+
+    /**
+     * The cluster name where the connector will be attached.
+     */
     private ClusterName clusterName;
 
     /**
@@ -38,12 +48,24 @@ public class AttachConnectorStatement extends MetadataStatement {
      */
     private Map<Selector, Selector> options = null;
 
+    /**
+     * Constructor class.
+     *
+     * @param connectorName The connector name.
+     * @param clusterName   The cluster where the connector will be attached.
+     * @param json          A json with the options of the attach connector sentence.
+     */
     public AttachConnectorStatement(ConnectorName connectorName, ClusterName clusterName, String json) {
         this.connectorName = connectorName;
         this.clusterName = clusterName;
         this.options = StringUtils.convertJsonToOptions(null, json);
     }
 
+    /**
+     * Get the validation requirements to attach connector.
+     *
+     * @return A {@link com.sun.xml.internal.ws.developer.MemberSubmissionAddressing.Validation} .
+     */
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CLUSTER)
                 .add(ValidationTypes.MUST_EXIST_CONNECTOR)
@@ -51,18 +73,39 @@ public class AttachConnectorStatement extends MetadataStatement {
                 .add(ValidationTypes.MUST_BE_CONNECTED);
     }
 
+    /**
+     * Get the connector name.
+     *
+     * @return A {@link com.stratio.crossdata.common.data.ConnectorName} .
+     */
     public ConnectorName getConnectorName() {
         return connectorName;
     }
 
+    /**
+     * Get the Cluster name.
+     *
+     * @return A {@link com.stratio.crossdata.common.data.ClusterName } .
+     */
     public ClusterName getClusterName() {
         return clusterName;
     }
 
+    /**
+     * Get the Options of the attach connector sentence.
+     *
+     * @return A Map of {@link com.stratio.crossdata.common.statements.structures.Selector},
+     *          {@link com.stratio.crossdata.common.statements.structures.Selector}
+     */
     public Map<Selector, Selector> getOptions() {
         return options;
     }
 
+    /**
+     * Transform the options of the attach connector to a String.
+     * @param options The map of options.
+     * @return A String.
+     */
     private String getStringFromOptions(Map<Selector, Selector> options) {
         StringBuilder sb = new StringBuilder("{");
         Iterator<Map.Entry<Selector, Selector>> entryIt = options.entrySet().iterator();

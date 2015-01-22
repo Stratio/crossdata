@@ -25,6 +25,9 @@ import java.util.List;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.Relation;
 
+/**
+ * Innerjoin metadata class.
+ */
 public class InnerJoin implements Serializable {
 
     private TableName tableName;
@@ -35,6 +38,11 @@ public class InnerJoin implements Serializable {
         this.tableName = tableName;
     }
 
+    /**
+     * Constructor class.
+     * @param tableName The table name of the join.
+     * @param joinRelations The list of relations of the join.
+     */
     public InnerJoin(TableName tableName, List<Relation> joinRelations) {
         this(tableName);
         this.relations = joinRelations;

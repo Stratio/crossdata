@@ -21,19 +21,27 @@ package com.stratio.crossdata.core.query;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.result.QueryStatus;
 
+/**
+ * Class that implements the logic of Planned Metadata queries.
+ */
 public class MetadataPlannedQuery extends MetadataValidatedQuery implements IPlannedQuery {
 
+    /**
+     * The execution workflow.
+     */
     private final ExecutionWorkflow executionWorkflow;
 
+    /**
+     * Constructor class for metadata planned query bases in a validated query and a execution workflow.
+     * @param metadataValidatedQuery Metadata validated query.
+     * @param executionWorkflow The execution workflow that will be executed in the planned query.
+     */
     public MetadataPlannedQuery(MetadataValidatedQuery metadataValidatedQuery, ExecutionWorkflow executionWorkflow) {
         super(metadataValidatedQuery);
         setQueryStatus(QueryStatus.PLANNED);
         this.executionWorkflow = executionWorkflow;
     }
 
-    public MetadataPlannedQuery(MetadataPlannedQuery metadataPlannedQuery) {
-        this(metadataPlannedQuery, metadataPlannedQuery.getExecutionWorkflow());
-    }
 
     @Override
     public ExecutionWorkflow getExecutionWorkflow() {

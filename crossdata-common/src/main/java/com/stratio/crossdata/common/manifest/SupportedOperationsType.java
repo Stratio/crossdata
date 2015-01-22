@@ -76,7 +76,7 @@ public class SupportedOperationsType implements Serializable {
      * Objects of the following type(s) are allowed in the list
      * {@link String }
      * 
-     * 
+     * @return a List of strings.
      */
     public List<String> getOperation() {
         if (operation == null) {
@@ -85,6 +85,10 @@ public class SupportedOperationsType implements Serializable {
         return this.operation;
     }
 
+    /**
+     * Set the operations.
+     * @param operation The list of operations.
+     */
     public void setOperation(List<String> operation) {
         this.operation = operation;
     }

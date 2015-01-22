@@ -55,6 +55,10 @@ public class DropCatalogStatement extends MetadataStatement {
         return sb.toString();
     }
 
+    /**
+     * Get the validation requirements to drop a catalog.
+     * @return A {@link com.stratio.crossdata.core.validator.requirements.ValidationRequirements} .
+     */
     public ValidationRequirements getValidationRequirements() {
         ValidationRequirements validationRequirements = new ValidationRequirements();
         if (!ifExists) {

@@ -20,7 +20,14 @@ package com.stratio.crossdata.common.exceptions.validation;
 
 import com.stratio.crossdata.common.exceptions.ValidationException;
 
+/**
+ * BadFormatException Class.
+ */
 public class BadFormatException extends ValidationException {
+    /**
+     * Constructor class.
+     * @param cause The message of the exception.
+     */
     public BadFormatException(String cause) {
         super(cause);
     }

@@ -77,7 +77,7 @@ public class PropertiesType implements Serializable {
      * Objects of the following type(s) are allowed in the list
      * {@link PropertyType }
      * 
-     * 
+     * @return a List of {@link com.stratio.crossdata.common.manifest.PropertyType}
      */
     public List<PropertyType> getProperty() {
         if (property == null) {
@@ -86,6 +86,10 @@ public class PropertiesType implements Serializable {
         return this.property;
     }
 
+    /**
+     * Set the list of properties .
+     * @param property The list of properties.
+     */
     public void setProperty(List<PropertyType> property) {
         this.property = property;
     }

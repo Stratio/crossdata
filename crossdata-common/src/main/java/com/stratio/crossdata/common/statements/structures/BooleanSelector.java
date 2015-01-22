@@ -51,6 +51,7 @@ public class BooleanSelector extends Selector {
     /**
      * Class constructor.
      *
+     * @param tableName The table name.
      * @param value The boolean value.
      */
     public BooleanSelector(TableName tableName, boolean value) {
@@ -61,6 +62,7 @@ public class BooleanSelector extends Selector {
     /**
      * Class constructor.
      *
+     * @param tableName The table name.
      * @param value A String representation of a boolean value.
      */
     public BooleanSelector(TableName tableName, String value) {

@@ -20,8 +20,15 @@ package com.stratio.crossdata.core.query;
 
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 
+/**
+ * IPlannedQuery interface for Validated queries.
+ */
 public interface IPlannedQuery extends IValidatedQuery {
 
+    /**
+     * Get the execution workflow.
+     * @return A {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow} .
+     */
     ExecutionWorkflow getExecutionWorkflow();
 
 }

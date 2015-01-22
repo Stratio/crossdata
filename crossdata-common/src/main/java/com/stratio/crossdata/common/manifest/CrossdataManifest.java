@@ -20,6 +20,9 @@ package com.stratio.crossdata.common.manifest;
 
 import java.io.Serializable;
 
+/**
+ * Crossdata Manifest class.
+ */
 public abstract class CrossdataManifest implements Serializable {
 
   /*
@@ -38,10 +41,18 @@ public abstract class CrossdataManifest implements Serializable {
 
     protected int manifestType;
 
+    /**
+     * Constructor class.
+     * @param manifestType The type of manifest, datastore or connector.
+     */
     protected CrossdataManifest(int manifestType) {
         this.manifestType = manifestType;
     }
 
+    /**
+     * Get the manifest type.
+     * @return An Integer.
+     */
     public int getManifestType() {
         return manifestType;
     }

@@ -21,7 +21,14 @@ package com.stratio.crossdata.common.exceptions.validation;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.ColumnName;
 
+/**
+ * No match data type exception class.
+ */
 public class NotMatchDataTypeException extends ValidationException {
+    /**
+     * Constructor class.
+     * @param name The name od the column that cause the exception.
+     */
     public NotMatchDataTypeException(ColumnName name) {
         super(name + " doesn't match data type");
     }
