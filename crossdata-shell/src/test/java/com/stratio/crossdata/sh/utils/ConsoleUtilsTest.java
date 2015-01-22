@@ -193,7 +193,8 @@ public class ConsoleUtilsTest {
 
     @Test
     public void testRetrieveHistoryOK() throws Exception {
-        File file = ConsoleUtils.retrieveHistory(new ConsoleReader(), Shell.dateFormat);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
+        File file = ConsoleUtils.retrieveHistory(new ConsoleReader(), dateFormat);
         String result = file.getName();
         String expected = "history.txt";
         assertTrue(result.equalsIgnoreCase(expected),
@@ -218,8 +219,9 @@ public class ConsoleUtilsTest {
     @Test
     public void testRetrieveHistoryFail() throws Exception {
         boolean ok=false;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
         try {
-            ConsoleUtils.retrieveHistory(null, Shell.dateFormat);
+            ConsoleUtils.retrieveHistory(null, dateFormat);
             fail("NullPointerException was expected");
         } catch (NullPointerException npe) {
             ok=true;
@@ -229,8 +231,9 @@ public class ConsoleUtilsTest {
 
     @Test
     public void testSaveHistoryOK() throws Exception {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
         File fileTest = new File("fileTest.temp");
-        ConsoleUtils.saveHistory(new ConsoleReader(), fileTest, Shell.dateFormat);
+        ConsoleUtils.saveHistory(new ConsoleReader(), fileTest, dateFormat);
         assertTrue(fileTest.delete(), "Save file history failed");
     }
 
@@ -238,8 +241,9 @@ public class ConsoleUtilsTest {
     public void testSaveHistoryFail() throws Exception
     {
         boolean ok=false;
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
         try {
-            ConsoleUtils.saveHistory(new ConsoleReader(), null, Shell.dateFormat);
+            ConsoleUtils.saveHistory(new ConsoleReader(), null, dateFormat);
             fail("NullPointerException was expected");
         } catch (NullPointerException npe) {
             ok=true;
