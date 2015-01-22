@@ -25,10 +25,17 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class AsteriskSelector extends Selector {
 
+    /**
+     * Basic Constructor class.
+     */
     public AsteriskSelector() {
         this(null);
     }
 
+    /**
+     * Constructor class.
+     * @param tableName The table name affected by the asterisk selector.
+     */
     public AsteriskSelector(TableName tableName) {
         super(tableName);
     }

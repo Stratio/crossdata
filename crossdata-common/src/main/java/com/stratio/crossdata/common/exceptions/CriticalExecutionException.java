@@ -23,14 +23,27 @@ package com.stratio.crossdata.common.exceptions;
  */
 public class CriticalExecutionException extends ExecutionException{
 
+    /**
+     * Constructor class.
+     * @param e A Exception
+     */
     public CriticalExecutionException(Exception e){
         super(e);
     }
 
+    /**
+     * Constructor class.
+     * @param message The message.
+     */
     public CriticalExecutionException(String message) {
         super(message);
     }
 
+    /**
+     * Constructor class.
+     * @param message The message.
+     * @param exception The throwable exception.
+     */
     public CriticalExecutionException(String message, Exception exception){
         super(message, exception);
     }

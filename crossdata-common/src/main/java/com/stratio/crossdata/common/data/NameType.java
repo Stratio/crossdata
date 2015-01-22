@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * Enum with the types of NAMES of crossdata.
+ */
 public enum NameType {
     CATALOG,
     CLUSTER,
@@ -28,6 +31,10 @@ public enum NameType {
     TABLE,
     INDEX;
 
+    /**
+     * Return the strung of the name type.
+     * @return A String.
+     */
     public String toString() {
         return name();
     }

@@ -42,10 +42,18 @@ public class UnionStep extends LogicalStep {
         super(operation);
     }
 
+    /**
+     * Add a new step before this step.
+     * @param previous The previous step.
+     */
     public void addPreviousSteps(LogicalStep... previous) {
         this.previousSteps.addAll(Arrays.asList(previous));
     }
 
+    /**
+     * Delete the previous step.
+     * @param previous The previous step.
+     */
     public void removePreviousStep(LogicalStep previous){
         this.previousSteps.remove(previous);
     }

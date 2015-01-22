@@ -32,6 +32,9 @@ import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 
+/**
+ * Class that implements the metadata of a Data Store.
+ */
 public class DataStoreMetadata implements IMetadata {
     private DataStoreName name;
     private String version;
@@ -41,6 +44,15 @@ public class DataStoreMetadata implements IMetadata {
     private Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs;
     private Set<FunctionType> functions;
 
+    /**
+     * Constructor Class.
+     * @param name The name of the datastore.
+     * @param version The version of the datastore.
+     * @param requiredProperties The set of properties of the datastore.
+     * @param othersProperties The set of optional properties of the datastore.
+     * @param behaviors The behaviours of the datastore.
+     * @param functions The functions of the datastore.
+     */
     public DataStoreMetadata(DataStoreName name, String version, Set<PropertyType> requiredProperties,
             Set<PropertyType> othersProperties, Set<String> behaviors, Set<FunctionType> functions) {
         this.name = name;
@@ -52,6 +64,16 @@ public class DataStoreMetadata implements IMetadata {
         this.functions = (functions == null) ? new HashSet<FunctionType>() : functions;
     }
 
+    /**
+     * Constructor class.
+     * @param name The name of the datastore.
+     * @param version The version of the datastore.
+     * @param requiredProperties The list of properties of the datastore.
+     * @param othersProperties The list of optional properties of the datastore.
+     * @param behaviors The behaviours of the datastore.
+     * @param functions The functions of the datastore.
+     * @throws ManifestException
+     */
     public DataStoreMetadata(DataStoreName name, String version, List<PropertyType> requiredProperties,
             List<PropertyType> othersProperties, List<String> behaviors, List<FunctionType> functions) throws
             ManifestException {
@@ -95,39 +117,75 @@ public class DataStoreMetadata implements IMetadata {
         this.clusterAttachedRefs = new HashMap<>();
     }
 
+    /**
+     * Get the name of the datastore.
+     * @return A {@link com.stratio.crossdata.common.data.DataStoreName} .
+     */
     public DataStoreName getName() {
         return name;
     }
 
+    /**
+     * Get the version.
+     * @return A String.
+     */
     public String getVersion() {
         return version;
     }
 
+    /**
+     * Get the required properties.
+     * @return A set of {@link com.stratio.crossdata.common.manifest.PropertyType} .
+     */
     public Set<PropertyType> getRequiredProperties() {
         return requiredProperties;
     }
 
+    /**
+     * Get the optional properties.
+     * @return A set of {@link com.stratio.crossdata.common.manifest.PropertyType} .
+     */
     public Set<PropertyType> getOthersProperties() {
         return othersProperties;
     }
 
+    /**
+     * Get the map with the relation between CLuster name and the cluster metadata.
+     * @return A Map of cluster name and cluster metadata.
+     */
     public Map<ClusterName, ClusterAttachedMetadata> getClusterAttachedRefs() {
         return clusterAttachedRefs;
     }
 
+    /**
+     * Get the behaviours.
+     * @return A set of string.
+     */
     public Set<String> getBehaviors() {
         return behaviors;
     }
 
+    /**
+     * set the cluster metadata.
+     * @param clusterAttachedRefs The map with the cluster metadata.
+     */
     public void setClusterAttachedRefs(
             Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs) {
         this.clusterAttachedRefs = clusterAttachedRefs;
     }
 
+    /**
+     * Get the functions of the datastore.
+     * @return A set of {@link com.stratio.crossdata.common.manifest.FunctionType} .
+     */
     public Set<FunctionType> getFunctions() {
         return functions;
     }
 
+    /**
+     * Set the functions of the datastore.
+     * @param functions The functions of the datastore.
+     */
     public void setFunctions(Set<FunctionType> functions) {
         this.functions = functions;
     }

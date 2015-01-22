@@ -21,7 +21,14 @@ package com.stratio.crossdata.common.exceptions.validation;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.Name;
 
+/**
+ * ExistName class exception thrown when the name not exists.
+ */
 public class ExistNameException extends ValidationException {
+    /**
+     * Constructor class.
+     * @param name The name that not exists.
+     */
     public ExistNameException(Name name) {
         super(" [" + name + "] exists already");
     }

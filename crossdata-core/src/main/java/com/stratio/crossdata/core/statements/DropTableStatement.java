@@ -77,6 +77,10 @@ public class DropTableStatement extends MetadataStatement {
         return sb.toString();
     }
 
+    /**
+     * Get the validation requirements to drop a table.
+     * @return A {@link com.stratio.crossdata.core.validator.requirements.ValidationRequirements} .
+     */
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
                 .add(ValidationTypes.MUST_EXIST_TABLE);
