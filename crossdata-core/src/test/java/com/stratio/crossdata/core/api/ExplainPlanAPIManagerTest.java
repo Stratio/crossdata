@@ -89,7 +89,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
                 "actorRef1");
         clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName());
 
-        CatalogName catalogName = createTestCatalog("demo");
+        CatalogName catalogName = createTestCatalog("demo").getName();
         String[] columnNames1 = { "id", "user" };
         ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys = { "id" };

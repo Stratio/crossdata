@@ -117,7 +117,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         ClusterName clusterName = new ClusterName("clusterTest");
         createTestCluster(clusterName.getName(), dataStoreRef);
         // Create catalog
-        CatalogName catalogName = createTestCatalog("testCatalog");
+        CatalogName catalogName = createTestCatalog("testCatalog").getName();
 
         //Check catalog persistence
         assertEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), catalogName,
@@ -133,7 +133,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         ClusterName clusterName = new ClusterName("clusterTest");
         createTestCluster(clusterName.getName(), dataStoreRef);
         // Create catalog
-        CatalogName catalogName = createTestCatalog("testCatalog");
+        CatalogName catalogName = createTestCatalog("testCatalog").getName();
 
         // Create and add test table to the metadatamanager
         String[] columnNames1 = { "id", "user" };
