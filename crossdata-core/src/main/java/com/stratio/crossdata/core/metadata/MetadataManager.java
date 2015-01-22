@@ -70,14 +70,36 @@ import com.stratio.crossdata.common.statements.structures.Selector;
  * Singleton to manage the metadata store.
  */
 public enum MetadataManager {
+
+    /**
+     * Metadata manager engine as enumeration to define a Singleton.
+     */
     MANAGER;
 
+    /**
+     * Whether the manager has been initialized.
+     */
     private boolean isInit = false;
 
+    /**
+     * Map associating {@link com.stratio.crossdata.common.data.FirstLevelName} with
+     * {@link com.stratio.crossdata.common.metadata.IMetadata} entities.
+     */
     private Map<FirstLevelName, IMetadata> metadata;
+
+    /**
+     * Lock for write access to the metadata map.
+     */
     private Lock writeLock;
+
+    /**
+     * Transaction manager to access the metadata map.
+     */
     private TransactionManager tm;
 
+    /**
+     * Check that the metadata manager has been previously initialized.
+     */
     private void shouldBeInit() {
         if (!isInit) {
             throw new MetadataManagerException("Metadata is not initialized yet.");
@@ -126,24 +148,49 @@ public enum MetadataManager {
         return result;
     }
 
+    /**
+     * Check that a {@link com.stratio.crossdata.common.data.Name} is unique.
+     *
+     * @param name The {@link com.stratio.crossdata.common.data.Name}.
+     */
     private void shouldBeUnique(Name name) {
         if (exists(name)) {
             throw new MetadataManagerException("[" + name + "] already exists");
         }
     }
 
+    /**
+     * Check that a {@link com.stratio.crossdata.common.data.Name} exists in the metadata map.
+     *
+     * @param name The {@link com.stratio.crossdata.common.data.Name}.
+     */
     private void shouldExist(Name name) {
         if (!exists(name)) {
             throw new MetadataManagerException("[" + name + "] doesn't exist yet");
         }
     }
 
+    /**
+     * Start a transaction using the associated transaction manager.
+     *
+     * @throws SystemException       If the transaction manager founds an error and it becomes unable to answer future
+     *                               requests.
+     * @throws NotSupportedException If the operation is not supported.
+     */
     private void beginTransaction() throws SystemException, NotSupportedException {
         if (tm != null) {
             tm.begin();
         }
     }
 
+    /**
+     * Commit a transaction.
+     *
+     * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
+     * @throws RollbackException          If the transaction is marked as rollback only.
+     * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
+     * @throws SystemException            If the transaction manager is not available.
+     */
     private void commitTransaction() throws HeuristicRollbackException, RollbackException,
             HeuristicMixedException, SystemException {
         if (tm != null) {
@@ -151,6 +198,12 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Check if a {@link com.stratio.crossdata.common.data.FirstLevelName} exists in the metadata map.
+     *
+     * @param name The {@link com.stratio.crossdata.common.data.FirstLevelName}.
+     * @return Whether it exists.
+     */
     private boolean exists(FirstLevelName name) {
         return metadata.containsKey(name);
     }
@@ -222,11 +275,11 @@ public enum MetadataManager {
     /**
      * Clear all metadata information.
      *
-     * @throws SystemException
-     * @throws NotSupportedException
-     * @throws HeuristicRollbackException
-     * @throws HeuristicMixedException
-     * @throws RollbackException
+     * @throws SystemException            If the transaction manager is not available.
+     * @throws NotSupportedException      If the operation is not supported.
+     * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
+     * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
+     * @throws RollbackException          If the transaction is marked as rollback only.
      */
     public synchronized void clear()
             throws SystemException, NotSupportedException, HeuristicRollbackException, HeuristicMixedException,
@@ -461,6 +514,12 @@ public enum MetadataManager {
         createCluster(clusterMetadata, true);
     }
 
+    /**
+     * Delete a cluster from the metadata store.
+     *
+     * @param clusterName The {@link com.stratio.crossdata.common.data.ClusterName}.
+     * @param ifExist     Whether the operation should be executed only if exists.
+     */
     public void deleteCluster(ClusterName clusterName, boolean ifExist) {
         shouldBeInit();
         writeLock.lock();
@@ -490,6 +549,11 @@ public enum MetadataManager {
         return (ClusterMetadata) metadata.get(name);
     }
 
+    /**
+     * Get the list of clusters currently managed by Crossdata.
+     *
+     * @return A list of {@link com.stratio.crossdata.common.metadata.ClusterMetadata}.
+     */
     public List<ClusterMetadata> getClusters() {
         shouldBeInit();
         List<ClusterMetadata> clusters = new ArrayList<>();
@@ -637,7 +701,7 @@ public enum MetadataManager {
             Set<PropertyType> optionalProperties = new HashSet<>();
             Set<Operations> supportedOperations = new HashSet<>();
             ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
-                    clusterProperties, requiredProperties, optionalProperties, supportedOperations,null);
+                    clusterProperties, requiredProperties, optionalProperties, supportedOperations, null);
             connectorMetadata.setActorRef(actorRef);
             try {
                 writeLock.lock();
@@ -807,6 +871,11 @@ public enum MetadataManager {
         return tablesMetadata;
     }
 
+    /**
+     * Get the list of indexes in the system.
+     *
+     * @return A list of {@link com.stratio.crossdata.common.metadata.IndexMetadata}.
+     */
     public List<IndexMetadata> getIndexes() {
         List<IndexMetadata> indexesMetadata = new ArrayList<>();
         for (TableMetadata table: getTables()) {
@@ -953,11 +1022,11 @@ public enum MetadataManager {
     /**
      * Remove catalogs.
      *
-     * @throws NotSupportedException
-     * @throws SystemException
-     * @throws HeuristicRollbackException
-     * @throws HeuristicMixedException
-     * @throws RollbackException
+     * @throws NotSupportedException      If the operation is not supported.
+     * @throws SystemException            If the transaction manager is not available.
+     * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
+     * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
+     * @throws RollbackException          If the transaction is marked as rollback only.
      */
     public void clearCatalogs()
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
@@ -988,13 +1057,13 @@ public enum MetadataManager {
     /**
      * Remove the connector from metadata manager.
      *
-     * @param connectorName The connector name
-     * @throws NotSupportedException
-     * @throws SystemException
-     * @throws HeuristicRollbackException
-     * @throws HeuristicMixedException
-     * @throws RollbackException
-     * @throws MetadataManagerException
+     * @param connectorName The connector name.
+     * @throws NotSupportedException      If the operation is not supported.
+     * @throws SystemException            If the transaction manager is not available.
+     * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
+     * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
+     * @throws RollbackException          If the transaction is marked as rollback only.
+     * @throws MetadataManagerException   If the connector does not exists.
      */
     public void deleteConnector(ConnectorName connectorName)
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
@@ -1029,13 +1098,13 @@ public enum MetadataManager {
     /**
      * Remove the data store from the metadata manager.
      *
-     * @param dataStoreName The data store name
-     * @throws NotSupportedException
-     * @throws SystemException
-     * @throws HeuristicRollbackException
-     * @throws HeuristicMixedException
-     * @throws RollbackException
-     * @throws MetadataManagerException
+     * @param dataStoreName The data store name.
+     * @throws NotSupportedException      If the operation is not supported.
+     * @throws SystemException            If the transaction manager is not available.
+     * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
+     * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
+     * @throws RollbackException          If the transaction is marked as rollback only.
+     * @throws MetadataManagerException   If the datastore does not exists.
      */
     public void deleteDatastore(DataStoreName dataStoreName)
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
@@ -1065,17 +1134,30 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Get the node metadata associated with a node name.
+     *
+     * @param name The {@link com.stratio.crossdata.common.data.NodeName}.
+     * @return A {@link com.stratio.crossdata.common.metadata.NodeMetadata}.
+     */
     public NodeMetadata getNode(NodeName name) {
         shouldBeInit();
         shouldExist(name);
         return (NodeMetadata) metadata.get(name);
     }
 
-    public Set<String> getSupportedFunctionNames(ConnectorName cn){
+
+    /**
+     * Get the names of the supported functions for a given connector.
+     *
+     * @param cn A {@link com.stratio.crossdata.common.data.ConnectorName}.
+     * @return A set with the function names.
+     */
+    public Set<String> getSupportedFunctionNames(ConnectorName cn) {
         Set<String> functions = new HashSet<>();
         ConnectorMetadata connector = getConnector(cn);
 
-        for(FunctionType ft: connector.getConnectorFunctions()){
+        for (FunctionType ft : connector.getConnectorFunctions()) {
             functions.add(ft.getFunctionName().toLowerCase());
         }
 
@@ -1089,7 +1171,13 @@ public enum MetadataManager {
         return functions;
     }
 
-    public Set<FunctionType> getSupportedFunctions(ConnectorName cn){
+    /**
+     * Get the set of supported function types for a given connector.
+     *
+     * @param cn The {@link com.stratio.crossdata.common.data.ConnectorName}.
+     * @return A set of {@link com.stratio.crossdata.common.manifest.FunctionType}.
+     */
+    public Set<FunctionType> getSupportedFunctions(ConnectorName cn) {
         Set<FunctionType> functions = new HashSet<>();
         ConnectorMetadata connector = getConnector(cn);
         functions.addAll(connector.getConnectorFunctions());
@@ -1113,6 +1201,12 @@ public enum MetadataManager {
         return result;
     }
 
+
+    /**
+     * Get the set of function types from all existing connectors.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.manifest.FunctionType}.
+     */
     public FunctionType getFunction(ConnectorName connectorName, String functionName) {
         FunctionType result = null;
         Set<FunctionType> candidateFunctions = getSupportedFunctions(connectorName);
@@ -1202,6 +1296,12 @@ public enum MetadataManager {
         return result;
     }
 
+    /**
+     * Get a node if exists.
+     *
+     * @param name The {@link com.stratio.crossdata.common.data.NodeName}.
+     * @return A {@link com.stratio.crossdata.common.metadata.NodeMetadata}.
+     */
     public NodeMetadata getNodeIfExists(NodeName name) {
         shouldBeInit();
         IMetadata iMetadata = metadata.get(name);
@@ -1212,6 +1312,12 @@ public enum MetadataManager {
         return nodeMetadata;
     }
 
+    /**
+     * Set a node status.
+     *
+     * @param nodeName The {@link com.stratio.crossdata.common.data.NodeName}.
+     * @param status   The {@link com.stratio.crossdata.common.data.Status}.
+     */
     public void setNodeStatus(NodeName nodeName, Status status) {
         shouldBeInit();
         try {
@@ -1225,6 +1331,12 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Set the node status if exists.
+     *
+     * @param nodeName The {@link com.stratio.crossdata.common.data.NodeName}.
+     * @param status   The {@link com.stratio.crossdata.common.data.Status}.
+     */
     public void setNodeStatusIfExists(NodeName nodeName, Status status) {
         shouldBeInit();
         try {
@@ -1243,10 +1355,22 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Get the node status.
+     *
+     * @param nodeName A {@link com.stratio.crossdata.common.data.NodeName}.
+     * @return A {@link com.stratio.crossdata.common.data.Status}.
+     */
     public Status getNodeStatus(NodeName nodeName) {
         return getNode(nodeName).getStatus();
     }
 
+    /**
+     * Get the name of the nodes with a given status.
+     *
+     * @param status The {@link com.stratio.crossdata.common.data.Status}.
+     * @return A list of {@link com.stratio.crossdata.common.data.NodeName}.
+     */
     public List<NodeName> getNodeNames(Status status) {
         List<NodeName> onlineNodeNames = new ArrayList<>();
         for (NodeMetadata nodeMetadata : getNodes(status)) {
@@ -1255,6 +1379,12 @@ public enum MetadataManager {
         return onlineNodeNames;
     }
 
+    /**
+     * Get the metadata of the nodes with a given status.
+     *
+     * @param status The {@link com.stratio.crossdata.common.data.Status}.
+     * @return A list of {@link com.stratio.crossdata.common.metadata.NodeMetadata}.
+     */
     public List<NodeMetadata> getNodes(Status status) {
         List<NodeMetadata> onlineNodes = new ArrayList<>();
         for (NodeMetadata node : getNodes()) {
@@ -1265,6 +1395,11 @@ public enum MetadataManager {
         return onlineNodes;
     }
 
+    /**
+     * Get the metadata associated with all existing nodes.
+     *
+     * @return A list of {@link com.stratio.crossdata.common.metadata.NodeMetadata}.
+     */
     public List<NodeMetadata> getNodes() {
         List<NodeMetadata> nodes = new ArrayList<>();
         for (Map.Entry<FirstLevelName, IMetadata> entry : metadata.entrySet()) {
@@ -1276,6 +1411,12 @@ public enum MetadataManager {
         return nodes;
     }
 
+    /**
+     * Check if a connector has already been associated with a name.
+     *
+     * @param nodeName The {@link com.stratio.crossdata.common.data.NodeName}.
+     * @return Whether the name should be asked.
+     */
     public boolean checkGetConnectorName(NodeName nodeName) {
         boolean result = false;
         try {
@@ -1292,12 +1433,23 @@ public enum MetadataManager {
         return result;
     }
 
+    /**
+     * Associate a catalog with a cluster.
+     *
+     * @param catalog     The {@link com.stratio.crossdata.common.data.CatalogName}.
+     * @param clusterName The {@link com.stratio.crossdata.common.data.ClusterName}.
+     */
     public void addCatalogToCluster(CatalogName catalog, ClusterName clusterName) {
         ClusterMetadata clusterMetadata = getCluster(clusterName);
         clusterMetadata.addPersistedCatalog(catalog);
         createCluster(clusterMetadata, false);
     }
 
+    /**
+     * Remove a catalog from all clusters.
+     *
+     * @param catalog The {@link com.stratio.crossdata.common.data.CatalogName}.
+     */
     public void removeCatalogFromClusters(CatalogName catalog) {
         List<ClusterMetadata> clusters = getClusters();
         for (ClusterMetadata cluster : clusters) {
@@ -1305,6 +1457,12 @@ public enum MetadataManager {
         }
     }
 
+    /**
+     * Remove a catalog from a particular cluster.
+     *
+     * @param catalog A {@link com.stratio.crossdata.common.data.CatalogName}.
+     * @param cluster The {@link com.stratio.crossdata.common.metadata.ClusterMetadata} to be removed.
+     */
     private void removeCatalogFromCluster(CatalogName catalog, ClusterMetadata cluster) {
         cluster.removePersistedCatalog(catalog);
         createCluster(cluster, false);

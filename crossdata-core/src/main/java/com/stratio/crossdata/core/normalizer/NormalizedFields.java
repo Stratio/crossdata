@@ -36,18 +36,55 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 
+/**
+ * Collection of fields that are processed by a {@link com.stratio.crossdata.core.normalizer.Normalizator} process.
+ */
 public class NormalizedFields {
+
+    /**
+     * Set of {@link com.stratio.crossdata.common.data.ColumnName} involved in a query.
+     */
     private Set<ColumnName> columnNames = new HashSet<>();
+
+    /**
+     * Set of {@link com.stratio.crossdata.common.data.TableName} involved in a query.
+     */
     private Set<TableName> tableNames = new HashSet<>();
+
+    /**
+     * Set of {@link com.stratio.crossdata.common.data.CatalogName} involved in a query.
+     */
     private Set<CatalogName> catalogNames = new HashSet<>();
-    // It can include functions, column names, asterisks...
+
+    /**
+     * List of {@link com.stratio.crossdata.common.statements.structures.Selector} involved in a query including
+     * column names, functions, asterisks, etc.
+     */
     private List<Selector> selectors = new ArrayList<>();
-    // Join relations
+
+    /**
+     * Inner join information.
+     */
     private InnerJoin join;
+
+    /**
+     * List of {@link com.stratio.crossdata.common.statements.structures.Relation} in the where clause.
+     */
     private List<Relation> where = new ArrayList<>();
+
+    /**
+     * List of {@link com.stratio.crossdata.common.statements.structures.OrderByClause}.
+     */
     private List<OrderByClause> orderByClauseClauses = new ArrayList<>();
+
+    /**
+     * List of {@link com.stratio.crossdata.core.structures.GroupByClause}.
+     */
     private GroupByClause groupByClause = new GroupByClause();
 
+    /**
+     * List of {@link com.stratio.crossdata.common.metadata.TableMetadata} involved in a query.
+     */
     private List<TableMetadata> tablesMetadata = new ArrayList<>();
 
     /**
@@ -60,11 +97,23 @@ public class NormalizedFields {
      */
     private Map<String, ColumnName> columnNameAlias = new HashMap<>();
 
+    /**
+     * Map associating function name and function signatures.
+     */
     private Map<String, String> signatures = new HashMap<>();
 
+    /**
+     * Class constructor.
+     */
     public NormalizedFields() {
     }
 
+    /**
+     * Add a new column.
+     *
+     * @param columnName The {@link com.stratio.crossdata.common.data.ColumnName}.
+     * @param alias      The associated alias.
+     */
     public void addColumnName(ColumnName columnName, String alias) {
         this.columnNames.add(columnName);
         if (alias != null) {
@@ -72,12 +121,13 @@ public class NormalizedFields {
         }
     }
 
+    /**
+     * Get the set of column names.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.data.ColumnName}.
+     */
     public Set<ColumnName> getColumnNames() {
         return columnNames;
-    }
-
-    public void setColumnNames(Set<ColumnName> columnNames) {
-        this.columnNames = columnNames;
     }
 
     /**
@@ -92,62 +142,101 @@ public class NormalizedFields {
         }
     }
 
+    /**
+     * Get the table names.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.data.TableName}.
+     */
     public Set<TableName> getTableNames() {
         return tableNames;
     }
 
-    public void setTableNames(Set<TableName> tableNames) {
-        this.tableNames = tableNames;
-    }
-
+    /**
+     * Get the catalogs.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.data.CatalogName}.
+     */
     public Set<CatalogName> getCatalogNames() {
         return catalogNames;
     }
 
-    public void setCatalogNames(Set<CatalogName> catalogNames) {
-        this.catalogNames = catalogNames;
-    }
-
+    /**
+     * Get the list of selectors.
+     *
+     * @return A list of {@link com.stratio.crossdata.common.statements.structures.Selector}.
+     */
     public List<Selector> getSelectors() {
         return selectors;
     }
 
-    public void setSelectors(List<Selector> selectors) {
-        this.selectors = selectors;
-    }
-
+    /**
+     * Get the inner join information.
+     *
+     * @return A {@link com.stratio.crossdata.core.structures.InnerJoin}.
+     */
     public InnerJoin getJoin() {
         return join;
     }
 
+    /**
+     * Set the inner join information.
+     *
+     * @param join A {@link com.stratio.crossdata.core.structures.InnerJoin}.
+     */
     public void setJoin(InnerJoin join) {
         this.join = join;
     }
 
+    /**
+     * Get the list of relation on the where clause.
+     *
+     * @return A list of {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     */
     public List<Relation> getWhere() {
         return where;
     }
 
+    /**
+     * Set the where clause.
+     *
+     * @param where A list of {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     */
     public void setWhere(List<Relation> where) {
         this.where = where;
     }
 
-    public List<OrderByClause> getOrderByClauseClauses() {
-        return orderByClauseClauses;
-    }
-
+    /**
+     * Set the order by clauses.
+     *
+     * @param orderByClauseClauses A list of {@link com.stratio.crossdata.common.statements.structures.OrderByClause}.
+     */
     public void setOrderByClauseClauses(List<OrderByClause> orderByClauseClauses) {
         this.orderByClauseClauses = orderByClauseClauses;
     }
 
+    /**
+     * Get the group by clause.
+     *
+     * @return A {@link com.stratio.crossdata.core.structures.GroupByClause}.
+     */
     public GroupByClause getGroupByClause() {
         return groupByClause;
     }
 
+    /**
+     * Set the group by clause.
+     *
+     * @param groupByClause A {@link com.stratio.crossdata.core.structures.GroupByClause}.
+     */
     public void setGroupByClause(GroupByClause groupByClause) {
         this.groupByClause = groupByClause;
     }
 
+    /**
+     * Get the list of tables.
+     *
+     * @return A list of {@link com.stratio.crossdata.common.metadata.TableMetadata}.
+     */
     public List<TableMetadata> getTablesMetadata() {
         //recover all Metadata about a tableName
         for (TableName tableName : tableNames) {
@@ -196,10 +285,21 @@ public class NormalizedFields {
         return columnNameAlias.get(alias);
     }
 
+    /**
+     * Get the map of functions with their a associated signatures.
+     *
+     * @return A map.
+     */
     public Map<String, String> getSignatures() {
         return signatures;
     }
 
+    /**
+     * Add a new signature.
+     *
+     * @param functionName The function name.
+     * @param signature    The signature.
+     */
     public void addSignature(String functionName, String signature) {
         signatures.put(functionName, signature);
     }

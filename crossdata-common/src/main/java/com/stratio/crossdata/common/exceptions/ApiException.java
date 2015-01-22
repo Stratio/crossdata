@@ -18,18 +18,42 @@
 
 package com.stratio.crossdata.common.exceptions;
 
+/**
+ * Exception thrown if an API call fails.
+ */
 public class ApiException extends Exception {
 
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
+    private static final long serialVersionUID = 6699041862726859426L;
+
+    /**
+     * Constructs a new Exception with a given message.
+     *
+     * @param message The message.
+     */
     public ApiException(String message) {
         super(message);
     }
 
+    /**
+     * Constructs a new Exception with a specific cause.
+     *
+     * @param cause The associated Exception.
+     */
     public ApiException(Throwable cause) {
         super(cause);
     }
 
-    public ApiException(String error, Throwable cause) {
-        super(error, cause);
+    /**
+     * Constructs a new Exception with a specific message and cause.
+     *
+     * @param msg The associated message.
+     * @param cause   The associated cause.
+     */
+    public ApiException(String msg, Throwable cause) {
+        super(msg, cause);
     }
 
 }

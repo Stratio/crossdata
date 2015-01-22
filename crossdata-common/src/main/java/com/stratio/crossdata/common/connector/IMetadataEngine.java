@@ -48,6 +48,15 @@ public interface IMetadataEngine {
     void createCatalog(ClusterName targetCluster, CatalogMetadata catalogMetadata)
             throws ConnectorException;
 
+    /**
+     * Alter the definition of a catalog in a cluster.
+     *
+     * @param targetCluster The targer cluster.
+     * @param catalogName   The {@link com.stratio.crossdata.common.data.CatalogName}.
+     * @param options       A map of options as {@link com.stratio.crossdata.common.statements.structures.Selector}.
+     * @throws ConnectorException A UnsupportedException is expected if the operation is not supported by a
+     *                            connector, or ExecutionException if the execution fails.
+     */
     void alterCatalog(ClusterName targetCluster, CatalogName catalogName, Map<Selector, Selector> options)
             throws ConnectorException;
 
@@ -86,7 +95,7 @@ public interface IMetadataEngine {
      * Alter an existing table.
      *
      * @param targetCluster Target cluster.
-     * @param name The table metadata.
+     * @param name          The table metadata.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
      *                            supported by the connector or ExecutionException if the execution fails.
      */
@@ -115,10 +124,38 @@ public interface IMetadataEngine {
     void dropIndex(ClusterName targetCluster, IndexMetadata indexMetadata)
             throws ConnectorException;
 
+    /**
+     * Provide a list of catalog metadata that the connector is able to extract from the underlying datastore.
+     *
+     * @param clusterName The target cluster name.
+     * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
+     * @throws ConnectorException A UnsupportedException is expected if the operation is not supported by a
+     *                            connector, or ExecutionException if the execution fails.
+     */
     List<CatalogMetadata> provideMetadata(ClusterName clusterName) throws ConnectorException;
 
+    /**
+     * Provide the metadata information associated with a catalog that the connector is able to extract from the
+     * underlying datastore.
+     *
+     * @param clusterName The target cluster.
+     * @param catalogName The target catalog.
+     * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
+     * @throws ConnectorException A UnsupportedException is expected if the operation is not supported by a
+     *                            connector, or ExecutionException if the execution fails.
+     */
     CatalogMetadata provideCatalogMetadata(ClusterName clusterName, CatalogName catalogName) throws ConnectorException;
 
+    /**
+     * Provide the metadata information associated with a table that the connector is able to extract from the
+     * underlying datastore.
+     *
+     * @param clusterName The target cluster.
+     * @param tableName   The target catalog.
+     * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata}.
+     * @throws ConnectorException A UnsupportedException is expected if the operation is not supported by a
+     *                            connector, or ExecutionException if the execution fails.
+     */
     TableMetadata provideTableMetadata(ClusterName clusterName, TableName tableName) throws ConnectorException;
 
 }
