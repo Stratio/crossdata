@@ -23,16 +23,32 @@ package com.stratio.crossdata.common.exceptions;
  */
 public class ConnectorException extends Exception {
 
+    /**
+     * Serial.
+     */
     private static final long serialVersionUID = -847420817619537147L;
 
+    /**
+     * Constructor class based in a Exception.
+     * @param e The exception.
+     */
     public ConnectorException(Exception e){
         super(e);
     }
 
+    /**
+     * Constructor class based in a message.
+     * @param msg The message.
+     */
     public ConnectorException(String msg) {
         super(msg);
     }
 
+    /**
+     * Constructor class based in a message and a throwable exception.
+     * @param msg The message.
+     * @param cause The throwable exception.
+     */
     public ConnectorException(String msg, Throwable cause) {
         super(msg, cause);
     }

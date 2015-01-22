@@ -20,13 +20,24 @@ package com.stratio.crossdata.core.query;
 
 import com.stratio.crossdata.common.result.QueryStatus;
 
+/**
+ * Class that implements the storage statements in the phase of validation.
+ */
 public class StorageValidatedQuery extends StorageParsedQuery implements IValidatedQuery {
 
+    /**
+     * Constructor class based in a Storage Statement that was parsed.
+     * @param storageParsedQuery the parsed statement.
+     */
     public StorageValidatedQuery(StorageParsedQuery storageParsedQuery) {
         super(storageParsedQuery);
         setQueryStatus(QueryStatus.VALIDATED);
     }
 
+    /**
+     * Constructor class based in a validated Storage statement.
+     * @param storageValidatedQuery The validated Statement.
+     */
     public StorageValidatedQuery(StorageValidatedQuery storageValidatedQuery) {
         this((StorageParsedQuery) storageValidatedQuery);
     }
