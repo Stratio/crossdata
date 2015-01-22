@@ -21,13 +21,21 @@ package com.stratio.crossdata.sh.help;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class HelpContentTest {
     @Test
     public void testSetHelp() throws Exception {
-        HelpContent helpContent = new HelpContent();
-        Map<HelpType, String> help =new HashMap<>();
-        helpContent.setHelp(help);
+        boolean ok=false;
+        try {
+            HelpContent helpContent = new HelpContent();
+            Map<HelpType, String> help = new HashMap<>();
+            helpContent.setHelp(help);
+            ok=true;
+        }catch (Exception e){
+            Assert.fail("Error in setHelp");
+        }
+        Assert.assertTrue(ok, "Error in setHelp");
     }
 }

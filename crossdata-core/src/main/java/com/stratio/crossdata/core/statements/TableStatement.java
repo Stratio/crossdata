@@ -28,7 +28,7 @@ public class TableStatement implements ITableStatement {
     protected TableName tableName;
     
     protected CatalogName catalog;
-    protected CatalogName sessionCatalog = null;
+    protected CatalogName sessionCatalog;
     
     public TableName getTableName() {
         return tableName;
