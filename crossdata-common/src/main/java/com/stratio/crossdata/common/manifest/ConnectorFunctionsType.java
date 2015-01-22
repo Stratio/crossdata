@@ -81,7 +81,7 @@ public class ConnectorFunctionsType implements Serializable {
      * Objects of the following type(s) are allowed in the list
      * {@link FunctionType }
      * 
-     * 
+     * @return A list of {@link com.stratio.crossdata.common.manifest.FunctionType} of the manifest.
      */
     public List<FunctionType> getFunction() {
         if (function == null) {
@@ -110,7 +110,7 @@ public class ConnectorFunctionsType implements Serializable {
      * Objects of the following type(s) are allowed in the list
      * {@link ExcludeType }
      * 
-     * 
+     * @return A list of {@link com.stratio.crossdata.common.manifest.ExcludeType} functions of the manifest.
      */
     public List<ExcludeType> getExclude() {
         if (exclude == null) {
@@ -119,10 +119,18 @@ public class ConnectorFunctionsType implements Serializable {
         return this.exclude;
     }
 
+    /**
+     * Set the functions of the manifest.
+     * @param function The list of {@link com.stratio.crossdata.common.manifest.FunctionType} .
+     */
     public void setFunction(List<FunctionType> function) {
         this.function = function;
     }
 
+    /**
+     * Set the exclude functions of the manifest.
+     * @param exclude The list of {@link com.stratio.crossdata.common.manifest.ExcludeType} .
+     */
     public void setExclude(List<ExcludeType> exclude) {
         this.exclude = exclude;
     }

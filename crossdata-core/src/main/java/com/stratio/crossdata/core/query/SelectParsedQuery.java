@@ -21,10 +21,21 @@ package com.stratio.crossdata.core.query;
 import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.core.statements.SelectStatement;
 
+/**
+ * Class that implements the logic of a parsed select statement.
+ */
 public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
 
+    /**
+     * The select statement.
+     */
     private SelectStatement statement;
 
+    /**
+     * Constructor class based in a Base Query and a Statement.
+     * @param baseQuery The query previous to be parsed.
+     * @param statement The statement with the query.
+     */
     public SelectParsedQuery(BaseQuery baseQuery,
             SelectStatement statement) {
         super(baseQuery);
@@ -32,6 +43,10 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
         setQueryStatus(QueryStatus.PARSED);
     }
 
+    /**
+     * Constructor class based in a parsed query.
+     * @param parsedQuery The parsed query.
+     */
     public SelectParsedQuery(SelectParsedQuery parsedQuery) {
         this(parsedQuery, parsedQuery.getStatement());
     }

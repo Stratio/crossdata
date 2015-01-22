@@ -130,23 +130,44 @@ public enum ColumnType {
         this.odbcType = odbcType;
     }
 
+    /**
+     * Set the dbInnerType.
+     * @param dbInnerType The inner db type.
+     */
     public void setDBCollectionType(ColumnType dbInnerType) {
         this.dbInnerType = dbInnerType;
     }
 
+    /**
+     * Set the dbInnerType and the dbInnerValueType.
+     * @param keyType The db inner type.
+     * @param valueType The db inner value.
+     */
     public void setDBMapType(ColumnType keyType, ColumnType valueType) {
         this.dbInnerType = keyType;
         this.dbInnerValueType = valueType;
     }
 
+    /**
+     * Get the dbInnerType.
+     * @return A crossdata {@link com.stratio.crossdata.common.metadata.ColumnType} .
+     */
     public ColumnType getDBInnerType() {
         return dbInnerType;
     }
 
+    /**
+     * Get the dbInnerValueType.
+     * @return A crossdata {@link com.stratio.crossdata.common.metadata.ColumnType} .
+     */
     public ColumnType getDBInnerValueType() {
         return dbInnerValueType;
     }
 
+    /**
+     * Get the java class that is the equivalent with the crossdata enum column type.
+     * @return The java class.
+     */
     public Class getJavaType(){
         Class clazz = null;
         switch (this){
@@ -187,6 +208,10 @@ public enum ColumnType {
         return clazz;
     }
 
+    /**
+     * Get the crossdata type that is the equivalent with the crossdata enum column type.
+     * @return A string with the crossdata type name.
+     */
     public String getCrossdataType(){
         String clazz = null;
         switch (this){

@@ -148,6 +148,12 @@ public final class StringUtils {
         return null;
     }
 
+    /**
+     * Convert the java types to Crossdata types.
+     * @param javaType The java type
+     * @return A Crossdata {@link ColumnType}
+     */
+
     public static ColumnType convertJavaTypeToXdType(String javaType) {
         ColumnType ct = ColumnType.NATIVE;
         if (javaType.equalsIgnoreCase("Long")) {
@@ -175,8 +181,8 @@ public final class StringUtils {
     /**
      * Return a patch of the diff between two objects using their serialized string representation.
      *
-     * @param objectA The first object.
-     * @param objectB The second object.
+     * @param oa The first object.
+     * @param ob The second object.
      * @return A {@link difflib.Patch}.
      */
     public static difflib.Patch objectDiff(Object oa, Object ob){
@@ -186,7 +192,15 @@ public final class StringUtils {
         ArrayList<String> listb = new ArrayList<String>(Arrays.asList(b));
         return DiffUtils.diff(lista, listb);
     }
-    
+
+    /**
+     * Return a String with the result json adding to the object the patch.
+     *
+     * @param a The object to patch.
+     * @param diff The patch.
+     * @return String.
+     * @throws PatchFailedException .
+     */
     public static String patchObject(Object a, Patch diff) throws PatchFailedException {
         String[] lista = StringUtils.serializeObject2String(a).split("\n"); //apply patch to a
         List<String> partialresult = (List<String>) diff.applyTo(Arrays.asList(lista));
@@ -195,7 +209,14 @@ public final class StringUtils {
         return jsonresult.toString();
     }
 
-    public static Object deserializeObjectFromString(String serializedObject, Class objectsClass) {
+    /**
+     * Deserialize an object.
+     *
+     * @param serializedObject The serialize object.
+     * @param arrayListClass
+     * @return The deserialized object.
+     */
+    public static Object deserializeObjectFromString(String serializedObject, Class arrayListClass) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             return mapper.readValue(mapper.readTree(serializedObject), List.class);
@@ -205,6 +226,11 @@ public final class StringUtils {
         return null;
     }
 
+    /**
+     * Serialize a Object to string.
+     * @param obj The object to serialize.
+     * @return A String with the object serialized.
+     */
     public static String serializeObject2String(Object obj) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.enable(SerializationConfig.Feature.INDENT_OUTPUT);
@@ -251,6 +277,11 @@ public final class StringUtils {
         return ct;
     }
 
+    /**
+     * Return the type of the crossdata function signature.
+     * @param signature The signature of the function.
+     * @return A String with the type of signature.
+     */
     public static String getReturningTypeFromSignature(String signature) {
         return signature.substring(signature.indexOf(':')+1)
                 .replace("Tuple[", "")
