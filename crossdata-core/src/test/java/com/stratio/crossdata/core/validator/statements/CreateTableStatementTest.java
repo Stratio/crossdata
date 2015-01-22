@@ -18,10 +18,8 @@
 
 package com.stratio.crossdata.core.validator.statements;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -33,13 +31,10 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.statements.CreateTableStatement;
-import com.stratio.crossdata.core.structures.Property;
-import com.stratio.crossdata.core.structures.PropertyNameValue;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -131,12 +126,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("unknown", "users2"),
                 new ClusterName("cluster"), columns, primaryKey, null);
 
-        List<Property> properties = new ArrayList<>();
-        Property prop = new PropertyNameValue(new StringSelector(tableName, "comment"),
-                new StringSelector(tableName, "Users2 table"));
-        properties.add(prop);
-
-        createTableStatement.setProperties(properties.toString());
+        createTableStatement.setProperties("comment");
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("unknown"));

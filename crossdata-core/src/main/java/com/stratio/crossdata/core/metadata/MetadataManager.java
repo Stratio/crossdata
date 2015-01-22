@@ -1192,6 +1192,12 @@ public enum MetadataManager {
         return functions;
     }
 
+    /**
+     * Check if the connector has associated the signature of the function.
+     * @param fSelector The function Selector with the signature.
+     * @param connectorName The name of the connector.
+     * @return A boolean with the check result.
+     */
     public boolean checkSignature(FunctionSelector fSelector, ConnectorName connectorName){
         boolean result = false;
         FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
@@ -1201,10 +1207,10 @@ public enum MetadataManager {
         return result;
     }
 
-
     /**
-     * Get the set of function types from all existing connectors.
-     *
+     *  Get the set of function types from all existing connectors.
+     * @param connectorName The connector name.
+     * @param functionName The function name.
      * @return A set of {@link com.stratio.crossdata.common.manifest.FunctionType}.
      */
     public FunctionType getFunction(ConnectorName connectorName, String functionName) {
@@ -1219,6 +1225,12 @@ public enum MetadataManager {
         return result;
     }
 
+    /**
+     * Check if the given statement signature is allowed by the registered function signature.
+     * @param functionSelector The function selector.
+     * @param functionConnector The function Type.
+     * @return A boolean with the check result.
+     */
     public boolean checkSignature(FunctionSelector functionSelector, FunctionType functionConnector){
         boolean result = false;
         String signatureFromSelector = createSignature(functionSelector);
@@ -1231,6 +1243,12 @@ public enum MetadataManager {
         return result;
     }
 
+    /**
+     * Check the signature of to functions.
+     * @param storedSignature The string with the first signature.
+     * @param querySignature The string with the second signature.
+     * @return A boolean with the check result.
+     */
     private boolean checkSignatureCompatibility(String storedSignature, String querySignature) {
         boolean result = false;
         if(storedSignature.contains("Any*]")){
@@ -1251,6 +1269,11 @@ public enum MetadataManager {
         return result;
     }
 
+    /**
+     * Generates the signature of a given function selector.
+     * @param functionSelector The function selector.
+     * @return A String with the signature.
+     */
     public String createSignature(FunctionSelector functionSelector) {
         StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
         sb.append("(Tuple[");

@@ -71,6 +71,7 @@ public class Coordinator implements Serializable {
      * Persists workflow in Metadata Manager.
      *
      * @param metadataWorkflow The metadata workflow.
+     * @param result The object to persist.
      */
     public void persist(MetadataWorkflow metadataWorkflow, MetadataResult result) {
         switch (metadataWorkflow.getExecutionType()) {
@@ -240,10 +241,19 @@ public class Coordinator implements Serializable {
         }
     }
 
+    /**
+     * Persist the Alter Catalog Statement into Metadata Manager.
+     * @param catalog The catalog to persist.
+     */
     public void persistAlterCatalog(CatalogMetadata catalog) {
         MetadataManager.MANAGER.createCatalog(catalog, false);
     }
 
+    /**
+     * Persist the Alter Table Statement into Metadata Manager.
+     * @param tableName The table name to persist.
+     * @param alterOptions The options of the alter table statement.
+     */
     private void persistAlterTable(TableName tableName, AlterOptions alterOptions) {
         TableMetadata storedTable = MetadataManager.MANAGER.getTable(tableName);
         switch(alterOptions.getOption()){
@@ -268,6 +278,11 @@ public class Coordinator implements Serializable {
         MetadataManager.MANAGER.createTable(storedTable, false);
     }
 
+    /**
+     * Persist the Catalog into Metadata Manager into its cluster.
+     * @param catalog The catalog to persist.
+     * @param clusterName The catalog cluster to persist.
+     */
     public void persistCreateCatalogInCluster(CatalogName catalog, ClusterName clusterName) {
         MetadataManager.MANAGER.addCatalogToCluster(catalog, clusterName);
     }
@@ -297,6 +312,7 @@ public class Coordinator implements Serializable {
      * Deletes catalog from Metadata Manager.
      *
      * @param catalog The catalog name.
+     * @param ifExist The variable that indicates if it is can be stored if exists previously.
      */
     public void persistDropCatalog(CatalogName catalog, boolean ifExist) {
         MetadataManager.MANAGER.deleteCatalog(catalog, ifExist);
@@ -382,12 +398,21 @@ public class Coordinator implements Serializable {
         return CommandResult.createCommandResult("CONNECTOR detached successfully");
     }
 
+    /**
+     * Create into metadata manager the previous catalogs that exists in the datastore.
+     * @param catalogMetadataList The catalogs.
+     */
     private void persistImportCatalogs(List<CatalogMetadata> catalogMetadataList) {
         for(CatalogMetadata catalog: catalogMetadataList){
             MetadataManager.MANAGER.createCatalog(catalog);
         }
     }
 
+    /**
+     * Store into metadata manager the tables in its cluster.
+     * @param tableMetadataList The list of tables.
+     * @param clusterName The cluster where the tables are created.
+     */
     private void persistTables(List<TableMetadata> tableMetadataList, ClusterName clusterName) {
         for(TableMetadata table: tableMetadataList){
             CatalogName catalogName = table.getName().getCatalogName();

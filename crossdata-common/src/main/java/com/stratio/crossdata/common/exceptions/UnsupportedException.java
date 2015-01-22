@@ -29,14 +29,27 @@ public class UnsupportedException extends ConnectorException {
      */
     private static final long serialVersionUID = 5194419221361563613L;
 
+    /**
+     * Constructor class based in a Exception.
+     * @param e The exception.
+     */
     public UnsupportedException(Exception e){
         super(e);
     }
 
+    /**
+     * Constructor class based in a message.
+     * @param message The message.
+     */
     public UnsupportedException(String message) {
         super(message);
     }
 
+    /**
+     * Constructor class based in a message and a throwable exception.
+     * @param msg The message.
+     * @param cause The throwable exception.
+     */
     public UnsupportedException(String msg, Throwable cause) {
         super(msg, cause);
     }

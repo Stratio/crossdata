@@ -80,6 +80,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
      *
      * @param tableType    TABLE type {@link com.stratio.crossdata.common.metadata.structures.TableType}.
      * @param tableName    The name of the table.
+     * @param clusterName  The cluster name that correspond with the table.
      * @param columns      A map with the name of the columns in the table and the associated data type.
      * @param partitionKey The list of columns that are part of the primary key.
      * @param clusterKey   The list of columns that are part of the clustering key.
@@ -107,6 +108,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
      *
      * @param tableName    The name of the table.
      * @param columns      A map with the name of the columns in the table and the associated data type.
+     * @param clusterName  The cluster name that correspond with the table.
      * @param partitionKey The list of columns that are part of the primary key.
      * @param clusterKey   The list of columns that are part of the clustering key.
      */
@@ -116,23 +118,35 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
         this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey);
     }
 
+    /**
+     * Get the partition key.
+     * @return The set with {@link com.stratio.crossdata.common.data.ColumnName} with the partition key.
+     */
     public Set<ColumnName> getPartitionKey() {
         return partitionKey;
     }
 
+    /**
+     * Get the cluster key.
+     * @return The set with {@link com.stratio.crossdata.common.data.ColumnName} with the cluster key.
+     */
     public Set<ColumnName> getClusterKey() {
         return clusterKey;
     }
 
-    public TableType getTableType() {
-        return tableType;
-    }
-
+    /**
+     * Get the columns and its types.
+     * @return A map of {@link com.stratio.crossdata.common.data.ColumnName} and {@link com.stratio.crossdata.common
+     * .metadata.ColumnType} .
+     */
     public Map<ColumnName, ColumnType> getColumnsWithTypes() {
         return columnsWithType;
     }
 
-
+    /**
+     * Gte the cluster name of a table.
+     * @return The {@link com.stratio.crossdata.common.data.ClusterName} .
+     */
     public ClusterName getClusterName() {
         return clusterName;
     }
@@ -155,6 +169,10 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
         this.properties = StringUtils.convertJsonToOptions(tableStatement.getTableName(), properties);
     }
 
+    /**
+     * Set if the table will be created if exists previously.
+     * @param ifNotExists The condition of creation.
+     */
     public void setIfNotExists(boolean ifNotExists) {
         this.ifNotExists = ifNotExists;
     }
@@ -193,10 +211,18 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
         return sb.toString();
     }
 
+    /**
+     * Return if the table has properties.
+     * @return The result check.
+     */
     private boolean hasProperties() {
         return ((properties != null) && (!properties.isEmpty()));
     }
 
+    /**
+     * Get the conditions of validations that are needed to create the table.
+     * @return The {@link com.stratio.crossdata.core.validator.requirements.ValidationRequirements} .
+     */
     public ValidationRequirements getValidationRequirements() {
         ValidationRequirements requirements = new ValidationRequirements()
                 .add(ValidationTypes.MUST_EXIST_CATALOG)
@@ -207,7 +233,10 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
         return requirements;
     }
 
-
+    /**
+     * Get isIfNotExists value.
+     * @return A boolean.
+     */
     public boolean isIfNotExists() {
         return ifNotExists;
     }

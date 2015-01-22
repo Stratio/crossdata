@@ -161,6 +161,7 @@ public class CreateIndexStatement extends IndexStatement {
      * Add a column to the list of indexed columns.
      *
      * @param column The name of the column.
+     * @return A boolean with the result of the addColumn.
      */
     public boolean addColumn(ColumnName column) {
         tableName = column.getTableName();
@@ -216,6 +217,9 @@ public class CreateIndexStatement extends IndexStatement {
         return result;
     }
 
+    /**
+     * Normalize the index name to obtain the table name and the index name.
+     */
     public void normalizeIndexName() {
         this.name = new IndexName(tableName, this.name.getName());
     }
@@ -247,6 +251,10 @@ public class CreateIndexStatement extends IndexStatement {
         return sb.toString();
     }
 
+    /**
+     * Return the crossdata index name.
+     * @return The crossdata {@link com.stratio.crossdata.common.data.IndexName} .
+     */
     public IndexName getName() {
         return new IndexName(catalog.getName(), tableName.getName(), getIndexName());
     }

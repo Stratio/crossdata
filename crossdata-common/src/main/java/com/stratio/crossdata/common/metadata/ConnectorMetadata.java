@@ -135,6 +135,7 @@ public class ConnectorMetadata implements IMetadata {
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
      * @param supportedOperations The set of supported operations.
+     * @param functions           The functions allow by the connector.
      */
     public ConnectorMetadata(ConnectorName name, String version,
             Set<DataStoreName> dataStoreRefs,
@@ -195,6 +196,8 @@ public class ConnectorMetadata implements IMetadata {
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
      * @param supportedOperations The set of supported operations.
+     * @param connectorFunctions  The set of functions allow by the connector.
+     * @param excludedFunctions   The set of functions of manifest excluded by the connector.
      */
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
@@ -463,19 +466,34 @@ public class ConnectorMetadata implements IMetadata {
        this.connectorFunctions = new HashSet<>(supportedFunctions.getFunction());
     }
 
+    /**
+     * Get if manifest is added.
+     * @return The check result.
+     */
     public boolean isManifestAdded() {
         return manifestAdded;
     }
 
+    /**
+     * Set manifestAdded.
+     * @param manifestAdded A boolean that indicates if it is added.
+     */
     public void setManifestAdded(boolean manifestAdded) {
         this.manifestAdded = manifestAdded;
     }
 
-
+    /**
+     * Get the connector functions.
+     * @return A set of {@link com.stratio.crossdata.common.manifest.FunctionType} .
+     */
     public Set<FunctionType> getConnectorFunctions() {
         return connectorFunctions;
     }
 
+    /**
+     * Set the connector functions.
+     * @param connectorFunctions A set of {@link com.stratio.crossdata.common.manifest.FunctionType} .
+     */
     public void setConnectorFunctions(Set<FunctionType> connectorFunctions) {
         this.connectorFunctions = connectorFunctions;
     }
@@ -500,6 +518,10 @@ public class ConnectorMetadata implements IMetadata {
         return operations;
     }
 
+    /**
+     * Get the excluded functions of the manifest.
+     * @return A set of strings with the exluded functions of the manifest.
+     */
     public Set<String> getExcludedFunctions() {
         HashSet<String> exFunctionsLowercase = new HashSet<>();
         for(String function: excludedFunctions){
@@ -508,6 +530,10 @@ public class ConnectorMetadata implements IMetadata {
         return exFunctionsLowercase;
     }
 
+    /**
+     * Set the exluded functions of the connector.
+     * @param excludedFunctions A set of String with the exluded functions.
+     */
     public void setExcludedFunctions(Set<String> excludedFunctions) {
         this.excludedFunctions = excludedFunctions;
     }
