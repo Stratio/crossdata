@@ -76,7 +76,7 @@ public class DataStoreFunctionsType implements Serializable {
      * Objects of the following type(s) are allowed in the list
      * {@link FunctionType }
      * 
-     * 
+     * @return a list of {@link com.stratio.crossdata.common.manifest.FunctionType} .
      */
     public List<FunctionType> getFunction() {
         if (function == null) {
@@ -85,6 +85,10 @@ public class DataStoreFunctionsType implements Serializable {
         return this.function;
     }
 
+    /**
+     * Set the functions of datastore.
+     * @param function The list of functions.
+     */
     public void setFunction(List<FunctionType> function) {
         this.function = function;
     }

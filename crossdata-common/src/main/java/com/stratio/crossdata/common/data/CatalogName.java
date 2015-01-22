@@ -18,9 +18,16 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * Catalog Name class.
+ */
 public class CatalogName extends FirstLevelName {
     private final String name;
 
+    /**
+     * Constructor class.
+     * @param catalogName The catalog name.
+     */
     public CatalogName(String catalogName) {
         super();
         this.name = catalogName.toLowerCase();

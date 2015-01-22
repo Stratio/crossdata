@@ -18,20 +18,43 @@
 
 package com.stratio.crossdata.core.utils;
 
+/**
+ * Antlr Error class.
+ */
 public class AntlrError {
 
+    /**
+     * Antlr header provided.
+     */
     private final String header;
+
+    /**
+     * The message.
+     */
     private final String message;
 
+    /**
+     * Constructor class.
+     * @param header The header.
+     * @param message The message.
+     */
     public AntlrError(String header, String message) {
         this.header = header;
         this.message = message;
     }
 
+    /**
+     * Get the header.
+     * @return A string.
+     */
     public String getHeader() {
         return header;
     }
 
+    /**
+     * Get the message.
+     * @return A string.
+     */
     public String getMessage() {
         return message;
     }
@@ -43,6 +66,10 @@ public class AntlrError {
         return sb.toString();
     }
 
+    /**
+     * Transform the error of antlr to string.
+     * @return A string.
+     */
     public String toStringWithTokenTranslation() {
         StringBuilder sb = new StringBuilder("\tError recognized: ");
         sb.append(header).append(": ");

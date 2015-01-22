@@ -39,6 +39,11 @@ public final class QualifiedNames {
         return normalize(name);
     }
 
+    /**
+     * Get the catalogName from a qualified Name.
+     * @param qualifiedName The qualified name.
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName} .
+     */
     public static CatalogName getCatalogNameFromQualifiedName(String qualifiedName) {
         CatalogName catalogName = null;
         String[] arrNames = qualifiedName.split("\\.");
@@ -101,6 +106,11 @@ public final class QualifiedNames {
         return normalize("node." + name);
     }
 
+    /**
+     * Get the qualified name of a function.
+     * @param name The name of the function.
+     * @return A string.
+     */
     public static String getFunctionQualifiedName(String name) {
         return normalize("function." + name);
     }

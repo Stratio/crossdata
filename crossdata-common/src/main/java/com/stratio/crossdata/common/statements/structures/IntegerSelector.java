@@ -51,6 +51,7 @@ public class IntegerSelector extends Selector {
     /**
      * Class constructor.
      *
+     * @param tableName A Table Name.
      * @param value An integer value.
      */
     public IntegerSelector(TableName tableName, int value) {
@@ -60,7 +61,7 @@ public class IntegerSelector extends Selector {
 
     /**
      * Class constructor.
-     *
+     * @param tableName A Table Name.
      * @param value The integer/long value.
      */
     public IntegerSelector(TableName tableName, String value) {

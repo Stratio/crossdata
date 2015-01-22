@@ -21,18 +21,37 @@ package com.stratio.crossdata.core.statements;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 
+/**
+ * Class with the logic of the tables statement.
+ */
 public class TableStatement implements ITableStatement {
     /**
      * The name of the table.
      */
     protected TableName tableName;
-    
+
+    /**
+     * The catalog name.
+     */
     protected CatalogName catalog;
+
+    /**
+     * The catalog name session.
+     */
     protected CatalogName sessionCatalog;
-    
+
+    /**
+     * Get the table name.
+     * @return A {@link com.stratio.crossdata.common.data.TableName} .
+     */
     public TableName getTableName() {
         return tableName;
     }
+
+    /**
+     * Set the table name.
+     * @param tableName The name.
+     */
     public void setTableName(TableName tableName) {
         this.tableName = tableName;
     }

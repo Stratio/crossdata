@@ -24,6 +24,9 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
+/**
+ * ImportMetadataStatement class that contain all metadata necessary to import data from a external datastore.
+ */
 public class ImportMetadataStatement extends MetadataStatement {
 
     final private ClusterName clusterName;
@@ -31,6 +34,13 @@ public class ImportMetadataStatement extends MetadataStatement {
     private TableName tableName;
     private boolean discover;
 
+    /**
+     * Constructor class.
+     * @param clusterName The cluster name.
+     * @param catalogName The catalog name.
+     * @param tableName The table name.
+     * @param discover Boolean that allow to discover data.
+     */
     public ImportMetadataStatement(
             ClusterName clusterName,
             CatalogName catalogName,

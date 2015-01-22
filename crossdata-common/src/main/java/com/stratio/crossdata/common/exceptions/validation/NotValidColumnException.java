@@ -21,7 +21,14 @@ package com.stratio.crossdata.common.exceptions.validation;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.ColumnName;
 
+/**
+ * Exception Class that is thrown when a column is not valid in validator phase.
+ */
 public class NotValidColumnException extends ValidationException {
+    /**
+     * Constructor class.
+     * @param name The name of the column affected.
+     */
     public NotValidColumnException(ColumnName name) {
         super(name + " is not valid column in this sentence");
     }

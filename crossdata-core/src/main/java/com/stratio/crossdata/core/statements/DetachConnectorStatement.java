@@ -23,11 +23,19 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
+/**
+ * DetachConnectorStatement class.
+ */
 public class DetachConnectorStatement extends MetadataStatement {
 
     private ConnectorName connectorName;
     private ClusterName clusterName;
 
+    /**
+     * Constructor class.
+     * @param connectorName The connector name.
+     * @param clusterName The cluster name where the connector will be detached.
+     */
     public DetachConnectorStatement(ConnectorName connectorName, ClusterName clusterName) {
         this.connectorName = connectorName;
         this.clusterName = clusterName;

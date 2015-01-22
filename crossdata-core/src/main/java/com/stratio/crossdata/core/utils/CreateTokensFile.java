@@ -30,6 +30,9 @@ import java.nio.charset.Charset;
 
 import org.apache.log4j.Logger;
 
+/**
+ * Create tokens file class for parser.
+ */
 public final class CreateTokensFile {
 
     /**
@@ -43,6 +46,10 @@ public final class CreateTokensFile {
     private CreateTokensFile() {
     }
 
+    /**
+     * Main method of the class.
+     * @param args The possible arguments.
+     */
     public static void main(String[] args) {
         String line = null;
         try {

@@ -20,7 +20,13 @@ package com.stratio.crossdata.common.exceptions.validation;
 
 import com.stratio.crossdata.common.exceptions.ValidationException;
 
+/**
+ * YodaCondition Exception class thrown when the order of the operators are inverted.
+ */
 public class YodaConditionException extends ValidationException {
+    /**
+     * Constructor class.
+     */
     public YodaConditionException() {
         super("Your condition order correct not is. May the Force be with you. <(-_-)>");
     }

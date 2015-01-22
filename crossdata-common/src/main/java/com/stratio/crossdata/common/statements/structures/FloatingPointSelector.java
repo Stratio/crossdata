@@ -51,6 +51,7 @@ public class FloatingPointSelector extends Selector {
     /**
      * Class constructor.
      *
+     * @param tableName A table name.
      * @param value A double value.
      */
     public FloatingPointSelector(TableName tableName, double value) {
@@ -60,7 +61,7 @@ public class FloatingPointSelector extends Selector {
 
     /**
      * Class constructor.
-     *
+     * @param tableName A table name.
      * @param value A double value.
      */
     public FloatingPointSelector(TableName tableName, String value) {

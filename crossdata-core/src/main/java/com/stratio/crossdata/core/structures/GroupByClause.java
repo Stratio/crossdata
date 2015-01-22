@@ -23,15 +23,25 @@ import java.util.List;
 
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * GroupByClause class that has the metadata of the group by of statement.
+ */
 public class GroupByClause implements Serializable {
 
     private static final long serialVersionUID = 1946514142415876581L;
 
     private List<Selector> selectorIdentifier;
 
+    /**
+     * Basic constructor class.
+     */
     public GroupByClause() {
     }
 
+    /**
+     * Constructor class.
+     * @param selectorIdentifier The selector identifier.
+     */
     public GroupByClause(
             List<Selector> selectorIdentifier) {
         this.selectorIdentifier = selectorIdentifier;

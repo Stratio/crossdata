@@ -67,6 +67,7 @@ public interface IConnector {
     /**
      * Close the connection with the underlying cluster.
      *
+     * @param name The Cluster name.
      * @throws ConnectionException If the close operation cannot be performed.
      */
     void close(ClusterName name) throws ConnectionException;
@@ -81,6 +82,7 @@ public interface IConnector {
     /**
      * Retrieve the connectivity status with the datastore.
      *
+     * @param name The Cluster name.
      * @return Whether it is connected or not.
      */
     boolean isConnected(ClusterName name);

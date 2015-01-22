@@ -22,8 +22,17 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 
+/**
+ * Normalizer class to select queries.
+ */
 public class Normalizer {
 
+    /**
+     * Constructor Class.
+     * @param parsedQuery The parsed query.
+     * @return A {@link com.stratio.crossdata.core.query.SelectValidatedQuery} .
+     * @throws ValidationException
+     */
     public SelectValidatedQuery normalize(SelectParsedQuery parsedQuery) throws ValidationException {
         Normalizator normalizator = new Normalizator(parsedQuery);
         normalizator.execute();

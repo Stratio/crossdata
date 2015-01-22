@@ -33,6 +33,11 @@ public class TableName extends Name {
 
     private String alias = null;
 
+    /**
+     * Constructor class.
+     * @param catalogName The catalog name.
+     * @param tableName The table name.
+     */
     public TableName(String catalogName, String tableName) {
         if (catalogName == null || catalogName.isEmpty()) {
             this.catalogName = null;
@@ -70,6 +75,10 @@ public class TableName extends Name {
         return catalogName != null;
     }
 
+    /**
+     * Return the complete name of the table, with te catalog name and the table name.
+     * @return A String.
+     */
     public String getQualifiedName() {
         String result;
         if (isCompletedName()) {

@@ -18,12 +18,24 @@
 
 package com.stratio.crossdata.common.result;
 
+/**
+ * InProgressResult class
+ */
 public class InProgressResult extends Result {
 
+    /**
+     * Constructor class.
+     * @param queryId The query Id.
+     */
     private InProgressResult(String queryId) {
         setQueryId(queryId);
     }
 
+    /**
+     * Constructor class like singleton
+     * @param queryId The query Id.
+     * @return A InProgressResult.
+     */
     public static InProgressResult createInProgressResult(String queryId){
         return new InProgressResult(queryId);
     }
