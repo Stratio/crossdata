@@ -66,7 +66,7 @@ public class ManagementWorkflow extends ExecutionWorkflow {
     /**
      * Class constructor.
      *
-     * @param queryId       Query identifer.
+     * @param queryId       Query identifier.
      * @param actorRef      Target actor reference.
      * @param executionType Type of execution.
      * @param type          Type of results.

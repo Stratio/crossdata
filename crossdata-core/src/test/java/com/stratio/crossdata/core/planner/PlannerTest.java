@@ -123,7 +123,7 @@ public class PlannerTest extends PlannerBaseTest {
                 "actorRef2");
 
         clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName(), connector2.getName());
-        CatalogName catalogName = createTestCatalog("demo");
+        CatalogName catalogName = createTestCatalog("demo").getName();
         createTestTables();
     }
 
