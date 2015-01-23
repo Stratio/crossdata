@@ -192,22 +192,22 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
-        table1 = createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes1, partitionKeys1,
-                clusteringKeys1);
+        table1 = createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes1,
+                partitionKeys1, clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
         ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
-        table2 = createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes2, partitionKeys2,
-                clusteringKeys2);
+        table2 = createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes2,
+                partitionKeys2, clusteringKeys2, null);
 
         String[] columnNames3 = { "id", "email" };
         ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys3 = { "id" };
         String[] clusteringKeys3 = { };
-        table2 = createTestTable(clusterName, "demo", "table3", columnNames3, columnTypes3, partitionKeys3,
-                clusteringKeys3);
+        table2 = createTestTable(clusterName, "demo", "table3", columnNames3, columnTypes3,
+                partitionKeys3, clusteringKeys3, null);
     }
 
     /**
@@ -612,8 +612,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
                 ColumnType.TEXT };
         String[] partitionKeys = { "name", "age" };
         String[] clusteringKeys = { "gender" };
-        createTestTable(new ClusterName("cluster"), "demo", "users", columnNames, columnTypes, partitionKeys,
-                clusteringKeys);
+        createTestTable(new ClusterName("cluster"), "demo", "users", columnNames, columnTypes,
+                partitionKeys, clusteringKeys, null);
         String query = "Insert into demo.users(name,gender,age,bool,phrase,email) values ('pepe','male',23,true,'this is the phrase','mail@mail.com';";
         List<ColumnName> columns = new ArrayList<>();
         List<Selector> values = new ArrayList<>();

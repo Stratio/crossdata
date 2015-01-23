@@ -94,12 +94,12 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
         ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys = { "id" };
         String[] clusteringKeys = { };
-        table1 = createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes, partitionKeys,
-                clusteringKeys);
+        table1 = createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes,
+                partitionKeys, clusteringKeys, null);
 
         String[] columnNames2 = { "id", "email" };
-        table2 = createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes, partitionKeys,
-                clusteringKeys);
+        table2 = createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes,
+                partitionKeys, clusteringKeys, null);
 
     }
 

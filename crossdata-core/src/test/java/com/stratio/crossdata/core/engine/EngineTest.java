@@ -29,7 +29,6 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.core.grid.Grid;
-import com.stratio.crossdata.core.grid.GridException;
 
 public class EngineTest {
 
@@ -85,18 +84,19 @@ public class EngineTest {
 
     @Test
     public void testConstructorFail(){
-        engineConfig = new EngineConfig();
-        engineConfig.setGridContactHosts(new String[]{"localhost"});
-        engineConfig.setGridJoinTimeout(-1);
-        engineConfig.setGridListenAddress(null);
-        engineConfig.setGridMinInitialMembers(-1);
-        engineConfig.setGridPersistencePath(null);
-        engineConfig.setGridPort(-1);
+        EngineConfig engineConfigTest = new EngineConfig();
+        engineConfigTest.setGridContactHosts(new String[]{"whatever"});
+        engineConfigTest.setGridJoinTimeout(-1);
+        engineConfigTest.setGridListenAddress(null);
+        engineConfigTest.setGridMinInitialMembers(-1);
+        engineConfigTest.setGridPersistencePath(null);
+        engineConfigTest.setGridPort(-1);
         try {
-            new Engine(engineConfig);
-            fail("testConstructorFail should have thrown a GridException");
-        } catch (GridException ge){
-            assertNotNull(ge, "testConstructorFail should have thrown a GridException");
+            Engine testEngine = new Engine(engineConfigTest);
+            testEngine.getParser().parseStatement("whatever", "whatever");
+            fail("testConstructorFail should have thrown a Exception");
+        } catch (Exception ex){
+            assertNotNull(ex, "testConstructorFail should have thrown a Exception");
         }
     }
 

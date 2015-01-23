@@ -24,15 +24,19 @@ import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
@@ -43,10 +47,13 @@ import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
@@ -272,7 +279,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         assertEquals(MetadataManager.MANAGER.getTable(tableName).getName(), tableMetadata.getName());
     }
 
-    /*
+
     //CREATE INDEX
     @Test
     public void testCreateIndex() throws Exception {
@@ -281,142 +288,47 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         String cluster = "clusterTest";
         String catalog = "catalogTest5";
         String table = "tableTest";
+        String index = "indexTest";
 
-        createTestDatastoreAndPersist(datastore, "0.2.0");
-        createTestClusterAndPersist(cluster, datastore);
-        createTestsCatalogAndPersist(catalog);
-        createTestTableAndPersist(cluster, catalog, table);
+        createTestDatastore();
+        createTestCluster(cluster, new DataStoreName(datastore));
+        createTestCatalog(catalog);
 
-        BaseQuery baseQuery =
-                new BaseQuery(UUID.randomUUID().toString(), "CREATE INDEX testIndex ON testTable",
-                        new CatalogName(catalog));
+        TableName tableName = new TableName(catalog, table);
+        String[] columnNames1 = { "id", "user" };
+        ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
+        String[] partitionKeys = { "id" };
+        String[] clusteringKeys = { };
 
-        CreateIndexStatement createIndexStatement = new CreateIndexStatement();
-        createIndexStatement.setTableName(new TableName("catalogTest5", "tableTest"));
-        new MetadataParsedQuery(baseQuery, createIndexStatement);
-
-        MetadataParsedQuery metadataParsedQuery =
-                new MetadataParsedQuery(baseQuery, createIndexStatement);
-
-        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
-
-        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
-
-        Coordinator coordinator = new Coordinator();
-        if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
-            assertTrue(true);
-            coordinator.persist(plannedQuery);
-        } else {
-            fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
-        }
-    }
-
-    //INSERT INTO
-    @Test
-    public void testInsertInto() throws Exception {
-        String catalog = "catalogTest6";
-        String table = "tableTest";
-
-        BaseQuery baseQuery =
-                new BaseQuery(UUID.randomUUID().toString(),
-                        "INSERT INTO catalogTest6.tableTest ('col1', 'col2') VALUES (1, 2)",
-                        new CatalogName(catalog));
-
-        InsertIntoStatement insert = new InsertIntoStatement(new TableName(catalog, table), new ArrayList<ColumnName>(),
-                new SelectStatement(new TableName(catalog, table)), false);
-
-        StorageParsedQuery metadataParsedQuery =
-                new StorageParsedQuery(baseQuery, insert);
-
-        StorageValidatedQuery metadataValidatedQuery = new StorageValidatedQuery(metadataParsedQuery);
-
-        StoragePlannedQuery plannedQuery = new StoragePlannedQuery(metadataValidatedQuery, null);
-
-        Coordinator coordinator = new Coordinator();
-        if (coordinator.coordinate(plannedQuery) instanceof StorageInProgressQuery) {
-            assertTrue(true);
-            coordinator.persist(plannedQuery);
-        } else {
-            fail("Coordinator.coordinate not creating new StorageInProgressQuery");
-        }
-    }
-
-    private void createTestDatastoreAndPersist(String name, String version) {
-        // Create and add a test datastore metadata to the metadataManager
-        DataStoreName dataStoreName = new DataStoreName(name);
-        String dataStoreVersion = version;
-        RequiredPropertiesType requiredProperties = null;
-        OptionalPropertiesType othersProperties = null;
-        DataStoreMetadata datastoreTest =
-                new DataStoreMetadata(dataStoreName, dataStoreVersion, requiredProperties, othersProperties);
-        MetadataManager.MANAGER.createDataStore(datastoreTest, false);
-    }
-
-    private void createTestClusterAndPersist(String cluster, String datastore) {
-        // Create and add a test cluster metadata to the metadataManager
-        ClusterName clusterName = new ClusterName(cluster);
-        DataStoreName dataStoreRef = new DataStoreName(datastore);
+        Set<IndexMetadata> indexes = new HashSet<>();
+        IndexName indexName = new IndexName(new ColumnName(catalog, table, index));
+        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        ColumnMetadata column = new ColumnMetadata(new ColumnName(catalog, table, "user"), null, ColumnType.TEXT);
+        columns.put(column.getName(), column);
+        IndexType indexType = IndexType.DEFAULT;
         Map<Selector, Selector> options = new HashMap<>();
-        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
-        ClusterMetadata clusterTest =
-                new ClusterMetadata(clusterName, dataStoreRef, options, connectorAttachedRefs);
-        MetadataManager.MANAGER.createClusterAndAttach(clusterTest, false);
-    }
+        IndexMetadata indexMetadata = new IndexMetadata(indexName, columns, indexType, options);
 
-    private void createTestsCatalogAndPersist(String catalog) {
-        // Create and add test catalog to the metadataManager
-        CatalogName catalogName = new CatalogName(catalog);
-        CatalogMetadata catalogMetadata =
-                new CatalogMetadata(catalogName, new HashMap<Selector, Selector>(),
-                        new HashMap<TableName, TableMetadata>());
-        MetadataManager.MANAGER.createCatalog(catalogMetadata);
-    }
+        createTestTable(new ClusterName(cluster), catalog, table, columnNames1, columnTypes,
+                partitionKeys, clusteringKeys, indexes);
 
-    private void createTestTableAndPersist(String clusterName, String catalogName,
-            String tableNameString) {
-        // Create and add test table to the metadataManager
-        TableName tableName = new TableName(catalogName, tableNameString);
-        TableMetadata table =
-                new TableMetadata(tableName, new HashMap<Selector, Selector>(),
-                        new HashMap<ColumnName, ColumnMetadata>(), new HashMap<IndexName, IndexMetadata>(),
-                        new ClusterName(clusterName), new ArrayList<ColumnName>(), new ArrayList<ColumnName>());
+        String queryId = "testCreateIndexQueryId";
+        String actorRef = "testCreateIndexActorRef";
+        ExecutionType executionType = ExecutionType.CREATE_INDEX;
+        ResultType type = ResultType.RESULTS;
+        MetadataWorkflow metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+        metadataWorkflow.setIndexName(indexMetadata.getName());
+        metadataWorkflow.setIndexMetadata(indexMetadata);
 
-        Map<ColumnName, ColumnType> columns = new HashMap<>();
-        for (Map.Entry<ColumnName, ColumnMetadata> c : table.getColumns().entrySet()) {
-            columns.put(c.getKey(), c.getValue().getColumnType());
-        }
-        MetadataManager.MANAGER.createTable(table);
-    }
-
-    @Test
-    public void testCreateCatalogCheckNameNotEquals() throws Exception {
-        CatalogName catalogName = new CatalogName("testCatalog2");
-
-        BaseQuery baseQuery =
-                new BaseQuery(UUID.randomUUID().toString(), "CREATE CATALOG testCatalog2", catalogName);
-
-        CreateCatalogStatement createCatalogStatement =
-                new CreateCatalogStatement(catalogName, false, "{}");
-
-        MetadataParsedQuery metadataParsedQuery =
-                new MetadataParsedQuery(baseQuery, createCatalogStatement);
-
-        MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
-
-        MetadataPlannedQuery plannedQuery = new MetadataPlannedQuery(metadataValidatedQuery, null);
-
+        MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_INDEX);
         Coordinator coordinator = new Coordinator();
-        if (coordinator.coordinate(plannedQuery) instanceof MetadataInProgressQuery) {
-            assertTrue(true);
-            coordinator.persist(plannedQuery);
-        } else {
-            fail("Coordinator.coordinate not creating new MetadataInProgressQuery");
-        }
+        coordinator.persist(metadataWorkflow, result);
 
-        assertNotEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), new CatalogName(
-                "notSameName"));
+        String storedIndexName =
+                MetadataManager.MANAGER.getTable(tableName).getIndexes().keySet().iterator().next().getName();
+        assertTrue(index.equalsIgnoreCase(storedIndexName),
+                "Expected: " + index + System.lineSeparator() +
+                        "Found:    " + storedIndexName);
     }
-
-*/
 
 }

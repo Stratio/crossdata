@@ -52,7 +52,8 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         columnTypes[6] = ColumnType.LIST;
         String[] partitionKeys = new String[0];
         String[] clusteringKeys = new String[0];
-        createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes, partitionKeys, clusteringKeys);
+        createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,
+                partitionKeys, clusteringKeys, null);
         table = new TableName("catalogTest", "tableTest");
     }
 
