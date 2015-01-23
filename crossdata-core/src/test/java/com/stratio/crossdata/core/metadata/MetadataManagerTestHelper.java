@@ -312,10 +312,19 @@ public class MetadataManagerTestHelper {
     public TableMetadata createTestTable(
             ClusterName clusterName,
             String catalogName,
-            String tableName, String[] columnNames,
-            ColumnType[] columnTypes, String[] partitionKeys, String[] clusteringKeys) {
+            String tableName,
+            String[] columnNames,
+            ColumnType[] columnTypes,
+            String[] partitionKeys,
+            String[] clusteringKeys,
+            Set<IndexMetadata> indexes) {
         TableMetadata tableMetadata = defineTable(clusterName, catalogName, tableName, columnNames, columnTypes,
                 partitionKeys, clusteringKeys);
+        if((indexes != null) && (!indexes.isEmpty())){
+            for(IndexMetadata indexMetadata: indexes){
+                tableMetadata.addIndex(indexMetadata.getName(), indexMetadata);
+            }
+        }
         MetadataManager.MANAGER.createTable(tableMetadata);
         return tableMetadata;
     }

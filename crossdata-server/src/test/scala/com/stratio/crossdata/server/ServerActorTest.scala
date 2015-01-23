@@ -52,7 +52,6 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import akka.actor.Address
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
@@ -240,8 +239,7 @@ ImplicitSender with BeforeAndAfterAll{
 
     //create table
     val table1= metadataManager.createTestTable(clusterName1, catalogName, tableName, Array(name, "age"),
-
-      Array(ColumnType.TEXT, ColumnType.INT), Array(name), Array(name))
+      Array(ColumnType.TEXT, ColumnType.INT), Array(name), Array(name), null)
 
     val initialSteps: java.util.List[LogicalStep] = new java.util.LinkedList[LogicalStep]
     val project: Project = getProject(tableName2)

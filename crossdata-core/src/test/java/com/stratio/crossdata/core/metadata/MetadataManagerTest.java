@@ -141,9 +141,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
         TableMetadata table = createTestTable(clusterName, catalogName.getName(), "testTable", columnNames1,
-                columnTypes1,
-                partitionKeys1,
-                clusteringKeys1);
+                columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         assertEquals(MetadataManager.MANAGER.getTable(table.getName()).getName(), table.getName(),
                 "Expected: " + table.getName() + System.lineSeparator() +
@@ -507,7 +505,8 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys = { "firstCol" };
         String[] clusteringKeys = new String[0];
-        createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes, partitionKeys, clusteringKeys);
+        createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,
+                partitionKeys, clusteringKeys, null);
 
         TableName name = new TableName("catalogTest", "tableTest");
         Map<Selector, Selector> options = new HashMap<>();
