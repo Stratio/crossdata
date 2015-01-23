@@ -23,7 +23,7 @@ import com.stratio.crossdata.core.statements.CrossdataStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 
 /**
- * Class that implements the logic to Parsed Metadata Queries
+ * Class that implements the logic to Parsed Metadata Queries.
  */
 public class MetadataParsedQuery extends BaseQuery implements IParsedQuery {
 

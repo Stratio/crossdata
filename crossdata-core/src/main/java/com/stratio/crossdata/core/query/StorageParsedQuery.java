@@ -23,7 +23,7 @@ import com.stratio.crossdata.core.statements.CrossdataStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
 
 /**
- * Storage Parsed Query
+ * Storage Parsed Query.
  */
 public class StorageParsedQuery extends BaseQuery implements IParsedQuery {
 

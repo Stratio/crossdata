@@ -372,7 +372,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       asyncSender ! ACK(aex.queryId, QueryStatus.IN_PROGRESS)
     } catch {
       case e: Exception => {
-        val result = Result.createErrorResult(e)
+        val result = Result.createExecutionErrorResult(e.getMessage())
         result.setQueryId(aex.queryId)
         asyncSender ! result
         runningJobs.remove(aex.queryId)
@@ -451,7 +451,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     } catch {
       case ex: Exception => {
         logger.error(ex.getMessage)
-        val result = Result.createErrorResult(ex)
+        val result = Result.createExecutionErrorResult(ex.getMessage)
         result.setQueryId(qId)
         s ! result
       }
