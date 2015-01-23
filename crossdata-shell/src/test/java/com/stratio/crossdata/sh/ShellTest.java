@@ -35,8 +35,10 @@ public class ShellTest {
 
     @Test
     public void testMain() {
+        boolean ok=false;
         Shell.main(new String[] { "--sync", "--script", "/path/file.xdql" });
-        assertTrue(true, "testMain failed.");
+        ok=true;
+        assertTrue(ok, "testMain failed.");
     }
 
     @Test

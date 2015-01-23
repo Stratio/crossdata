@@ -182,7 +182,7 @@ public class Normalizator {
 
         if (orderByClauseClauses != null) {
             normalizeOrderBy(orderByClauseClauses);
-            fields.setOrderByClauseClauses(orderByClauseClauses);
+            fields.setOrderByClauses(orderByClauseClauses);
         }
     }
 

@@ -18,11 +18,18 @@
 
 package com.stratio.crossdata.common.result;
 
+/**
+ * Empty Result Class.
+ */
 public class EmptyResult extends Result {
 
     private EmptyResult() {
     }
 
+    /**
+     * Singleton constructor.
+     * @return EmptyResult object.
+     */
     public static EmptyResult createEmptyResult(){
         return new EmptyResult();
     }
