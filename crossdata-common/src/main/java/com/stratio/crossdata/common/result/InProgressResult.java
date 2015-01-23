@@ -19,7 +19,7 @@
 package com.stratio.crossdata.common.result;
 
 /**
- * InProgressResult class
+ * InProgressResult class.
  */
 public class InProgressResult extends Result {
 
@@ -32,7 +32,7 @@ public class InProgressResult extends Result {
     }
 
     /**
-     * Constructor class like singleton
+     * Constructor class like singleton.
      * @param queryId The query Id.
      * @return A InProgressResult.
      */

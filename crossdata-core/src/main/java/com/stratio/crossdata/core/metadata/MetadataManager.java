@@ -1251,6 +1251,7 @@ public enum MetadataManager {
      */
     private boolean checkSignatureCompatibility(String storedSignature, String querySignature) {
         boolean result = false;
+
         if(storedSignature.contains("Any*]")){
             String typesInStoresSignature = storedSignature.substring(
                     storedSignature.indexOf("Tuple["),
