@@ -1251,20 +1251,23 @@ public enum MetadataManager {
      */
     private boolean checkSignatureCompatibility(String storedSignature, String querySignature) {
         boolean result = false;
-
+        String querySignature1=querySignature;
         if(storedSignature.contains("Any*]")){
             String typesInStoresSignature = storedSignature.substring(
                     storedSignature.indexOf("Tuple["),
-                    storedSignature.indexOf("]")+1);
-            querySignature = querySignature.replaceFirst("Tuple\\[[^\\]]*]", typesInStoresSignature);
+                    storedSignature.indexOf(']')+1);
+            querySignature1 = querySignature.replaceFirst("Tuple\\[[^\\]]*]", typesInStoresSignature);
         }
+
+        String querySignature2=querySignature1;
         if(storedSignature.endsWith(":Tuple[Any]")){
-            querySignature = querySignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
+            querySignature2 = querySignature1.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
         }
-        if(querySignature.endsWith(":Tuple[Any]")){
-            storedSignature = storedSignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
+        String storedSignature1=storedSignature;
+        if(querySignature1.endsWith(":Tuple[Any]")){
+            storedSignature1 = storedSignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
         }
-        if(storedSignature.equalsIgnoreCase(querySignature)){
+        if(storedSignature1.equalsIgnoreCase(querySignature2)){
             result = true;
         }
         return result;

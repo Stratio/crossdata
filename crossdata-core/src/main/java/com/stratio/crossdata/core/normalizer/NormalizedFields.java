@@ -75,7 +75,7 @@ public class NormalizedFields {
     /**
      * List of {@link com.stratio.crossdata.common.statements.structures.OrderByClause}.
      */
-    private List<OrderByClause> orderByClauseClauses = new ArrayList<>();
+    private List<OrderByClause> orderByClauses = new ArrayList<>();
 
     /**
      * List of {@link com.stratio.crossdata.core.structures.GroupByClause}.
@@ -208,10 +208,10 @@ public class NormalizedFields {
     /**
      * Set the order by clauses.
      *
-     * @param orderByClauseClauses A list of {@link com.stratio.crossdata.common.statements.structures.OrderByClause}.
+     * @param orderByClauses A list of {@link com.stratio.crossdata.common.statements.structures.OrderByClause}.
      */
-    public void setOrderByClauseClauses(List<OrderByClause> orderByClauseClauses) {
-        this.orderByClauseClauses = orderByClauseClauses;
+    public void setOrderByClauses(List<OrderByClause> orderByClauses) {
+        this.orderByClauses = orderByClauses;
     }
 
     /**

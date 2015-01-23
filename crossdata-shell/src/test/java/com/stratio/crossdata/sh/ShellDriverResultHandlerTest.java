@@ -51,6 +51,6 @@ public class ShellDriverResultHandlerTest {
         }catch (Exception e){
             fail("testProcessResult failed.");
         }
-        assertTrue(true, "testProcessResult failed.");
+        assertTrue(ok, "testProcessResult failed.");
     }
 }

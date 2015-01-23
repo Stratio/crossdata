@@ -129,7 +129,7 @@ public class APIManager {
         this.planner = planner;
     }
 
-    private Result processRequestListCatalogs(Command cmd){
+    private Result processRequestListCatalogs(){
         Result result;
         LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
         LOG.info(PROCESSING + APICommand.LIST_CATALOGS().toString());
@@ -215,7 +215,7 @@ public class APIManager {
     public Result processRequest(Command cmd) {
         Result result;
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
-            result=processRequestListCatalogs(cmd);
+            result=processRequestListCatalogs();
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
            result=processRequestListTables(cmd);
         } else if (APICommand.LIST_COLUMNS().equals(cmd.commandType())) {
@@ -616,20 +616,7 @@ public class APIManager {
         for (ClusterMetadata cluster : clusters) {
             sb.append("Clusters List:").append(System.lineSeparator());
             sb.append("\t").append(cluster.getName()).append(System.lineSeparator());
-            /*
-            sb.append("Datastore: ").append(cluster.getDataStoreRef()).append(System.lineSeparator());
 
-            sb.append("Options: ").append(System.lineSeparator());
-            Map<Selector, Selector> options = cluster.getOptions();
-            for (Map.Entry<Selector, Selector> entry : options.entrySet()) {
-                sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(System.lineSeparator());
-            }
-
-            sb.append("Attached connectors: ").append(cluster.getConnectorAttachedRefs().keySet())
-                    .append(System.lineSeparator());
-
-            sb = sb.append(System.getProperty("line.separator"));
-            */
         }
         result = CommandResult.createCommandResult(sb.toString());
         return result;

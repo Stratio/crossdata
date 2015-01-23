@@ -92,7 +92,8 @@ public final class StringUtils {
         if ((json == null) || (json.isEmpty())) {
             return new HashMap<>();
         }
-        json = json.replaceAll("<[^>]*>\\.", "");
+        String jsonModified;
+        jsonModified = json.replaceAll("<[^>]*>\\.", "");
         Map<Selector, Selector> options = new LinkedHashMap<>();
         ObjectMapper mapper = new ObjectMapper();
         mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
@@ -100,7 +101,7 @@ public final class StringUtils {
         JsonFactory factory = mapper.getJsonFactory();
         JsonParser jp;
         try {
-            jp = factory.createJsonParser(json);
+            jp = factory.createJsonParser(jsonModified);
             JsonNode root = mapper.readTree(jp);
             Iterator<Map.Entry<String, JsonNode>> iter = root.getFields();
             while (iter.hasNext()) {
