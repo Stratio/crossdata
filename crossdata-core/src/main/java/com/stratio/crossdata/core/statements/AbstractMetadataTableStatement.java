@@ -25,7 +25,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 public abstract class AbstractMetadataTableStatement extends MetadataStatement implements ITableStatement{
     
     private class InnerTableStatement extends TableStatement {   }
-    TableStatement tableStatement=new InnerTableStatement();
+    protected TableStatement tableStatement=new InnerTableStatement();
 
 
     protected AbstractMetadataTableStatement() {

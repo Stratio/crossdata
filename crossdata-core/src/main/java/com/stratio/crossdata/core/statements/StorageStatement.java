@@ -31,7 +31,7 @@ public abstract class StorageStatement extends CrossdataStatement implements ITa
     /**
      * A table statement that affect the storage operation.
      */
-    TableStatement tableStatement=new TableStatement();
+    protected TableStatement tableStatement=new TableStatement();
     
     @Override
     public ValidationRequirements getValidationRequirements() {
@@ -53,4 +53,6 @@ public abstract class StorageStatement extends CrossdataStatement implements ITa
     public void setTableName(TableName tablename) { tableStatement.setTableName(tablename); }
     @Override
     public CatalogName getEffectiveCatalog() { return tableStatement.getEffectiveCatalog(); }
+
+
 }

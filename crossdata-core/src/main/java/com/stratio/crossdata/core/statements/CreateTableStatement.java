@@ -18,7 +18,6 @@
 
 package com.stratio.crossdata.core.statements;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -41,7 +40,6 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 public class CreateTableStatement extends AbstractMetadataTableStatement implements ITableStatement {
 
     private TableType tableType = TableType.DATABASE;
-
 
     private ClusterName clusterName;
 
@@ -120,6 +118,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     /**
      * Get the partition key.
+     *
      * @return The set with {@link com.stratio.crossdata.common.data.ColumnName} with the partition key.
      */
     public Set<ColumnName> getPartitionKey() {
@@ -128,6 +127,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     /**
      * Get the cluster key.
+     *
      * @return The set with {@link com.stratio.crossdata.common.data.ColumnName} with the cluster key.
      */
     public Set<ColumnName> getClusterKey() {
@@ -136,6 +136,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     /**
      * Get the columns and its types.
+     *
      * @return A map of {@link com.stratio.crossdata.common.data.ColumnName} and {@link com.stratio.crossdata.common
      * .metadata.ColumnType} .
      */
@@ -145,6 +146,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     /**
      * Gte the cluster name of a table.
+     *
      * @return The {@link com.stratio.crossdata.common.data.ClusterName} .
      */
     public ClusterName getClusterName() {
@@ -171,6 +173,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     /**
      * Set if the table will be created if exists previously.
+     *
      * @param ifNotExists The condition of creation.
      */
     public void setIfNotExists(boolean ifNotExists) {
@@ -213,6 +216,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     /**
      * Return if the table has properties.
+     *
      * @return The result check.
      */
     private boolean hasProperties() {
@@ -221,13 +225,14 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     /**
      * Get the conditions of validations that are needed to create the table.
+     *
      * @return The {@link com.stratio.crossdata.core.validator.requirements.ValidationRequirements} .
      */
     public ValidationRequirements getValidationRequirements() {
         ValidationRequirements requirements = new ValidationRequirements()
                 .add(ValidationTypes.MUST_EXIST_CATALOG)
                 .add(ValidationTypes.MUST_EXIST_CLUSTER);
-        if(!isIfNotExists()){
+        if (!isIfNotExists()) {
             requirements = requirements.add(ValidationTypes.MUST_NOT_EXIST_TABLE);
         }
         return requirements;
@@ -235,6 +240,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     /**
      * Get isIfNotExists value.
+     *
      * @return A boolean.
      */
     public boolean isIfNotExists() {

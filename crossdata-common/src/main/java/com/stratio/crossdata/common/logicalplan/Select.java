@@ -99,6 +99,7 @@ public class Select extends TransformationStep {
     }
 
     /**
+     * @deprecated
      * Get the columns in the expected order. With the introduction of function support
      * this method is marked as Deprecated in favour of #getOutputSelectorOrder().
      * @return A list of {@link com.stratio.crossdata.common.data.ColumnName}.

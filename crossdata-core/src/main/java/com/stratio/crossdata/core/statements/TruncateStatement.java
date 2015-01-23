@@ -87,23 +87,7 @@ public class TruncateStatement extends StorageStatement implements ITableStateme
         this.catalog = catalog;
     }
 
-    /**
-     * Get the table name of the truncate statement.
-     *
-     * @return com.stratio.crossdata.common.data.TableName
-     */
-    public TableName getTablename() {
-        return tableName;
-    }
 
-    /**
-     * Set the table name of a truncate statement.
-     *
-     * @param tableName
-     */
-    public void setTablename(TableName tableName) {
-        this.tableName = tableName;
-    }
 
     @Override
     public String toString() {

@@ -226,7 +226,8 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         Coordinator coordinator = new Coordinator();
         coordinator.persist(metadataWorkflow, result);
 
-        assertEquals(MetadataManager.MANAGER.getCatalog(catalogMetadata.getName()).getName(), catalogMetadata.getName());
+        assertEquals(MetadataManager.MANAGER.getCatalog(catalogMetadata.getName()).getName(),
+                catalogMetadata.getName()," CheckName Error Test");
     }
 
     /*
