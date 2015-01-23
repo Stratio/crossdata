@@ -133,21 +133,21 @@ public class PlannerTest extends PlannerBaseTest {
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
         table1 = createTestTable(clusterName, "demo", "table1",
-                columnNames1, columnTypes1, partitionKeys1, clusteringKeys1);
+                columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
         ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
         table2 = createTestTable(clusterName, "demo", "table2",
-                columnNames2, columnTypes2, partitionKeys2, clusteringKeys2);
+                columnNames2, columnTypes2, partitionKeys2, clusteringKeys2, null);
 
         String[] columnNames3 = { "id_aux", "address" };
         ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys3 = { "id_aux" };
         String[] clusteringKeys3 = { };
         table3 = createTestTable(clusterName, "demo", "table3",
-                columnNames3, columnTypes3, partitionKeys3, clusteringKeys3);
+                columnNames3, columnTypes3, partitionKeys3, clusteringKeys3, null);
     }
 
     @Test

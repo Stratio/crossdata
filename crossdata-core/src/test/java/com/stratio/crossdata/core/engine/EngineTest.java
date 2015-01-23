@@ -19,6 +19,7 @@
 package com.stratio.crossdata.core.engine;
 
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.fail;
 
 import java.io.File;
 import java.util.Random;
@@ -79,6 +80,24 @@ public class EngineTest {
     @Test
     public void testGetAPIManager() throws Exception {
         assertNotNull(engine.getAPIManager(), "APIManager is null");
+    }
+
+    @Test
+    public void testConstructorFail(){
+        EngineConfig engineConfigTest = new EngineConfig();
+        engineConfigTest.setGridContactHosts(new String[]{"whatever"});
+        engineConfigTest.setGridJoinTimeout(-1);
+        engineConfigTest.setGridListenAddress(null);
+        engineConfigTest.setGridMinInitialMembers(-1);
+        engineConfigTest.setGridPersistencePath(null);
+        engineConfigTest.setGridPort(-1);
+        try {
+            Engine testEngine = new Engine(engineConfigTest);
+            testEngine.getParser().parseStatement("whatever", "whatever");
+            fail("testConstructorFail should have thrown a Exception");
+        } catch (Exception ex){
+            assertNotNull(ex, "testConstructorFail should have thrown a Exception");
+        }
     }
 
 }
