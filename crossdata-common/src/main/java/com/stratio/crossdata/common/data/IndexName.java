@@ -20,7 +20,7 @@ package com.stratio.crossdata.common.data;
 
 public class IndexName extends Name {
     /**
-     * Name of the column.
+     * Name of the index.
      */
     private final String name;
 
@@ -31,7 +31,7 @@ public class IndexName extends Name {
      *
      * @param catalogName Name of the catalog.
      * @param tableName   Name of the table.
-     * @param indexName   Name of the column.
+     * @param indexName   Name of the index.
      */
     public IndexName(String catalogName, String tableName, String indexName) {
         if (tableName != null && !tableName.isEmpty()) {
@@ -46,17 +46,16 @@ public class IndexName extends Name {
      * Constructor using existing TableName.
      *
      * @param tableName  TableName.
-     * @param columnName Name of the column.
+     * @param indexName Name of the index.
      */
-    public IndexName(TableName tableName, String columnName) {
-        this.tableName = tableName;
-        this.name = columnName;
+    public IndexName(TableName tableName, String indexName) {
+        this(tableName.getCatalogName().getName(), tableName.getName(), indexName);
     }
 
     /**
      * Constructor using existing TableName.
      *
-     * @param columnName Name of the column.
+     * @param columnName Name of the index.
      */
     public IndexName(ColumnName columnName) {
         this(columnName.getTableName(), columnName.getName());
