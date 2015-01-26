@@ -277,7 +277,8 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         Coordinator coordinator = new Coordinator();
         coordinator.persist(metadataWorkflow, result);
 
-        assertEquals(MetadataManager.MANAGER.getTable(tableName).getName(), tableMetadata.getName());
+        assertEquals(MetadataManager.MANAGER.getTable(tableName).getName(), tableMetadata.getName(),
+                "Test create table fail");
     }
 
 

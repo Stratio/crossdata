@@ -20,6 +20,9 @@ package com.stratio.crossdata.core.structures;
 
 import com.stratio.crossdata.common.data.TableName;
 
+/**
+ * SelectionAsterisk class is a type of Selection that implements functionality of '*'
+ */
 public class SelectionAsterisk extends Selection {
 
     /**

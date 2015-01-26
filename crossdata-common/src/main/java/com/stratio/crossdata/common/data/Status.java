@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * Enum that determines if a connector is alive.
+ */
 public enum Status {
     OFFLINE,
     ONLINE,

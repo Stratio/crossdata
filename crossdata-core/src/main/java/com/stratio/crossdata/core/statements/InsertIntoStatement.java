@@ -99,6 +99,7 @@ public class InsertIntoStatement extends StorageStatement {
      * @param selectStatement a {@link com.stratio.crossdata.core.statements.InsertIntoStatement}
      * @param cellValues      List of
      *                        {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
+     * @param options         String with the options of the insert.
      * @param ifNotExists     Boolean that indicates if IF NOT EXISTS clause is included in the query.
      * @param conditions      Query options.
      * @param typeValues      Integer that indicates if values come from insert or select.
@@ -172,6 +173,10 @@ public class InsertIntoStatement extends StorageStatement {
         return ifNotExists;
     }
 
+    /**
+     * Return the catalogue of the table where the insert table is.
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName} .
+     */
     public CatalogName getCatalogName() {
         return tableName.getCatalogName();
     }

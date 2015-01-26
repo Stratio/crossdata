@@ -25,6 +25,9 @@ import java.util.List;
 
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 
+/**
+ * ResultSet class implements the Result of crossdata query.
+ */
 public class ResultSet implements Iterable<Row>, Serializable {
 
     /**

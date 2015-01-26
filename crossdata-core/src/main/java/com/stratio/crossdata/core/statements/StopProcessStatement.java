@@ -20,10 +20,17 @@ package com.stratio.crossdata.core.statements;
 
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 
+/**
+ * Class to control the stop of the executions of streaming queries.
+ */
 public class StopProcessStatement extends MetadataStatement {
 
     private String queryId;
 
+    /**
+     * Constructor class.
+     * @param queryId The query id.
+     */
     public StopProcessStatement(String queryId) {
         this.command = true;
         this.queryId = queryId;

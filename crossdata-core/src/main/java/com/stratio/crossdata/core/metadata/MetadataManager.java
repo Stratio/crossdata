@@ -1319,8 +1319,7 @@ public enum MetadataManager {
             }
         }
         sb.append("]):Tuple[Any]");
-        String result = sb.toString();
-        return result;
+        return  sb.toString();
     }
 
     /**

@@ -121,7 +121,10 @@ public class APIManager {
     private static final String PROCESSING = "Processing ";
 
     /**
-     * Class constructor.
+     * Constructor class.
+     * @param parser The parser.
+     * @param validator The validator.
+     * @param planner The planner.
      */
     public APIManager(Parser parser, Validator validator, Planner planner) {
         this.parser = parser;

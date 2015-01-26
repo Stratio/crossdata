@@ -80,6 +80,12 @@ public final class ConsoleUtils {
     private ConsoleUtils() {
     }
 
+    /**
+     * Convert the result of a query to String to show it by the shell.
+     * @param result The result of the query.
+     * @param shell The Shell.
+     * @return
+     */
     public static String stringResult(Result result, Shell shell) {
         String stringResult = stringResult(result);
         if (result instanceof CommandResult) {

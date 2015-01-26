@@ -69,6 +69,11 @@ public class QueryWorkflow extends ExecutionWorkflow {
         return result;
     }
 
+    /**
+     * Return the operation.
+     * @param queryId The query id.
+     * @return A {@link com.stratio.crossdata.communication.ExecuteOperation}
+     */
     public ExecuteOperation getExecuteOperation(String queryId){
         //Look for window operators.
         if(checkStreaming(workflow.getLastStep())) {

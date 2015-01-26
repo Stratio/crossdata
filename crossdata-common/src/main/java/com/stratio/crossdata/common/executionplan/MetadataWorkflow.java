@@ -159,6 +159,10 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         this.ifNotExists = ifNotExists;
     }
 
+    /**
+     * Create a Metadata operation.
+     * @return A {@link com.stratio.crossdata.communication.MetadataOperation} .
+     */
     public MetadataOperation createMetadataOperationMessage() {
         MetadataOperation result = null;
 

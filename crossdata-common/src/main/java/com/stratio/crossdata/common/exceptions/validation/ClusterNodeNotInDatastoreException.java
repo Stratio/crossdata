@@ -20,7 +20,15 @@ package com.stratio.crossdata.common.exceptions.validation;
 
 import com.stratio.crossdata.common.exceptions.ValidationException;
 
+/**
+ * Exception class that is thrown when a cluster node is not found in a defined datastore.
+ */
 public class ClusterNodeNotInDatastoreException extends ValidationException {
+
+    /**
+     * Constructor class.
+     * @param cause The cause of the exception.
+     */
     public ClusterNodeNotInDatastoreException(String cause) {
         super(cause);
     }

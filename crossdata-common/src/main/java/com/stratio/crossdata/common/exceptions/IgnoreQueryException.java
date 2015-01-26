@@ -18,12 +18,19 @@
 
 package com.stratio.crossdata.common.exceptions;
 
+/**
+ * Exception class that is thrown when a query cannot be executed.
+ */
 public class IgnoreQueryException extends Exception {
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
      */
     private static final long serialVersionUID = 1878003904827417242L;
 
+    /**
+     * Constructor class.
+     * @param cause The cause of the exception.
+     */
     public IgnoreQueryException(String cause) {
         super("Query has been ignored because: " + cause);
     }
