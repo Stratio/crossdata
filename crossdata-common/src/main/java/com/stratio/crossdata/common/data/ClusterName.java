@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * Cluster name class.
+ */
 public class ClusterName extends FirstLevelName {
 
     /**

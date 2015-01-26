@@ -39,6 +39,11 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
      */
     private List<Relation> whereClauses;
 
+    /**
+     * Constructor Class.
+     * @param tableName The table name of the delete statement.
+     * @param whereClauses The condition of deletion.
+     */
     public DeleteStatement(TableName tableName, List<Relation> whereClauses) {
         this.tableStatement.setTableName(tableName);
         this.whereClauses = whereClauses;

@@ -96,6 +96,7 @@ public interface IMetadataEngine {
      *
      * @param targetCluster Target cluster.
      * @param name          The table metadata.
+     * @param alterOptions  The options for an alter table.
      * @throws ConnectorException Use UnsupportedException If the required set of operations are not
      *                            supported by the connector or ExecutionException if the execution fails.
      */

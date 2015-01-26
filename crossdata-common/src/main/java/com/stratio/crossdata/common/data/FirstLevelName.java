@@ -18,7 +18,15 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * SuperClass that contains the definition of names of Catalogs, Cluster, Connectors, Datastore and node names.
+ */
 public abstract class FirstLevelName extends Name {
+
+    /**
+     * Return if the name is qualified or not.
+     * @return A Boolean.
+     */
     public boolean isCompletedName() {
         return true;
     }

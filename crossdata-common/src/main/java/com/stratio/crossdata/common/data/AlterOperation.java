@@ -17,7 +17,9 @@
  */
 package com.stratio.crossdata.common.data;
 
-
+/**
+ * Enum that defines the options of Alter Table.
+ */
 public enum AlterOperation {
     /**
      * Alter a new column data type using {@code ALTER}.

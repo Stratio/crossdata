@@ -42,6 +42,7 @@ public class RelationSelector extends Selector {
     /**
      * Class constructor.
      *
+     * @param tableName  The table name.
      * @param relation A {@link com.stratio.crossdata.common.statements.structures.Relation}.
      */
     public RelationSelector(TableName tableName, Relation relation) {

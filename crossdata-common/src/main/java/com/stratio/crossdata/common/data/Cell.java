@@ -20,6 +20,9 @@ package com.stratio.crossdata.common.data;
 
 import java.io.Serializable;
 
+/**
+ * Cell class implements the value of a cell in a query result.
+ */
 public class Cell implements Serializable {
 
     private static final long serialVersionUID = 7100387802412023310L;

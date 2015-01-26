@@ -23,6 +23,9 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Row class implements the query result row.
+ */
 public class Row implements Serializable {
 
     private static final long serialVersionUID = 2053597366590152927L;

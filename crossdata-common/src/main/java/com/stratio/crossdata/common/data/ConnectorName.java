@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * Connector Name class.
+ */
 public class ConnectorName extends FirstLevelName {
 
     /**

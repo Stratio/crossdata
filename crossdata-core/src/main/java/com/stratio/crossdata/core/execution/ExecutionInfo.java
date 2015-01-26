@@ -23,6 +23,9 @@ import java.io.Serializable;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.result.QueryStatus;
 
+/**
+ * Execution info class with the workflow information.
+ */
 public class ExecutionInfo implements Serializable {
 
     private String sender = null;

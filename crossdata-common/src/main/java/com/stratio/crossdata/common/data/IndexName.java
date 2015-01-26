@@ -18,12 +18,18 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * Index name class that implements the characteristics of the indexes.
+ */
 public class IndexName extends Name {
     /**
      * Name of the index.
      */
     private final String name;
 
+    /**
+     * The table name that affect the index.
+     */
     private TableName tableName;
 
     /**
@@ -81,6 +87,10 @@ public class IndexName extends Name {
         return tableName != null && tableName.isCompletedName();
     }
 
+    /**
+     * Get the complete name of the index.
+     * @return A String.
+     */
     public String getQualifiedName() {
         String result;
         if (isCompletedName()) {

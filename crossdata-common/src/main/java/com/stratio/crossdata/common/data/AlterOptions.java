@@ -24,6 +24,9 @@ import java.util.Map;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * Alter options class implements the different options in a Alter Table statement.
+ */
 public class AlterOptions implements Serializable {
 
     /**

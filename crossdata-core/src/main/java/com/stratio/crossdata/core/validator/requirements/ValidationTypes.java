@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.core.validator.requirements;
 
+/**
+ * Enumeration that defines the types of validations clauses for the validator.
+ */
 public enum ValidationTypes {
     MUST_NOT_EXIST_CATALOG,
     MUST_EXIST_CATALOG,

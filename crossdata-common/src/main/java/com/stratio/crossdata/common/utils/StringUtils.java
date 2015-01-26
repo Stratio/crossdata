@@ -203,10 +203,13 @@ public final class StringUtils {
      * @throws PatchFailedException .
      */
     public static String patchObject(Object a, Patch diff) throws PatchFailedException {
-        String[] lista = StringUtils.serializeObject2String(a).split("\n"); //apply patch to a
+        //apply patch to a
+        String[] lista = StringUtils.serializeObject2String(a).split("\n");
         List<String> partialresult = (List<String>) diff.applyTo(Arrays.asList(lista));
         StringBuffer jsonresult=new StringBuffer();
-        for(String res:partialresult){ jsonresult.append(res); }
+        for(String res:partialresult){
+            jsonresult.append(res);
+        }
         return jsonresult.toString();
     }
 
