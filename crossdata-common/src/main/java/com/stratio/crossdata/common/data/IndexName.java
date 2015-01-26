@@ -66,8 +66,7 @@ public class IndexName extends Name {
      * @param columnName Name of the index.
      */
     public IndexName(ColumnName columnName) {
-        this((columnName != null)? columnName.getTableName(): null,
-             (columnName != null)? columnName.getName(): null);
+        this(columnName.getTableName(),columnName.getName());
     }
 
     public TableName getTableName() {
