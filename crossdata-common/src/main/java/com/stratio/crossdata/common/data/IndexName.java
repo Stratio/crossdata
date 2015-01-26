@@ -49,7 +49,9 @@ public class IndexName extends Name {
      * @param indexName Name of the index.
      */
     public IndexName(TableName tableName, String indexName) {
-        this(tableName.getCatalogName().getName(), tableName.getName(), indexName);
+        this(((tableName != null) && (tableName.getCatalogName() != null))? tableName.getCatalogName().getName(): null,
+             (tableName != null) ? tableName.getName(): null,
+             indexName);
     }
 
     /**
@@ -58,7 +60,8 @@ public class IndexName extends Name {
      * @param columnName Name of the index.
      */
     public IndexName(ColumnName columnName) {
-        this(columnName.getTableName(), columnName.getName());
+        this((columnName != null)? columnName.getTableName(): null,
+             (columnName != null)? columnName.getName(): null);
     }
 
     public TableName getTableName() {
