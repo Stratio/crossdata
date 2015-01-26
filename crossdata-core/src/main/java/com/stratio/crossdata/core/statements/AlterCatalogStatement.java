@@ -68,6 +68,10 @@ public class AlterCatalogStatement extends MetadataStatement {
         return options;
     }
 
+    /**
+     * Get the catalog name of the alter statement.
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName} .
+     */
     public CatalogName getCatalogName() {
         return catalog;
     }

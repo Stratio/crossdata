@@ -20,7 +20,15 @@ package com.stratio.crossdata.common.exceptions.validation;
 
 import com.stratio.crossdata.common.exceptions.ValidationException;
 
+/**
+ * Exception class that is thrown when there is not a connection established with any connector.
+ */
 public class NotConnectionException extends ValidationException {
+
+    /**
+     * Constructor class.
+     * @param msg The cause of the exception.
+     */
     public NotConnectionException(String msg) {
         super(msg);
     }

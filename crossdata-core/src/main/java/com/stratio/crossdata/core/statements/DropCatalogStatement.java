@@ -71,6 +71,10 @@ public class DropCatalogStatement extends MetadataStatement {
         return ifExists;
     }
 
+    /**
+     * Get the catalog name affected by the drop operation.
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName} .
+     */
     public CatalogName getCatalogName() {
         return catalog;
     }

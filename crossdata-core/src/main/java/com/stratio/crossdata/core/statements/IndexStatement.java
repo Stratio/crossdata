@@ -20,6 +20,9 @@ package com.stratio.crossdata.core.statements;
 
 import com.stratio.crossdata.common.data.IndexName;
 
+/**
+ * Index Statement Class.
+ */
 public abstract class IndexStatement extends MetadataStatement {
 
     /**

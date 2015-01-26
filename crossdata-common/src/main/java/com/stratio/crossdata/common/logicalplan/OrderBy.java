@@ -25,6 +25,9 @@ import java.util.List;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 
+/**
+ * OrderBy class that implements the order by clause as a step of a workflow.
+ */
 public class OrderBy extends TransformationStep {
 
     /**

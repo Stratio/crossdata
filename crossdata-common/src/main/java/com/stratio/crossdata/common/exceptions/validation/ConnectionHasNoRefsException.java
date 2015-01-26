@@ -20,7 +20,15 @@ package com.stratio.crossdata.common.exceptions.validation;
 
 import com.stratio.crossdata.common.exceptions.ValidationException;
 
+/**
+ * Exception class that is thrown when validates a connection.
+ */
 public class ConnectionHasNoRefsException extends ValidationException {
+
+    /**
+     * Constructor class.
+     * @param msg The cause of the exception.
+     */
     public ConnectionHasNoRefsException(String msg) {
         super(msg);
     }

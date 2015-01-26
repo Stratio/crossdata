@@ -44,6 +44,9 @@ public class Select extends TransformationStep {
      */
     private Map<String, ColumnType> typeMap;
 
+    /**
+     * Map with the types of the selectors.
+     */
     private Map<Selector, ColumnType> typeMapFromColumnName;
 
     /**
@@ -56,6 +59,7 @@ public class Select extends TransformationStep {
      *            result.
      * @param typeMap
      *            The mapping of column types.
+     * @param typeMapFromColumnName  The types of selectors.
      */
     public Select(Operations operation, Map<Selector, String> columnMap, Map<String, ColumnType> typeMap,
             Map<Selector, ColumnType> typeMapFromColumnName) {

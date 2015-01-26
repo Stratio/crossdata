@@ -77,7 +77,7 @@ public class DataStoreRefsType implements Serializable {
      * Objects of the following type(s) are allowed in the list
      * {@link String }
      * 
-     * 
+     * @return A list of String.
      */
     public List<String> getDataStoreName() {
         if (dataStoreName == null) {
@@ -86,6 +86,10 @@ public class DataStoreRefsType implements Serializable {
         return this.dataStoreName;
     }
 
+    /**
+     * Set the datastores defined into a connector.
+     * @param dataStoreName A list of datastore names.
+     */
     public void setDataStoreName(List<String> dataStoreName) {
         this.dataStoreName = dataStoreName;
     }

@@ -263,6 +263,11 @@ public final class ManifestHelper implements Serializable {
         return metadataFunctions;
     }
 
+    /**
+     * Get the metadata of the excluded functions.
+     * @param excludedFunctions The manifest excluded functions.
+     * @return A set of string.
+     */
     public static Set<String> convertManifestExcludedFunctionsToMetadataExcludedFunctions(
             List<ExcludeType> excludedFunctions) {
         Set<String> metadataExcludedFunctions = new HashSet<>();

@@ -485,6 +485,7 @@ public class Normalizator {
     /**
      * Validate the conditions that have an asterisk.
      *
+     * @param tableName The tableName to check the selector.
      * @return List of ColumnSelector
      */
     public List<ColumnSelector> checkAsteriskSelector(TableName tableName) {

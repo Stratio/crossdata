@@ -47,6 +47,11 @@ public class GridInitializer {
         LOG.info(" ---> CREATING GRID INITIALIZER");
     }
 
+    /**
+     * Set the port of the grid.
+     * @param port The port.
+     * @return A {@link com.stratio.crossdata.core.grid.GridInitializer} .
+     */
     public GridInitializer withPort(int port) {
         this.port = port;
         return this;

@@ -73,6 +73,11 @@ public class ChannelServiceBuilder {
         return this;
     }
 
+    /**
+     * Define the port of the channel.
+     * @param port The port.
+     * @return A {@link com.stratio.crossdata.core.grid.ChannelServiceBuilder} .
+     */
     public ChannelServiceBuilder withPort(int port) {
         this.port = port;
         return this;

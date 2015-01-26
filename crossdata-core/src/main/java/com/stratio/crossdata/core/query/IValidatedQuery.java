@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.core.query;
 
+/**
+ * Interface to generate validator classes.
+ */
 public interface IValidatedQuery extends IParsedQuery {
 
 }
