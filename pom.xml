@@ -113,7 +113,7 @@
 	     <plugin>
                 <groupId>com.stratio.mojo.unix</groupId>
                 <artifactId>unix-maven-plugin</artifactId>
-                <version>1.0-alpha-7</version>
+                <version>1.0-alpha-9</version>
                 <extensions>true</extensions>
                 <configuration>
                     <contact><![CDATA[Stratio <chernandez@stratio.com>]]></contact>
