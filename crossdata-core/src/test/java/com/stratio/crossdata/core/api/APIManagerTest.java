@@ -55,7 +55,6 @@ public class APIManagerTest extends MetadataManagerTestHelper {
 
     @Test
     public void testPersistDataStore() throws Exception {
-        APIManager ApiManager = new APIManager(parser, validator, planner);
 
         DataStoreType dataStoreType = new DataStoreType();
 
@@ -103,7 +102,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
                         "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
                         "Behaviors: " + System.lineSeparator() + "\tBehavior: Test" + System.lineSeparator();
 
-        CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
+        CommandResult result = (CommandResult) getApiManager().processRequest(cmd);
 
         String str = String.valueOf(result.getResult());
 
@@ -294,7 +293,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
                 "   Found: " + str);
     }
 
-    @Test
+    @Test(dependsOnMethods = { "testListConnectors" })
     public void testResetMetadata() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         createTestConnector("connectorTest2", new DataStoreName("datastoreTest"), "akkaActorRef");

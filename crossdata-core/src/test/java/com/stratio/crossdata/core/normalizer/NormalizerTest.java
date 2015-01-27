@@ -21,10 +21,13 @@ package com.stratio.crossdata.core.normalizer;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.Test;
@@ -44,11 +47,21 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
+import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.structures.GroupByClause;
+import com.stratio.crossdata.core.structures.InnerJoin;
 
 public class NormalizerTest extends MetadataManagerTestHelper {
 
@@ -220,10 +233,10 @@ public class NormalizerTest extends MetadataManagerTestHelper {
 
         assertTrue(result.toString().equalsIgnoreCase(expectedText),
                 "Test failed: " + methodName + System.lineSeparator() +
-                        "Result:   " + result.toString() + System.lineSeparator() +
-                        "Expected: " + expectedText);
+                "Result:   " + result.toString() + System.lineSeparator() +
+                "Expected: " + expectedText);
     }
-/*
+
     @Test(dependsOnGroups = "putData")
     public void testNormalizeWhereOrderGroup() throws Exception {
 
@@ -235,8 +248,8 @@ public class NormalizerTest extends MetadataManagerTestHelper {
                 + "GROUP BY colSales, colExpenses;";
 
         String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
-                + "WHERE demo.tableClients.colPlace = Madrid "
-                + "ORDER BY demo.tableClients.year "
+                + "WHERE demo.tableClients.colPlace = 'Madrid' "
+                + "ORDER BY [demo.tableClients.year] "
                 + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses";
 
         // BASE QUERY
@@ -261,8 +274,10 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         // ORDER BY
         List<Selector> selectorListOrder = new ArrayList<>();
         selectorListOrder.add(new ColumnSelector(new ColumnName(null, "year")));
-        OrderByClause orderBy = new OrderByClause(selectorListOrder);
-        selectStatement.setOrderByClauses(orderBy);
+        OrderByClause orderBy = new OrderByClause(new ColumnSelector(new ColumnName(null, "year")));
+        List<OrderByClause> orderByClauses = new ArrayList<>();
+        orderByClauses.add(orderBy);
+        selectStatement.setOrderByClauses(orderByClauses);
 
         // GROUP BY
         List<Selector> groupBy = new ArrayList<>();
@@ -290,8 +305,8 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         String expectedText =
                 "SELECT demo.tableClients.colSales, myCatalog.tableCostumers.colFee FROM demo.tableClients "
                         + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.tableClients.clientId "
-                        + "WHERE myCatalog.tableCostumers.colCity = Madrid "
-                        + "ORDER BY myCatalog.tableCostumers.age "
+                        + "WHERE myCatalog.tableCostumers.colCity = 'Madrid' "
+                        + "ORDER BY [myCatalog.tableCostumers.age] "
                         + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee";
 
         // BASE QUERY
@@ -325,8 +340,10 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         // ORDER BY
         List<Selector> selectorListOrder = new ArrayList<>();
         selectorListOrder.add(new ColumnSelector(new ColumnName(null, "age")));
-        OrderByClause orderBy = new OrderByClause(selectorListOrder);
-        selectStatement.setOrderByClauses(orderBy);
+        OrderByClause orderBy = new OrderByClause(new ColumnSelector(new ColumnName(null, "age")));
+        List<OrderByClause> orderByClauses = new ArrayList<>();
+        orderByClauses.add(orderBy);
+        selectStatement.setOrderByClauses(orderByClauses);
 
         // GROUP BY
         List<Selector> groupBy = new ArrayList<>();
@@ -339,5 +356,5 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
 
     }
-*/
+
 }

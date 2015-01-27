@@ -316,7 +316,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         MetadataManager.MANAGER.setConnectorStatus(names, status);
 
         assertTrue(MetadataManager.MANAGER.checkConnectorStatus(connectorName, status),
-                connectorName + " shoud have the status : " + status);
+                connectorName + " should have the status : " + status);
     }
 
     @Test

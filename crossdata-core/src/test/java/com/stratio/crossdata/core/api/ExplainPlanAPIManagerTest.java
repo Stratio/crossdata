@@ -45,20 +45,11 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
-import com.stratio.crossdata.core.parser.Parser;
-import com.stratio.crossdata.core.planner.Planner;
-import com.stratio.crossdata.core.validator.Validator;
 
 /**
- * Explain plan tests using the API manager
+ * Explain plan tests using the API apiManager
  */
 public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
-
-    private final Parser parser = new Parser();
-    private final Validator validator = new Validator();
-    private final Planner planner = new Planner();
-
-    private final APIManager manager = new APIManager(parser, validator, planner);
 
     private ConnectorMetadata connector1 = null;
 
@@ -74,7 +65,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
 
     @BeforeClass
     public void setUp() throws ManifestException {
-        super.setUp();
+
         DataStoreName dataStoreName = createTestDatastore();
 
         Set<Operations> operationsC1 = new HashSet<>();
@@ -114,7 +105,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void invalidExplainRequest() {
         List<Object> params = new ArrayList<>();
         Command cmd = new Command("QID", APICommand.EXPLAIN_PLAN(), params);
-        Result r = manager.processRequest(cmd);
+        Result r = getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), ErrorResult.class, "Expecting error result");
         assertEquals(ErrorResult.class.cast(r).getException().getClass(), UnsupportedException.class,
@@ -125,7 +116,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainQualifiedSelect() {
         String inputText = "SELECT demo.table1.id FROM demo.table1;";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), CommandResult.class, "Expecting command result");
         CommandResult result = (CommandResult) r;
@@ -138,7 +129,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainNonQualifiedSelect() {
         String inputText = "SELECT id FROM table1;";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), CommandResult.class, "Expecting command result");
         CommandResult result = (CommandResult) r;
@@ -151,7 +142,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainInsert() {
         String inputText = "INSERT INTO table1(id, user) VALUES (1, 'user1');";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), CommandResult.class, "Expecting command result");
         CommandResult result = (CommandResult) r;
@@ -165,7 +156,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
         String inputText = "CREATE TABLE new_table ON CLUSTER TestCluster1" +
                 " (id int PRIMARY KEY, name text);";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), CommandResult.class, "Expecting command result");
         CommandResult result = (CommandResult) r;
@@ -178,7 +169,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainNotSupportedSelect() {
         String inputText = "SELECT id FROM table1 WHERE id > 5;";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), ErrorResult.class, "Expecting command result");
         ErrorResult result = (ErrorResult) r;
@@ -191,7 +182,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainInvalidSelect() {
         String inputText = "SELECT id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), ErrorResult.class, "Expecting command result");
         ErrorResult result = (ErrorResult) r;
@@ -204,7 +195,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainUnrecognized() {
         String inputText = "SELL id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), ErrorResult.class, "Expecting command result");
         ErrorResult result = (ErrorResult) r;

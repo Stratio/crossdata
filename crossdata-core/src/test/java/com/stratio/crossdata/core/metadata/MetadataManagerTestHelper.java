@@ -65,9 +65,13 @@ import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.core.api.APIManager;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
 import com.stratio.crossdata.core.grid.GridInitializer;
+import com.stratio.crossdata.core.parser.Parser;
+import com.stratio.crossdata.core.planner.Planner;
+import com.stratio.crossdata.core.validator.Validator;
 
 public class MetadataManagerTestHelper {
 
@@ -75,17 +79,29 @@ public class MetadataManagerTestHelper {
     Map<FirstLevelName, Serializable> executionMap = new HashMap<>();
     private String path = "";
 
+    private final Parser parser = new Parser();
+    private final Validator validator = new Validator();
+    private final Planner planner = new Planner();
+    private final APIManager apiManager = new APIManager(parser, validator, planner);
+
+    Lock lock;
+    Lock executionLock;
+
+    public APIManager getApiManager() {
+        return apiManager;
+    }
+
     @BeforeClass
     public void setUp() throws ManifestException {
         initializeGrid();
         //MetadataManager
         Map<FirstLevelName, IMetadata> metadataMap = Grid.INSTANCE.map("crossdata-test");
-        Lock lock = Grid.INSTANCE.lock("crossdata-test");
+        lock = Grid.INSTANCE.lock("crossdata-test");
         TransactionManager tm = Grid.INSTANCE.transactionManager("crossdata-test");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
         //ExecutionManager
         Map<String, Serializable> executionMap = Grid.INSTANCE.map("crossdata.executionmanager.test");
-        Lock executionLock = Grid.INSTANCE.lock("crossdata.executionmanager.test");
+        executionLock = Grid.INSTANCE.lock("crossdata.executionmanager.test");
         TransactionManager executionTM = Grid.INSTANCE.transactionManager("crossdata.executionmanager.test");
         ExecutionManager.MANAGER.init(executionMap, executionLock, executionTM);
     }
@@ -168,7 +184,7 @@ public class MetadataManagerTestHelper {
             fail(e.getMessage());
         }
         connectorMetadata.setActorRef(actorRef);
-        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
         return connectorName;
     }
 
