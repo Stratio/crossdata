@@ -1,93 +1,127 @@
----
-title: About Meta
----
+About
+*****
 
-Stratio Meta is one of the core modules on which the Stratio platform is based. It is a abstraction to distributed 
-programming that combines streaming and batch process.
+Crossdata (aka Meta) is a distributed framework that unifies the interaction with batch and streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies Crossdata defines a common unifying interface containing the set of operations that a datastore may support. New connectors can be easily added to increase its connectivity capabilities. Two types of connectors are defined: native and spark-based. Native connectors are faster for simple operations, while Spark-based connectors offer a larger set of functionality. The Crossdata planner decides which connector will be used for any request based its characteristics. We offer a shell, Java/REST APIs, and ODBC for BI.
 
-Table of Contents
-=================
+Compiling Crossdata
+===================
 
--   [Introduction](#introduction)
--   [Features](#features)
--   [Architecture](#architecture)
+Compiling Crossdata involves generating a set of files (.tokens, Lexers, and Parsers) from the different grammar
+files. To automatically build Stratio Crossdata execute the following command::
 
-**Introduction**
-================
+    > mvn clean compile install
 
-Meta is a simple and elegant framework designed to unify batch and stream processing using a common language. 
-The Meta language maintains the friendliness of SQL and CQL while providing streaming processing capabilities.
 
-**Features**
-============
+Running the com.stratio.crossdata-server
+========================================::
 
--   Unified language with streaming and batch support.
--   Reliable fault-tolerant architecture.
--   Authentication, authorization and auditing support.
--   Support for Cassandra-Lucene indexes.
--   UDF support.
--   Trigger support.
--   Extended CQL.
--   Java API to develop custom applications.
+    > mvn exec:java -DskipTests -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.CrossdataApplication"
 
-**Architecture**
-================
+or you can run our script located in crossdata-dist::
 
-The META architecture is composed of two main elements: client and server.
+    > chmod +x crossdata-dist/target/crossdata-dist-[crossdata-version]/bin/crossdata-server
+    > cd crossdata-dist/target/crossdata-dist-[crossdata-version]/
+    > bin/crossdata-server
 
-![Meta Architecture](images/about-architecture.png)
+or run it like a service::
 
-The client is in charge of receiving user requests either from the MetaSh or from the API. Once a request is 
-received, the client performs an initial validation and sends the command to the server in order to execute the query itself.
+    > bin/crossdata-server-daemon start
+    
 
-![Meta Overview](images/about-includes-overview.png)
 
-The META server receives user requests and processes them in several steps: Parsing, Validation, Planning and Execution.
+Running the crossdata-shell
+==========================
 
-To show how META server works, examples based on the following query will be used for each step:
+The com.stratio.crossdata-shell allows users to launch interactive queries against a set of Crossdata servers. 
+Works both in Unix and Windows.
+The shell features:
 
-```sql
-SELECT name, id FROM users WHERE city = "Madrid";
-```
+-   History support (arrow navigation)
+-   History search (ctrl-r)
+-   Token completion (tab)
+-   Help command
+::
 
-Step 1: Parsing
----------------
+    > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell"
 
-![Parsing](images/about-step1-parsing.png)
 
-The parser will validate the syntax and build the following tree:
+The shell also supports synchronous query execution by means of the --sync parameter. This execution mode is required
+ for streaming queries.::
 
-![Tree](images/about-step1-tree.png)
+    > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--sync"
 
-Step 2: Validation
-------------------
 
-![Validation](images/about-step2-validation.png)
+Additionally, you can execute an script upon launching the shell. The script will be executed first,
+and the prompt will be shown afterwards.::
 
-During this step, the server checks that the query is semantically valid. For example:
 
-1.  Checks that the users table exists in the database.
-2.  Checks that the columns, name id and city, are present in the users table.
-3.  Checks that the operator “=” can be applied to the city column and the string “Madrid”.
+    > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--script /path/script.xdql"
 
-Step 3: Planning
-----------------
 
-The server builds the execution plan.
+You can run our shell too, executing our crossdata-dist script::
 
-![Planning](images/about-step3-planning.png)
+    > chmod +x crossdata-dist/target/crossdata-dist-[crossdata-version]/bin/crossdata-sh
+    > cd crossdata-dist/target/crossdata-dist-[crossdata-version]/
+    > bin/crossdata-sh
 
-Step 4: Execution
------------------
 
-The server executes the query by launching the required Cassandra and Spark operations. The results of the 
-execution are then forwarded back to the client.
 
-![Execution](images/about-step4-execution.png)
+Useful commands
+===============
 
-Where to go from here
-=====================
+Once the shell is running, you can exit the program introducing the word **exit** or **quit** in the query prompt. A command help system is available by introducing the command **help**. A help entry is available per command, to check specify help topics use **help command**.
 
-To explore and play with Stratio Meta, we recommend taking the 
-[First steps with Stratio Meta](first-steps-with-stratio-meta.html "First steps with Stratio Meta") 
-tutorial, and visiting the [Meta Reference](meta-reference.html "Meta Reference") manual.
+Send issues to Jira
+===================
+You can send us issues in https://crossdata.atlassian.net/
+
+
+Grammar
+=======
+
+Grammar specification for this release can be found `here <Grammar.rst>`_.
+
+
+Getting started
+===============
+In this `link <GettingStarted.rst>`_ you can follow an example of Crossdata with a Cassandra Connector as an access
+to a Cassandra datastore.
+
+
+Connectors
+==========
+
+`List of Crossdata Connectors <List-of-Crossdata-Connectors.rst>`_
+
+`InMemory Connector development tutorial <InMemory-Connector-Development-Tutorial.rst>`_
+
+`Definition of Connector Operations <ConnectorOperations.md>`_
+
+`Crossdata Connector Challenge <https://stratio.github.io/crossdata/contest>`_
+
+
+Sandbox
+=======
+
+if you want to test Crossdata you can get our Sandbox follow the instructions of this `link <Sandbox.rst>`_
+
+License
+=======
+
+Stratio Crossdata is licensed as `Apache2 <http://www.apache.org/licenses/LICENSE-2.0.txt>`_
+
+Licensed to STRATIO (C) under one or more contributor license agreements.
+See the NOTICE file distributed with this work for additional information 
+regarding copyright ownership.  The STRATIO (C) licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.

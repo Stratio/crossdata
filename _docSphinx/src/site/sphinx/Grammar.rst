@@ -1,67 +1,6 @@
-
 CROSSDATA Grammar
----
+*****************
 
-Language definition
-
-Version: 0.2.0
-
-Date: 19, Jan, 2015
-
-
-* * * * *
-
-Table of contents
-
--   [Notes] (#notes)
--   [Introduction](#introduction)
--   [Main characteristics](#main-characteristics)
--   [Language Features](#language-features)
-    -   [Statements](#statements)
-        -   [ADD DATASTORE](#add-datastore)
-        -   [DROP DATASTORE](#drop-datastore)
-        -   [ADD CONNECTOR](#add-connector)
-        -   [DROP CONNECTOR](#drop-connector)
-        -   [ATTACH CLUSTER](#attach-cluster)
-        -   [ALTER CLUSTER](#alter-cluster)
-        -   [DETACH CLUSTER](#detach-cluster)
-        -   [ATTACH CONNECTOR](#attach-connector)
-        -   [DETACH CONNECTOR](#detach-connector)
-        -   [CREATE CATALOG](#create-catalog)
-        -   [ALTER CATALOG](#alter-catalog)
-        -   [DROP CATALOG](#drop-catalog)
-        -   [USE] (#use)
-        -   [CREATE TABLE](#create-table)
-        -   [ALTER TABLE] (#alter-table)
-        -   [UPDATE TABLE] (#update-table)
-        -   [DROP TABLE] (#drop-table)
-        -   [TRUNCATE TABLE] (#truncate-table)
-        -   [DELETE] (#delete)
-        -   [INSERT](#insert)
-        -   [CREATE INDEX](#create-index)
-        -   [DROP INDEX](#drop-index)
-        -   [SELECT](#select)
-        -   [EXPLAIN PLAN](#explain-plan)
-        -   [RESET SERVERDATA](#reset-serverdata)
-        -   [CLEAN METADATA](#clean-metadata)
-        -   [DESCRIBE SYSTEM](#describe-system)
-        -   [DESCRIBE DATASTORES](#describe-datastores)
-        -   [DESCRIBE DATASTORE](#describe-datastore)
-        -   [DESCRIBE CLUSTERS](#describe-clusters)
-        -   [DESCRIBE CLUSTER](#describe-cluster)
-        -   [DESCRIBE CONNECTORS](#describe-connectors)
-        -   [DESCRIBE CONNECTOR](#describe-connector)
-        -   [DESCRIBE CATALOGS](#describe-catalogs)
-        -   [DESCRIBE CATALOG](#describe-catalog)
-        -   [DESCRIBE TABLES](#describe-tables)
-        -   [DESCRIBE TABLE](#describe-table)
-        -   [DISCOVER METADATA] (#discover-metadata)
-        -   [IMPORT CATALOGS] (#import-catalogs)
-        -   [IMPORT CATALOG] (#import-catalog)
-        -   [IMPORT TABLE] (#import-table)
--   [Shell features] (#shell-features)
-
-* * * * *
 
 Notes
 =======
@@ -84,7 +23,7 @@ Example:
 
 -   In the near future, many statements and statement extensions will be supported.
 
-* * * * *
+
 
 Introduction
 ============
@@ -93,7 +32,7 @@ Introduction
 of the supported operations. The CROSSDATA language is a SQL-like language that unifies the
 treatment of streaming and batch data into a single language.
 
-* * * * *
+
 
 Main characteristics
 ====================
@@ -114,7 +53,7 @@ existing SQL implementation.
 -   P2P storage backend (if Stratio Cassandra is used as datastore)
 
 
-* * * * *
+
 
 Language Features
 =================
@@ -153,7 +92,7 @@ language .
 -   \<data-types\> = TEXT | BIGINT | INT | DOUBLE | FLOAT | BOOLEAN
 
 Supported types
-----------
+---------------
 
 -   TEXT
 -   BIGINT
@@ -162,112 +101,112 @@ Supported types
 -   FLOAT
 -   BOOLEAN
 
-### ADD DATASTORE
-
+ADD DATASTORE
+-------------
 ADD DATASTORE \<path\> ';'
 
 Example:
 
     ADD DATASTORE “/home/stratio/crossdata/cassandra.xml”;
 
-### DROP DATASTORE
-
+DROP DATASTORE
+--------------
 DROP DATASTORE \<datastore-name\> ';'
 
 Example:
 
     DROP DATASTORE cassandra;
 
-### ADD CONNECTOR
-
+ADD CONNECTOR
+-------------
 ADD CONNECTOR \<path\> ';'
 
 Examples:
 
     ADD CONNECTOR “/home/stratio/crossdata/connectors/connector_native_cassandra.xml”;
 
-### DROP CONNECTOR
-
+DROP CONNECTOR
+--------------
 DROP CONNECTOR \<connector-name\> ';'
 
 Examples:
 
     DROP CONNECTOR cassandra_connector;
 
-### ATTACH CLUSTER
-
+ATTACH CLUSTER
+--------------
 ATTACH CLUSTER (IF NOT EXISTS)? \<cluster\_name\> ON DATASTORE \<datastore\_name\> WITH OPTIONS \<JSON\> ';'
 
 Example:
 
     ATTACH CLUSTER production_madrid ON DATASTORE cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'port': 9160};
 
-### ALTER CLUSTER
-
+ALTER CLUSTER
+-------------
 ALTER CLUSTER (IF EXISTS)? \<cluster\_name\> WITH \<JSON\> ';'
 
 Example:
 
     ALTER CLUSTER production_madrid WITH {"port": 9161};
 
-### DETACH CLUSTER
-
+DETACH CLUSTER
+--------------
 DETACH CLUSTER \<cluster\_name\>';'
 
 Example:
 
     DETACH CLUSTER production_madrid;
 
-### ATTACH CONNECTOR
-
+ATTACH CONNECTOR
+----------------
 ATTACH CONNECTOR \<connector-name\> TO \<cluster-name\> WITH OPTIONS \<JSON\>';'
 
 Example:
 
     ATTACH CONNECTOR con_native_cassandra TO cassandra_production WITH OPTIONS {'DefaultLimit': '1000'};
 
-### DETACH CONNECTOR
-
+DETACH CONNECTOR
+----------------
 DETACH CONNECTOR \<connector-name\> FROM \<cluster-name\>';'
 
 Example:
 
     DETACH CONNECTOR con_native_cassandra FROM cassandra_production;
 
-### CREATE CATALOG
-
+CREATE CATALOG
+--------------
 CREATE CATALOG (IF NOT EXISTS)? \<catalog\_name\> (WITH \<JSON\>)? ';'
 
 Example:
 
     CREATE CATALOG catalog1 WITH {"comment": "This is a comment"};                
 
-### ALTER CATALOG
-
+ALTER CATALOG
+-------------
 ALTER CATALOG (IF NOT EXISTS)? \<catalog\_name\> (WITH \<JSON\>)? ';'
 
 Example:
 
     ALTER CATALOG catalog1 WITH {"comment": "This is a comment"};
 
-### DROP CATALOG
-
+DROP CATALOG
+------------
 DROP CATALOG (IF EXISTS)? \<catalog\_name\> ';'
 
 Example:
 
     DROP CATALOG catalog1;  
 
-### USE
-
+USE
+----
 USE \<catalog\_name\> ';'
 
 Example:
 
     USE sales;
 
-### CREATE TABLE
-
+CREATE TABLE
+------------
 CREATE TABLE (IF NOT EXISTS)? \<tablename\> ON CLUSTER \<clusterName\> '('\<column-definition\> (',' \<column-definition\> )\* ')' (WITH \<JSON\>)? ';'
 
 \<column-definition\> ::= \<identifier\> \<type\> ( PRIMARY KEY )? | PRIMARY KEY '(' \<partition-key\> (',' \<identifier\> )\* ')'
@@ -278,8 +217,8 @@ Example:
 
     CREATE TABLE tableTest ON CLUSTER cassandra_prod (id int PRIMARY KEY, name text);
         
-### ALTER TABLE
-
+ALTER TABLE
+-----------
 ALTER TABLE \<tablename\>
         (ALTER \<column-name\> \<data-types\>
         |ADD \<column-name\> \<data-types\>
@@ -290,8 +229,8 @@ Example:
 
     ALTER TABLE tableTest ADD timestamp INT;
 
-### UPDATE TABLE
-
+UPDATE TABLE
+------------
 UPDATE \<tablename\>
     (USING option (AND option)\*)?
     SET assignment (COMMA assignment)\*
@@ -310,24 +249,24 @@ Example:
 
     UPDATE tableTest SET value = value + 900 WHERE age > 30;
 
-### DROP TABLE
-
+DROP TABLE
+----------
 DROP TABLE (IF EXISTS)? \<tablename\> ';'
 
 Example:
 
     DROP TABLE tableTest;
 
-### TRUNCATE TABLE
-
+TRUNCATE TABLE
+--------------
 TRUNCATE \<tablename\> ';'
 
 Example:
 
     TRUNCATE tableTest;
 
-### DELETE
-
+DELETE
+------
 DELETE FROM \<tablename\> (WHERE \<where-clause\>)? ';'
 
 \<where-clause\> ::= \<relation\> ( AND \<relation\> )\*
@@ -338,8 +277,8 @@ Example:
 
     DELETE FROM tableTest WHERE income < 100;
 
-### INSERT
-
+INSERT
+------
 INSERT INTO \<tablename\> '('\<identifier\> (',' \<identifier\> )\*')' VALUES '('\<data-types\> (',
 ' \<term-or-literal\> )\* ')' (IF NOT EXISTS)? WHEN \<where-clause\> (WITH \<JSON\>)? ';'
 
@@ -347,8 +286,8 @@ Example:
 
     INSERT INTO mykeyspace.tablename (ident1, ident2) VALUES (-3.75, 'term2') IF NOT EXISTS;
 
-### CREATE INDEX
-
+CREATE INDEX
+------------
 CREATE (\<index-type\>)? INDEX (IF NOT EXISTS)? \<index-name\> ON \<table-name\> '(' \<column-names\> ')' (WITH \<JSON\>)? ';'
 
 \<index-type\> ::= DEFAULT | FULL\_TEXT | CUSTOM
@@ -357,16 +296,16 @@ Example:
 
     CREATE FULL_TEXT INDEX revenueIndex ON tabletest (revenue);
 
-### DROP INDEX
-
+DROP INDEX
+----------
 DROP INDEX (IF EXISTS)? \<indexname\> ';'
 
 Example:
 
     DROP INDEX IF EXISTS tabletest.revenueIndex;
 
-### SELECT
-
+SELECT
+------
 SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)? ((INNER)? JOIN
 \<tablename\> (AS \<identifier\>) ON \<field1\>=\<field2\>)? (WHERE \<where-clause\>)? (ORDER BY \<select-list\>)?
 (GROUP BY \<select-list\>)? (LIMIT \<integer\>)? ';'
@@ -408,8 +347,8 @@ Example:
     SELECT * FROM demo.clients, demo.sales ON clients.identifier = sales.codeID;
 
 
-### EXPLAIN PLAN
-
+EXPLAIN PLAN
+------------
 Explain plan for a specific command according to the current state of the system.
 
 EXPLAIN PLAN FOR \<crossdata-statement\> ';'
@@ -418,8 +357,8 @@ Example:
 
     EXPLAIN PLAN FOR Select * from demoCatalog.demoCatalog;
 
-### RESET SERVERDATA
-
+RESET SERVERDATA
+----------------
 Remove all data stored in the system (in all servers), including information related to datastores, clusters and connectors.
 Connectors status are the only metadata kept by the system after issuing this command.
 
@@ -429,8 +368,8 @@ Example:
 
     RESET SERVERDATA;
 
-### CLEAN METADATA
-
+CLEAN METADATA
+--------------
 Remove all metadata related to catalogs, tables, indexes and columns.
 
 CLEAN METADATA ';'
@@ -439,8 +378,8 @@ Example:
 
     CLEAN METADATA;
 
-### DESCRIBE SYSTEM
-
+DESCRIBE SYSTEM
+---------------
 Describe all the information related to datastores, clusters and connectors.
 
 DESCRIBE SYSTEM ';'
@@ -449,8 +388,8 @@ Example:
 
     DESCRIBE SYSTEM;
 
-### DESCRIBE DATASTORES
-
+DESCRIBE DATASTORES
+-------------------
 Describe all the datastores registered in the system.
 
 DESCRIBE DATASTORES ';'
@@ -459,8 +398,8 @@ Example:
 
     DESCRIBE DATASTORES;
 
-### DESCRIBE DATASTORE
-
+DESCRIBE DATASTORE
+------------------
 Describe information related to a specific datastore.
 
 DESCRIBE DATASTORE \<datastore-name\> ';'
@@ -469,8 +408,8 @@ Example:
 
     DESCRIBE DATASTORE cassandra;
 
-### DESCRIBE CLUSTERS
-
+DESCRIBE CLUSTERS
+-----------------
 Describe all the clusters registered in the system.
 
 DESCRIBE CLUSTERS ';'
@@ -479,8 +418,8 @@ Example:
 
     DESCRIBE CLUSTERS;
 
-### DESCRIBE CLUSTER
-
+DESCRIBE CLUSTER
+----------------
 Describe information related to a specific cluster.
 
 DESCRIBE CLUSTER \<cluster-name\> ';'
@@ -489,8 +428,8 @@ Example:
 
     DESCRIBE CLUSTER production;
 
-### DESCRIBE CONNECTORS
-
+DESCRIBE CONNECTORS
+-------------------
 Describe all the connectors registered in the system.
 
 DESCRIBE CONNECTORS;
@@ -499,8 +438,8 @@ Example:
 
     DESCRIBE CONNECTORS;
 
-### DESCRIBE CONNECTOR
-
+DESCRIBE CONNECTOR
+------------------
 Describe the specified connector.
 
 DESCRIBE CONNECTOR \<connector-name\> ';'
@@ -509,8 +448,8 @@ Example:
 
     DESCRIBE CONNECTOR cassandra_connector;
 
-### DESCRIBE CATALOGS
-
+DESCRIBE CATALOGS
+-----------------
 List of the catalogs created in the system.
 
 DESCRIBE CATALOGS ';'
@@ -519,8 +458,8 @@ Example:
 
     DESCRIBE CATALOGS;
 
-### DESCRIBE CATALOG
-
+DESCRIBE CATALOG
+----------------
 Describe the specified catalog.
 
 DESCRIBE CATALOG \<catalog-name\> ';'
@@ -529,8 +468,8 @@ Example:
 
     DESCRIBE CATALOG catalog1;
 
-### DESCRIBE TABLES
-
+DESCRIBE TABLES
+---------------
 List of the tables created in a specific catalog.
 
 DESCRIBE TABLES (FROM \<catalog-name\>)? ';'
@@ -540,8 +479,8 @@ Example:
     DESCRIBE TABLES FROM myCatalog;
 
 
-### DESCRIBE TABLE
-
+DESCRIBE TABLE
+--------------
 Describe the specified table.
 
 DESCRIBE TABLE \<table-name\> ';'
@@ -550,8 +489,8 @@ Example:
 
     DESCRIBE TABLE catalog1.table;
 
-### DISCOVER METADATA
-
+DISCOVER METADATA
+-----------------
 Discover metadata from a specified cluster. This command provides information about catalogs and tables already
 existent on a cluster.
 
@@ -561,8 +500,8 @@ Example:
 
     DISCOVER METADATA FROM productionCluster;
 
-### IMPORT CATALOGS
-
+IMPORT CATALOGS
+---------------
 Import all the metadata from a specific cluster. This command incorporates to the Crossdata servers all the catalogs
 metadata and their underlying metadata.
 
@@ -572,8 +511,8 @@ Example:
 
     IMPORT CATALOGS FROM CLUSTER cluster_name;
 
-### IMPORT CATALOGS
-
+IMPORT CATALOGS
+---------------
 Import all the metadata from a specific catalog. This command incorporates to the the Crossdata servers a
 catalog metadata and its underlying metadata.
 
@@ -583,8 +522,8 @@ Example:
 
     IMPORT CATALOGS FROM CLUSTER cluster_name;
 
-### IMPORT TABLE
-
+IMPORT TABLE
+------------
 Import metadata of a specific table. This command incorporates to the the Crossdata servers a
 table metadata and its underlying metadata.
 
@@ -594,7 +533,7 @@ Example:
 
     IMPORT TABLE myCatalog.myTable FROM CLUSTER myCluster;
 
-* * * * *
+
 
 Shell Features
 ==============

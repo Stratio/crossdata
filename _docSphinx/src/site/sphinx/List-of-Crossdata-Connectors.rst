@@ -1,5 +1,5 @@
-# List of Crossdata Connectors #
-
+List of Crossdata Connectors
+****************************
 This document maintains an updated list of connector that work with current versions of Crossdata. Take into account 
 that each connector listed may require different version of Crossdata.
 
