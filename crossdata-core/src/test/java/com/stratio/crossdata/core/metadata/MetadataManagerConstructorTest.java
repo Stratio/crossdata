@@ -5,7 +5,6 @@ import static org.testng.Assert.fail;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.DataStoreName;
@@ -14,7 +13,7 @@ import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 
 public class MetadataManagerConstructorTest {
 
-    @BeforeTest
+    @Test
     public void testShouldBeInitException() {
         DataStoreName name = new DataStoreName("dataStoreTest");
         String version = "0.2.0";

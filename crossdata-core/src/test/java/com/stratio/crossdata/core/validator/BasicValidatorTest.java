@@ -30,7 +30,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
 
@@ -82,10 +81,12 @@ public class BasicValidatorTest {
                 .withJoinTimeoutInMs(3000)
                 .withPersistencePath(path).init();
 
+        /*
         metadataMap = Grid.INSTANCE.map("crossDatatest");
         Lock lock = Grid.INSTANCE.lock("crossDatatest");
         TransactionManager tm = Grid.INSTANCE.transactionManager("crossDatatest");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
+        */
         MetadataManager.MANAGER.createDataStore(createDataStoreMetadata(), false);
         MetadataManager.MANAGER.createConnector(createConnectorMetadata(), false);
         MetadataManager.MANAGER.createCluster(createClusterMetadata(), false);

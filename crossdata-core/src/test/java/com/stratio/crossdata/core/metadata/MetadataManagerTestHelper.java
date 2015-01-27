@@ -37,8 +37,8 @@ import java.util.concurrent.locks.Lock;
 import javax.transaction.TransactionManager;
 
 import org.apache.commons.io.FileUtils;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
+import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeSuite;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -84,26 +84,31 @@ public class MetadataManagerTestHelper {
     private final Planner planner = new Planner();
     private final APIManager apiManager = new APIManager(parser, validator, planner);
 
-    Lock lock;
-    Lock executionLock;
-
     public APIManager getApiManager() {
         return apiManager;
     }
 
-    @BeforeClass
+    @BeforeSuite
     public void setUp() throws ManifestException {
         initializeGrid();
         //MetadataManager
         Map<FirstLevelName, IMetadata> metadataMap = Grid.INSTANCE.map("crossdata-test");
-        lock = Grid.INSTANCE.lock("crossdata-test");
+        Lock lock = Grid.INSTANCE.lock("crossdata-test");
         TransactionManager tm = Grid.INSTANCE.transactionManager("crossdata-test");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
         //ExecutionManager
         Map<String, Serializable> executionMap = Grid.INSTANCE.map("crossdata.executionmanager.test");
-        executionLock = Grid.INSTANCE.lock("crossdata.executionmanager.test");
+        Lock executionLock = Grid.INSTANCE.lock("crossdata.executionmanager.test");
         TransactionManager executionTM = Grid.INSTANCE.transactionManager("crossdata.executionmanager.test");
         ExecutionManager.MANAGER.init(executionMap, executionLock, executionTM);
+    }
+
+    @AfterSuite
+    public void tearDown() throws Exception {
+        metadataMap.clear();
+        executionMap.clear();
+        Grid.INSTANCE.close();
+        FileUtils.deleteDirectory(new File(path));
     }
 
     private void initializeGrid() {
@@ -343,14 +348,6 @@ public class MetadataManagerTestHelper {
         }
         MetadataManager.MANAGER.createTable(tableMetadata);
         return tableMetadata;
-    }
-
-    @AfterClass
-    public void tearDown() throws Exception {
-        metadataMap.clear();
-        executionMap.clear();
-        Grid.INSTANCE.close();
-        FileUtils.deleteDirectory(new File(path));
     }
 
 }

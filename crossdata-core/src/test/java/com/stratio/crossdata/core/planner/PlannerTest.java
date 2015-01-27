@@ -92,7 +92,7 @@ public class PlannerTest extends PlannerBaseTest {
 
     @BeforeClass
     public void setUp() throws ManifestException {
-        super.setUp();
+        //super.setUp();
         DataStoreName dataStoreName = createTestDatastore();
 
         //Connector with join.

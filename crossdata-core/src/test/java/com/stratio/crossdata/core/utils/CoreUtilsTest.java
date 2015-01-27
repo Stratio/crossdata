@@ -27,7 +27,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
 
     @BeforeClass
     public void setUp() throws ManifestException {
-        super.setUp();
+        //super.setUp();
         createTestDatastore();
         createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
         createTestCatalog("catalogTest");

@@ -90,8 +90,11 @@ public class GridTest {
     public void testGridLock() throws Exception {
         boolean res = true;
         Lock lock = Grid.INSTANCE.lock("testGridLock");
-        lock.lock();
-        lock.unlock();
+        try {
+            lock.lock();
+        } finally {
+            lock.unlock();
+        }
         assertTrue(res, "Grid Lock test failed.");
     }
 
