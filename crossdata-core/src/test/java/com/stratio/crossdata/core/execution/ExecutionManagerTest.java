@@ -20,7 +20,7 @@ package com.stratio.crossdata.core.execution;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-public class ExecutionManagerTest /*extends MetadataManagerTestHelper*/ {
+public class ExecutionManagerTest {
 
     @Test
     public void testExist() throws Exception {

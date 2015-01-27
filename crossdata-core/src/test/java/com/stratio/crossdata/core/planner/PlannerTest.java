@@ -62,6 +62,7 @@ import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
@@ -93,7 +94,7 @@ public class PlannerTest extends PlannerBaseTest {
     @BeforeClass
     public void setUp() throws ManifestException {
         //super.setUp();
-        DataStoreName dataStoreName = createTestDatastore();
+        DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         //Connector with join.
         Set<Operations> operationsC1 = new HashSet<>();
@@ -117,13 +118,13 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_INNER_JOIN);
         operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
 
-        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
+        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
                 "actorRef1");
-        connector2 = createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
+        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
                 "actorRef2");
 
-        clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName(), connector2.getName());
-        CatalogName catalogName = createTestCatalog("demo").getName();
+        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster("TestCluster1", dataStoreName, connector1.getName(), connector2.getName());
+        CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         createTestTables();
     }
 
@@ -132,21 +133,21 @@ public class PlannerTest extends PlannerBaseTest {
         ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
-        table1 = createTestTable(clusterName, "demo", "table1",
+        table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table1",
                 columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
         ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
-        table2 = createTestTable(clusterName, "demo", "table2",
+        table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table2",
                 columnNames2, columnTypes2, partitionKeys2, clusteringKeys2, null);
 
         String[] columnNames3 = { "id_aux", "address" };
         ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys3 = { "id_aux" };
         String[] clusteringKeys3 = { };
-        table3 = createTestTable(clusterName, "demo", "table3",
+        table3 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table3",
                 columnNames3, columnTypes3, partitionKeys3, clusteringKeys3, null);
     }
 

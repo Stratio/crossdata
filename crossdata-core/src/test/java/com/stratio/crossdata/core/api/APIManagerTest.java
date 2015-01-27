@@ -24,6 +24,7 @@ import static org.testng.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.ask.APICommand;
@@ -42,16 +43,21 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.execution.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.validator.Validator;
 
-public class APIManagerTest extends MetadataManagerTestHelper {
+public class APIManagerTest {
 
     private final Parser parser = new Parser();
     private final Validator validator = new Validator();
     private final Planner planner = new Planner();
+
+    @BeforeClass
+    public void init() {
+        MetadataManagerTestHelper.HELPER.initHelper();
+    }
 
     @Test
     public void testPersistDataStore() throws Exception {
@@ -102,7 +108,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
                         "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
                         "Behaviors: " + System.lineSeparator() + "\tBehavior: Test" + System.lineSeparator();
 
-        CommandResult result = (CommandResult) getApiManager().processRequest(cmd);
+        CommandResult result = (CommandResult) MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
 
         String str = String.valueOf(result.getResult());
 
@@ -284,7 +290,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
     public void testListConnectors() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         Command cmd = new Command("QID", APICommand.DESCRIBE_CONNECTORS(), null);
-        createTestConnector("connectorTest", new DataStoreName("datastoreTest"), "akkaActorRef");
+        MetadataManagerTestHelper.HELPER.createTestConnector("connectorTest", new DataStoreName("datastoreTest"), "akkaActorRef");
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
         String expectedResult = System.lineSeparator() + "Connector: connector.connectortest" +
                 "\tONLINE\t[]\t[datastore.datastoretest]\takkaActorRef" + System.lineSeparator();
@@ -296,7 +302,7 @@ public class APIManagerTest extends MetadataManagerTestHelper {
     @Test(dependsOnMethods = { "testListConnectors" })
     public void testResetMetadata() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
-        createTestConnector("connectorTest2", new DataStoreName("datastoreTest"), "akkaActorRef");
+        MetadataManagerTestHelper.HELPER.createTestConnector("connectorTest2", new DataStoreName("datastoreTest"), "akkaActorRef");
         Command cmd = new Command("QID", APICommand.RESET_SERVERDATA(), null);
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
 

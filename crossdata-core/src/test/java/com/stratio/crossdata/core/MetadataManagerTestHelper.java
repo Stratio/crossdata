@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.execution;
+package com.stratio.crossdata.core;
 
 import static org.testng.Assert.fail;
 
@@ -38,7 +38,6 @@ import javax.transaction.TransactionManager;
 
 import org.apache.commons.io.FileUtils;
 import org.testng.annotations.AfterSuite;
-import org.testng.annotations.BeforeSuite;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -66,6 +65,7 @@ import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.api.APIManager;
+import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
 import com.stratio.crossdata.core.grid.GridInitializer;
 import com.stratio.crossdata.core.metadata.MetadataManager;
@@ -73,22 +73,21 @@ import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.validator.Validator;
 
-public class MetadataManagerTestHelper {
+public enum MetadataManagerTestHelper {
+    HELPER;
 
-    Map<FirstLevelName, Serializable> metadataMap = new HashMap<>();
-    Map<FirstLevelName, Serializable> executionMap = new HashMap<>();
     private String path = "";
 
     private final Parser parser = new Parser();
     private final Validator validator = new Validator();
     private final Planner planner = new Planner();
     private final APIManager apiManager = new APIManager(parser, validator, planner);
+    private boolean initialized = false;
 
     public APIManager getApiManager() {
         return apiManager;
     }
 
-    @BeforeSuite
     public void setUp() throws ManifestException {
         initializeGrid();
         //MetadataManager
@@ -101,14 +100,27 @@ public class MetadataManagerTestHelper {
         Lock executionLock = Grid.INSTANCE.lock("crossdata.executionmanager.test");
         TransactionManager executionTM = Grid.INSTANCE.transactionManager("crossdata.executionmanager.test");
         ExecutionManager.MANAGER.init(executionMap, executionLock, executionTM);
+        initialized = true;
     }
 
     @AfterSuite
     public void tearDown() throws Exception {
+        /*
         metadataMap.clear();
         executionMap.clear();
         Grid.INSTANCE.close();
+        */
         FileUtils.deleteDirectory(new File(path));
+    }
+
+    public void initHelper(){
+        if(!initialized){
+            try {
+                setUp();
+            } catch (ManifestException e) {
+                initialized = false;
+            }
+        }
     }
 
     private void initializeGrid() {
@@ -122,7 +134,7 @@ public class MetadataManagerTestHelper {
                 .withPersistencePath(path).init();
     }
 
-    protected DataStoreMetadata insertDataStore(String dataStore, String cluster) {
+    public DataStoreMetadata insertDataStore(String dataStore, String cluster) {
         DataStoreName dataStoreName = new DataStoreName(dataStore);
         String version = "0.2.0";
 

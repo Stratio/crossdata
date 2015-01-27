@@ -37,7 +37,7 @@ import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
 import com.stratio.crossdata.core.coordinator.Coordinator
-import com.stratio.crossdata.core.execution.{MetadataManagerTestHelper, ExecutionManager}
+import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.grid.Grid
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.planner.{PlannerExecutionWorkflowTest, SelectValidatedQueryWrapper}
@@ -52,6 +52,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import com.stratio.crossdata.core.MetadataManagerTestHelper
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.CatalogName;
@@ -55,7 +56,7 @@ import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.execution.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
@@ -63,18 +64,23 @@ import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 
-public class NormalizerTest extends MetadataManagerTestHelper {
+public class NormalizerTest {
 
     /**
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(MetadataManagerTestHelper.class);
 
+    @BeforeClass
+    public void init() {
+        MetadataManagerTestHelper.HELPER.initHelper();
+    }
+
     @Test(groups = "putData")
     public void putData() throws Exception {
 
         // DATASTORE
-        insertDataStore("Cassandra", "production");
+        MetadataManagerTestHelper.HELPER.insertDataStore("Cassandra", "production");
 
         // CLUSTER
         ClusterName clusterName = new ClusterName("testing");

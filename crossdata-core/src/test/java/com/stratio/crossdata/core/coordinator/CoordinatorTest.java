@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.CatalogName;
@@ -61,9 +62,14 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.communication.ManagementOperation;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.execution.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
-public class CoordinatorTest extends MetadataManagerTestHelper {
+public class CoordinatorTest {
+
+    @BeforeClass
+    public void init() {
+        MetadataManagerTestHelper.HELPER.initHelper();
+    }
 
     /**
      * Testing an API operation (attaching a cluster to a datastore)
@@ -74,7 +80,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
     public void testAttachCluster() throws Exception {
 
         // Create and add a test datastore metadata to the metadataManager
-        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "production");
+        DataStoreMetadata datastoreTest = MetadataManagerTestHelper.HELPER.insertDataStore("datastoreTest", "production");
 
         ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.ATTACH_CLUSTER,
                 ResultType.RESULTS);
@@ -111,7 +117,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
     public void testDetachCluster() throws Exception {
 
         // Create and add a test datastore metadata to the metadataManager
-        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "production");
+        DataStoreMetadata datastoreTest = MetadataManagerTestHelper.HELPER.insertDataStore("datastoreTest", "production");
 
         ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.DETACH_CLUSTER,
                 ResultType.RESULTS);
@@ -143,7 +149,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
     public void testAttachConnector() throws Exception {
 
         // Create and add a test datastore metadata to the metadataManager
-        DataStoreMetadata datastoreTest = insertDataStore("datastoreTest", "preProduction");
+        DataStoreMetadata datastoreTest = MetadataManagerTestHelper.HELPER.insertDataStore("datastoreTest", "preProduction");
 
         MetadataManager.MANAGER.createDataStore(datastoreTest, false);
 
@@ -247,16 +253,16 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         String catalog = "catalogTest4";
         String tableString = "tableTest";
 
-        createTestDatastore();
-        createTestCluster(cluster, new DataStoreName(datastore));
-        createTestCatalog(catalog);
+        MetadataManagerTestHelper.HELPER.createTestDatastore();
+        MetadataManagerTestHelper.HELPER.createTestCluster(cluster, new DataStoreName(datastore));
+        MetadataManagerTestHelper.HELPER.createTestCatalog(catalog);
 
         TableName tableName = new TableName(catalog, tableString);
         String[] columnNames1 = { "id", "user" };
         ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys = { "id" };
         String[] clusteringKeys = { };
-        TableMetadata tableMetadata = defineTable(
+        TableMetadata tableMetadata = MetadataManagerTestHelper.HELPER.defineTable(
                 new ClusterName(cluster),
                 catalog,
                 tableString,
@@ -292,9 +298,9 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         String table = "tableTest";
         String index = "indexTest";
 
-        createTestDatastore();
-        createTestCluster(cluster, new DataStoreName(datastore));
-        createTestCatalog(catalog);
+        MetadataManagerTestHelper.HELPER.createTestDatastore();
+        MetadataManagerTestHelper.HELPER.createTestCluster(cluster, new DataStoreName(datastore));
+        MetadataManagerTestHelper.HELPER.createTestCatalog(catalog);
 
         TableName tableName = new TableName(catalog, table);
         String[] columnNames1 = { "id", "user" };
@@ -311,7 +317,7 @@ public class CoordinatorTest extends MetadataManagerTestHelper {
         Map<Selector, Selector> options = new HashMap<>();
         IndexMetadata indexMetadata = new IndexMetadata(indexName, columns, indexType, options);
 
-        createTestTable(new ClusterName(cluster), catalog, table, columnNames1, columnTypes,
+        MetadataManagerTestHelper.HELPER.createTestTable(new ClusterName(cluster), catalog, table, columnNames1, columnTypes,
                 partitionKeys, clusteringKeys, indexes);
 
         String queryId = "testCreateIndexQueryId";

@@ -19,18 +19,18 @@ import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
-import com.stratio.crossdata.core.execution.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
-public class CoreUtilsTest extends MetadataManagerTestHelper {
+public class CoreUtilsTest {
 
     private TableName table;
 
     @BeforeClass
     public void setUp() throws ManifestException {
         //super.setUp();
-        createTestDatastore();
-        createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
-        createTestCatalog("catalogTest");
+        MetadataManagerTestHelper.HELPER.createTestDatastore();
+        MetadataManagerTestHelper.HELPER.createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
+        MetadataManagerTestHelper.HELPER.createTestCatalog("catalogTest");
         ClusterName clusterName = new ClusterName("clusterTest");
         String catalogName = "catalogTest";
         String tableName = "tableTest";
@@ -52,7 +52,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         columnTypes[6] = ColumnType.LIST;
         String[] partitionKeys = new String[0];
         String[] clusteringKeys = new String[0];
-        createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,
+        MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,
                 partitionKeys, clusteringKeys, null);
         table = new TableName("catalogTest", "tableTest");
     }
