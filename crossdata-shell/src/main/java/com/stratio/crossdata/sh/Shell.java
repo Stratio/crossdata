@@ -343,8 +343,12 @@ public class Shell {
                     if (toExecute.toLowerCase().startsWith("help")) {
                         showHelp(sb.toString());
                     } else {
-                        Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler);
-                        LOG.info(ConsoleUtils.stringResult(result, this));
+                        try {
+                            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler);
+                            LOG.info(ConsoleUtils.stringResult(result, this));
+                        } catch (Exception ex) {
+                            LOG.error("Execution failed: " + ex.getMessage());
+                        }
                     }
                     sb = new StringBuilder();
                     if(!console.getPrompt().startsWith(DEFAULT_PROMPT)){
