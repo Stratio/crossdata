@@ -274,6 +274,9 @@ public class Coordinator implements Serializable {
         case ALTER_OPTIONS:
             storedTable.setOptions(alterOptions.getProperties());
             break;
+        default:
+            LOG.info("unknown statement detected");
+            break;
         }
         MetadataManager.MANAGER.createTable(storedTable, false);
     }

@@ -87,10 +87,18 @@ public class ExecutionWorkflow implements Serializable {
         this.resultType = type;
     }
 
+    /**
+     * Return the execution type of the workflow.
+     * @return A {@link com.stratio.crossdata.common.executionplan.ExecutionType} .
+     */
     public ExecutionType getExecutionType() {
         return executionType;
     }
 
+    /**
+     * Return the query identification.
+     * @return A String.
+     */
     public String getQueryId() {
         return queryId;
     }

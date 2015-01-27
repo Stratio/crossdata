@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * DataStoreName Class.
+ */
 public class DataStoreName extends FirstLevelName {
 
     /**

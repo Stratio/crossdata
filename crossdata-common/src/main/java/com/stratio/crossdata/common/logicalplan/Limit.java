@@ -33,6 +33,7 @@ public class Limit extends TransformationStep {
     /**
      * Class constructor.
      *
+     * @param limit  The max of results.
      * @param operation The operation to be applied.
      */
     public Limit(Operations operation, int limit) {

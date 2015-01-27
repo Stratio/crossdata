@@ -77,6 +77,9 @@ public class ConnectorType extends CrossdataManifest {
     @XmlElement(name = "Functions")
     protected ConnectorFunctionsType functions;
 
+    /**
+     * Constructor class.
+     */
     public ConnectorType() {
         super(TYPE_CONNECTOR);
     }

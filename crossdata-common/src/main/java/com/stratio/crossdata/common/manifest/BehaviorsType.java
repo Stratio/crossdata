@@ -77,7 +77,7 @@ public class BehaviorsType implements Serializable {
      * Objects of the following type(s) are allowed in the list
      * {@link String }
      * 
-     * 
+     * @return A list of String
      */
     public List<String> getBehavior() {
         if (behavior == null) {
@@ -86,6 +86,10 @@ public class BehaviorsType implements Serializable {
         return this.behavior;
     }
 
+    /**
+     * Set the behaviors for the connector manifest.
+     * @param behavior
+     */
     public void setBehavior(List<String> behavior) {
         this.behavior = behavior;
     }

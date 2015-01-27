@@ -20,6 +20,9 @@ package com.stratio.crossdata.common.metadata;
 
 import java.io.Serializable;
 
+/**
+ * Interface to Catalog, Cluster, Datastore, Connector and node metadata classes.
+ */
 public interface IMetadata extends Serializable {
 
 }

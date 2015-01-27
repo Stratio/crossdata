@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * Node Name class.
+ */
 public class NodeName extends FirstLevelName {
 
     /**

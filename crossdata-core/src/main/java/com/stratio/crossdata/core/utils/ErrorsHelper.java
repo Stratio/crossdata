@@ -21,6 +21,9 @@ package com.stratio.crossdata.core.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Errors Helper class used by th parser.
+ */
 public class ErrorsHelper {
 
     private String message;
