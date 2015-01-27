@@ -37,9 +37,9 @@ import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
 import com.stratio.crossdata.core.coordinator.Coordinator
-import com.stratio.crossdata.core.execution.ExecutionManager
+import com.stratio.crossdata.core.execution.{MetadataManagerTestHelper, ExecutionManager}
 import com.stratio.crossdata.core.grid.Grid
-import com.stratio.crossdata.core.metadata.{MetadataManager, MetadataManagerTestHelper}
+import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.planner.{PlannerExecutionWorkflowTest, SelectValidatedQueryWrapper}
 import com.stratio.crossdata.core.query.{SelectPlannedQuery, SelectParsedQuery, BaseQuery, StorageParsedQuery,
 StorageValidatedQuery, StoragePlannedQuery, MetadataParsedQuery, MetadataValidatedQuery, MetadataPlannedQuery}

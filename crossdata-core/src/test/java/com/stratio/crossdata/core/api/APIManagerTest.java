@@ -42,7 +42,7 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.execution.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.validator.Validator;

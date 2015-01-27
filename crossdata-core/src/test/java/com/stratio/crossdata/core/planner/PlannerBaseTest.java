@@ -46,7 +46,7 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.window.TimeUnit;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
 import com.stratio.crossdata.core.grammar.ParsingTest;
-import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.execution.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;

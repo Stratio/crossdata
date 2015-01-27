@@ -27,7 +27,6 @@ public class ExecutionManagerTest /*extends MetadataManagerTestHelper*/ {
         ExecutionManager.MANAGER.createEntry("key", "testKey");
         ExecutionManager.MANAGER.createEntry("key", "testKey", true);
         Assert.assertTrue(ExecutionManager.MANAGER.exists("key"));
-
     }
 
     @Test

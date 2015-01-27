@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.metadata;
+package com.stratio.crossdata.core.execution;
 
 import static org.testng.Assert.fail;
 
@@ -66,9 +66,9 @@ import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.api.APIManager;
-import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
 import com.stratio.crossdata.core.grid.GridInitializer;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.validator.Validator;

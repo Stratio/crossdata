@@ -19,7 +19,7 @@ import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
-import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.execution.MetadataManagerTestHelper;
 
 public class CoreUtilsTest extends MetadataManagerTestHelper {
 

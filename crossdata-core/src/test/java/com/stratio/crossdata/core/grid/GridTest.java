@@ -22,7 +22,7 @@ import static org.testng.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Map;
-import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
@@ -53,7 +53,7 @@ public class GridTest {
      */
     @BeforeClass
     public void setUp() {
-        path = "/tmp/com.stratio.crossdata-test-" + new Random().nextInt(100000);
+        path = "/tmp/com.stratio.crossdata-test-" + UUID.randomUUID();
         Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
     }
 
