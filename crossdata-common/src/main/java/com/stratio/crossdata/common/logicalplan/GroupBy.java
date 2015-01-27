@@ -24,6 +24,9 @@ import java.util.List;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * GroupBy class implements the step of a group by in a workflow.
+ */
 public class GroupBy extends TransformationStep {
 
     /**

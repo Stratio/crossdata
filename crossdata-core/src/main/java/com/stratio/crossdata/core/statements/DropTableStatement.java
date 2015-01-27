@@ -90,6 +90,10 @@ public class DropTableStatement extends MetadataStatement {
         return ifExists;
     }
 
+    /**
+     * Get the catalogName od the drop table statement.
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName} .
+     */
     public CatalogName getCatalogName() {
         return tableName.getCatalogName();
     }

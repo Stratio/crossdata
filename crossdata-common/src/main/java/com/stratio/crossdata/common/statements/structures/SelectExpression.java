@@ -34,6 +34,10 @@ public class SelectExpression implements Serializable {
      */
     private final List<Selector> selectorList;
 
+    /**
+     * Class constructor.
+     * @param selectorList The list of Selectors.
+     */
     public SelectExpression(List<Selector> selectorList) {
         this.selectorList = selectorList;
     }

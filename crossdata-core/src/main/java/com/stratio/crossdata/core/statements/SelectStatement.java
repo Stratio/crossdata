@@ -340,6 +340,10 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         return orderByClauseClauses;
     }
 
+    /**
+     * Set the order by clause of the statement.
+     * @param orderByClauseClauses Tge list of columns that are implicated in the order by.
+     */
     public void setOrderByClauses(List<OrderByClause> orderByClauseClauses) {
         if ((orderByClauseClauses != null) && (!orderByClauseClauses.isEmpty())) {
             this.orderInc = true;

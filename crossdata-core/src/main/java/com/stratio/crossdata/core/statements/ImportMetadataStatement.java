@@ -29,7 +29,7 @@ import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
  */
 public class ImportMetadataStatement extends MetadataStatement {
 
-    final private ClusterName clusterName;
+    private final ClusterName clusterName;
     private CatalogName catalogName;
     private TableName tableName;
     private boolean discover;

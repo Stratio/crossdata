@@ -21,12 +21,23 @@ package com.stratio.crossdata.common.statements.structures;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Selector Helper class that implements a converter of selector map to String map.
+ */
 public final class SelectorHelper {
 
+    /**
+     * Constructor class.
+     */
     private SelectorHelper(){
 
     }
 
+    /**
+     * Convert a map of selector to a map of strings.
+     * @param selectorsMap The map of selectors.
+     * @return A map of strings.
+     */
     public static Map<String, String> convertSelectorMapToStringMap(Map<Selector, Selector> selectorsMap) {
         Map<String, String> stringsMap = new HashMap<>();
         for(Map.Entry<Selector,Selector> entry: selectorsMap.entrySet()){

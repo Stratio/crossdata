@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * Enum that determines if there is a connection between tha actor of connector and actor of server.
+ */
 public enum ConnectionStatus {
     CONNECTED,
     DISCONNECTED

@@ -74,6 +74,9 @@ public class DataStoreType extends CrossdataManifest {
     @XmlElement(name = "Functions")
     protected DataStoreFunctionsType functions;
 
+    /**
+     * Class constructor.
+     */
     public DataStoreType() {
         super(TYPE_DATASTORE);
     }

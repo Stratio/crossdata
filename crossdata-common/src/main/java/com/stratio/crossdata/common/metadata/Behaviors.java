@@ -17,6 +17,9 @@
  */
 package com.stratio.crossdata.common.metadata;
 
+/**
+ * Enum that defines the types of behaviours defined in crossdata.
+ */
 public enum Behaviors {
 
     UPSERT_ON_INSERT("UPSERT_ON_INSERT"),

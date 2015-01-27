@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+/**
+ * Enumerator that defines the different types of selectors of crossdata.
+ */
 public enum SelectorType {
     FUNCTION,
     COLUMN,

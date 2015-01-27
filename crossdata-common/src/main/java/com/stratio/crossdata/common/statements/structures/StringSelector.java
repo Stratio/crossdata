@@ -42,6 +42,7 @@ public class StringSelector extends Selector {
     /**
      * Class constructor.
      *
+     * @param tableName The table name.
      * @param value The string value.
      */
     public StringSelector(TableName tableName, String value) {

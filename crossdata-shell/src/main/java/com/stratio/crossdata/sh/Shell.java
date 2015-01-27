@@ -343,12 +343,8 @@ public class Shell {
                     if (toExecute.toLowerCase().startsWith("help")) {
                         showHelp(sb.toString());
                     } else {
-                        try {
-                            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler);
-                            LOG.info(ConsoleUtils.stringResult(result, this));
-                        } catch (Exception ex) {
-                            LOG.error("Execution failed: ", ex);
-                        }
+                        Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler);
+                        LOG.info(ConsoleUtils.stringResult(result, this));
                     }
                     sb = new StringBuilder();
                     if(!console.getPrompt().startsWith(DEFAULT_PROMPT)){
@@ -368,7 +364,8 @@ public class Shell {
                     }
                     sb = new StringBuilder();
                     println("");
-                } else if(!toExecute.isEmpty()) { // Multiline code
+                } else if(!toExecute.isEmpty()) {
+                    // Multiline code
                     if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
                         currentPrompt = console.getPrompt();
                         String tempPrompt =
@@ -380,7 +377,7 @@ public class Shell {
         } catch (IOException ex) {
             LOG.error("Cannot read from console.", ex);
         } catch (Exception e) {
-            LOG.error("Cannot read from console.", e);
+            LOG.error("Execution failed:", e);
         }
     }
 

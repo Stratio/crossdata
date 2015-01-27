@@ -20,6 +20,9 @@ package com.stratio.crossdata.core.engine;
 
 import java.util.Arrays;
 
+/**
+ * Engine Config Class implements the configuration parameters of infinispan.
+ */
 public class EngineConfig {
 
     /**

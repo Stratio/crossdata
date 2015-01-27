@@ -73,6 +73,10 @@ public class CreateCatalogStatement extends MetadataStatement {
         return sb.toString();
     }
 
+    /**
+     * Get the requirements to validate if the create catalog statement is possible.
+     * @return A {@link com.stratio.crossdata.core.validator.requirements.ValidationRequirements} .
+     */
     public ValidationRequirements getValidationRequirements() {
         ValidationRequirements validationRequirements = new ValidationRequirements();
         if (!ifNotExists) {
@@ -81,6 +85,10 @@ public class CreateCatalogStatement extends MetadataStatement {
         return validationRequirements;
     }
 
+    /**
+     * Get the catalog name.
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName} .
+     */
     public CatalogName getCatalogName() {
         return catalog;
     }
