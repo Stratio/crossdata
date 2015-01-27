@@ -140,5 +140,5 @@ Crossdata will generate the following LogicalWorkflow::
 More Information
 ================
 
-For more information about the available operations, check the `Connector Operations <ConnectorOperations.rst>`_
+For more information about the available operations, check the `Connector Operations <ConnectorOperations.html>`_
 document

@@ -143,5 +143,5 @@ Query
 More information
 ================
 
-For more information, check the project documentation_.
-.. _documentation: http://stratio.github.io/crossdata
+For more information, check the project `documentation <http://stratio.github.io/crossdata>`_.
+

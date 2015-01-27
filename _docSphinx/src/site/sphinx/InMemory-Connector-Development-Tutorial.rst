@@ -119,7 +119,7 @@ Defining the manifests
 In Crossdata there are two important notions to consider: *datastores*, and *connectors*. A datastore describes 
 a particular storage technology describing its name, its properties, and its behaviours. This information is stored in
  a xml manifest file, and it is uploaded to Crossdata using the 
-[ADD DATASTORE](Grammar.md#add-datastore)
+ `ADD DATASTORE <Grammar.html#add-datastore>`_
 sentence. For instance, the datastore manifest for Cassandra have the following definition::
 
 
@@ -175,13 +175,13 @@ content::
 
 
 Crossdata will require the presence of these properties when the 
-[ATTACH CLUSTER](Grammar.md#attach-cluster)
+`ATTACH CLUSTER <Grammar.html#attach-cluster>`_
 operation is executed, but it is responsibility of the connector itself to semantically check that the given parameters
 can be used.
 
 Once the datastore have been characterized, the next step is to define the properties and capabilities of the 
 connector. As before, a XML manifest is used and uploaded to Crossdata with the
-[ADD CONNECTOR](Grammar.md#add-connector)
+ `ADD CONNECTOR <Grammar.html#add-connector>`_
 sentence. In the case of the *InMemoryConnector*, the manifest has the following contents::
 
 
@@ -235,11 +235,11 @@ sentence. In the case of the *InMemoryConnector*, the manifest has the following
 
 The aforementioned manifest contains the connector name, the list of datastores it may access, 
 the properties required by the connector when an
-[ATTACH CONNECTOR](Grammar.md#attach-connector)
+`ATTACH CONNECTOR <Grammar.html#attach-connector>`_
 command is issued, and the list of operations supported by the connector. This last part will be analyzed by 
 Crossdata on each query to determine which connector will be used to execute a particular query. For more information
  about the supported operation check the 
-[operations documentation](ConnectorOperations.md).
+`operations documentation <ConnectorOperations.html>`_.
 
 For more information check the `datastore <https://github
 .com/Stratio/crossdata/blob/develop/crossdata-common/src/main/resources/com/stratio/crossdata/connector
@@ -349,7 +349,7 @@ Implementing IQueryEngine
 -------------------------
 
 The *IQueryEngine* defines the operations required to execute a
-[SELECT](Grammar.md#select).
+`SELECT <Grammar.html#select>`_.
 Two methods are provided depending on the type of queries supported. The *execute* method is currently used for 
 synchronous queries, while the *asyncExecute* method is used for streaming selects. If the query introduced by the 
 user contains a **WITH WINDOW** clause, the *asyncExecute* method will be invoked. In the case of the 
@@ -401,7 +401,7 @@ For each incoming query in Crossdata, the query is analyzed, checked and process
 *ExecutionWorkflow*. In the case of the *SELECT* statement, the *ExecutionWorkflow* contains a *LogicalWorkflow* that
  represents the workflow to be executed in order to obtain the required results. For more information about logical 
  workflow check the
-[Logical Workflows explained](Logical-Workflows-Explained.md)
+`Logical Workflows explained <Logical-Workflows-Explained.html>`_
 document.
 
 In our case, given that we do not support *UnionStep*, we can take the *Project* and *Select* operator to build the 

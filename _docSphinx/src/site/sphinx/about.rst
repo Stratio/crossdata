@@ -13,7 +13,8 @@ files. To automatically build Stratio Crossdata execute the following command::
 
 
 Running the com.stratio.crossdata-server
-========================================::
+========================================
+::
 
     > mvn exec:java -DskipTests -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.CrossdataApplication"
 
@@ -79,23 +80,23 @@ You can send us issues in https://crossdata.atlassian.net/
 Grammar
 =======
 
-Grammar specification for this release can be found `here <Grammar.rst>`_.
+Grammar specification for this release can be found `here <Grammar.html>`_.
 
 
 Getting started
 ===============
-In this `link <GettingStarted.rst>`_ you can follow an example of Crossdata with a Cassandra Connector as an access
+In this `link <GettingStarted.html>`_ you can follow an example of Crossdata with a Cassandra Connector as an access
 to a Cassandra datastore.
 
 
 Connectors
 ==========
 
-`List of Crossdata Connectors <List-of-Crossdata-Connectors.rst>`_
+`List of Crossdata Connectors <List-of-Crossdata-Connectors.html>`_
 
-`InMemory Connector development tutorial <InMemory-Connector-Development-Tutorial.rst>`_
+`InMemory Connector development tutorial <InMemory-Connector-Development-Tutorial.html>`_
 
-`Definition of Connector Operations <ConnectorOperations.md>`_
+`Definition of Connector Operations <ConnectorOperations.html>`_
 
 `Crossdata Connector Challenge <https://stratio.github.io/crossdata/contest>`_
 
@@ -103,7 +104,7 @@ Connectors
 Sandbox
 =======
 
-if you want to test Crossdata you can get our Sandbox follow the instructions of this `link <Sandbox.rst>`_
+if you want to test Crossdata you can get our Sandbox follow the instructions of this `link <Sandbox.html>`_
 
 License
 =======

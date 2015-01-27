@@ -37,10 +37,10 @@ source_suffix = '.rst'
 # source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = 'about'
 
 # General information about the project.
-project = u'Streaming CEP'
+project = u'Crossdata'
 copyright = u'2015 Stratio'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -192,7 +192,7 @@ html_static_path = ['_static']
 #html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'StreamingCEPdoc'
+htmlhelp_basename = 'about'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -214,8 +214,8 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'StreamingCEP.tex', u'Streaming CEP Documentation',
-     u'David Morales, Alberto Rodríguez, Antonio Jesus Navarro', 'manual'),
+    ('about', 'Grammar', u'GettingStarted',
+     'Juanjo Lopez, Daniel Higuero, Miguel Angel Fernandez'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -244,8 +244,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'streamingcep', u'Streaming CEP Documentation',
-     [u'David Morales, Alberto Rodríguez, Antonio Jesus Navarro'], 1)
+    ('about', 'Grammar', u'GettingStarted',
+     [u'Juanjo Lopez, Daniel Higuero, Migel Angel Fernandez'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -258,10 +258,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'StreamingCEP', u'Streaming CEP Documentation',
-     u'David Morales, Alberto Rodríguez, Antonio Jesus Navarro', 'StreamingCEP',
-     'One line description of project.',
-     'Miscellaneous'),
+    ('about', 'Grammar', u'GettingStarted',
+     'Juanjo Lopez, Daniel Higuero, Miguel Angel Fernandez'),
 ]
 
 # Documents to append as an appendix to all manuals.
@@ -277,7 +275,7 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 pdf_documents = [
-    ('index', u'${project.name}', u'${project.name}', u'${project.name}'),
+    ('about', u'${project.name}', u'${project.name}', u'${project.name}'),
     ]
 
 pdf_stylesheets = ['sphinx','kerning','a4']
