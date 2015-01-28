@@ -44,21 +44,12 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
-import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
-import com.stratio.crossdata.core.parser.Parser;
-import com.stratio.crossdata.core.planner.Planner;
-import com.stratio.crossdata.core.validator.Validator;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 /**
- * Explain plan tests using the API manager
+ * Explain plan tests using the API apiManager
  */
-public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
-
-    private final Parser parser = new Parser();
-    private final Validator validator = new Validator();
-    private final Planner planner = new Planner();
-
-    private final APIManager manager = new APIManager(parser, validator, planner);
+public class ExplainPlanAPIManagerTest {
 
     private ConnectorMetadata connector1 = null;
 
@@ -74,8 +65,10 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
 
     @BeforeClass
     public void setUp() throws ManifestException {
-        super.setUp();
-        DataStoreName dataStoreName = createTestDatastore();
+
+        MetadataManagerTestHelper.HELPER.initHelper();
+
+        DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         Set<Operations> operationsC1 = new HashSet<>();
         operationsC1.add(Operations.CREATE_TABLE);
@@ -85,22 +78,24 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
         operationsC1.add(Operations.FILTER_PK_EQ);
         operationsC1.add(Operations.SELECT_INNER_JOIN);
 
-        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
-                "actorRef1");
-        clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName());
+        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector(
+                "TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1, "actorRef1");
+        clusterName = MetadataManagerTestHelper.HELPER.
+                createTestCluster("TestCluster1", dataStoreName, connector1.getName());
 
-        CatalogName catalogName = createTestCatalog("demo").getName();
+        CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         String[] columnNames1 = { "id", "user" };
         ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys = { "id" };
         String[] clusteringKeys = { };
-        table1 = createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes,
+        table1 = MetadataManagerTestHelper.HELPER.createTestTable(
+                clusterName, "demo", "table1", columnNames1, columnTypes,
                 partitionKeys, clusteringKeys, null);
 
         String[] columnNames2 = { "id", "email" };
-        table2 = createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes,
+        table2 = MetadataManagerTestHelper.HELPER.createTestTable(
+                clusterName, "demo", "table2", columnNames2, columnTypes,
                 partitionKeys, clusteringKeys, null);
-
     }
 
     private Command getCommand(String statement) {
@@ -114,7 +109,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void invalidExplainRequest() {
         List<Object> params = new ArrayList<>();
         Command cmd = new Command("QID", APICommand.EXPLAIN_PLAN(), params);
-        Result r = manager.processRequest(cmd);
+        Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), ErrorResult.class, "Expecting error result");
         assertEquals(ErrorResult.class.cast(r).getException().getClass(), UnsupportedException.class,
@@ -125,7 +120,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainQualifiedSelect() {
         String inputText = "SELECT demo.table1.id FROM demo.table1;";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), CommandResult.class, "Expecting command result");
         CommandResult result = (CommandResult) r;
@@ -138,7 +133,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainNonQualifiedSelect() {
         String inputText = "SELECT id FROM table1;";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), CommandResult.class, "Expecting command result");
         CommandResult result = (CommandResult) r;
@@ -151,7 +146,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainInsert() {
         String inputText = "INSERT INTO table1(id, user) VALUES (1, 'user1');";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), CommandResult.class, "Expecting command result");
         CommandResult result = (CommandResult) r;
@@ -165,7 +160,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
         String inputText = "CREATE TABLE new_table ON CLUSTER TestCluster1" +
                 " (id int PRIMARY KEY, name text);";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), CommandResult.class, "Expecting command result");
         CommandResult result = (CommandResult) r;
@@ -178,7 +173,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainNotSupportedSelect() {
         String inputText = "SELECT id FROM table1 WHERE id > 5;";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), ErrorResult.class, "Expecting command result");
         ErrorResult result = (ErrorResult) r;
@@ -191,7 +186,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainInvalidSelect() {
         String inputText = "SELECT id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), ErrorResult.class, "Expecting command result");
         ErrorResult result = (ErrorResult) r;
@@ -204,7 +199,7 @@ public class ExplainPlanAPIManagerTest extends MetadataManagerTestHelper {
     public void explainUnrecognized() {
         String inputText = "SELL id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
-        Result r = manager.processRequest(cmd);
+        Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), ErrorResult.class, "Expecting command result");
         ErrorResult result = (ErrorResult) r;

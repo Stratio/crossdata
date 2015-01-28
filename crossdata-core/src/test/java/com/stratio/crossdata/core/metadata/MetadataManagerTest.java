@@ -33,6 +33,7 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.CatalogName;
@@ -56,14 +57,20 @@ import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
-public class MetadataManagerTest extends MetadataManagerTestHelper {
+public class MetadataManagerTest {
+
+    @BeforeClass
+    public void init() {
+        MetadataManagerTestHelper.HELPER.initHelper();
+    }
 
     @Test
     public void testAttachCluster() throws Exception {
 
-        DataStoreName dataStoreName = createTestDatastore();
-        ClusterName clusterName = createTestCluster("clusterTest", dataStoreName);
+        DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
+        ClusterName clusterName = MetadataManagerTestHelper.HELPER.createTestCluster("clusterTest", dataStoreName);
         DataStoreMetadata dataStoreTest = MetadataManager.MANAGER.getDataStore(dataStoreName);
 
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
@@ -86,14 +93,15 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
     public void testAttachConnector() throws Exception {
 
         // Create and add a test dataStore and cluster to the MetadataManager
-        DataStoreName dataStoreRef = createTestDatastore();
+        DataStoreName dataStoreRef = MetadataManagerTestHelper.HELPER.createTestDatastore();
         ClusterName clusterName = new ClusterName("clusterTest");
         Set<ClusterName> clusterList = new HashSet<>();
         clusterList.add(clusterName);
         // Create and add a test ConnectorManager metadata to the MetadataManager
-        ConnectorName connectorName = createTestConnector("testConnector", dataStoreRef, clusterList,
+        ConnectorName connectorName = MetadataManagerTestHelper.HELPER.createTestConnector("testConnector",
+                dataStoreRef, clusterList,
                 "coordinatorActorRef");
-        createTestCluster(clusterName.getName(), dataStoreRef, connectorName);
+        MetadataManagerTestHelper.HELPER.createTestCluster(clusterName.getName(), dataStoreRef, connectorName);
 
         // Check persistence of ConnectorManager
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
@@ -113,11 +121,11 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
     public void testCreateCatalog() throws Exception {
 
         // Create and add a test dataStore and cluster to the MetadataManager
-        DataStoreName dataStoreRef = createTestDatastore();
+        DataStoreName dataStoreRef = MetadataManagerTestHelper.HELPER.createTestDatastore();
         ClusterName clusterName = new ClusterName("clusterTest");
-        createTestCluster(clusterName.getName(), dataStoreRef);
+        MetadataManagerTestHelper.HELPER.createTestCluster(clusterName.getName(), dataStoreRef);
         // Create catalog
-        CatalogName catalogName = createTestCatalog("testCatalog").getName();
+        CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("testCatalog").getName();
 
         //Check catalog persistence
         assertEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), catalogName,
@@ -129,18 +137,19 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
     @Test
     public void testCreateTable() throws Exception {
         // Create and add a test dataStore and cluster to the MetadataManager
-        DataStoreName dataStoreRef = createTestDatastore();
+        DataStoreName dataStoreRef = MetadataManagerTestHelper.HELPER.createTestDatastore();
         ClusterName clusterName = new ClusterName("clusterTest");
-        createTestCluster(clusterName.getName(), dataStoreRef);
+        MetadataManagerTestHelper.HELPER.createTestCluster(clusterName.getName(), dataStoreRef);
         // Create catalog
-        CatalogName catalogName = createTestCatalog("testCatalog").getName();
+        CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("testCatalog").getName();
 
         // Create and add test table to the metadatamanager
         String[] columnNames1 = { "id", "user" };
         ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
-        TableMetadata table = createTestTable(clusterName, catalogName.getName(), "testTable", columnNames1,
+        TableMetadata table = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(),
+                "testTable", columnNames1,
                 columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         assertEquals(MetadataManager.MANAGER.getTable(table.getName()).getName(), table.getName(),
@@ -161,7 +170,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String name = "connectorTest";
         DataStoreName dataStoreName = new DataStoreName("dataStoreTest");
         String actorRef = "akkaActorRefTest";
-        createTestConnector(name, dataStoreName, actorRef);
+        MetadataManagerTestHelper.HELPER.createTestConnector(name, dataStoreName, actorRef);
 
         ConnectorName connectorName = new ConnectorName(name);
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
@@ -183,7 +192,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String name = "connectorTest";
         DataStoreName dataStoreName = new DataStoreName("dataStoreTest");
         String actorRef = null;
-        createTestConnector(name, dataStoreName, actorRef);
+        MetadataManagerTestHelper.HELPER.createTestConnector(name, dataStoreName, actorRef);
 
         ConnectorName connectorName = new ConnectorName("connectorName");
         actorRef = "akkaActorRefTest";
@@ -225,7 +234,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String name = "connectorTest";
         DataStoreName dataStoreName = new DataStoreName("dataStoreTest");
         String actorRef = null;
-        createTestConnector(name, dataStoreName, actorRef);
+        MetadataManagerTestHelper.HELPER.createTestConnector(name, dataStoreName, actorRef);
 
         List<ConnectorName> names = new ArrayList<>();
         ConnectorName connectorName = new ConnectorName("connectorTest");
@@ -252,7 +261,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String name = "connectorTest";
         DataStoreName dataStoreName = new DataStoreName("dataStoreTest");
         String actorRef = "akkActorRefTest";
-        createTestConnector(name, dataStoreName, actorRef);
+        MetadataManagerTestHelper.HELPER.createTestConnector(name, dataStoreName, actorRef);
 
         assertTrue(MetadataManager.MANAGER.getConnectorRef(new ConnectorName(name)).equalsIgnoreCase(actorRef),
                 "Expected: " + actorRef + System.lineSeparator() +
@@ -268,17 +277,17 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
             fail();
         }
 
-        createTestDatastore();
+        MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         DataStoreName dataStoreName = new DataStoreName("dataStoreTest");
         String cluster = "clusterTest";
         String connector = "connectorTest";
 
         String actorRef = null;
-        createTestConnector(connector, dataStoreName, actorRef);
+        MetadataManagerTestHelper.HELPER.createTestConnector(connector, dataStoreName, actorRef);
 
         try {
-            createTestCluster(cluster, dataStoreName, new ConnectorName(connector));
+            MetadataManagerTestHelper.HELPER.createTestCluster(cluster, dataStoreName, new ConnectorName(connector));
         } catch (ManifestException e) {
             fail();
         }
@@ -307,7 +316,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String name = "connectorTest";
         DataStoreName dataStoreName = new DataStoreName("dataStoreTest");
         String actorRef = null;
-        createTestConnector(name, dataStoreName, actorRef);
+        MetadataManagerTestHelper.HELPER.createTestConnector(name, dataStoreName, actorRef);
 
         List<ConnectorName> names = new ArrayList<>();
         ConnectorName connectorName = new ConnectorName("connectorTest");
@@ -316,13 +325,13 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         MetadataManager.MANAGER.setConnectorStatus(names, status);
 
         assertTrue(MetadataManager.MANAGER.checkConnectorStatus(connectorName, status),
-                connectorName + " shoud have the status : " + status);
+                connectorName + " should have the status : " + status);
     }
 
     @Test
     public void testGetCatalogs() {
         String catalog = "catalogTest";
-        createTestCatalog(catalog);
+        MetadataManagerTestHelper.HELPER.createTestCatalog(catalog);
 
         List<CatalogMetadata> catalogs = MetadataManager.MANAGER.getCatalogs();
 
@@ -470,7 +479,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testShouldBeUniqueException() {
-        DataStoreName name = createTestDatastore();
+        DataStoreName name = MetadataManagerTestHelper.HELPER.createTestDatastore();
         String version = "0.2.0";
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
@@ -489,7 +498,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testCreateCatalogException() {
-        createTestCatalog("catalogTest");
+        MetadataManagerTestHelper.HELPER.createTestCatalog("catalogTest");
         MetadataManager.MANAGER.createCatalog(new CatalogMetadata(new CatalogName("catalogTest"),
                 new HashMap<Selector, Selector>(), new HashMap<TableName, TableMetadata>()));
         fail();
@@ -505,7 +514,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys = { "firstCol" };
         String[] clusteringKeys = new String[0];
-        createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,
+        MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,
                 partitionKeys, clusteringKeys, null);
 
         TableName name = new TableName("catalogTest", "tableTest");
@@ -523,7 +532,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testCreateClusterException() {
         try {
-            createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
+            MetadataManagerTestHelper.HELPER.createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
         } catch (ManifestException e) {
             fail();
         }
@@ -544,7 +553,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
 
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testCreateDataStoreException() {
-        createTestDatastore();
+        MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         DataStoreName name = new DataStoreName("dataStoreTest");
         String version = "0.2.0";
@@ -563,7 +572,7 @@ public class MetadataManagerTest extends MetadataManagerTestHelper {
         String name = "connectorTest";
         DataStoreName dataStoreName = new DataStoreName("dataStoreTest");
         String actorRef = "akkaRefTest";
-        createTestConnector(name, dataStoreName, actorRef);
+        MetadataManagerTestHelper.HELPER.createTestConnector(name, dataStoreName, actorRef);
 
         String version = "0.2.0";
         List<String> dataStoreRefs = new ArrayList<>();

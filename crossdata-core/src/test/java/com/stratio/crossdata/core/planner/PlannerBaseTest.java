@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
@@ -45,8 +46,8 @@ import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.window.TimeUnit;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.grammar.ParsingTest;
-import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
@@ -55,7 +56,7 @@ import com.stratio.crossdata.core.statements.SelectStatement;
 /**
  * Base class for planner tests.
  */
-public class PlannerBaseTest extends MetadataManagerTestHelper {
+public class PlannerBaseTest {
 
     /**
      * Class logger.
@@ -65,6 +66,11 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
     ParsingTest helperPT = new ParsingTest();
 
     Planner planner = new Planner();
+
+    @BeforeClass
+    public void init() {
+        MetadataManagerTestHelper.HELPER.initHelper();
+    }
 
     /**
      * Get the execution workflow from a statement.

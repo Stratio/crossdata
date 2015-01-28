@@ -20,35 +20,32 @@ package com.stratio.crossdata.core.execution;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
-
-public class ExecutionManagerTest extends MetadataManagerTestHelper {
+public class ExecutionManagerTest {
 
     @Test
     public void testExist() throws Exception {
-        ExecutionManager.MANAGER.createEntry("key", "pruebaKey");
-        ExecutionManager.MANAGER.createEntry("key", "pruebaKey", true);
+        ExecutionManager.MANAGER.createEntry("key", "testKey");
+        ExecutionManager.MANAGER.createEntry("key", "testKey", true);
         Assert.assertTrue(ExecutionManager.MANAGER.exists("key"));
-
     }
 
     @Test
     public void testClear() throws Exception {
-        ExecutionManager.MANAGER.createEntry("key", "pruebaKey");
+        ExecutionManager.MANAGER.createEntry("key", "testKey");
         ExecutionManager.MANAGER.clear();
         Assert.assertFalse(ExecutionManager.MANAGER.exists("key"));
     }
 
     @Test
     public void testClearWithDelete() throws Exception {
-        ExecutionManager.MANAGER.createEntry("key", "pruebaKey");
+        ExecutionManager.MANAGER.createEntry("key", "testKey");
         ExecutionManager.MANAGER.deleteEntry("key");
         Assert.assertFalse(ExecutionManager.MANAGER.exists("key"));
     }
 
     @Test
     public void testGetValue() throws Exception {
-        ExecutionManager.MANAGER.createEntry("key2", "pruebaKey");
-        Assert.assertEquals(ExecutionManager.MANAGER.getValue("key2"), "pruebaKey");
+        ExecutionManager.MANAGER.createEntry("key2", "testKey");
+        Assert.assertEquals(ExecutionManager.MANAGER.getValue("key2"), "testKey");
     }
 }

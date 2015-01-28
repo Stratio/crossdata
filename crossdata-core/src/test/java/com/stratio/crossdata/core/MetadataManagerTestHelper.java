@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.metadata;
+package com.stratio.crossdata.core;
 
 import static org.testng.Assert.fail;
 
@@ -37,8 +37,6 @@ import java.util.concurrent.locks.Lock;
 import javax.transaction.TransactionManager;
 
 import org.apache.commons.io.FileUtils;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -65,17 +63,30 @@ import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.core.api.APIManager;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
 import com.stratio.crossdata.core.grid.GridInitializer;
+import com.stratio.crossdata.core.metadata.MetadataManager;
+import com.stratio.crossdata.core.parser.Parser;
+import com.stratio.crossdata.core.planner.Planner;
+import com.stratio.crossdata.core.validator.Validator;
 
-public class MetadataManagerTestHelper {
+public enum MetadataManagerTestHelper {
+    HELPER;
 
-    Map<FirstLevelName, Serializable> metadataMap = new HashMap<>();
-    Map<FirstLevelName, Serializable> executionMap = new HashMap<>();
     private String path = "";
 
-    @BeforeClass
+    private final Parser parser = new Parser();
+    private final Validator validator = new Validator();
+    private final Planner planner = new Planner();
+    private final APIManager apiManager = new APIManager(parser, validator, planner);
+    private boolean initialized = false;
+
+    public APIManager getApiManager() {
+        return apiManager;
+    }
+
     public void setUp() throws ManifestException {
         initializeGrid();
         //MetadataManager
@@ -88,6 +99,23 @@ public class MetadataManagerTestHelper {
         Lock executionLock = Grid.INSTANCE.lock("crossdata.executionmanager.test");
         TransactionManager executionTM = Grid.INSTANCE.transactionManager("crossdata.executionmanager.test");
         ExecutionManager.MANAGER.init(executionMap, executionLock, executionTM);
+        initialized = true;
+    }
+
+    public void tearDown() throws Exception {
+        Grid.INSTANCE.close();
+        FileUtils.deleteDirectory(new File(path));
+    }
+
+    public void initHelper(){
+        if(!initialized){
+            try {
+                setUp();
+                initialized = true;
+            } catch (ManifestException e) {
+                initialized = false;
+            }
+        }
     }
 
     private void initializeGrid() {
@@ -101,7 +129,7 @@ public class MetadataManagerTestHelper {
                 .withPersistencePath(path).init();
     }
 
-    protected DataStoreMetadata insertDataStore(String dataStore, String cluster) {
+    public DataStoreMetadata insertDataStore(String dataStore, String cluster) {
         DataStoreName dataStoreName = new DataStoreName(dataStore);
         String version = "0.2.0";
 
@@ -168,7 +196,7 @@ public class MetadataManagerTestHelper {
             fail(e.getMessage());
         }
         connectorMetadata.setActorRef(actorRef);
-        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
         return connectorName;
     }
 
@@ -220,7 +248,7 @@ public class MetadataManagerTestHelper {
                 clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
         connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
-        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
         return connectorMetadata;
 
     }
@@ -327,14 +355,6 @@ public class MetadataManagerTestHelper {
         }
         MetadataManager.MANAGER.createTable(tableMetadata);
         return tableMetadata;
-    }
-
-    @AfterClass
-    public void tearDown() throws Exception {
-        metadataMap.clear();
-        executionMap.clear();
-        Grid.INSTANCE.close();
-        FileUtils.deleteDirectory(new File(path));
     }
 
 }

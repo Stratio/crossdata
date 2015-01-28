@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.statements.structures;
 import com.stratio.crossdata.common.data.TableName;
 
 /**
- * String selector. This type of Selector will be used for enquoted strings.
+ * String selector. This type of Selector will be used for quoted strings.
  */
 public class StringSelector extends Selector {
 

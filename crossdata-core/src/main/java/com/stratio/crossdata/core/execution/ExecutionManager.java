@@ -155,7 +155,7 @@ public enum ExecutionManager {
      * @throws SystemException            If the transaction manager is not available.
      * @throws NotSupportedException      If the operation is not supported.
      * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
-     * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
+     * @throws HeuristicMixedException    If the transaction has been partially committed due to the use of a heuristic.
      * @throws RollbackException          If the transaction is marked as rollback only.
      */
     public synchronized void clear()
@@ -208,6 +208,7 @@ public enum ExecutionManager {
     public void deleteEntry(String key) {
         shouldBeInit();
         try {
+            writeLock.lock();
             beginTransaction();
             executionData.remove(key);
             commitTransaction();
