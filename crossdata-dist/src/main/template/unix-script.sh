@@ -1,9 +1,16 @@
 #!/bin/bash
 @LICENSE_HEADER@
 
+
+scriptdir=`pwd`"/"`basename $0`"/"`dirname $0`
+dist=0
+if [ -n "`echo $scriptdir | grep 'bin' | grep 'crossdata-dist' `" ]; then;dist=1;fi
+
 # Read configuration variable file if it is present
 if [ -r /etc/default/crossdata ]; then
+ if [ $dist -lt 1 ]; then
     . /etc/default/crossdata
+ fi
 fi
 
 # resolve links - $0 may be a softlink
