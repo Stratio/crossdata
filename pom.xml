@@ -113,7 +113,7 @@
 	     <plugin>
                 <groupId>com.stratio.mojo.unix</groupId>
                 <artifactId>unix-maven-plugin</artifactId>
-                <version>1.0-alpha-7</version>
+                <version>1.0-alpha-9</version>
                 <extensions>true</extensions>
                 <configuration>
                     <contact><![CDATA[Stratio <chernandez@stratio.com>]]></contact>
@@ -172,11 +172,11 @@
 				<toFile>etc/init.d/crossdata</toFile>
             		</copyFile>
                         <copyFile>
-                            <path>crossdata-dist/target/crossdata-dist-0.2.0-RC1/LICENSE</path>
+                            <path>crossdata-dist/target/crossdata-dist-0.2.0-RC2/LICENSE</path>
                             <toFile>opt/sds/crossdata/LICENSE</toFile>
                         </copyFile>
                         <copyFile>
-                            <path>crossdata-dist/target/crossdata-dist-0.2.0-RC1/NOTICE</path>
+                            <path>crossdata-dist/target/crossdata-dist-0.2.0-RC2/NOTICE</path>
                             <toFile>opt/sds/crossdata/NOTICE</toFile>
                         </copyFile>
             			
