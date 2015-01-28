@@ -4,7 +4,7 @@
 
 scriptdir=`pwd`"/"`basename $0`"/"`dirname $0`
 dist=0
-if [ -n "`echo $scriptdir | grep 'bin' | grep 'crossdata-dist' `" ]; then;dist=1;fi
+if [ -n "`echo $scriptdir | grep 'bin' | grep 'crossdata-dist' `" ]; then dist=1;fi
 
 # Read configuration variable file if it is present
 if [ -r /etc/default/crossdata ]; then
