@@ -37,7 +37,6 @@ import java.util.concurrent.locks.Lock;
 import javax.transaction.TransactionManager;
 
 import org.apache.commons.io.FileUtils;
-import org.testng.annotations.AfterSuite;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -103,13 +102,8 @@ public enum MetadataManagerTestHelper {
         initialized = true;
     }
 
-    @AfterSuite
     public void tearDown() throws Exception {
-        /*
-        metadataMap.clear();
-        executionMap.clear();
         Grid.INSTANCE.close();
-        */
         FileUtils.deleteDirectory(new File(path));
     }
 
@@ -117,6 +111,7 @@ public enum MetadataManagerTestHelper {
         if(!initialized){
             try {
                 setUp();
+                initialized = true;
             } catch (ManifestException e) {
                 initialized = false;
             }
@@ -253,7 +248,7 @@ public enum MetadataManagerTestHelper {
                 clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
         connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
-        MetadataManager.MANAGER.createConnector(connectorMetadata);
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
         return connectorMetadata;
 
     }

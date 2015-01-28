@@ -597,7 +597,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ConnectorMetadata connectorMetadata = null;
         try {
             connectorMetadata = MetadataManagerTestHelper.HELPER.createTestConnector("cassandraConnector", dataStoreName,
-                    new HashSet<ClusterName>(), operations, "1");
+                    new HashSet<ClusterName>(), operations, "ActorRefTest");
         } catch (ManifestException e) {
             fail();
         }
@@ -654,7 +654,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
-    @Test
+    @Test(dependsOnMethods = { "alterCatalogWorkflowTest" })
     public void dropCatalogWorkflowTest() {
 
         DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("demo2"), true);

@@ -96,7 +96,6 @@ public class ExplainPlanAPIManagerTest {
         table2 = MetadataManagerTestHelper.HELPER.createTestTable(
                 clusterName, "demo", "table2", columnNames2, columnTypes,
                 partitionKeys, clusteringKeys, null);
-
     }
 
     private Command getCommand(String statement) {

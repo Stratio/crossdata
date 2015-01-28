@@ -30,13 +30,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
 
 import org.apache.commons.io.FileUtils;
 import org.jgroups.util.UUID;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -70,7 +69,7 @@ public class BasicValidatorTest {
     static Map<FirstLevelName, IMetadata> metadataMap;
     private static String path = "";
 
-    @BeforeClass
+    //@BeforeClass
     public static void setUpBeforeClass() throws ManifestException {
         GridInitializer gridInitializer = Grid.initializer();
         gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
@@ -81,12 +80,11 @@ public class BasicValidatorTest {
                 .withJoinTimeoutInMs(3000)
                 .withPersistencePath(path).init();
 
-        /*
         metadataMap = Grid.INSTANCE.map("crossDatatest");
         Lock lock = Grid.INSTANCE.lock("crossDatatest");
         TransactionManager tm = Grid.INSTANCE.transactionManager("crossDatatest");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
-        */
+
         MetadataManager.MANAGER.createDataStore(createDataStoreMetadata(), false);
         MetadataManager.MANAGER.createConnector(createConnectorMetadata(), false);
         MetadataManager.MANAGER.createCluster(createClusterMetadata(), false);
@@ -208,7 +206,7 @@ public class BasicValidatorTest {
         return clusterMetadata;
     }
 
-    @AfterClass
+    //@AfterClass
     public void tearDown() throws Exception {
         TransactionManager tm = Grid.INSTANCE.transactionManager("com.stratio.crossdata-test");
         tm.begin();

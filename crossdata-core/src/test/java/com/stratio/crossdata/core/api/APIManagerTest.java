@@ -18,8 +18,10 @@
 
 package com.stratio.crossdata.core.api;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +44,8 @@ import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
-import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.validator.Validator;
@@ -64,7 +66,7 @@ public class APIManagerTest {
 
         DataStoreType dataStoreType = new DataStoreType();
 
-        dataStoreType.setName("dataStoreTest");
+        dataStoreType.setName("dataStoreMock");
 
         dataStoreType.setVersion("0.2.0");
 
@@ -99,7 +101,7 @@ public class APIManagerTest {
 
         String expectedResult =
                 "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
-                        "Name: dataStoreTest" + System.lineSeparator()
+                        "Name: dataStoreMock" + System.lineSeparator()
                         + "Version: 0.2.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                         "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                         System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()
@@ -108,9 +110,17 @@ public class APIManagerTest {
                         "OptionalProperty" + System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() +
                         "Behaviors: " + System.lineSeparator() + "\tBehavior: Test" + System.lineSeparator();
 
-        CommandResult result = (CommandResult) MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
+        Result result = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
 
-        String str = String.valueOf(result.getResult());
+        if(result instanceof ErrorResult){
+            fail(System.lineSeparator() +
+                "testPersistDataStore failed." + System.lineSeparator() +
+                ((ErrorResult)result).getErrorMessage());
+        }
+
+        CommandResult commandResult = (CommandResult) result;
+
+        String str = String.valueOf(commandResult.getResult());
 
         assertTrue(str.equalsIgnoreCase(expectedResult), "- Expected: " + System.lineSeparator() +
                 expectedResult + System.lineSeparator() + "-    Found: " + System.lineSeparator() + str);
@@ -292,11 +302,28 @@ public class APIManagerTest {
         Command cmd = new Command("QID", APICommand.DESCRIBE_CONNECTORS(), null);
         MetadataManagerTestHelper.HELPER.createTestConnector("connectorTest", new DataStoreName("datastoreTest"), "akkaActorRef");
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
+
+        /*
         String expectedResult = System.lineSeparator() + "Connector: connector.connectortest" +
                 "\tONLINE\t[]\t[datastore.datastoretest]\takkaActorRef" + System.lineSeparator();
+        */
+
         String str = String.valueOf(result.getResult());
+        String[] connectors = str.split(System.lineSeparator());
+        System.out.println("connectors.length: " + connectors.length);
+
+        int expectedSize = 4;
+
+        assertEquals((connectors.length-1), expectedSize,
+                System.lineSeparator() +
+                "testListConnectors failed." + System.lineSeparator() +
+                "Expected number of connectors: " + expectedSize +
+                "Number of connectors found:    " + (connectors.length-1));
+
+        /*
         assertTrue(str.equalsIgnoreCase(expectedResult), "Expected: " + expectedResult + System.lineSeparator() +
                 "   Found: " + str);
+        */
     }
 
     @Test(dependsOnMethods = { "testListConnectors" })

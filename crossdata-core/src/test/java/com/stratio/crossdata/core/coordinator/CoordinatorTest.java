@@ -61,8 +61,8 @@ import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.communication.ManagementOperation;
-import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class CoordinatorTest {
 
