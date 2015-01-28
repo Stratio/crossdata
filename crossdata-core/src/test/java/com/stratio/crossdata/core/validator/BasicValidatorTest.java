@@ -30,12 +30,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
 
 import org.apache.commons.io.FileUtils;
-import org.jgroups.util.UUID;
+import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -61,7 +60,6 @@ import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.grid.Grid;
-import com.stratio.crossdata.core.grid.GridInitializer;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class BasicValidatorTest {
@@ -69,8 +67,9 @@ public class BasicValidatorTest {
     static Map<FirstLevelName, IMetadata> metadataMap;
     private static String path = "";
 
-    //@BeforeClass
+    @BeforeClass
     public static void setUpBeforeClass() throws ManifestException {
+        /*
         GridInitializer gridInitializer = Grid.initializer();
         gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
         path = "/tmp/metadatastore" + UUID.randomUUID();
@@ -84,13 +83,23 @@ public class BasicValidatorTest {
         Lock lock = Grid.INSTANCE.lock("crossDatatest");
         TransactionManager tm = Grid.INSTANCE.transactionManager("crossDatatest");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
-
+        */
         MetadataManager.MANAGER.createDataStore(createDataStoreMetadata(), false);
         MetadataManager.MANAGER.createConnector(createConnectorMetadata(), false);
         MetadataManager.MANAGER.createCluster(createClusterMetadata(), false);
         MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata(), false);
         MetadataManager.MANAGER.createTable(createTable(), false);
         MetadataManager.MANAGER.createTable(createJoinTable(), false);
+    }
+
+    //@AfterClass
+    public void tearDown() throws Exception {
+        TransactionManager tm = Grid.INSTANCE.transactionManager("com.stratio.crossdata-test");
+        tm.begin();
+        metadataMap.clear();
+        tm.commit();
+        Grid.INSTANCE.close();
+        FileUtils.deleteDirectory(new File(path));
     }
 
     private static CatalogMetadata generateCatalogsMetadata() {
@@ -206,13 +215,4 @@ public class BasicValidatorTest {
         return clusterMetadata;
     }
 
-    //@AfterClass
-    public void tearDown() throws Exception {
-        TransactionManager tm = Grid.INSTANCE.transactionManager("com.stratio.crossdata-test");
-        tm.begin();
-        metadataMap.clear();
-        tm.commit();
-        Grid.INSTANCE.close();
-        FileUtils.deleteDirectory(new File(path));
-    }
 }

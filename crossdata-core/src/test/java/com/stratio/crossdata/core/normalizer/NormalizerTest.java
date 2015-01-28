@@ -76,8 +76,8 @@ public class NormalizerTest {
         MetadataManagerTestHelper.HELPER.initHelper();
     }
 
-    @Test(groups = "putData")
-    public void putData() throws Exception {
+    @Test
+    public void insertData() throws Exception {
 
         // DATASTORE
         MetadataManagerTestHelper.HELPER.insertDataStore("Cassandra", "production");
@@ -91,7 +91,7 @@ public class NormalizerTest {
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreRef, clusterOptions,
                 connectorAttachedRefs);
 
-        MetadataManager.MANAGER.createCluster(clusterMetadata);
+        MetadataManager.MANAGER.createCluster(clusterMetadata, false);
 
         // CATALOG 1
         HashMap<TableName, TableMetadata> tables = new HashMap<>();
@@ -163,7 +163,7 @@ public class NormalizerTest {
                 tables // tables
         );
 
-        MetadataManager.MANAGER.createCatalog(catalogMetadata);
+        MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
 
         // CATALOG 2
         tables = new HashMap<>();
@@ -222,7 +222,7 @@ public class NormalizerTest {
                 tables // tables
         );
 
-        MetadataManager.MANAGER.createCatalog(catalogMetadata);
+        MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
 
         LOG.info("Data inserted in the MetadataManager for the NormalizedTest");
     }
@@ -243,7 +243,7 @@ public class NormalizerTest {
                 "Expected: " + expectedText);
     }
 
-    @Test(dependsOnGroups = "putData")
+    @Test(dependsOnMethods = { "insertData" } )
     public void testNormalizeWhereOrderGroup() throws Exception {
 
         String methodName = "testNormalizeWhereOrderGroup";
