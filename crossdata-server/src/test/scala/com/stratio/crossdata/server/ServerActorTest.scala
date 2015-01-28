@@ -39,7 +39,7 @@ import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.grid.Grid
-import com.stratio.crossdata.core.metadata.{MetadataManager, MetadataManagerTestHelper}
+import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.planner.{PlannerExecutionWorkflowTest, SelectValidatedQueryWrapper}
 import com.stratio.crossdata.core.query.{SelectPlannedQuery, SelectParsedQuery, BaseQuery, StorageParsedQuery,
 StorageValidatedQuery, StoragePlannedQuery, MetadataParsedQuery, MetadataValidatedQuery, MetadataPlannedQuery}
@@ -52,6 +52,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import com.stratio.crossdata.core.MetadataManagerTestHelper
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
@@ -59,8 +60,8 @@ ImplicitSender with BeforeAndAfterAll{
   this: Suite =>
 
   //lazy val system = ActorSystem(clusterName, config)
-  val metadataManager=new MetadataManagerTestHelper()
-  val plannertest= new PlannerExecutionWorkflowTest()
+  val metadataManager = MetadataManagerTestHelper.HELPER
+  val plannerTest= new PlannerExecutionWorkflowTest()
 
   override def afterAll() {
     shutdown(system)
@@ -245,7 +246,7 @@ ImplicitSender with BeforeAndAfterAll{
     val project: Project = getProject(tableName2)
     val columns: Array[ColumnName] = Array(new ColumnName(table1.getName, id), new ColumnName(table1.getName, "user"))
     val types: Array[ColumnType] = Array(ColumnType.INT, ColumnType.TEXT)
-    val select: Select = plannertest.getSelect(columns, types)
+    val select: Select = plannerTest.getSelect(columns, types)
     project.setNextStep(select)
 
 

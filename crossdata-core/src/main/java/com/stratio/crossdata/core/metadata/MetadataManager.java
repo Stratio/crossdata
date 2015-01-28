@@ -329,11 +329,11 @@ public enum MetadataManager {
      */
     public void deleteCatalog(CatalogName catalogName, boolean ifExist) {
         shouldBeInit();
-        writeLock.lock();
-        if (!ifExist) {
-            shouldExist(catalogName);
-        }
         try {
+            writeLock.lock();
+            if (!ifExist) {
+                shouldExist(catalogName);
+            }
             beginTransaction();
             metadata.remove(catalogName);
             commitTransaction();
@@ -405,10 +405,10 @@ public enum MetadataManager {
      */
     public void deleteTable(TableName tableName) {
         shouldBeInit();
-        writeLock.lock();
-        shouldExist(tableName);
-        shouldExist(tableName.getCatalogName());
         try {
+            writeLock.lock();
+            shouldExist(tableName);
+            shouldExist(tableName.getCatalogName());
             beginTransaction();
             metadata.remove(tableName);
             CatalogMetadata catalogMetadata = getCatalog(tableName.getCatalogName());
@@ -522,11 +522,11 @@ public enum MetadataManager {
      */
     public void deleteCluster(ClusterName clusterName, boolean ifExist) {
         shouldBeInit();
-        writeLock.lock();
-        if (!ifExist) {
-            shouldExist(clusterName);
-        }
         try {
+            writeLock.lock();
+            if (!ifExist) {
+                shouldExist(clusterName);
+            }
             beginTransaction();
             metadata.remove(clusterName);
             commitTransaction();

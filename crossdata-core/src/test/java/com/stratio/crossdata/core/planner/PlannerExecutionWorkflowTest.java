@@ -73,6 +73,7 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
@@ -158,8 +159,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     @BeforeClass
     public void setUp() throws ManifestException {
-        super.setUp();
-        DataStoreName dataStoreName = createTestDatastore();
+        //super.setUp();
+        DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         //Connector with join.
         Set<Operations> operationsC1 = new HashSet<>();
@@ -176,14 +177,14 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.SELECT_WINDOW);
 
-        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
+        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
                 "actorRef1");
-        connector2 = createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
+        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
                 "actorRef2");
 
-        clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName());
-        createTestCatalog("demo");
-        createTestCatalog("demo2");
+        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster("TestCluster1", dataStoreName, connector1.getName());
+        MetadataManagerTestHelper.HELPER.createTestCatalog("demo");
+        MetadataManagerTestHelper.HELPER.createTestCatalog("demo2");
         createTestTables();
     }
 
@@ -192,21 +193,21 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
-        table1 = createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes1,
+        table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes1,
                 partitionKeys1, clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
         ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
-        table2 = createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes2,
+        table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes2,
                 partitionKeys2, clusteringKeys2, null);
 
         String[] columnNames3 = { "id", "email" };
         ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys3 = { "id" };
         String[] clusteringKeys3 = { };
-        table2 = createTestTable(clusterName, "demo", "table3", columnNames3, columnTypes3,
+        table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table3", columnNames3, columnTypes3,
                 partitionKeys3, clusteringKeys3, null);
     }
 
@@ -589,19 +590,19 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     @Test
     public void storageWorkflowTest() {
-        DataStoreName dataStoreName = createTestDatastore();
+        DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
         Set<Operations> operations = new HashSet<>();
         operations.add(Operations.INSERT);
         operations.add(Operations.INSERT_IF_NOT_EXISTS);
         ConnectorMetadata connectorMetadata = null;
         try {
-            connectorMetadata = createTestConnector("cassandraConnector", dataStoreName,
-                    new HashSet<ClusterName>(), operations, "1");
+            connectorMetadata = MetadataManagerTestHelper.HELPER.createTestConnector("cassandraConnector", dataStoreName,
+                    new HashSet<ClusterName>(), operations, "ActorRefTest");
         } catch (ManifestException e) {
             fail();
         }
         try {
-            createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
+            MetadataManagerTestHelper.HELPER.createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
         } catch (ManifestException e) {
             fail();
         }
@@ -612,7 +613,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
                 ColumnType.TEXT };
         String[] partitionKeys = { "name", "age" };
         String[] clusteringKeys = { "gender" };
-        createTestTable(new ClusterName("cluster"), "demo", "users", columnNames, columnTypes,
+        MetadataManagerTestHelper.HELPER.createTestTable(new ClusterName("cluster"), "demo", "users", columnNames, columnTypes,
                 partitionKeys, clusteringKeys, null);
         String query = "Insert into demo.users(name,gender,age,bool,phrase,email) values ('pepe','male',23,true,'this is the phrase','mail@mail.com';";
         List<ColumnName> columns = new ArrayList<>();
@@ -653,7 +654,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
-    @Test
+    @Test(dependsOnMethods = { "alterCatalogWorkflowTest" })
     public void dropCatalogWorkflowTest() {
 
         DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("demo2"), true);

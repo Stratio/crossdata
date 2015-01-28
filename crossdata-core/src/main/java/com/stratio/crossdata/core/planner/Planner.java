@@ -1428,23 +1428,35 @@ public class Planner {
             } else if (ColumnSelector.class.isInstance(s)) {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
                 if (cs.getAlias() != null) {
-                    aliasMap.put(cs, cs.getAlias());
+
+                    String alias = cs.getAlias();
+                    if(aliasMap.containsValue(alias)){
+                        alias = cs.getColumnName().getTableName().getName() + "_" + cs.getAlias();
+                    }
+
+                    aliasMap.put(cs, alias);
 
                     typeMapFromColumnName.put(cs,
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName())
                                     .getColumnType());
 
-                    typeMap.put(cs.getAlias(),
+                    typeMap.put(alias,
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().
                                     get(cs.getName()).getColumnType());
                 } else {
-                    aliasMap.put(cs, cs.getName().getName());
+
+                    String alias = cs.getName().getName();
+                    if(aliasMap.containsValue(alias)){
+                        alias = cs.getColumnName().getTableName().getName() + "_" + cs.getName().getName();
+                    }
+
+                    aliasMap.put(cs, alias);
 
                     typeMapFromColumnName.put(cs,
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName())
                                     .getColumnType());
 
-                    typeMap.put(cs.getName().getName(),
+                    typeMap.put(alias,
                             tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName())
                                     .getColumnType()
                     );
@@ -1454,13 +1466,25 @@ public class Planner {
                 FunctionSelector fs = FunctionSelector.class.cast(s);
                 ColumnType ct = null;
                 if (fs.getAlias() != null) {
-                    aliasMap.put(fs, fs.getAlias());
+
+                    String alias = fs.getAlias();
+                    if(aliasMap.containsValue(alias)){
+                        alias = fs.getTableName().getName() + "_" + fs.getAlias();
+                    }
+
+                    aliasMap.put(fs, alias);
                     typeMapFromColumnName.put(fs, ct);
-                    typeMap.put(fs.getAlias(), ct);
+                    typeMap.put(alias, ct);
                 } else {
-                    aliasMap.put(fs, fs.getFunctionName());
+
+                    String alias = fs.getFunctionName();
+                    if(aliasMap.containsValue(alias)){
+                        alias = fs.getTableName().getName() + "_" + fs.getFunctionName();
+                    }
+
+                    aliasMap.put(fs, alias);
                     typeMapFromColumnName.put(fs, ct);
-                    typeMap.put(fs.getFunctionName(), ct);
+                    typeMap.put(alias, ct);
                 }
             } else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
@@ -1471,18 +1495,30 @@ public class Planner {
             TableMetadata metadata = tableMetadataMap.get(selectStatement.getTableName().getQualifiedName());
             for (Map.Entry<ColumnName, ColumnMetadata> column: metadata.getColumns().entrySet()) {
                 ColumnSelector cs = new ColumnSelector(column.getKey());
-                aliasMap.put(cs, column.getKey().getName());
+
+                String alias = column.getKey().getName();
+                if(aliasMap.containsValue(alias)){
+                    alias = cs.getColumnName().getTableName().getName() + "_" + column.getKey().getName();
+                }
+
+                aliasMap.put(cs, alias);
                 typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-                typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
+                typeMap.put(alias, column.getValue().getColumnType());
             }
             if (selectStatement.getJoin() != null) {
                 TableMetadata metadataJoin = tableMetadataMap.get(selectStatement.getJoin().getTablename()
                         .getQualifiedName());
                 for (Map.Entry<ColumnName, ColumnMetadata> column: metadataJoin.getColumns().entrySet()) {
                     ColumnSelector cs = new ColumnSelector(column.getKey());
-                    aliasMap.put(cs, column.getKey().getName());
+
+                    String alias = column.getKey().getName();
+                    if(aliasMap.containsValue(alias)){
+                        alias = column.getKey().getTableName().getName() + "_" + column.getKey().getName();
+                    }
+
+                    aliasMap.put(cs, alias);
                     typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-                    typeMap.put(column.getKey().getName(), column.getValue().getColumnType());
+                    typeMap.put(alias, column.getValue().getColumnType());
                 }
             }
         }

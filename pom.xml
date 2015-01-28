@@ -179,7 +179,6 @@
                             <path>crossdata-dist/target/crossdata-dist-0.3.0-SNAPSHOT/NOTICE</path>
                             <toFile>opt/sds/crossdata/NOTICE</toFile>
                         </copyFile>
-            			
                     </assembly>
                 </configuration>
             </plugin>

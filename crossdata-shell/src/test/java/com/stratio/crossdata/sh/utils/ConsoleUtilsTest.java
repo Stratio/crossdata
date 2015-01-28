@@ -99,7 +99,7 @@ public class ConsoleUtilsTest {
         result.setQueryId(queryId);
         String message = ConsoleUtils.stringResult(result);
         String expected = System.lineSeparator() +
-                "Partial result: true" + System.lineSeparator() +
+                "Partial result: false" + System.lineSeparator() +
                 "--------------------" + System.lineSeparator() +
                 "| id      | number | " + System.lineSeparator() +
                 "--------------------" + System.lineSeparator() +

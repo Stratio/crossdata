@@ -38,7 +38,7 @@ public final class QueryResult extends Result {
     /**
      * Determine whether this query result contains the last resultset of the query.
      */
-    private boolean lastResultSet = false;
+    private boolean lastResultSet = true;
 
     /**
      * Number of results sets that are part of the same query identifier sent to the client.
