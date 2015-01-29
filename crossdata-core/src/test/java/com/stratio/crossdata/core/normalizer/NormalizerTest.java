@@ -249,8 +249,10 @@ public class NormalizerTest {
                 "Expected: " + expectedText);
     }
 
-    @Test(dependsOnMethods = { "insertData" } )
+    @Test
     public void testNormalizeWhereOrderGroup() throws Exception {
+
+        insertData();
 
         String methodName = "testNormalizeWhereOrderGroup";
 
@@ -302,8 +304,10 @@ public class NormalizerTest {
         testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
     }
 
-    @Test(dependsOnMethods = { "insertData" } )
+    @Test
     public void testNormalizeInnerJoin() throws Exception {
+
+        insertData();
 
         String methodName = "testNormalizeInnerJoin";
 
