@@ -165,6 +165,9 @@ public class NormalizerTest {
 
         MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
 
+        assertTrue(MetadataManager.MANAGER.exists(catalogMetadata.getName()), System.lineSeparator() +
+                "Catalog: " + catalogMetadata.getName() + " not found in the Metadata Manager");
+
         // CATALOG 2
         tables = new HashMap<>();
 
@@ -225,6 +228,9 @@ public class NormalizerTest {
         MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
 
         LOG.info("Data inserted in the MetadataManager for the NormalizedTest");
+
+        assertTrue(MetadataManager.MANAGER.exists(catalogMetadata.getName()), System.lineSeparator() +
+                "Catalog: " + catalogMetadata.getName() + " not found in the Metadata Manager");
     }
 
     public void testSelectedParserQuery(SelectParsedQuery selectParsedQuery, String expectedText, String methodName) {
@@ -243,8 +249,10 @@ public class NormalizerTest {
                 "Expected: " + expectedText);
     }
 
-    @Test(dependsOnMethods = { "insertData" } )
+    @Test
     public void testNormalizeWhereOrderGroup() throws Exception {
+
+        insertData();
 
         String methodName = "testNormalizeWhereOrderGroup";
 
@@ -296,8 +304,10 @@ public class NormalizerTest {
         testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
     }
 
-    @Test(dependsOnGroups = "putData")
+    @Test
     public void testNormalizeInnerJoin() throws Exception {
+
+        insertData();
 
         String methodName = "testNormalizeInnerJoin";
 
