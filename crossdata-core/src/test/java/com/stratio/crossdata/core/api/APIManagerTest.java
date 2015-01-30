@@ -26,6 +26,7 @@ import static org.testng.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -310,14 +311,13 @@ public class APIManagerTest {
 
         String str = String.valueOf(result.getResult());
         String[] connectors = str.split(System.lineSeparator());
-        System.out.println("connectors.length: " + connectors.length);
 
-        int expectedSize = 4;
+        int expectedSize = 1;
 
         assertEquals((connectors.length-1), expectedSize,
                 System.lineSeparator() +
                 "testListConnectors failed." + System.lineSeparator() +
-                "Expected number of connectors: " + expectedSize +
+                "Expected number of connectors: " + expectedSize + System.lineSeparator() +
                 "Number of connectors found:    " + (connectors.length-1));
 
         /*
@@ -384,4 +384,10 @@ public class APIManagerTest {
                 "Expected: " + "CrossdataManifest added" + System.lineSeparator() +
                 "Found:    " + resultStr);
     }
+
+    @AfterClass(groups = "APIManagerTest")
+    public void tearDown(){
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+    }
+
 }
