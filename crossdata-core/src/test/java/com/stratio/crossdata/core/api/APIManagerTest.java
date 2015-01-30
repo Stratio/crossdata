@@ -310,14 +310,13 @@ public class APIManagerTest {
 
         String str = String.valueOf(result.getResult());
         String[] connectors = str.split(System.lineSeparator());
-        System.out.println("connectors.length: " + connectors.length);
 
-        int expectedSize = 4;
+        int expectedSize = 1;
 
         assertEquals((connectors.length-1), expectedSize,
                 System.lineSeparator() +
                 "testListConnectors failed." + System.lineSeparator() +
-                "Expected number of connectors: " + expectedSize +
+                "Expected number of connectors: " + expectedSize + System.lineSeparator() +
                 "Number of connectors found:    " + (connectors.length-1));
 
         /*

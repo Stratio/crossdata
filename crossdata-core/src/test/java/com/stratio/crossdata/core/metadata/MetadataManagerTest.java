@@ -303,7 +303,7 @@ public class MetadataManagerTest {
 
         List<CatalogMetadata> catalogs = MetadataManager.MANAGER.getCatalogs();
 
-        int expectedNumber = 1;
+        int expectedNumber = 7;
 
         assertTrue(catalogs.size() == expectedNumber,
                 "Catalogs size is wrong." + System.lineSeparator() +
@@ -327,7 +327,7 @@ public class MetadataManagerTest {
 
         List<TableMetadata> tables = MetadataManager.MANAGER.getTables();
 
-        int expectedSize = 7;
+        int expectedSize = 6;
 
         assertTrue(tables.size() == expectedSize,
                 "Tables size is wrong." + System.lineSeparator() +
@@ -348,7 +348,7 @@ public class MetadataManagerTest {
 
         List<ColumnMetadata> columns = MetadataManager.MANAGER.getColumns();
 
-        int expectedSize = 20;
+        int expectedSize = 16;
 
         assertTrue(columns.size() == expectedSize,
                 "Columns size is wrong." + System.lineSeparator() +
@@ -409,7 +409,7 @@ public class MetadataManagerTest {
         Status status = Status.ONLINE;
         List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors(status);
 
-        int expectedSize = 5;
+        int expectedSize = 4;
 
         assertTrue(connectors.size() == expectedSize,
                 "Connectors size is wrong." + System.lineSeparator() +
@@ -427,7 +427,7 @@ public class MetadataManagerTest {
 
         List<ConnectorName> connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE);
 
-        int expectedSize = 5;
+        int expectedSize = 4;
 
         assertTrue(connectors.size() == expectedSize,
                 "Connectors size is wrong." + System.lineSeparator() +
