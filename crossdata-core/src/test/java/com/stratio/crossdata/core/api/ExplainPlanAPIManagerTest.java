@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -63,7 +64,7 @@ public class ExplainPlanAPIManagerTest {
      */
     private static final Logger LOG = Logger.getLogger(ExplainPlanAPIManagerTest.class);
 
-    @BeforeClass
+    @BeforeClass(dependsOnGroups = { "APIManagerTest" } )
     public void setUp() throws ManifestException {
 
         MetadataManagerTestHelper.HELPER.initHelper();
@@ -208,4 +209,9 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getException());
     }
 
+    @AfterClass(groups = { "ExplainPlanAPIManagerTest" })
+    public void tearDown() throws Exception {
+
+
+    }
 }
