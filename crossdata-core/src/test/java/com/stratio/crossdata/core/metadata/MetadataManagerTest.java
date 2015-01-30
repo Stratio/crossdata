@@ -303,7 +303,7 @@ public class MetadataManagerTest {
 
         List<CatalogMetadata> catalogs = MetadataManager.MANAGER.getCatalogs();
 
-        int expectedNumber = 7;
+        int expectedNumber = 1;
 
         assertTrue(catalogs.size() == expectedNumber,
                 "Catalogs size is wrong." + System.lineSeparator() +
