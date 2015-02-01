@@ -21,10 +21,11 @@ package com.stratio.crossdata.core.engine;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 
-import java.io.File;
-import java.util.Random;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
-import com.stratio.crossdata.core.grid.Grid;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class EngineTest {
 
@@ -32,8 +33,10 @@ public class EngineTest {
     private EngineConfig engineConfig;
     private String path;
 
-    //@BeforeClass
+    @BeforeClass(dependsOnGroups = {"EngineConfigTest"})
     public void setUp() {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        /*
         path = "/tmp/com.stratio.crossdata-test-" + new Random().nextInt(100000);
         Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
         engineConfig = new EngineConfig();
@@ -44,16 +47,20 @@ public class EngineTest {
         engineConfig.setGridPersistencePath(path);
         engineConfig.setGridPort(7810);
         engine = new Engine(engineConfig);
+        */
     }
 
-    //@AfterClass
+    @AfterClass(groups = {"EngineTest"})
     public void tearDown() {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+        /*
         engine.shutdown();
         File file = new File(path);
         file.delete();
+        */
     }
 
-    //@Test
+    @Test
     public void testGetParser() throws Exception {
         assertNotNull(engine.getParser(), "Parser is null");
     }

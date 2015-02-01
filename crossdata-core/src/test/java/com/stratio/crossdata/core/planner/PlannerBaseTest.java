@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.ColumnName;
@@ -67,9 +68,14 @@ public class PlannerBaseTest {
 
     Planner planner = new Planner();
 
-    @BeforeClass
-    public void init() {
+    @BeforeClass(dependsOnGroups = {"NormalizerTest"})
+    public void setUp() throws Exception {
         MetadataManagerTestHelper.HELPER.initHelper();
+    }
+
+    @AfterClass(groups = {"PlannerBaseTest"})
+    public void tearDown() throws Exception {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
     }
 
     /**

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -71,9 +72,14 @@ public class NormalizerTest {
      */
     private static final Logger LOG = Logger.getLogger(MetadataManagerTestHelper.class);
 
-    @BeforeClass
-    public void init() {
+    @BeforeClass(dependsOnGroups = {"MetadataManagerTest"})
+    public void setUp() throws Exception {
         MetadataManagerTestHelper.HELPER.initHelper();
+    }
+
+    @AfterClass(groups = {"NormalizerTest"})
+    public void tearDown() throws Exception {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
     }
 
     @Test

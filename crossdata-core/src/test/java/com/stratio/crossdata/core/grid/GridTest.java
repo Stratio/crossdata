@@ -48,7 +48,7 @@ public class GridTest {
     /**
      * Starts the common {@link Grid} used by all its tests.
      */
-    //@BeforeClass
+    //@BeforeClass(dependsOnGroups = {"ParsingTest"})
     public void setUp() {
         path = "/tmp/com.stratio.crossdata-test-" + UUID.randomUUID();
         Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
@@ -57,7 +57,7 @@ public class GridTest {
     /**
      * Stops the common {@link Grid} used by all its tests.
      */
-    //@AfterClass
+    //@AfterClass(groups = {"GridTest"})
     public void tearDown() {
         Grid.INSTANCE.close();
         File file = new File(path);

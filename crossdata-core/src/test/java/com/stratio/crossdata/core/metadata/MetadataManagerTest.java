@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -55,9 +56,14 @@ import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class MetadataManagerTest {
 
-    @BeforeClass
-    public void init() {
+    @BeforeClass(dependsOnGroups = {"MetadataManagerConstructorTest"})
+    public void setUp() throws Exception {
         MetadataManagerTestHelper.HELPER.initHelper();
+    }
+
+    @AfterClass(groups = {"MetadataManagerTest"})
+    public void tearDown() throws Exception {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
     }
 
     @Test

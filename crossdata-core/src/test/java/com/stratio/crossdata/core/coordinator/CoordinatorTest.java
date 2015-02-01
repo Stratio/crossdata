@@ -67,7 +67,7 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 public class CoordinatorTest {
 
     @BeforeClass
-    public void init() {
+    public void setUp() {
         MetadataManagerTestHelper.HELPER.initHelper();
     }
 

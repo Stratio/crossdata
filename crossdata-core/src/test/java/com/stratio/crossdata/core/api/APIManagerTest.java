@@ -26,7 +26,6 @@ import static org.testng.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -35,6 +34,7 @@ import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.DataStoreRefsType;
@@ -58,11 +58,16 @@ public class APIManagerTest {
     private final Planner planner = new Planner();
 
     @BeforeClass
-    public void init() {
+    public void setUp() {
         MetadataManagerTestHelper.HELPER.initHelper();
+        try {
+            MetadataManagerTestHelper.HELPER.createTestEnvironment();
+        } catch (ManifestException e) {
+            fail();
+        }
     }
 
-    @Test
+    @Test(groups = {"APIManagerTest"})
     public void testPersistDataStore() throws Exception {
 
         DataStoreType dataStoreType = new DataStoreType();
@@ -127,7 +132,7 @@ public class APIManagerTest {
                 expectedResult + System.lineSeparator() + "-    Found: " + System.lineSeparator() + str);
     }
 
-    @Test
+    @Test(groups = {"APIManagerTest"})
     public void testPersistDataStoreFail() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
 
@@ -182,7 +187,7 @@ public class APIManagerTest {
                 "Found: " + result.getClass().getCanonicalName());
     }
 
-    @Test
+    @Test(groups = {"APIManagerTest"})
     public void testPersistConnector() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
 
@@ -241,7 +246,7 @@ public class APIManagerTest {
                 expectedResult + System.lineSeparator() + "-    Found: " + System.lineSeparator() + str);
     }
 
-    @Test
+    @Test(groups = {"APIManagerTest"})
     public void testPersistConnectorFail() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
 
@@ -297,7 +302,7 @@ public class APIManagerTest {
                 "Found: " + result.getClass().getCanonicalName());
     }
 
-    @Test
+    @Test(groups = {"APIManagerTest"})
     public void testListConnectors() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         Command cmd = new Command("QID", APICommand.DESCRIBE_CONNECTORS(), null);
@@ -326,7 +331,7 @@ public class APIManagerTest {
         */
     }
 
-    @Test(dependsOnMethods = { "testListConnectors" })
+    @Test(groups = {"APIManagerTest"}, dependsOnMethods = { "testListConnectors" })
     public void testResetMetadata() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         MetadataManagerTestHelper.HELPER.createTestConnector("connectorTest2", new DataStoreName("datastoreTest"), "akkaActorRef");
@@ -350,13 +355,13 @@ public class APIManagerTest {
         assertTrue(MetadataManager.MANAGER.exists(n), "MetadataManager should maintain the connector basic info");
     }
 
-    @Test
+    @Test(groups = {"APIManagerTest"})
     public void testConstructor() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         assertNotNull(ApiManager, "ApiManager shouldn't be null");
     }
 
-    @Test
+    @Test(groups = {"APIManagerTest"})
     public void testAddDataStore() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         List params = new ArrayList<DataStoreType>();
@@ -383,11 +388,6 @@ public class APIManagerTest {
         assertTrue(resultStr.startsWith("CrossdataManifest added"),
                 "Expected: " + "CrossdataManifest added" + System.lineSeparator() +
                 "Found:    " + resultStr);
-    }
-
-    @AfterClass(groups = "APIManagerTest")
-    public void tearDown(){
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
     }
 
 }

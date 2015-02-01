@@ -4,6 +4,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -25,9 +26,9 @@ public class CoreUtilsTest {
 
     private TableName table;
 
-    @BeforeClass
+    @BeforeClass(dependsOnGroups = {"PlannerBaseTest"})
     public void setUp() throws ManifestException {
-        //super.setUp();
+        MetadataManagerTestHelper.HELPER.initHelper();
         MetadataManagerTestHelper.HELPER.createTestDatastore();
         MetadataManagerTestHelper.HELPER.createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
         MetadataManagerTestHelper.HELPER.createTestCatalog("catalogTest");
@@ -55,6 +56,11 @@ public class CoreUtilsTest {
         MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,
                 partitionKeys, clusteringKeys, null);
         table = new TableName("catalogTest", "tableTest");
+    }
+
+    @AfterClass(groups = {"CoreUtilsTest"})
+    public void tearDown() throws Exception {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
     }
 
     @Test

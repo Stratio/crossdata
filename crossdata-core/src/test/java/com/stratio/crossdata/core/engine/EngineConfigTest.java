@@ -23,9 +23,19 @@ import static org.testng.Assert.assertTrue;
 import java.util.Arrays;
 import java.util.Random;
 
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
+
 public class EngineConfigTest {
+
+    @BeforeClass(dependsOnGroups = {"CoordinatorTest"})
+    public void setUp() throws Exception {
+        MetadataManagerTestHelper.HELPER.initHelper();
+    }
+
     @Test
     public void testToString() throws Exception {
         String path = "/tmp/com.stratio.crossdata-test-" + new Random().nextInt(100000);
@@ -49,5 +59,10 @@ public class EngineConfigTest {
         assertTrue(result.equalsIgnoreCase(expected),
                 "Result:   " + System.lineSeparator() +
                 "Expected: ");
+    }
+
+    @AfterClass(groups = {"EngineConfigTest"})
+    public void tearDown() throws Exception {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
     }
 }

@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -64,7 +63,7 @@ public class ExplainPlanAPIManagerTest {
      */
     private static final Logger LOG = Logger.getLogger(ExplainPlanAPIManagerTest.class);
 
-    @BeforeClass(dependsOnGroups = { "APIManagerTest" } )
+    @BeforeClass
     public void setUp() throws ManifestException {
 
         MetadataManagerTestHelper.HELPER.initHelper();
@@ -106,7 +105,7 @@ public class ExplainPlanAPIManagerTest {
         return new Command("QID", APICommand.EXPLAIN_PLAN(), params);
     }
 
-    @Test
+    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
     public void invalidExplainRequest() {
         List<Object> params = new ArrayList<>();
         Command cmd = new Command("QID", APICommand.EXPLAIN_PLAN(), params);
@@ -117,7 +116,7 @@ public class ExplainPlanAPIManagerTest {
                 "Expecting unsupported exception");
     }
 
-    @Test
+    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
     public void explainQualifiedSelect() {
         String inputText = "SELECT demo.table1.id FROM demo.table1;";
         Command cmd = getCommand(inputText);
@@ -130,7 +129,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getResult());
     }
 
-    @Test
+    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
     public void explainNonQualifiedSelect() {
         String inputText = "SELECT id FROM table1;";
         Command cmd = getCommand(inputText);
@@ -143,7 +142,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getResult());
     }
 
-    @Test
+    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
     public void explainInsert() {
         String inputText = "INSERT INTO table1(id, user) VALUES (1, 'user1');";
         Command cmd = getCommand(inputText);
@@ -156,7 +155,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getResult());
     }
 
-    @Test
+    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
     public void explainCreateTable() {
         String inputText = "CREATE TABLE new_table ON CLUSTER TestCluster1" +
                 " (id int PRIMARY KEY, name text);";
@@ -170,7 +169,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getResult());
     }
 
-    @Test
+    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
     public void explainNotSupportedSelect() {
         String inputText = "SELECT id FROM table1 WHERE id > 5;";
         Command cmd = getCommand(inputText);
@@ -183,7 +182,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getException());
     }
 
-    @Test
+    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
     public void explainInvalidSelect() {
         String inputText = "SELECT id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
@@ -196,7 +195,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getException());
     }
 
-    @Test
+    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
     public void explainUnrecognized() {
         String inputText = "SELL id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
@@ -209,9 +208,4 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getException());
     }
 
-    @AfterClass(groups = { "ExplainPlanAPIManagerTest" })
-    public void tearDown() throws Exception {
-
-
-    }
 }

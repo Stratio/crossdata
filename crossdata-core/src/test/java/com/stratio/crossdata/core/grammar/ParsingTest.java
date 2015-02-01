@@ -25,8 +25,12 @@ import static org.testng.Assert.fail;
 
 import java.util.UUID;
 
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.exceptions.ParsingException;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
@@ -35,6 +39,16 @@ import com.stratio.crossdata.core.query.IParsedQuery;
  * XDqlParser tests that recognize the different options of each Statement.
  */
 public class ParsingTest {
+
+    @BeforeClass(dependsOnGroups = {"ExecutionManagerTest"})
+    public void setUp() throws Exception {
+        MetadataManagerTestHelper.HELPER.initHelper();
+    }
+
+    @AfterClass(groups = {"ParsingTest"})
+    public void tearDown() throws Exception {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+    }
 
     protected final Parser parser = new Parser();
 

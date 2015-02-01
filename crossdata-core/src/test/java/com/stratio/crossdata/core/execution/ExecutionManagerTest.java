@@ -18,9 +18,18 @@
 package com.stratio.crossdata.core.execution;
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
+
 public class ExecutionManagerTest {
+
+    @BeforeClass(dependsOnGroups = {"EngineTest"})
+    public void setUp() throws Exception {
+        MetadataManagerTestHelper.HELPER.initHelper();
+    }
 
     @Test
     public void testExist() throws Exception {
@@ -48,4 +57,10 @@ public class ExecutionManagerTest {
         ExecutionManager.MANAGER.createEntry("key2", "testKey");
         Assert.assertEquals(ExecutionManager.MANAGER.getValue("key2"), "testKey");
     }
+
+    @AfterClass(groups = {"ExecutionManagerTest"})
+    public void tearDown() throws Exception {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+    }
+
 }

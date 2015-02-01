@@ -20,7 +20,6 @@ package com.stratio.crossdata.core.validator;
 
 import static org.testng.Assert.fail;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -31,9 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.transaction.TransactionManager;
-
-import org.apache.commons.io.FileUtils;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.CatalogName;
@@ -59,7 +56,7 @@ import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.grid.Grid;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class BasicValidatorTest {
@@ -67,8 +64,9 @@ public class BasicValidatorTest {
     static Map<FirstLevelName, IMetadata> metadataMap;
     private static String path = "";
 
-    @BeforeClass
+    @BeforeClass(dependsOnGroups = {"CoreUtilsTest"})
     public static void setUpBeforeClass() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
         /*
         GridInitializer gridInitializer = Grid.initializer();
         gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
@@ -92,7 +90,13 @@ public class BasicValidatorTest {
         MetadataManager.MANAGER.createTable(createJoinTable(), false);
     }
 
+    @AfterClass(groups = {"BasicValidatorTest"})
+    public void tearDown() throws Exception {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+    }
+
     //@AfterClass
+    /*
     public void tearDown() throws Exception {
         TransactionManager tm = Grid.INSTANCE.transactionManager("com.stratio.crossdata-test");
         tm.begin();
@@ -101,6 +105,7 @@ public class BasicValidatorTest {
         Grid.INSTANCE.close();
         FileUtils.deleteDirectory(new File(path));
     }
+    */
 
     private static CatalogMetadata generateCatalogsMetadata() {
         CatalogMetadata catalogMetadata;
