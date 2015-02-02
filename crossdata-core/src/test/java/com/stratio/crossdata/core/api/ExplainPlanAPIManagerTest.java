@@ -212,6 +212,5 @@ public class ExplainPlanAPIManagerTest {
     @AfterClass(groups = { "ExplainPlanAPIManagerTest" })
     public void tearDown() throws Exception {
 
-
     }
 }
