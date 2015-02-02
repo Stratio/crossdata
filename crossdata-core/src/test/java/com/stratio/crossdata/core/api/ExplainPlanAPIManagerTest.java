@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -45,6 +46,7 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 /**
  * Explain plan tests using the API apiManager
@@ -67,6 +69,7 @@ public class ExplainPlanAPIManagerTest {
     public void setUp() throws ManifestException {
 
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
 
         DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
@@ -98,6 +101,12 @@ public class ExplainPlanAPIManagerTest {
                 partitionKeys, clusteringKeys, null);
     }
 
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
+    }
+
     private Command getCommand(String statement) {
         List<Object> params = new ArrayList<>();
         params.add(statement);
@@ -105,7 +114,7 @@ public class ExplainPlanAPIManagerTest {
         return new Command("QID", APICommand.EXPLAIN_PLAN(), params);
     }
 
-    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
+    @Test
     public void invalidExplainRequest() {
         List<Object> params = new ArrayList<>();
         Command cmd = new Command("QID", APICommand.EXPLAIN_PLAN(), params);
@@ -116,7 +125,7 @@ public class ExplainPlanAPIManagerTest {
                 "Expecting unsupported exception");
     }
 
-    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
+    @Test
     public void explainQualifiedSelect() {
         String inputText = "SELECT demo.table1.id FROM demo.table1;";
         Command cmd = getCommand(inputText);
@@ -129,7 +138,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getResult());
     }
 
-    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
+    @Test
     public void explainNonQualifiedSelect() {
         String inputText = "SELECT id FROM table1;";
         Command cmd = getCommand(inputText);
@@ -142,7 +151,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getResult());
     }
 
-    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
+    @Test
     public void explainInsert() {
         String inputText = "INSERT INTO table1(id, user) VALUES (1, 'user1');";
         Command cmd = getCommand(inputText);
@@ -155,7 +164,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getResult());
     }
 
-    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
+    @Test
     public void explainCreateTable() {
         String inputText = "CREATE TABLE new_table ON CLUSTER TestCluster1" +
                 " (id int PRIMARY KEY, name text);";
@@ -169,7 +178,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getResult());
     }
 
-    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
+    @Test
     public void explainNotSupportedSelect() {
         String inputText = "SELECT id FROM table1 WHERE id > 5;";
         Command cmd = getCommand(inputText);
@@ -182,7 +191,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getException());
     }
 
-    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
+    @Test
     public void explainInvalidSelect() {
         String inputText = "SELECT id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
@@ -195,7 +204,7 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getException());
     }
 
-    @Test(groups = { "ExplainPlanAPIManagerTest" }, dependsOnGroups = { "APIManagerTest" })
+    @Test
     public void explainUnrecognized() {
         String inputText = "SELL id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);

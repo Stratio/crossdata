@@ -27,13 +27,21 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class EngineConfigTest {
 
-    @BeforeClass(dependsOnGroups = {"CoordinatorTest"})
-    public void setUp() throws Exception {
+    @BeforeClass
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
     }
 
     @Test
@@ -61,8 +69,4 @@ public class EngineConfigTest {
                 "Expected: ");
     }
 
-    @AfterClass(groups = {"EngineConfigTest"})
-    public void tearDown() throws Exception {
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
-    }
 }

@@ -21,14 +21,16 @@ import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class CoreUtilsTest {
 
     private TableName table;
 
-    @BeforeClass(dependsOnGroups = {"PlannerBaseTest"})
+    @BeforeClass
     public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
         MetadataManagerTestHelper.HELPER.createTestDatastore();
         MetadataManagerTestHelper.HELPER.createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
         MetadataManagerTestHelper.HELPER.createTestCatalog("catalogTest");
@@ -58,9 +60,9 @@ public class CoreUtilsTest {
         table = new TableName("catalogTest", "tableTest");
     }
 
-    @AfterClass(groups = {"CoreUtilsTest"})
+    @AfterClass
     public void tearDown() throws Exception {
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+        MetadataManager.MANAGER.clear();
     }
 
     @Test

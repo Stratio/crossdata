@@ -26,6 +26,7 @@ import static org.testng.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -58,16 +59,17 @@ public class APIManagerTest {
     private final Planner planner = new Planner();
 
     @BeforeClass
-    public void setUp() {
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
-        try {
-            MetadataManagerTestHelper.HELPER.createTestEnvironment();
-        } catch (ManifestException e) {
-            fail();
-        }
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
     }
 
-    @Test(groups = {"APIManagerTest"})
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
+    }
+
+    @Test
     public void testPersistDataStore() throws Exception {
 
         DataStoreType dataStoreType = new DataStoreType();
@@ -132,7 +134,7 @@ public class APIManagerTest {
                 expectedResult + System.lineSeparator() + "-    Found: " + System.lineSeparator() + str);
     }
 
-    @Test(groups = {"APIManagerTest"})
+    @Test
     public void testPersistDataStoreFail() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
 
@@ -187,7 +189,7 @@ public class APIManagerTest {
                 "Found: " + result.getClass().getCanonicalName());
     }
 
-    @Test(groups = {"APIManagerTest"})
+    @Test
     public void testPersistConnector() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
 
@@ -246,7 +248,7 @@ public class APIManagerTest {
                 expectedResult + System.lineSeparator() + "-    Found: " + System.lineSeparator() + str);
     }
 
-    @Test(groups = {"APIManagerTest"})
+    @Test
     public void testPersistConnectorFail() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
 
@@ -302,7 +304,7 @@ public class APIManagerTest {
                 "Found: " + result.getClass().getCanonicalName());
     }
 
-    @Test(groups = {"APIManagerTest"})
+    @Test
     public void testListConnectors() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         Command cmd = new Command("QID", APICommand.DESCRIBE_CONNECTORS(), null);
@@ -317,7 +319,7 @@ public class APIManagerTest {
         String str = String.valueOf(result.getResult());
         String[] connectors = str.split(System.lineSeparator());
 
-        int expectedSize = 1;
+        int expectedSize = 2;
 
         assertEquals((connectors.length-1), expectedSize,
                 System.lineSeparator() +
@@ -331,7 +333,7 @@ public class APIManagerTest {
         */
     }
 
-    @Test(groups = {"APIManagerTest"}, dependsOnMethods = { "testListConnectors" })
+    @Test
     public void testResetMetadata() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         MetadataManagerTestHelper.HELPER.createTestConnector("connectorTest2", new DataStoreName("datastoreTest"), "akkaActorRef");
@@ -355,13 +357,13 @@ public class APIManagerTest {
         assertTrue(MetadataManager.MANAGER.exists(n), "MetadataManager should maintain the connector basic info");
     }
 
-    @Test(groups = {"APIManagerTest"})
+    @Test
     public void testConstructor() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         assertNotNull(ApiManager, "ApiManager shouldn't be null");
     }
 
-    @Test(groups = {"APIManagerTest"})
+    @Test
     public void testAddDataStore() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         List params = new ArrayList<DataStoreType>();

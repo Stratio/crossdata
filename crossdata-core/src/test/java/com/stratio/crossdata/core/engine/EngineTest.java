@@ -23,9 +23,10 @@ import static org.testng.Assert.fail;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class EngineTest {
 
@@ -33,10 +34,21 @@ public class EngineTest {
     private EngineConfig engineConfig;
     private String path;
 
-    @BeforeClass(dependsOnGroups = {"EngineConfigTest"})
+    @BeforeClass
+    public void setUp() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
+    }
+
+    /*
+    @BeforeClass
     public void setUp() {
         MetadataManagerTestHelper.HELPER.initHelper();
-        /*
         path = "/tmp/com.stratio.crossdata-test-" + new Random().nextInt(100000);
         Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
         engineConfig = new EngineConfig();
@@ -47,20 +59,20 @@ public class EngineTest {
         engineConfig.setGridPersistencePath(path);
         engineConfig.setGridPort(7810);
         engine = new Engine(engineConfig);
-        */
     }
+    */
 
-    @AfterClass(groups = {"EngineTest"})
+    /*
+    @AfterClass
     public void tearDown() {
         System.out.println(this.getClass().getCanonicalName() + ": tearDown");
-        /*
         engine.shutdown();
         File file = new File(path);
         file.delete();
-        */
     }
+    */
 
-    @Test
+    //@Test
     public void testGetParser() throws Exception {
         assertNotNull(engine.getParser(), "Parser is null");
     }

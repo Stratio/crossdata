@@ -22,13 +22,21 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class ExecutionManagerTest {
 
-    @BeforeClass(dependsOnGroups = {"EngineTest"})
-    public void setUp() throws Exception {
+    @BeforeClass
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
     }
 
     @Test
@@ -56,11 +64,6 @@ public class ExecutionManagerTest {
     public void testGetValue() throws Exception {
         ExecutionManager.MANAGER.createEntry("key2", "testKey");
         Assert.assertEquals(ExecutionManager.MANAGER.getValue("key2"), "testKey");
-    }
-
-    @AfterClass(groups = {"ExecutionManagerTest"})
-    public void tearDown() throws Exception {
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
     }
 
 }

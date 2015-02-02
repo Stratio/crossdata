@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -39,6 +40,7 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
 import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
@@ -67,8 +69,14 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 public class CoordinatorTest {
 
     @BeforeClass
-    public void setUp() {
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
     }
 
     /**
@@ -223,7 +231,7 @@ public class CoordinatorTest {
     // CREATE CATALOG
     @Test
     public void testCreateCatalogCheckName() throws Exception {
-        CatalogName catalogName = new CatalogName("testCatalog");
+        CatalogName catalogName = new CatalogName("catalog1");
         Map<TableName, TableMetadata> catalogTables = new HashMap<>();
         Map<Selector, Selector> options = new HashMap<>();
         CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);

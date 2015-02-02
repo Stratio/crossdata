@@ -64,9 +64,10 @@ public class BasicValidatorTest {
     static Map<FirstLevelName, IMetadata> metadataMap;
     private static String path = "";
 
-    @BeforeClass(dependsOnGroups = {"CoreUtilsTest"})
+    @BeforeClass
     public static void setUpBeforeClass() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
         /*
         GridInitializer gridInitializer = Grid.initializer();
         gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
@@ -90,9 +91,9 @@ public class BasicValidatorTest {
         MetadataManager.MANAGER.createTable(createJoinTable(), false);
     }
 
-    @AfterClass(groups = {"BasicValidatorTest"})
+    @AfterClass
     public void tearDown() throws Exception {
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+        MetadataManager.MANAGER.clear();
     }
 
     //@AfterClass
