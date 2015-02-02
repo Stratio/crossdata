@@ -137,9 +137,7 @@ public enum MetadataManagerTestHelper {
         DataStoreName datastoreName = createTestDatastore();
         createTestCluster(
                 "production",
-                datastoreName,
-                new ConnectorName("connector1"),
-                new ConnectorName("connector2"));
+                datastoreName);
         Set<ClusterName> clusterList = new HashSet<>();
         clusterList.add(new ClusterName("production"));
         Set<Operations> options = new HashSet<>();

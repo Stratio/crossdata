@@ -33,6 +33,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
@@ -49,6 +50,7 @@ import com.stratio.crossdata.common.statements.structures.window.TimeUnit;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.grammar.ParsingTest;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
@@ -68,14 +70,15 @@ public class PlannerBaseTest {
 
     Planner planner = new Planner();
 
-    @BeforeClass(dependsOnGroups = {"NormalizerTest"})
-    public void setUp() throws Exception {
+    @BeforeClass
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
     }
 
-    @AfterClass(groups = {"PlannerBaseTest"})
+    @AfterClass
     public void tearDown() throws Exception {
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+        MetadataManager.MANAGER.clear();
     }
 
     /**

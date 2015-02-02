@@ -10,20 +10,22 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class MetadataManagerConstructorTest {
 
-    @BeforeClass(dependsOnGroups = {"GridTest"})
-    public void setUp() throws Exception {
+    @BeforeClass
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
     }
 
-    @AfterClass(groups = {"MetadataManagerConstructorTest"})
+    @AfterClass
     public void tearDown() throws Exception {
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+        MetadataManager.MANAGER.clear();
     }
 
     @Test

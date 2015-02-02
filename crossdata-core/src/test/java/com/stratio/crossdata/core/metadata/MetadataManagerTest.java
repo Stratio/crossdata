@@ -56,14 +56,15 @@ import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class MetadataManagerTest {
 
-    @BeforeClass(dependsOnGroups = {"MetadataManagerConstructorTest"})
-    public void setUp() throws Exception {
+    @BeforeClass
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
     }
 
-    @AfterClass(groups = {"MetadataManagerTest"})
+    @AfterClass
     public void tearDown() throws Exception {
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+        MetadataManager.MANAGER.clear();
     }
 
     @Test
@@ -333,7 +334,7 @@ public class MetadataManagerTest {
 
         List<TableMetadata> tables = MetadataManager.MANAGER.getTables();
 
-        int expectedSize = 6;
+        int expectedSize = 1;
 
         assertTrue(tables.size() == expectedSize,
                 "Tables size is wrong." + System.lineSeparator() +
@@ -354,7 +355,7 @@ public class MetadataManagerTest {
 
         List<ColumnMetadata> columns = MetadataManager.MANAGER.getColumns();
 
-        int expectedSize = 16;
+        int expectedSize = 2;
 
         assertTrue(columns.size() == expectedSize,
                 "Columns size is wrong." + System.lineSeparator() +

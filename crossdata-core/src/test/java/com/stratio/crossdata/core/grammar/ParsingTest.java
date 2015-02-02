@@ -29,8 +29,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
@@ -40,14 +42,15 @@ import com.stratio.crossdata.core.query.IParsedQuery;
  */
 public class ParsingTest {
 
-    @BeforeClass(dependsOnGroups = {"ExecutionManagerTest"})
-    public void setUp() throws Exception {
+    @BeforeClass
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
     }
 
-    @AfterClass(groups = {"ParsingTest"})
+    @AfterClass
     public void tearDown() throws Exception {
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+        MetadataManager.MANAGER.clear();
     }
 
     protected final Parser parser = new Parser();

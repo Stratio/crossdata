@@ -41,6 +41,7 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
@@ -72,14 +73,15 @@ public class NormalizerTest {
      */
     private static final Logger LOG = Logger.getLogger(MetadataManagerTestHelper.class);
 
-    @BeforeClass(dependsOnGroups = {"MetadataManagerTest"})
-    public void setUp() throws Exception {
+    @BeforeClass
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
     }
 
-    @AfterClass(groups = {"NormalizerTest"})
+    @AfterClass
     public void tearDown() throws Exception {
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
+        MetadataManager.MANAGER.clear();
     }
 
     @Test
