@@ -60,10 +60,6 @@ public class MetadataManagerTest {
     public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
         MetadataManagerTestHelper.HELPER.createTestEnvironment();
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @AfterClass
@@ -92,10 +88,6 @@ public class MetadataManagerTest {
             }
         }
         assertTrue(found, "Attachment not found");
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -122,10 +114,6 @@ public class MetadataManagerTest {
         assertEquals(clusterMetadata.getConnectorAttachedRefs().get(connectorName).getConnectorRef(), connectorName,
                 "Expected: " + connectorName + System.lineSeparator() +
                 "Found:    " + clusterMetadata.getConnectorAttachedRefs().get(connectorName).getConnectorRef());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     // CREATE CATALOG
@@ -143,10 +131,6 @@ public class MetadataManagerTest {
         assertEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), catalogName,
                 "Expected: " + catalogName + System.lineSeparator() +
                 "Found:    " + MetadataManager.MANAGER.getCatalog(catalogName).getName());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     // CREATE TABLE
@@ -171,10 +155,6 @@ public class MetadataManagerTest {
         assertEquals(MetadataManager.MANAGER.getTable(table.getName()).getName(), table.getName(),
                 "Expected: " + table.getName() + System.lineSeparator() +
                 "Found:    " + MetadataManager.MANAGER.getTable(table.getName()).getName());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -198,10 +178,6 @@ public class MetadataManagerTest {
         assertEquals(found, dataStoreName,
                 "Expected: " + dataStoreName + System.lineSeparator() +
                 "Found:    " + found);
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -222,10 +198,6 @@ public class MetadataManagerTest {
         assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef().equalsIgnoreCase(actorRef),
                 "Expected: " + actorRef + System.lineSeparator() +
                 "Found:    " + MetadataManager.MANAGER.getConnector(connectorName).getActorRef());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -242,10 +214,6 @@ public class MetadataManagerTest {
         assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef().equalsIgnoreCase(actorRef),
                 "Expected: " + actorRef + System.lineSeparator() +
                 "Found:    " + MetadataManager.MANAGER.getConnector(connectorName).getActorRef());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -265,10 +233,6 @@ public class MetadataManagerTest {
         assertEquals(connectorMetadata.getStatus(), status,
                 "Expected: " + status + System.lineSeparator() +
                 "Found:    " + connectorMetadata.getStatus());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -282,10 +246,6 @@ public class MetadataManagerTest {
         assertTrue(MetadataManager.MANAGER.getConnectorRef(new ConnectorName(name)).equalsIgnoreCase(actorRef),
                 "Expected: " + actorRef + System.lineSeparator() +
                 "Found:    " + MetadataManager.MANAGER.getConnectorRef(new ConnectorName(name)));
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -323,10 +283,6 @@ public class MetadataManagerTest {
         assertEquals(attachedConnectors.get(0).getName(), connectorName,
                 "Expected: " + connectorName + System.lineSeparator() +
                 "Found:    " + attachedConnectors.get(0).getName());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -344,10 +300,6 @@ public class MetadataManagerTest {
 
         assertTrue(MetadataManager.MANAGER.checkConnectorStatus(connectorName, status),
                 connectorName + " should have the status : " + status);
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test(dependsOnMethods = { "testCreateCatalog" } )
@@ -368,13 +320,9 @@ public class MetadataManagerTest {
                 "Expected: " + catalog + System.lineSeparator() +
                 "Found:    " + catalogs.get(0).getName().getName());
         */
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
-    @Test
+    @Test(dependsOnMethods = { "testCreateTable" })
     public void testGetTables() {
 
         try {
@@ -391,13 +339,11 @@ public class MetadataManagerTest {
                 "Tables size is wrong." + System.lineSeparator() +
                 "Expected: " + expectedSize + System.lineSeparator() +
                 "Found:    " + tables.size());
-        assertTrue(tables.get(0).getName().getName().equalsIgnoreCase("testTable"),
-                "Expected: " + "testTable" + System.lineSeparator() +
+        /*
+        assertTrue(tables.get(0).getName().getName().equalsIgnoreCase("table1"),
+                "Expected: " + "table1" + System.lineSeparator() +
                 "Found:    " + tables.get(0).getName().getName());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
+        */
     }
 
     @Test(dependsOnMethods = { "testCreateTable" })
@@ -410,7 +356,7 @@ public class MetadataManagerTest {
 
         List<ColumnMetadata> columns = MetadataManager.MANAGER.getColumns();
 
-        int expectedSize = 7;
+        int expectedSize = 2;
 
         assertTrue(columns.size() == expectedSize,
                 "Columns size is wrong." + System.lineSeparator() +
@@ -424,10 +370,6 @@ public class MetadataManagerTest {
                 "Expected: " + "user" + System.lineSeparator() +
                 "Found:    " + columns.get(1).getName().getName());
         */
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -438,15 +380,11 @@ public class MetadataManagerTest {
             fail();
         }
 
-        List<TableMetadata> tablesMetadata = MetadataManager.MANAGER.getTablesByCatalogName("testCatalog");
+        List<TableMetadata> tablesMetadata = MetadataManager.MANAGER.getTablesByCatalogName("catalog1");
 
-        assertTrue(tablesMetadata.get(0).getName().getName().equalsIgnoreCase("testTable"),
-                "Expected: " + "testTable" + System.lineSeparator() +
+        assertTrue(tablesMetadata.get(0).getName().getName().equalsIgnoreCase("table1"),
+                "Expected: " + "table1" + System.lineSeparator() +
                 "Found:    " + tablesMetadata.get(0).getName().getName());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -457,7 +395,7 @@ public class MetadataManagerTest {
             fail();
         }
 
-        List<ColumnMetadata> columnsMetadata = MetadataManager.MANAGER.getColumnByTable("testCatalog", "testTable");
+        List<ColumnMetadata> columnsMetadata = MetadataManager.MANAGER.getColumnByTable("catalog1", "table1");
 
         assertTrue(columnsMetadata.size() == 2,
                 "Size of the Metadata of columns is wrong." + System.lineSeparator() +
@@ -469,10 +407,6 @@ public class MetadataManagerTest {
         assertTrue(columnsMetadata.get(1).getName().getName().equals("user"),
                 "Expected: " + "user" + System.lineSeparator() +
                 "Found:    " + columnsMetadata.get(1).getName().getName());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -492,10 +426,6 @@ public class MetadataManagerTest {
         assertTrue(connectors.get(0).getStatus() == status,
                 "Expected: " + status + System.lineSeparator() +
                 "Found:    " + connectors.get(0).getStatus());
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test
@@ -516,10 +446,6 @@ public class MetadataManagerTest {
                 "Expected: " + "connectorTest" + System.lineSeparator() +
                 "Found:    " + connectors.get(0).getName());
         */
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -532,21 +458,12 @@ public class MetadataManagerTest {
         DataStoreMetadata dataStore = new DataStoreMetadata(name, version, requiredProperties, othersProperties,
                 behaviors, null);
         MetadataManager.MANAGER.createDataStore(dataStore);
-        fail();
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testShouldExistException() {
         MetadataManager.MANAGER.getCluster(new ClusterName("random"));
         fail();
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -555,10 +472,6 @@ public class MetadataManagerTest {
         MetadataManager.MANAGER.createCatalog(new CatalogMetadata(new CatalogName("catalogTest"),
                 new HashMap<Selector, Selector>(), new HashMap<TableName, TableMetadata>()));
         fail();
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -584,10 +497,6 @@ public class MetadataManagerTest {
                 clusterKey);
         MetadataManager.MANAGER.createTable(tableMetadata);
         fail();
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -610,10 +519,6 @@ public class MetadataManagerTest {
         }
         MetadataManager.MANAGER.createCluster(clusterMetadata);
         fail();
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -630,10 +535,6 @@ public class MetadataManagerTest {
 
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
         fail();
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
@@ -657,10 +558,6 @@ public class MetadataManagerTest {
         }
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         fail();
-        /*******************************************************/
-        boolean result = MetadataManager.MANAGER.exists(new TableName("testCatalog", "testTable"));
-        assertTrue(result);
-        /*******************************************************/
     }
 
 }

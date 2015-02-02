@@ -319,7 +319,7 @@ public class APIManagerTest {
         String str = String.valueOf(result.getResult());
         String[] connectors = str.split(System.lineSeparator());
 
-        int expectedSize = 3;
+        int expectedSize = 1;
 
         assertEquals((connectors.length-1), expectedSize,
                 System.lineSeparator() +
