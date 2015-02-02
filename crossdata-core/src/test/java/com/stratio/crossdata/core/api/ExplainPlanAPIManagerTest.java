@@ -119,7 +119,7 @@ public class ExplainPlanAPIManagerTest {
 
     @Test
     public void explainQualifiedSelect() {
-        String inputText = "SELECT demo.table1.id FROM demo.table1;";
+        String inputText = "EXPLAIN PLAN FOR SELECT demo.table1.id FROM demo.table1;";
         Command cmd = getCommand(inputText);
         Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
@@ -132,7 +132,7 @@ public class ExplainPlanAPIManagerTest {
 
     @Test
     public void explainNonQualifiedSelect() {
-        String inputText = "SELECT id FROM table1;";
+        String inputText = "EXPLAIN PLAN FOR SELECT id FROM table1;";
         Command cmd = getCommand(inputText);
         Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
@@ -145,7 +145,7 @@ public class ExplainPlanAPIManagerTest {
 
     @Test
     public void explainInsert() {
-        String inputText = "INSERT INTO table1(id, user) VALUES (1, 'user1');";
+        String inputText = "EXPLAIN PLAN FOR INSERT INTO table1(id, user) VALUES (1, 'user1');";
         Command cmd = getCommand(inputText);
         Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
@@ -158,7 +158,7 @@ public class ExplainPlanAPIManagerTest {
 
     @Test
     public void explainCreateTable() {
-        String inputText = "CREATE TABLE new_table ON CLUSTER TestCluster1" +
+        String inputText = "EXPLAIN PLAN FOR CREATE TABLE new_table ON CLUSTER TestCluster1" +
                 " (id int PRIMARY KEY, name text);";
         Command cmd = getCommand(inputText);
         Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
@@ -172,7 +172,7 @@ public class ExplainPlanAPIManagerTest {
 
     @Test
     public void explainNotSupportedSelect() {
-        String inputText = "SELECT id FROM table1 WHERE id > 5;";
+        String inputText = "EXPLAIN PLAN FOR SELECT id FROM table1 WHERE id > 5;";
         Command cmd = getCommand(inputText);
         Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
@@ -185,7 +185,7 @@ public class ExplainPlanAPIManagerTest {
 
     @Test
     public void explainInvalidSelect() {
-        String inputText = "SELECT id FROM table1 WHERE unknown > 5;";
+        String inputText = "EXPLAIN PLAN FOR SELECT id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
         Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
@@ -198,7 +198,7 @@ public class ExplainPlanAPIManagerTest {
 
     @Test
     public void explainUnrecognized() {
-        String inputText = "SELL id FROM table1 WHERE unknown > 5;";
+        String inputText = "EXPLAIN PLAN FOR SELL id FROM table1 WHERE unknown > 5;";
         Command cmd = getCommand(inputText);
         Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
