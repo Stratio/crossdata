@@ -304,7 +304,7 @@ public class APIManagerTest {
                 "Found: " + result.getClass().getCanonicalName());
     }
 
-    @Test
+    @Test(dependsOnMethods = { "testPersistConnector" })
     public void testListConnectors() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         Command cmd = new Command("QID", APICommand.DESCRIBE_CONNECTORS(), null);
@@ -319,7 +319,7 @@ public class APIManagerTest {
         String str = String.valueOf(result.getResult());
         String[] connectors = str.split(System.lineSeparator());
 
-        int expectedSize = 2;
+        int expectedSize = 3;
 
         assertEquals((connectors.length-1), expectedSize,
                 System.lineSeparator() +
@@ -333,7 +333,7 @@ public class APIManagerTest {
         */
     }
 
-    @Test
+    @Test(dependsOnMethods = { "testListConnectors" })
     public void testResetMetadata() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         MetadataManagerTestHelper.HELPER.createTestConnector("connectorTest2", new DataStoreName("datastoreTest"), "akkaActorRef");
