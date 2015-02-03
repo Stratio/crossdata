@@ -36,7 +36,7 @@ public class ExecutionManagerTest {
 
     @AfterClass
     public void tearDown() throws Exception {
-        MetadataManager.MANAGER.clear();
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     @Test

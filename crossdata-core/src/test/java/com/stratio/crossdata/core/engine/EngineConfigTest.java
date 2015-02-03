@@ -29,7 +29,6 @@ import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
-import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class EngineConfigTest {
 
@@ -41,7 +40,7 @@ public class EngineConfigTest {
 
     @AfterClass
     public void tearDown() throws Exception {
-        MetadataManager.MANAGER.clear();
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     @Test

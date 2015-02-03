@@ -57,7 +57,10 @@ public class InnerJoin implements Serializable {
         return relations;
     }
 
-
+    /**
+     * Get the ordered relations of the Join according to the appearance order of the tables in the query.
+     * @return A list with the ordered relations.
+     */
     public List<Relation> getOrderedRelations() {
         List<Relation> orderedRelations = new ArrayList<>();
         for(Relation relation: relations){

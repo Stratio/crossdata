@@ -14,7 +14,7 @@ Now, we need the `Cassandra Connector <https://github.com/Stratio/stratio-connec
 
 And then, run it::
 
-    > target/stratio-connector-cassandra-0.1.0/bin/stratio-connector-cassandra-0.1.0 start
+    > target/stratio-connector-cassandra-[version]/bin/stratio-connector-cassandra-[version] start
 
 
 **NOTE:** All the connectors have to be started once CrossdataServer is already running!
@@ -22,7 +22,7 @@ And then, run it::
 Now, from the Crossdata Shell we can write the following commands:
 
 Add a data store. We need to specified the XML manifest that defines the data store. The XML manifest can be found
-in the path of the Cassandra Connector in target/stratio-connector-cassandra-0.1.0/conf/CassandraDataStore.xml ::
+in the path of the Cassandra Connector in target/stratio-connector-cassandra-[version]/conf/CassandraDataStore.xml ::
 
 
     xdsh:user>  ADD DATASTORE <Absolute path to Cassandra Datastore manifest>;
@@ -34,7 +34,7 @@ Attach cluster on that data store. The data store name must be the same as the d
 
 
 Add the connector manifest. The XML with the manifest can be found in the path of the Cassandra Connector in
-target/stratio-connector-cassandra-0.1.0/conf/CassandraConnector.xml::
+target/stratio-connector-cassandra-[version]/conf/CassandraConnector.xml::
 
     xdsh:user>  ADD CONNECTOR <Path to Cassandra Connector Manifest>;
 

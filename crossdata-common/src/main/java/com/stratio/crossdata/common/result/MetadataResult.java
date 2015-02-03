@@ -152,10 +152,10 @@ public final class MetadataResult extends Result {
     }
 
     /**
-     * Create a successed metadata result.
+     * Create a succeeded metadata result.
      * @param operation The operation.
      * @param noOperation The noOperation.
-     * @return
+     * @return The result of the Metadata Operation
      */
     public static MetadataResult createSuccessMetadataResult(final int operation, boolean noOperation) {
         return new MetadataResult(operation, noOperation);

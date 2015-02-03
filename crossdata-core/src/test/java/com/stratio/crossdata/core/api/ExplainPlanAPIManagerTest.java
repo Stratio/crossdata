@@ -46,7 +46,6 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
-import com.stratio.crossdata.core.metadata.MetadataManager;
 
 /**
  * Explain plan tests using the API apiManager
@@ -104,7 +103,7 @@ public class ExplainPlanAPIManagerTest {
 
     @AfterClass
     public void tearDown() throws Exception {
-        MetadataManager.MANAGER.clear();
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     private Command getCommand(String statement) {

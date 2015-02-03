@@ -34,15 +34,15 @@ import org.jgroups.blocks.RequestOptions;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
-import com.stratio.crossdata.core.metadata.MetadataManager;
 
 /**
  * Tests {@link Grid}.
  */
-//@Test(testName = "GridTest")
+@Test(testName = "GridTest")
 public class GridTest {
 
     private String syncMessage;
@@ -57,36 +57,13 @@ public class GridTest {
 
     @AfterClass
     public void tearDown() throws Exception {
-        MetadataManager.MANAGER.clear();
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
-
-    /**
-     * Starts the common {@link Grid} used by all its tests.
-     */
-    /*
-    @BeforeClass(dependsOnGroups = {"ParsingTest"})
-    public void setUp() {
-        path = "/tmp/com.stratio.crossdata-test-" + UUID.randomUUID();
-        Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
-    }
-    */
-
-    /**
-     * Stops the common {@link Grid} used by all its tests.
-     */
-    /*
-    @AfterClass(groups = {"GridTest"})
-    public void tearDown() {
-        Grid.INSTANCE.close();
-        File file = new File(path);
-        file.delete();
-    }
-    */
 
     /**
      * Tests {@link Grid} distributed storing.
      */
-    //@Test
+    @Test
     public void testGridStore() throws Exception {
         Map<String, String> map = Grid.INSTANCE.map("testGridStore");
         TransactionManager tm = Grid.INSTANCE.transactionManager("testGridStore");
@@ -102,7 +79,7 @@ public class GridTest {
     /**
      * Tests {@link Grid} distributed locking.
      */
-    //@Test
+    @Test
     public void testGridLock() throws Exception {
         boolean res = true;
         Lock lock = Grid.INSTANCE.lock("testGridLock");
@@ -117,7 +94,7 @@ public class GridTest {
     /**
      * Tests {@link Grid} distributed synchronous channeling.
      */
-    //@Test
+    @Test
     public void testGridSyncChannel() throws Exception {
         JChannel syncChannel = Grid.INSTANCE.channel("testGridSyncChannel");
         MessageDispatcher
@@ -137,7 +114,7 @@ public class GridTest {
     /**
      * Tests {@link Grid} distributed asynchronous channeling.
      */
-    //@Test
+    @Test
     public void testGridAsyncChannel() throws Exception {
         JChannel asyncChannel = Grid.INSTANCE.channel("testGridAsyncChannel");
         asyncChannel.setReceiver(new ReceiverAdapter() {

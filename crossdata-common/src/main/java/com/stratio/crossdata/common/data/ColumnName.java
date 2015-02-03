@@ -114,7 +114,7 @@ public class ColumnName extends Name {
 
     /**
      * Obtain a String with the complete column name that includes the catalog name, table name, and the column name.
-     * @return
+     * @return The qualified name of the Column
      */
     public String getQualifiedName() {
         String result;

@@ -1,22 +1,22 @@
 About
 *****
 
-Crossdata (aka Meta) is a distributed framework that unifies the interaction with batch and streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies Crossdata defines a common unifying interface containing the set of operations that a datastore may support. New connectors can be easily added to increase its connectivity capabilities. Two types of connectors are defined: native and spark-based. Native connectors are faster for simple operations, while Spark-based connectors offer a larger set of functionality. The Crossdata planner decides which connector will be used for any request based its characteristics. We offer a shell, Java/REST APIs, and ODBC for BI.
+Crossdata is a distributed framework that unifies the interaction with batch and streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies Crossdata defines a common unifying interface containing the set of operations that a datastore may support. New connectors can be easily added to increase its connectivity capabilities. Two types of connectors are defined: native and spark-based. Native connectors are faster for simple operations, while Spark-based connectors offer a larger set of functionality. The Crossdata planner decides which connector will be used for any request based its characteristics. We offer a shell, Java/REST APIs, and ODBC for BI.
 
 Compiling Crossdata
 ===================
 
-Compiling Crossdata involves generating a set of files (.tokens, Lexers, and Parsers) from the different grammar
+Compiling Crossdata involves generating a set of files (.tokens, Lexers and Parsers) from the different grammar
 files. To automatically build Stratio Crossdata execute the following command::
 
-    > mvn clean compile install
+    > mvn clean install
 
 
 Running the com.stratio.crossdata-server
 ========================================
 ::
 
-    > mvn exec:java -DskipTests -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.CrossdataApplication"
+    > mvn exec:java -pl crossdata-server -Dexec.mainClass="com.stratio.crossdata.server.CrossdataApplication"
 
 or you can run our script located in crossdata-dist::
 
@@ -46,8 +46,8 @@ The shell features:
     > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell"
 
 
-The shell also supports synchronous query execution by means of the --sync parameter. This execution mode is required
- for streaming queries.::
+The default behaviour of the Shell is asynchronous, however, the shell also supports synchronous query execution by
+means of the --sync parameter.::
 
     > mvn exec:java -pl crossdata-shell -Dexec.mainClass="com.stratio.crossdata.sh.Shell" -Dexec.args="--sync"
 
@@ -75,6 +75,7 @@ Once the shell is running, you can exit the program introducing the word **exit*
 Send issues to Jira
 ===================
 You can send us issues in https://crossdata.atlassian.net/
+You can also find help in https://groups.google.com/forum/#!forum/crossdata-users
 
 
 Grammar

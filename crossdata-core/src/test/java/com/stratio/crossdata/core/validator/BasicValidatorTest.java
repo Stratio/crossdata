@@ -93,7 +93,7 @@ public class BasicValidatorTest {
 
     @AfterClass
     public void tearDown() throws Exception {
-        MetadataManager.MANAGER.clear();
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     //@AfterClass
