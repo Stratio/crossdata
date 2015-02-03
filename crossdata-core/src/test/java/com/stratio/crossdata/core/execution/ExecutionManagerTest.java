@@ -55,9 +55,9 @@ public class ExecutionManagerTest {
 
     @Test
     public void testClearWithDelete() throws Exception {
-        ExecutionManager.MANAGER.createEntry("key", "testKey");
-        ExecutionManager.MANAGER.deleteEntry("key");
-        Assert.assertFalse(ExecutionManager.MANAGER.exists("key"));
+        ExecutionManager.MANAGER.createEntry("testClearWithDelete", "testValue");
+        ExecutionManager.MANAGER.deleteEntry("testClearWithDelete");
+        Assert.assertFalse(ExecutionManager.MANAGER.exists("testClearWithDelete"));
     }
 
     @Test
