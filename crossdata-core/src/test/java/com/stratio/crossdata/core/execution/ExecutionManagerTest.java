@@ -18,9 +18,26 @@
 package com.stratio.crossdata.core.execution;
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
+
 public class ExecutionManagerTest {
+
+    @BeforeClass
+    public void setUp() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
+    }
 
     @Test
     public void testExist() throws Exception {
@@ -38,9 +55,9 @@ public class ExecutionManagerTest {
 
     @Test
     public void testClearWithDelete() throws Exception {
-        ExecutionManager.MANAGER.createEntry("key", "testKey");
-        ExecutionManager.MANAGER.deleteEntry("key");
-        Assert.assertFalse(ExecutionManager.MANAGER.exists("key"));
+        ExecutionManager.MANAGER.createEntry("testClearWithDelete", "testValue");
+        ExecutionManager.MANAGER.deleteEntry("testClearWithDelete");
+        Assert.assertFalse(ExecutionManager.MANAGER.exists("testClearWithDelete"));
     }
 
     @Test
@@ -48,4 +65,5 @@ public class ExecutionManagerTest {
         ExecutionManager.MANAGER.createEntry("key2", "testKey");
         Assert.assertEquals(ExecutionManager.MANAGER.getValue("key2"), "testKey");
     }
+
 }

@@ -20,9 +20,7 @@ package com.stratio.crossdata.core.grid;
 
 import static org.testng.Assert.assertTrue;
 
-import java.io.File;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
@@ -34,6 +32,12 @@ import org.jgroups.blocks.MessageDispatcher;
 import org.jgroups.blocks.RequestHandler;
 import org.jgroups.blocks.RequestOptions;
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
+import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 /**
  * Tests {@link Grid}.
@@ -45,24 +49,39 @@ public class GridTest {
     private String asyncMessage;
     private String path;
 
+    @BeforeClass
+    public void setUp() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
+    }
+
     /**
      * Starts the common {@link Grid} used by all its tests.
      */
-    //@BeforeClass
+    /*
+    @BeforeClass(dependsOnGroups = {"ParsingTest"})
     public void setUp() {
         path = "/tmp/com.stratio.crossdata-test-" + UUID.randomUUID();
         Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
     }
+    */
 
     /**
      * Stops the common {@link Grid} used by all its tests.
      */
-    //@AfterClass
+    /*
+    @AfterClass(groups = {"GridTest"})
     public void tearDown() {
         Grid.INSTANCE.close();
         File file = new File(path);
         file.delete();
     }
+    */
 
     /**
      * Tests {@link Grid} distributed storing.

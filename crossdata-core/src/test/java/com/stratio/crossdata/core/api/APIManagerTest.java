@@ -35,6 +35,7 @@ import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.DataStoreRefsType;
@@ -58,8 +59,14 @@ public class APIManagerTest {
     private final Planner planner = new Planner();
 
     @BeforeClass
-    public void init() {
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
     }
 
     @Test
@@ -297,7 +304,7 @@ public class APIManagerTest {
                 "Found: " + result.getClass().getCanonicalName());
     }
 
-    @Test
+    @Test(dependsOnMethods = { "testPersistConnector" })
     public void testListConnectors() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         Command cmd = new Command("QID", APICommand.DESCRIBE_CONNECTORS(), null);
@@ -383,11 +390,6 @@ public class APIManagerTest {
         assertTrue(resultStr.startsWith("CrossdataManifest added"),
                 "Expected: " + "CrossdataManifest added" + System.lineSeparator() +
                 "Found:    " + resultStr);
-    }
-
-    @AfterClass(groups = "APIManagerTest")
-    public void tearDown(){
-        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
     }
 
 }
