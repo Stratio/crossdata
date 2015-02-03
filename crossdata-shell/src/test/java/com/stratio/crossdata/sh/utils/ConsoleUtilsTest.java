@@ -43,7 +43,6 @@ import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.result.StorageResult;
-import com.stratio.crossdata.sh.Shell;
 
 import jline.console.ConsoleReader;
 
@@ -169,7 +168,7 @@ public class ConsoleUtilsTest {
     @Test
     public void testStringResultWithShellOK() throws Exception {
         StorageResult result = StorageResult.createSuccessfulStorageResult("Success");
-        String message = ConsoleUtils.stringResult(result, new Shell(false));
+        String message = ConsoleUtils.stringResult(result);
         String expected = "Success";
         assertTrue(message.equalsIgnoreCase(expected),
                 System.lineSeparator() +
@@ -183,7 +182,7 @@ public class ConsoleUtilsTest {
         CommandResult result = CommandResult.createCommandResult(new CatalogName("catalogTest"));
         boolean ok=false;
         try {
-            ConsoleUtils.stringResult(result, null);
+            ConsoleUtils.stringResult(result);
             fail("NullPointerException was expected");
         } catch (NullPointerException npe) {
             ok=true;
