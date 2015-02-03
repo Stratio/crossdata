@@ -110,7 +110,7 @@
 
     <build>
         <plugins>
-	     <plugin>
+            <plugin>
                 <groupId>com.stratio.mojo.unix</groupId>
                 <artifactId>unix-maven-plugin</artifactId>
                 <version>1.0-alpha-9</version>
@@ -126,18 +126,17 @@
                         <group>stratio</group>
                     </rpm>
                     <assembly>
-			<mkdirs>
-  			<paths>
-    			<path>etc/init.d</path>
-    			<path>etc/sds/crossdata</path>
-    			<path>etc/default</path>
-  			</paths>
-  			<attributes>
-    			<user>stratio</user>
-    			<group>stratio</group>
-                	<mode>644</mode>
-  			</attributes>
-			</mkdirs>
+                        <mkdirs>
+                            <paths>
+                                <path>etc/sds/crossdata</path>
+                                <path>etc/default</path>
+                            </paths>
+                            <attributes>
+                                <user>stratio</user>
+                                <group>stratio</group>
+                                <mode>644</mode>
+                            </attributes>
+                        </mkdirs>
                         <copyDirectory>
                             <from>crossdata-dist/target/crossdata-dist-${project.version}/bin</from>
                             <to>opt/sds/crossdata/bin</to>
@@ -151,26 +150,22 @@
                             <to>opt/sds/crossdata/lib</to>
                         </copyDirectory>
                         <copyDirectory>
-				<from>crossdata-dist/src/main/unix/files_and_dirs/etc/default</from>
-				<to>etc/default</to>
+                            <from>crossdata-dist/src/main/unix/files_and_dirs/etc/default</from>
+                            <to>etc/default</to>
                         </copyDirectory>
-			<copyFile>
-				<path>crossdata-dist/src/main/unix/files_and_dirs/DEBIAN/conffiles</path>
-				<toFile>DEBIAN/conffiles</toFile>
-            		</copyFile>
-            		<copyFile>
-				<path>crossdata-dist/src/main/unix/files_and_dirs/DEBIAN/copyright</path>
-				<toFile>DEBIAN/copyright</toFile>
-   
-            		</copyFile>
-            		<copyFile>
-				<path>crossdata-dist/src/main/include/README.md</path>
-				<toFile>opt/sds/crossdata/README.md</toFile>
-            		</copyFile>
-            		<copyFile>
-				<path>crossdata-dist/target/crossdata-dist-${project.version}/bin/crossdata-server-daemon</path>
-				<toFile>etc/init.d/crossdata</toFile>
-            		</copyFile>
+                        <copyFile>
+                            <path>crossdata-dist/src/main/unix/files_and_dirs/DEBIAN/conffiles</path>
+                            <toFile>DEBIAN/conffiles</toFile>
+                        </copyFile>
+                        <copyFile>
+                            <path>crossdata-dist/src/main/unix/files_and_dirs/DEBIAN/copyright</path>
+                            <toFile>DEBIAN/copyright</toFile>
+
+                        </copyFile>
+                        <copyFile>
+                            <path>crossdata-dist/src/main/include/README.md</path>
+                            <toFile>opt/sds/crossdata/README.md</toFile>
+                        </copyFile>
                         <copyFile>
                             <path>crossdata-dist/target/crossdata-dist-0.2.0-RC2/LICENSE</path>
                             <toFile>opt/sds/crossdata/LICENSE</toFile>
@@ -179,7 +174,8 @@
                             <path>crossdata-dist/target/crossdata-dist-0.2.0-RC2/NOTICE</path>
                             <toFile>opt/sds/crossdata/NOTICE</toFile>
                         </copyFile>
-            			
+
+
                     </assembly>
                 </configuration>
             </plugin>
