@@ -43,6 +43,7 @@ import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
+import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -405,6 +406,78 @@ public class NormalizerTest {
                 "Test failed: " + methodName + System.lineSeparator() +
                         "Result:   " + result.toString() + System.lineSeparator() +
                         "Expected: " + expectedText);
+
+    }
+
+
+
+    @Test(expectedExceptions = BadFormatException.class)
+    public void testNormalizeWrongInnerJoin() throws Exception {
+
+        insertData();
+
+        String inputText =
+                        "SELECT colSales FROM tableClients "
+                                        + "INNER JOIN tableClients ON assistantId = clientId ";
+
+        // BASE QUERY
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+
+        // SELECTORS
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
+
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        // SELECT STATEMENT
+        SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
+
+        List<Relation> joinRelations = new ArrayList<>();
+        Relation relation = new Relation(
+                        new ColumnSelector(new ColumnName(new TableName("myCatalog","tableCostumers"), "assistantId")),
+                        Operator.EQ,
+                        new ColumnSelector(new ColumnName(null, "clientId")));
+        joinRelations.add(relation);
+        InnerJoin innerJoin = new InnerJoin(new TableName("demo", "tableClients"), joinRelations);
+        selectStatement.setJoin(innerJoin);
+
+
+        SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        //VALIDATE THE QUERY
+        Normalizer normalizer = new Normalizer();
+        normalizer.normalize(selectParsedQuery);
+
+
+    }
+
+    @Test(expectedExceptions = BadFormatException.class)
+    public void testNormalizeWrongBasicSelect() throws Exception {
+
+        insertData();
+
+        String inputText =
+                        "SELECT myCatalog.tableCostumers.colFee FROM demo.tableClients";
+
+        // BASE QUERY
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+
+        // SELECTORS
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
+        selectorList.add(new ColumnSelector(new ColumnName(new TableName("myCatalog","tableCostumers"), "colFee")));
+
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        // SELECT STATEMENT
+        SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
+
+        SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        //VALIDATE THE QUERY
+        Normalizer normalizer = new Normalizer();
+        normalizer.normalize(selectParsedQuery);
+
 
     }
 
