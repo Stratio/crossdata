@@ -21,10 +21,12 @@ package com.stratio.crossdata.core.engine;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 
-import java.io.File;
-import java.util.Random;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 
-import com.stratio.crossdata.core.grid.Grid;
+import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class EngineTest {
 
@@ -32,8 +34,21 @@ public class EngineTest {
     private EngineConfig engineConfig;
     private String path;
 
-    //@BeforeClass
+    @BeforeClass
+    public void setUp() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
+    }
+
+    /*
+    @BeforeClass
     public void setUp() {
+        MetadataManagerTestHelper.HELPER.initHelper();
         path = "/tmp/com.stratio.crossdata-test-" + new Random().nextInt(100000);
         Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
         engineConfig = new EngineConfig();
@@ -45,13 +60,17 @@ public class EngineTest {
         engineConfig.setGridPort(7810);
         engine = new Engine(engineConfig);
     }
+    */
 
-    //@AfterClass
+    /*
+    @AfterClass
     public void tearDown() {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
         engine.shutdown();
         File file = new File(path);
         file.delete();
     }
+    */
 
     //@Test
     public void testGetParser() throws Exception {

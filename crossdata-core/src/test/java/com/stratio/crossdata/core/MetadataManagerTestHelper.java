@@ -60,9 +60,12 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.api.APIManager;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
@@ -127,6 +130,56 @@ public enum MetadataManagerTestHelper {
                 .withMinInitialMembers(1)
                 .withJoinTimeoutInMs(3000)
                 .withPersistencePath(path).init();
+    }
+
+
+    public void createTestEnvironment() throws ManifestException {
+        DataStoreName datastoreName = createTestDatastore();
+        createTestCluster(
+                "production",
+                datastoreName);
+        Set<ClusterName> clusterList = new HashSet<>();
+        clusterList.add(new ClusterName("production"));
+        Set<Operations> options = new HashSet<>();
+        options.add(Operations.PROJECT);
+        options.add(Operations.SELECT_OPERATOR);
+        options.add(Operations.SELECT_INNER_JOIN);
+        options.add(Operations.ALTER_CATALOG);
+        createTestConnector(
+                "connector1",
+                datastoreName,
+                clusterList,
+                options,
+                "actorRed1");
+        createTestCatalog("testCatalog");
+        IndexName indexName = new IndexName(new ColumnName("catalog1", "table1", "defaultTest"));
+        Set<IndexMetadata> indexes = new HashSet<>();
+        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        ColumnName columnName = new ColumnName("catalog1", "table1", "col3");
+        ColumnMetadata columnMetadata = new ColumnMetadata(columnName, new Object[]{"whatever"}, ColumnType.TEXT);
+        columns.put(columnName, columnMetadata);
+        Map<Selector, Selector> indexOpts = new HashMap<>();
+        IndexMetadata index = new IndexMetadata(indexName, columns, IndexType.DEFAULT, indexOpts);
+        indexes.add(index);
+        indexName = new IndexName(new ColumnName("catalog1", "table1", "fulltextTest"));
+        columns = new HashMap<>();
+        columnName = new ColumnName("catalog1", "table1", "col4");
+        columnMetadata = new ColumnMetadata(columnName, new Object[]{}, ColumnType.DOUBLE);
+        columns.put(columnName, columnMetadata);
+        indexOpts.put(new StringSelector("Length"), new IntegerSelector(10));
+        index = new IndexMetadata(indexName, columns, IndexType.FULL_TEXT, indexOpts);
+        indexes.add(index);
+        createTestTable(
+                new ClusterName("production"),
+                "testCatalog",
+                "testTable",
+                new String[] { "col1", "col2", "col3", "col4", "col5" },
+                new ColumnType[] { ColumnType.INT, ColumnType.INT, ColumnType.TEXT, ColumnType.DOUBLE,
+                        ColumnType.BOOLEAN },
+                new String[] { "col1" },
+                new String[] { "col2" },
+                indexes
+        );
     }
 
     public DataStoreMetadata insertDataStore(String dataStore, String cluster) {

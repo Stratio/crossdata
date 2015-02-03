@@ -4,6 +4,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -20,6 +21,7 @@ import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class CoreUtilsTest {
 
@@ -27,7 +29,8 @@ public class CoreUtilsTest {
 
     @BeforeClass
     public void setUp() throws ManifestException {
-        //super.setUp();
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
         MetadataManagerTestHelper.HELPER.createTestDatastore();
         MetadataManagerTestHelper.HELPER.createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
         MetadataManagerTestHelper.HELPER.createTestCatalog("catalogTest");
@@ -55,6 +58,11 @@ public class CoreUtilsTest {
         MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,
                 partitionKeys, clusteringKeys, null);
         table = new TableName("catalogTest", "tableTest");
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
     }
 
     @Test

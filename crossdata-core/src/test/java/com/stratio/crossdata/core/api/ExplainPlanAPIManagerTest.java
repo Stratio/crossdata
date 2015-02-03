@@ -46,6 +46,7 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 /**
  * Explain plan tests using the API apiManager
@@ -64,10 +65,11 @@ public class ExplainPlanAPIManagerTest {
      */
     private static final Logger LOG = Logger.getLogger(ExplainPlanAPIManagerTest.class);
 
-    @BeforeClass(dependsOnGroups = { "APIManagerTest" } )
+    @BeforeClass
     public void setUp() throws ManifestException {
 
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
 
         DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
@@ -97,6 +99,12 @@ public class ExplainPlanAPIManagerTest {
         table2 = MetadataManagerTestHelper.HELPER.createTestTable(
                 clusterName, "demo", "table2", columnNames2, columnTypes,
                 partitionKeys, clusteringKeys, null);
+    }
+
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManager.MANAGER.clear();
     }
 
     private Command getCommand(String statement) {
@@ -209,8 +217,4 @@ public class ExplainPlanAPIManagerTest {
         LOG.info(result.getException());
     }
 
-    @AfterClass(groups = { "ExplainPlanAPIManagerTest" })
-    public void tearDown() throws Exception {
-
-    }
 }
