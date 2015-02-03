@@ -309,7 +309,22 @@ public class NormalizerTest {
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
-        testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
+        Normalizer normalizer = new Normalizer();
+
+        SelectValidatedQuery result = null;
+        try {
+            result = normalizer.normalize(selectParsedQuery);
+        } catch (ValidationException e) {
+            fail("Test failed: " + methodName + System.lineSeparator(), e);
+        }
+
+        assertTrue(result.toString().equalsIgnoreCase(expectedText),
+                "Test failed: " + methodName + System.lineSeparator() +
+                        "Result:   " + result.toString() + System.lineSeparator() +
+                        "Expected: " + expectedText);
+
+
+
     }
 
     @Test
@@ -377,7 +392,19 @@ public class NormalizerTest {
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
-        testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
+        Normalizer normalizer = new Normalizer();
+
+        SelectValidatedQuery result = null;
+        try {
+            result = normalizer.normalize(selectParsedQuery);
+        } catch (ValidationException e) {
+            fail("Test failed: " + methodName + System.lineSeparator(), e);
+        }
+
+        assertTrue(result.toString().equalsIgnoreCase(expectedText),
+                "Test failed: " + methodName + System.lineSeparator() +
+                        "Result:   " + result.toString() + System.lineSeparator() +
+                        "Expected: " + expectedText);
 
     }
 

@@ -27,18 +27,11 @@ import com.stratio.crossdata.common.data.TableName;
 
 public class StringSelectorTest {
 
-    private void compareStrings(String result, String expected, String testName){
-        assertTrue(result.equalsIgnoreCase(expected),
-                System.lineSeparator() +
-                this.getClass().getCanonicalName() + "." + testName + " failed." + System.lineSeparator() +
-                "Result:   " + result + System.lineSeparator() +
-                "Expected: " + expected);
-    }
 
     @Test
     public void testGetValue() throws Exception {
         StringSelector selector = new StringSelector("StringTest");
-        compareStrings("StringTest", selector.getValue(), "testGetValue");
+        assertEquals("StringTest",selector.getValue(), "Error in testGetValue");
     }
 
     @Test
@@ -56,13 +49,13 @@ public class StringSelectorTest {
     @Test
     public void testToString() throws Exception {
         StringSelector selector = new StringSelector("StringTest");
-        compareStrings(selector.toString(), "'StringTest'", "testToString");
+        assertEquals(selector.toString(), "'StringTest'", "Error in testToString");
     }
 
     @Test
     public void testGetStringValue() throws Exception {
         StringSelector selector = new StringSelector("StringTest");
-        compareStrings(selector.getStringValue(), "StringTest", "testToString");
+        assertEquals(selector.getStringValue(), "StringTest", "Error in testToString");
     }
 
     @Test
