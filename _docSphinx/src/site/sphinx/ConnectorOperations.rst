@@ -20,7 +20,7 @@ associated manifest. As an example, consider the following *InMemoryConnector.xm
             <DataStoreName>InMemoryDatastore</DataStoreName>
         </DataStores>
         <!-- Connector version -->
-        <Version>0.0.1</Version>
+        <Version>0.2.0</Version>
 
         <!-- Define the set of required operations the user will be asked to input
         when attaching the connector -->
@@ -114,7 +114,7 @@ Metadata operations are those associated with the *IMetadataEngine* interface.
 *   **ALTER_TABLE**: Alter the definition of an existing table.
 *   **DROP_TABLE**: Drop an existing table.
 *   **CREATE_INDEX**: Create a new index.
-*    **DROP_INDEX**: Drop an existing index.
+*   **DROP_INDEX**: Drop an existing index.
 
 Storage
 -------
