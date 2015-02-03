@@ -38,7 +38,7 @@ case "$1" in
 
   ;;
 esac    
-
+cp /opt/sds/crossdata/bin/crossdata-server-daemon /etc/init.d/crossdata
 chmod 755 /etc/init.d/crossdata
 chmod 755 /opt/sds/crossdata/bin/crossdata-sh
 chmod +x /etc/default/crossdata
