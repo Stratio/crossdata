@@ -8,6 +8,7 @@ DIR_INSTALL='/opt/sds/crossdata'
 DIR_CONF='/etc/sds/crossdata'
 DIR_LOG='/var/log/sds/crossdata'
 
+cp /opt/sds/crossdata/bin/crossdata-server-daemon /etc/init.d/crossdata
 chmod 755 /etc/init.d/crossdata
 chmod 755 /opt/sds/crossdata/bin/crossdata-sh
 chmod +x /etc/default/crossdata
@@ -31,6 +32,7 @@ case "$1" in
   fi
 
   chown -R ${USER}:${GROUP} /opt/sds /etc/sds
+
   chown root:root /etc/init.d/crossdata
  
   chown -R ${USER}:${GROUP} $DIR_INSTALL
