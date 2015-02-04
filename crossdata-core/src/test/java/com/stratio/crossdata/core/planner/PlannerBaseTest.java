@@ -29,9 +29,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
@@ -68,8 +70,14 @@ public class PlannerBaseTest {
     Planner planner = new Planner();
 
     @BeforeClass
-    public void init() {
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     /**

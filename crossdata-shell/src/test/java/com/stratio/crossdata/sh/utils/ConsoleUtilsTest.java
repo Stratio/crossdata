@@ -29,21 +29,18 @@ import java.util.List;
 
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.InProgressResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.result.StorageResult;
-import com.stratio.crossdata.sh.Shell;
 
 import jline.console.ConsoleReader;
 
@@ -169,26 +166,13 @@ public class ConsoleUtilsTest {
     @Test
     public void testStringResultWithShellOK() throws Exception {
         StorageResult result = StorageResult.createSuccessfulStorageResult("Success");
-        String message = ConsoleUtils.stringResult(result, new Shell(false));
+        String message = ConsoleUtils.stringResult(result);
         String expected = "Success";
         assertTrue(message.equalsIgnoreCase(expected),
                 System.lineSeparator() +
                 "Expected: " + expected +
                 System.lineSeparator() +
                 "Found:    " + message);
-    }
-
-    @Test
-    public void testStringResultWithShellException() throws Exception {
-        CommandResult result = CommandResult.createCommandResult(new CatalogName("catalogTest"));
-        boolean ok=false;
-        try {
-            ConsoleUtils.stringResult(result, null);
-            fail("NullPointerException was expected");
-        } catch (NullPointerException npe) {
-            ok=true;
-            assertEquals(ok, true, "NullPointerException was expected");
-        }
     }
 
     @Test

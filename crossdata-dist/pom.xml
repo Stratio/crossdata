@@ -109,7 +109,7 @@
                     <extraJvmArguments>-Xms512m</extraJvmArguments>
                     <repositoryLayout>flat</repositoryLayout>
                     <generateRepository>true</generateRepository>
-                    <licenseHeaderFile>${project.basedir}/src/main/template/license-header.txt</licenseHeaderFile>
+                    <licenseHeaderFile>${project.basedir}/src/main/include/LICENSE</licenseHeaderFile>
                     <repositoryName>lib</repositoryName>
                     <platforms>
                         <platform>unix</platform>

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -56,8 +57,14 @@ import com.stratio.crossdata.core.MetadataManagerTestHelper;
 public class MetadataManagerTest {
 
     @BeforeClass
-    public void init() {
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     @Test
@@ -107,7 +114,6 @@ public class MetadataManagerTest {
         assertEquals(clusterMetadata.getConnectorAttachedRefs().get(connectorName).getConnectorRef(), connectorName,
                 "Expected: " + connectorName + System.lineSeparator() +
                 "Found:    " + clusterMetadata.getConnectorAttachedRefs().get(connectorName).getConnectorRef());
-
     }
 
     // CREATE CATALOG
@@ -135,15 +141,15 @@ public class MetadataManagerTest {
         ClusterName clusterName = new ClusterName("clusterTest");
         MetadataManagerTestHelper.HELPER.createTestCluster(clusterName.getName(), dataStoreRef);
         // Create catalog
-        CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("testCatalog").getName();
+        CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("catalog1").getName();
 
-        // Create and add test table to the metadatamanager
+        // Create and add test table to the MetadataManager
         String[] columnNames1 = { "id", "user" };
         ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
         TableMetadata table = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(),
-                "testTable", columnNames1,
+                "table1", columnNames1,
                 columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         assertEquals(MetadataManager.MANAGER.getTable(table.getName()).getName(), table.getName(),
@@ -316,7 +322,7 @@ public class MetadataManagerTest {
         */
     }
 
-    @Test
+    @Test(dependsOnMethods = { "testCreateTable" })
     public void testGetTables() {
 
         try {
@@ -327,18 +333,20 @@ public class MetadataManagerTest {
 
         List<TableMetadata> tables = MetadataManager.MANAGER.getTables();
 
-        int expectedSize = 7;
+        int expectedSize = 1;
 
         assertTrue(tables.size() == expectedSize,
                 "Tables size is wrong." + System.lineSeparator() +
                 "Expected: " + expectedSize + System.lineSeparator() +
                 "Found:    " + tables.size());
-        assertTrue(tables.get(0).getName().getName().equalsIgnoreCase("testTable"),
-                "Expected: " + "testTable" + System.lineSeparator() +
+        /*
+        assertTrue(tables.get(0).getName().getName().equalsIgnoreCase("table1"),
+                "Expected: " + "table1" + System.lineSeparator() +
                 "Found:    " + tables.get(0).getName().getName());
+        */
     }
 
-    @Test
+    @Test(dependsOnMethods = { "testCreateTable" })
     public void testGetColumns() {
         try {
             testCreateTable();
@@ -348,7 +356,7 @@ public class MetadataManagerTest {
 
         List<ColumnMetadata> columns = MetadataManager.MANAGER.getColumns();
 
-        int expectedSize = 20;
+        int expectedSize = 2;
 
         assertTrue(columns.size() == expectedSize,
                 "Columns size is wrong." + System.lineSeparator() +
@@ -372,10 +380,10 @@ public class MetadataManagerTest {
             fail();
         }
 
-        List<TableMetadata> tablesMetadata = MetadataManager.MANAGER.getTablesByCatalogName("testCatalog");
+        List<TableMetadata> tablesMetadata = MetadataManager.MANAGER.getTablesByCatalogName("catalog1");
 
-        assertTrue(tablesMetadata.get(0).getName().getName().equalsIgnoreCase("testTable"),
-                "Expected: " + "testTable" + System.lineSeparator() +
+        assertTrue(tablesMetadata.get(0).getName().getName().equalsIgnoreCase("table1"),
+                "Expected: " + "table1" + System.lineSeparator() +
                 "Found:    " + tablesMetadata.get(0).getName().getName());
     }
 
@@ -387,7 +395,7 @@ public class MetadataManagerTest {
             fail();
         }
 
-        List<ColumnMetadata> columnsMetadata = MetadataManager.MANAGER.getColumnByTable("testCatalog", "testTable");
+        List<ColumnMetadata> columnsMetadata = MetadataManager.MANAGER.getColumnByTable("catalog1", "table1");
 
         assertTrue(columnsMetadata.size() == 2,
                 "Size of the Metadata of columns is wrong." + System.lineSeparator() +
@@ -409,7 +417,7 @@ public class MetadataManagerTest {
         Status status = Status.ONLINE;
         List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors(status);
 
-        int expectedSize = 5;
+        int expectedSize = 4;
 
         assertTrue(connectors.size() == expectedSize,
                 "Connectors size is wrong." + System.lineSeparator() +
@@ -427,7 +435,7 @@ public class MetadataManagerTest {
 
         List<ConnectorName> connectors = MetadataManager.MANAGER.getConnectorNames(Status.ONLINE);
 
-        int expectedSize = 5;
+        int expectedSize = 4;
 
         assertTrue(connectors.size() == expectedSize,
                 "Connectors size is wrong." + System.lineSeparator() +
@@ -450,7 +458,6 @@ public class MetadataManagerTest {
         DataStoreMetadata dataStore = new DataStoreMetadata(name, version, requiredProperties, othersProperties,
                 behaviors, null);
         MetadataManager.MANAGER.createDataStore(dataStore);
-        fail();
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)

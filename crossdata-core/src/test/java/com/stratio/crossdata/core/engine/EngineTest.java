@@ -21,10 +21,14 @@ package com.stratio.crossdata.core.engine;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 
-import java.io.File;
-import java.util.Random;
+import java.util.UUID;
 
-import com.stratio.crossdata.core.grid.Grid;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
+import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class EngineTest {
 
@@ -32,8 +36,30 @@ public class EngineTest {
     private EngineConfig engineConfig;
     private String path;
 
-    //@BeforeClass
+    @BeforeClass
+    public void setUp() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+        path = "/tmp/com.stratio.crossdata-test-" + UUID.randomUUID();
+        engineConfig = new EngineConfig();
+        engineConfig.setGridContactHosts(new String[]{"localhost"});
+        engineConfig.setGridJoinTimeout(5000);
+        engineConfig.setGridListenAddress("localhost");
+        engineConfig.setGridMinInitialMembers(1);
+        engineConfig.setGridPersistencePath(path);
+        engineConfig.setGridPort(7810);
+        engine = new Engine(engineConfig);
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
+    }
+
+    /*
+    @BeforeClass
     public void setUp() {
+        MetadataManagerTestHelper.HELPER.initHelper();
         path = "/tmp/com.stratio.crossdata-test-" + new Random().nextInt(100000);
         Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
         engineConfig = new EngineConfig();
@@ -45,40 +71,44 @@ public class EngineTest {
         engineConfig.setGridPort(7810);
         engine = new Engine(engineConfig);
     }
+    */
 
-    //@AfterClass
+    /*
+    @AfterClass
     public void tearDown() {
+        System.out.println(this.getClass().getCanonicalName() + ": tearDown");
         engine.shutdown();
         File file = new File(path);
         file.delete();
     }
+    */
 
-    //@Test
+    @Test
     public void testGetParser() throws Exception {
         assertNotNull(engine.getParser(), "Parser is null");
     }
 
-    //@Test
+    @Test
     public void testGetValidator() throws Exception {
         assertNotNull(engine.getValidator(), "Validator is null");
     }
 
-    //@Test
+    @Test
     public void testGetPlanner() throws Exception {
         assertNotNull(engine.getPlanner(), "Planner is null");
     }
 
-    //@Test
+    @Test
     public void testGetCoordinator() throws Exception {
         assertNotNull(engine.getCoordinator(), "Coordinator is null");
     }
 
-    //@Test
+    @Test
     public void testGetAPIManager() throws Exception {
         assertNotNull(engine.getAPIManager(), "APIManager is null");
     }
 
-    //@Test
+    @Test
     public void testConstructorFail(){
         EngineConfig engineConfigTest = new EngineConfig();
         engineConfigTest.setGridContactHosts(new String[]{"whatever"});

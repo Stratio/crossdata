@@ -26,6 +26,7 @@ import static org.testng.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -34,6 +35,7 @@ import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.DataStoreRefsType;
@@ -57,8 +59,14 @@ public class APIManagerTest {
     private final Planner planner = new Planner();
 
     @BeforeClass
-    public void init() {
+    public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     @Test
@@ -296,7 +304,7 @@ public class APIManagerTest {
                 "Found: " + result.getClass().getCanonicalName());
     }
 
-    @Test
+    @Test(dependsOnMethods = { "testPersistConnector" })
     public void testListConnectors() throws Exception {
         APIManager ApiManager = new APIManager(parser, validator, planner);
         Command cmd = new Command("QID", APICommand.DESCRIBE_CONNECTORS(), null);
@@ -310,14 +318,13 @@ public class APIManagerTest {
 
         String str = String.valueOf(result.getResult());
         String[] connectors = str.split(System.lineSeparator());
-        System.out.println("connectors.length: " + connectors.length);
 
-        int expectedSize = 4;
+        int expectedSize = 1;
 
         assertEquals((connectors.length-1), expectedSize,
                 System.lineSeparator() +
                 "testListConnectors failed." + System.lineSeparator() +
-                "Expected number of connectors: " + expectedSize +
+                "Expected number of connectors: " + expectedSize + System.lineSeparator() +
                 "Number of connectors found:    " + (connectors.length-1));
 
         /*
@@ -384,4 +391,5 @@ public class APIManagerTest {
                 "Expected: " + "CrossdataManifest added" + System.lineSeparator() +
                 "Found:    " + resultStr);
     }
+
 }

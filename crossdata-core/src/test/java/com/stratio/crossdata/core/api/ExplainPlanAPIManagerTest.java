@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -67,6 +68,7 @@ public class ExplainPlanAPIManagerTest {
     public void setUp() throws ManifestException {
 
         MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
 
         DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
@@ -96,6 +98,12 @@ public class ExplainPlanAPIManagerTest {
         table2 = MetadataManagerTestHelper.HELPER.createTestTable(
                 clusterName, "demo", "table2", columnNames2, columnTypes,
                 partitionKeys, clusteringKeys, null);
+    }
+
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     private Command getCommand(String statement) {

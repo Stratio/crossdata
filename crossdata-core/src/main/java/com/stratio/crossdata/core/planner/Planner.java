@@ -1375,7 +1375,7 @@ public class Planner {
         Join j = new Join(Operations.SELECT_INNER_JOIN, id);
         j.addSourceIdentifier(targetTable);
         j.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
-        j.addJoinRelations(queryJoin.getRelations());
+        j.addJoinRelations(queryJoin.getOrderedRelations());
         StringBuilder sb = new StringBuilder(targetTable)
                 .append("$").append(queryJoin.getTablename().getQualifiedName());
         //Attach to input tables path
