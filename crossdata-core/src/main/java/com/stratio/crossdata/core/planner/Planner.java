@@ -80,6 +80,7 @@ import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
@@ -263,6 +264,7 @@ public class Planner {
                 }
                 if (paths[index].getAvailableConnectors().size() == toRemove.size()) {
                     //Add intermediate result node
+                    // TODO: CROSSDATA-464
                     PartialResults partialResults = new PartialResults(Operations.PARTIAL_RESULTS);
                     partialResults.setNextStep(mergeStep);
                     mergeStep.addPreviousSteps(partialResults);
@@ -561,6 +563,7 @@ public class Planner {
             processed = addFilter(processed, tableMetadataMap, query);
         }
 
+        //Add window
         SelectStatement ss = SelectStatement.class.cast(query.getStatement());
         if (ss.getWindow() != null) {
             processed = addWindow(processed, ss);
@@ -584,6 +587,68 @@ public class Planner {
                 if (Project.class.isInstance(initial)) {
                     initialSteps.add(initial);
                 }
+            }
+        }
+
+        //Include Select step for join queries
+        boolean firstPath = true;
+        for(LogicalStep initialStep: initialSteps){
+            LogicalStep step = initialStep;
+            LogicalStep previousStepToUnion = initialStep;
+            while((step != null) && (!UnionStep.class.isInstance(step))){
+                previousStepToUnion = step;
+                step = step.getNextStep();
+            }
+            if(step == null){
+                continue;
+            } else {
+                // Create Select step here
+                UnionStep unionStep = (UnionStep) step;
+                Map<String, TableMetadata> partialTableMetadataMap = new HashMap<>();
+                for(String key: tableMetadataMap.keySet()){
+                    if(Project.class.isInstance(initialStep)){
+                        Project projectStep = (Project) initialStep;
+                        if(projectStep.getTableName().getQualifiedName().equalsIgnoreCase(key)){
+                            partialTableMetadataMap.put(key, tableMetadataMap.get(key));
+                            break;
+                        }
+                    }
+                }
+                // Generate fake Select for Join Table
+                SelectStatement partialSelect = ss;
+                if(Project.class.cast(initialStep).getTableName().getQualifiedName().equalsIgnoreCase(
+                        ss.getJoin().getTablename().getQualifiedName())){
+                    List<Selector> selectorList = new ArrayList<>();
+                    for(Selector querySelector: ss.getSelectExpression().getSelectorList()){
+                        if(querySelector instanceof ColumnSelector){
+                            ColumnSelector columnSelector = (ColumnSelector) querySelector;
+                            if(columnSelector.getColumnName().getTableName().getQualifiedName().equalsIgnoreCase(
+                                    ss.getJoin().getTablename().getQualifiedName())){
+                                selectorList.add(columnSelector);
+                            }
+                        } else if (querySelector instanceof AsteriskSelector){
+                            // TODO:
+
+                        }
+                    }
+                    SelectExpression selectExpression = new SelectExpression(selectorList);
+                    TableName tableName = ss.getJoin().getTablename();
+                    partialSelect = new SelectStatement(selectExpression, tableName);
+                }
+                Select selectStep = generateSelect(partialSelect, partialTableMetadataMap);
+
+                previousStepToUnion.setNextStep(selectStep);
+
+                selectStep.setPrevious(previousStepToUnion);
+                selectStep.setNextStep(unionStep);
+
+                List<LogicalStep> previousStepsToUnion = unionStep.getPreviousSteps();
+                if(firstPath){
+                    previousStepsToUnion.clear();
+                    firstPath = false;
+                }
+                previousStepsToUnion.add(selectStep);
+                unionStep.setPreviousSteps(previousStepsToUnion);
             }
         }
 
@@ -616,8 +681,6 @@ public class Planner {
             l.setPrevious(last);
             last = l;
         }
-
-        //Add window
 
         //Add SELECT operator
         Select finalSelect = generateSelect(ss, tableMetadataMap);
