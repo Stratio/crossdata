@@ -355,7 +355,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     public List<TableName> getFromTables() {
         ArrayList<TableName> tableNames = new ArrayList<>();
         tableNames.add(tableName);
-        if (joinInc) {
+        if (join != null) {
             tableNames.add(join.getTablename());
         }
         return tableNames;

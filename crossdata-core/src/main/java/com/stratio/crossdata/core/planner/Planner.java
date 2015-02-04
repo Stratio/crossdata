@@ -116,6 +116,7 @@ public class Planner {
      * @throws com.stratio.crossdata.common.exceptions.PlanningException If the query cannot be planned.
      */
     public SelectPlannedQuery planQuery(SelectValidatedQuery query) throws PlanningException {
+        query.optimizeQuery();
         LogicalWorkflow workflow = buildWorkflow(query);
         //Plan the workflow execution into different connectors.
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query.getQueryId(), workflow);

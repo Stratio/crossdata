@@ -19,13 +19,16 @@
 package com.stratio.crossdata.core.query;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.QueryStatus;
+import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.SelectorType;
 import com.stratio.crossdata.core.structures.InnerJoin;
 
 /**
@@ -134,6 +137,44 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
      */
     public void setJoin(InnerJoin join) {
         this.join = join;
+    }
+
+    /** Try to optimize the query in order to reduce its complexity.
+    */
+    public void optimizeQuery() {
+        if(join != null ) {
+            optimizeJoins();
+        }
+        optimizeRelations();
+    }
+
+    private void optimizeRelations() {
+        boolean trueRelationFound = false;
+        for (Iterator<Relation> iterator = relations.iterator(); iterator.hasNext();) {
+            Relation relation = iterator.next();
+            if(relation.getOperator() == Operator.EQ){
+                //TODO only with columnType if(relation.getRightTerm().getType() == SelectorType.COLUMN)
+                if(relation.getLeftTerm().equals(relation.getRightTerm())){
+                    iterator.remove();
+                    trueRelationFound = true;
+                }
+            }
+        }
+        if(trueRelationFound){
+            this.getStatement().setWhere(relations);
+        }
+    }
+
+    private void optimizeJoins() {
+
+        //TODO when multiple joins supported => tables.size() = joins.size();
+        if(tables.size() == 1 ){
+            //TODO It should not modify the statment (warning: joinInc)
+            relations.addAll(join.getRelations());
+            this.getStatement().setWhere(relations);
+            this.getStatement().setJoin(null);
+            join = null;
+        }
     }
 
 }
