@@ -643,6 +643,7 @@ public class Planner {
                     TableName tableName = ss.getJoin().getTablename();
                     partialSelect = new SelectStatement(selectExpression, tableName);
                 } else {
+                    partialSelect = new SelectStatement(ss.getSelectExpression(), ss.getTableName());
                     partialSelect.setJoin(null);
                     partialTableMetadataMap = tableMetadataMap;
                 }
