@@ -264,9 +264,13 @@ public class Planner {
                 }
                 if (paths[index].getAvailableConnectors().size() == toRemove.size()) {
                     //Add intermediate result node
-                    // TODO: CROSSDATA-464
                     PartialResults partialResults = new PartialResults(Operations.PARTIAL_RESULTS);
                     partialResults.setNextStep(mergeStep);
+
+                    // TODO: CROSSDATA-464
+                    // Add select step before merge step
+
+
                     mergeStep.addPreviousSteps(partialResults);
                     mergeStep.removePreviousStep(paths[index].getLast());
                     paths[index].getLast().setNextStep(null);
@@ -627,13 +631,19 @@ public class Planner {
                                 selectorList.add(columnSelector);
                             }
                         } else if (querySelector instanceof AsteriskSelector){
-                            // TODO:
-
+                            TableMetadata tableMetadata =
+                                    MetadataManager.MANAGER.getTable(ss.getJoin().getTablename());
+                            for(ColumnMetadata cm: tableMetadata.getColumns().values()){
+                                ColumnSelector cs = new ColumnSelector(cm.getName());
+                                selectorList.add(cs);
+                            }
                         }
                     }
                     SelectExpression selectExpression = new SelectExpression(selectorList);
                     TableName tableName = ss.getJoin().getTablename();
                     partialSelect = new SelectStatement(selectExpression, tableName);
+                } else {
+                    partialTableMetadataMap = tableMetadataMap;
                 }
                 Select selectStep = generateSelect(partialSelect, partialTableMetadataMap);
 
