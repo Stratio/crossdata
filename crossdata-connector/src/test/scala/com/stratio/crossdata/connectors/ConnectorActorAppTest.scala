@@ -25,7 +25,7 @@ import akka.pattern.ask
 import akka.testkit.{ImplicitSender, TestKit}
 import akka.util.Timeout
 import com.stratio.crossdata.common.connector.{IQueryEngine, IMetadataEngine, IConnector, IStorageEngine}
-import com.stratio.crossdata.common.data.{ClusterName, ColumnName, IndexName, Row, TableName}
+import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.logicalplan.{TransformationStep, LogicalStep, LogicalWorkflow}
 import com.stratio.crossdata.common.metadata.{Operations, ColumnMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.{MetadataResult, QueryResult, StorageResult}
@@ -39,6 +39,11 @@ import org.testng.Assert.{assertNotNull}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import java.util.UUID
+import com.stratio.crossdata.communication.Execute
+import scala.Some
+import com.stratio.crossdata.communication.CreateTable
+import com.stratio.crossdata.communication.Insert
 
 //class ConnectorActorAppTest extends FunSuite with MockFactory {
 class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with MockFactory with ImplicitSender {
@@ -78,7 +83,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val m = mock[IConnector]
     val qe = mock[IQueryEngine]
     (m.getQueryEngine _).expects().returning(qe)
-    (qe.execute(_:LogicalWorkflow)).expects(*).returning(QueryResult.createSuccessQueryResult())
+    (qe.execute(_:LogicalWorkflow)).expects(*).returning(QueryResult.createQueryResult(UUID.randomUUID().toString, new ResultSet(), 0, true))
     (m.getConnectorName _).expects().returning(connector)
     (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning(connector)
@@ -111,7 +116,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val port = "2560"
     val m = mock[IConnector]
     val me = mock[IMetadataEngine]
-    (me.createTable _).expects(*,*).returning(QueryResult.createSuccessQueryResult())
+    (me.createTable _).expects(*,*).returning(QueryResult.createQueryResult(UUID.randomUUID().toString, new ResultSet(), 0, true))
     (m.getMetadataEngine _).expects().returning(me)
     (m.getConnectorName _).expects().returning("My New Connector")
     (m.init _).expects(*).returning(None)

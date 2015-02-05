@@ -8,6 +8,7 @@ nbactions.xml
 nb-configuration.xml
 .idea
 *.iml
+*.xml.asc
 crossdata-core/src/main/java/com/stratio/crossdata/core/grammar/generated/
 crossdata-shell/src/main/java/com/stratio/crossdata/sh/help/generated/
 src/main/resources/history.txt

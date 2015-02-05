@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
@@ -305,7 +306,11 @@ public class InMemoryQueryEngine implements IQueryEngine{
         }
 
         crossdataResults.setRows(crossdataRows);
-        return QueryResult.createQueryResult(crossdataResults);
+        return QueryResult.createQueryResult(
+                UUID.randomUUID().toString(),
+                crossdataResults,
+                0,
+                true);
     }
 
     /**

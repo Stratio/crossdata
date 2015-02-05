@@ -23,6 +23,7 @@ import static org.testng.Assert.fail;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.UUID;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -107,7 +108,7 @@ public class ShellTest {
         boolean ok = true;
         try {
             Shell shell = new Shell(false);
-            QueryResult result = QueryResult.createQueryResult(new ResultSet());
+            QueryResult result = QueryResult.createQueryResult(UUID.randomUUID().toString(), new ResultSet(), 0, true);
             result.setCurrentCatalog("catalogTest");
             shell.updatePrompt(result);
         } catch (Exception e) {

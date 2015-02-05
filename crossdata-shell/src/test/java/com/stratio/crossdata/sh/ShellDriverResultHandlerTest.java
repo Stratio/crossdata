@@ -3,9 +3,12 @@ package com.stratio.crossdata.sh;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.util.UUID;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.exceptions.ApiException;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.QueryResult;
@@ -44,7 +47,7 @@ public class ShellDriverResultHandlerTest {
         boolean ok=false;
         try {
             ShellDriverResultHandler handler = new ShellDriverResultHandler(new Shell(false));
-            QueryResult result = QueryResult.createSuccessQueryResult();
+            QueryResult result = QueryResult.createQueryResult(UUID.randomUUID().toString(), new ResultSet(), 0, true);
             result.setLastResultSet();
             handler.processResult(result);
             ok = true;

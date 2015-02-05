@@ -26,6 +26,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.testng.annotations.Test;
 
@@ -66,9 +67,8 @@ public class ConsoleUtilsTest {
 
     @Test
     public void testStringResultWithQueryResultEmpty() throws Exception {
-        Result result = QueryResult.createSuccessQueryResult();
         String queryId = "testStringResultWithQueryResult";
-        result.setQueryId(queryId);
+        Result result = QueryResult.createQueryResult(queryId, new ResultSet(), 0, true);
         String message = ConsoleUtils.stringResult(result);
         String expected = System.lineSeparator() + "0 results returned";
         assertTrue(message.equalsIgnoreCase(expected),
@@ -91,7 +91,8 @@ public class ConsoleUtilsTest {
         row.addCell("id", new Cell("Stratio"));
         row.addCell("number", new Cell(25));
         resultSet.add(row);
-        Result result = QueryResult.createSuccessQueryResult(resultSet, "catalogTest");
+        Result result = QueryResult.createQueryResult(
+                UUID.randomUUID().toString(), new ResultSet(), 0, true, "catalogTest");
         String queryId = "testStringResultWithQueryResult";
         result.setQueryId(queryId);
         String message = ConsoleUtils.stringResult(result);

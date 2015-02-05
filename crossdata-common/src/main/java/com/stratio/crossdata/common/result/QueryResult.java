@@ -38,12 +38,12 @@ public final class QueryResult extends Result {
     /**
      * Determine whether this query result contains the last resultset of the query.
      */
-    private boolean lastResultSet = true;
+    private boolean lastResultSet;
 
     /**
      * Number of results sets that are part of the same query identifier sent to the client.
      */
-    private int resultPage = 0;
+    private int resultPage;
 
     /**
      * The current user session catalog if it has been changed.
@@ -65,18 +65,16 @@ public final class QueryResult extends Result {
     /**
      * Private class constructor of the factory.
      *
+     * @param queryId Identifier of the query.
      * @param resultSet The set of tuples returned.
+     * @param resultPage Number of the page.
+     * @param lastResultSet whether it is the last result or not.
      */
-    private QueryResult(ResultSet resultSet) {
+    private QueryResult(String queryId, ResultSet resultSet, int resultPage, boolean lastResultSet) {
+        this.queryId = queryId;
         this.resultSet = resultSet;
-    }
-
-    /**
-     * Create a new query result that is success.
-     * @return A {@link com.stratio.crossdata.common.result.QueryResult} .
-     */
-    public static QueryResult createSuccessQueryResult() {
-        return new QueryResult(null);
+        this.resultPage = resultPage;
+        this.lastResultSet = lastResultSet;
     }
 
     /**
@@ -85,19 +83,24 @@ public final class QueryResult extends Result {
      * @param resultSet The associated {@link com.stratio.crossdata.common.data.ResultSet}
      * @return A {@link com.stratio.crossdata.common.result.QueryResult}.
      */
-    public static QueryResult createQueryResult(ResultSet resultSet) {
-        return new QueryResult(resultSet);
+    public static QueryResult createQueryResult(String queryId, ResultSet resultSet,
+            int resultPage, boolean lastResultSet) {
+        return new QueryResult(queryId, resultSet, resultPage, lastResultSet);
     }
 
     /**
      * Create a successful query result.
      *
+     * @param queryId Identifier of the query.
      * @param resultSet The associated {@link com.stratio.crossdata.common.data.ResultSet}.
+     * @param resultPage Number of the page.
+     * @param lastResultSet whether it is the last result or not.
      * @param catalog   The new session catalog.
      * @return A {@link com.stratio.crossdata.common.result.QueryResult}.
      */
-    public static QueryResult createSuccessQueryResult(ResultSet resultSet, String catalog) {
-        QueryResult result = new QueryResult(resultSet);
+    public static QueryResult createQueryResult(String queryId, ResultSet resultSet,
+            int resultPage, boolean lastResultSet, String catalog) {
+        QueryResult result = new QueryResult(queryId, resultSet, resultPage, lastResultSet);
         result.setCurrentCatalog(catalog);
         return result;
     }

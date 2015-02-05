@@ -25,6 +25,8 @@ import com.stratio.crossdata.common.result.{QueryResult,StorageResult,MetadataRe
 import com.stratio.crossdata.communication.{Execute,StorageOperation, MetadataOperation,CreateTable, CreateCatalog,
 CreateTableAndCatalog, CreateIndex, DropCatalog, DropIndex, DropTable, getConnectorName, replyConnectorName}
 import org.apache.log4j.Logger
+import java.util.UUID
+import com.stratio.crossdata.common.data.ResultSet
 
 
 object State extends Enumeration {
@@ -56,15 +58,13 @@ class MockConnectorActor() extends Actor with ActorLogging {
     }
     case lw:LogicalWorkflow=>{
       logger.debug(">>>>>>>>>>>>>>>>>>>>>>> lw ")
-      val result=QueryResult.createSuccessQueryResult()
-      result.setQueryId(lastqueryid)
+      val result=QueryResult.createQueryResult(lastqueryid, new ResultSet(), 0, true)
       sender ! result
     }
 
     case execute: Execute=> {
       logger.debug(">>>>>>>>>>>>>>>>>>>>>>> execute")
-      val result=QueryResult.createSuccessQueryResult()
-      result.setQueryId( execute.queryId )
+      val result=QueryResult.createQueryResult(execute.queryId, new ResultSet(), 0, true)
       sender ! result
     }
 

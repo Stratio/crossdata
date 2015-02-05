@@ -19,11 +19,12 @@
 package Mocks
 
 import com.stratio.crossdata.common.connector.{IMetadataEngine}
-import com.stratio.crossdata.common.data.{AlterOptions, CatalogName, ClusterName, TableName}
+import com.stratio.crossdata.common.data.{AlterOptions, CatalogName, ClusterName, ResultSet, TableName}
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, IndexMetadata, TableMetadata}
 import com.stratio.crossdata.common.result.QueryResult
 import org.apache.log4j.Logger
 import com.stratio.crossdata.common.statements.structures.Selector
+import java.util.UUID
 
 class DummyIMetadataEngine extends IMetadataEngine{
 
@@ -42,7 +43,7 @@ class DummyIMetadataEngine extends IMetadataEngine{
         logger.debug(i + " seconds gone by ----")
       }
       logger.debug("very Slow process (end)")
-      QueryResult.createSuccessQueryResult()
+      QueryResult.createQueryResult(UUID.randomUUID().toString, new ResultSet(), 0, true)
   }
 
   override def createIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata): Unit = {}
