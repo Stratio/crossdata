@@ -4,6 +4,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -19,18 +20,19 @@ import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
-import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
-public class CoreUtilsTest extends MetadataManagerTestHelper {
+public class CoreUtilsTest {
 
     private TableName table;
 
     @BeforeClass
     public void setUp() throws ManifestException {
-        super.setUp();
-        createTestDatastore();
-        createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
-        createTestCatalog("catalogTest");
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+        MetadataManagerTestHelper.HELPER.createTestDatastore();
+        MetadataManagerTestHelper.HELPER.createTestCluster("clusterTest", new DataStoreName("dataStoreTest"));
+        MetadataManagerTestHelper.HELPER.createTestCatalog("catalogTest");
         ClusterName clusterName = new ClusterName("clusterTest");
         String catalogName = "catalogTest";
         String tableName = "tableTest";
@@ -52,47 +54,55 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
         columnTypes[6] = ColumnType.LIST;
         String[] partitionKeys = new String[0];
         String[] clusteringKeys = new String[0];
-        createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes, partitionKeys, clusteringKeys);
+        MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,
+                partitionKeys, clusteringKeys, null);
         table = new TableName("catalogTest", "tableTest");
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     @Test
     public void testConstructor() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        assertNotNull(coreUtils);
+        assertNotNull(coreUtils, "CoreUtils instance should be null");
     }
 
     @Test
     public void testConvertSelectorToLong() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        Selector selector = new IntegerSelector(25);
+        Selector selector = new IntegerSelector(table, 25);
         ColumnName columnName = new ColumnName(table, "BigIntColumn");
         Object result = coreUtils.convertSelectorToObject(selector, columnName);
-        assertTrue(result instanceof Long);
+        assertTrue(result instanceof Long, "Result should be a Long. Found: " + result.getClass().getCanonicalName());
     }
 
     @Test
     public void testConvertSelectorToDouble() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        Selector selector = new FloatingPointSelector(25.7);
+        Selector selector = new FloatingPointSelector(table, 25.7);
         ColumnName columnName = new ColumnName(table, "DoubleColumn");
         Object result = coreUtils.convertSelectorToObject(selector, columnName);
-        assertTrue(result instanceof Double);
+        assertTrue(result instanceof Double,
+                "Result should be a Double. Found: " + result.getClass().getCanonicalName());
     }
 
     @Test
     public void testConvertSelectorToFloat() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        Selector selector = new FloatingPointSelector(25.7);
+        Selector selector = new FloatingPointSelector(table, 25.7);
         ColumnName columnName = new ColumnName(table, "FloatColumn");
         Object result = coreUtils.convertSelectorToObject(selector, columnName);
-        assertTrue(result instanceof Float);
+        assertTrue(result instanceof Float,
+                "Result should be a Float. Found: " + result.getClass().getCanonicalName());
     }
 
     @Test(expectedExceptions = PlanningException.class)
     public void testConvertSelectorToUnsupportedType() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        Selector selector = new IntegerSelector(25);
+        Selector selector = new IntegerSelector(table, 25);
         ColumnName columnName = new ColumnName(table, "ListColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
         fail();
@@ -101,7 +111,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
     @Test(expectedExceptions = PlanningException.class)
     public void testFailToFloat() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        Selector selector = new StringSelector("test");
+        Selector selector = new StringSelector(table, "test");
         ColumnName columnName = new ColumnName(table, "FloatColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
         fail();
@@ -110,7 +120,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
     @Test(expectedExceptions = PlanningException.class)
     public void testFailToDouble() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        Selector selector = new StringSelector("test");
+        Selector selector = new StringSelector(table, "test");
         ColumnName columnName = new ColumnName(table, "DoubleColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
         fail();
@@ -119,7 +129,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
     @Test(expectedExceptions = PlanningException.class)
     public void testFailToInteger() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        Selector selector = new StringSelector("test");
+        Selector selector = new StringSelector(table, "test");
         ColumnName columnName = new ColumnName(table, "IntColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
         fail();
@@ -128,7 +138,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
     @Test(expectedExceptions = PlanningException.class)
     public void testFailToLong() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        Selector selector = new StringSelector("test");
+        Selector selector = new StringSelector(table, "test");
         ColumnName columnName = new ColumnName(table, "BigIntColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
         fail();
@@ -137,7 +147,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
     @Test(expectedExceptions = PlanningException.class)
     public void testFailToString() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        Selector selector = new AsteriskSelector();
+        Selector selector = new AsteriskSelector(table);
         ColumnName columnName = new ColumnName(table, "TextColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
         fail();
@@ -146,7 +156,7 @@ public class CoreUtilsTest extends MetadataManagerTestHelper {
     @Test(expectedExceptions = PlanningException.class)
     public void testFailToBoolean() throws Exception {
         CoreUtils coreUtils = CoreUtils.create();
-        Selector selector = new StringSelector("test");
+        Selector selector = new StringSelector(table, "test");
         ColumnName columnName = new ColumnName(table, "BooleanColumn");
         coreUtils.convertSelectorToObject(selector, columnName);
         fail();

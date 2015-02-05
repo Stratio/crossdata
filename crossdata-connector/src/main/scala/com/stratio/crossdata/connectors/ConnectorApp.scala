@@ -18,39 +18,80 @@
 
 package com.stratio.crossdata.connectors
 
+import java.util
+
 import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import akka.routing.RoundRobinRouter
-import com.stratio.crossdata.common.utils.StringUtils
+import com.stratio.crossdata.common.data.{ClusterName, ConnectionStatus, TableName, CatalogName}
+import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata}
+import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
 import com.stratio.crossdata.connectors.config.ConnectConfig
-import com.stratio.crossdata.common.connector.{IConfiguration, IConnector}
+import com.stratio.crossdata.common.connector.{IConnectorApp, IConfiguration, IConnector}
 import com.stratio.crossdata.communication.Shutdown
 import org.apache.log4j.Logger
+import scala.collection.mutable.Set
+import com.codahale.metrics.{Gauge, MetricRegistry}
 
 object ConnectorApp extends App {
   args.length==2
 }
 
-class ConnectorApp extends ConnectConfig {
+class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   type OptionMap = Map[Symbol, String]
   lazy val system = ActorSystem(clusterName, config)
+  val connectedServers: Set[String] = Set()
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
 
   var actorClusterNode: Option[ActorRef] = None
 
-  def shutdown() :Unit= {
-  }
+  var metricName: String = "connector"
 
   def stop():Unit = {
     actorClusterNode.get ! Shutdown()
     system.shutdown()
+    Metrics.getRegistry.remove(metricName)
   }
 
   def startup(connector: IConnector): ActorSelection= {
     actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
-      connector).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
+      connector, connectedServers).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
     connector.init(new IConfiguration {})
-    system.actorSelection( StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString()))
+    val actorSelection = system.actorSelection(StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString()))
+
+    metricName = MetricRegistry.name(connector.getConnectorName, "connection", "status")
+    Metrics.getRegistry.register(metricName,
+      new Gauge[Boolean] {
+        override def getValue: Boolean = {
+          var status: Boolean = true
+          if (connectedServers.isEmpty) {
+            status = false
+          }
+          return status
+        }
+      })
+
+    actorSelection
+  }
+
+  override def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+    actorClusterNode.asInstanceOf[ConnectorActor].getTableMetadata(clusterName, tableName)
+  }
+
+  override def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata= {
+    actorClusterNode.asInstanceOf[ConnectorActor].getCatalogMetadata(catalogName)
+  }
+
+  override def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
+    actorClusterNode.asInstanceOf[ConnectorActor].getCatalogs(cluster);
+  }
+
+  override def getConnectionStatus(): ConnectionStatus = {
+    var status: ConnectionStatus = ConnectionStatus.CONNECTED
+    if (connectedServers.isEmpty){
+      status = ConnectionStatus.DISCONNECTED
+    }
+    status
   }
 
 }

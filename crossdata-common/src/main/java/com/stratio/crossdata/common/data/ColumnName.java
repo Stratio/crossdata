@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.data;
 
+/**
+ * Class that implements the logic of the Column Names of crossdata.
+ */
 public class ColumnName extends Name {
 
     /**
@@ -46,7 +49,11 @@ public class ColumnName extends Name {
         } else {
             this.tableName = null;
         }
-        this.name = columnName.toLowerCase();
+        if(columnName != null && !columnName.isEmpty()){
+            this.name = columnName.toLowerCase();
+        } else {
+            this.name = null;
+        }
     }
 
     /**
@@ -56,22 +63,46 @@ public class ColumnName extends Name {
      * @param columnName Name of the column.
      */
     public ColumnName(TableName tableName, String columnName) {
-        this.tableName = tableName;
-        this.name = columnName.toLowerCase();
+        if (tableName != null) {
+            this.tableName = tableName;
+        } else {
+            this.tableName = null;
+        }
+        if(columnName != null && !columnName.isEmpty()){
+            this.name = columnName.toLowerCase();
+        } else {
+            this.name = null;
+        }
     }
 
+    /**
+     * Get the table name.
+     * @return A {@link com.stratio.crossdata.common.data.TableName} .
+     */
     public TableName getTableName() {
         return tableName;
     }
 
+    /**
+     * Set the table Name.
+     * @param tableName The table name.
+     */
     public void setTableName(TableName tableName) {
         this.tableName = tableName;
     }
 
+    /**
+     * Get the String with the column name.
+     * @return A string with the column name.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the alias of a column.
+     * @param alias The alias.
+     */
     public void setAlias(String alias) {
         this.alias = alias;
     }
@@ -81,6 +112,10 @@ public class ColumnName extends Name {
         return tableName != null && tableName.isCompletedName();
     }
 
+    /**
+     * Obtain a String with the complete column name that includes the catalog name, table name, and the column name.
+     * @return The qualified name of the Column
+     */
     public String getQualifiedName() {
         String result;
         if (isCompletedName()) {
@@ -110,7 +145,7 @@ public class ColumnName extends Name {
         if (this == o) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (!(o instanceof ColumnName)) {
             return false;
         }
         if (!super.equals(o)) {
@@ -137,11 +172,21 @@ public class ColumnName extends Name {
         return result;
     }
 
+    /**
+     * Get the column name that will be shown as part of the result. It gives de alias if exists.
+     * @return A string with the column name to show.
+     */
     public String getColumnNameToShow() {
         return (alias==null)? name: alias;
     }
 
+    /**
+     * Get the alias of a column.
+     * @return A string with the alias.
+     */
     public String getAlias() {
         return alias;
     }
+
+
 }

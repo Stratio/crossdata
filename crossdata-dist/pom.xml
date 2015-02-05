@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>crossdata-parent</artifactId>
-        <version>0.1.1</version>
+        <version>0.2.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
@@ -109,7 +109,7 @@
                     <extraJvmArguments>-Xms512m</extraJvmArguments>
                     <repositoryLayout>flat</repositoryLayout>
                     <generateRepository>true</generateRepository>
-                    <licenseHeaderFile>${project.basedir}/src/main/template/license-header.txt</licenseHeaderFile>
+                    <licenseHeaderFile>${project.basedir}/src/main/include/LICENSE</licenseHeaderFile>
                     <repositoryName>lib</repositoryName>
                     <platforms>
                         <platform>unix</platform>

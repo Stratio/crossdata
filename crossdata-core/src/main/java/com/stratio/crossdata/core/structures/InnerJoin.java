@@ -19,12 +19,16 @@
 package com.stratio.crossdata.core.structures;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.statements.structures.Relation;
 
+/**
+ * InnerJoin metadata class.
+ */
 public class InnerJoin implements Serializable {
 
     private TableName tableName;
@@ -35,6 +39,11 @@ public class InnerJoin implements Serializable {
         this.tableName = tableName;
     }
 
+    /**
+     * Constructor class.
+     * @param tableName The table name of the join.
+     * @param joinRelations The list of relations of the join.
+     */
     public InnerJoin(TableName tableName, List<Relation> joinRelations) {
         this(tableName);
         this.relations = joinRelations;
@@ -46,6 +55,34 @@ public class InnerJoin implements Serializable {
 
     public List<Relation> getRelations() {
         return relations;
+    }
+
+    /**
+     * Get the ordered relations of the Join according to the appearance order of the tables in the query.
+     * @return A list with the ordered relations.
+     */
+    public List<Relation> getOrderedRelations() {
+        List<Relation> orderedRelations = new ArrayList<>();
+        for(Relation relation: relations){
+
+            Relation orderedRelation = new Relation(
+                    relation.getLeftTerm(),
+                    relation.getOperator(),
+                    relation.getRightTerm());
+
+            String joinTable = tableName.getQualifiedName();
+            String rightTable = relation.getRightTerm().getColumnName().getTableName().getQualifiedName();
+
+            if(!joinTable.equalsIgnoreCase(rightTable)){
+                orderedRelation = new Relation(
+                        relation.getRightTerm(),
+                        relation.getOperator(),
+                        relation.getLeftTerm());
+            }
+
+            orderedRelations.add(orderedRelation);
+        }
+        return orderedRelations;
     }
 
     @Override

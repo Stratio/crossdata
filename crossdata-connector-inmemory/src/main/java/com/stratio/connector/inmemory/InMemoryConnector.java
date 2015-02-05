@@ -25,8 +25,9 @@ import org.apache.log4j.Logger;
 
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
+import com.stratio.crossdata.common.connector.AbstractExtendedConnector;
 import com.stratio.crossdata.common.connector.IConfiguration;
-import com.stratio.crossdata.common.connector.IConnector;
+import com.stratio.crossdata.common.connector.IConnectorApp;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
 import com.stratio.crossdata.common.connector.IQueryEngine;
 import com.stratio.crossdata.common.connector.IStorageEngine;
@@ -38,12 +39,14 @@ import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.connectors.ConnectorApp;
 
+import akka.cluster.Cluster;
+
 /**
  * InMemory connector that demonstrates the internals of a crossdata connector.
  * @see <a href="https://github.com/Stratio/crossdata/_doc/InMemory-Connector-Development-Tutorial.md">InMemory Connector
  * development tutorial</a>
  */
-public class InMemoryConnector implements IConnector{
+public class InMemoryConnector extends AbstractExtendedConnector {
 
     /**
      * Class logger.
@@ -60,6 +63,10 @@ public class InMemoryConnector implements IConnector{
      * Constant defining the required datastore property.
      */
     private static final String DATASTORE_PROPERTY = "TableRowLimit";
+
+    public InMemoryConnector(IConnectorApp connectorApp) {
+        super(connectorApp);
+    }
 
     @Override
     public String getConnectorName() {
@@ -91,6 +98,9 @@ public class InMemoryConnector implements IConnector{
         }else{
             throw new ConnectionException("Invalid options, expecting TableRowLimit");
         }
+
+        //Try to restore existing schema
+        restoreSchema(targetCluster);
     }
 
     @Override
@@ -98,8 +108,8 @@ public class InMemoryConnector implements IConnector{
         //This method usually closes the session with the given cluster and removes any relevant data.
         if(clusters.get(name) != null) {
             clusters.remove(name);
-        }else{
-            throw new ConnectionException("Cluster " + name + "does not exists");
+        } else {
+            throw new ConnectionException("Cluster " + name + "does not exist");
         }
     }
 
@@ -137,13 +147,18 @@ public class InMemoryConnector implements IConnector{
         return this.clusters.get(cluster);
     }
 
+
+    private void restoreSchema(ClusterName cluster){
+
+    }
+
     /**
      * Run an InMemory Connector using a {@link com.stratio.crossdata.connectors.ConnectorApp}.
      * @param args The arguments.
      */
     public static void main(String [] args){
-        InMemoryConnector inMemoryConnector = new InMemoryConnector();
         ConnectorApp connectorApp = new ConnectorApp();
+        InMemoryConnector inMemoryConnector = new InMemoryConnector(connectorApp);
         connectorApp.startup(inMemoryConnector);
     }
 }

@@ -118,11 +118,20 @@ public abstract class CrossdataStatement {
         sessionCatalog = targetCatalog;
     }
 
+    /**
+     * Get the tables affected  by this statement.
+     * @return A list of {@link com.stratio.crossdata.common.data.TableName} .
+     */
     public List<TableName> getFromTables() {
         return null;
     }
 
     //TODO: This method should be abstract
+
+    /**
+     * Get the validation requirements for the validation of this type of statement.
+     * @return A {@link com.stratio.crossdata.core.validator.requirements.ValidationRequirements} .
+     */
     public abstract ValidationRequirements getValidationRequirements();
 
     /**

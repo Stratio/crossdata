@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>crossdata-parent</artifactId>
-        <version>0.1.1</version>
+        <version>0.2.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>crossdata-connector</artifactId>
@@ -166,6 +166,14 @@
                     <artifactId>scala-library</artifactId>
                     <groupId>org.scala-lang</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>leveldbjni</artifactId>
+                    <groupId>org.fusesource.leveldbjni</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -212,7 +220,7 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
-    </dependencies>
+   </dependencies>
     <build>
 
 

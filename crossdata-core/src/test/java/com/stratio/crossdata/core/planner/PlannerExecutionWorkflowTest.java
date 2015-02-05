@@ -47,7 +47,9 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
+import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
+import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.Join;
@@ -71,6 +73,7 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
@@ -128,13 +131,14 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     public Select getSelect(ColumnName[] columns, ColumnType[] types) {
         Operations operation = Operations.SELECT_OPERATOR;
-        Map<ColumnName, String> columnMap = new LinkedHashMap<>();
+        Map<Selector, String> columnMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
-        Map<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
+        Map<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
 
         for (int index = 0; index < columns.length; index++) {
-            columnMap.put(columns[index], columns[index].getName());
-            typeMapFromColumnName.put(columns[index], types[index]);
+            ColumnSelector cs = new ColumnSelector(columns[index]);
+            columnMap.put(cs, columns[index].getName());
+            typeMapFromColumnName.put(cs, types[index]);
             typeMap.put(columns[index].getName(), types[index]);
         }
         Select select = new Select(operation, columnMap, typeMap, typeMapFromColumnName);
@@ -155,8 +159,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     @BeforeClass
     public void setUp() throws ManifestException {
-        super.setUp();
-        DataStoreName dataStoreName = createTestDatastore();
+        //super.setUp();
+        DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         //Connector with join.
         Set<Operations> operationsC1 = new HashSet<>();
@@ -173,14 +177,14 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.SELECT_WINDOW);
 
-        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
+        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
                 "actorRef1");
-        connector2 = createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
+        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
                 "actorRef2");
 
-        clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName());
-        createTestCatalog("demo");
-        createTestCatalog("demo2");
+        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster("TestCluster1", dataStoreName, connector1.getName());
+        MetadataManagerTestHelper.HELPER.createTestCatalog("demo");
+        MetadataManagerTestHelper.HELPER.createTestCatalog("demo2");
         createTestTables();
     }
 
@@ -189,22 +193,22 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
-        table1 = createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes1, partitionKeys1,
-                clusteringKeys1);
+        table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes1,
+                partitionKeys1, clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
         ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
-        table2 = createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes2, partitionKeys2,
-                clusteringKeys2);
+        table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes2,
+                partitionKeys2, clusteringKeys2, null);
 
         String[] columnNames3 = { "id", "email" };
         ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys3 = { "id" };
         String[] clusteringKeys3 = { };
-        table2 = createTestTable(clusterName, "demo", "table3", columnNames3, columnTypes3, partitionKeys3,
-                clusteringKeys3);
+        table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table3", columnNames3, columnTypes3,
+                partitionKeys3, clusteringKeys3, null);
     }
 
     /**
@@ -249,7 +253,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns, types);
 
-        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ, new IntegerSelector(42));
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
 
         //Link the elements
         project.setNextStep(filter);
@@ -284,7 +289,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns, types);
 
-        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ, new IntegerSelector(42));
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
 
         //Link the elements
         project.setNextStep(filter);
@@ -318,7 +324,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns, types);
 
-        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ, new IntegerSelector(42));
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
 
         //Link the elements
         project.setNextStep(filter);
@@ -346,7 +353,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns, types);
 
-        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ, new IntegerSelector(42));
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
 
         //Link the elements
         project.setNextStep(filter);
@@ -384,7 +392,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns1, types);
 
-        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ, new IntegerSelector(42));
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
 
         Join join = getJoin("joinId");
 
@@ -475,7 +484,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns1, types);
 
-        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ, new IntegerSelector(42));
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
 
         Relation r = new Relation(new ColumnSelector(columns1[0]), Operator.EQ,
                 new ColumnSelector(columns2[0]));
@@ -530,7 +540,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
         Select select = getSelect(columns1, types);
 
-        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ, new IntegerSelector(42));
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
 
         Relation r = new Relation(new ColumnSelector(columns1[0]), Operator.EQ,
                 new ColumnSelector(columns2[0]));
@@ -579,19 +590,19 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     @Test
     public void storageWorkflowTest() {
-        DataStoreName dataStoreName = createTestDatastore();
+        DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
         Set<Operations> operations = new HashSet<>();
         operations.add(Operations.INSERT);
         operations.add(Operations.INSERT_IF_NOT_EXISTS);
         ConnectorMetadata connectorMetadata = null;
         try {
-            connectorMetadata = createTestConnector("cassandraConnector", dataStoreName,
-                    new HashSet<ClusterName>(), operations, "1");
+            connectorMetadata = MetadataManagerTestHelper.HELPER.createTestConnector("cassandraConnector", dataStoreName,
+                    new HashSet<ClusterName>(), operations, "ActorRefTest");
         } catch (ManifestException e) {
             fail();
         }
         try {
-            createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
+            MetadataManagerTestHelper.HELPER.createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
         } catch (ManifestException e) {
             fail();
         }
@@ -602,27 +613,30 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
                 ColumnType.TEXT };
         String[] partitionKeys = { "name", "age" };
         String[] clusteringKeys = { "gender" };
-        createTestTable(new ClusterName("cluster"), "demo", "users", columnNames, columnTypes, partitionKeys,
-                clusteringKeys);
+        MetadataManagerTestHelper.HELPER.createTestTable(new ClusterName("cluster"), "demo", "users", columnNames, columnTypes,
+                partitionKeys, clusteringKeys, null);
         String query = "Insert into demo.users(name,gender,age,bool,phrase,email) values ('pepe','male',23,true,'this is the phrase','mail@mail.com';";
         List<ColumnName> columns = new ArrayList<>();
         List<Selector> values = new ArrayList<>();
-        columns.add(new ColumnName(new TableName("demo", "users"), "name"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "gender"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "age"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "bool"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "phrase"));
-        columns.add(new ColumnName(new TableName("demo", "users"), "email"));
 
-        values.add(new StringSelector("'pepe'"));
-        values.add(new StringSelector("'male'"));
-        values.add(new IntegerSelector(23));
-        values.add(new BooleanSelector(true));
-        values.add(new StringSelector("'this is the phrase'"));
-        values.add(new StringSelector("'mail@mail.com'"));
+        TableName tableName = new TableName("demo", "users");
 
-        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns, values,
-                true);
+        columns.add(new ColumnName(tableName, "name"));
+        columns.add(new ColumnName(tableName, "gender"));
+        columns.add(new ColumnName(tableName, "age"));
+        columns.add(new ColumnName(tableName, "bool"));
+        columns.add(new ColumnName(tableName, "phrase"));
+        columns.add(new ColumnName(tableName, "email"));
+
+        values.add(new StringSelector(tableName, "'pepe'"));
+        values.add(new StringSelector(tableName, "'male'"));
+        values.add(new IntegerSelector(tableName, 23));
+        values.add(new BooleanSelector(tableName, true));
+        values.add(new StringSelector(tableName, "'this is the phrase'"));
+        values.add(new StringSelector(tableName, "'mail@mail.com'"));
+
+        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns,
+                null, values, true, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
 
         BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
 
@@ -640,7 +654,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
-    @Test
+    @Test(dependsOnMethods = { "alterCatalogWorkflowTest" })
     public void dropCatalogWorkflowTest() {
 
         DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("demo2"), true);
@@ -659,10 +673,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
-
     @Test
     public void alterCatalogWorkflowTest() {
-        String options="{comment:'the new comment'}";
+        String options = "{comment:'the new comment'}";
         AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("demo2"), options);
         String query = "ALTER CATALOG demo2 WITH {comment:'the new comment'};";
         BaseQuery baseQuery = new BaseQuery("alterId", query, new CatalogName("demo2"));
@@ -673,7 +686,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         try {
             ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
             Assert.assertTrue(MetadataManager.MANAGER.exists(new CatalogName("demo2")));
-            CatalogMetadata catalogMetadata=MetadataManager.MANAGER.getCatalog(new CatalogName("demo2"));
+            CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(new CatalogName("demo2"));
             Assert.assertEquals(catalogMetadata.getOptions(), alterCatalogStatement.getOptions());
         } catch (PlanningException e) {
             Assert.fail(e.getMessage());
@@ -681,15 +694,14 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
-
     @Test
     public void alterTableWorkflowTest() {
         Object[] parameters = { };
-        ColumnMetadata columnMetadata=new ColumnMetadata(new ColumnName(new TableName("demo", "table3"),
+        ColumnMetadata columnMetadata = new ColumnMetadata(new ColumnName(new TableName("demo", "table3"),
                 "email"), parameters, ColumnType.VARCHAR);
-        AlterOptions alterOptions=new AlterOptions(AlterOperation.ALTER_COLUMN,null,columnMetadata);
+        AlterOptions alterOptions = new AlterOptions(AlterOperation.ALTER_COLUMN, null, columnMetadata);
 
-        AlterTableStatement alterTableStatement =new AlterTableStatement(columnMetadata.getName().getTableName(),
+        AlterTableStatement alterTableStatement = new AlterTableStatement(columnMetadata.getName().getTableName(),
                 columnMetadata.getName(), ColumnType.VARCHAR, null, AlterOperation.ALTER_COLUMN);
         String query = "ALTER TABLE demo.table3 ALTER table3.email TYPE varchar;";
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
@@ -699,15 +711,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Planner planner = new Planner();
         try {
             ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
-            Assert.assertTrue(MetadataManager.MANAGER.exists(new ColumnName("demo","table3","email")));
-            ColumnMetadata columnMetadataModified=MetadataManager.MANAGER.getColumn(new ColumnName("demo","table3",
+            Assert.assertTrue(MetadataManager.MANAGER.exists(new ColumnName("demo", "table3", "email")));
+            ColumnMetadata columnMetadataModified = MetadataManager.MANAGER.getColumn(new ColumnName("demo", "table3",
                     "email"));
-            Assert.assertEquals(columnMetadataModified.getColumnType(), ColumnType.VARCHAR);
+            Assert.assertEquals(metadataWorkflow.getExecutionType(), ExecutionType.ALTER_TABLE);
+
+            Assert.assertEquals(((MetadataWorkflow)metadataWorkflow).getAlterOptions().getOption(), AlterOperation.ALTER_COLUMN);
         } catch (PlanningException e) {
             Assert.fail(e.getMessage());
         }
 
     }
-
 
 }

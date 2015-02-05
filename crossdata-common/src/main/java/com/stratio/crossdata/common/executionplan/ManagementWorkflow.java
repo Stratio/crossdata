@@ -66,7 +66,7 @@ public class ManagementWorkflow extends ExecutionWorkflow {
     /**
      * Class constructor.
      *
-     * @param queryId       Query identifer.
+     * @param queryId       Query identifier.
      * @param actorRef      Target actor reference.
      * @param executionType Type of execution.
      * @param type          Type of results.
@@ -101,6 +101,10 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         this.options = options;
     }
 
+    /**
+     * Determines the the type of operation in a workflow.
+     * @return A {@link com.stratio.crossdata.communication.ManagementOperation} .
+     */
     public ManagementOperation createManagementOperationMessage() {
         ManagementOperation result = null;
         if (ExecutionType.ATTACH_CLUSTER.equals(this.executionType)) {

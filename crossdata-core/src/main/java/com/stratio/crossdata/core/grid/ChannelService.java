@@ -63,6 +63,7 @@ public class ChannelService implements Closeable {
     /**
      * Builds a new {@link com.stratio.crossdata.core.grid.ChannelService} based on the specified JGroups
      * channel. All the created channels will be forked from the specified base channel.
+     * @param channel The new channel.
      */
     public ChannelService(JChannel channel) {
         this.channel = channel;
@@ -92,7 +93,6 @@ public class ChannelService implements Closeable {
         tcpping.setPortRange(1);
         tcpping.setNumInitialMembers(minInitialMembers);
         tcpping.setTimeout(timeout);
-
 
         NAKACK nakack = new NAKACK();
         nakack.setUseMcastXmit(false);

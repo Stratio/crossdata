@@ -20,9 +20,12 @@ package com.stratio.crossdata.core.query;
 
 import java.io.Serializable;
 
-import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.result.QueryStatus;
 
+/**
+ * A base query class that contains the status of the query, the id, the query and the catalog.
+ */
 public class BaseQuery implements Serializable {
     /**
      * The query introduced by the user.
@@ -38,6 +41,12 @@ public class BaseQuery implements Serializable {
 
     private QueryStatus queryStatus;
 
+    /**
+     * Constructor class.
+     * @param queryId The query id.
+     * @param query The string with the query.
+     * @param defaultCatalog The catalog of the query.
+     */
     public BaseQuery(String queryId, String query, CatalogName defaultCatalog) {
         this.queryId = queryId;
         this.query = query;
@@ -45,6 +54,10 @@ public class BaseQuery implements Serializable {
         this.queryStatus = QueryStatus.NONE;
     }
 
+    /**
+     * Constructor class.
+     * @param baseQuery The base query.
+     */
     BaseQuery(BaseQuery baseQuery) {
         this(baseQuery.getQueryId(), baseQuery.getQuery(), baseQuery.getDefaultCatalog());
     }

@@ -23,10 +23,10 @@ import static org.testng.Assert.fail;
 
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.exceptions.ManifestException;
-import com.stratio.crossdata.sh.utils.ConsoleUtils;
+import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
+import com.stratio.crossdata.driver.utils.ManifestUtils;
 
 public class CrossdataManifestTest {
 
@@ -35,7 +35,7 @@ public class CrossdataManifestTest {
 
         CrossdataManifest manifest = null;
         try {
-            manifest = ConsoleUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_DATASTORE,
+            manifest = ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_DATASTORE,
                     getClass().getResourceAsStream("/com/stratio/crossdata/connector/DataStoreDefinition.xml"));
         } catch (ManifestException e) {
             fail("CrossdataManifest validation failed", e);
@@ -75,6 +75,21 @@ public class CrossdataManifestTest {
         sb.append("\t").append("Behavior: ").append("UPSERT_ON_INSERT").append(System.lineSeparator());
         sb.append("\t").append("Behavior: ").append("FAKE_BEHAVIOR").append(System.lineSeparator());
 
+        // FUNCTIONS
+        sb.append("Functions: ").append(System.lineSeparator());
+
+        sb.append("\t").append("Function: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Name: fakeFunction").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Signature: fakeFunction(Tuple[Any]):Tuple[Any]").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Type: simple").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: Not a real function").append(System.lineSeparator());
+
+        sb.append("\t").append("Function: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Name: almostRealFunction").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Signature: almostRealFunction(Tuple[Text]):Tuple[Int]").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Type: aggregation").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: Almost a real function").append(System.lineSeparator());
+
         // ERROR MESSAGE
         StringBuilder sbError = new StringBuilder(System.lineSeparator());
         sbError.append("Expecting:  ").append(sb.toString()).append(System.lineSeparator());
@@ -88,7 +103,7 @@ public class CrossdataManifestTest {
 
         CrossdataManifest manifest = null;
         try {
-            manifest = ConsoleUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_CONNECTOR,
+            manifest = ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_CONNECTOR,
                     getClass().getResourceAsStream("/com/stratio/crossdata/connector/ConnectorDefinition.xml"));
         } catch (ManifestException e) {
             fail("CrossdataManifest validation failed", e);
@@ -107,7 +122,7 @@ public class CrossdataManifestTest {
         sb.append("\t").append("DataStoreName: ").append("cassandra").append(System.lineSeparator());
 
         // VERSION
-        sb.append("Version: ").append("0.1.1").append(System.lineSeparator());
+        sb.append("Version: ").append("0.2.0").append(System.lineSeparator());
 
         // REQUIRED PROPERTIES
         sb.append("Required properties: ").append(System.lineSeparator());
@@ -139,6 +154,23 @@ public class CrossdataManifestTest {
         sb.append("\t").append("Operation: ").append("INSERT").append(System.lineSeparator());
         sb.append("\t").append("Operation: ").append("DELETE").append(System.lineSeparator());
         sb.append("\t").append("Operation: ").append("PROJECT").append(System.lineSeparator());
+
+        // FUNCTIONS
+        sb.append("Functions: ").append(System.lineSeparator());
+
+        sb.append("\t").append("Function: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Name: usefulFunction").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Signature: usefulFunction(Tuple[Int, Text]):Tuple[Double]").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Type: simple").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: It's just magic").append(System.lineSeparator());
+
+        sb.append("\t").append("Function: ").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Name: magicAggregation").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Signature: magicAggregation(Tuple[Any*]):Tuple[Float]").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Type: aggregation").append(System.lineSeparator());
+        sb.append("\t").append("\t").append("Description: Absolutely magic").append(System.lineSeparator());
+
+        sb.append("\t").append("Excludes: fakeFunction, almostRealFunction").append(System.lineSeparator());
 
         // ERROR MESSAGE
         StringBuilder sbError = new StringBuilder(System.lineSeparator());

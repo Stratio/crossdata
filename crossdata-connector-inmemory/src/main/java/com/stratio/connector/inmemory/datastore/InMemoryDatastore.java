@@ -21,10 +21,13 @@ package com.stratio.connector.inmemory.datastore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.connector.inmemory.datastore.functions.AbstractInMemoryFunction;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 
 /**
  * This class provides a proof-of-concept implementation of an in-memory datastore for
@@ -74,7 +77,7 @@ public class InMemoryDatastore {
      */
     private void catalogShouldExist(String catalogName) throws Exception{
         if(!catalogs.containsKey(catalogName)){
-            throw new Exception("Catalog " + catalogName + " does not exists");
+            throw new Exception("Catalog " + catalogName + " does not exist");
         }
     }
 
@@ -96,7 +99,7 @@ public class InMemoryDatastore {
     /**
      * Drop an existing catalog.
      * @param catalogName The name of the catalog.
-     * @throws Exception If the catalog does not exists or it still have tables in it.
+     * @throws Exception If the catalog does not exist or it still have tables in it.
      */
     public void dropCatalog(String catalogName) throws Exception{
         catalogShouldExist(catalogName);
@@ -109,7 +112,7 @@ public class InMemoryDatastore {
      * Drop an existing table.
      * @param catalogName The name of the catalog.
      * @param tableName The name of the table.
-     * @throws Exception If the table does not exists.
+     * @throws Exception If the table does not exist.
      */
     public void dropTable(String catalogName, String tableName) throws Exception{
         catalogShouldExist(catalogName);
@@ -144,15 +147,33 @@ public class InMemoryDatastore {
      * @param catalogName The name of the catalog.
      * @param tableName The name of the table.
      * @param relations The list of {@link InMemoryRelation} to be satisfied.
-     * @param columnOrder The column order.
+     * @param outputColumns The output columns in order.
      * @return A list of rows.
      * @throws Exception If search cannot be performed.
      */
-    public List<Object[]> search(String catalogName, String tableName, List<InMemoryRelation> relations,
-            List<String> columnOrder)
-            throws Exception {
+    public List<Object[]> search(String catalogName, String tableName,
+            List<InMemoryRelation> relations,
+            List<InMemorySelector> outputColumns) throws Exception {
         catalogShouldExist(catalogName);
-        return catalogs.get(catalogName).search(tableName, relations, columnOrder);
+        List<Object[]> result;
+
+        result = catalogs.get(catalogName).search(tableName, relations, outputColumns);
+
+        //Execute the required aggregation functions.
+
+        for(int index = 0; index < outputColumns.size(); index++){
+            if(InMemoryFunctionSelector.class.isInstance(outputColumns.get(index))){
+                AbstractInMemoryFunction f = InMemoryFunctionSelector.class
+                        .cast(outputColumns.get(index))
+                        .getFunction();
+                if(!f.isRowFunction()){
+                    InMemoryTable table = catalogs.get(catalogName).getTable(tableName);
+                    result = f.apply(table.getColumnIndex(), result);
+                }
+            }
+        }
+
+        return result;
     }
 
     /**

@@ -21,25 +21,20 @@ package com.stratio.crossdata.core.statements;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.AlterOperation;
-import com.stratio.crossdata.common.metadata.ColumnMetadata;
-import com.stratio.crossdata.common.utils.StringUtils;
-import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models an {@code ALTER TABLE} statement from the CROSSDATA language.
  */
-public class AlterTableStatement extends MetadataStatement implements ITableStatement {
+public class AlterTableStatement extends AbstractMetadataTableStatement implements ITableStatement {
 
-    /**
-     * The target table.
-     */
-    private TableName tableName;
 
     /**
      * Type of alter.
@@ -78,19 +73,19 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
     public AlterTableStatement(TableName tableName, ColumnName column, ColumnType type,
             String properties, AlterOperation option) {
         this.command = false;
-        this.tableName = tableName;
+        this.tableStatement.setTableName(tableName);
         this.column = column;
         this.type = type;
-        this.properties = StringUtils.convertJsonToOptions(properties);
+        this.properties = StringUtils.convertJsonToOptions(tableName, properties);
         this.option = option;
-        Object[] parameters={};
-        this.columnMetadata=new ColumnMetadata(column,parameters,type);
+        Object[] parameters = { };
+        this.columnMetadata = new ColumnMetadata(column, parameters, type);
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("ALTER TABLE ");
-        sb.append(tableName.getQualifiedName());
+        sb.append(tableStatement.getTableName().getQualifiedName());
         switch (option) {
         case ALTER_COLUMN:
             sb.append(" ALTER ").append(column.getQualifiedName());
@@ -112,7 +107,9 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
             sb.append("BAD OPTION");
             break;
         }
-
+        if((option != AlterOperation.ALTER_OPTIONS) && (properties != null) && (!properties.isEmpty())){
+            sb.append(" WITH ").append(properties);
+        }
         return sb.toString();
     }
 
@@ -137,32 +134,11 @@ public class AlterTableStatement extends MetadataStatement implements ITableStat
                     .add(ValidationTypes.MUST_EXIST_PROPERTIES);
             break;
         default:
-            validationRequirements = new ValidationRequirements();
+            validationRequirements = new ValidationRequirements().add(ValidationTypes.MUST_EXIST_TABLE);
         }
         return validationRequirements;
     }
 
-    public TableName getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(TableName tableName) {
-        this.tableName = tableName;
-    }
-
-    @Override
-    public CatalogName getEffectiveCatalog() {
-        CatalogName effective;
-        if (tableName != null) {
-            effective = tableName.getCatalogName();
-        } else {
-            effective = catalog;
-        }
-        if (sessionCatalog != null) {
-            effective = sessionCatalog;
-        }
-        return effective;
-    }
 
     public ColumnName getColumn() {
         return column;

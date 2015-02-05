@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.metadata;
 
+/**
+ * Enumerator that defines the type of index that are allowed in crossdata.
+ */
 public enum IndexType {
     FULL_TEXT,
     DEFAULT,

@@ -18,7 +18,10 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +34,7 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 /**
  * TableMetadata class.
  */
-public class TableMetadata implements IMetadata {
+public class TableMetadata implements Serializable {
 
     private static final long serialVersionUID = 937637791215246279L;
 
@@ -39,11 +42,11 @@ public class TableMetadata implements IMetadata {
 
     private Map<Selector, Selector> options;
 
-    private Map<ColumnName, ColumnMetadata> columns;
+    private Map<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
 
-    private final Map<IndexName, IndexMetadata> indexes;
+    private Map<IndexName, IndexMetadata> indexes;
 
-    private final ClusterName clusterRef;
+    private ClusterName clusterRef;
 
     private final List<ColumnName> partitionKey;
     private final List<ColumnName> clusterKey;
@@ -59,17 +62,30 @@ public class TableMetadata implements IMetadata {
      * @param clusterKey The list of columns tha conforms the cluster key.
      */
     public TableMetadata(TableName name, Map<Selector, Selector> options,
-            Map<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
-            ClusterName clusterRef,
-            List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
+            LinkedHashMap<ColumnName, ColumnMetadata> columns, Map<IndexName, IndexMetadata> indexes,
+            ClusterName clusterRef, List<ColumnName> partitionKey, List<ColumnName> clusterKey) {
         this.name = name;
+
         this.options = options;
+        if(options == null){
+            this.options = new HashMap<>();
+        }
+
         this.columns = columns;
+        if(columns == null){
+            this.columns = new LinkedHashMap<>();
+        }
+
         this.indexes = indexes;
+        if(indexes == null){
+            this.indexes = new HashMap<>();
+        }
+
         this.clusterRef = clusterRef;
 
-        this.partitionKey = partitionKey;
-        this.clusterKey = clusterKey;
+        this.partitionKey = (partitionKey == null)? new ArrayList<ColumnName>(): partitionKey;
+
+        this.clusterKey = (clusterKey == null)? new ArrayList<ColumnName>(): clusterKey;
     }
 
     /**
@@ -104,6 +120,10 @@ public class TableMetadata implements IMetadata {
      */
     public ClusterName getClusterRef() {
         return clusterRef;
+    }
+
+    public void setClusterRef(ClusterName clusterRef) {
+        this.clusterRef = clusterRef;
     }
 
     /**
@@ -190,7 +210,7 @@ public class TableMetadata implements IMetadata {
         this.options = options;
     }
 
-    public void setColumns(Map<ColumnName, ColumnMetadata> columns) {
+    public void setColumns(LinkedHashMap<ColumnName, ColumnMetadata> columns) {
         this.columns = columns;
     }
 }

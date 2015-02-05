@@ -38,7 +38,7 @@ public final class QueryResult extends Result {
     /**
      * Determine whether this query result contains the last resultset of the query.
      */
-    private boolean lastResultSet = false;
+    private boolean lastResultSet = true;
 
     /**
      * Number of results sets that are part of the same query identifier sent to the client.
@@ -71,6 +71,10 @@ public final class QueryResult extends Result {
         this.resultSet = resultSet;
     }
 
+    /**
+     * Create a new query result that is success.
+     * @return A {@link com.stratio.crossdata.common.result.QueryResult} .
+     */
     public static QueryResult createSuccessQueryResult() {
         return new QueryResult(null);
     }
@@ -130,6 +134,9 @@ public final class QueryResult extends Result {
         this.catalogChanged = true;
     }
 
+    /**
+     * Set  the last result set of the query.
+     */
     public void setLastResultSet() {
         this.lastResultSet = true;
     }

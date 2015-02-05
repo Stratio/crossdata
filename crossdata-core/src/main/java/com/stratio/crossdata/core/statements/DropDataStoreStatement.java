@@ -18,13 +18,23 @@
 
 package com.stratio.crossdata.core.statements;
 
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
+/**
+ * Drop datastore statement class.
+ */
 public class DropDataStoreStatement extends MetadataStatement {
 
+    /**
+     * The datastore name.
+     */
     private String name;
 
+    /**
+     * Constructor class.
+     * @param name The datastore name.
+     */
     public DropDataStoreStatement(String name) {
         this.name = name;
     }
@@ -39,6 +49,10 @@ public class DropDataStoreStatement extends MetadataStatement {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_DATASTORE);
     }
 
+    /**
+     * Get the name of the datastore to drop.
+     * @return A String.
+     */
     public String getName() {
         return name;
     }

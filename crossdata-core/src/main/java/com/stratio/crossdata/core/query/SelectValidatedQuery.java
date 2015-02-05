@@ -21,66 +21,117 @@ package com.stratio.crossdata.core.query;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.stratio.crossdata.common.result.QueryStatus;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.result.QueryStatus;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.core.structures.InnerJoin;
 
+/**
+ * Class that implement the logic to de select validated queries.
+ */
 public class SelectValidatedQuery extends SelectParsedQuery implements IValidatedQuery {
 
-    private List<TableMetadata> tableMetadata=new ArrayList<>();
-    private List<ColumnName> columns=new ArrayList<>();
-    private List<Relation> relationships=new ArrayList<>();
-    private List<TableName> tables=new ArrayList<>();
+    private List<TableMetadata> tableMetadata = new ArrayList<>();
+    private List<ColumnName> columns = new ArrayList<>();
+    private List<Relation> relations = new ArrayList<>();
+    private List<TableName> tables = new ArrayList<>();
     private InnerJoin join;
 
+    /**
+     * Constructor class.
+     * @param selectParsedQuery A Select parsed query.
+     */
     public SelectValidatedQuery(SelectParsedQuery selectParsedQuery) {
         super(selectParsedQuery);
         setQueryStatus(QueryStatus.VALIDATED);
     }
 
+    /**
+     * Constructor class.
+     * @param selectValidatedQuery A select validated query.
+     */
     public SelectValidatedQuery(SelectValidatedQuery selectValidatedQuery) {
         this((SelectParsedQuery) selectValidatedQuery);
     }
 
+    /**
+     * Get the list of tables of the validated select query.
+     * @return A list of {@link com.stratio.crossdata.common.metadata.TableMetadata} .
+     */
     public List<TableMetadata> getTableMetadata() {
         return tableMetadata;
     }
 
+    /**
+     * Set the table metadata to the select validated query.
+     * @param tableMetadata The {@link com.stratio.crossdata.common.metadata.TableMetadata} .
+     */
     public void setTableMetadata(List<TableMetadata> tableMetadata) {
         this.tableMetadata = tableMetadata;
     }
 
+    /**
+     * Get the list of columns of the validated select query.
+     * @return A list of {@link com.stratio.crossdata.common.data.ColumnName} .
+     */
     public List<ColumnName> getColumns() {
         return columns;
     }
 
+    /**
+     * Set the Column names to the select validated query.
+     * @param columns The list of {@link com.stratio.crossdata.common.data.ColumnName} .
+     */
     public void setColumns(List<ColumnName> columns) {
         this.columns = columns;
     }
 
-    public List<Relation> getRelationships() {
-        return relationships;
+    /**
+     * Get the list of relations of the validated select query.
+     * @return A list of {@link com.stratio.crossdata.common.statements.structures.Relation} .
+     */
+    public List<Relation> getRelations() {
+        return relations;
     }
 
-    public void setRelationships(List<Relation> relationships) {
-        this.relationships = relationships;
+    /**
+     * Set the Relations metadata to the select validated query.
+     * @param relations The list of {@link com.stratio.crossdata.common.statements.structures.Relation} .
+     */
+    public void setRelations(List<Relation> relations) {
+        this.relations = relations;
     }
 
+    /**
+     * Get the list of tables of the validated select query.
+     * @return A list of {@link com.stratio.crossdata.common.data.TableName} .
+     */
     public List<TableName> getTables() {
         return tables;
     }
 
+    /**
+     * Set the table names to the select validated query.
+     * @param tables The list of {@link com.stratio.crossdata.common.data.TableName} .
+     */
     public void setTables(List<TableName> tables) {
         this.tables = tables;
     }
 
+    /**
+     * Get the list of Joins of the validated select query.
+     * @return A  {@link com.stratio.crossdata.core.structures.InnerJoin} .
+     */
     public InnerJoin getJoin() {
         return join;
     }
 
+    /**
+     * Set the join metadata to the select validated query.
+     * @param join The {@link com.stratio.crossdata.core.structures.InnerJoin} .
+     */
     public void setJoin(InnerJoin join) {
         this.join = join;
     }

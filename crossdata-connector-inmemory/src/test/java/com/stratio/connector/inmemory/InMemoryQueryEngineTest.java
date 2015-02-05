@@ -21,12 +21,10 @@ package com.stratio.connector.inmemory;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.BeforeClass;
@@ -76,7 +74,7 @@ public class InMemoryQueryEngineTest {
 
     private TableMetadata tableMetadata = null;
 
-    private IConnector connector = new InMemoryConnector();
+    private IConnector connector = new InMemoryConnector(null);
 
     private static final int NUM_ROWS = 100;
 
@@ -112,9 +110,9 @@ public class InMemoryQueryEngineTest {
     private TableMetadata getTestTableMetadata(ClusterName targetCluster) {
         TableName targetTable = new TableName("test_catalog", "types");
         Map<Selector, Selector> options = new HashMap<>();
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
-        List<ColumnName> partitionKey = new ArrayList<>();
-        List<ColumnName> clusterKey = new ArrayList<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         Object[] parameters = { };
         columns.put(new ColumnName(targetTable, "text_column"),
                 new ColumnMetadata(new ColumnName(targetTable, "text_column"), parameters,
@@ -157,7 +155,7 @@ public class InMemoryQueryEngineTest {
                 row.addCell("text_column", new Cell("text_" + index));
                 row.addCell("int_column", new Cell(index));
                 row.addCell("bool_column", new Cell(index % 2 == 0));
-                connector.getStorageEngine().insert(targetCluster, targetTable, row);
+                connector.getStorageEngine().insert(targetCluster, targetTable, row, false);
             }
         } catch (ConnectorException e) {
             fail("Insertion failed", e);
@@ -177,15 +175,16 @@ public class InMemoryQueryEngineTest {
             project.addColumn(new ColumnName(tableMetadata.getName(), columnName));
         }
 
-        Map<ColumnName, String> columnMap = new LinkedHashMap<>();
+        Map<Selector, String> columnMap = new LinkedHashMap<>();
         Map<String, ColumnType> typeMap = new LinkedHashMap<>();
-        Map<ColumnName, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
+        Map<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
 
         int index = 0;
         for(ColumnName column : project.getColumnList()){
-            columnMap.put(column, column.getName());
+            ColumnSelector cs = new ColumnSelector(column);
+            columnMap.put(cs, column.getName());
             typeMap.put(column.getName(), types[index]);
-            typeMapFromColumnName.put(column, types[index]);
+            typeMapFromColumnName.put(cs, types[index]);
             index++;
         }
         Select select = new Select(Operations.SELECT_OPERATOR, columnMap, typeMap, typeMapFromColumnName);
@@ -253,7 +252,7 @@ public class InMemoryQueryEngineTest {
         Project project = generateProjectAndSelect(columnNames, types);
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        StringSelector right = new StringSelector("text_42");
+        StringSelector right = new StringSelector(project.getTableName(), "text_42");
         Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
 
         Select s = Select.class.cast(project.getNextStep());
@@ -283,7 +282,7 @@ public class InMemoryQueryEngineTest {
         Project project = generateProjectAndSelect(columnNames, types);
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        BooleanSelector right = new BooleanSelector(true);
+        BooleanSelector right = new BooleanSelector(project.getTableName(), true);
         Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
 
         Select s = Select.class.cast(project.getNextStep());
@@ -313,7 +312,7 @@ public class InMemoryQueryEngineTest {
         Project project = generateProjectAndSelect(columnNames, types);
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        IntegerSelector right = new IntegerSelector(42);
+        IntegerSelector right = new IntegerSelector(project.getTableName(), 42);
         Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
 
         Select s = Select.class.cast(project.getNextStep());
@@ -343,7 +342,7 @@ public class InMemoryQueryEngineTest {
         Project project = generateProjectAndSelect(columnNames, types);
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        IntegerSelector right = new IntegerSelector(NUM_ROWS/2);
+        IntegerSelector right = new IntegerSelector(project.getTableName(), NUM_ROWS/2);
         Filter filter = new Filter(Operations.FILTER_NON_INDEXED_GT, new Relation(left, Operator.GT, right));
 
         Select s = Select.class.cast(project.getNextStep());

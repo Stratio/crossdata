@@ -20,17 +20,18 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
-import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code CREATE INDEX} statement of the CROSSDATA language. This class recognizes
@@ -66,12 +67,7 @@ public class CreateIndexStatement extends IndexStatement {
      * The list of columns covered by the index. Only one column is allowed for {@code DEFAULT}
      * indexes.
      */
-    private List<ColumnName> targetColumns = null;
-
-    /**
-     * The name of the class that implements the secondary index.
-     */
-    private String usingClass = null;
+    private Set<ColumnName> targetColumns = new LinkedHashSet<>();
 
     /**
      * The map of options passed to the index during its creation.
@@ -83,7 +79,7 @@ public class CreateIndexStatement extends IndexStatement {
      */
     public CreateIndexStatement() {
         this.command = false;
-        targetColumns = new ArrayList<>();
+        targetColumns = new LinkedHashSet<>();
         options = new LinkedHashMap<>();
     }
 
@@ -103,15 +99,14 @@ public class CreateIndexStatement extends IndexStatement {
         createIfNotExists = true;
     }
 
-
     /**
      * Set the name of the index from a column name as both have the same attributes.
      *
      * @param columnName The column name.
      */
     public void setName(ColumnName columnName) {
-        tableName=columnName.getTableName();
-        if (tableName!=null) {
+        tableName = columnName.getTableName();
+        if (tableName != null) {
             catalog = columnName.getTableName().getCatalogName();
         }
         this.name = new IndexName(columnName.getTableName(), columnName.getName());
@@ -158,7 +153,7 @@ public class CreateIndexStatement extends IndexStatement {
      *
      * @return List<ColumnName> with the columns targeted by the index.
      */
-    public List<ColumnName> getTargetColumns() {
+    public Set<ColumnName> getTargetColumns() {
         return targetColumns;
     }
 
@@ -166,24 +161,16 @@ public class CreateIndexStatement extends IndexStatement {
      * Add a column to the list of indexed columns.
      *
      * @param column The name of the column.
+     * @return A boolean with the result of the addColumn.
      */
-    public void addColumn(ColumnName column) {
-        tableName=column.getTableName();
-        catalog=column.getTableName().getCatalogName();
-        targetColumns.add(column);
-    }
-
-    /**
-     * Set a USING class that implements the custom index.
-     *
-     * @param using The qualified name of the class.
-     */
-    public void setUsingClass(String using) {
-        usingClass = using;
+    public boolean addColumn(ColumnName column) {
+        tableName = column.getTableName();
+        catalog = column.getTableName().getCatalogName();
+        return targetColumns.add(column);
     }
 
     public void setOptionsJson(String optionsJson) {
-        options = StringUtils.convertJsonToOptions(optionsJson);
+        options = StringUtils.convertJsonToOptions(tableName, optionsJson);
     }
 
     /**
@@ -194,7 +181,6 @@ public class CreateIndexStatement extends IndexStatement {
     public Map<Selector, Selector> getOptions() {
         return options;
     }
-
 
     public boolean isCreateIfNotExists() {
         return createIfNotExists;
@@ -227,14 +213,14 @@ public class CreateIndexStatement extends IndexStatement {
             result = sb.toString();
         } else {
             result = name.getName();
-            if (IndexType.FULL_TEXT.equals(type)) {
-                result = "stratio_fulltext_" + name.getName();
-            }
         }
         return result;
     }
 
-    public void normalizeIndexName(){
+    /**
+     * Normalize the index name to obtain the table name and the index name.
+     */
+    public void normalizeIndexName() {
         this.name = new IndexName(tableName, this.name.getName());
     }
 
@@ -255,26 +241,32 @@ public class CreateIndexStatement extends IndexStatement {
             sb.append(catalog).append(".");
         }
         sb.append(tableName);
-        sb.append("(").append(StringUtils.stringList(targetColumns, ", ")).append(")");
-        if (usingClass != null) {
-            sb.append(" USING ");
-            sb.append("'").append(usingClass).append("'");
-        }
+        sb.append("(");
+        sb.append(StringUtils.stringList(new ArrayList<>(targetColumns), ", "));
+        sb.append(")");
         if (!options.isEmpty()) {
             sb.append(" WITH ");
             sb.append(options);
         }
-
         return sb.toString();
     }
 
+    /**
+     * Return the crossdata index name.
+     * @return The crossdata {@link com.stratio.crossdata.common.data.IndexName} .
+     */
     public IndexName getName() {
-        return new IndexName(catalog.getName(),tableName.getName(),getIndexName());
+        return new IndexName(catalog.getName(), tableName.getName(), getIndexName());
     }
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_NOT_EXIST_INDEX).add(ValidationTypes.MUST_EXIST_TABLE)
+        ValidationRequirements vr = new ValidationRequirements()
+                .add(ValidationTypes.MUST_EXIST_TABLE)
                 .add(ValidationTypes.MUST_EXIST_COLUMN);
+        if(!createIfNotExists){
+            vr.add(ValidationTypes.MUST_NOT_EXIST_INDEX);
+        }
+        return vr;
     }
 }

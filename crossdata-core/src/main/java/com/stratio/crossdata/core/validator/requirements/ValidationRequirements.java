@@ -30,9 +30,10 @@ public class ValidationRequirements {
 
     /**
      * Class Constructor.
+     *
      * @param types The enum with the validation types
      */
-    public ValidationRequirements(ValidationTypes ... types) {
+    public ValidationRequirements(ValidationTypes... types) {
         this.validations = Arrays.asList(types);
     }
 
@@ -45,6 +46,7 @@ public class ValidationRequirements {
 
     /**
      * Get the validations of a query.
+     *
      * @return A {@link java.util.List} with {@link com.stratio.crossdata.core.validator.requirements.ValidationTypes}
      */
     public List<ValidationTypes> getValidations() {
@@ -53,6 +55,7 @@ public class ValidationRequirements {
 
     /**
      * Add a new validation for a query.
+     *
      * @param requirement The validation.
      * @return {@link com.stratio.crossdata.core.validator.requirements.ValidationRequirements}
      */

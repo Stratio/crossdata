@@ -18,10 +18,27 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.TableName;
+
 /**
  * Asterisk selector.
  */
 public class AsteriskSelector extends Selector {
+
+    /**
+     * Basic Constructor class.
+     */
+    public AsteriskSelector() {
+        this(null);
+    }
+
+    /**
+     * Constructor class.
+     * @param tableName The table name affected by the asterisk selector.
+     */
+    public AsteriskSelector(TableName tableName) {
+        super(tableName);
+    }
 
     @Override
     public String toString() {
@@ -40,13 +57,6 @@ public class AsteriskSelector extends Selector {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-
-        AsteriskSelector that = (AsteriskSelector) o;
-
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
-
         return true;
     }
 

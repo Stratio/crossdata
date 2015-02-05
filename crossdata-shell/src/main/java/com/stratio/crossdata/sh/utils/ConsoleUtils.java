@@ -22,10 +22,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.text.ParseException;
@@ -38,33 +36,18 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
-import org.xml.sax.SAXException;
 
-import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
-import com.stratio.crossdata.common.exceptions.ManifestException;
-import com.stratio.crossdata.common.manifest.ConnectorFactory;
-import com.stratio.crossdata.common.manifest.ConnectorType;
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
-import com.stratio.crossdata.common.manifest.DataStoreFactory;
-import com.stratio.crossdata.common.manifest.DataStoreType;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.ErrorResult;
+import com.stratio.crossdata.common.result.InProgressResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
@@ -89,9 +72,6 @@ public final class ConsoleUtils {
      */
     private static final int DAYS_HISTORY_ENTRY_VALID = 30;
 
-    private static final String DATASTORE_SCHEMA_PATH = "/com/stratio/crossdata/connector/DataStoreDefinition.xsd";
-    private static final String CONNECTOR_SCHEMA_PATH = "/com/stratio/crossdata/connector/ConnectorDefinition.xsd";
-
     /**
      * Private class constructor as all methods are static.
      */
@@ -105,19 +85,19 @@ public final class ConsoleUtils {
      * @return String representing the result.
      */
     public static String stringResult(Result result) {
-        if (ErrorResult.class.isInstance(result)) {
+        if (result instanceof ErrorResult) {
             ErrorResult error = ErrorResult.class.cast(result);
             StringBuilder sb = new StringBuilder("The operation for query ");
             sb.append(error.getQueryId()).append(" cannot be executed:").append(System.lineSeparator());
             sb.append(error.getErrorMessage()).append(System.lineSeparator());
             return sb.toString();
-        }
-        if (result instanceof QueryResult) {
+        } else if (result instanceof QueryResult) {
             QueryResult queryResult = (QueryResult) result;
             return stringQueryResult(queryResult);
         } else if (result instanceof CommandResult) {
             CommandResult commandResult = (CommandResult) result;
-            return String.class.cast(commandResult.getResult());
+            Object objectResult = commandResult.getResult();
+            return String.valueOf(objectResult);
         } else if (result instanceof ConnectResult) {
             ConnectResult connectResult = (ConnectResult) result;
             return String.valueOf("Connected with SessionId=" + connectResult.getSessionId());
@@ -127,6 +107,9 @@ public final class ConsoleUtils {
         } else if (result instanceof StorageResult) {
             StorageResult storageResult = (StorageResult) result;
             return storageResult.toString();
+        } else if (result instanceof InProgressResult) {
+            InProgressResult inProgressResult = (InProgressResult) result;
+            return "Query " + inProgressResult.getQueryId() + " in progress";
         } else {
             return "Unknown result";
         }
@@ -140,8 +123,8 @@ public final class ConsoleUtils {
      */
 
     private static String stringQueryResult(QueryResult queryResult) {
-        if (queryResult.getResultSet().isEmpty()) {
-            return System.lineSeparator() + "OK";
+        if ((queryResult.getResultSet() == null ) || queryResult.getResultSet().isEmpty()) {
+            return System.lineSeparator() + "0 results returned";
         }
 
         ResultSet resultSet = queryResult.getResultSet();
@@ -158,7 +141,7 @@ public final class ConsoleUtils {
         sb.append(bar).append(System.lineSeparator());
         sb.append("| ");
         List<String> columnNames = new ArrayList<>();
-        for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
+        for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
             sb.append(
                     StringUtils.rightPad(columnMetadata.getName().getColumnNameToShow(),
                             colWidths.get(columnMetadata.getName().getColumnNameToShow()) + 1)).append("| ");
@@ -171,9 +154,9 @@ public final class ConsoleUtils {
 
         for (Row row : resultSet) {
             sb.append("| ");
-            for(String columnName : columnNames){
-                String str = String.valueOf(row.getCell(columnName).getValue());
-                sb.append(StringUtils.rightPad(str, colWidths.get(columnName)));
+            for (String columnName: columnNames) {
+                String str = String.valueOf(row.getCell(columnName.toLowerCase()).getValue());
+                sb.append(StringUtils.rightPad(str, colWidths.get(columnName.toLowerCase())));
                 sb.append(" | ");
             }
             sb.append(System.lineSeparator());
@@ -193,24 +176,24 @@ public final class ConsoleUtils {
         LinkedHashMap<String, Integer> colWidths = new LinkedHashMap<>();
 
         // Get column names or aliases width
-        for (ColumnMetadata columnMetadata: resultSet.getColumnMetadata()) {
+        for (ColumnMetadata columnMetadata : resultSet.getColumnMetadata()) {
             colWidths.put(columnMetadata.getName().getColumnNameToShow(),
                     columnMetadata.getName().getColumnNameToShow().length());
         }
 
         // Find widest cell content of every column
-        for (Row row: resultSet) {
+        for (Row row : resultSet) {
             int pos = 0;
-            for (String key: row.getCells().keySet()) {
+            for (String key : row.getCells().keySet()) {
                 String cellContent = String.valueOf(row.getCell(key).getValue());
 
                 int currentWidth;
-                if(colWidths.containsKey(key)){
+                if (colWidths.containsKey(key)) {
                     currentWidth = colWidths.get(key);
                 } else {
                     Iterator<Map.Entry<String, Integer>> iter = colWidths.entrySet().iterator();
                     int limit = 0;
-                    while(limit < pos){
+                    while (limit < pos) {
                         iter.next();
                         limit++;
                     }
@@ -328,74 +311,4 @@ public final class ConsoleUtils {
         }
     }
 
-    /**
-     * Parse an XML document into a {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
-     * @param manifestType The type of manifest.
-     * @param path The XML path.
-     * @return A {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
-     * @throws ManifestException If the XML is not valid.
-     * @throws FileNotFoundException If the XML file does not exists.
-     */
-    public static CrossdataManifest parseFromXmlToManifest(int manifestType, String path) throws
-            ManifestException, FileNotFoundException {
-        if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
-            return parseFromXmlToDataStoreManifest(new FileInputStream(path));
-        } else {
-            return parseFromXmlToConnectorManifest(new FileInputStream(path));
-        }
-    }
-
-    /**
-     * Parse an XML document into a {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
-     * @param manifestType The type of manifest.
-     * @param path The {@link java.io.InputStream} to retrieve the XML.
-     * @return A {@link com.stratio.crossdata.common.manifest.CrossdataManifest}.
-     * @throws ManifestException If the XML is not valid.
-     */
-    public static CrossdataManifest parseFromXmlToManifest(int manifestType, InputStream path) throws
-            ManifestException {
-        if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
-            return parseFromXmlToDataStoreManifest(path);
-        } else {
-            return parseFromXmlToConnectorManifest(path);
-        }
-    }
-
-    private static DataStoreType parseFromXmlToDataStoreManifest(InputStream path)
-            throws ManifestException {
-        try {
-            SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-
-            Schema schema = sf.newSchema(ConsoleUtils.class.getResource(DATASTORE_SCHEMA_PATH));
-
-            JAXBContext jaxbContext = JAXBContext.newInstance(DataStoreFactory.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-            unmarshaller.setSchema(schema);
-
-            JAXBElement<DataStoreType> unmarshalledDataStore = (JAXBElement<DataStoreType>) unmarshaller
-                    .unmarshal(path);
-            return unmarshalledDataStore.getValue();
-        } catch (JAXBException | SAXException e) {
-            throw new ManifestException(e);
-        }
-    }
-
-    private static CrossdataManifest parseFromXmlToConnectorManifest(InputStream path) throws ManifestException {
-        try {
-            SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-            Schema schema = sf.newSchema(ConsoleUtils.class.getResource(CONNECTOR_SCHEMA_PATH));
-
-            JAXBContext jaxbContext = JAXBContext.newInstance(ConnectorFactory.class);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-
-            unmarshaller.setSchema(schema);
-
-            JAXBElement<ConnectorType> unmarshalledDataStore = (JAXBElement<ConnectorType>) unmarshaller
-                    .unmarshal(path);
-            return unmarshalledDataStore.getValue();
-        } catch (JAXBException | SAXException e) {
-            throw new ManifestException(e);
-        }
-    }
 }

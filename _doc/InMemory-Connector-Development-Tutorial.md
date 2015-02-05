@@ -77,7 +77,7 @@ connect and close methods.
         if(clusters.get(name) != null) {
             clusters.remove(name);
         }else{
-            throw new ConnectionException("Cluster " + name + "does not exists");
+            throw new ConnectionException("Cluster " + name + "does not exist");
         }
     }
 ```
@@ -453,8 +453,8 @@ The connector can be started in two different ways:
 1. Running the connector tests:
     
     > mvn clean verify -DconnectorJar="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata-connector
-    -inmemory-0.1.1.jar" -DconnectorDefinition="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata
-    -connector-inmemory-0.1.1/conf/InMemoryConnector.xml" -DclusterOptions="[TableRowLimit-100]"
+    -inmemory-0.2.0.jar" -DconnectorDefinition="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata
+    -connector-inmemory-0.2.0/conf/InMemoryConnector.xml" -DclusterOptions="[TableRowLimit-100]"
     -DconnectorCluster="TestCluster" -DconnectorMainClass="com.stratio.connector.inmemory.InMemoryConnector"
     
 2. Starting the connector with maven:

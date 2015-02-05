@@ -20,6 +20,10 @@ package com.stratio.crossdata.common.data;
 
 import java.io.Serializable;
 
+/**
+ * Name Class.
+ */
+
 public abstract class Name implements Serializable {
 
     private static final long serialVersionUID = -3032254998929033117L;
@@ -65,7 +69,7 @@ public abstract class Name implements Serializable {
     }
 
     /**
-     * Method equals
+     * Method equals.
      * @param o Object to be compared
      * @return whether Object o is equal to this object
      */

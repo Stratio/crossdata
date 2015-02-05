@@ -23,6 +23,9 @@ import java.io.Serializable;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.result.QueryStatus;
 
+/**
+ * Execution info class with the workflow information.
+ */
 public class ExecutionInfo implements Serializable {
 
     private String sender = null;
@@ -32,12 +35,12 @@ public class ExecutionInfo implements Serializable {
     private QueryStatus queryStatus = QueryStatus.NONE;
 
     /**
-     * Persist in MetadataManager
+     * Persist in MetadataManager.
      */
     private boolean persistOnSuccess = false;
 
     /**
-     * Remove from ExecutionManager
+     * Remove from ExecutionManager.
      */
     private boolean removeOnSuccess = true;
 

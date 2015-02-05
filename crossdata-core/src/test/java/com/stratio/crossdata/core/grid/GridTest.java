@@ -21,7 +21,6 @@ package com.stratio.crossdata.core.grid;
 import static org.testng.Assert.assertTrue;
 
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.locks.Lock;
 
 import javax.transaction.TransactionManager;
@@ -37,6 +36,9 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
+
 /**
  * Tests {@link Grid}.
  */
@@ -45,22 +47,17 @@ public class GridTest {
 
     private String syncMessage;
     private String asyncMessage;
+    private String path;
 
-    /**
-     * Starts the common {@link Grid} used by all its tests.
-     */
     @BeforeClass
-    public void setUp() {
-        String path = "/tmp/com.stratio.crossdata-test-" + new Random().nextInt(100000);
-        Grid.initializer().withPort(7810).withListenAddress("localhost").withPersistencePath(path).init();
+    public void setUp() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
     }
 
-    /**
-     * Stops the common {@link Grid} used by all its tests.
-     */
     @AfterClass
-    public void tearDown() {
-        Grid.INSTANCE.close();
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     /**
@@ -84,11 +81,14 @@ public class GridTest {
      */
     @Test
     public void testGridLock() throws Exception {
-        boolean res=true;
+        boolean res = true;
         Lock lock = Grid.INSTANCE.lock("testGridLock");
-        lock.lock();
-        lock.unlock();
-        assertTrue(res);
+        try {
+            lock.lock();
+        } finally {
+            lock.unlock();
+        }
+        assertTrue(res, "Grid Lock test failed.");
     }
 
     /**

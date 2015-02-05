@@ -18,10 +18,42 @@
 
 package com.stratio.crossdata.common.exceptions;
 
+/**
+ * Exception throw if the provided manifest is not valid.
+ */
 public class ManifestException extends ApiException {
 
+    /**
+     * Serial version UID in order to be {@link java.io.Serializable}.
+     */
+    private static final long serialVersionUID = 6466318923082574130L;
+
+    /**
+     * Constructs a new Exception with a given message.
+     *
+     * @param message The message.
+     */
+    public ManifestException(String message) {
+        super(message);
+    }
+
+    /**
+     * Constructs a new Exception with a specific cause.
+     *
+     * @param cause The associated cause.
+     */
     public ManifestException(Throwable cause) {
         super(cause);
+    }
+
+    /**
+     * Constructs a new Exception with a specific message and cause.
+     *
+     * @param msg   The associated message.
+     * @param cause The associated cause.
+     */
+    public ManifestException(String msg, Throwable cause) {
+        super(msg, cause);
     }
 
     @Override

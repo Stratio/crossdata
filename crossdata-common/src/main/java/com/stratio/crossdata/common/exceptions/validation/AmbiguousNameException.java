@@ -21,7 +21,14 @@ package com.stratio.crossdata.common.exceptions.validation;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.ColumnName;
 
+/**
+ * Exception class thrown when a column name has an ambiguous name in validator phase.
+ */
 public class AmbiguousNameException extends ValidationException {
+    /**
+     * Constructor class.
+     * @param columnName The column name affected.
+     */
     public AmbiguousNameException(ColumnName columnName) {
         super("COLUMN name [" + columnName + "] is ambiguous");
     }

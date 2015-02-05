@@ -20,14 +20,21 @@ package com.stratio.connector.inmemory.datastore;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.testng.annotations.Test;
+
+import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryLiteralSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 
 /**
  * Table tests.
@@ -121,15 +128,101 @@ public class InMemoryTableTest {
         }
         assertEquals(table.size(), INSERT_TEST_SIZE, "Invalid size");
 
+        InMemorySelector outputColumn = new InMemoryColumnSelector("string_col");
         int indexToFind = (INSERT_TEST_SIZE-1);
         InMemoryRelation relation = new InMemoryRelation(columnNames[0], InMemoryOperations.EQ,
                 columnNames[0]+indexToFind);
-        List<Object[]> result = table.fullScanSearch(Arrays.asList(relation), primaryKey);
+        List<Object[]> result = null;
+        try {
+            result = table.fullScanSearch(Arrays.asList(relation), Arrays.asList(outputColumn));
+        } catch (Exception e) {
+            fail("Cannot execute query", e);
+        }
         assertEquals(result.size(), 1, "Invalid size");
         Object[] row = result.get(0);
         assertEquals(row.length, 1, "Invalid number of columns returned.");
         assertEquals(row[0], columnNames[0]+indexToFind, "Invalid row retrieved.");
+    }
 
+    @Test
+    public void selectToUpper(){
+        String tableName = "testTable";
+        String[] columnNames = new String[] { "string_col" };
+        Class[] columnTypes = new Class[] { String.class};
+        List<String> primaryKey = Arrays.asList("string_col");
+        InMemoryTable table = createTestTable(tableName, columnNames, columnTypes, primaryKey);
+        try {
+            Map<String, Object> row = new HashMap<>();
+            for (int index = 0; index < INSERT_TEST_SIZE; index++) {
+                row = new HashMap<>();
+                row.put(columnNames[0], columnNames[0] + index);
+                table.insert(row);
+            }
+        } catch (Exception e) {
+            fail("Insert should work", e);
+        }
+        assertEquals(table.size(), INSERT_TEST_SIZE, "Invalid size");
+
+        InMemorySelector stringColumn = new InMemoryColumnSelector("string_col");
+        InMemorySelector toUpper = new InMemoryFunctionSelector("toUpper", Arrays.asList(stringColumn));
+
+        int indexToFind = (INSERT_TEST_SIZE-1);
+        InMemoryRelation relation = new InMemoryRelation(columnNames[0], InMemoryOperations.EQ,
+                columnNames[0]+indexToFind);
+        List<Object[]> result = null;
+        try {
+            result = table.fullScanSearch(Arrays.asList(relation), Arrays.asList(toUpper));
+        } catch (Exception e) {
+            fail("Cannot execute query", e);
+        }
+        assertEquals(result.size(), 1, "Invalid size");
+        Object[] row = result.get(0);
+        assertEquals(row.length, 1, "Invalid number of columns returned.");
+        String expected = (columnNames[0]+indexToFind).toUpperCase();
+        assertEquals(row[0], expected, "Invalid row retrieved.");
+    }
+
+    @Test
+    public void selectConcat(){
+        String tableName = "testTable";
+        String[] columnNames = new String[] { "string_col" };
+        Class[] columnTypes = new Class[] { String.class};
+        List<String> primaryKey = Arrays.asList("string_col");
+        InMemoryTable table = createTestTable(tableName, columnNames, columnTypes, primaryKey);
+        try {
+            Map<String, Object> row = new HashMap<>();
+            for (int index = 0; index < INSERT_TEST_SIZE; index++) {
+                row = new HashMap<>();
+                row.put(columnNames[0], columnNames[0] + index);
+                table.insert(row);
+            }
+        } catch (Exception e) {
+            fail("Insert should work", e);
+        }
+        assertEquals(table.size(), INSERT_TEST_SIZE, "Invalid size");
+
+        InMemorySelector stringColumn = new InMemoryColumnSelector("string_col");
+        InMemorySelector literalColumn = new InMemoryLiteralSelector("CONCAT_TEST");
+        InMemorySelector concat = new InMemoryFunctionSelector("concat", Arrays.asList(stringColumn, literalColumn));
+
+        List<Object[]> result = null;
+        try {
+            result = table.fullScanSearch(new ArrayList<InMemoryRelation>(), Arrays.asList(concat));
+        } catch (Exception e) {
+            fail("Cannot execute query", e);
+        }
+        assertEquals(result.size(), INSERT_TEST_SIZE, "Invalid size");
+
+        List<String> toCheck = new ArrayList<>();
+        for(Object [] row : result) {
+            assertEquals(row.length, 1, "Invalid number of columns returned.");
+            toCheck.add(row[0].toString());
+        }
+
+        for (int index = 0; index < INSERT_TEST_SIZE; index++) {
+            String expected = (columnNames[0] + index + literalColumn.getName());
+            assertTrue(toCheck.contains(expected), "Cannot find element " + expected);
+        }
     }
 
 }

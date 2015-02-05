@@ -20,11 +20,12 @@ package com.stratio.crossdata.core.statements;
 
 import java.util.Map;
 
-import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code CREATE CATALOG} statement from the CROSSDATA language. CATALOG
@@ -56,7 +57,7 @@ public class CreateCatalogStatement extends MetadataStatement {
         this.catalogInc = true;
         this.command = false;
         this.ifNotExists = ifNotExists;
-        this.options = StringUtils.convertJsonToOptions(options);
+        this.options = StringUtils.convertJsonToOptions(new TableName(catalogName.getName(), null), options);
     }
 
     @Override
@@ -72,10 +73,22 @@ public class CreateCatalogStatement extends MetadataStatement {
         return sb.toString();
     }
 
+    /**
+     * Get the requirements to validate if the create catalog statement is possible.
+     * @return A {@link com.stratio.crossdata.core.validator.requirements.ValidationRequirements} .
+     */
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_NOT_EXIST_CATALOG);
+        ValidationRequirements validationRequirements = new ValidationRequirements();
+        if (!ifNotExists) {
+            validationRequirements = validationRequirements.add(ValidationTypes.MUST_NOT_EXIST_CATALOG);
+        }
+        return validationRequirements;
     }
 
+    /**
+     * Get the catalog name.
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName} .
+     */
     public CatalogName getCatalogName() {
         return catalog;
     }

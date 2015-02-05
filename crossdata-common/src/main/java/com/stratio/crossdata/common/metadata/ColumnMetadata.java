@@ -18,15 +18,19 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.io.Serializable;
+
 import com.stratio.crossdata.common.data.ColumnName;
 
 /**
  * ColumnMetadata class.
  */
-public class ColumnMetadata implements IMetadata {
+public class ColumnMetadata implements Serializable {
+
+    private static final long serialVersionUID = 4648404086101059817L;
     private final ColumnName name;
     private final Object[] parameters;
-    private final ColumnType columnType;
+    private ColumnType columnType;
 
     /**
      * Class Constructor.
@@ -67,6 +71,10 @@ public class ColumnMetadata implements IMetadata {
      */
     public ColumnType getColumnType() {
         return columnType;
+    }
+
+    public void setColumnType(ColumnType columnType) {
+        this.columnType = columnType;
     }
 
     /**

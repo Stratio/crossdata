@@ -32,6 +32,7 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
  */
 public abstract class Result implements Serializable {
 
+
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
      */
@@ -144,4 +145,5 @@ public abstract class Result implements Serializable {
     public boolean hasError() {
         return error;
     }
+
 }

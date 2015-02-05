@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
-import java.util.List;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -34,14 +33,10 @@ import org.antlr.runtime.RecognitionException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
-import com.stratio.crossdata.common.exceptions.ManifestException;
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.CommandResult;
-import com.stratio.crossdata.common.result.ErrorResult;
-import com.stratio.crossdata.common.result.IResultHandler;
+import com.stratio.crossdata.common.result.IDriverResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.driver.BasicDriver;
@@ -74,7 +69,7 @@ public class Shell {
     /**
      * Asynchronous result handler.
      */
-    private final IResultHandler resultHandler;
+    private final IDriverResultHandler resultHandler;
 
     /**
      * Console reader.
@@ -89,7 +84,7 @@ public class Shell {
     /**
      * Driver that connects to the CROSSDATA servers.
      */
-    private BasicDriver crossDataDriver = null;
+    private BasicDriver crossdataDriver = null;
 
     /**
      * History date format.
@@ -102,17 +97,7 @@ public class Shell {
     private boolean useAsync = false;
 
     /**
-     * Constant to transform milliseconds in seconds.
-     */
-    private static final int MS_TO_SECONDS = 1000;
-
-    /**
-     * Constant to define the prefix for explain plan operations.
-     */
-    private static final String EXPLAIN_PLAN_TOKEN = "explain plan for";
-
-    /**
-     * Default String for the Crossdata prompt
+     * Default String for the Crossdata prompt.
      */
     private static final String DEFAULT_PROMPT = "xdsh:";
 
@@ -128,7 +113,7 @@ public class Shell {
         help = hm.loadHelpContent();
         this.useAsync = useAsync;
         initialize();
-        resultHandler = new ShellResultHandler(this);
+        resultHandler = new ShellDriverResultHandler(this);
     }
 
     /**
@@ -171,10 +156,10 @@ public class Shell {
      * Initialize the console settings.
      */
     private void initialize() {
-        crossDataDriver = new BasicDriver();
+        crossdataDriver = new BasicDriver();
         // Take the username from the system.
-        crossDataDriver.setUserName(System.getProperty("user.name"));
-        LOG.debug("Connecting with user: " + crossDataDriver.getUserName());
+        crossdataDriver.setUserName(System.getProperty("user.name"));
+        LOG.debug("Connecting with user: " + crossdataDriver.getUserName());
 
         try {
             console = new ConsoleReader();
@@ -220,9 +205,9 @@ public class Shell {
      *
      * @param currentCatalog The currentCatalog.
      */
-    private void setPrompt(String currentCatalog) {
+    public void setPrompt(String currentCatalog) {
         StringBuilder sb = new StringBuilder(DEFAULT_PROMPT);
-        sb.append(crossDataDriver.getUserName());
+        sb.append(crossdataDriver.getUserName());
         if ((currentCatalog != null) && (!currentCatalog.isEmpty())) {
             sb.append(":");
             sb.append(currentCatalog);
@@ -262,65 +247,12 @@ public class Shell {
     }
 
     /**
-     * Execute a query on the remote CROSSDATA servers.
-     *
-     * @param cmd The query.
-     */
-    private void executeQuery(String cmd) {
-        if (this.useAsync) {
-            executeAsyncQuery(cmd);
-        } else {
-            executeSyncQuery(cmd);
-        }
-    }
-
-    /**
-     * Execute a query using synchronous execution.
-     *
-     * @param cmd The query.
-     */
-    private void executeSyncQuery(String cmd) {
-        LOG.debug("Command: " + cmd);
-        long queryStart = System.currentTimeMillis();
-        long queryEnd = queryStart;
-        Result crossDataResult;
-        try {
-            crossDataResult = crossDataDriver.executeQuery(cmd);
-            queryEnd = System.currentTimeMillis();
-            updatePrompt(crossDataResult);
-            println("Result: " + ConsoleUtils.stringResult(crossDataResult));
-            println("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
-        } catch (Exception e) {
-            println("Error: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Remove the {@link com.stratio.crossdata.common.result.IResultHandler} associated with a query.
+     * Remove the {@link com.stratio.crossdata.common.result.IDriverResultHandler} associated with a query.
      *
      * @param queryId The query identifier.
      */
     protected void removeResultsHandler(String queryId) {
-        crossDataDriver.removeResultHandler(queryId);
-    }
-
-    /**
-     * Execute a query asynchronously.
-     *
-     * @param cmd The query.
-     */
-    private void executeAsyncQuery(String cmd) {
-        String queryId;
-        try {
-            queryId = crossDataDriver.asyncExecuteQuery(cmd, resultHandler);
-            LOG.debug("Async command: " + cmd + " id: " + queryId);
-            println("QID: " + queryId);
-            println("");
-        } catch (ConnectionException e) {
-            LOG.error(e.getMessage(), e);
-            println("ERROR: " + e.getMessage());
-        }
-
+        crossdataDriver.removeResultHandler(queryId);
     }
 
     /**
@@ -330,12 +262,17 @@ public class Shell {
      * @param result The result returned by the driver.
      */
     protected void updatePrompt(Result result) {
-        if (QueryResult.class.isInstance(result)) {
+        if (CommandResult.class.isInstance(result)) {
+            Object objectResult = ((CommandResult) result).getResult();
+            if (objectResult instanceof CatalogName) {
+                setPrompt(((CatalogName) objectResult).getName());
+            }
+        } else if (QueryResult.class.isInstance(result)) {
             QueryResult qr = QueryResult.class.cast(result);
             if (qr.isCatalogChanged()) {
                 String currentCatalog = qr.getCurrentCatalog();
                 if (!currentCatalog.isEmpty()) {
-                    crossDataDriver.setCurrentCatalog(currentCatalog);
+                    crossdataDriver.setCurrentCatalog(currentCatalog);
                     setPrompt(currentCatalog);
                 }
             }
@@ -350,12 +287,12 @@ public class Shell {
     public boolean connect() {
         boolean result = true;
         try {
-            Result connectionResult = crossDataDriver.connect(crossDataDriver.getUserName());
+            Result connectionResult = crossdataDriver.connect(crossdataDriver.getUserName());
             LOG.info("Driver connections established");
             LOG.info(ConsoleUtils.stringResult(connectionResult));
         } catch (ConnectionException ce) {
             result = false;
-            LOG.error(ce.getMessage());
+            LOG.error(ce.getMessage(),ce);
         }
         return result;
     }
@@ -368,80 +305,12 @@ public class Shell {
             ConsoleUtils.saveHistory(console, historyFile, dateFormat);
             LOG.debug("History saved");
 
-            crossDataDriver.close();
+            crossdataDriver.close();
             LOG.info("Driver connections closed");
 
         } catch (IOException ex) {
             LOG.error("Cannot save user history", ex);
         }
-    }
-
-    public boolean executeApiCall(String command){
-        boolean apiCallExecuted = false;
-        String result = "OK";
-        if(command.toLowerCase().startsWith("describe")){
-            if(command.toLowerCase().startsWith("describe connector ")){
-                result = describeConnector(command.toLowerCase().replace("describe connector ", "").replace(";", "").trim());
-            } else if (command.toLowerCase().startsWith("describe connectors")) {
-                result = describeConnectors();
-            } else if (command.toLowerCase().startsWith("describe system")) {
-                result = describeSystem();
-            } else if (command.toLowerCase().startsWith("describe datastore ")) {
-                result = describeDatastore(
-                        command.toLowerCase().replace("describe datastore ", "").replace(";", "").trim());
-            } else if (command.toLowerCase().startsWith("describe catalogs")) {
-                result = describeCatalogs();
-            } else {
-                result = "Unknown command";
-            }
-            apiCallExecuted = true;
-        } else if (command.toLowerCase().startsWith("add connector")
-                   || command.toLowerCase().startsWith("add datastore")) {
-            result = sendManifest(command);
-            apiCallExecuted = true;
-        } else if (command.toLowerCase().startsWith("reset serverdata")) {
-            if(command.toLowerCase().contains("--force")) {
-                result = resetServerdata();
-            } else {
-                String currentPrompt = console.getPrompt();
-                String answer = "No";
-                try {
-                    console.print(" > RESET SERVERDATA will ERASE ALL THE DATA stored in the Crossdata Server, ");
-                    console.println("even the one related to datastores, clusters and connectors.");
-                    console.print(" > Maybe you can use CLEAN METADATA, ");
-                    console.println("which erases only metadata related to catalogs, tables, indexes and columns.");
-                    console.setPrompt(" > Do you want to continue? (yes/no): ");
-                    answer = console.readLine();
-                } catch (IOException e) {
-                    LOG.error(e.getMessage());
-                }
-                answer = answer.replace(";", "").trim();
-                if(answer.equalsIgnoreCase("yes") || answer.equalsIgnoreCase("y")){
-                    result = resetServerdata();
-                }
-                console.setPrompt(currentPrompt);
-            }
-            apiCallExecuted = true;
-        } else if (command.toLowerCase().startsWith("clean metadata")){
-            result = cleanMetadata();
-            apiCallExecuted = true;
-        } else if (command.toLowerCase().startsWith("drop datastore")){
-            result = dropManifest(
-                    CrossdataManifest.TYPE_DATASTORE,
-                    command.toLowerCase().replace("drop datastore ", "").replace(";", "").trim());
-            apiCallExecuted = true;
-        } else if (command.toLowerCase().startsWith("drop connector")){
-            result = dropManifest(
-                    CrossdataManifest.TYPE_CONNECTOR,
-                    command.toLowerCase().replace("drop connector ", "").replace(";", "").trim());
-            apiCallExecuted = true;
-        } else if (command.toLowerCase().startsWith(EXPLAIN_PLAN_TOKEN)){
-            result = explainPlan(command);
-        }
-        if(apiCallExecuted){
-            LOG.info(result);
-        }
-        return apiCallExecuted;
     }
 
     /**
@@ -458,7 +327,7 @@ public class Shell {
                     && !cmd.trim().toLowerCase().startsWith("quit")) {
                 cmd = console.readLine();
                 sb.append(cmd).append(" ");
-                toExecute = sb.toString().trim();
+                toExecute = sb.toString().replaceAll("\\s+", " ").trim();
                 if (toExecute.startsWith("//") || toExecute.startsWith("#")) {
                     LOG.debug("Comment: " + toExecute);
                     sb = new StringBuilder();
@@ -480,12 +349,14 @@ public class Shell {
                 } else if (toExecute.endsWith(";")) {
                     if (toExecute.toLowerCase().startsWith("help")) {
                         showHelp(sb.toString());
-                    } else if (toExecute.toLowerCase().startsWith("use ")) {
-                        updateCatalog(toExecute);
-                    } else if(executeApiCall(toExecute)) {
-                        LOG.debug("API call executed.");
                     } else {
-                        executeQuery(toExecute);
+                        try {
+                            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler);
+                            LOG.info(ConsoleUtils.stringResult(result));
+                            updatePrompt(result);
+                        } catch (Exception ex) {
+                            LOG.error("Execution failed: " + ex.getMessage());
+                        }
                     }
                     sb = new StringBuilder();
                     if(!console.getPrompt().startsWith(DEFAULT_PROMPT)){
@@ -505,7 +376,8 @@ public class Shell {
                     }
                     sb = new StringBuilder();
                     println("");
-                } else if(!toExecute.isEmpty()) { // Multiline code
+                } else if(!toExecute.isEmpty()) {
+                    // Multiline code
                     if(console.getPrompt().startsWith(DEFAULT_PROMPT)){
                         currentPrompt = console.getPrompt();
                         String tempPrompt =
@@ -517,142 +389,7 @@ public class Shell {
         } catch (IOException ex) {
             LOG.error("Cannot read from console.", ex);
         } catch (Exception e) {
-            LOG.error("Cannot read from console.", e);
-        }
-    }
-
-    /**
-     * Trigger the explain plan operation using the driver.
-     * @param toExecute The user input.
-     * @return Execution plan.
-     */
-    private String explainPlan(String toExecute){
-        Result r = crossDataDriver.explainPlan(toExecute.substring(EXPLAIN_PLAN_TOKEN.length()));
-        return ConsoleUtils.stringResult(r);
-    }
-
-    private String describeConnectors() {
-        return ConsoleUtils.stringResult(crossDataDriver.describeConnectors());
-    }
-
-    private String describeConnector(String connectorName) {
-        return ConsoleUtils.stringResult(crossDataDriver.describeConnector(new ConnectorName(connectorName)));
-    }
-
-    private String describeSystem() {
-        return ConsoleUtils.stringResult(crossDataDriver.describeSystem());
-    }
-
-    private String describeCatalogs() {
-        return ConsoleUtils.stringResult(crossDataDriver.listCatalogs());
-    }
-
-    private String describeDatastore(String datastoreName) {
-        return ConsoleUtils.stringResult(crossDataDriver.describeDatastore(new DataStoreName(datastoreName)));
-    }
-
-    private String updateCatalog(String toExecute) {
-        String newCatalog = toExecute.toLowerCase().replace("use ", "").replace(";", "").trim();
-        String currentCatalog = crossDataDriver.getCurrentCatalog();
-        if(newCatalog.isEmpty()){
-            crossDataDriver.setCurrentCatalog(newCatalog);
-            currentCatalog = newCatalog;
-        } else {
-            List<String> catalogs = crossDataDriver.listCatalogs().getCatalogList();
-            if (catalogs.contains(newCatalog.toLowerCase())) {
-                crossDataDriver.setCurrentCatalog(newCatalog);
-                currentCatalog = newCatalog;
-            } else {
-                LOG.error("Catalog " + newCatalog + " doesn't exist.");
-            }
-        }
-        setPrompt(currentCatalog);
-        return currentCatalog;
-    }
-
-    /**
-     * Trigger the operation to reset only the metadata information related to catalogs.
-     */
-    private String cleanMetadata() {
-        return ConsoleUtils.stringResult(crossDataDriver.cleanMetadata());
-    }
-
-    /**
-     * Trigger the operation to reset all the data in the server.
-     */
-    private String resetServerdata() {
-        return ConsoleUtils.stringResult(crossDataDriver.resetServerdata());
-    }
-
-    /**
-     * Send a manifest through the driver.
-     *
-     * @param sentence The sentence introduced by the user.
-     * @return The operation result.
-     */
-    public String sendManifest(String sentence) {
-        LOG.debug("Command: " + sentence);
-
-        String result = "OK";
-
-        // Get manifest type
-        String[] tokens = sentence.split(" ");
-        if (tokens.length != 3) {
-            return "ERROR: Invalid ADD syntax";
-        }
-
-        int typeManifest;
-        if (tokens[1].equalsIgnoreCase("datastore")) {
-            typeManifest = CrossdataManifest.TYPE_DATASTORE;
-        } else if (tokens[1].equalsIgnoreCase("connector")) {
-            typeManifest = CrossdataManifest.TYPE_CONNECTOR;
-        } else {
-            return "ERROR: Unknown type: " + tokens[1];
-        }
-
-        // Create CrossdataManifest object from XML file
-        CrossdataManifest manifest;
-        try {
-            manifest = ConsoleUtils.parseFromXmlToManifest(typeManifest,
-                    tokens[2].replace(";", "").replace("\"", "").replace("'", ""));
-        } catch (ManifestException | FileNotFoundException e) {
-            LOG.error("CrossdataManifest couldn't be parsed", e);
-            return null;
-        }
-
-        long queryStart = System.currentTimeMillis();
-        long queryEnd = queryStart;
-        Result crossDataResult;
-
-        try {
-            crossDataResult = crossDataDriver.addManifest(manifest);
-        } catch (ManifestException e) {
-            LOG.error("CrossdataManifest couldn't be parsed", e);
-            return null;
-        }
-        queryEnd = System.currentTimeMillis();
-        updatePrompt(crossDataResult);
-        LOG.info("Response time: " + ((queryEnd - queryStart) / MS_TO_SECONDS) + " seconds");
-        if(crossDataResult instanceof ErrorResult){
-            result = "Result: " + ConsoleUtils.stringResult(crossDataResult);
-        }
-        return result;
-    }
-
-    private String dropManifest(int manifestType, String manifestName) {
-        try {
-            Result result = crossDataDriver.dropManifest(manifestType, manifestName);
-            String message;
-            if(result.hasError()){
-                ErrorResult errorResult = (ErrorResult) result;
-                message = errorResult.getErrorMessage();
-            } else {
-                CommandResult commandResult = (CommandResult) result;
-                message = commandResult.getResult().toString();
-            }
-            return message;
-        } catch (ManifestException e) {
-            return "ERROR";
+            LOG.error("Execution failed:", e);
         }
     }
 
@@ -666,14 +403,25 @@ public class Shell {
         BufferedReader input = null;
         String query;
         int numberOps = 0;
+        Result result;
         try {
-            input =
-                    new BufferedReader(new InputStreamReader(new FileInputStream(new File(scriptPath)), "UTF-8"));
+            input = new BufferedReader(
+                        new InputStreamReader(
+                                new FileInputStream(
+                                        new File(scriptPath)), "UTF-8"));
 
             while ((query = input.readLine()) != null) {
                 query = query.trim();
                 if (query.length() > 0 && !query.startsWith("#")) {
-                    executeQuery(query);
+                    LOG.info("Executing: "+query);
+                    if(useAsync){
+                        result = crossdataDriver.executeAsyncRawQuery(query, resultHandler);
+                        Thread.sleep(1000);
+                    } else {
+                        result = crossdataDriver.executeRawQuery(query);
+                    }
+                    LOG.info(ConsoleUtils.stringResult(result));
+                    updatePrompt(result);
                     numberOps++;
                 }
             }
@@ -683,6 +431,8 @@ public class Shell {
             LOG.error("Invalid path: " + scriptPath, e);
         } catch (IOException e) {
             LOG.error("Cannot read script: " + scriptPath, e);
+        } catch (InterruptedException e) {
+            LOG.error(e);
         } finally {
             if (input != null) {
                 try {

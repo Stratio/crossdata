@@ -20,6 +20,8 @@ package com.stratio.crossdata.common.result;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -126,14 +128,13 @@ public class MetadataResultTest {
         Assert.assertEquals(result.getColumnList().get(0).getColumnType().name(), "BIGINT");
     }
 
-
     private TableMetadata createTableMetadata() {
         TableName targetTable = new TableName("demo", "users");
         Map<Selector, Selector> options = new HashMap<>();
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         ClusterName clusterRef = new ClusterName("cluster");
-        List<ColumnName> partitionKey = new ArrayList<>();
-        List<ColumnName> clusterKey = new ArrayList<>();
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         Object[] parameters = { };
         columns.put(new ColumnName(new TableName("demo", "users"), "name"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "name"), parameters,

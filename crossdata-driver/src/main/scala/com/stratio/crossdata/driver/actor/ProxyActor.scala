@@ -34,7 +34,7 @@ import scala.concurrent.duration._
  */
 object ProxyActor {
   /**
-   * Initial path for actor's indentify.
+   * Initial path for actor's identify.
    */
   val INIT_PATH = "/user/"
 
@@ -72,8 +72,6 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
   logger.info("Up!")
 
   override def receive: Actor.Receive = {
-
-
 
     /* The driver sends the connect message. */
     case c: Connect => {
@@ -114,7 +112,7 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
           handler.processError(result)
         }
       } else {
-        logger.warn("Result not expected received for QID: " + result.getQueryId)
+        logger.info("Result not expected received for QID: " + result.getQueryId)
       }
 
     }

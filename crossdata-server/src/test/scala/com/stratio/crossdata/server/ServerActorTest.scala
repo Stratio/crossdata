@@ -24,7 +24,7 @@ import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
 import akka.pattern.ask
 import akka.testkit.ImplicitSender
-import com.stratio.crossdata.common.data.{CatalogName, ClusterName, ColumnName, ConnectorName, ConnectorStatus,
+import com.stratio.crossdata.common.data.{CatalogName, ClusterName, ColumnName, ConnectorName, Status,
 DataStoreName, FirstLevelName, IndexName, TableName}
 import com.stratio.crossdata.common.executionplan.{StorageWorkflow, ExecutionType, ResultType, MetadataWorkflow,
 QueryWorkflow}
@@ -39,7 +39,7 @@ import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.grid.Grid
-import com.stratio.crossdata.core.metadata.{MetadataManager, MetadataManagerTestHelper}
+import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.planner.{PlannerExecutionWorkflowTest, SelectValidatedQueryWrapper}
 import com.stratio.crossdata.core.query.{SelectPlannedQuery, SelectParsedQuery, BaseQuery, StorageParsedQuery,
 StorageValidatedQuery, StoragePlannedQuery, MetadataParsedQuery, MetadataValidatedQuery, MetadataPlannedQuery}
@@ -52,7 +52,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import akka.actor.Address
+import com.stratio.crossdata.core.MetadataManagerTestHelper
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
@@ -60,8 +60,8 @@ ImplicitSender with BeforeAndAfterAll{
   this: Suite =>
 
   //lazy val system = ActorSystem(clusterName, config)
-  val metadataManager=new MetadataManagerTestHelper()
-  val plannertest= new PlannerExecutionWorkflowTest()
+  val metadataManager = MetadataManagerTestHelper.HELPER
+  val plannerTest= new PlannerExecutionWorkflowTest()
 
   override def afterAll() {
     shutdown(system)
@@ -76,16 +76,14 @@ ImplicitSender with BeforeAndAfterAll{
     queryIdIncrement += 1;
     queryId + queryIdIncrement
   }
-//Actors in this tests
-var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet[Address]()
 
-  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(connectorManagerActorsSharedMemory),
-  "ConnectorManagerActor")
+  //Actors in this tests
+  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(), "ConnectorManagerActor")
   val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
     "CoordinatorActor")
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
 
-//Variables
+  //Variables
   var queryId = "query_id-2384234-1341234-23434"
   var queryIdIncrement = 0
   val tableName="myTable"
@@ -140,13 +138,13 @@ var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet
 
   val metadataStatement1: MetadataStatement =  new CreateTableStatement(TableType.DATABASE,
 
-      new TableName(catalogName,tableName1),
-      new ClusterName(myClusterName),
+    new TableName(catalogName,tableName1),
+    new ClusterName(myClusterName),
 
-      new util.HashMap[ColumnName, ColumnType](),
-      new util.ArrayList[ColumnName](),
-      new util.ArrayList[ColumnName]()
-    )
+    new util.LinkedHashMap[ColumnName, ColumnType](),
+    new util.LinkedHashSet[ColumnName](),
+    new util.LinkedHashSet[ColumnName]()
+  )
   val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table " + tableName1 + ";",
     new CatalogName(catalogName)),
     metadataStatement1)
@@ -162,17 +160,17 @@ var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet
     )
   )
   val columnNme= new ColumnName(catalogName,tableName1,columnName)
-  val myList=new java.util.ArrayList[ColumnName]()
+  val myList=new java.util.LinkedList[ColumnName]()
   myList.add(columnNme)
   metadataWorkflow1.setTableMetadata(
-  new TableMetadata(
-    new TableName(catalogName, tableName1),
-    new util.HashMap[Selector, Selector](),
-    new util.HashMap[ColumnName, ColumnMetadata](),
-    new util.HashMap[IndexName, IndexMetadata](),
-    new ClusterName(myClusterName),
-    myList,
-    new java.util.ArrayList[ColumnName]()
+    new TableMetadata(
+      new TableName(catalogName, tableName1),
+      new util.HashMap[Selector, Selector](),
+      new util.LinkedHashMap[ColumnName, ColumnMetadata](),
+      new util.HashMap[IndexName, IndexMetadata](),
+      new ClusterName(myClusterName),
+      myList,
+      new java.util.LinkedList[ColumnName]()
     )
   )
   val metadataPlannedQuery1 = new MetadataPlannedQuery(metadataValidatedQuery1,metadataWorkflow1)
@@ -203,7 +201,7 @@ var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet
   }
 
   def initializeTablesInfinispan(){//: TableMetadata = {
-    val operations=new java.util.HashSet[Operations]()
+  val operations=new java.util.HashSet[Operations]()
     operations.add(Operations.PROJECT)
     operations.add(Operations.SELECT_OPERATOR)
     operations.add(Operations.CREATE_TABLE)
@@ -231,7 +229,7 @@ var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet
 
     //create catalog
     metadataManager.createTestCatalog(catalogName)
-    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), ConnectorStatus.ONLINE)
+    MetadataManager.MANAGER.setConnectorStatus(new ConnectorName(connectorName.name), Status.ONLINE)
 
     val clusterMetadata = MetadataManager.MANAGER.getCluster(testcluster)
     val connectorsMap = new java.util.HashMap[ConnectorName, ConnectorAttachedMetadata]()
@@ -242,14 +240,13 @@ var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet
 
     //create table
     val table1= metadataManager.createTestTable(clusterName1, catalogName, tableName, Array(name, "age"),
-
-      Array(ColumnType.TEXT, ColumnType.INT), Array(name), Array(name))
+      Array(ColumnType.TEXT, ColumnType.INT), Array(name), Array(name), null)
 
     val initialSteps: java.util.List[LogicalStep] = new java.util.LinkedList[LogicalStep]
     val project: Project = getProject(tableName2)
     val columns: Array[ColumnName] = Array(new ColumnName(table1.getName, id), new ColumnName(table1.getName, "user"))
     val types: Array[ColumnType] = Array(ColumnType.INT, ColumnType.TEXT)
-    val select: Select = plannertest.getSelect(columns, types)
+    val select: Select = plannerTest.getSelect(columns, types)
     project.setNextStep(select)
 
 
@@ -262,7 +259,6 @@ var connectorManagerActorsSharedMemory: util.HashSet[Address] = new util.HashSet
         StringUtils.getAkkaActorRefUri(connectorActor),
         ExecutionType.SELECT, ResultType.RESULTS,workflow))
   }
-
 
   /**
    * Create a test Project operator.

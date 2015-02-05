@@ -18,9 +18,7 @@
 
 package Mocks
 
-import com.stratio.crossdata.common.connector.{ IConfiguration, IConnector}
-import com.stratio.crossdata.common.connector.{IStorageEngine, ConnectorClusterConfig,
-IQueryEngine, IMetadataEngine}
+import com.stratio.crossdata.common.connector.{ConnectorClusterConfig, IConfiguration, IConnector, IMetadataEngine, IQueryEngine, IStorageEngine}
 import com.stratio.crossdata.common.data.ClusterName
 import com.stratio.crossdata.common.security.ICredentials
 

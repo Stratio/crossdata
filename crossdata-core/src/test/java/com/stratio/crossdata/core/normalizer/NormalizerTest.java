@@ -22,15 +22,18 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -38,6 +41,9 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
+import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -45,24 +51,45 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
+import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.structures.GroupByClause;
+import com.stratio.crossdata.core.structures.InnerJoin;
 
-public class NormalizerTest extends MetadataManagerTestHelper {
+public class NormalizerTest {
 
     /**
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(MetadataManagerTestHelper.class);
 
-    @Test(groups = "putData")
-    public void putData() throws Exception {
+    @BeforeClass
+    public void setUp() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
+    }
+
+    @Test
+    public void insertData() throws Exception {
 
         // DATASTORE
-        insertDataStore("Cassandra", "production");
+        MetadataManagerTestHelper.HELPER.insertDataStore("Cassandra", "production");
 
         // CLUSTER
         ClusterName clusterName = new ClusterName("testing");
@@ -73,7 +100,7 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreRef, clusterOptions,
                 connectorAttachedRefs);
 
-        MetadataManager.MANAGER.createCluster(clusterMetadata);
+        MetadataManager.MANAGER.createCluster(clusterMetadata, false);
 
         // CATALOG 1
         HashMap<TableName, TableMetadata> tables = new HashMap<>();
@@ -81,7 +108,7 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         TableName tableName = new TableName("demo", "tableClients");
         Map<Selector, Selector> options = new HashMap<>();
 
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
 
         ColumnMetadata columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "clientId"),
@@ -121,8 +148,11 @@ public class NormalizerTest extends MetadataManagerTestHelper {
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
         ClusterName clusterRef = new ClusterName("testing");
-        List<ColumnName> partitionKey = Collections.singletonList(new ColumnName("demo", "tableClients", "clientId"));
-        List<ColumnName> clusterKey = new ArrayList<>();
+
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        partitionKey.add(new ColumnName("demo", "tableClients", "clientId"));
+
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
 
         TableMetadata tableMetadata = new TableMetadata(
                 tableName,
@@ -142,7 +172,10 @@ public class NormalizerTest extends MetadataManagerTestHelper {
                 tables // tables
         );
 
-        MetadataManager.MANAGER.createCatalog(catalogMetadata);
+        MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
+
+        assertTrue(MetadataManager.MANAGER.exists(catalogMetadata.getName()), System.lineSeparator() +
+                "Catalog: " + catalogMetadata.getName() + " not found in the Metadata Manager");
 
         // CATALOG 2
         tables = new HashMap<>();
@@ -150,7 +183,7 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         tableName = new TableName("myCatalog", "tableCostumers");
         options = new HashMap<>();
 
-        columns = new HashMap<>();
+        columns = new LinkedHashMap<>();
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "assistantId"),
@@ -178,8 +211,10 @@ public class NormalizerTest extends MetadataManagerTestHelper {
 
         indexes = new HashMap<>();
         clusterRef = new ClusterName("myCluster");
-        partitionKey = Collections.singletonList(new ColumnName("myCatalog", "tableCostumers", "assistantId"));
-        clusterKey = new ArrayList<>();
+        partitionKey.clear();
+        partitionKey.add(new ColumnName("myCatalog", "tableCostumers", "assistantId"));
+
+        clusterKey = new LinkedList<>();
 
         tableMetadata = new TableMetadata(
                 tableName,
@@ -199,9 +234,12 @@ public class NormalizerTest extends MetadataManagerTestHelper {
                 tables // tables
         );
 
-        MetadataManager.MANAGER.createCatalog(catalogMetadata);
+        MetadataManager.MANAGER.createCatalog(catalogMetadata, false);
 
         LOG.info("Data inserted in the MetadataManager for the NormalizedTest");
+
+        assertTrue(MetadataManager.MANAGER.exists(catalogMetadata.getName()), System.lineSeparator() +
+                "Catalog: " + catalogMetadata.getName() + " not found in the Metadata Manager");
     }
 
     public void testSelectedParserQuery(SelectParsedQuery selectParsedQuery, String expectedText, String methodName) {
@@ -216,12 +254,14 @@ public class NormalizerTest extends MetadataManagerTestHelper {
 
         assertTrue(result.toString().equalsIgnoreCase(expectedText),
                 "Test failed: " + methodName + System.lineSeparator() +
-                        "Result:   " + result.toString() + System.lineSeparator() +
-                        "Expected: " + expectedText);
+                "Result:   " + result.toString() + System.lineSeparator() +
+                "Expected: " + expectedText);
     }
-/*
-    @Test(dependsOnGroups = "putData")
+
+    @Test
     public void testNormalizeWhereOrderGroup() throws Exception {
+
+        insertData();
 
         String methodName = "testNormalizeWhereOrderGroup";
 
@@ -231,8 +271,8 @@ public class NormalizerTest extends MetadataManagerTestHelper {
                 + "GROUP BY colSales, colExpenses;";
 
         String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
-                + "WHERE demo.tableClients.colPlace = Madrid "
-                + "ORDER BY demo.tableClients.year "
+                + "WHERE demo.tableClients.colPlace = 'Madrid' "
+                + "ORDER BY [demo.tableClients.year] "
                 + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses";
 
         // BASE QUERY
@@ -257,22 +297,41 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         // ORDER BY
         List<Selector> selectorListOrder = new ArrayList<>();
         selectorListOrder.add(new ColumnSelector(new ColumnName(null, "year")));
-        OrderBy orderBy = new OrderBy(selectorListOrder);
-        selectStatement.setOrderBy(orderBy);
+        OrderByClause orderBy = new OrderByClause(new ColumnSelector(new ColumnName(null, "year")));
+        List<OrderByClause> orderByClauses = new ArrayList<>();
+        orderByClauses.add(orderBy);
+        selectStatement.setOrderByClauses(orderByClauses);
 
         // GROUP BY
         List<Selector> groupBy = new ArrayList<>();
         groupBy.add(new ColumnSelector(new ColumnName(null, "colSales")));
         groupBy.add(new ColumnSelector(new ColumnName(null, "colExpenses")));
-        selectStatement.setGroupBy(new GroupBy(groupBy));
+        selectStatement.setGroupByClause(new GroupByClause(groupBy));
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
-        testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
+        Normalizer normalizer = new Normalizer();
+
+        SelectValidatedQuery result = null;
+        try {
+            result = normalizer.normalize(selectParsedQuery);
+        } catch (ValidationException e) {
+            fail("Test failed: " + methodName + System.lineSeparator(), e);
+        }
+
+        assertTrue(result.toString().equalsIgnoreCase(expectedText),
+                "Test failed: " + methodName + System.lineSeparator() +
+                        "Result:   " + result.toString() + System.lineSeparator() +
+                        "Expected: " + expectedText);
+
+
+
     }
 
-    @Test(dependsOnGroups = "putData")
+    @Test
     public void testNormalizeInnerJoin() throws Exception {
+
+        insertData();
 
         String methodName = "testNormalizeInnerJoin";
 
@@ -286,8 +345,8 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         String expectedText =
                 "SELECT demo.tableClients.colSales, myCatalog.tableCostumers.colFee FROM demo.tableClients "
                         + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.tableClients.clientId "
-                        + "WHERE myCatalog.tableCostumers.colCity = Madrid "
-                        + "ORDER BY myCatalog.tableCostumers.age "
+                        + "WHERE myCatalog.tableCostumers.colCity = 'Madrid' "
+                        + "ORDER BY [myCatalog.tableCostumers.age] "
                         + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee";
 
         // BASE QUERY
@@ -321,19 +380,105 @@ public class NormalizerTest extends MetadataManagerTestHelper {
         // ORDER BY
         List<Selector> selectorListOrder = new ArrayList<>();
         selectorListOrder.add(new ColumnSelector(new ColumnName(null, "age")));
-        OrderBy orderBy = new OrderBy(selectorListOrder);
-        selectStatement.setOrderBy(orderBy);
+        OrderByClause orderBy = new OrderByClause(new ColumnSelector(new ColumnName(null, "age")));
+        List<OrderByClause> orderByClauses = new ArrayList<>();
+        orderByClauses.add(orderBy);
+        selectStatement.setOrderByClauses(orderByClauses);
 
         // GROUP BY
         List<Selector> groupBy = new ArrayList<>();
         groupBy.add(new ColumnSelector(new ColumnName(null, "colSales")));
         groupBy.add(new ColumnSelector(new ColumnName(null, "colFee")));
-        selectStatement.setGroupBy(new GroupBy(groupBy));
+        selectStatement.setGroupByClause(new GroupByClause(groupBy));
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
-        testSelectedParserQuery(selectParsedQuery, expectedText, methodName);
+        Normalizer normalizer = new Normalizer();
+
+        SelectValidatedQuery result = null;
+        try {
+            result = normalizer.normalize(selectParsedQuery);
+        } catch (ValidationException e) {
+            fail("Test failed: " + methodName + System.lineSeparator(), e);
+        }
+
+        assertTrue(result.toString().equalsIgnoreCase(expectedText),
+                "Test failed: " + methodName + System.lineSeparator() +
+                        "Result:   " + result.toString() + System.lineSeparator() +
+                        "Expected: " + expectedText);
 
     }
-*/
+
+
+
+    @Test(expectedExceptions = BadFormatException.class)
+    public void testNormalizeWrongInnerJoin() throws Exception {
+
+        insertData();
+
+        String inputText =
+                        "SELECT colSales FROM tableClients "
+                                        + "INNER JOIN tableClients ON assistantId = clientId ";
+
+        // BASE QUERY
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+
+        // SELECTORS
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
+
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        // SELECT STATEMENT
+        SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
+
+        List<Relation> joinRelations = new ArrayList<>();
+        Relation relation = new Relation(
+                        new ColumnSelector(new ColumnName(new TableName("myCatalog","tableCostumers"), "assistantId")),
+                        Operator.EQ,
+                        new ColumnSelector(new ColumnName(null, "clientId")));
+        joinRelations.add(relation);
+        InnerJoin innerJoin = new InnerJoin(new TableName("demo", "tableClients"), joinRelations);
+        selectStatement.setJoin(innerJoin);
+
+
+        SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        //VALIDATE THE QUERY
+        Normalizer normalizer = new Normalizer();
+        normalizer.normalize(selectParsedQuery);
+
+
+    }
+
+    @Test(expectedExceptions = BadFormatException.class)
+    public void testNormalizeWrongBasicSelect() throws Exception {
+
+        insertData();
+
+        String inputText =
+                        "SELECT myCatalog.tableCostumers.colFee FROM demo.tableClients";
+
+        // BASE QUERY
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+
+        // SELECTORS
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
+        selectorList.add(new ColumnSelector(new ColumnName(new TableName("myCatalog","tableCostumers"), "colFee")));
+
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        // SELECT STATEMENT
+        SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
+
+        SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        //VALIDATE THE QUERY
+        Normalizer normalizer = new Normalizer();
+        normalizer.normalize(selectParsedQuery);
+
+
+    }
+
 }

@@ -17,6 +17,9 @@
  */
 package com.stratio.crossdata.common.exceptions.validation;
 
+/**
+ * Class of exception for coordinator.
+ */
 public class CoordinationException extends Exception {
 
     /**
@@ -24,10 +27,19 @@ public class CoordinationException extends Exception {
      */
     private static final long serialVersionUID = -885849978386466715L;
 
+    /**
+     * Constructor class based in a message.
+     * @param message The message.
+     */
     public CoordinationException(String message) {
         super(message);
     }
 
+    /**
+     * Constructor class based in a message and a throwable cause.
+     * @param msg The message.
+     * @param cause The throwable exception.
+     */
     public CoordinationException(String msg, Throwable cause) {
         super(msg, cause);
     }

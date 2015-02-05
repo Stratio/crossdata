@@ -18,8 +18,12 @@
 
 package com.stratio.crossdata.common.result;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 
@@ -27,6 +31,11 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
  * Class to return results from the execution of a metadata-related operation.
  */
 public final class MetadataResult extends Result {
+
+    /**
+     * Unknown Operation.
+     */
+    public static final int OPERATION_UNKNOWN = 0;
 
     /**
      * Operation identifier to create catalog.
@@ -83,11 +92,13 @@ public final class MetadataResult extends Result {
      */
     public static final int OPERATION_ALTER_TABLE = 11;
 
-    /**
-     * Unknown Operation.
-     */
-    public static final int OPERATION_UNKNOWN = 12;
+    public static final int OPERATION_DISCOVER_METADATA = 12;
 
+    public static final int OPERATION_IMPORT_CATALOGS = 13;
+
+    public static final int OPERATION_IMPORT_CATALOG = 14;
+
+    public static final int OPERATION_IMPORT_TABLE = 15;
 
     /**
      * Operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}.
@@ -98,6 +109,8 @@ public final class MetadataResult extends Result {
      * Serial version UID in order to be Serializable.
      */
     private static final long serialVersionUID = 7257573696937869953L;
+
+    private List<CatalogMetadata> catalogMetadataList = null;
 
     /**
      * List of catalogs in the database.
@@ -114,11 +127,18 @@ public final class MetadataResult extends Result {
      */
     private List<ColumnMetadata> columnList = null;
 
+    private boolean noOperation = false;
+
     /**
      * Private constructor of the factory.
      */
     private MetadataResult(final int operation) {
+        this(operation, false);
+    }
+
+    private MetadataResult(final int operation, boolean noOperation) {
         this.operation = operation;
+        this.noOperation = noOperation;
     }
 
     /**
@@ -128,8 +148,17 @@ public final class MetadataResult extends Result {
      * @return A {@link com.stratio.crossdata.common.result.MetadataResult}.
      */
     public static MetadataResult createSuccessMetadataResult(final int operation) {
-        return new MetadataResult
-                (operation);
+        return new MetadataResult(operation);
+    }
+
+    /**
+     * Create a succeeded metadata result.
+     * @param operation The operation.
+     * @param noOperation The noOperation.
+     * @return The result of the Metadata Operation
+     */
+    public static MetadataResult createSuccessMetadataResult(final int operation, boolean noOperation) {
+        return new MetadataResult(operation, noOperation);
     }
 
     public List<String> getCatalogList() {
@@ -146,8 +175,16 @@ public final class MetadataResult extends Result {
         return operation;
     }
 
+    public List<CatalogMetadata> getCatalogMetadataList() {
+        return catalogMetadataList;
+    }
+
+    public void setCatalogMetadataList(List<CatalogMetadata> catalogMetadataList) {
+        this.catalogMetadataList = catalogMetadataList;
+    }
+
     /**
-     * Set the catalog list.
+     *java.lang.Object Set the catalog list.
      *
      * @param catalogList The list.
      */
@@ -188,6 +225,9 @@ public final class MetadataResult extends Result {
      */
     @Override
     public String toString() {
+        if(noOperation){
+            return "None operation was necessary";
+        }
         switch (this.operation) {
 
         case MetadataResult.OPERATION_CREATE_CATALOG:
@@ -208,11 +248,41 @@ public final class MetadataResult extends Result {
             return tableList.toString();
         case MetadataResult.OPERATION_LIST_COLUMNS:
             return columnList.toString();
-
+        case MetadataResult.OPERATION_DISCOVER_METADATA:
+            return showCatalogs(catalogMetadataList);
+        case MetadataResult.OPERATION_IMPORT_CATALOGS:
+            return "Catalogs " + showCatalogNames(catalogMetadataList) + " imported successfully";
+        case MetadataResult.OPERATION_IMPORT_CATALOG:
+            return "Catalog " + catalogMetadataList.get(0).getName() + " imported successfully";
+        case MetadataResult.OPERATION_IMPORT_TABLE:
+            return "Table " + tableList.get(0).getName() + " imported successfully";
         default:
             return "OK";
-
         }
 
     }
+
+    private String showCatalogs(List<CatalogMetadata> catalogMetadataList) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(System.lineSeparator());
+        for(CatalogMetadata cm: catalogMetadataList){
+            sb.append(" * Catalog: ").append(cm.getName()).append(System.lineSeparator());
+            for(TableName tb: cm.getTables().keySet()){
+                sb.append("\t").append(" - Table: ").append(tb).append(System.lineSeparator());
+            }
+        }
+        sb.append(System.lineSeparator());
+        return sb.toString();
+    }
+
+    private List<CatalogName> showCatalogNames(List<CatalogMetadata> catalogMetadataList) {
+        List<CatalogName> catalogNames = new ArrayList<>();
+        for(CatalogMetadata cm: catalogMetadataList){
+            catalogNames.add(cm.getName());
+        }
+        return catalogNames;
+    }
+
+
+
 }

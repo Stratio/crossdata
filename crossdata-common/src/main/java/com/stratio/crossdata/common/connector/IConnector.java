@@ -18,12 +18,12 @@
 
 package com.stratio.crossdata.common.connector;
 
+import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.security.ICredentials;
-import com.stratio.crossdata.common.data.ClusterName;
 
 /**
  * Common interface for CROSSDATA connectors. A connector provides implementations for storage and query
@@ -67,12 +67,13 @@ public interface IConnector {
     /**
      * Close the connection with the underlying cluster.
      *
+     * @param name The Cluster name.
      * @throws ConnectionException If the close operation cannot be performed.
      */
     void close(ClusterName name) throws ConnectionException;
 
     /**
-     * Shuts down and then close all cluster's connections
+     * Shuts down and then close all cluster's connections.
      *
      * @throws ExecutionException If the shutdown operation cannot be performed.
      */
@@ -81,6 +82,7 @@ public interface IConnector {
     /**
      * Retrieve the connectivity status with the datastore.
      *
+     * @param name The Cluster name.
      * @return Whether it is connected or not.
      */
     boolean isConnected(ClusterName name);
@@ -108,4 +110,5 @@ public interface IConnector {
      * @throws UnsupportedException If the connector does not provide this functionality.
      */
     IMetadataEngine getMetadataEngine() throws UnsupportedException;
+
 }

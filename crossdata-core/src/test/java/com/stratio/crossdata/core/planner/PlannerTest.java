@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -62,6 +63,7 @@ import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
@@ -74,7 +76,7 @@ import com.stratio.crossdata.core.query.StorageValidatedQuery;
  * Planner tests considering an initial input, generating all intermediate steps,
  * and generating a ExecutionWorkflow.
  */
-public class PlannerTest extends PlannerBaseTest{
+public class PlannerTest extends PlannerBaseTest {
 
     /**
      * Class logger.
@@ -92,13 +94,14 @@ public class PlannerTest extends PlannerBaseTest{
 
     @BeforeClass
     public void setUp() throws ManifestException {
-        super.setUp();
-        DataStoreName dataStoreName = createTestDatastore();
+        MetadataManagerTestHelper.HELPER.initHelper();
+        DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         //Connector with join.
         Set<Operations> operationsC1 = new HashSet<>();
         operationsC1.add(Operations.PROJECT);
         operationsC1.add(Operations.SELECT_OPERATOR);
+        operationsC1.add(Operations.SELECT_FUNCTIONS);
         operationsC1.add(Operations.SELECT_WINDOW);
         operationsC1.add(Operations.SELECT_GROUP_BY);
         operationsC1.add(Operations.DELETE_PK_EQ);
@@ -116,12 +119,19 @@ public class PlannerTest extends PlannerBaseTest{
         operationsC2.add(Operations.SELECT_INNER_JOIN);
         operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
 
-        connector1 = createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(),operationsC1, "actorRef1");
-        connector2 = createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(),operationsC2, "actorRef2");
+        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
+                "actorRef1");
+        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
+                "actorRef2");
 
-        clusterName = createTestCluster("TestCluster1", dataStoreName, connector1.getName(), connector2.getName());
-        CatalogName catalogName = createTestCatalog("demo");
+        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster("TestCluster1", dataStoreName, connector1.getName(), connector2.getName());
+        CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         createTestTables();
+    }
+
+    @AfterClass
+    public void tearDown(){
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     public void createTestTables() {
@@ -129,27 +139,26 @@ public class PlannerTest extends PlannerBaseTest{
         ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
-        table1 = createTestTable(clusterName, "demo", "table1",
-                columnNames1, columnTypes1, partitionKeys1, clusteringKeys1);
+        table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table1",
+                columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
         ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
-        table2 = createTestTable(clusterName, "demo", "table2",
-                columnNames2, columnTypes2, partitionKeys2, clusteringKeys2);
+        table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table2",
+                columnNames2, columnTypes2, partitionKeys2, clusteringKeys2, null);
 
         String[] columnNames3 = { "id_aux", "address" };
         ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
         String[] partitionKeys3 = { "id_aux" };
         String[] clusteringKeys3 = { };
-        table3 = createTestTable(clusterName, "demo", "table3",
-                columnNames3, columnTypes3, partitionKeys3, clusteringKeys3);
+        table3 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table3",
+                columnNames3, columnTypes3, partitionKeys3, clusteringKeys3, null);
     }
 
-
     @Test
-    public void selectSingleColumn(){
+    public void selectSingleColumn() {
         String inputText = "SELECT demo.table1.id FROM demo.table1;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "selectSingleColumn", false, table1);
         assertNotNull(queryWorkflow, "Null workflow received.");
@@ -159,7 +168,17 @@ public class PlannerTest extends PlannerBaseTest{
     }
 
     @Test
-    public void selectJoinMultipleColumns(){
+    public void selectWithFunction() {
+        String inputText = "SELECT getYear(demo.table1.id) AS getYear FROM demo.table1;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "selectWithFunction", false, table1);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        assertEquals(queryWorkflow.getActorRef(), connector1.getActorRef(), "Wrong target actor");
+    }
+
+    @Test
+    public void selectJoinMultipleColumns() {
         String inputText = "SELECT demo.table1.id, demo.table1.user, demo.table2.id, demo.table2.email"
                 + " FROM demo.table1"
                 + " INNER JOIN demo.table2 ON demo.table1.id = demo.table2.id;";
@@ -172,7 +191,7 @@ public class PlannerTest extends PlannerBaseTest{
     }
 
     @Test
-    public void selectJoinMultipleColumnsDiffOnNames(){
+    public void selectJoinMultipleColumnsDiffOnNames() {
         String inputText = "SELECT demo.table1.id, demo.table1.user, demo.table3.id_aux, demo.table3.address"
                 + " FROM demo.table1"
                 + " INNER JOIN demo.table3 ON demo.table1.id = demo.table3.id_aux;";
@@ -185,7 +204,7 @@ public class PlannerTest extends PlannerBaseTest{
     }
 
     @Test
-    public void dropTable(){
+    public void dropTable() {
         String inputText = "DROP TABLE demo.table1;";
 
         IParsedQuery stmt = helperPT.testRegularStatement(inputText, "dropTable");
@@ -209,7 +228,7 @@ public class PlannerTest extends PlannerBaseTest{
     }
 
     @Test
-    public void deleteRows(){
+    public void deleteRows() {
         String inputText = "DELETE FROM demo.table1 WHERE id = 3;";
 
         String expectedText = "DELETE FROM demo.table1 WHERE demo.table1.id = 3;";
@@ -237,17 +256,17 @@ public class PlannerTest extends PlannerBaseTest{
         whereClauses.add(new Filter(Operations.DELETE_PK_EQ, new Relation(
                 new ColumnSelector(new ColumnName("demo", "table1", "id")),
                 Operator.EQ,
-                new IntegerSelector(3))));
+                new IntegerSelector(new TableName("demo", "table1"), 3))));
 
         assertEquals(storageWorkflow.getWhereClauses().size(), whereClauses.size(), "Where clauses size differs");
 
         assertTrue(storageWorkflow.getWhereClauses().iterator().next().toString().equalsIgnoreCase(
-                whereClauses.iterator().next().toString()),
+                        whereClauses.iterator().next().toString()),
                 "Where clauses are not equal");
     }
 
     @Test
-    public void createIndex(){
+    public void createIndex() {
         String inputText = "CREATE INDEX indexTest ON demo.table1(user);";
 
         String expectedText = "CREATE DEFAULT INDEX indexTest ON demo.table1(demo.table1.user);";
@@ -280,9 +299,9 @@ public class PlannerTest extends PlannerBaseTest{
         Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
         ColumnName columnName = new ColumnName("demo", "table1", "user");
         columns.put(columnName, new ColumnMetadata(
-                                        columnName,
-                                        null,
-                                        ColumnType.TEXT));
+                columnName,
+                null,
+                ColumnType.TEXT));
         assertEquals(indexMetadata.getColumns().size(), columns.size(), "Column sizes differ");
         assertEquals(indexMetadata.getColumns().values().iterator().next().getColumnType(),
                 columns.values().iterator().next().getColumnType(),
@@ -290,7 +309,7 @@ public class PlannerTest extends PlannerBaseTest{
     }
 
     @Test
-    public void dropIndex(){
+    public void dropIndex() {
         String inputText = "DROP INDEX demo.table1.indexTest;";
 
         String expectedText = "DROP INDEX demo.table1.index[indexTest];";
@@ -347,7 +366,7 @@ public class PlannerTest extends PlannerBaseTest{
     }
 
     @Test
-    public void updateTable(){
+    public void updateTable() {
         String inputText = "UPDATE demo.table1 SET user = 'DataHub' WHERE id = 1;";
 
         String expectedText = "UPDATE demo.table1 SET demo.table1.user = 'DataHub' WHERE demo.table1.id = 1;";
@@ -372,28 +391,28 @@ public class PlannerTest extends PlannerBaseTest{
 
         List<Relation> relations = new ArrayList<>();
         Selector leftSelector = new ColumnSelector(new ColumnName("demo", "table1", "user"));
-        Selector rightTerm = new StringSelector("DataHub");
+        Selector rightTerm = new StringSelector(new TableName("demo", "table1"), "DataHub");
         relations.add(new Relation(leftSelector, Operator.ASSIGN, rightTerm));
         assertEquals(storageWorkflow.getAssignments().size(), 1, "Wrong assignments size");
         assertEquals(storageWorkflow.getAssignments().size(), relations.size(), "Assignments sizes differ");
         assertTrue(storageWorkflow.getAssignments().iterator().next().toString().equalsIgnoreCase(
-                relations.iterator().next().toString()),
+                        relations.iterator().next().toString()),
                 "Assignments differ");
 
         List<Filter> filters = new ArrayList<>();
         ColumnSelector firstSelector = new ColumnSelector(new ColumnName("demo", "table1", "id"));
-        IntegerSelector secondSelector = new IntegerSelector(1);
+        IntegerSelector secondSelector = new IntegerSelector(new TableName("demo", "table1"), 1);
         Relation relation = new Relation(firstSelector, Operator.EQ, secondSelector);
         filters.add(new Filter(Operations.UPDATE_PK_EQ, relation));
         assertEquals(storageWorkflow.getWhereClauses().size(), 1, "Wrong where clauses size");
         assertEquals(storageWorkflow.getWhereClauses().size(), filters.size(), "Where clauses sizes differ");
         assertTrue(storageWorkflow.getWhereClauses().iterator().next().toString().equalsIgnoreCase(
-                filters.iterator().next().toString()),
+                        filters.iterator().next().toString()),
                 "Where clauses differ");
     }
 
     @Test
-    public void truncateTable(){
+    public void truncateTable() {
         String inputText = "TRUNCATE demo.table1;";
 
         IParsedQuery stmt = helperPT.testRegularStatement(inputText, "truncateTable");
@@ -418,9 +437,9 @@ public class PlannerTest extends PlannerBaseTest{
     }
 
     @Test
-    public void selectGroupBy(){
+    public void selectGroupBy() {
         String inputText =
-                "SELECT demo.table1.id, FUNCTION(demo.table1.user) FROM demo.table1 GROUP BY demo.table1.id;";
+                "SELECT demo.table1.id, shorten(demo.table1.user) AS shorten FROM demo.table1 GROUP BY demo.table1.id;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "selectGroupBy", false, table1);

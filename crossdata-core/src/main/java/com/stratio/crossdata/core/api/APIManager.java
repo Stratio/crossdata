@@ -38,8 +38,12 @@ import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.IndexName;
+import com.stratio.crossdata.common.data.Status;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ApiException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
@@ -48,10 +52,13 @@ import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
+import com.stratio.crossdata.common.manifest.ConnectorFunctionsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
+import com.stratio.crossdata.common.manifest.DataStoreFunctionsType;
 import com.stratio.crossdata.common.manifest.DataStoreRefsType;
 import com.stratio.crossdata.common.manifest.DataStoreType;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertiesType;
 import com.stratio.crossdata.common.manifest.PropertyType;
@@ -63,6 +70,8 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
@@ -109,15 +118,95 @@ public class APIManager {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(APIManager.class);
-    private static final String PROCESSING= "Processing ";
+    private static final String PROCESSING = "Processing ";
 
     /**
-     * Class constructor.
+     * Constructor class.
+     * @param parser The parser.
+     * @param validator The validator.
+     * @param planner The planner.
      */
     public APIManager(Parser parser, Validator validator, Planner planner) {
         this.parser = parser;
         this.validator = validator;
         this.planner = planner;
+    }
+
+    private Result processRequestListCatalogs(){
+        Result result;
+        LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
+        LOG.info(PROCESSING + APICommand.LIST_CATALOGS().toString());
+        List<CatalogMetadata> catalogsMetadata = MetadataManager.MANAGER.getCatalogs();
+
+        result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_CATALOGS);
+        List<String> catalogs = new ArrayList<>();
+        for (CatalogMetadata catalogMetadata : catalogsMetadata) {
+            catalogs.add(catalogMetadata.getName().getName());
+        }
+        ((MetadataResult) result).setCatalogList(catalogs);
+        return result;
+    }
+
+    private Result processRequestListTables(Command cmd){
+        Result result;
+        List<TableMetadata> tables;
+
+        if (cmd.params() != null && !cmd.params().isEmpty()) {
+            String catalog = (String) cmd.params().get(0);
+            LOG.info(PROCESSING + APICommand.LIST_TABLES().toString());
+            tables = MetadataManager.MANAGER.getTablesByCatalogName(catalog);
+        } else {
+            LOG.info(PROCESSING + APICommand.LIST_TABLES().toString());
+            tables = MetadataManager.MANAGER.getTables();
+        }
+        result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_TABLES);
+        ((MetadataResult) result).setTableList(tables);
+        return result;
+    }
+
+    private Result processRequestListColumns(Command cmd){
+        Result result;
+        LOG.info("Processing " + APICommand.LIST_COLUMNS().toString());
+        List<ColumnMetadata> columns;
+
+        if (cmd.params() != null && !cmd.params().isEmpty()) {
+            String catalog = (String) cmd.params().get(0);
+            String table = (String) cmd.params().get(1);
+            columns = MetadataManager.MANAGER.getColumnByTable(catalog, table);
+        } else {
+            columns = MetadataManager.MANAGER.getColumns();
+        }
+
+        result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_COLUMNS);
+        ((MetadataResult) result).setColumnList(columns);
+        return result;
+    }
+
+    private Result processRequestAddManifest(Command cmd){
+        Result result;
+        LOG.info(PROCESSING + APICommand.ADD_MANIFEST().toString());
+        result = CommandResult.createCommandResult("CrossdataManifest added "
+                + System.lineSeparator()
+                + cmd.params().get(0).toString());
+        try {
+            persistManifest((CrossdataManifest) cmd.params().get(0));
+        } catch (ApiException e) {
+            result = new ErrorResult(e);
+        }
+        return result;
+    }
+
+    private Result processRequestDropManifest(Command cmd){
+        Result result;
+        LOG.info(PROCESSING + APICommand.DROP_MANIFEST().toString());
+        result = CommandResult.createCommandResult("Manifest dropped");
+        try {
+            dropManifest(Integer.parseInt(String.valueOf(cmd.params().get(0))), cmd.params().get(1).toString());
+        } catch (ApiException e) {
+            LOG.info(e.getMessage(),e);
+            result = CommandResult.createExecutionErrorResult(e.getMessage());
+        }
+        return result;
     }
 
     /**
@@ -129,77 +218,48 @@ public class APIManager {
     public Result processRequest(Command cmd) {
         Result result;
         if (APICommand.LIST_CATALOGS().equals(cmd.commandType())) {
-            LOG.info("Processing " + APICommand.LIST_CATALOGS().toString());
-            LOG.info(PROCESSING + APICommand.LIST_CATALOGS().toString());
-            List<CatalogMetadata> catalogsMetadata = MetadataManager.MANAGER.getCatalogs();
-
-            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_CATALOGS);
-            List<String> catalogs = new ArrayList<>();
-            for(CatalogMetadata catalogMetadata: catalogsMetadata){
-                catalogs.add(catalogMetadata.getName().getName());
-            }
-            ((MetadataResult) result).setCatalogList(catalogs);
+            result=processRequestListCatalogs();
         } else if (APICommand.LIST_TABLES().equals(cmd.commandType())) {
-            List<TableMetadata> tables;
-
-            if (cmd.params() != null && !cmd.params().isEmpty()) {
-                String catalog = (String) cmd.params().get(0);
-                LOG.info(PROCESSING + APICommand.LIST_TABLES().toString());
-                tables = MetadataManager.MANAGER.getTablesByCatalogName(catalog);
-            } else {
-                LOG.info(PROCESSING + APICommand.LIST_TABLES().toString());
-                tables = MetadataManager.MANAGER.getTables();
-            }
-            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_TABLES);
-            ((MetadataResult) result).setTableList(tables);
+           result=processRequestListTables(cmd);
         } else if (APICommand.LIST_COLUMNS().equals(cmd.commandType())) {
-            LOG.info("Processing " + APICommand.LIST_COLUMNS().toString());
-            List<ColumnMetadata> columns;
-
-            if (cmd.params() != null && !cmd.params().isEmpty()) {
-                String catalog = (String) cmd.params().get(0);
-                String table = (String) cmd.params().get(1);
-                columns = MetadataManager.MANAGER.getColumnByTable(catalog, table);
-            } else {
-                columns = MetadataManager.MANAGER.getColumns();
-            }
-
-            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_COLUMNS);
-            ((MetadataResult) result).setColumnList(columns);
+            result=processRequestListColumns(cmd);
         } else if (APICommand.ADD_MANIFEST().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.ADD_MANIFEST().toString());
-            result = CommandResult.createCommandResult("CrossdataManifest added "
-                    + System.lineSeparator()
-                    + cmd.params().get(0).toString());
-            try {
-                persistManifest((CrossdataManifest) cmd.params().get(0));
-            } catch (ApiException e) {
-                result = new ErrorResult(e);
-            }
-
-        } else if (APICommand.DROP_MANIFEST().equals(cmd.commandType())){
-            LOG.info(PROCESSING + APICommand.DROP_MANIFEST().toString());
-            result = CommandResult.createCommandResult("Manifest dropped");
-            try {
-                dropManifest(Integer.parseInt(String.valueOf(cmd.params().get(0))), cmd.params().get(1).toString());
-            } catch (ApiException e) {
-                result = CommandResult.createExecutionErrorResult(e.getMessage());
-            }
+            result=processRequestAddManifest(cmd);
+        } else if (APICommand.DROP_MANIFEST().equals(cmd.commandType())) {
+            result=processRequestDropManifest(cmd);
         } else if (APICommand.RESET_SERVERDATA().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.RESET_SERVERDATA().toString());
             result = resetServerdata();
         } else if (APICommand.CLEAN_METADATA().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.CLEAN_METADATA().toString());
             result = cleanMetadata();
-        } else if (APICommand.DESCRIBE_CONNECTOR().equals(cmd.commandType())) {
-            LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTOR().toString());
-            result = describeConnector((ConnectorName) cmd.params().get(0));
-        } else if (APICommand.DESCRIBE_DATASTORE().equals(cmd.commandType())) {
-                LOG.info(PROCESSING + APICommand.DESCRIBE_DATASTORE().toString());
-                result = describeDatastore((DataStoreName) cmd.params().get(0));
         } else if (APICommand.DESCRIBE_CONNECTORS().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTORS().toString());
             result = describeConnectors();
+        } else if (APICommand.DESCRIBE_CONNECTOR().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CONNECTOR().toString());
+            result = describeConnector((ConnectorName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_CLUSTER().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CLUSTER().toString());
+            result = describeCluster((ClusterName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_CATALOG().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CATALOG().toString());
+            result = describeCatalog((CatalogName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_TABLE().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_TABLE().toString());
+            result = describeTable((TableName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_TABLES().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_TABLES().toString());
+            result = describeTables((CatalogName) cmd.params().get(0));
+        } else if (APICommand.DESCRIBE_DATASTORES().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_DATASTORES().toString());
+            result = describeDatastores();
+        } else if (APICommand.DESCRIBE_CLUSTERS().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_CLUSTERS().toString());
+            result = describeClusters();
+        } else if (APICommand.DESCRIBE_DATASTORE().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.DESCRIBE_DATASTORE().toString());
+            result = describeDatastore((DataStoreName) cmd.params().get(0));
         } else if (APICommand.DESCRIBE_SYSTEM().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.DESCRIBE_SYSTEM().toString());
             result = describeSystem();
@@ -207,29 +267,29 @@ public class APIManager {
             LOG.info(PROCESSING + APICommand.EXPLAIN_PLAN().toString());
             result = explainPlan(cmd);
         } else {
-            result =
-                    Result.createUnsupportedOperationErrorResult("Command " + cmd.commandType() + " not supported");
+            result = Result.createUnsupportedOperationErrorResult("Command " + cmd.commandType() + " not supported");
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
         result.setQueryId(cmd.queryId());
         return result;
     }
 
-    private Result describeSystem(){
+    private Result describeSystem() {
         Result result;
         StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
         List<DataStoreMetadata> dataStores = MetadataManager.MANAGER.getDatastores();
-        for(DataStoreMetadata dataStore:dataStores){
+        for (DataStoreMetadata dataStore : dataStores) {
             stringBuilder = stringBuilder.append("Datastore ").append(dataStore.getName())
                     .append(":").append(System.getProperty("line.separator"));
             Set<Map.Entry<ClusterName, ClusterAttachedMetadata>> refs = dataStore.getClusterAttachedRefs().entrySet();
-            for(Map.Entry<ClusterName, ClusterAttachedMetadata> ref:refs){
+            for (Map.Entry<ClusterName, ClusterAttachedMetadata> ref : refs) {
                 ClusterName clustername = ref.getKey();
                 stringBuilder = stringBuilder.append("\tCluster ").append(clustername.getName())
                         .append(":").append(System.getProperty("line.separator"));
                 ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(clustername);
-                Set<Map.Entry<ConnectorName, ConnectorAttachedMetadata>> connectors = cluster.getConnectorAttachedRefs().entrySet();
-                for(Map.Entry<ConnectorName, ConnectorAttachedMetadata>c: connectors){
+                Set<Map.Entry<ConnectorName, ConnectorAttachedMetadata>> connectors = cluster.getConnectorAttachedRefs()
+                        .entrySet();
+                for (Map.Entry<ConnectorName, ConnectorAttachedMetadata> c : connectors) {
                     stringBuilder = stringBuilder.append("\t\tConnector ").append(c.getKey().getName())
                             .append(System.getProperty("line.separator"));
                 }
@@ -245,21 +305,40 @@ public class APIManager {
         try {
             datastore = MetadataManager.MANAGER.getDataStore(dataStoreName);
         } catch (MetadataManagerException mme) {
-            result = CommandResult.createExecutionErrorResult(mme.getMessage());
+            LOG.info(mme.getMessage(),mme);
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
-        if (datastore != null){
+        if (datastore != null) {
             StringBuilder sb = new StringBuilder(System.getProperty("line.separator"));
-            sb.append("\t").append("Name: ").append(datastore.getName()).append(System.lineSeparator());
-            sb.append("\t").append("Version: ").append(datastore.getVersion()).append(System.lineSeparator());
-            sb.append("\t").append("Required properties: ").append(datastore.getRequiredProperties())
-                    .append(System.lineSeparator());
-            sb.append("\t").append("Other properties: ").append(datastore.getOthersProperties())
-                    .append(System.lineSeparator());
-            sb.append("\t").append("Behaviours: ").append(datastore.getBehaviors())
-                    .append(System.lineSeparator());
-            sb.append("\t").append("Attached Refs: ").append(datastore.getClusterAttachedRefs().keySet())
-                    .append(System.lineSeparator());
+            sb.append("\t").append("Name: ").append(System.getProperty("line.separator")).append("\t\t").append
+                    (datastore.getName()).append(System.lineSeparator());
+            sb.append("\t").append("Version: ").append(System.getProperty("line.separator")).append("\t\t").append
+                    (datastore.getVersion()).append(System.lineSeparator());
+            sb.append("\t").append("Required properties: ").append(System.getProperty("line.separator"));
+            Set<PropertyType> requiredProps = datastore.getRequiredProperties();
+            for (PropertyType pt : requiredProps) {
+                sb.append("\t\t").append(pt.getPropertyName()).append(": ").append(pt.getDescription()).append(
+                        System.lineSeparator());
+            }
+
+            sb.append("\t").append("Other properties: ").append(System.lineSeparator());
+            Set<PropertyType> othersProps = datastore.getOthersProperties();
+            for (PropertyType pt : othersProps) {
+                sb.append("\t\t").append(pt.getPropertyName()).append(": ").append(pt.getDescription()).append(
+                        System.lineSeparator());
+            }
+
+            sb.append("\t").append("Functions: ").append(System.lineSeparator());
+            Set<FunctionType> functions=datastore.getFunctions();
+            for (FunctionType function:functions){
+                sb.append("\t\t").append(function.getFunctionName()).append(System.lineSeparator());
+            }
+
+            sb.append("\t").append("Behaviours: ").append(System.getProperty("line.separator")).append("\t\t").append
+                    (datastore.getBehaviors()).append(System.lineSeparator());
+            sb.append("\t").append("Attached Refs: ").append(System.getProperty("line.separator")).append
+                    ("\t\t").append(datastore.getClusterAttachedRefs().keySet()).append(System.lineSeparator());
             result = CommandResult.createCommandResult(sb.toString());
         }
 
@@ -272,41 +351,49 @@ public class APIManager {
         try {
             connector = MetadataManager.MANAGER.getConnector(name);
         } catch (MetadataManagerException mme) {
-            result = CommandResult.createExecutionErrorResult(mme.getMessage());
+            LOG.info(mme.getMessage(),mme);
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
-        if (connector != null){
+        if (connector != null) {
             StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
             Set<DataStoreName> datastores = connector.getDataStoreRefs();
             Set<ClusterName> clusters = connector.getClusterRefs();
             Map<ClusterName, Map<Selector, Selector>> properties = connector.getClusterProperties();
+            Set<Operations> supportedOperations=connector.getSupportedOperations();
 
             stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
                     .append("\t").append(System.getProperty("line.separator"));
 
-            stringBuilder.append("\t").append("Status: ").append(connector.getConnectorStatus()).append(System.getProperty(
+            stringBuilder.append("\t").append("Status: ").append(connector.getStatus()).append(System.getProperty(
                     "line.separator"));
 
             stringBuilder.append("\t").append("Properties: ").append(System.getProperty("line.separator"));
 
             Iterator<Map.Entry<ClusterName, Map<Selector, Selector>>> propIt = properties.entrySet().iterator();
-            while(propIt.hasNext()){
+            while (propIt.hasNext()) {
                 Map.Entry<ClusterName, Map<Selector, Selector>> e = propIt.next();
                 stringBuilder.append("\t\t").append(e.getKey().toString()).append(": ")
                         .append(e.getValue().toString())
-                        .append(System .getProperty("line.separator"));
+                        .append(System.getProperty("line.separator"));
             }
 
             stringBuilder.append("\t").append("Datastores: ").append(System.getProperty("line.separator"));
-            for(DataStoreName datastore:datastores){
+            for (DataStoreName datastore : datastores) {
                 stringBuilder.append("\t\t").append(datastore.getName().toString())
-                        .append(System .getProperty("line.separator"));
+                        .append(System.getProperty("line.separator"));
             }
 
             stringBuilder.append("\t").append("Clusters: ").append(System.getProperty("line.separator"));
-            for(ClusterName cluster:clusters){
+            for (ClusterName cluster : clusters) {
                 stringBuilder.append("\t\t").append(cluster.getName().toString())
-                        .append(System .getProperty("line.separator"));
+                        .append(System.getProperty("line.separator"));
+            }
+
+            stringBuilder.append("\t").append("Supported Operations: ").append(System.getProperty("line.separator"));
+            for (Operations operation : supportedOperations) {
+                stringBuilder.append("\t\t").append(operation.getOperationsStr())
+                        .append(System.getProperty("line.separator"));
             }
 
             stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
@@ -316,54 +403,216 @@ public class APIManager {
         return result;
     }
 
+    private Result describeCatalog(CatalogName name) {
+        Result result;
+
+        try {
+            CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name);
+            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+            sb.append("Catalog: ").append(catalog.getName()).append(System.lineSeparator());
+
+            sb.append("Options: ").append(System.lineSeparator());
+            for (Map.Entry<Selector, Selector> entry : catalog.getOptions().entrySet()) {
+                sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue())
+                        .append(System.lineSeparator());
+            }
+
+            sb.append("Tables: ").append(catalog.getTables().keySet()).append(System.lineSeparator());
+
+            result = CommandResult.createCommandResult(sb.toString());
+
+        } catch (MetadataManagerException mme) {
+            LOG.info(mme.getMessage(),mme);
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
+        }
+
+        return result;
+    }
+
+    private Result describeTables(CatalogName name) {
+        Result result;
+
+        try {
+            CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name);
+            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+            sb.append("Catalog: ").append(catalog.getName()).append(System.lineSeparator());
+
+            sb.append("Tables: ").append(catalog.getTables().keySet()).append(System.lineSeparator());
+
+            result = CommandResult.createCommandResult(sb.toString());
+
+        } catch (MetadataManagerException mme) {
+            LOG.info(mme.getMessage(),mme);
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
+        }
+        return result;
+    }
+
+    private Result describeTable(TableName name) {
+        Result result;
+
+        try{
+            CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name.getCatalogName());
+            TableMetadata table = catalog.getTables().get(name);
+            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+            if(table == null){
+                throw new MetadataManagerException("[" + name + "] doesn't exist yet");
+            }
+
+            sb.append("Table: ").append(table.getName()).append(System.lineSeparator());
+
+            sb.append("Cluster: ").append(table.getClusterRef()).append(System.lineSeparator());
+
+            sb.append("Columns: ").append(System.lineSeparator());
+            Map<ColumnName, ColumnMetadata> columns = table.getColumns();
+            for (Map.Entry<ColumnName, ColumnMetadata> entry : columns.entrySet()) {
+                sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue().getColumnType())
+                        .append(System.lineSeparator());
+            }
+
+            sb.append("Partition key: ").append(table.getPartitionKey()).append(System.lineSeparator());
+
+            sb.append("Cluster key: ").append(table.getClusterKey()).append(System.lineSeparator());
+
+            sb.append("Indexes: ").append(System.lineSeparator());
+            Map<IndexName, IndexMetadata> indexes = table.getIndexes();
+            for (Map.Entry<IndexName, IndexMetadata> idx : indexes.entrySet()) {
+                sb.append("\t").append(idx.getKey()).append("(").append(idx.getValue().getType()).append(")");
+                sb.append(": ").append(idx.getValue().getColumns().keySet());
+                sb.append(System.lineSeparator());
+            }
+
+            sb.append("Options: ").append(System.lineSeparator());
+            Map<Selector, Selector> options = table.getOptions();
+            for (Map.Entry<Selector, Selector> opt : options.entrySet()) {
+                sb.append("\t").append(opt.getKey()).append(": ").append(opt.getValue())
+                        .append(System.lineSeparator());
+            }
+
+            result = CommandResult.createCommandResult(sb.toString());
+        } catch (MetadataManagerException mme) {
+            LOG.info(mme.getMessage(),mme);
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
+        }
+
+        return result;
+    }
+
+    private Result describeCluster(ClusterName name) {
+        Result result;
+
+        try {
+            ClusterMetadata cluster = MetadataManager.MANAGER.getCluster(name);
+            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+            sb.append("Cluster: ").append(cluster.getName()).append(System.lineSeparator());
+
+            sb.append("Datastore: ").append(cluster.getDataStoreRef()).append(System.lineSeparator());
+
+            sb.append("Options: ").append(System.lineSeparator());
+            Map<Selector, Selector> options = cluster.getOptions();
+            for (Map.Entry<Selector, Selector> entry : options.entrySet()) {
+                sb.append(entry.getKey()).append(": ").append(entry.getValue()).append(System.lineSeparator());
+            }
+
+            sb.append("Attached connectors: ").append(cluster.getConnectorAttachedRefs().keySet())
+                    .append(System.lineSeparator());
+
+            result = CommandResult.createCommandResult(sb.toString());
+        } catch (MetadataManagerException mme) {
+            LOG.info(mme.getMessage(),mme);
+            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
+        }
+
+        return result;
+    }
+
     private Result describeConnectors() {
         Result result;
         List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
-        StringBuilder stringBuilder = new StringBuilder().append(System.getProperty("line.separator"));
+        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
 
         for (ConnectorMetadata connector : connectors) {
-            stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
-                    .append("\t").append(connector.getConnectorStatus());
+            sb = sb.append("Connector: ").append(connector.getName())
+                    .append("\t").append(connector.getStatus());
             // ClusterRefs
             if (connector.getClusterRefs() == null) {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append("UNKNOWN");
             } else {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append(Arrays.toString(connector.getClusterRefs().toArray()));
             }
             // DatastoreRefs
             if (connector.getDataStoreRefs() == null) {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append("UNKNOWN");
             } else {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append(Arrays.toString(connector.getDataStoreRefs().toArray()));
             }
             // ActorRef
             if (connector.getActorRef() == null) {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append("UNKNOWN");
             } else {
-                stringBuilder = stringBuilder.append("\t")
+                sb = sb.append("\t")
                         .append(connector.getActorRef());
             }
 
-            stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
+            sb = sb.append(System.getProperty("line.separator"));
         }
-        result = CommandResult.createCommandResult(stringBuilder.toString());
+        result = CommandResult.createCommandResult(sb.toString());
+        return result;
+    }
+
+    private Result describeDatastores() {
+        Result result;
+        List<DataStoreMetadata> datastores = MetadataManager.MANAGER.getDatastores();
+        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+        sb.append("Datastore: ").append(System.lineSeparator());
+        for (DataStoreMetadata datastore : datastores) {
+            sb.append(datastore.getName()).append(System.lineSeparator());
+        }
+        result = CommandResult.createCommandResult(sb.toString());
+        return result;
+    }
+
+    private Result describeClusters() {
+        Result result;
+        List<ClusterMetadata> clusters = MetadataManager.MANAGER.getClusters();
+        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+        for (ClusterMetadata cluster : clusters) {
+            sb.append("Clusters List:").append(System.lineSeparator());
+            sb.append("\t").append(cluster.getName()).append(System.lineSeparator());
+
+        }
+        result = CommandResult.createCommandResult(sb.toString());
         return result;
     }
 
     private Result resetServerdata() {
         Result result = CommandResult.createCommandResult("Crossdata server reset.");
         try {
+            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
             MetadataManager.MANAGER.clear();
             ExecutionManager.MANAGER.clear();
+            for (ConnectorMetadata cm : connectors) {
+                if (cm.getStatus() == Status.ONLINE) {
+                    ConnectorName connectorName = cm.getName();
+                    String actorRef = cm.getActorRef();
+                    MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+                    MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE);
+                }
+            }
         } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException
-                e) {
-            result = CommandResult.createErrorResult(e);
-            LOG.error(e.getMessage());
+                | ManifestException ex) {
+            result = CommandResult.createErrorResult(ex);
+            LOG.error(ex.getMessage());
         }
         return result;
     }
@@ -388,7 +637,7 @@ public class APIManager {
             } else {
                 persistConnector((ConnectorType) manifest);
             }
-        } catch (NullPointerException npe){
+        } catch (NullPointerException npe) {
             throw new ApiException("Manifest couldn't be added", npe);
         }
     }
@@ -397,7 +646,7 @@ public class APIManager {
         // NAME
         DataStoreName name = new DataStoreName(dataStoreType.getName());
 
-        if(MetadataManager.MANAGER.exists(name)){
+        if (MetadataManager.MANAGER.exists(name)) {
             throw new ManifestException(new ExecutionException(name + " already exists"));
         }
 
@@ -413,13 +662,19 @@ public class APIManager {
         // BEHAVIORS
         BehaviorsType behaviorsType = dataStoreType.getBehaviors();
 
+        // DATASTORE FUNCTIONS
+        DataStoreFunctionsType datastoreFunctions = dataStoreType.getFunctions();
+
         // Create Metadata
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(
                 name,
                 version,
                 (requiredProperties == null) ? null : requiredProperties.getProperty(),
                 (optionalProperties == null) ? null : optionalProperties.getProperty(),
-                (behaviorsType == null) ? null : behaviorsType.getBehavior());
+                (behaviorsType == null) ? null : behaviorsType.getBehavior(),
+                (datastoreFunctions==null)? null: datastoreFunctions.getFunction()
+        );
+
 
         // Persist
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
@@ -447,6 +702,17 @@ public class APIManager {
         // SUPPORTED OPERATIONS
         SupportedOperationsType supportedOperations = connectorType.getSupportedOperations();
 
+        // CONNECTOR FUNCTIONS
+        ConnectorFunctionsType connectorFunctions = connectorType.getFunctions();
+
+        // EXCLUDED FUNCTIONS
+        List<String> excludedFunctions = new ArrayList<>();
+        if(connectorFunctions != null){
+            Set<String> convertedExcludes = ManifestHelper.convertManifestExcludedFunctionsToMetadataExcludedFunctions(
+                    connectorFunctions.getExclude());
+            excludedFunctions.addAll(convertedExcludes);
+        }
+
         // Create Metadata
         ConnectorMetadata connectorMetadata;
 
@@ -454,7 +720,7 @@ public class APIManager {
 
             connectorMetadata = MetadataManager.MANAGER.getConnector(name);
 
-            if(connectorMetadata.isManifestAdded()){
+            if (connectorMetadata.isManifestAdded()) {
                 throw new ManifestException(new ExecutionException("Connector " + name + " was already added"));
             }
 
@@ -468,15 +734,29 @@ public class APIManager {
             connectorMetadata.setOptionalProperties((optionalProperties == null) ?
                     new HashSet<PropertyType>() :
                     ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties.getProperty()));
+
             connectorMetadata.setSupportedOperations(supportedOperations.getOperation());
+
+            connectorMetadata.setConnectorFunctions((connectorFunctions == null) ?
+                    new HashSet<FunctionType>() :
+                    ManifestHelper.convertManifestFunctionsToMetadataFunctions(
+                            connectorFunctions.getFunction()));
+
+            connectorMetadata.setExcludedFunctions(
+                    //(excludedFunctions == null) ?
+                    //new HashSet<String>():
+                    new HashSet<>(excludedFunctions));
         } else {
             connectorMetadata = new ConnectorMetadata(
                     name,
                     version,
-                    (dataStoreRefs == null) ? new ArrayList<String>() : dataStoreRefs.getDataStoreName(),
+                    (dataStoreRefs == null) ? new ArrayList<String>() :  dataStoreRefs.getDataStoreName(),
                     (requiredProperties == null) ? new ArrayList<PropertyType>() : requiredProperties.getProperty(),
                     (optionalProperties == null) ? new ArrayList<PropertyType>() : optionalProperties.getProperty(),
-                    (supportedOperations == null) ? new ArrayList<String>() : supportedOperations.getOperation());
+                    (supportedOperations == null) ? new ArrayList<String>() : supportedOperations.getOperation(),
+                    (connectorFunctions==null) ? new ArrayList<FunctionType>(): connectorFunctions.getFunction(),
+                    excludedFunctions
+            );
         }
 
         connectorMetadata.setManifestAdded(true);
@@ -501,7 +781,7 @@ public class APIManager {
 
     private void dropDataStore(DataStoreName dataStoreName) throws ApiException {
         try {
-            if(!MetadataManager.MANAGER.exists(dataStoreName)){
+            if (!MetadataManager.MANAGER.exists(dataStoreName)) {
                 throw new ApiException(new ExecutionException(dataStoreName + " doesn't exist"));
             }
             MetadataManager.MANAGER.deleteDatastore(dataStoreName);
@@ -513,10 +793,16 @@ public class APIManager {
 
     private void dropConnector(ConnectorName connectorName) throws ApiException {
         try {
-            if(!MetadataManager.MANAGER.exists(connectorName)){
+            if (!MetadataManager.MANAGER.exists(connectorName)) {
                 throw new ApiException(new ExecutionException(connectorName + " doesn't exist"));
             }
+            ConnectorMetadata cm = MetadataManager.MANAGER.getConnector(connectorName);
             MetadataManager.MANAGER.deleteConnector(connectorName);
+            if(cm.getStatus() == Status.ONLINE){
+                String actorRef = cm.getActorRef();
+                MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+                MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE);
+            }
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
                 RollbackException | MetadataManagerException e) {
             throw new ApiException(e);
@@ -526,6 +812,7 @@ public class APIManager {
     /**
      * Method that implements the explain logic. The method will follow the query processing stages: Parser,
      * Validator, and Planner and will provide as result the execution workflow.
+     *
      * @param cmd The command to be executed.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
@@ -537,22 +824,23 @@ public class APIManager {
 
             StringBuilder plan = new StringBuilder("Explain plan for: ");
             plan.append(statement).append(System.lineSeparator());
-            BaseQuery query = new BaseQuery(cmd.queryId(), statement, new CatalogName(catalog));
+            String realStatement=statement.substring(17);
+            BaseQuery query = new BaseQuery(cmd.queryId(), realStatement, new CatalogName(catalog));
             try {
                 IParsedQuery parsedQuery = parser.parse(query);
                 IValidatedQuery validatedQuery = validator.validate(parsedQuery);
-                if(SelectValidatedQuery.class.isInstance(validatedQuery)){
+                if (SelectValidatedQuery.class.isInstance(validatedQuery)) {
                     SelectPlannedQuery plannedQuery = planner.planQuery((SelectValidatedQuery) validatedQuery);
                     plan.append(plannedQuery.getExecutionWorkflow().toString());
-                }else if(MetadataValidatedQuery.class.isInstance(validatedQuery)){
+                } else if (MetadataValidatedQuery.class.isInstance(validatedQuery)) {
                     MetadataPlannedQuery plannedQuery = planner.planQuery((MetadataValidatedQuery) validatedQuery);
                     plan.append(plannedQuery.getExecutionWorkflow());
-                }else if(StorageValidatedQuery.class.isInstance(validatedQuery)){
+                } else if (StorageValidatedQuery.class.isInstance(validatedQuery)) {
                     StoragePlannedQuery plannedQuery = planner.planQuery((StorageValidatedQuery) validatedQuery);
                     plan.append(plannedQuery.getExecutionWorkflow());
                 }
                 result = CommandResult.createCommandResult(plan.toString());
-            }catch(ParsingException | IgnoreQueryException | ValidationException | PlanningException e){
+            } catch (ParsingException | IgnoreQueryException | ValidationException | PlanningException e) {
                 result = Result.createErrorResult(e);
             }
         } else {

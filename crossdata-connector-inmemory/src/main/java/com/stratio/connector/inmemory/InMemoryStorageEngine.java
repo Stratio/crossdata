@@ -21,7 +21,6 @@ package com.stratio.connector.inmemory;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.crossdata.common.connector.IStorageEngine;
@@ -55,7 +54,7 @@ public class InMemoryStorageEngine implements IStorageEngine{
     }
 
     @Override
-    public void insert(ClusterName targetCluster, TableMetadata targetTable, Row row)
+    public void insert(ClusterName targetCluster, TableMetadata targetTable, Row row, boolean ifNotExists)
             throws ConnectorException {
         InMemoryDatastore datastore = connector.getDatastore(targetCluster);
         if(datastore != null){
@@ -77,10 +76,10 @@ public class InMemoryStorageEngine implements IStorageEngine{
     }
 
     @Override
-    public void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows)
+    public void insert(ClusterName targetCluster, TableMetadata targetTable, Collection<Row> rows, boolean ifNotExists)
             throws ConnectorException {
         for(Row r : rows){
-            insert(targetCluster, targetTable, r);
+            insert(targetCluster, targetTable, r, ifNotExists);
         }
     }
 

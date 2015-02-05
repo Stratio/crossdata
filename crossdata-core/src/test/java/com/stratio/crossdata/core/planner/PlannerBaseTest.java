@@ -29,8 +29,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
@@ -45,8 +48,8 @@ import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.window.TimeUnit;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.grammar.ParsingTest;
-import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
@@ -55,7 +58,7 @@ import com.stratio.crossdata.core.statements.SelectStatement;
 /**
  * Base class for planner tests.
  */
-public class PlannerBaseTest extends MetadataManagerTestHelper {
+public class PlannerBaseTest {
 
     /**
      * Class logger.
@@ -66,16 +69,28 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
 
     Planner planner = new Planner();
 
+    @BeforeClass
+    public void setUp() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
+    }
+
     /**
      * Get the execution workflow from a statement.
-     * @param statement A valid statement.
-     * @param methodName The test name.
-     * @param shouldFail Whether the planning should succeed.
+     *
+     * @param statement         A valid statement.
+     * @param methodName        The test name.
+     * @param shouldFail        Whether the planning should succeed.
      * @param tableMetadataList The list of table metadata.
      * @return An {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow}.
      */
     public ExecutionWorkflow getPlannedQuery(String statement, String methodName,
-            boolean shouldFail, TableMetadata... tableMetadataList){
+            boolean shouldFail, TableMetadata... tableMetadataList) {
 
         IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
@@ -89,13 +104,13 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
         SelectPlannedQuery plannedQuery = null;
         try {
             plannedQuery = planner.planQuery(svqw);
-            if(shouldFail){
+            if (shouldFail) {
                 fail("Expecting planning to fail");
             }
         } catch (PlanningException e) {
-            if(!shouldFail){
+            if (!shouldFail) {
                 fail("Expecting planning to succeed");
-            }else{
+            } else {
                 assertNotNull(e, "Exception should not be null");
                 assertEquals(e.getClass(), PlanningException.class, "Exception class does not match.");
             }
@@ -206,7 +221,7 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
     }
 
     public void assertWindow(LogicalWorkflow workflow, WindowType type, int numRows,
-            int numTimeUnits, TimeUnit timeUnit){
+            int numTimeUnits, TimeUnit timeUnit) {
 
         Iterator<LogicalStep> it = workflow.getInitialSteps().iterator();
         LogicalStep step = null;
@@ -214,16 +229,17 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
         //For each initial logical step try to find the join.
         while (it.hasNext() && !found) {
             step = it.next();
-            while(step != null && !found) {
-                LOG.info("step: " + step + " isInstance: " + com.stratio.crossdata.common.logicalplan.Window.class.isInstance(step));
+            while (step != null && !found) {
+                LOG.info("step: " + step + " isInstance: " + com.stratio.crossdata.common.logicalplan.Window.class
+                        .isInstance(step));
                 if (com.stratio.crossdata.common.logicalplan.Window.class.isInstance(step)) {
                     found = true;
-                }else {
+                } else {
                     step = step.getNextStep();
                 }
             }
         }
-        if(found) {
+        if (found) {
             com.stratio.crossdata.common.logicalplan.Window window = com.stratio.crossdata.common.logicalplan.Window.class
                     .cast(step);
 
@@ -234,22 +250,22 @@ public class PlannerBaseTest extends MetadataManagerTestHelper {
             } else {
                 assertEquals(window.getNumRows(), numRows, "Invalid number of rows");
             }
-        }else{
+        } else {
             fail("Window operator not found");
         }
 
     }
 
-    public void assertExecutionWorkflow(ExecutionWorkflow executionWorkflow, int numberSteps, String [] targetActors){
+    public void assertExecutionWorkflow(ExecutionWorkflow executionWorkflow, int numberSteps, String[] targetActors) {
         assertNotNull(executionWorkflow, "Null execution workflow received");
         LOG.info(executionWorkflow);
         int steps = 1;
         ExecutionWorkflow current = executionWorkflow;
         assertNotNull(current.getActorRef(), "Null target actor");
         assertEquals(targetActors[0], current.getActorRef(), "Invalid target actor " + current.getActorRef());
-        while(ResultType.TRIGGER_EXECUTION.equals(current.getResultType())){
+        while (ResultType.TRIGGER_EXECUTION.equals(current.getResultType())) {
             assertNotNull(current.getActorRef(), "Null target actor");
-            assertEquals(targetActors[steps-1], current.getActorRef(), "Invalid target actor");
+            assertEquals(targetActors[steps - 1], current.getActorRef(), "Invalid target actor");
             current = current.getNextExecutionWorkflow();
             steps++;
         }

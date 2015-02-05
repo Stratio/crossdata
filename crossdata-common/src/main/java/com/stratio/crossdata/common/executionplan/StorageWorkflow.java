@@ -54,6 +54,8 @@ public class StorageWorkflow extends ExecutionWorkflow{
 
     private Collection<Relation> assignments = null;
 
+    private boolean ifNotExists;
+
     /**
      * Class constructor.
      *
@@ -90,9 +92,9 @@ public class StorageWorkflow extends ExecutionWorkflow{
     public StorageOperation getStorageOperation() throws CoordinationException {
         StorageOperation result;
         if(ExecutionType.INSERT.equals(this.executionType)){
-            result = new Insert(queryId, this.clusterName, this.tableMetadata, this.row);
+            result = new Insert(queryId, this.clusterName, this.tableMetadata, this.row, this.ifNotExists);
         } else if(ExecutionType.INSERT_BATCH.equals(this.executionType)){
-            result = new InsertBatch(queryId, this.clusterName, this.tableMetadata, this.rows);
+            result = new InsertBatch(queryId, this.clusterName, this.tableMetadata, this.rows, this.ifNotExists);
         } else if(ExecutionType.DELETE_ROWS.equals(this.executionType)){
             result = new DeleteRows(queryId, this.clusterName, tableName, this.whereClauses);
         } else if(ExecutionType.UPDATE_TABLE.equals(this.executionType)){
@@ -145,4 +147,11 @@ public class StorageWorkflow extends ExecutionWorkflow{
         this.tableName = tableName;
     }
 
+    public boolean isIfNotExists() {
+        return ifNotExists;
+    }
+
+    public void setIfNotExists(boolean ifNotExists) {
+        this.ifNotExists = ifNotExists;
+    }
 }

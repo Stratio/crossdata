@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.TableName;
+
 /**
  * Relation selector.
  */
@@ -34,6 +36,17 @@ public class RelationSelector extends Selector {
      * @param relation A {@link com.stratio.crossdata.common.statements.structures.Relation}.
      */
     public RelationSelector(Relation relation) {
+        this(null, relation);
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param tableName  The table name.
+     * @param relation A {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     */
+    public RelationSelector(TableName tableName, Relation relation) {
+        super(tableName);
         this.relation = relation;
     }
 
@@ -67,9 +80,6 @@ public class RelationSelector extends Selector {
 
         RelationSelector that = (RelationSelector) o;
 
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
         if (!relation.equals(that.relation)) {
             return false;
         }

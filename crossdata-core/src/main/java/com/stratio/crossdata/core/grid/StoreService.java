@@ -48,6 +48,8 @@ import org.jgroups.JChannel;
  */
 public class StoreService implements Closeable {
 
+    public static final int Timeout = 10;
+    public static final int ConcurrencyLevel = 500;
     private final JChannel channel;
     private final GlobalConfiguration gc;
     private final Configuration config;
@@ -78,12 +80,12 @@ public class StoreService implements Closeable {
                 .useSynchronization(true)
                 .syncCommitPhase(true)
                 .syncRollbackPhase(true)
-                .cacheStopTimeout(10, TimeUnit.SECONDS)
+                .cacheStopTimeout(Timeout, TimeUnit.SECONDS)
                 .lockingMode(LockingMode.OPTIMISTIC)
                 .locking()
-                .lockAcquisitionTimeout(10, TimeUnit.SECONDS)
+                .lockAcquisitionTimeout(Timeout, TimeUnit.SECONDS)
                 .useLockStriping(false)
-                .concurrencyLevel(500)
+                .concurrencyLevel(ConcurrencyLevel)
                 .writeSkewCheck(false)
                 .isolationLevel(IsolationLevel.READ_COMMITTED)
                 .eviction()

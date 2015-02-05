@@ -105,6 +105,22 @@ public final class ManifestHelper implements Serializable {
             }
         }
 
+        // FUNCTIONS
+        if (dataStoreType.getFunctions() != null){
+            sb.append("Functions: ").append(System.lineSeparator());
+            for(FunctionType function: dataStoreType.getFunctions().getFunction()){
+                sb.append("\t").append("Function: ").append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Name: ").append(function.getFunctionName()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Signature: ").append(function.getSignature()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Type: ").append(function.getFunctionType()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Description: ").append(function.getDescription()).append(System
+                        .lineSeparator());
+            }
+        }
+
         // RESULT
         return sb.toString();
     }
@@ -161,6 +177,27 @@ public final class ManifestHelper implements Serializable {
             sb.append("\t").append("Operation: ").append(operation).append(System.lineSeparator());
         }
 
+        // FUNCTIONS
+        if(connectorType.getFunctions() != null){
+            sb.append("Functions: ").append(System.lineSeparator());
+            // Includes
+            for(FunctionType function: connectorType.getFunctions().getFunction()){
+                sb.append("\t").append("Function: ").append(System.lineSeparator());
+                sb.append("\t").append("\t").append("Name: ").append(function.getFunctionName()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Signature: ").append(function.getSignature()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Type: ").append(function.getFunctionType()).append(System
+                        .lineSeparator());
+                sb.append("\t").append("\t").append("Description: ").append(function.getDescription()).append(System
+                        .lineSeparator());
+            }
+            // Excludes
+            sb.append("\t").append("Excludes: ").append(
+                    connectorType.getFunctions().getExclude().toString().replace("[", "").replace("]", ""));
+            sb.append(System.lineSeparator());
+        }
+
         // RESULT
         return sb.toString();
     }
@@ -188,7 +225,10 @@ public final class ManifestHelper implements Serializable {
      */
     public static Set<DataStoreName> convertManifestDataStoreNamesToMetadataDataStoreNames(List<String> dataStoreRefs) {
         Set<DataStoreName> dataStoreNames = new HashSet<>();
-        for (String name : dataStoreRefs) {
+        if(dataStoreRefs == null){
+            return dataStoreNames;
+        }
+        for (String name: dataStoreRefs) {
             dataStoreNames.add(new DataStoreName(name));
         }
         return dataStoreNames;
@@ -206,5 +246,34 @@ public final class ManifestHelper implements Serializable {
             metadataBehaviors.add(behavior);
         }
         return metadataBehaviors;
+    }
+
+    /**
+     * Conversion method (Manifest Functions to Metadata Functions).
+     *
+     * @param connectorFunctions The list of connector functions.
+     * @return Set<PropertyType> A set of {@link com.stratio.crossdata.common.manifest.FunctionType}.
+     */
+    public static Set<FunctionType> convertManifestFunctionsToMetadataFunctions(
+            List<FunctionType> connectorFunctions) {
+        Set<FunctionType> metadataFunctions = new HashSet<>();
+        for (FunctionType functionType : connectorFunctions) {
+            metadataFunctions.add(functionType);
+        }
+        return metadataFunctions;
+    }
+
+    /**
+     * Get the metadata of the excluded functions.
+     * @param excludedFunctions The manifest excluded functions.
+     * @return A set of string.
+     */
+    public static Set<String> convertManifestExcludedFunctionsToMetadataExcludedFunctions(
+            List<ExcludeType> excludedFunctions) {
+        Set<String> metadataExcludedFunctions = new HashSet<>();
+        for (ExcludeType excludeFunction: excludedFunctions) {
+            metadataExcludedFunctions.add(excludeFunction.getFunctionName());
+        }
+        return metadataExcludedFunctions;
     }
 }

@@ -19,6 +19,7 @@
 package com.stratio.crossdata.core.validator.statements;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
@@ -36,6 +37,7 @@ import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
+import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.statements.AttachClusterStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
@@ -45,7 +47,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachClusterNoOptions() {
-        boolean res=true;
+        boolean res = true;
         String query = "ATTACH CLUSTER cluster on DATASTORE Cassandra";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -61,15 +63,15 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             fail("Options are required for ATTACH CLUSTER statement");
         } catch (ValidationException e) {
-            assertTrue(res);
+            assertTrue(res, "Result should be True");
         } catch (IgnoreQueryException e) {
-            assertTrue(res);
+            assertTrue(res, "Result should be True");
         }
     }
 
     @Test
     public void attachClusterUnknownDatastore() {
-        boolean res=true;
+        boolean res = true;
         String query = "ATTACH CLUSTER cluster on DATASTORE unknown";
 
         AttachClusterStatement attachClusterStatement = new AttachClusterStatement(new ClusterName("cluster"), false,
@@ -84,9 +86,9 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             validator.validate(parsedQuery);
             fail("Datastore must exists before ATTACH CLUSTER statement");
         } catch (ValidationException e) {
-            assertTrue(res);
+            assertTrue(res, "Result should be True");
         } catch (IgnoreQueryException e) {
-            assertTrue(res);
+            assertTrue(res, "Result should be True");
         }
     }
 
@@ -117,7 +119,6 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
 
     @Test
     public void attachUnknownClusterWithOptionsIfExists() {
-        boolean res=true;
         String query = "ATTACH CLUSTER IF EXIST unknown on DATASTORE Cassandra with options " +
                 "{'comment':'attach cluster'}";
 
@@ -136,14 +137,15 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             String errorMsg = System.lineSeparator() +
                     "Expected: Some properties are not found in the manifest" + System.lineSeparator() +
                     "   Found: " + e.getMessage().trim();
-            assertTrue(e.getMessage().trim().equalsIgnoreCase("Some properties are not found in the manifest"), errorMsg);
+            assertTrue(e.getMessage().trim().equalsIgnoreCase("Some properties are not found in the manifest"),
+                    errorMsg);
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
     }
 
     @Test
-    public void attachToADifferentDatastore(){
+    public void attachToADifferentDatastore() {
         // Add ElasticSearch Data Store to Metadata Manager
         HashSet<String> behaviours = new HashSet<>();
         behaviours.add("PROJECT");
@@ -152,7 +154,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
                 "1.0",
                 new HashSet<PropertyType>(),
                 new HashSet<PropertyType>(),
-                behaviours);
+                behaviours, null);
         MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
 
         // Create & send query
@@ -176,6 +178,46 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
                     "[cluster.cluster] exists already",
                     "Message exception not expected");
         } catch (IgnoreQueryException e) {
+            fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void attachClusterWithProperties(){
+        // Add ElasticSearch Data Store to Metadata Manager
+        HashSet<String> behaviours = new HashSet<>();
+        behaviours.add("PROJECT");
+        behaviours.add("CREATE_TABLE");
+        HashSet<PropertyType> requiredProperties = new HashSet<>();
+        PropertyType pt = new PropertyType();
+        pt.setPropertyName("replication");
+        pt.setDescription("Data replication");
+        requiredProperties.add(pt);
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(
+                new DataStoreName("randomDB"),
+                "1.0",
+                requiredProperties,
+                new HashSet<PropertyType>(),
+                behaviours, null);
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata);
+
+        // Create & send query
+        String query = "ATTACH CLUSTER randomCluster on DATASTORE randomDB WITH OPTIONS {'replication':2};";
+
+        AttachClusterStatement attachClusterStatement = new AttachClusterStatement(
+                new ClusterName("randomCluster"),
+                false,
+                new DataStoreName("randomDB"),
+                "{'replication':2}");
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("attachClusterWithProperties", query, new CatalogName("catalogTest"));
+
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
+        try {
+            IValidatedQuery validatedQuery = validator.validate(parsedQuery);
+            assertNotNull(validatedQuery, "Validation failed for: " + System.lineSeparator() + query);
+        } catch (Exception e) {
             fail(e.getMessage());
         }
     }

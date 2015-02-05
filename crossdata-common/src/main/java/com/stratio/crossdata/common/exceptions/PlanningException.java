@@ -28,10 +28,19 @@ public class PlanningException extends Exception {
      */
     private static final long serialVersionUID = 1878003904827417242L;
 
+    /**
+     * Constructor class.
+     * @param message The message of the exception.
+     */
     public PlanningException(String message) {
         super(message);
     }
 
+    /**
+     * Constructor class.
+     * @param msg The message of the exception.
+     * @param cause The throwable exception.
+     */
     public PlanningException(String msg, Throwable cause) {
         super(msg, cause);
     }

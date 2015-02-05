@@ -47,21 +47,21 @@ public class InsertIntoStatementTest extends ParsingTest {
     public void insertIntoUsing() {
         String inputText =
                 "INSERT INTO mycatalog.tablename (ident1, ident2) VALUES (-3.75, 'term2') "
-                        + "IF NOT EXISTS USING COMPACT STORAGE AND 'prop1' = '{innerTerm: result}';";
+                        + "IF NOT EXISTS WITH {'COMPACT_STORAGE': true, 'prop1': '{innerTerm: result}'};";
         String expectText =
                 "INSERT INTO mycatalog.tablename (mycatalog.tablename.ident1, mycatalog.tablename.ident2) VALUES (-3.75, 'term2') "
-                        + "IF NOT EXISTS USING COMPACT STORAGE AND 'prop1' = '{innerTerm: result}';";
+                        + "IF NOT EXISTS WITH {'COMPACT_STORAGE'=true, 'prop1'='{innerTerm: result}'};";
         testRegularStatement(inputText, expectText, "insertInto");
     }
 
     @Test
     public void insertInto2() {
         String inputText = "[test], " +
-                "INSERT INTO tablename (column1, column2) VALUES ('value1', 'value2')"
-                        + " IF NOT EXISTS USING 'TTL' = 10;";
+                "INSERT INTO tablename (column1, column2) VALUES ('value1', 60)"
+                + " IF NOT EXISTS WHEN column2 > 10;";
         String expectText =
-                "INSERT INTO test.tablename (test.tablename.column1, test.tablename.column2) VALUES ('value1', 'value2')"
-                        + " IF NOT EXISTS USING 'TTL' = 10;";
+                "INSERT INTO test.tablename (test.tablename.column1, test.tablename.column2) VALUES ('value1', 60)"
+                        + " IF NOT EXISTS WHEN test.tablename.column2 > 10;";
         testRegularStatement(inputText, expectText, "insertInto2");
     }
 
@@ -108,10 +108,10 @@ public class InsertIntoStatementTest extends ParsingTest {
     public void insertIntoSelect() {
         String inputText =
                 "INSERT INTO tablename (ident1, ident2) SELECT c.a, c.b from c "
-                        + "IF NOT EXISTS USING COMPACT STORAGE AND 'prop1' = '{innerTerm: result}';";
+                        + "IF NOT EXISTS WHEN ident3 = true WITH {'innerTerm': 'result'};";
         String expectText =
                 "INSERT INTO demo.tablename (demo.tablename.ident1, demo.tablename.ident2) SELECT demo.c.a, demo.c.b from demo.c "
-                        + "IF NOT EXISTS USING COMPACT STORAGE AND 'prop1' = '{innerTerm: result}';";
+                        + "IF NOT EXISTS WHEN demo.tablename.ident3 = true WITH {'innerTerm'='result'};";
         testRegularStatementSession("demo", inputText, expectText, "insertIntoSelect");
     }
 

@@ -26,7 +26,7 @@ import com.stratio.crossdata.common.data.TableName;
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
  */
-public class Relation implements Serializable{
+public class Relation implements Serializable {
 
     /**
      * Identifier in the left part of the relationship.
@@ -98,7 +98,38 @@ public class Relation implements Serializable{
     }
 
     @Override
-//TODO:javadoc
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Relation relation = (Relation) o;
+
+        if (leftTerm != null ? !leftTerm.equals(relation.leftTerm) : relation.leftTerm != null) {
+            return false;
+        }
+        if (operator != relation.operator) {
+            return false;
+        }
+        if (rightTerm != null ? !rightTerm.equals(relation.rightTerm) : relation.rightTerm != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = leftTerm != null ? leftTerm.hashCode() : 0;
+        result = 31 * result + (operator != null ? operator.hashCode() : 0);
+        result = 31 * result + (rightTerm != null ? rightTerm.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(leftTerm.toString());
         sb.append(" ").append(operator).append(" ");

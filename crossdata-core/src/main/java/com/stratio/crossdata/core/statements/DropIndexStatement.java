@@ -19,8 +19,8 @@
 package com.stratio.crossdata.core.statements;
 
 import com.stratio.crossdata.common.data.IndexName;
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models a {@code DROP INDEX} statement from the CROSSDATA language.
@@ -51,7 +51,7 @@ public class DropIndexStatement extends IndexStatement {
         dropIfExists = true;
     }
 
-    public void setName(IndexName name){
+    public void setName(IndexName name) {
         this.name = name;
     }
 
@@ -75,7 +75,13 @@ public class DropIndexStatement extends IndexStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_INDEX);
+        ValidationRequirements vr = new ValidationRequirements()
+                .add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_TABLE);
+        if(!dropIfExists){
+            vr.add(ValidationTypes.MUST_EXIST_INDEX);
+        }
+        return vr;
     }
 
 }

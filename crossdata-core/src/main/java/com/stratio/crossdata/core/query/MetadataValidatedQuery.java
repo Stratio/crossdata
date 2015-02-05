@@ -27,6 +27,7 @@ public class MetadataValidatedQuery extends MetadataParsedQuery implements IVali
 
     /**
      * Contructor Class.
+     *
      * @param metadataParsedQuery The metadata parsed query
      */
     public MetadataValidatedQuery(MetadataParsedQuery metadataParsedQuery) {
@@ -36,6 +37,7 @@ public class MetadataValidatedQuery extends MetadataParsedQuery implements IVali
 
     /**
      * Constructor Class.
+     *
      * @param metadataValidatedQuery
      */
     public MetadataValidatedQuery(MetadataValidatedQuery metadataValidatedQuery) {

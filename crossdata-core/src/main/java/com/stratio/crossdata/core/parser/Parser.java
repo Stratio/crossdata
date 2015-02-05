@@ -49,6 +49,7 @@ public class Parser {
 
     /**
      * Parse incoming query.
+     *
      * @param baseQuery Required information for parsing statement.
      * @return Parsed Query.
      * @throws ParsingException Couldn't be parsed.
@@ -69,9 +70,10 @@ public class Parser {
 
     /**
      * Parse a input text and return the equivalent Statement.
+     *
      * @param sessionCatalog Current catalog of the user.
-     * @param query The input text.
-     * @return An AntlrResult object with the parsed Statement (if any) and the found errors (if any).
+     * @param query          The input text.
+     * @return An Antlr Result object with the parsed Statement (if any) and the found errors (if any).
      */
     public CrossdataStatement parseStatement(String sessionCatalog, String query) throws ParsingException {
         String modifiedQuery = "[" + sessionCatalog + "], " + query;
@@ -91,7 +93,7 @@ public class Parser {
             resultStatement = parser.query();
             foundErrors = parser.getFoundErrors();
         } catch (Exception e) {
-            LOG.error("Cannot parse statement", e);
+            LOG.error("Cannot parse statement: " + e.getMessage());
             if (foundErrors.isEmpty()) {
                 foundErrors.addError(new AntlrError("Unknown parser error", e.getMessage()));
             } else if (foundErrors.getAntlrErrors().iterator().next().getMessage().contains("missing")) {

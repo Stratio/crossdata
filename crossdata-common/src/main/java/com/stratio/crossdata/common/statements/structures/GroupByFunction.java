@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+/**
+ * Aggregation function that affect a GroupBy statemet..
+ */
 public enum GroupByFunction {
     SUM,
     MAX,

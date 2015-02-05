@@ -19,6 +19,10 @@
 package com.stratio.connector.inmemory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,19 +34,22 @@ import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * Class that implements the {@link com.stratio.crossdata.common.connector.IMetadataEngine}.
  */
-public class InMemoryMetadataEngine implements IMetadataEngine{
+public class InMemoryMetadataEngine implements IMetadataEngine {
 
     /**
      * Link to the in memory connector.
@@ -72,6 +79,11 @@ public class InMemoryMetadataEngine implements IMetadataEngine{
         }else{
             throw new ExecutionException("No datastore connected to " + targetCluster);
         }
+    }
+
+    @Override public void alterCatalog(ClusterName targetCluster, CatalogName catalogName,
+            Map<Selector, Selector> options) throws ConnectorException {
+        throw new UnsupportedException("Alter Catalog not implemented yet");
     }
 
     @Override
@@ -156,5 +168,65 @@ public class InMemoryMetadataEngine implements IMetadataEngine{
     @Override
     public void dropIndex(ClusterName targetCluster, IndexMetadata indexMetadata) throws ConnectorException {
         throw new UnsupportedException("Deleting indexes is not supported.");
+    }
+
+    @Override
+    public List<CatalogMetadata> provideMetadata(ClusterName clusterName) throws ConnectorException {
+        CatalogName name = new CatalogName("InMemoryCatalog");
+        Map<Selector, Selector> options = new HashMap<>();
+        Map<TableName, TableMetadata> tables = new HashMap<>();
+        TableName tableName = new TableName("InMemoryCatalog", "InMemoryTable");
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
+
+        // First column
+        ColumnName columnName = new ColumnName(tableName, "FirstCol");
+        Object[] parameters = new Object[0];
+        ColumnType columnType = ColumnType.TEXT;
+        ColumnMetadata col = new ColumnMetadata(columnName, parameters, columnType);
+        columns.put(col.getName(), col);
+        // Second column
+        columnName = new ColumnName(tableName, "SecondCol");
+        columnType = ColumnType.INT;
+        col = new ColumnMetadata(columnName, parameters, columnType);
+        columns.put(col.getName(), col);
+        // Third column
+        columnName = new ColumnName(tableName, "ThirdCol");
+        columnType = ColumnType.BOOLEAN;
+        col = new ColumnMetadata(columnName, parameters, columnType);
+        columns.put(col.getName(), col);
+
+        Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+        ClusterName clusterRef = null;
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        partitionKey.add(columns.keySet().iterator().next());
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
+        TableMetadata tableMetadata = new TableMetadata(tableName, options, columns, indexes, clusterRef,
+                partitionKey, clusterKey);
+        tables.put(tableName, tableMetadata);
+        CatalogMetadata catalogMetadata = new CatalogMetadata(name, options, tables);
+        return Arrays.asList(catalogMetadata);
+    }
+
+    @Override
+    public CatalogMetadata provideCatalogMetadata(ClusterName clusterName, CatalogName catalogName)
+            throws ConnectorException {
+        CatalogMetadata foundCatalog = null;
+        List<CatalogMetadata> catalogs = provideMetadata(clusterName);
+        for(CatalogMetadata catalog: catalogs){
+            if(catalog.getName().equals(catalogName)){
+                foundCatalog = catalog;
+                break;
+            }
+        }
+        if(foundCatalog == null){
+            throw new ExecutionException("Catalog " + catalogName + " not found.");
+        }
+        return foundCatalog;
+    }
+
+    @Override
+    public TableMetadata provideTableMetadata(ClusterName clusterName, TableName tableName)
+            throws ConnectorException {
+        return provideCatalogMetadata(clusterName, tableName.getCatalogName()).getTables().get(tableName);
     }
 }

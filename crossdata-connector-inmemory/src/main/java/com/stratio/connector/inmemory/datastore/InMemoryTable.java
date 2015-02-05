@@ -23,6 +23,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.connector.inmemory.datastore.functions.AbstractInMemoryFunction;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryLiteralSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+
 /**
  * This class provides a basic abstraction of a database-like table stored in memory.
  */
@@ -102,6 +108,14 @@ public class InMemoryTable {
     }
 
     /**
+     * Get the column mapping indexes.
+     * @return A map associating column names with columns indexes.
+     */
+    public Map<String, Integer> getColumnIndex() {
+        return columnIndex;
+    }
+
+    /**
      * Insert a new row in the table.
      * @param row The map associating column name with cell value.
      */
@@ -156,7 +170,11 @@ public class InMemoryTable {
      * @param outputColumns The output columns in order.
      * @return A list with the matching columns.
      */
-    public List<Object[]> fullScanSearch(List<InMemoryRelation> relations, List<String> outputColumns){
+    public List<Object[]> fullScanSearch(
+            List<InMemoryRelation> relations,
+            List<InMemorySelector> outputColumns)
+    throws Exception{
+
         List<Object[]> results = new ArrayList<>();
         boolean toAdd = true;
         for(Object [] row : rows.values()){
@@ -165,6 +183,7 @@ public class InMemoryTable {
                 Object o = row[columnIndex.get(relation.getColumnName())];
                 toAdd &= relation.getRelation().compare(o, relation.getRightPart());
             }
+
             if(toAdd){
                 results.add(projectColumns(row, outputColumns));
             }
@@ -172,17 +191,32 @@ public class InMemoryTable {
         return results;
     }
 
+
+
     /**
      * Project a set of columns given a complete row.
      * @param row The source row.
      * @param outputColumns The set of output columns.
      * @return A row with the projected columns.
      */
-    private Object[] projectColumns(final Object [] row, final List<String> outputColumns){
+    private Object[] projectColumns(final Object[] row, final List<InMemorySelector> outputColumns) throws Exception{
         Object [] result = new Object[outputColumns.size()];
         int index = 0;
-        for(String output : outputColumns){
-            result[index] = row[columnIndex.get(output)];
+        for(InMemorySelector selector : outputColumns){
+            if(InMemoryFunctionSelector.class.isInstance(selector)){
+               //Process function.
+                AbstractInMemoryFunction f = InMemoryFunctionSelector.class.cast(selector).getFunction();
+                if(f.isRowFunction()) {
+                    result[index] = f.apply(columnIndex, row);
+                }
+            }else if(InMemoryColumnSelector.class.isInstance(selector)){
+                Integer pos = columnIndex.get(selector.getName());
+                result[index] = row[pos];
+            }else if(InMemoryLiteralSelector.class.isInstance(selector)){
+                result[index] = selector.getName();
+            }else{
+                throw new Exception("Cannot recognize selector class " + selector.getClass());
+            }
             index++;
         }
         return result;

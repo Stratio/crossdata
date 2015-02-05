@@ -18,38 +18,52 @@
 package com.stratio.crossdata.core.execution;
 
 import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.core.metadata.MetadataManagerTestHelper;
+import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
-public class ExecutionManagerTest extends MetadataManagerTestHelper {
+public class ExecutionManagerTest {
+
+    @BeforeClass
+    public void setUp() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
+    }
 
     @Test
     public void testExist() throws Exception {
-        ExecutionManager.MANAGER.createEntry("key", "pruebaKey");
-        ExecutionManager.MANAGER.createEntry("key", "pruebaKey",true);
+        ExecutionManager.MANAGER.createEntry("key", "testKey");
+        ExecutionManager.MANAGER.createEntry("key", "testKey", true);
         Assert.assertTrue(ExecutionManager.MANAGER.exists("key"));
-
     }
 
     @Test
     public void testClear() throws Exception {
-        ExecutionManager.MANAGER.createEntry("key", "pruebaKey");
+        ExecutionManager.MANAGER.createEntry("key", "testKey");
         ExecutionManager.MANAGER.clear();
         Assert.assertFalse(ExecutionManager.MANAGER.exists("key"));
     }
 
-
     @Test
     public void testClearWithDelete() throws Exception {
-        ExecutionManager.MANAGER.createEntry("key", "pruebaKey");
-        ExecutionManager.MANAGER.deleteEntry("key");
-        Assert.assertFalse(ExecutionManager.MANAGER.exists("key"));
+        ExecutionManager.MANAGER.createEntry("testClearWithDelete", "testValue");
+        ExecutionManager.MANAGER.deleteEntry("testClearWithDelete");
+        Assert.assertFalse(ExecutionManager.MANAGER.exists("testClearWithDelete"));
     }
 
     @Test
     public void testGetValue() throws Exception {
-        ExecutionManager.MANAGER.createEntry("key2", "pruebaKey");
-        Assert.assertEquals(ExecutionManager.MANAGER.getValue("key2"), "pruebaKey");
+        ExecutionManager.MANAGER.createEntry("key2", "testKey");
+        Assert.assertEquals(ExecutionManager.MANAGER.getValue("key2"), "testKey");
     }
+
 }

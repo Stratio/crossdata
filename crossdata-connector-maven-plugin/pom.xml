@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>crossdata-parent</artifactId>
-        <version>0.1.1</version>
+        <version>0.2.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -81,11 +81,18 @@
             <email>jjlopez at stratio dot com</email>
         </developer>
     </developers>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
             <version>3.1.1</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>guava</artifactId>
+                    <groupId>com.google.guava</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
@@ -116,6 +123,11 @@
             <artifactId>testng</artifactId>
             <version>${testng.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-common</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 

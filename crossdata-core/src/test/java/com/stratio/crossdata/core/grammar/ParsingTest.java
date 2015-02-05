@@ -25,8 +25,13 @@ import static org.testng.Assert.fail;
 
 import java.util.UUID;
 
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
@@ -35,6 +40,17 @@ import com.stratio.crossdata.core.query.IParsedQuery;
  * XDqlParser tests that recognize the different options of each Statement.
  */
 public class ParsingTest {
+
+    @BeforeClass
+    public void setUp() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+    }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
+    }
 
     protected final Parser parser = new Parser();
 
@@ -57,7 +73,7 @@ public class ParsingTest {
             fail(sb.toString(), e);
         }
 
-        assertTrue(inputText.replaceAll("\"","").equalsIgnoreCase(st.toString() + ";"),
+        assertTrue(inputText.replaceAll("\"", "").equalsIgnoreCase(st.toString() + ";"),
                 "Cannot parse " + methodName
                         + ": " + System.lineSeparator() + " expecting" + System.lineSeparator() + "'" + inputText
                         + "' " + System.lineSeparator() + "from" + System.lineSeparator() + "'" + st.toString() + ";'");
@@ -126,7 +142,6 @@ public class ParsingTest {
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText,
                     new CatalogName(sessionCatalog));
-            //st = parser.parse(sessionCatalog, inputText);
             st = parser.parse(baseQuery);
         } catch (ParsingException e) {
             StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());

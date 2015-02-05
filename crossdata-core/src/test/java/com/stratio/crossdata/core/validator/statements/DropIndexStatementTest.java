@@ -21,10 +21,10 @@ package com.stratio.crossdata.core.validator.statements;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
-import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.IndexName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
@@ -81,7 +81,6 @@ public class DropIndexStatementTest extends BasicValidatorTest {
         String query = "DROP INDEX unknown;";
         DropIndexStatement dropIndexStatement = new DropIndexStatement();
         dropIndexStatement.setName(new IndexName("demo", "users", "unknown"));
-        dropIndexStatement.setDropIfExists();
 
         Validator validator = new Validator();
 
@@ -90,11 +89,11 @@ public class DropIndexStatementTest extends BasicValidatorTest {
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
             validator.validate(parsedQuery);
-            Assert.fail("INDEX must exist");
+            Assert.fail("INDEX unknown shouldn't exist");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
-            Assert.assertTrue(true);
+            Assert.assertTrue(false);
         }
     }
 

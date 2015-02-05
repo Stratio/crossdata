@@ -33,6 +33,10 @@ public enum ExecutionType {
     ALTER_TABLE,
     CREATE_INDEX,
     DROP_INDEX,
+    DISCOVER_METADATA,
+    IMPORT_CATALOGS,
+    IMPORT_CATALOG,
+    IMPORT_TABLE,
 
     //IStorage
     INSERT,

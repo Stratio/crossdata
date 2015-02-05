@@ -20,19 +20,16 @@ package com.stratio.crossdata.core.validator;
 
 import static org.testng.Assert.fail;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.Lock;
+import java.util.Set;
 
-import javax.transaction.TransactionManager;
-
-import org.apache.commons.io.FileUtils;
-import org.jgroups.util.UUID;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
@@ -45,6 +42,7 @@ import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
@@ -58,8 +56,7 @@ import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.core.grid.Grid;
-import com.stratio.crossdata.core.grid.GridInitializer;
+import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class BasicValidatorTest {
@@ -69,6 +66,9 @@ public class BasicValidatorTest {
 
     @BeforeClass
     public static void setUpBeforeClass() throws ManifestException {
+        MetadataManagerTestHelper.HELPER.initHelper();
+        MetadataManagerTestHelper.HELPER.createTestEnvironment();
+        /*
         GridInitializer gridInitializer = Grid.initializer();
         gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
         path = "/tmp/metadatastore" + UUID.randomUUID();
@@ -82,13 +82,31 @@ public class BasicValidatorTest {
         Lock lock = Grid.INSTANCE.lock("crossDatatest");
         TransactionManager tm = Grid.INSTANCE.transactionManager("crossDatatest");
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
-        MetadataManager.MANAGER.createDataStore(createDataStoreMetadata());
-        MetadataManager.MANAGER.createConnector(createConnectorMetadata());
-        MetadataManager.MANAGER.createCluster(createClusterMetadata());
-        MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata());
-        MetadataManager.MANAGER.createTable(createTable());
-        MetadataManager.MANAGER.createTable(createJoinTable());
+        */
+        MetadataManager.MANAGER.createDataStore(createDataStoreMetadata(), false);
+        MetadataManager.MANAGER.createConnector(createConnectorMetadata(), false);
+        MetadataManager.MANAGER.createCluster(createClusterMetadata(), false);
+        MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata(), false);
+        MetadataManager.MANAGER.createTable(createTable(), false);
+        MetadataManager.MANAGER.createTable(createJoinTable(), false);
     }
+
+    @AfterClass
+    public void tearDown() throws Exception {
+        MetadataManagerTestHelper.HELPER.closeHelper();
+    }
+
+    //@AfterClass
+    /*
+    public void tearDown() throws Exception {
+        TransactionManager tm = Grid.INSTANCE.transactionManager("com.stratio.crossdata-test");
+        tm.begin();
+        metadataMap.clear();
+        tm.commit();
+        Grid.INSTANCE.close();
+        FileUtils.deleteDirectory(new File(path));
+    }
+    */
 
     private static CatalogMetadata generateCatalogsMetadata() {
         CatalogMetadata catalogMetadata;
@@ -103,10 +121,10 @@ public class BasicValidatorTest {
         TableMetadata tableMetadata;
         TableName targetTable = new TableName("demo", "users");
         Map<Selector, Selector> options = new HashMap<>();
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         ClusterName clusterRef = new ClusterName("cluster");
-        List<ColumnName> partitionKey = new ArrayList<>();
-        List<ColumnName> clusterKey = new ArrayList<>();
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         Object[] parameters = null;
         columns.put(new ColumnName(new TableName("demo", "users"), "name"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "name"), parameters,
@@ -147,10 +165,10 @@ public class BasicValidatorTest {
         TableMetadata tableMetadata;
         TableName targetTable = new TableName("demo", "users_info");
         Map<Selector, Selector> options = new HashMap<>();
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         ClusterName clusterRef = new ClusterName("cluster");
-        List<ColumnName> partitionKey = new ArrayList<>();
-        List<ColumnName> clusterKey = new ArrayList<>();
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
         Object[] parameters = null;
         columns.put(new ColumnName(new TableName("demo", "users_info"), "name"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users_info"), "name"), parameters,
@@ -165,7 +183,6 @@ public class BasicValidatorTest {
         return tableMetadata;
     }
 
-
     private static ConnectorMetadata createConnectorMetadata() {
         DataStoreName dataStoreName = new DataStoreName("Cassandra");
         List<String> dataStoreRefs = Arrays.asList(dataStoreName.getName());
@@ -175,17 +192,22 @@ public class BasicValidatorTest {
         ConnectorMetadata connectorMetadata = null;
         try {
             connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
-                    dataStoreRefs, null, null, supportedOperations);
+                    dataStoreRefs, null, null, supportedOperations, null, null);
         } catch (ManifestException e) {
             fail(e.getMessage());
         }
         return connectorMetadata;
-
     }
 
     private static DataStoreMetadata createDataStoreMetadata() {
+        Set<FunctionType> functions = new HashSet<>();
+        FunctionType function = new FunctionType();
+        function.setFunctionName("getYear");
+        function.setSignature("getYear(Tuple[Int]):Tuple[Any]");
+        function.setFunctionType("simple");
+        functions.add(function);
         DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(new DataStoreName("Cassandra"), "1.0",
-                new HashSet<PropertyType>(), new HashSet<PropertyType>(), null);
+                new HashSet<PropertyType>(), new HashSet<PropertyType>(), null, functions);
         return dataStoreMetadata;
     }
 
@@ -199,13 +221,4 @@ public class BasicValidatorTest {
         return clusterMetadata;
     }
 
-    @AfterClass
-    public void tearDown() throws Exception {
-        TransactionManager tm = Grid.INSTANCE.transactionManager("com.stratio.crossdata-test");
-        tm.begin();
-        metadataMap.clear();
-        tm.commit();
-        Grid.INSTANCE.close();
-        FileUtils.deleteDirectory(new File(path));
-    }
 }

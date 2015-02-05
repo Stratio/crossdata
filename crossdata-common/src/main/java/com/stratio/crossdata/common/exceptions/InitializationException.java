@@ -25,16 +25,32 @@ package com.stratio.crossdata.common.exceptions;
  */
 public class InitializationException extends ConnectorException {
 
+    /**
+     * Serial.
+     */
     private static final long serialVersionUID = -3453090024561154440L;
 
+    /**
+     * Constructor class based in an Exception.
+     * @param e The Exception.
+     */
     public InitializationException(Exception e){
         super(e);
     }
 
+    /**
+     * Constructor class based in a string message.
+     * @param msg The message.
+     */
     public InitializationException(String msg) {
         super(msg);
     }
 
+    /**
+     * Constructor class based in a string message and a throwable exception.
+     * @param msg The message.
+     * @param cause The throwable exception.
+     */
     public InitializationException(String msg, Throwable cause) {
         super(msg, cause);
     }

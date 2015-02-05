@@ -53,6 +53,13 @@ public enum Operations {
      */
     DROP_TABLE("DROP_TABLE"),
 
+    IMPORT_METADATA("IMPORT_METADATA"),
+
+    /**
+     * The engine supports unconditional updates.
+     */
+    UPDATE_NO_FILTERS("UPDATE_NO_FILTERS"),
+
     /**
      * The engine supports update operations on columns
      * that are part of the primary key with an equal operator.
@@ -145,31 +152,31 @@ public enum Operations {
 
     /**
      * The engine supports update operations using
-     * a function as part of a relation using with an equal operator.
+     * a includes as part of a relation using with an equal operator.
      */
     UPDATE_FUNCTION_EQ("UPDATE_FUNCTION_EQ"),
 
     /**
      * The engine supports update operations using
-     * a function as part of a relation using with a greater than operator.
+     * a includes as part of a relation using with a greater than operator.
      */
     UPDATE_FUNCTION_GT("UPDATE_FUNCTION_GT"),
 
     /**
      * The engine supports update operations using
-     * a function as part of a relation using with a less than operator.
+     * a includes as part of a relation using with a less than operator.
      */
     UPDATE_FUNCTION_LT("UPDATE_FUNCTION_LT"),
 
     /**
      * The engine supports update operations using
-     * a function as part of a relation using with a greater than or equal operator.
+     * a includes as part of a relation using with a greater than or equal operator.
      */
     UPDATE_FUNCTION_GET("UPDATE_FUNCTION_GET"),
 
     /**
      * The engine supports update operations using
-     * a function as part of a relation using with a less than or equal operator.
+     * a includes as part of a relation using with a less than or equal operator.
      */
     UPDATE_FUNCTION_LET("UPDATE_FUNCTION_LET"),
 
@@ -188,6 +195,11 @@ public enum Operations {
      * connector is capable of behaving as a "classic" insert.
      */
     INSERT_IF_NOT_EXISTS("INSERT_IF_NOT_EXISTS"),
+
+    /**
+     * The engine supports unconditional deletes.
+     */
+    DELETE_NO_FILTERS("DELETE_NO_FILTERS"),
 
     /**
      * The engine supports delete operations on columns
@@ -281,31 +293,31 @@ public enum Operations {
 
     /**
      * The engine supports delete operations using
-     * a function as part of a relation using with an equal operator.
+     * a includes as part of a relation using with an equal operator.
      */
     DELETE_FUNCTION_EQ("DELETE_FUNCTION_EQ"),
 
     /**
      * The engine supports delete operations using
-     * a function as part of a relation using with a greater than operator.
+     * a includes as part of a relation using with a greater than operator.
      */
     DELETE_FUNCTION_GT("DELETE_FUNCTION_GT"),
 
     /**
      * The engine supports delete operations using
-     * a function as part of a relation using with a less than operator.
+     * a includes as part of a relation using with a less than operator.
      */
     DELETE_FUNCTION_LT("DELETE_FUNCTION_LT"),
 
     /**
      * The engine supports delete operations using
-     * a function as part of a relation using with a greater than or equal operator.
+     * a includes as part of a relation using with a greater than or equal operator.
      */
     DELETE_FUNCTION_GET("DELETE_FUNCTION_GET"),
 
     /**
      * The engine supports delete operations using
-     * a function as part of a relation using with a less than or equal operator.
+     * a includes as part of a relation using with a less than or equal operator.
      */
     DELETE_FUNCTION_LET("DELETE_FUNCTION_LET"),
 
@@ -427,6 +439,12 @@ public enum Operations {
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are part of the primary key with match operator.
+     */
+    FILTER_PK_MATCH("FILTER_PK_MATCH"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
      * that are not indexed by the underlying datastore with an equal operator.
      */
     FILTER_NON_INDEXED_EQ("FILTER_NON_INDEXED_EQ"),
@@ -505,37 +523,37 @@ public enum Operations {
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
-     * a function as part of a relation using with an equal operator.
+     * a includes as part of a relation using with an equal operator.
      */
     FILTER_FUNCTION_EQ("FILTER_FUNCTION_EQ"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
-     * a function as part of a relation using with a greater than operator.
+     * a includes as part of a relation using with a greater than operator.
      */
     FILTER_FUNCTION_GT("FILTER_FUNCTION_GT"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
-     * a function as part of a relation using with a less than operator.
+     * a includes as part of a relation using with a less than operator.
      */
     FILTER_FUNCTION_LT("FILTER_FUNCTION_LT"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
-     * a function as part of a relation using with a greater than or equal operator.
+     * a includes as part of a relation using with a greater than or equal operator.
      */
     FILTER_FUNCTION_GET("FILTER_FUNCTION_GET"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
-     * a function as part of a relation using with a less than or equal operator.
+     * a includes as part of a relation using with a less than or equal operator.
      */
     FILTER_FUNCTION_LET("FILTER_FUNCTION_LET"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
-     * a function as part of a relation using with a distinct operator.
+     * a includes as part of a relation using with a distinct operator.
      */
     FILTER_FUNCTION_DISTINCT("FILTER_FUNCTION_DISTINCT"),
 

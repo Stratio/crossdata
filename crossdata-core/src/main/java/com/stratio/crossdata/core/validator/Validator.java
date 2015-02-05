@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.core.validator;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -26,12 +27,14 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.data.Status;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
@@ -48,6 +51,8 @@ import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
@@ -75,6 +80,7 @@ public class Validator {
 
     /**
      * validate a parsed query.
+     *
      * @param parsedQuery The parsed query
      * @return com.stratio.crossdata.core.query.IValidatedQuery;
      * @throws ValidationException
@@ -83,8 +89,7 @@ public class Validator {
     public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
         IValidatedQuery validatedQuery = null;
         LOG.info("Validating CrossdataStatements...");
-        for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
-
+        for (ValidationTypes val: parsedQuery.getStatement().getValidationRequirements().getValidations()) {
             switch (val) {
             case MUST_NOT_EXIST_CATALOG:
                 validateCatalog(parsedQuery.getStatement(), false);
@@ -167,9 +172,8 @@ public class Validator {
             ((SelectValidatedQuery) validatedQuery).setTableMetadata(fields.getTablesMetadata());
             ((SelectValidatedQuery) validatedQuery).getColumns().addAll(fields.getColumnNames());
             ((SelectValidatedQuery) validatedQuery).getTables().addAll(fields.getTableNames());
-            ((SelectValidatedQuery) validatedQuery).getRelationships().addAll(fields.getWhere());
+            ((SelectValidatedQuery) validatedQuery).getRelations().addAll(fields.getWhere());
             ((SelectValidatedQuery) validatedQuery).setJoin(fields.getJoin());
-
         }
 
         return validatedQuery;
@@ -180,9 +184,9 @@ public class Validator {
         DataStoreName datastoreName = attachClusterStatement.getDatastoreName();
         ClusterName clusterName = attachClusterStatement.getClusterName();
 
-        if (MetadataManager.MANAGER.exists(clusterName)){
+        if (MetadataManager.MANAGER.exists(clusterName)) {
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
-            if(!clusterMetadata.getDataStoreRef().equals(datastoreName)){
+            if (!clusterMetadata.getDataStoreRef().equals(datastoreName)) {
                 throw new BadFormatException("A cluster can be attached to only one data store.");
             }
         }
@@ -190,27 +194,28 @@ public class Validator {
 
     private void validateConnectorAttachedRefs(CrossdataStatement statement) throws ValidationException {
         if (statement instanceof DetachConnectorStatement) {
-            DetachConnectorStatement detachConnectorStatement= (DetachConnectorStatement) statement;
+            DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) statement;
             ConnectorName connectorName = detachConnectorStatement.getConnectorName();
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER
                     .getCluster(detachConnectorStatement.getClusterName());
             Map<ConnectorName, ConnectorAttachedMetadata> refs = clusterMetadata
                     .getConnectorAttachedRefs();
-            Iterator it=refs.entrySet().iterator();
-            boolean found=false;
-            while(it.hasNext()){
-                Map.Entry<ConnectorName, ConnectorMetadata>pairs=(Map.Entry)it.next();
-                if (connectorName.equals(pairs.getKey())){
-                   found=true;
-                   break;
+            Iterator it = refs.entrySet().iterator();
+            boolean found = false;
+            while (it.hasNext()) {
+                Map.Entry<ConnectorName, ConnectorMetadata> pairs = (Map.Entry) it.next();
+                if (connectorName.equals(pairs.getKey())) {
+                    found = true;
+                    break;
                 }
             }
-            if(!found){
+            if (!found) {
                 throw new ConnectionHasNoRefsException("Invalid validation [MUST_EXIST_ATTACH_CONNECTOR_CLUSTER] for " +
                         statement);
             }
         } else {
-            throw new ConnectionHasNoRefsException("Invalid validation [MUST_EXIST_ATTACH_CONNECTOR_CLUSTER] for " + statement);
+            throw new ConnectionHasNoRefsException(
+                    "Invalid validation [MUST_EXIST_ATTACH_CONNECTOR_CLUSTER] for " + statement);
         }
     }
 
@@ -218,7 +223,7 @@ public class Validator {
         if (statement instanceof AttachConnectorStatement) {
             AttachConnectorStatement attachConnectorStatement = (AttachConnectorStatement) statement;
             ConnectorName connectorName = attachConnectorStatement.getConnectorName();
-            if (!MetadataManager.MANAGER.checkConnectorStatus(connectorName, ConnectorStatus.ONLINE)) {
+            if (!MetadataManager.MANAGER.checkConnectorStatus(connectorName, Status.ONLINE)) {
                 throw new NotConnectionException("Connector " + connectorName + " is not connected.");
             }
         } else {
@@ -265,43 +270,37 @@ public class Validator {
 
     private void validateCluster(CrossdataStatement stmt, boolean exist) throws IgnoreQueryException,
             NotExistNameException, ExistNameException {
-        Name name = null;
+        ClusterName clusterName = null;
         boolean hasIfExists = false;
 
         if (stmt instanceof AlterClusterStatement) {
-            name = ((AlterClusterStatement) stmt).getClusterName();
+            clusterName = ((AlterClusterStatement) stmt).getClusterName();
             hasIfExists = ((AlterClusterStatement) stmt).isIfExists();
-        }
-
-        if (stmt instanceof AttachClusterStatement) {
-            name = (((AttachClusterStatement) stmt).getClusterName());
+        } else if (stmt instanceof AttachClusterStatement) {
+            clusterName = (((AttachClusterStatement) stmt).getClusterName());
             hasIfExists = ((AttachClusterStatement) stmt).isIfNotExists();
-        }
-
-        if (stmt instanceof DetachClusterStatement) {
-            name = new ClusterName(((DetachClusterStatement) stmt).getClusterName());
-        }
-
-        if (stmt instanceof AttachConnectorStatement) {
-            name = (((AttachConnectorStatement) stmt).getClusterName());
-        }
-
-        if (stmt instanceof CreateTableStatement) {
+        } else if (stmt instanceof DetachClusterStatement) {
+            clusterName = new ClusterName(((DetachClusterStatement) stmt).getClusterName());
+        } else if (stmt instanceof AttachConnectorStatement) {
+            clusterName = (((AttachConnectorStatement) stmt).getClusterName());
+        } else if (stmt instanceof CreateTableStatement) {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
-            name = createTableStatement.getClusterName();
+            clusterName = createTableStatement.getClusterName();
             hasIfExists = createTableStatement.isIfNotExists();
-        }
-        if (stmt instanceof DetachConnectorStatement) {
+        } else if (stmt instanceof DetachConnectorStatement) {
             DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) stmt;
-            name = detachConnectorStatement.getClusterName();
+            clusterName = detachConnectorStatement.getClusterName();
+        } else if (stmt instanceof ImportMetadataStatement) {
+            ImportMetadataStatement importMetadataStatement = (ImportMetadataStatement) stmt;
+            clusterName = importMetadataStatement.getClusterName();
         }
 
-        validateName(exist, name, hasIfExists);
+        validateName(exist, clusterName, hasIfExists);
     }
 
     private void validateClusterProperties(DataStoreName name, Map<Selector, Selector> opts)
             throws ValidationException {
-        if(!MetadataManager.MANAGER.exists(name)){
+        if (!MetadataManager.MANAGER.exists(name)) {
             throw new NotExistNameException(name);
         }
         DataStoreMetadata datastore = MetadataManager.MANAGER.getDataStore(name);
@@ -310,7 +309,7 @@ public class Validator {
 
     private void validateConnectorProperties(ConnectorName name, Map<Selector, Selector> opts)
             throws ValidationException {
-        if(!MetadataManager.MANAGER.exists(name)){
+        if (!MetadataManager.MANAGER.exists(name)) {
             throw new NotExistNameException(name);
         }
         ConnectorMetadata connector = MetadataManager.MANAGER.getConnector(name);
@@ -325,26 +324,26 @@ public class Validator {
 
         // Get property names of the attachment
         Set<String> attProps = new HashSet<>();
-        for(Selector sel: opts.keySet()){
+        for (Selector sel : opts.keySet()) {
             attProps.add(sel.getStringValue().toLowerCase());
         }
 
         // Verify required properties
         Set<String> props = new HashSet<>();
-        for(PropertyType pt: requiredProps){
+        for (PropertyType pt : requiredProps) {
             props.add(pt.getPropertyName().toLowerCase());
         }
-        if(!attProps.containsAll(props)){
+        if (!attProps.containsAll(props)) {
             throw new BadFormatException("Some required properties are missing");
         }
         attProps.removeAll(props);
 
         // Verify optional properties
         props = new HashSet<>();
-        for(PropertyType pt: optProps){
+        for (PropertyType pt : optProps) {
             props.add(pt.getPropertyName().toLowerCase());
         }
-        if(!props.containsAll(attProps)){
+        if (!props.containsAll(attProps)) {
             throw new BadFormatException("Some properties are not found in the manifest");
         }
     }
@@ -387,7 +386,7 @@ public class Validator {
 
     private void validateColumn(CrossdataStatement stmt, boolean exist)
             throws NotExistNameException, IgnoreQueryException, ExistNameException {
-        ColumnName columnName = null;
+        ColumnName columnName;
         if (stmt instanceof AlterTableStatement) {
             columnName = ((AlterTableStatement) stmt).getColumn();
             validateName(exist, columnName, false);
@@ -409,8 +408,7 @@ public class Validator {
                 throw new BadFormatException("AlterCatalog options can't be empty");
             }
 
-        }
-        if (stmt instanceof AlterClusterStatement) {
+        } else if (stmt instanceof AlterClusterStatement) {
             AlterClusterStatement alterClusterStatement = (AlterClusterStatement) stmt;
             if (alterClusterStatement.getOptions() == null || alterClusterStatement.getOptions().isEmpty()) {
                 throw new BadFormatException("AlterCluster options can't be empty");
@@ -421,85 +419,98 @@ public class Validator {
 
     private void validateTable(CrossdataStatement stmt, boolean exist)
             throws NotExistNameException, IgnoreQueryException, ExistNameException {
-        Name name;
+        TableName tableName;
         boolean hasIfExists = false;
 
         if (stmt instanceof AlterTableStatement) {
-            name = ((AlterTableStatement) stmt).getTableName();
+            tableName = ((AlterTableStatement) stmt).getTableName();
         } else if (stmt instanceof DropTableStatement) {
-            name = ((DropTableStatement) stmt).getTableName();
+            tableName = ((DropTableStatement) stmt).getTableName();
             hasIfExists = ((DropTableStatement) stmt).isIfExists();
         } else if (stmt instanceof CreateTableStatement) {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
-            name = createTableStatement.getTableName();
+            tableName = createTableStatement.getTableName();
             hasIfExists = createTableStatement.isIfNotExists();
         } else if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
-            name = insertIntoStatement.getTableName();
-            hasIfExists = insertIntoStatement.isIfNotExists();
+            tableName = insertIntoStatement.getTableName();
         } else if (stmt instanceof DeleteStatement) {
             DeleteStatement deleteStatement = (DeleteStatement) stmt;
-            name = deleteStatement.getTableName();
-        } else  if (stmt instanceof DetachClusterStatement) {
+            tableName = deleteStatement.getTableName();
+        } else if (stmt instanceof DetachClusterStatement) {
             DetachClusterStatement detachClusterStatement = (DetachClusterStatement) stmt;
-            name = detachClusterStatement.getTableMetadata().getName();
+            tableName = detachClusterStatement.getTableMetadata().getName();
         } else if (stmt instanceof AttachClusterStatement) {
             AttachClusterStatement attachClusterStatement = (AttachClusterStatement) stmt;
-            name = attachClusterStatement.getTableMetadata().getName();
+            tableName = attachClusterStatement.getTableMetadata().getName();
             hasIfExists = attachClusterStatement.isIfNotExists();
         } else if (stmt instanceof CreateIndexStatement) {
             CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
-            name = createIndexStatement.getTableName();
+            tableName = createIndexStatement.getTableName();
             hasIfExists = createIndexStatement.isCreateIfNotExists();
+        } else if(stmt instanceof DropIndexStatement) {
+            DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
+            tableName = dropIndexStatement.getName().getTableName();
         } else if (stmt instanceof UpdateTableStatement) {
             UpdateTableStatement updateTableStatement = (UpdateTableStatement) stmt;
-            name = updateTableStatement.getTableName();
+            tableName = updateTableStatement.getTableName();
         } else if (stmt instanceof TruncateStatement) {
             TruncateStatement truncateStatement = (TruncateStatement) stmt;
-            name = truncateStatement.getTableName();
+            tableName = truncateStatement.getTableName();
+        } else if (stmt instanceof ImportMetadataStatement) {
+            ImportMetadataStatement importMetadataStatement = (ImportMetadataStatement) stmt;
+            tableName = importMetadataStatement.getTableName();
         } else {
             throw new IgnoreQueryException(stmt.getClass().getCanonicalName() + " not supported yet.");
         }
 
-        validateName(exist, name, hasIfExists);
+        validateName(exist, tableName, hasIfExists);
     }
 
     private void validateCatalog(CrossdataStatement stmt, boolean exist)
             throws IgnoreQueryException, ExistNameException, NotExistNameException {
-        Name name = null;
+        CatalogName catalogName = null;
         boolean validate = true;
         boolean hasIfExists = false;
         if (stmt instanceof AlterCatalogStatement) {
             AlterCatalogStatement alterCatalogStatement = (AlterCatalogStatement) stmt;
-            name = alterCatalogStatement.getCatalogName();
+            catalogName = alterCatalogStatement.getCatalogName();
         } else if (stmt instanceof CreateCatalogStatement) {
             CreateCatalogStatement createCatalogStatement = (CreateCatalogStatement) stmt;
             hasIfExists = createCatalogStatement.isIfNotExists();
-            name = createCatalogStatement.getCatalogName();
+            catalogName = createCatalogStatement.getCatalogName();
         } else if (stmt instanceof DropCatalogStatement) {
             DropCatalogStatement dropCatalogStatement = (DropCatalogStatement) stmt;
             hasIfExists = dropCatalogStatement.isIfExists();
-            name = dropCatalogStatement.getCatalogName();
+            catalogName = dropCatalogStatement.getCatalogName();
         } else if (stmt instanceof CreateTableStatement) {
             CreateTableStatement createTableStatement = (CreateTableStatement) stmt;
-            name = createTableStatement.getEffectiveCatalog();
+            catalogName = createTableStatement.getEffectiveCatalog();
             hasIfExists = createTableStatement.isIfNotExists();
         } else if (stmt instanceof DropTableStatement) {
             DropTableStatement dropTableStatement = (DropTableStatement) stmt;
-            name = dropTableStatement.getCatalogName();
+            catalogName = dropTableStatement.getCatalogName();
             hasIfExists = dropTableStatement.isIfExists();
         } else if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
-            name = insertIntoStatement.getCatalogName();
-            hasIfExists = insertIntoStatement.isIfNotExists();
+            catalogName = insertIntoStatement.getCatalogName();
+        } else if (stmt instanceof ImportMetadataStatement) {
+            ImportMetadataStatement importMetadataStatement = (ImportMetadataStatement) stmt;
+            catalogName = importMetadataStatement.getCatalogName();
+        } else if (stmt instanceof CreateIndexStatement) {
+            CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
+            catalogName = createIndexStatement.getTableName().getCatalogName();
+        } else if (stmt instanceof DropIndexStatement){
+            DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
+            catalogName = dropIndexStatement.getName().getTableName().getCatalogName();
         } else {
             //TODO: should through exception?
-            //Correctness - Method call passes null for nonnull parameter
+            //Correctness - Method call passes null for notnull parameter
             validate = false;
         }
 
         if (validate) {
-            validateName(exist, name, hasIfExists);
+            validateName(exist, catalogName, hasIfExists);
         }
     }
 
@@ -538,29 +549,33 @@ public class Validator {
             List<ColumnName> columnNameList = insertIntoStatement.getIds();
             List<Selector> selectorList = insertIntoStatement.getCellValues();
 
+            List<Selector> resultingList = new ArrayList<>();
             for (int i = 0; i < columnNameList.size(); i++) {
                 ColumnName columnName = columnNameList.get(i);
                 Selector valueSelector = selectorList.get(i);
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
 
-                validateColumnType(columnMetadata, valueSelector);
+                Selector resultingSelector = validateColumnType(columnMetadata, valueSelector, true);
+                resultingList.add(resultingSelector);
             }
+            insertIntoStatement.setCellValues(resultingList);
         }
     }
 
-    private void validateColumnType(ColumnMetadata columnMetadata, Selector right)
+    private Selector validateColumnType(ColumnMetadata columnMetadata, Selector querySelector, boolean tryConversion)
             throws BadFormatException, NotMatchDataTypeException {
         NotMatchDataTypeException notMatchDataTypeException = null;
         BadFormatException badFormatException = null;
-        switch (right.getType()) {
+        Selector resultingSelector = querySelector;
+        switch (querySelector.getType()) {
         case FUNCTION:
-            LOG.info("Function is not validate yet");
+            LOG.info("Functions are not supported yet for this statement.");
             break;
         case COLUMN:
-            ColumnName rightColumnName = ((ColumnSelector) right).getName();
-            ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(rightColumnName);
+            ColumnName queryColumnName = ((ColumnSelector) querySelector).getName();
+            ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(queryColumnName);
             if (columnMetadata.getColumnType() != rightColumnMetadata.getColumnType()) {
-                notMatchDataTypeException = new NotMatchDataTypeException(rightColumnName);
+                notMatchDataTypeException = new NotMatchDataTypeException(queryColumnName);
             }
             break;
         case ASTERISK:
@@ -579,7 +594,14 @@ public class Validator {
         case INTEGER:
             if (columnMetadata.getColumnType() != ColumnType.INT &&
                     columnMetadata.getColumnType() != ColumnType.BIGINT) {
-                notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
+                if(tryConversion){
+                    resultingSelector = convertIntegerSelector(
+                            (IntegerSelector) querySelector,
+                            columnMetadata.getColumnType(),
+                            columnMetadata.getName());
+                } else {
+                    notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
+                }
             }
             break;
         case FLOATING_POINT:
@@ -595,12 +617,23 @@ public class Validator {
             break;
         }
 
-
         if (notMatchDataTypeException != null) {
             throw notMatchDataTypeException;
         } else if (badFormatException != null) {
             throw badFormatException;
         }
+        return resultingSelector;
+    }
+
+    private Selector convertIntegerSelector(IntegerSelector querySelector, ColumnType columnType, ColumnName name)
+            throws NotMatchDataTypeException {
+        Selector resultingSelector;
+        if(columnType == ColumnType.DOUBLE || columnType == ColumnType.FLOAT){
+            resultingSelector = new FloatingPointSelector(querySelector.getTableName(), querySelector.getValue());
+        } else {
+            throw new NotMatchDataTypeException(name);
+        }
+        return resultingSelector;
     }
 
 }

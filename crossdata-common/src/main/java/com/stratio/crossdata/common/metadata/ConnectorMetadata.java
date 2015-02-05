@@ -26,10 +26,13 @@ import java.util.Set;
 
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.ConnectorStatus;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.manifest.ConnectorFunctionsType;
+import com.stratio.crossdata.common.manifest.ExcludeType;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -43,6 +46,7 @@ public class ConnectorMetadata implements IMetadata {
      * Connector name.
      */
     private final ConnectorName name;
+
 
     /**
      * Connector version.
@@ -68,7 +72,7 @@ public class ConnectorMetadata implements IMetadata {
     /**
      * The connector status.
      */
-    private ConnectorStatus connectorStatus;
+    private Status status;
 
     /**
      * The actor Akka reference.
@@ -90,8 +94,12 @@ public class ConnectorMetadata implements IMetadata {
      */
     private Set<Operations> supportedOperations;
 
+    private Set<FunctionType> connectorFunctions;
+
+    private Set<String> excludedFunctions;
+
     /**
-     * Whether the manifest of this connector was already added or not
+     * Whether the manifest of this connector was already added or not.
      */
     private boolean manifestAdded = false;
 
@@ -105,14 +113,14 @@ public class ConnectorMetadata implements IMetadata {
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
      * @param supportedOperations The set of supported operations.
+     * @param functions           The set of supported functions.
      */
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations) throws ManifestException {
-        this(name, version, dataStoreRefs, clusterProperties, ConnectorStatus.OFFLINE, null, requiredProperties,
-                optionalProperties,
-                supportedOperations);
+            Set<Operations> supportedOperations, ConnectorFunctionsType functions) throws ManifestException {
+        this(name, version, dataStoreRefs, clusterProperties, Status.OFFLINE, null, requiredProperties,
+                optionalProperties, supportedOperations, functions);
     }
 
     /**
@@ -122,19 +130,21 @@ public class ConnectorMetadata implements IMetadata {
      * @param version             The connector version.
      * @param dataStoreRefs       The set of datastores the connector may access.
      * @param clusterProperties   The map of clusters associated with this connector and their associated properties.
-     * @param connectorStatus     The connector status.
+     * @param status              The connector status.
      * @param actorRef            The actor Akka reference.
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
      * @param supportedOperations The set of supported operations.
+     * @param functions           The functions allow by the connector.
      */
     public ConnectorMetadata(ConnectorName name, String version,
             Set<DataStoreName> dataStoreRefs,
-            Map<ClusterName, Map<Selector, Selector>> clusterProperties, ConnectorStatus connectorStatus,
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties, Status status,
             String actorRef,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
-            Set<Operations> supportedOperations) throws ManifestException {
+            Set<Operations> supportedOperations,
+            ConnectorFunctionsType functions) throws ManifestException {
 
         if(name.getName().isEmpty()){
             throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
@@ -156,7 +166,24 @@ public class ConnectorMetadata implements IMetadata {
         this.requiredProperties = (requiredProperties!=null)?requiredProperties:new HashSet<PropertyType>();
         this.optionalProperties = (optionalProperties!=null)?optionalProperties:new HashSet<PropertyType>();
         this.supportedOperations = (supportedOperations!=null)?supportedOperations:new HashSet<Operations>();
-        this.connectorStatus = connectorStatus;
+        if(functions==null){
+            this.connectorFunctions = new HashSet<>();
+            this.excludedFunctions = new HashSet<>();
+        } else {
+            List<FunctionType> includes = functions.getFunction();
+            this.connectorFunctions = new HashSet<>();
+            if(includes != null){
+                this.connectorFunctions.addAll(includes);
+            }
+            List<ExcludeType> excludes = functions.getExclude();
+            this.excludedFunctions = new HashSet<>();
+            if(excludes != null){
+                for(ExcludeType exclude: excludes){
+                    this.excludedFunctions.add(exclude.getFunctionName());
+                }
+            }
+        }
+        this.status = status;
         this.actorRef = actorRef;
     }
 
@@ -169,10 +196,13 @@ public class ConnectorMetadata implements IMetadata {
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
      * @param supportedOperations The set of supported operations.
+     * @param connectorFunctions  The set of functions allow by the connector.
+     * @param excludedFunctions   The set of functions of manifest excluded by the connector.
      */
     public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
-            List<String> supportedOperations) throws ManifestException {
+            List<String> supportedOperations, List<FunctionType> connectorFunctions,
+            List<String> excludedFunctions) throws ManifestException {
 
         if(name.getName().isEmpty()){
             throw new ManifestException(new ExecutionException("Tag name cannot be empty"));
@@ -187,9 +217,6 @@ public class ConnectorMetadata implements IMetadata {
         }
 
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
-        if(this.dataStoreRefs == null){
-            this.dataStoreRefs = new HashSet<>();
-        }
 
         if (requiredProperties != null) {
             this.requiredProperties = ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties);
@@ -209,7 +236,19 @@ public class ConnectorMetadata implements IMetadata {
             this.supportedOperations = new HashSet<>();
         }
 
-        this.connectorStatus = ConnectorStatus.OFFLINE;
+        if(connectorFunctions!=null){
+            this.connectorFunctions=ManifestHelper.convertManifestFunctionsToMetadataFunctions(connectorFunctions);
+        }else{
+            this.connectorFunctions=new HashSet<>();
+        }
+
+        if(excludedFunctions!=null){
+            this.excludedFunctions=new HashSet<>(excludedFunctions);
+        } else {
+            this.excludedFunctions=new HashSet<>();
+        }
+
+        this.status = Status.OFFLINE;
     }
 
     /**
@@ -307,19 +346,19 @@ public class ConnectorMetadata implements IMetadata {
     /**
      * Get the connector status.
      *
-     * @return A {@link com.stratio.crossdata.common.data.ConnectorStatus}.
+     * @return A {@link com.stratio.crossdata.common.data.Status}.
      */
-    public ConnectorStatus getConnectorStatus() {
-        return connectorStatus;
+    public Status getStatus() {
+        return status;
     }
 
     /**
      * Set the connector status.
      *
-     * @param connectorStatus A {@link com.stratio.crossdata.common.data.ConnectorStatus}.
+     * @param status A {@link com.stratio.crossdata.common.data.Status}.
      */
-    public void setConnectorStatus(ConnectorStatus connectorStatus) {
-        this.connectorStatus = connectorStatus;
+    public void setStatus(Status status) {
+        this.status = status;
     }
 
     /**
@@ -337,7 +376,7 @@ public class ConnectorMetadata implements IMetadata {
      * @param actorRef String of the actor reference path.
      */
     public void setActorRef(String actorRef) {
-        this.connectorStatus = ConnectorStatus.ONLINE;
+        this.status = Status.ONLINE;
         this.actorRef = actorRef;
     }
 
@@ -418,12 +457,45 @@ public class ConnectorMetadata implements IMetadata {
         this.supportedOperations = convertManifestOperationsToMetadataOperations(supportedOperations);
     }
 
+    /**
+     * Set the supported Functions.
+     *
+     * @param supportedFunctions A list of supported operations.
+     */
+    public void setSupportedFunctions(ConnectorFunctionsType supportedFunctions) throws ManifestException {
+       this.connectorFunctions = new HashSet<>(supportedFunctions.getFunction());
+    }
+
+    /**
+     * Get if manifest is added.
+     * @return The check result.
+     */
     public boolean isManifestAdded() {
         return manifestAdded;
     }
 
+    /**
+     * Set manifestAdded.
+     * @param manifestAdded A boolean that indicates if it is added.
+     */
     public void setManifestAdded(boolean manifestAdded) {
         this.manifestAdded = manifestAdded;
+    }
+
+    /**
+     * Get the connector functions.
+     * @return A set of {@link com.stratio.crossdata.common.manifest.FunctionType} .
+     */
+    public Set<FunctionType> getConnectorFunctions() {
+        return connectorFunctions;
+    }
+
+    /**
+     * Set the connector functions.
+     * @param connectorFunctions A set of {@link com.stratio.crossdata.common.manifest.FunctionType} .
+     */
+    public void setConnectorFunctions(Set<FunctionType> connectorFunctions) {
+        this.connectorFunctions = connectorFunctions;
     }
 
     /**
@@ -442,13 +514,34 @@ public class ConnectorMetadata implements IMetadata {
         } catch (IllegalArgumentException ex) {
             throw new ManifestException(ex);
         }
+
         return operations;
+    }
+
+    /**
+     * Get the excluded functions of the manifest.
+     * @return A set of strings with the exluded functions of the manifest.
+     */
+    public Set<String> getExcludedFunctions() {
+        HashSet<String> exFunctionsLowercase = new HashSet<>();
+        for(String function: excludedFunctions){
+            exFunctionsLowercase.add(function);
+        }
+        return exFunctionsLowercase;
+    }
+
+    /**
+     * Set the exluded functions of the connector.
+     * @param excludedFunctions A set of String with the exluded functions.
+     */
+    public void setExcludedFunctions(Set<String> excludedFunctions) {
+        this.excludedFunctions = excludedFunctions;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Connector: ");
-        sb.append(name).append(" status: ").append(connectorStatus).append(" actorRef: ").append(actorRef);
+        sb.append(name).append(" status: ").append(status).append(" actorRef: ").append(actorRef);
         return sb.toString();
     }
 }

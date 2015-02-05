@@ -18,5 +18,41 @@
 
 package com.stratio.crossdata.core.statements;
 
-public abstract class StorageStatement extends CrossdataStatement {
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+
+/**
+ * Storage Statement Class.
+ */
+public abstract class StorageStatement extends CrossdataStatement implements ITableStatement{
+
+    /**
+     * A table statement that affect the storage operation.
+     */
+    protected TableStatement tableStatement=new TableStatement();
+    
+    @Override
+    public ValidationRequirements getValidationRequirements() {
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_TABLE)
+                .add(ValidationTypes.MUST_EXIST_COLUMN);
+    }
+
+    /**
+     * Get the table name of the storage statement.
+     * @return A {@link com.stratio.crossdata.common.data.TableName} .
+     */
+    public TableName getTableName() { return tableStatement.getTableName(); }
+
+    /**
+     * Set the table name for the storage statement.
+     * @param tablename The table name.
+     */
+    public void setTableName(TableName tablename) { tableStatement.setTableName(tablename); }
+    @Override
+    public CatalogName getEffectiveCatalog() { return tableStatement.getEffectiveCatalog(); }
+
+
 }

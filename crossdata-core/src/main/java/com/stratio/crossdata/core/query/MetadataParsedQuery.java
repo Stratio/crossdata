@@ -22,10 +22,21 @@ import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.core.statements.CrossdataStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 
+/**
+ * Class that implements the logic to Parsed Metadata Queries.
+ */
 public class MetadataParsedQuery extends BaseQuery implements IParsedQuery {
 
+    /**
+     * The crossdata Statement.
+     */
     private CrossdataStatement statement;
 
+    /**
+     * Constructor class base in a BaseQuery and the statement.
+     * @param baseQuery The base query.
+     * @param statement The statement.
+     */
     public MetadataParsedQuery(BaseQuery baseQuery,
             MetadataStatement statement) {
         super(baseQuery);
@@ -33,6 +44,10 @@ public class MetadataParsedQuery extends BaseQuery implements IParsedQuery {
         setQueryStatus(QueryStatus.PARSED);
     }
 
+    /**
+     * Constructor class based in a parsedQuery.
+     * @param parsedQuery A parsed query.
+     */
     public MetadataParsedQuery(MetadataParsedQuery parsedQuery) {
         this(parsedQuery, parsedQuery.getStatement());
     }

@@ -48,6 +48,7 @@ public abstract class MetadataStatement extends CrossdataStatement {
 
     /**
      * Get the cluster metadata of a statement.
+     *
      * @return {@link com.stratio.crossdata.common.metadata.ClusterMetadata}
      */
     public ClusterMetadata getClusterMetadata() {
@@ -56,6 +57,7 @@ public abstract class MetadataStatement extends CrossdataStatement {
 
     /**
      * Set the cluster metadata of the statement.
+     *
      * @param clusterMetadata The cluster metadata
      */
     public void setClusterMetadata(ClusterMetadata clusterMetadata) {
@@ -64,6 +66,7 @@ public abstract class MetadataStatement extends CrossdataStatement {
 
     /**
      * Get de connector metadata of the statement.
+     *
      * @return {@link com.stratio.crossdata.common.metadata.ConnectorMetadata}
      */
     public ConnectorMetadata getConnectorMetadata() {
@@ -72,6 +75,7 @@ public abstract class MetadataStatement extends CrossdataStatement {
 
     /**
      * Set the connector metadata of the statement.
+     *
      * @param connectorMetadata The connector metadata.
      */
     public void setConnectorMetadata(ConnectorMetadata connectorMetadata) {
@@ -80,6 +84,7 @@ public abstract class MetadataStatement extends CrossdataStatement {
 
     /**
      * Get de data store metadata of the statement.
+     *
      * @return {@link com.stratio.crossdata.common.metadata.DataStoreMetadata}
      */
     public DataStoreMetadata getDataStoreMetadata() {
@@ -88,6 +93,7 @@ public abstract class MetadataStatement extends CrossdataStatement {
 
     /**
      * Set the data store metadata of the statement.
+     *
      * @param dataStoreMetadata The data store metadata-
      */
     public void setDataStoreMetadata(DataStoreMetadata dataStoreMetadata) {
@@ -96,6 +102,7 @@ public abstract class MetadataStatement extends CrossdataStatement {
 
     /**
      * Get the table metadata of the statement.
+     *
      * @return {@link com.stratio.crossdata.common.metadata.TableMetadata}
      */
     public TableMetadata getTableMetadata() {
@@ -104,6 +111,7 @@ public abstract class MetadataStatement extends CrossdataStatement {
 
     /**
      * Set the Table metadata of the statement.
+     *
      * @param tableMetadata The table metadata.
      */
     public void setTableMetadata(TableMetadata tableMetadata) {
@@ -112,6 +120,7 @@ public abstract class MetadataStatement extends CrossdataStatement {
 
     /**
      * Get the column metadata of the statement.
+     *
      * @return {@link com.stratio.crossdata.common.metadata.ColumnMetadata}
      */
     public ColumnMetadata getColumnMetadata() {
@@ -120,6 +129,7 @@ public abstract class MetadataStatement extends CrossdataStatement {
 
     /**
      * Set de Column metadata of the statement.
+     *
      * @param columnMetadata The column metadata.
      */
     public void setColumnMetadata(ColumnMetadata columnMetadata) {

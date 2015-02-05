@@ -39,6 +39,10 @@ public class ErrorResult extends Result {
      */
     private Exception exception;
 
+    /**
+     * Class constructor.
+     * @param e The exception that causes this type of result.
+     */
     public ErrorResult(Exception e) {
         this.error = true;
         this.exception = e;

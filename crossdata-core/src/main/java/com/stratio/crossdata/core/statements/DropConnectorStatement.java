@@ -18,13 +18,23 @@
 
 package com.stratio.crossdata.core.statements;
 
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
+/**
+ * Drop Connector Statement class.
+ */
 public class DropConnectorStatement extends MetadataStatement {
 
+    /**
+     * The name of the connector.
+     */
     private String name;
 
+    /**
+     * Constructor class.
+     * @param name The name of the connector to drop.
+     */
     public DropConnectorStatement(String name) {
         this.name = name;
     }

@@ -18,25 +18,49 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * Catalog metadatada class that implements the characteristics of a catalog.
+ */
 public class CatalogMetadata implements IMetadata {
 
+    /**
+     * The catalog name.
+     */
     private final CatalogName name;
 
+    /**
+     * The creation options of the catalog.
+     */
     private Map<Selector, Selector> options;
 
+    /**
+     * The tables contained by the catalog.
+     */
     private final Map<TableName, TableMetadata> tables;
 
+    /**
+     * Constructor class.
+     * @param name The name of the catalog.
+     * @param options The creation options.
+     * @param tables The tables of the catalog.
+     */
     public CatalogMetadata(CatalogName name, Map<Selector, Selector> options,
             Map<TableName, TableMetadata> tables) {
         this.name = name;
         this.options = options;
-        this.tables = tables;
+        if(tables == null){
+            this.tables = new HashMap<>();
+        } else {
+            this.tables = tables;
+        }
+
     }
 
     public final CatalogName getName() {

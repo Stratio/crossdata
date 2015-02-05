@@ -31,6 +31,7 @@ public abstract class Property {
 
     /**
      * Class Constructor.
+     *
      * @param type
      */
     public Property(int type) {
@@ -39,6 +40,7 @@ public abstract class Property {
 
     /**
      * Get the type of the property.
+     *
      * @return The type.
      */
     public int getType() {
@@ -47,6 +49,7 @@ public abstract class Property {
 
     /**
      * Set the type of the property.
+     *
      * @param type
      */
     public void setType(int type) {

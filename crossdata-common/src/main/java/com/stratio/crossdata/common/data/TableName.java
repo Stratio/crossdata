@@ -33,14 +33,22 @@ public class TableName extends Name {
 
     private String alias = null;
 
+    /**
+     * Constructor class.
+     * @param catalogName The catalog name.
+     * @param tableName The table name.
+     */
     public TableName(String catalogName, String tableName) {
         if (catalogName == null || catalogName.isEmpty()) {
             this.catalogName = null;
         } else {
             this.catalogName = new CatalogName(catalogName);
         }
-
-        this.name = tableName.toLowerCase();
+        if(tableName == null || tableName.isEmpty()){
+            this.name = null;
+        } else {
+            this.name = tableName.toLowerCase();
+        }
     }
 
     public CatalogName getCatalogName() {
@@ -67,6 +75,10 @@ public class TableName extends Name {
         return catalogName != null;
     }
 
+    /**
+     * Return the complete name of the table, with te catalog name and the table name.
+     * @return A String.
+     */
     public String getQualifiedName() {
         String result;
         if (isCompletedName()) {
@@ -88,5 +100,19 @@ public class TableName extends Name {
         StringBuilder sb = new StringBuilder(this.getQualifiedName());
         sb.append(" AS ").append(alias);
         return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        String code;
+
+        code = getType() + getQualifiedName();
+
+        return code.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return (this == o) || ((o instanceof TableName) && (this.hashCode() == o.hashCode()));
     }
 }

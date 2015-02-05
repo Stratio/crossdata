@@ -24,8 +24,8 @@ import java.util.List;
 
 /**
  * Class that contains the list of elements requested by the user in a SELECT statement. For
- * example, given the following statement: SELECT a, b as z, function(c) FROM t this class contains
- * a list with a, b as z, function(c).
+ * example, given the following statement: SELECT a, b as z, includes(c) FROM t this class contains
+ * a list with a, b as z, includes(c).
  */
 public class SelectExpression implements Serializable {
 
@@ -34,8 +34,10 @@ public class SelectExpression implements Serializable {
      */
     private final List<Selector> selectorList;
 
-    private boolean distinct = false;
-
+    /**
+     * Class constructor.
+     * @param selectorList The list of Selectors.
+     */
     public SelectExpression(List<Selector> selectorList) {
         this.selectorList = selectorList;
     }
@@ -44,12 +46,27 @@ public class SelectExpression implements Serializable {
         return selectorList;
     }
 
-    public boolean isDistinct() {
-        return distinct;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        SelectExpression that = (SelectExpression) o;
+
+        if (selectorList != null ? !selectorList.equals(that.selectorList) : that.selectorList != null) {
+            return false;
+        }
+
+        return true;
     }
 
-    public void setDistinct(boolean distinct) {
-        this.distinct = distinct;
+    @Override
+    public int hashCode() {
+        return selectorList != null ? selectorList.hashCode() : 0;
     }
 
     @Override

@@ -4,9 +4,9 @@ CROSSDATA Grammar
 
 Language definition
 
-Version: 0.1.1
+Version: 0.2.0
 
-Date: 14, Nov, 2014
+Date: 19, Jan, 2015
 
 
 * * * * *
@@ -45,10 +45,20 @@ Table of contents
         -   [RESET SERVERDATA](#reset-serverdata)
         -   [CLEAN METADATA](#clean-metadata)
         -   [DESCRIBE SYSTEM](#describe-system)
+        -   [DESCRIBE DATASTORES](#describe-datastores)
         -   [DESCRIBE DATASTORE](#describe-datastore)
+        -   [DESCRIBE CLUSTERS](#describe-clusters)
+        -   [DESCRIBE CLUSTER](#describe-cluster)
         -   [DESCRIBE CONNECTORS](#describe-connectors)
         -   [DESCRIBE CONNECTOR](#describe-connector)
         -   [DESCRIBE CATALOGS](#describe-catalogs)
+        -   [DESCRIBE CATALOG](#describe-catalog)
+        -   [DESCRIBE TABLES](#describe-tables)
+        -   [DESCRIBE TABLE](#describe-table)
+        -   [DISCOVER METADATA] (#discover-metadata)
+        -   [IMPORT CATALOGS] (#import-catalogs)
+        -   [IMPORT CATALOG] (#import-catalog)
+        -   [IMPORT TABLE] (#import-table)
 -   [Shell features] (#shell-features)
 
 * * * * *
@@ -139,7 +149,6 @@ language .
 -   \<tablename\> ::= (\<catalog\_name\> '.')? \<identifier\>
 -   \<columnname\> ::= (\<tablename\> '.')? \<identifier\>
 -   \<indexname\> ::= \<tablename\> '.' \<identifier\>
--   \<properties\> ::= \<property\> (AND \<property\>)\*
 -   \<property\> ::= (\<literal\> | \<identifier\> ) '=' ( \<literal\> | \<constant\> )
 -   \<data-types\> = TEXT | BIGINT | INT | DOUBLE | FLOAT | BOOLEAN
 
@@ -219,7 +228,7 @@ Example:
 
 ### DETACH CONNECTOR
 
-DETACH CONNECTOR \<connector-name\> FROM \<cluster-name\> WITH OPTIONS \<JSON\>';'
+DETACH CONNECTOR \<connector-name\> FROM \<cluster-name\>';'
 
 Example:
 
@@ -274,8 +283,8 @@ Example:
 ALTER TABLE \<tablename\>
         (ALTER \<column-name\> \<data-types\>
         |ADD \<column-name\> \<data-types\>
-        |DROP \<column-name\>
-        |WITH \<JSON\>)) ';'   
+        |DROP \<column-name\>)?
+        (WITH \<JSON\>)?';'   
 
 Example:
 
@@ -287,9 +296,7 @@ UPDATE \<tablename\>
     (USING option (AND option)\*)?
     SET assignment (COMMA assignment)\*
     (WHERE \<where-clause\>)?
-    (IF option (AND option)\*)? ';'      
-
-\<option\> ::= \<property\> = \<value\>
+    (WITH \<JSON\>)? ';'      
 
 \<assignment\> ::= \<column-name\> = \<value-assignment\>
 
@@ -321,7 +328,7 @@ Example:
 
 ### DELETE
 
-DELETE FROM \<tablename\> WHERE \<where-clause\> ';'
+DELETE FROM \<tablename\> (WHERE \<where-clause\>)? ';'
 
 \<where-clause\> ::= \<relation\> ( AND \<relation\> )\*
 
@@ -333,7 +340,8 @@ Example:
 
 ### INSERT
 
-INSERT INTO \<tablename\> '('\<identifier\> (',' \<identifier\> )\*')' VALUES '('\<data-types\> (',' \<term-or-literal\> )\* ')' (IF NOT EXISTS)? ';'
+INSERT INTO \<tablename\> '('\<identifier\> (',' \<identifier\> )\*')' VALUES '('\<data-types\> (',
+' \<term-or-literal\> )\* ')' (IF NOT EXISTS)? WHEN \<where-clause\> (WITH \<JSON\>)? ';'
 
 Example:
 
@@ -341,8 +349,7 @@ Example:
 
 ### CREATE INDEX
 
-CREATE (\<index-type\>)? INDEX (IF NOT EXISTS)? \<index-name\> ON \<table-name\> '(' \<column-names\> ')' (USING
-\<quoted-literal\>)? (WITH \<JSON\>)? ';'
+CREATE (\<index-type\>)? INDEX (IF NOT EXISTS)? \<index-name\> ON \<table-name\> '(' \<column-names\> ')' (WITH \<JSON\>)? ';'
 
 \<index-type\> ::= DEFAULT | FULL\_TEXT | CUSTOM
 
@@ -360,8 +367,9 @@ Example:
 
 ### SELECT
 
-SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)? (INNER JOIN
-\<tablename\> (AS \<identifier\>) ON \<field1\>=\<field2\>)? (WHERE \<where-clause\>)? (LIMIT \<integer\>)? ';'
+SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)? ((INNER)? JOIN
+\<tablename\> (AS \<identifier\>) ON \<field1\>=\<field2\>)? (WHERE \<where-clause\>)? (ORDER BY \<select-list\>)?
+(GROUP BY \<select-list\>)? (LIMIT \<integer\>)? ';'
 
 \<selection-list\> ::= \<identifier\> (AS \<identifier\>)? (',' \<selector\> (AS \<identifier\>)? )\* | '\*'
 
@@ -389,11 +397,22 @@ Example:
 
     SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;
 
+Implicit joins are also supported:
+
+SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? ',' \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)? ON
+\<field1\>=\<field2\> (WHERE \<where-clause\>)? (ORDER BY \<select-list\>)? (GROUP BY \<select-list\>)? (LIMIT
+\<integer\>)? ';'
+
+Example:
+
+    SELECT * FROM demo.clients, demo.sales ON clients.identifier = sales.codeID;
+
+
 ### EXPLAIN PLAN
 
 Explain plan for a specific command according to the current state of the system.
 
-EXPLAIN PLAN FOR \<crossdata-statement\>;
+EXPLAIN PLAN FOR \<crossdata-statement\> ';'
 
 Example:
 
@@ -402,9 +421,9 @@ Example:
 ### RESET SERVERDATA
 
 Remove all data stored in the system (in all servers), including information related to datastores, clusters and connectors.
-This command shows a warning message and requires to answer a security question.
+Connectors status are the only metadata kept by the system after issuing this command.
 
-RESET SERVERDATA;
+RESET SERVERDATA ';'
 
 Example:
 
@@ -412,9 +431,9 @@ Example:
 
 ### CLEAN METADATA
 
-Remove all apiManager related to catalogs, tables, indexes and columns.
+Remove all metadata related to catalogs, tables, indexes and columns.
 
-CLEAN METADATA;
+CLEAN METADATA ';'
 
 Example:
 
@@ -424,21 +443,51 @@ Example:
 
 Describe all the information related to datastores, clusters and connectors.
 
-DESCRIBE SYSTEM;
+DESCRIBE SYSTEM ';'
 
 Example:
 
     DESCRIBE SYSTEM;
 
+### DESCRIBE DATASTORES
+
+Describe all the datastores registered in the system.
+
+DESCRIBE DATASTORES ';'
+
+Example:
+
+    DESCRIBE DATASTORES;
+
 ### DESCRIBE DATASTORE
 
 Describe information related to a specific datastore.
 
-DESCRIBE DATASTORE \<datastore-name\>;
+DESCRIBE DATASTORE \<datastore-name\> ';'
 
 Example:
 
     DESCRIBE DATASTORE cassandra;
+
+### DESCRIBE CLUSTERS
+
+Describe all the clusters registered in the system.
+
+DESCRIBE CLUSTERS ';'
+
+Example:
+
+    DESCRIBE CLUSTERS;
+
+### DESCRIBE CLUSTER
+
+Describe information related to a specific cluster.
+
+DESCRIBE CLUSTER \<cluster-name\> ';'
+
+Example:
+
+    DESCRIBE CLUSTER production;
 
 ### DESCRIBE CONNECTORS
 
@@ -454,7 +503,7 @@ Example:
 
 Describe the specified connector.
 
-DESCRIBE CONNECTOR \<connector-name\>;
+DESCRIBE CONNECTOR \<connector-name\> ';'
 
 Example:
 
@@ -464,11 +513,86 @@ Example:
 
 List of the catalogs created in the system.
 
-DESCRIBE CATALOGS;
+DESCRIBE CATALOGS ';'
 
 Example:
 
     DESCRIBE CATALOGS;
+
+### DESCRIBE CATALOG
+
+Describe the specified catalog.
+
+DESCRIBE CATALOG \<catalog-name\> ';'
+
+Example:
+
+    DESCRIBE CATALOG catalog1;
+
+### DESCRIBE TABLES
+
+List of the tables created in a specific catalog.
+
+DESCRIBE TABLES (FROM \<catalog-name\>)? ';'
+
+Example:
+
+    DESCRIBE TABLES FROM myCatalog;
+
+
+### DESCRIBE TABLE
+
+Describe the specified table.
+
+DESCRIBE TABLE \<table-name\> ';'
+
+Example:
+
+    DESCRIBE TABLE catalog1.table;
+
+### DISCOVER METADATA
+
+Discover metadata from a specified cluster. This command provides information about catalogs and tables already
+existent on a cluster.
+
+DISCOVER METADATA ON CLUSTER \<cluster-name\> ';'
+
+Example:
+
+    DISCOVER METADATA ON CLUSTER productionCluster;
+
+### IMPORT CATALOGS
+
+Import all the metadata from a specific cluster. This command incorporates to the Crossdata servers all the catalogs
+metadata and their underlying metadata.
+
+IMPORT CATALOGS FROM CLUSTER \<cluster-name\> ';'
+
+Example:
+
+    IMPORT CATALOGS FROM CLUSTER cluster_name;
+
+### IMPORT CATALOG
+
+Import all the metadata from a specific catalog. This command incorporates to the the Crossdata servers a
+catalog metadata and its underlying metadata.
+
+IMPORT CATALOG \<catalog-name\> FROM CLUSTER \<cluster-name\> ';'
+
+Example:
+
+    IMPORT CATALOG catalog_name FROM CLUSTER cluster_name;
+
+### IMPORT TABLE
+
+Import metadata of a specific table. This command incorporates to the the Crossdata servers a
+table metadata and its underlying metadata.
+
+IMPORT TABLE \<table-name\> FROM CLUSTER \<cluster-name\> ';'
+
+Example:
+
+    IMPORT TABLE myCatalog.myTable FROM CLUSTER myCluster;
 
 * * * * *
 

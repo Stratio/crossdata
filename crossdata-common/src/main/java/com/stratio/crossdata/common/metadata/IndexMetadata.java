@@ -18,18 +18,31 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
-public class IndexMetadata implements IMetadata {
+/**
+ * Index Metadata class.
+ */
+public class IndexMetadata implements Serializable {
+
+    private static final long serialVersionUID = -3324957892171791688L;
     private final IndexName name;
     private final Map<ColumnName, ColumnMetadata> columns;
     private final IndexType type;
     private final Map<Selector, Selector> options;
 
+    /**
+     * Constructor class.
+     * @param name The name of the index.
+     * @param columns The column to be indexed.
+     * @param type The type of the index.
+     * @param options The options of the creation of the index.
+     */
     public IndexMetadata(IndexName name, Map<ColumnName, ColumnMetadata> columns, IndexType type,
             Map<Selector, Selector> options) {
         this.name = name;

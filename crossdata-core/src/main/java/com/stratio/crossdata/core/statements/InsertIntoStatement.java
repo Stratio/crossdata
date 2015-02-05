@@ -18,17 +18,19 @@
 
 package com.stratio.crossdata.core.statements;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
-
-import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
-import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 import com.stratio.crossdata.common.utils.StringUtils;
-import com.stratio.crossdata.core.structures.Option;
+import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
+import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
  * Class that models an {@code INSERT INTO} statement from the CROSSDATA language.
@@ -50,32 +52,39 @@ public class InsertIntoStatement extends StorageStatement {
      * The name of the target table.
      */
     private TableName tableName;
+
     /**
      * The list of columns to be assigned.
      */
     private List<ColumnName> ids;
+
     /**
      * A {@link com.stratio.crossdata.core.statements.SelectStatement} to retrieve data if the insert type
      * is matches {@code TYPE_SELECT_CLAUSE}.
      */
     private SelectStatement selectStatement;
+
     /**
      * A list of {@link com.stratio.crossdata.common.statements.structures.Selector} with the
      * literal values to be assigned if the insert type matches {@code TYPE_VALUES_CLAUSE}.
      */
     private List<Selector> cellValues;
+
     /**
      * Indicates if exists "IF NOT EXISTS" clause.
      */
     private boolean ifNotExists;
-    /**
-     * Indicates if there is options in the statement..
-     */
-    private boolean optsInc;
+
     /**
      * List of options included in the statement.
      */
-    private List<Option> options;
+    private List<Relation> conditions;
+
+    /**
+     * A JSON with the options specified by the user.
+     */
+    private Map<Selector, Selector> options = new HashMap<>();
+
     /**
      * Type of Insert statement. {@link InsertIntoStatement#TYPE_SELECT_CLAUSE} or
      * {@link InsertIntoStatement#TYPE_VALUES_CLAUSE}.
@@ -90,79 +99,31 @@ public class InsertIntoStatement extends StorageStatement {
      * @param selectStatement a {@link com.stratio.crossdata.core.statements.InsertIntoStatement}
      * @param cellValues      List of
      *                        {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
+     * @param options         String with the options of the insert.
      * @param ifNotExists     Boolean that indicates if IF NOT EXISTS clause is included in the query.
-     * @param optsInc         Boolean that indicates if there is options in the query.
-     * @param options         Query options.
+     * @param conditions      Query options.
      * @param typeValues      Integer that indicates if values come from insert or select.
      */
     public InsertIntoStatement(TableName tableName, List<ColumnName> ids,
             SelectStatement selectStatement, List<Selector> cellValues, boolean ifNotExists,
-            boolean optsInc, List<Option> options, int typeValues) {
+            List<Relation> conditions, String options, int typeValues) {
         this.command = false;
         this.tableName = tableName;
         this.ids = ids;
         this.selectStatement = selectStatement;
         this.cellValues = cellValues;
         this.ifNotExists = ifNotExists;
-        this.optsInc = optsInc;
-        this.options = options;
+        if (conditions != null) {
+            this.conditions = conditions;
+        } else {
+            this.conditions = new ArrayList<>();
+        }
+        if (options != null) {
+            this.options = StringUtils.convertJsonToOptions(tableName, options);
+        } else {
+            this.options = new HashMap<>();
+        }
         this.typeValues = typeValues;
-    }
-
-    /**
-     * InsertIntoStatement constructor comes from INSERT INTO .. SELECT .. with options.
-     *
-     * @param tableName       Tablename target.
-     * @param ids             List of name of fields in the table.
-     * @param selectStatement a {@link com.stratio.crossdata.core.statements.InsertIntoStatement}
-     * @param ifNotExists     Boolean that indicates if IF NOT EXISTS clause is included in the query.
-     * @param options         Query options.
-     */
-    public InsertIntoStatement(TableName tableName, List<ColumnName> ids,
-            SelectStatement selectStatement, boolean ifNotExists, List<Option> options) {
-        this(tableName, ids, selectStatement, null, ifNotExists, true, options, 1);
-    }
-
-    /**
-     * InsertIntoStatement constructor comes from INSERT INTO .. VALUES .. with options.
-     *
-     * @param tableName   Tablename target.
-     * @param ids         List of name of fields in the table.
-     * @param cellValues  List of
-     *                    {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
-     * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
-     * @param options     Query options.
-     */
-    public InsertIntoStatement(TableName tableName, List<ColumnName> ids, List<Selector> cellValues,
-            boolean ifNotExists, List<Option> options) {
-        this(tableName, ids, null, cellValues, ifNotExists, true, options, 2);
-    }
-
-    /**
-     * InsertIntoStatement constructor comes from INSERT INTO .. SELECT .. without options.
-     *
-     * @param tableName       Tablename target.
-     * @param ids             List of name of fields in the table.
-     * @param selectStatement a {@link com.stratio.crossdata.core.statements.InsertIntoStatement}
-     * @param ifNotExists     Boolean that indicates if IF NOT EXISTS clause is included in the query.
-     */
-    public InsertIntoStatement(TableName tableName, List<ColumnName> ids,
-            SelectStatement selectStatement, boolean ifNotExists) {
-        this(tableName, ids, selectStatement, null, ifNotExists, false, null, 1);
-    }
-
-    /**
-     * InsertIntoStatement constructor comes from INSERT INTO .. VALUES .. without options.
-     *
-     * @param tableName   Tablename target.
-     * @param ids         List of name of fields in the table.
-     * @param cellValues  List of
-     *                    {@link com.stratio.crossdata.common.statements.structures.Selector} to insert.
-     * @param ifNotExists Boolean that indicates if IF NOT EXISTS clause is included in the query.
-     */
-    public InsertIntoStatement(TableName tableName, List<ColumnName> ids, List<Selector> cellValues,
-            boolean ifNotExists) {
-        this(tableName, ids, null, cellValues, ifNotExists, false, null, 2);
     }
 
     @Override
@@ -183,17 +144,25 @@ public class InsertIntoStatement extends StorageStatement {
         if (ifNotExists) {
             sb.append(" IF NOT EXISTS");
         }
-        if (optsInc) {
-            sb.append(" USING ");
-            sb.append(StringUtils.stringList(options, " AND "));
+        if ((conditions != null) && (!conditions.isEmpty())) {
+            sb.append(" WHEN ");
+            sb.append(StringUtils.stringList(conditions, " AND "));
+        }
+        if ((options != null) && (!options.isEmpty())) {
+            sb.append(" WITH ").append(options);
         }
         return sb.toString();
     }
 
+    public void setCellValues(List<Selector> cellValues) {
+        this.cellValues = cellValues;
+    }
+
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG).add(ValidationTypes.MUST_EXIST_TABLE).add
-                (ValidationTypes.VALIDATE_TYPES);
+        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
+                .add(ValidationTypes.MUST_EXIST_TABLE)
+                .add(ValidationTypes.VALIDATE_TYPES);
     }
 
     public TableName getTableName() {
@@ -204,7 +173,11 @@ public class InsertIntoStatement extends StorageStatement {
         return ifNotExists;
     }
 
-    public CatalogName getCatalogName(){
+    /**
+     * Return the catalogue of the table where the insert table is.
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName} .
+     */
+    public CatalogName getCatalogName() {
         return tableName.getCatalogName();
     }
 

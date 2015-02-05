@@ -22,10 +22,21 @@ import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.core.statements.CrossdataStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
 
+/**
+ * Storage Parsed Query.
+ */
 public class StorageParsedQuery extends BaseQuery implements IParsedQuery {
 
+    /**
+     * The original statement.
+     */
     private CrossdataStatement statement;
 
+    /**
+     * Constructor class.
+     * @param baseQuery The base storage query.
+     * @param statement The statement.
+     */
     public StorageParsedQuery(BaseQuery baseQuery,
             StorageStatement statement) {
         super(baseQuery);
@@ -33,6 +44,10 @@ public class StorageParsedQuery extends BaseQuery implements IParsedQuery {
         setQueryStatus(QueryStatus.PARSED);
     }
 
+    /**
+     * Constructor Class.
+     * @param parsedQuery A parsed query.
+     */
     public StorageParsedQuery(StorageParsedQuery parsedQuery) {
         this(parsedQuery, parsedQuery.getStatement());
     }

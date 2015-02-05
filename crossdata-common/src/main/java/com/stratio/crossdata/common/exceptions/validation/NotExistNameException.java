@@ -21,7 +21,14 @@ package com.stratio.crossdata.common.exceptions.validation;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.Name;
 
+/**
+ * Exception class that is thrown by the normalizator when a Name not exists yet in Metadata Manager.
+ */
 public class NotExistNameException extends ValidationException {
+    /**
+     * Constructor Class.
+     * @param name The Name that is not found in Metadata Manager.
+     */
     public NotExistNameException(Name name) {
         super("[" + name + "]  doesn't exist yet");
     }

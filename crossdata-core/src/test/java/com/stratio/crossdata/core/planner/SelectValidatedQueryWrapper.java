@@ -23,20 +23,20 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.structures.InnerJoin;
 
 /**
-* Query wrapper to return non-processed list of tables, columns, etc.
-*/
+ * Query wrapper to return non-processed list of tables, columns, etc.
+ */
 public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
 
     /**
@@ -104,7 +104,7 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
     }
 
     @Override
-    public List<Relation> getRelationships() {
+    public List<Relation> getRelations() {
         return stmt.getWhere();
     }
 

@@ -18,8 +18,10 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.TableName;
+
 /**
- * String selector. This type of Selector will be used for enquoted strings.
+ * String selector. This type of Selector will be used for quoted strings.
  */
 public class StringSelector extends Selector {
 
@@ -34,6 +36,17 @@ public class StringSelector extends Selector {
      * @param value The string value.
      */
     public StringSelector(String value) {
+        this(null, value);
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param tableName The table name.
+     * @param value The string value.
+     */
+    public StringSelector(TableName tableName, String value) {
+        super(tableName);
         this.value = value;
     }
 
@@ -74,9 +87,6 @@ public class StringSelector extends Selector {
 
         StringSelector that = (StringSelector) o;
 
-        if (!alias.equals(that.alias)) {
-            return false;
-        }
         if (!value.equals(that.value)) {
             return false;
         }
