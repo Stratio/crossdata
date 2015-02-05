@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -93,7 +94,7 @@ public class PlannerTest extends PlannerBaseTest {
 
     @BeforeClass
     public void setUp() throws ManifestException {
-        //super.setUp();
+        MetadataManagerTestHelper.HELPER.initHelper();
         DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         //Connector with join.
@@ -126,6 +127,11 @@ public class PlannerTest extends PlannerBaseTest {
         clusterName = MetadataManagerTestHelper.HELPER.createTestCluster("TestCluster1", dataStoreName, connector1.getName(), connector2.getName());
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         createTestTables();
+    }
+
+    @AfterClass
+    public void tearDown(){
+        MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
     public void createTestTables() {
