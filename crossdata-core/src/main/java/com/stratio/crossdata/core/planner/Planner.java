@@ -622,7 +622,26 @@ public class Planner {
                 SelectStatement partialSelect = ss;
                 if(Project.class.cast(initialStep).getTableName().getQualifiedName().equalsIgnoreCase(
                         ss.getJoin().getTablename().getQualifiedName())){
+
+
                     List<Selector> selectorList = new ArrayList<>();
+                    Selector firstSelector = ss.getSelectExpression().getSelectorList().get(0);
+                    if(firstSelector instanceof ColumnSelector){
+                        Project currentProject = (Project) initialStep;
+                        List<ColumnName> columnsFromProject = currentProject.getColumnList();
+                        for(ColumnName col: columnsFromProject){
+                            selectorList.add(new ColumnSelector(col));
+                        }
+                    } else {
+                        TableMetadata tableMetadata =
+                                MetadataManager.MANAGER.getTable(ss.getJoin().getTablename());
+                        for(ColumnMetadata cm: tableMetadata.getColumns().values()){
+                            ColumnSelector cs = new ColumnSelector(cm.getName());
+                            selectorList.add(cs);
+                        }
+                    }
+                    /////////////////////////////////////////////////////////////////////////////////////////////////
+                    /*
                     for(Selector querySelector: ss.getSelectExpression().getSelectorList()){
                         if(querySelector instanceof ColumnSelector){
                             ColumnSelector columnSelector = (ColumnSelector) querySelector;
@@ -639,11 +658,23 @@ public class Planner {
                             }
                         }
                     }
+                    */
+                    /////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
                     SelectExpression selectExpression = new SelectExpression(selectorList);
                     TableName tableName = ss.getJoin().getTablename();
                     partialSelect = new SelectStatement(selectExpression, tableName);
                 } else {
-                    partialSelect = new SelectStatement(ss.getSelectExpression(), ss.getTableName());
+                    List<Selector> selectorList = new ArrayList<>();
+                    Project currentProject = (Project) initialStep;
+                    List<ColumnName> columnsFromProject = currentProject.getColumnList();
+                    for(ColumnName col: columnsFromProject){
+                        selectorList.add(new ColumnSelector(col));
+                    }
+                    partialSelect = new SelectStatement(new SelectExpression(selectorList), ss.getTableName());
                     partialSelect.setJoin(null);
                     partialTableMetadataMap = tableMetadataMap;
                 }
