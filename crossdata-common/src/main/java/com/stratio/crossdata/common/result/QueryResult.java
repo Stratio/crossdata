@@ -141,6 +141,14 @@ public final class QueryResult extends Result {
         this.lastResultSet = true;
     }
 
+    /**
+     * Set  the last result set of the query.
+     * @param lastResult last result
+     */
+    public void setLastResultSet(boolean lastResult) {
+        this.lastResultSet = lastResult;
+    }
+
     public boolean isLastResultSet() {
         return lastResultSet;
     }
