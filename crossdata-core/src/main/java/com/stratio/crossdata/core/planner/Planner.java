@@ -622,8 +622,6 @@ public class Planner {
                 SelectStatement partialSelect = ss;
                 if(Project.class.cast(initialStep).getTableName().getQualifiedName().equalsIgnoreCase(
                         ss.getJoin().getTablename().getQualifiedName())){
-
-
                     List<Selector> selectorList = new ArrayList<>();
                     Selector firstSelector = ss.getSelectExpression().getSelectorList().get(0);
                     if(firstSelector instanceof ColumnSelector){
@@ -640,30 +638,6 @@ public class Planner {
                             selectorList.add(cs);
                         }
                     }
-                    /////////////////////////////////////////////////////////////////////////////////////////////////
-                    /*
-                    for(Selector querySelector: ss.getSelectExpression().getSelectorList()){
-                        if(querySelector instanceof ColumnSelector){
-                            ColumnSelector columnSelector = (ColumnSelector) querySelector;
-                            if(columnSelector.getColumnName().getTableName().getQualifiedName().equalsIgnoreCase(
-                                    ss.getJoin().getTablename().getQualifiedName())){
-                                selectorList.add(columnSelector);
-                            }
-                        } else if (querySelector instanceof AsteriskSelector){
-                            TableMetadata tableMetadata =
-                                    MetadataManager.MANAGER.getTable(ss.getJoin().getTablename());
-                            for(ColumnMetadata cm: tableMetadata.getColumns().values()){
-                                ColumnSelector cs = new ColumnSelector(cm.getName());
-                                selectorList.add(cs);
-                            }
-                        }
-                    }
-                    */
-                    /////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
                     SelectExpression selectExpression = new SelectExpression(selectorList);
                     TableName tableName = ss.getJoin().getTablename();
                     partialSelect = new SelectStatement(selectExpression, tableName);
