@@ -39,7 +39,7 @@ public class DataStoreName extends FirstLevelName {
      */
     public DataStoreName(String dataStoreName) {
         super();
-        this.name = dataStoreName.toLowerCase();
+        this.name = dataStoreName;
     }
 
     /**

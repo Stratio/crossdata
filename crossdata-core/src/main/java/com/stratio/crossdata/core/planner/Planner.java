@@ -490,7 +490,7 @@ public class Planner {
                                 for(Selector selector: cols){
                                     if(selector instanceof FunctionSelector){
                                         FunctionSelector fSelector = (FunctionSelector) selector;
-                                        if(!sFunctions.contains(fSelector.getFunctionName().toLowerCase())){
+                                        if(!sFunctions.contains(fSelector.getFunctionName())){
                                             toRemove.add(connector);
                                             break;
                                         } else {
