@@ -325,13 +325,13 @@ public class Validator {
         // Get property names of the attachment
         Set<String> attProps = new HashSet<>();
         for (Selector sel : opts.keySet()) {
-            attProps.add(sel.getStringValue().toLowerCase());
+            attProps.add(sel.getStringValue());
         }
 
         // Verify required properties
         Set<String> props = new HashSet<>();
         for (PropertyType pt : requiredProps) {
-            props.add(pt.getPropertyName().toLowerCase());
+            props.add(pt.getPropertyName());
         }
         if (!attProps.containsAll(props)) {
             throw new BadFormatException("Some required properties are missing");
@@ -341,7 +341,7 @@ public class Validator {
         // Verify optional properties
         props = new HashSet<>();
         for (PropertyType pt : optProps) {
-            props.add(pt.getPropertyName().toLowerCase());
+            props.add(pt.getPropertyName());
         }
         if (!props.containsAll(attProps)) {
             throw new BadFormatException("Some properties are not found in the manifest");

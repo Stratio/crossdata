@@ -45,7 +45,7 @@ public class IndexName extends Name {
         } else {
             this.tableName = null;
         }
-        this.name = indexName.toLowerCase();
+        this.name = indexName;
     }
 
     /**
