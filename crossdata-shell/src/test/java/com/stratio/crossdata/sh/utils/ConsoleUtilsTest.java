@@ -67,7 +67,8 @@ public class ConsoleUtilsTest {
     @Test
     public void testStringResultWithQueryResultEmpty() throws Exception {
         String queryId = "testStringResultWithQueryResult";
-        Result result = QueryResult.createQueryResult(queryId, new ResultSet(), 0, true);
+        Result result = QueryResult.createQueryResult(new ResultSet(), 0, true);
+        result.setQueryId(queryId);
         String message = ConsoleUtils.stringResult(result);
         String expected = System.lineSeparator() + "0 results returned";
         assertTrue(message.equalsIgnoreCase(expected),
@@ -92,7 +93,7 @@ public class ConsoleUtilsTest {
         resultSet.add(row);
         String queryId = "testStringResultWithQueryResult";
         Result result = QueryResult.createQueryResult(
-                queryId, resultSet, 0, true, "catalogTest");
+                resultSet, 0, true, "catalogTest");
 
         String message = ConsoleUtils.stringResult(result);
         String expected = System.lineSeparator() +

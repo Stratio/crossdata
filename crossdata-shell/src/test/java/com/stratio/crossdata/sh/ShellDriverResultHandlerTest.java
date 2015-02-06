@@ -3,8 +3,6 @@ package com.stratio.crossdata.sh;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import java.util.UUID;
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -47,7 +45,7 @@ public class ShellDriverResultHandlerTest {
         boolean ok=false;
         try {
             ShellDriverResultHandler handler = new ShellDriverResultHandler(new Shell(false));
-            QueryResult result = QueryResult.createQueryResult(UUID.randomUUID().toString(), new ResultSet(), 0, true);
+            QueryResult result = QueryResult.createQueryResult(new ResultSet(), 0, true);
             result.setLastResultSet();
             handler.processResult(result);
             ok = true;

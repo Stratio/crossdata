@@ -65,13 +65,11 @@ public final class QueryResult extends Result {
     /**
      * Private class constructor of the factory.
      *
-     * @param queryId Identifier of the query.
      * @param resultSet The set of tuples returned.
      * @param resultPage Number of the page.
      * @param lastResultSet whether it is the last result or not.
      */
-    private QueryResult(String queryId, ResultSet resultSet, int resultPage, boolean lastResultSet) {
-        this.queryId = queryId;
+    private QueryResult(ResultSet resultSet, int resultPage, boolean lastResultSet) {
         this.resultSet = resultSet;
         this.resultPage = resultPage;
         this.lastResultSet = lastResultSet;
@@ -81,26 +79,27 @@ public final class QueryResult extends Result {
      * Create a successful query result.
      *
      * @param resultSet The associated {@link com.stratio.crossdata.common.data.ResultSet}
+     * @param resultPage Number of the page.
+     * @param lastResultSet whether it is the last result or not.
      * @return A {@link com.stratio.crossdata.common.result.QueryResult}.
      */
-    public static QueryResult createQueryResult(String queryId, ResultSet resultSet,
+    public static QueryResult createQueryResult(ResultSet resultSet,
             int resultPage, boolean lastResultSet) {
-        return new QueryResult(queryId, resultSet, resultPage, lastResultSet);
+        return new QueryResult(resultSet, resultPage, lastResultSet);
     }
 
     /**
      * Create a successful query result.
      *
-     * @param queryId Identifier of the query.
      * @param resultSet The associated {@link com.stratio.crossdata.common.data.ResultSet}.
      * @param resultPage Number of the page.
      * @param lastResultSet whether it is the last result or not.
      * @param catalog   The new session catalog.
      * @return A {@link com.stratio.crossdata.common.result.QueryResult}.
      */
-    public static QueryResult createQueryResult(String queryId, ResultSet resultSet,
+    public static QueryResult createQueryResult(ResultSet resultSet,
             int resultPage, boolean lastResultSet, String catalog) {
-        QueryResult result = new QueryResult(queryId, resultSet, resultPage, lastResultSet);
+        QueryResult result = new QueryResult(resultSet, resultPage, lastResultSet);
         result.setCurrentCatalog(catalog);
         return result;
     }
@@ -150,10 +149,6 @@ public final class QueryResult extends Result {
 
     public int getResultPage() {
         return resultPage;
-    }
-
-    public void setResultPage(int resultPage) {
-        this.resultPage = resultPage;
     }
 
     public boolean isIgnoredQuery() {
