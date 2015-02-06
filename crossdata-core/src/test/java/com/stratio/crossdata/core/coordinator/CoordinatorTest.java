@@ -107,7 +107,7 @@ public class CoordinatorTest {
             ClusterAttachedMetadata clusterAttachedMetadata =
                     clusterAttachedRefsTest.get(clusterNameTest);
             if (clusterAttachedMetadata.getClusterRef().equals(new ClusterName("clusterTest"))) {
-                assertEquals(clusterAttachedMetadata.getDataStoreRef(), new DataStoreName("datastoreTest"),
+                assertEquals(clusterAttachedMetadata.getDataStoreRef(), new DataStoreName("dataStoreTest"),
                         "Wrong attachment for clusterTest");
                 found = true;
                 break;
