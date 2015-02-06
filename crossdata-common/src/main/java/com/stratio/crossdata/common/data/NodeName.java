@@ -39,7 +39,7 @@ public class NodeName extends FirstLevelName {
      */
     public NodeName(String nodeName) {
         super();
-        this.name = nodeName.toLowerCase();
+        this.name = nodeName;
     }
 
     /**

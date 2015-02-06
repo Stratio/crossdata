@@ -30,7 +30,7 @@ public class CatalogName extends FirstLevelName {
      */
     public CatalogName(String catalogName) {
         super();
-        this.name = catalogName.toLowerCase();
+        this.name = catalogName;
     }
 
     public String getName() {
@@ -38,7 +38,7 @@ public class CatalogName extends FirstLevelName {
     }
 
     @Override public String getQualifiedName() {
-        return QualifiedNames.getCatalogQualifiedName(getName());
+        return getName();
     }
 
     @Override public NameType getType() {

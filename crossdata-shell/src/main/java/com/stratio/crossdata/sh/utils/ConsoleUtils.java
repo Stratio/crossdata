@@ -155,8 +155,8 @@ public final class ConsoleUtils {
         for (Row row : resultSet) {
             sb.append("| ");
             for (String columnName: columnNames) {
-                String str = String.valueOf(row.getCell(columnName.toLowerCase()).getValue());
-                sb.append(StringUtils.rightPad(str, colWidths.get(columnName.toLowerCase())));
+                String str = String.valueOf(row.getCell(columnName).getValue());
+                sb.append(StringUtils.rightPad(str, colWidths.get(columnName)));
                 sb.append(" | ");
             }
             sb.append(System.lineSeparator());
