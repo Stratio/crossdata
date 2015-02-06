@@ -57,7 +57,14 @@ public class ConsoleUtilsTest {
                 System.lineSeparator() +
                 errorMessage +
                 System.lineSeparator();
+        /*
         assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+        */
+        assertEquals(message, expected,
                 System.lineSeparator() +
                 "Expected: " + expected +
                 System.lineSeparator() +
@@ -71,7 +78,14 @@ public class ConsoleUtilsTest {
         result.setQueryId(queryId);
         String message = ConsoleUtils.stringResult(result);
         String expected = System.lineSeparator() + "0 results returned";
+        /*
         assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                        "Expected: " + expected +
+                        System.lineSeparator() +
+                        "Found:    " + message);
+        */
+        assertEquals(message, expected,
                 System.lineSeparator() +
                 "Expected: " + expected +
                 System.lineSeparator() +
@@ -85,7 +99,7 @@ public class ConsoleUtilsTest {
         ColumnName firstColumn = new ColumnName("catalogTest", "tableTest", "Id");
         columnMetadata.add(new ColumnMetadata(firstColumn, new Object[]{}, ColumnType.TEXT));
         ColumnName secondColumn = new ColumnName("catalogTest", "tableTest", "Number");
-        columnMetadata.add(new ColumnMetadata(secondColumn, new Object[]{}, ColumnType.INT));
+        columnMetadata.add(new ColumnMetadata(secondColumn, new Object[] { }, ColumnType.INT));
         resultSet.setColumnMetadata(columnMetadata);
         Row row = new Row();
         row.addCell("id", new Cell("Stratio"));
@@ -94,6 +108,7 @@ public class ConsoleUtilsTest {
         String queryId = "testStringResultWithQueryResult";
         Result result = QueryResult.createQueryResult(
                 resultSet, 0, true, "catalogTest");
+        result.setQueryId(queryId);
 
         String message = ConsoleUtils.stringResult(result);
         String expected = System.lineSeparator() +
@@ -103,7 +118,14 @@ public class ConsoleUtilsTest {
                 "--------------------" + System.lineSeparator() +
                 "| Stratio | 25     | " + System.lineSeparator() +
                 "--------------------" + System.lineSeparator();
+        /*
         assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+        */
+        assertEquals(message, expected,
                 System.lineSeparator() +
                 "Expected: " + expected +
                 System.lineSeparator() +
@@ -118,11 +140,18 @@ public class ConsoleUtilsTest {
         result.setQueryId(queryId);
         String message = ConsoleUtils.stringResult(result);
         String expected = "Connected with SessionId=" + sessionId;
+        /*
         assertTrue(message.equalsIgnoreCase(expected),
                 System.lineSeparator() +
                 "Expected: " + expected +
                 System.lineSeparator() +
                 "Found:    " + message);
+        */
+        assertEquals(message, expected,
+                System.lineSeparator() +
+                        "Expected: " + expected +
+                        System.lineSeparator() +
+                        "Found:    " + message);
     }
 
     @Test
@@ -132,7 +161,14 @@ public class ConsoleUtilsTest {
         result.setQueryId(queryId);
         String message = ConsoleUtils.stringResult(result);
         String expected = "Catalog created successfully";
+        /*
         assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+        */
+        assertEquals(message, expected,
                 System.lineSeparator() +
                 "Expected: " + expected +
                 System.lineSeparator() +
@@ -146,7 +182,14 @@ public class ConsoleUtilsTest {
         result.setQueryId(queryId);
         String message = ConsoleUtils.stringResult(result);
         String expected = "Query " + queryId + " in progress";
+        /*
         assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+        */
+        assertEquals(message,expected,
                 System.lineSeparator() +
                 "Expected: " + expected +
                 System.lineSeparator() +
@@ -157,7 +200,14 @@ public class ConsoleUtilsTest {
     public void testStringResultNull() throws Exception {
         String expected = "Unknown result";
         String message = ConsoleUtils.stringResult(null);
+        /*
         assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+        */
+        assertEquals(message, expected,
                 System.lineSeparator() +
                 "Expected: " + expected +
                 System.lineSeparator() +
@@ -169,7 +219,14 @@ public class ConsoleUtilsTest {
         StorageResult result = StorageResult.createSuccessfulStorageResult("Success");
         String message = ConsoleUtils.stringResult(result);
         String expected = "Success";
+        /*
         assertTrue(message.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + message);
+        */
+        assertEquals(message, expected,
                 System.lineSeparator() +
                 "Expected: " + expected +
                 System.lineSeparator() +
@@ -182,7 +239,14 @@ public class ConsoleUtilsTest {
         File file = ConsoleUtils.retrieveHistory(new ConsoleReader(), dateFormat);
         String result = file.getName();
         String expected = "history.txt";
+        /*
         assertTrue(result.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + result);
+        */
+        assertEquals(result.equalsIgnoreCase(expected),
                 System.lineSeparator() +
                         "Expected: " + expected +
                         System.lineSeparator() +
@@ -194,7 +258,14 @@ public class ConsoleUtilsTest {
         File file = ConsoleUtils.retrieveHistory(new ConsoleReader(), new SimpleDateFormat());
         String result = file.getName();
         String expected = "history.txt";
+        /*
         assertTrue(result.equalsIgnoreCase(expected),
+                System.lineSeparator() +
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + result);
+        */
+        assertEquals(result, expected,
                 System.lineSeparator() +
                 "Expected: " + expected +
                 System.lineSeparator() +
@@ -203,7 +274,7 @@ public class ConsoleUtilsTest {
 
     @Test
     public void testRetrieveHistoryFail() throws Exception {
-        boolean ok=false;
+        boolean ok;
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
         try {
             ConsoleUtils.retrieveHistory(null, dateFormat);
@@ -225,7 +296,7 @@ public class ConsoleUtilsTest {
     @Test
     public void testSaveHistoryFail() throws Exception
     {
-        boolean ok=false;
+        boolean ok;
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd/M/yyyy");
         try {
             ConsoleUtils.saveHistory(new ConsoleReader(), null, dateFormat);

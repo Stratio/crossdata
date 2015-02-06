@@ -152,10 +152,16 @@ public class ShellTest {
             HelpStatement helpStatement = (HelpStatement) obj;
             String result = helpStatement.toString();
             String expected = "HELP CREATE";
+            /*
             assertTrue(result.equalsIgnoreCase(expected),
                     "Result:   " + result +
                             System.lineSeparator() +
                             "Expected: " + expected);
+            */
+            assertEquals(result, expected,
+                    "Result:   " + result +
+                    System.lineSeparator() +
+                    "Expected: " + expected);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             fail("ERROR: " + e.getMessage(), e);
         }

@@ -221,7 +221,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
 
   def executeAsyncRawQuery(command: String, callback: IDriverResultHandler): Result = {
     var result:Result = null.asInstanceOf[Result]
-    val input:String = command.replaceAll("\\s+", " ")
+    val input:String = command.replaceAll("\\s+", " ").trim
     if(input.toLowerCase.startsWith("use ")){
       result = updateCatalog(input)
     } else {
@@ -239,14 +239,15 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
 
   @throws(classOf[NotExistNameException])
   def updateCatalog(toExecute: String): Result = {
-    val newCatalog: String = toExecute.toLowerCase.replace("use ", "").replace(";", "").trim
+    //val newCatalog: String = toExecute.toLowerCase.replace("use ", "").replace(";", "").trim
+    val newCatalog: String = toExecute.substring(4).replace(";", "").trim
     var currentCatalog: String = getCurrentCatalog
     if (newCatalog.isEmpty) {
       setCurrentCatalog(newCatalog)
       currentCatalog = newCatalog
     } else {
       val catalogs: java.util.List[String] = (listCatalogs.asInstanceOf[MetadataResult]).getCatalogList
-      if (catalogs.contains(newCatalog.toLowerCase)) {
+      if (catalogs.contains(newCatalog)) {
         setCurrentCatalog(newCatalog)
         currentCatalog = newCatalog
       } else {
@@ -272,9 +273,15 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     } else if (command.toLowerCase.startsWith("clean metadata")) {
       result = cleanMetadata
     } else if (command.toLowerCase.startsWith("drop datastore")) {
-      result = dropManifest(CrossdataManifest.TYPE_DATASTORE, command.toLowerCase.replace("drop datastore ", "").replace(";", "").trim)
+      //result = dropManifest(
+      // CrossdataManifest.TYPE_DATASTORE, command.toLowerCase.replace("drop datastore ", "").replace(";", "").trim)
+      result = dropManifest(
+        CrossdataManifest.TYPE_DATASTORE, command.substring(15).replace(";", "").trim)
     } else if (command.toLowerCase.startsWith("drop connector")) {
-      result = dropManifest(CrossdataManifest.TYPE_CONNECTOR, command.toLowerCase.replace("drop connector ", "").replace(";", "").trim)
+      //result = dropManifest(
+      // CrossdataManifest.TYPE_CONNECTOR, command.toLowerCase.replace("drop connector ", "").replace(";", "").trim)
+      result = dropManifest(
+        CrossdataManifest.TYPE_CONNECTOR, command.substring(15).replace(";", "").trim)
     } else if (command.toLowerCase.startsWith(EXPLAIN_PLAN_TOKEN)) {
       result = explainPlan(command)
     }
@@ -339,22 +346,26 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     } else if (command.toLowerCase.startsWith("describe datastores")) {
       result = describeDatastores
     } else if (command.toLowerCase.startsWith("describe datastore ")) {
-      val datastore = command.toLowerCase.replace("describe datastore ", "").replace(";", "").trim
+      //val datastore = command.toLowerCase.replace("describe datastore ", "").replace(";", "").trim
+      val datastore = command.substring(19).replace(";", "").trim
       result = describeDatastore(new DataStoreName(datastore))
     } else if (command.toLowerCase.startsWith("describe clusters")) {
       result = describeClusters
     } else if (command.toLowerCase.startsWith("describe cluster ")) {
-      val cluster = command.toLowerCase.replace("describe cluster ", "").replace(";", "").trim
+      //val cluster = command.toLowerCase.replace("describe cluster ", "").replace(";", "").trim
+      val cluster = command.substring(17).replace(";", "").trim
       result = describeCluster(new ClusterName(cluster))
     } else if (command.toLowerCase.startsWith("describe connectors")) {
       result = describeConnectors
     } else if (command.toLowerCase.startsWith("describe connector ")) {
-      val connector = command.toLowerCase.replace("describe connector ", "").replace(";", "").trim
+      //val connector = command.toLowerCase.replace("describe connector ", "").replace(";", "").trim
+      val connector = command.substring(19).replace(";", "").trim
       result = describeConnector(new ConnectorName(connector))
     } else if (command.toLowerCase.startsWith("describe catalogs")) {
       result = listCatalogs
     } else if (command.toLowerCase.startsWith("describe catalog")) {
-      val catalog = command.toLowerCase.replace("describe catalog", "").replace(";", "").trim
+      //val catalog = command.toLowerCase.replace("describe catalog ", "").replace(";", "").trim
+      val catalog = command.substring(17).replace(";", "").trim
       var catalogName: CatalogName = new CatalogName(catalog)
       if(catalog.isEmpty){
         catalogName = new CatalogName(getCurrentCatalog)
@@ -362,7 +373,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       result = describeCatalog(catalogName)
     } else if (command.toLowerCase.startsWith("describe tables")) {
       if (command.toLowerCase.startsWith("describe tables from ")) {
-        val catalog = command.toLowerCase.replace("describe tables from ", "").replace(";", "").trim
+        //val catalog = command.toLowerCase.replace("describe tables from ", "").replace(";", "").trim
+        val catalog = command.substring(21).replace(";", "").trim
         result = describeTables(new CatalogName(catalog))
       } else if (!getCurrentCatalog.isEmpty) {
         result = describeTables(new CatalogName(getCurrentCatalog))
@@ -374,11 +386,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
         result = Result.createErrorResult(new Exception("Table name is missing"))
       } else if (command.toLowerCase.startsWith("describe table ") &&
         command.toLowerCase.replace("describe table ", "").replace(";", "").trim.contains(".")) {
-        val table = command.toLowerCase.replace("describe table ", "").replace(";", "").trim
+        //val table = command.toLowerCase.replace("describe table ", "").replace(";", "").trim
+        val table = command.substring(15).replace(";", "").trim
         val tokens: Array[String] = table.split("\\.")
         result = describeTable(new TableName(tokens(0), tokens(1)))
       } else if (!getCurrentCatalog.isEmpty) {
-        val table = command.toLowerCase.replace("describe table ", "").replace(";", "").trim
+        //val table = command.toLowerCase.replace("describe table ", "").replace(";", "").trim
+        val table = command.substring(15).replace(";", "").trim
         result = describeTable(new TableName(getCurrentCatalog, table))
       } else {
         result = Result.createErrorResult(new Exception("Catalog not specified"))

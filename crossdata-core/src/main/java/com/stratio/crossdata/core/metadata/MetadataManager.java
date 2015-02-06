@@ -1158,13 +1158,13 @@ public enum MetadataManager {
         ConnectorMetadata connector = getConnector(cn);
 
         for (FunctionType ft : connector.getConnectorFunctions()) {
-            functions.add(ft.getFunctionName().toLowerCase());
+            functions.add(ft.getFunctionName());
         }
 
         for(DataStoreName dsn: connector.getDataStoreRefs()){
             DataStoreMetadata datastore = getDataStore(dsn);
             for(FunctionType ft: datastore.getFunctions()){
-                functions.add(ft.getFunctionName().toLowerCase());
+                functions.add(ft.getFunctionName());
             }
         }
         functions.removeAll(connector.getExcludedFunctions());
@@ -1184,7 +1184,7 @@ public enum MetadataManager {
         for(DataStoreName dsn: connector.getDataStoreRefs()){
             DataStoreMetadata datastore = getDataStore(dsn);
             for(FunctionType df: datastore.getFunctions()){
-                if(!connector.getExcludedFunctions().contains(df.getFunctionName().toLowerCase())){
+                if(!connector.getExcludedFunctions().contains(df.getFunctionName())){
                     functions.add(df);
                 }
             }
@@ -1293,7 +1293,7 @@ public enum MetadataManager {
                 ColumnName columnName = cs.getName();
                 ColumnMetadata column = getColumn(columnName);
                 ColumnType columnType = column.getColumnType();
-                sb.append(columnType.getCrossdataType().toLowerCase());
+                sb.append(columnType.getCrossdataType());
                 break;
             case ASTERISK:
 

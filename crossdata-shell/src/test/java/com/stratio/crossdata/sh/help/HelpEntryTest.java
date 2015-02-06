@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.sh.help;
 
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
 
 import org.testng.annotations.Test;
 
@@ -30,7 +30,13 @@ public class HelpEntryTest {
         helpEntry.setEntry("Test");
         String result = helpEntry.toString();
         String expected = "Test" + System.lineSeparator() + "Comment";
+        /*
         assertTrue(result.equalsIgnoreCase(expected),
+                "Result:   " + result +
+                System.lineSeparator() +
+                "Expected: " + expected);
+        */
+        assertEquals(result, expected,
                 "Result:   " + result +
                 System.lineSeparator() +
                 "Expected: " + expected);
