@@ -102,8 +102,8 @@ public class ConsoleUtilsTest {
         columnMetadata.add(new ColumnMetadata(secondColumn, new Object[] { }, ColumnType.INT));
         resultSet.setColumnMetadata(columnMetadata);
         Row row = new Row();
-        row.addCell("id", new Cell("Stratio"));
-        row.addCell("number", new Cell(25));
+        row.addCell("Id", new Cell("Stratio"));
+        row.addCell("Number", new Cell(25));
         resultSet.add(row);
         String queryId = "testStringResultWithQueryResult";
         Result result = QueryResult.createQueryResult(
@@ -114,7 +114,7 @@ public class ConsoleUtilsTest {
         String expected = System.lineSeparator() +
                 "Partial result: false" + System.lineSeparator() +
                 "--------------------" + System.lineSeparator() +
-                "| id      | number | " + System.lineSeparator() +
+                "| Id      | Number | " + System.lineSeparator() +
                 "--------------------" + System.lineSeparator() +
                 "| Stratio | 25     | " + System.lineSeparator() +
                 "--------------------" + System.lineSeparator();
@@ -160,7 +160,7 @@ public class ConsoleUtilsTest {
         String queryId = "testStringResultWithMetadataResult";
         result.setQueryId(queryId);
         String message = ConsoleUtils.stringResult(result);
-        String expected = "Catalog created successfully";
+        String expected = "CATALOG created successfully";
         /*
         assertTrue(message.equalsIgnoreCase(expected),
                 System.lineSeparator() +
@@ -246,11 +246,11 @@ public class ConsoleUtilsTest {
                 System.lineSeparator() +
                 "Found:    " + result);
         */
-        assertEquals(result.equalsIgnoreCase(expected),
+        assertEquals(result, expected,
                 System.lineSeparator() +
-                        "Expected: " + expected +
-                        System.lineSeparator() +
-                        "Found:    " + result);
+                "Expected: " + expected +
+                System.lineSeparator() +
+                "Found:    " + result);
     }
 
     @Test
