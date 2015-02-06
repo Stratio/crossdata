@@ -33,31 +33,31 @@ public class QualifiedNameTest {
     @Test
     public void testTableQualifiedName() {
         String name = QualifiedNames.getTableQualifiedName("test", "taBle");
-        Assert.assertEquals(name, "test.table");
+        Assert.assertEquals(name, "test.taBle");
     }
 
     @Test
     public void testColumnQualifiedName() {
         String name = QualifiedNames.getColumnQualifiedName("test", "taBle", "column");
-        Assert.assertEquals(name, "test.table.column");
+        Assert.assertEquals(name, "test.taBle.column");
     }
 
     @Test
     public void testClusterQualifiedName() {
-        String name = QualifiedNames.getClusterQualifiedName("test");
-        Assert.assertEquals(name, "cluster.test");
+        String name = QualifiedNames.getClusterQualifiedName("Test");
+        Assert.assertEquals(name, "cluster.Test");
     }
 
     @Test
     public void testConnectorQualifiedName() {
-        String name = QualifiedNames.getConnectorQualifiedName("test");
-        Assert.assertEquals(name, "connector.test");
+        String name = QualifiedNames.getConnectorQualifiedName("teSt");
+        Assert.assertEquals(name, "connector.teSt");
     }
 
     @Test
     public void testDataStoreQualifiedName() {
-        String name = QualifiedNames.getDataStoreQualifiedName("test");
-        Assert.assertEquals(name, "datastore.test");
+        String name = QualifiedNames.getDataStoreQualifiedName("TesT");
+        Assert.assertEquals(name, "datastore.TesT");
     }
 
 }

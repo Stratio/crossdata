@@ -39,7 +39,7 @@ public class ConnectorName extends FirstLevelName {
      */
     public ConnectorName(String connectorName) {
         super();
-        this.name = connectorName.toLowerCase();
+        this.name = connectorName;
     }
 
     /**

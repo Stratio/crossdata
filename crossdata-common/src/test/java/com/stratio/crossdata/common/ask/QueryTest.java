@@ -1,5 +1,6 @@
 package com.stratio.crossdata.common.ask;
 
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 

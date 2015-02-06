@@ -47,7 +47,7 @@ public class TableName extends Name {
         if(tableName == null || tableName.isEmpty()){
             this.name = null;
         } else {
-            this.name = tableName.toLowerCase();
+            this.name = tableName;
         }
     }
 
