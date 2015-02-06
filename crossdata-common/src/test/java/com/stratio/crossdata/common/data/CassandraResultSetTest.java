@@ -58,7 +58,8 @@ public class CassandraResultSetTest {
         rSet = new ResultSet();
         rSet.setColumnMetadata(buildColumnDefinitions());
 
-        Assert.assertEquals(rSet.getColumnMetadata().get(0).getName().getQualifiedName(), "catalogtest.tabletest.str",
+        Assert.assertEquals(rSet.getColumnMetadata().get(0).getName().getQualifiedName().toLowerCase(),
+                "catalogtest.tabletest.str",
                 "Invalid column name");
         Assert.assertEquals(rSet.getColumnMetadata().get(0).getColumnType().getODBCType(), "SQL_VARCHAR",
                 "Invalid column class");
