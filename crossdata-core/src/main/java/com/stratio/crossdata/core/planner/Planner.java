@@ -1386,84 +1386,62 @@ public class Planner {
                 addAll = true;
             } else if (ColumnSelector.class.isInstance(s)) {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
+                String alias;
                 if (cs.getAlias() != null) {
 
-                    String alias = cs.getAlias();
+                    alias = cs.getAlias();
                     if (aliasMap.containsValue(alias)) {
                         alias = cs.getColumnName().getTableName().getName() + "_" + cs.getAlias();
                     }
 
                     aliasMap.put(cs, alias);
 
-                    ColumnType colType = tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns()
-                                    .get(cs.getName()).getColumnType();
-                    typeMapFromColumnName.put(cs, colType);
-
-                    typeMap.put(alias, colType);
                 } else {
 
-                    String alias = cs.getName().getName();
+                    alias = cs.getName().getName();
                     if (aliasMap.containsValue(alias)) {
                         alias = cs.getColumnName().getTableName().getName() + "_" + cs.getName().getName();
                     }
 
                     aliasMap.put(cs, alias);
 
-                    ColumnType colType = tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns()
-                                    .get(cs.getName()).getColumnType();
-                    typeMapFromColumnName.put(cs, colType);
-
-                    typeMap.put(alias, colType);
                 }
+
+                ColumnType colType = tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns().get(cs.getName())
+                                .getColumnType();
+                typeMapFromColumnName.put(cs, colType);
+
+                typeMap.put(alias, colType);
+
             } else if (FunctionSelector.class.isInstance(s)) {
                 currentOperation = Operations.SELECT_FUNCTIONS;
                 FunctionSelector fs = FunctionSelector.class.cast(s);
                 ColumnType ct = null;
+                String alias;
                 if (fs.getAlias() != null) {
-
-                    String alias = fs.getAlias();
+                    alias = fs.getAlias();
                     if (aliasMap.containsValue(alias)) {
                         alias = fs.getTableName().getName() + "_" + fs.getAlias();
                     }
 
-                    aliasMap.put(fs, alias);
-                    typeMapFromColumnName.put(fs, ct);
-                    typeMap.put(alias, ct);
                 } else {
-
-                    String alias = fs.getFunctionName();
+                    alias = fs.getFunctionName();
                     if (aliasMap.containsValue(alias)) {
                         alias = fs.getTableName().getName() + "_" + fs.getFunctionName();
                     }
-
-                    aliasMap.put(fs, alias);
-                    typeMapFromColumnName.put(fs, ct);
-                    typeMap.put(alias, ct);
                 }
+                aliasMap.put(fs, alias);
+                typeMapFromColumnName.put(fs, ct);
+                typeMap.put(alias, ct);
+
             } else if (IntegerSelector.class.isInstance(s)) {
-                IntegerSelector is = IntegerSelector.class.cast(s);
-                if (is.getAlias() != null) {
-
-                    String alias = is.getAlias();
-                    if (aliasMap.containsValue(alias)) {
-                        alias = is.getColumnName().getTableName().getName() + "_" + is.getAlias();
-                    }
-
-                    aliasMap.put(is, alias);
-
-                    typeMapFromColumnName.put(is, ColumnType.INT);
-
-                    typeMap.put(alias, ColumnType.INT);
-                } else {
-                    //TODO alias 1 could be duplicated
-                    String alias = is.getStringValue();
-
-                    aliasMap.put(is, alias);
-
-                    typeMapFromColumnName.put(is, ColumnType.INT);
-
-                    typeMap.put(alias, ColumnType.INT);
-                }
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.INT);
+            } else if (FloatingPointSelector.class.isInstance(s)) {
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.FLOAT);
+            } else if (BooleanSelector.class.isInstance(s)) {
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.BOOLEAN);
+            } else if (StringSelector.class.isInstance(s)) {
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.TEXT);
             } else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
             }
@@ -1502,6 +1480,28 @@ public class Planner {
         }
 
         return new Select(currentOperation, aliasMap, typeMap, typeMapFromColumnName);
+    }
+
+    private void generateLiteralSelect(LinkedHashMap<Selector, String> aliasMap,
+                    LinkedHashMap<String, ColumnType> typeMap,
+                    LinkedHashMap<Selector, ColumnType> typeMapFromColumnName, Selector selector,
+                    ColumnType columnType) {
+
+        String alias;
+        if (selector.getAlias() != null) {
+            alias = selector.getAlias();
+            if (aliasMap.containsValue(alias)) {
+                alias = selector.getColumnName().getTableName().getName() + "_" + selector.getAlias();
+            }
+
+        } else {
+            alias = selector.getStringValue();
+
+        }
+
+        aliasMap.put(selector, alias);
+        typeMapFromColumnName.put(selector, columnType);
+        typeMap.put(alias, columnType);
     }
 
     private String findAnyActorRef(ClusterMetadata clusterMetadata, Status status, Operations... requiredOperations)
