@@ -1529,7 +1529,7 @@ public class Planner {
             } else if (IntegerSelector.class.isInstance(s)) {
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.INT);
             } else if (FloatingPointSelector.class.isInstance(s)) {
-                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.FLOAT);
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.DOUBLE);
             } else if (BooleanSelector.class.isInstance(s)) {
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.BOOLEAN);
             } else if (StringSelector.class.isInstance(s)) {
