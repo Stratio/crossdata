@@ -102,6 +102,7 @@ public class ConnectorMetadata implements IMetadata {
      * Whether the manifest of this connector was already added or not.
      */
     private boolean manifestAdded = false;
+    private int pageSize;
 
     /**
      * Class constructor.
@@ -464,6 +465,10 @@ public class ConnectorMetadata implements IMetadata {
      */
     public void setSupportedFunctions(ConnectorFunctionsType supportedFunctions) throws ManifestException {
        this.connectorFunctions = new HashSet<>(supportedFunctions.getFunction());
+    }
+
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
     }
 
     /**

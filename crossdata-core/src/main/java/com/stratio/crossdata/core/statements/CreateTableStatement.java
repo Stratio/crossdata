@@ -137,8 +137,8 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
     /**
      * Get the columns and its types.
      *
-     * @return A map of {@link com.stratio.crossdata.common.data.ColumnName} and {@link com.stratio.crossdata.common
-     * .metadata.ColumnType} .
+     * @return A map of {@link com.stratio.crossdata.common.data.ColumnName} and
+     * {@link com.stratio.crossdata.common.metadata.ColumnType} .
      */
     public Map<ColumnName, ColumnType> getColumnsWithTypes() {
         return columnsWithType;

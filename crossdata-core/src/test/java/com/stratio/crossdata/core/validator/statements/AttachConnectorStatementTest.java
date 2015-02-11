@@ -41,7 +41,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
                 ("CassandraConnector"),
-                new ClusterName("Cassandra"), "{'comment':'a comment'}");
+                new ClusterName("Cassandra"), "{'comment':'a comment'}", 5, 0);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("system"));
@@ -63,7 +63,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName("unknown"),
                 new ClusterName("myCluster"),
-                "{'comment':'a comment'}");
+                "{'comment':'a comment'}", 5, 0);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
@@ -85,7 +85,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
                 ("CassandraConnector"),
-                new ClusterName("unknown"), "{'comment':'a comment'}");
+                new ClusterName("unknown"), "{'comment':'a comment'}", 5, 0);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
@@ -107,7 +107,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
                 ("CassandraConnector"),
-                new ClusterName("Cassandra"), "");
+                new ClusterName("Cassandra"), "", 5, 0);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));

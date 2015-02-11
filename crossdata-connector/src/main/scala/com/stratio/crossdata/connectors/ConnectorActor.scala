@@ -57,7 +57,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   extends HeartbeatActor with ActorLogging with IResultHandler {
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
-  val metadata: util.Map[FirstLevelName, IMetadata]=new util.HashMap[FirstLevelName,IMetadata]()
+  val metadata: util.Map[FirstLevelName, IMetadata] = new util.HashMap[FirstLevelName,IMetadata]()
 
   logger.info("Lifting connector actor")
 
