@@ -303,6 +303,7 @@ T_BIGINT: B I G I N T;
 T_IMPORT: I M P O R T;
 T_DISCOVER: D I S C O V E R;
 T_METADATA: M E T A D A T A;
+T_PRIORITY: P R I O R I T Y;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -377,12 +378,14 @@ alterClusterStatement returns [AlterClusterStatement acs]
 attachConnectorStatement returns [AttachConnectorStatement acs]
     @init{
         optionsJson = "";
+        int priority = 5;
     }
     @after{
         $acs = new AttachConnectorStatement(new ConnectorName($connectorName.text),
-        new ClusterName($clusterName.text), optionsJson);
+        new ClusterName($clusterName.text), optionsJson, priority);
     }:
     T_ATTACH T_CONNECTOR connectorName=T_IDENT T_TO clusterName=T_IDENT (T_WITH (T_OPTIONS)? optionsJson=getJson)?
+    (T_AND T_PRIORITY T_EQUAL number=T_CONSTANT { priority = Integer.parseInt($number.text) } )?
 ;
 
 detachConnectorStatement returns [DetachConnectorStatement dcs]
