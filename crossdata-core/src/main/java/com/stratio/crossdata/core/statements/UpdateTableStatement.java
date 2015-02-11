@@ -23,8 +23,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ParsingException;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.utils.StringUtils;
@@ -113,6 +115,20 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
     private boolean hasProperties() {
         return ((properties != null) && (!properties.isEmpty()));
     }
+
+
+    @Override
+    public List<ColumnName> getColumns() {
+        List<ColumnName> columnsList = new ArrayList<>();
+        for (Relation assignation : assignations) {
+            columnsList.addAll(assignation.getSelectorColumns());
+        }
+        for (Relation whereClause : whereClauses) {
+            columnsList.addAll(whereClause.getSelectorColumns());
+        }
+        return  columnsList;
+    }
+
 
 
 

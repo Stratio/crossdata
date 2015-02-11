@@ -35,6 +35,8 @@ import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
 import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
 import com.stratio.crossdata.common.exceptions.validation.NotValidColumnException;
+import com.stratio.crossdata.common.exceptions.validation.NotValidTableException;
+import com.stratio.crossdata.common.exceptions.validation.NotValidCatalogException;
 import com.stratio.crossdata.common.exceptions.validation.YodaConditionException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
@@ -529,7 +531,31 @@ public class Normalizator {
             case COLUMN:
                 ColumnSelector columnSelector = (ColumnSelector) selector;
                 checkColumnSelector(columnSelector);
-                columnSelector.setTableName(firstTableName);
+
+
+                //check with selectFromTables to add the secondTableName
+                Iterator<TableName> tableNameIterator = fields.getTableNames().iterator();
+
+                TableName currentTableName = null;
+                boolean tableFound=false;
+                while (tableNameIterator.hasNext() && !tableFound){
+                    currentTableName = tableNameIterator.next();
+                    if( columnSelector.getTableName() != null) {
+                        if (!columnSelector.getTableName().getName().equals(currentTableName.getName()) && ! tableNameIterator.hasNext()) {
+                            throw new NotValidTableException(columnSelector.getTableName());
+                        }else{
+                            if (columnSelector.getTableName().getCatalogName() != null && !columnSelector.getTableName().getCatalogName().getName().equals(currentTableName.getCatalogName().getName()) && ! tableNameIterator.hasNext()) {
+                                throw new NotValidCatalogException(columnSelector.getTableName().getCatalogName());
+                            }
+                            tableFound = true;
+                        }
+                    }
+                }
+
+                columnSelector.setTableName(currentTableName);
+
+
+
                 result.add(columnSelector);
                 break;
             case ASTERISK:

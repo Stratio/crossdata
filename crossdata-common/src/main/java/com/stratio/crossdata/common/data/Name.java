@@ -27,7 +27,7 @@ import java.io.Serializable;
 public abstract class Name implements Serializable {
 
     private static final long serialVersionUID = -3032254998929033117L;
-    static final String UNKNOWN_NAME = "<UNKNOWN_NAME>";
+    public static final String UNKNOWN_NAME = "<UNKNOWN_NAME>";
 
     /**
      *
