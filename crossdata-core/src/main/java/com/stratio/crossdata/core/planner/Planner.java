@@ -378,6 +378,10 @@ public class Planner {
 
         updateFunctionsFromSelect(workflow, connectorMetadata.getName());
 
+        if(connectorMetadata.getPageSize() > 0){
+            workflow.setPagination(connectorMetadata.getPageSize());
+        }
+
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 

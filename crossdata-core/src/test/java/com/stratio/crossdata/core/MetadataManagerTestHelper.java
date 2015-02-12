@@ -317,6 +317,7 @@ public enum MetadataManagerTestHelper {
                 clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
         connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
+        connectorMetadata.setPageSize(5);
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
         return connectorMetadata;
 

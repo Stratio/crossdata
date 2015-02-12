@@ -471,6 +471,10 @@ public class ConnectorMetadata implements IMetadata {
         this.pageSize = pageSize;
     }
 
+    public int getPageSize() {
+        return pageSize;
+    }
+
     /**
      * Get if manifest is added.
      * @return The check result.

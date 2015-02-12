@@ -41,6 +41,20 @@ public class LogicalWorkflow implements Serializable {
      */
     private LogicalStep lastStep = null;
 
+    private int pagination = 0;
+
+    /**
+     * Workflow constructor.
+     *
+     * @param initialSteps
+     *            The list of initial steps.
+     */
+    public LogicalWorkflow(List<LogicalStep> initialSteps, LogicalStep lastStep, int pagination) {
+        this.initialSteps = initialSteps;
+        this.lastStep = lastStep;
+        this.pagination = pagination;
+    }
+
     /**
      * Workflow constructor.
      * 
@@ -85,6 +99,14 @@ public class LogicalWorkflow implements Serializable {
      */
     public void setLastStep(LogicalStep lastStep) {
         this.lastStep = lastStep;
+    }
+
+    public int getPagination() {
+        return pagination;
+    }
+
+    public void setPagination(int pagination) {
+        this.pagination = pagination;
     }
 
     @Override

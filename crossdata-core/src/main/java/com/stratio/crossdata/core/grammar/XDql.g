@@ -304,7 +304,7 @@ T_IMPORT: I M P O R T;
 T_DISCOVER: D I S C O V E R;
 T_METADATA: M E T A D A T A;
 T_PRIORITY: P R I O R I T Y;
-T_ASYNC: A S Y N C;
+T_PAGINATION: P A G I N A T I O N;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';

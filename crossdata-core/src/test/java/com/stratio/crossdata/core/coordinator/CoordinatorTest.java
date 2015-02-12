@@ -31,6 +31,7 @@ import java.util.Set;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.CatalogName;
@@ -71,7 +72,13 @@ public class CoordinatorTest {
     @BeforeClass
     public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+    }
+
+    @BeforeMethod
+    public void createEnvironment() throws ManifestException {
         MetadataManagerTestHelper.HELPER.createTestEnvironment();
+        // Create and add a test datastore metadata to the metadataManager
+        MetadataManagerTestHelper.HELPER.insertDataStore("datastoreTest", "production");
     }
 
     @AfterClass
@@ -87,9 +94,6 @@ public class CoordinatorTest {
     @Test
     public void testAttachCluster() throws Exception {
 
-        // Create and add a test datastore metadata to the metadataManager
-        DataStoreMetadata datastoreTest = MetadataManagerTestHelper.HELPER.insertDataStore("datastoreTest", "production");
-
         ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.ATTACH_CLUSTER,
                 ResultType.RESULTS);
         workflow.setClusterName(new ClusterName("clusterTest"));
@@ -99,7 +103,7 @@ public class CoordinatorTest {
         ManagementOperation op = workflow.createManagementOperationMessage();
         coordinator.executeManagementOperation(op);
         // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
-        datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
+        DataStoreMetadata datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
                 datastoreTest.getClusterAttachedRefs();
         boolean found = false;
@@ -124,9 +128,6 @@ public class CoordinatorTest {
     @Test
     public void testDetachCluster() throws Exception {
 
-        // Create and add a test datastore metadata to the metadataManager
-        DataStoreMetadata datastoreTest = MetadataManagerTestHelper.HELPER.insertDataStore("datastoreTest", "production");
-
         ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.DETACH_CLUSTER,
                 ResultType.RESULTS);
         workflow.setClusterName(new ClusterName("clusterTest"));
@@ -136,7 +137,7 @@ public class CoordinatorTest {
         ManagementOperation op = workflow.createManagementOperationMessage();
         coordinator.executeManagementOperation(op);
         // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
-        datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
+        DataStoreMetadata datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
                 datastoreTest.getClusterAttachedRefs();
         boolean found = false;
