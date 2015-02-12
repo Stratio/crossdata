@@ -28,7 +28,13 @@ import java.util.Set;
  */
 public enum ColumnType {
     BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"),
-    INT("SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"), NATIVE(null),
+    INT("SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"),
+    NATIVE("NATIVE") {
+        @Override
+        public String toString() {
+            return getDbType();
+        }
+    },
     SET("SET") {
         @Override
         public String toString() {

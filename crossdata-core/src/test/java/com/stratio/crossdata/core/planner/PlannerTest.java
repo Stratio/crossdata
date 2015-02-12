@@ -104,6 +104,7 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC1.add(Operations.UPDATE_PK_EQ);
         operationsC1.add(Operations.TRUNCATE_TABLE);
         operationsC1.add(Operations.DROP_TABLE);
+        operationsC1.add(Operations.PAGINATION);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
