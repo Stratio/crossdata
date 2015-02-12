@@ -20,6 +20,7 @@ package com.stratio.connector.inmemory.datastore;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +63,7 @@ public class InMemoryTable {
     /**
      * Map of rows indexed by primary key.
      */
-    private final Map<String, Object[]> rows = new HashMap<>();
+    private final Map<String, Object[]> rows = new LinkedHashMap<>();
 
     /**
      * Maximum number of rows in the table.

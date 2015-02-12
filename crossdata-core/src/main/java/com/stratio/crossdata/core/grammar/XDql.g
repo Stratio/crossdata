@@ -755,6 +755,7 @@ getBasicType returns [ColumnType dataType]:
     | T_INTEGER { $dataType=ColumnType.INT; }
     | T_TEXT { $dataType=ColumnType.TEXT; }
     | T_VARCHAR { $dataType=ColumnType.VARCHAR; }
+    | native=T_IDENT { $dataType = ColumnType.NATIVE; $dataType.setDBMapping($native.text, Object.class); }
 ;
 
 getCollectionType returns [ColumnType dataType]:
