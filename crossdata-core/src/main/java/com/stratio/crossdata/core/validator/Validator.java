@@ -164,6 +164,8 @@ public class Validator {
                 break;
             case PAGINATION_SUPPORT:
                 validatePaginationSupport(parsedQuery.getStatement());
+            case VALIDATE_PRIORITY:
+                validatePriority(parsedQuery.getStatement());
                 break;
             default:
                 break;
@@ -187,15 +189,27 @@ public class Validator {
         return validatedQuery;
     }
 
+
     private void validatePaginationSupport(CrossdataStatement crossdataStatement) throws BadFormatException {
         AttachConnectorStatement acs = (AttachConnectorStatement) crossdataStatement;
         int pageSize = acs.getPagination();
-        if(pageSize > 0){
+        if (pageSize > 0) {
             ConnectorName connectorName = acs.getConnectorName();
             ConnectorMetadata connector = MetadataManager.MANAGER.getConnector(connectorName);
             Set<Operations> supportedOperations = connector.getSupportedOperations();
-            if(!supportedOperations.contains(Operations.PAGINATION)){
+            if (!supportedOperations.contains(Operations.PAGINATION)) {
                 throw new BadFormatException("Pagination is not supported by the connector " + connectorName);
+            }
+        }
+    }
+
+    private void validatePriority(CrossdataStatement statement) throws BadFormatException {
+        if (statement instanceof AttachConnectorStatement) {
+            Integer priority = ((AttachConnectorStatement) statement).getPriority();
+
+            if (priority < 1 || priority > 9) {
+                throw new BadFormatException("The priority is out of range: Must be [1-9]");
+
             }
         }
     }

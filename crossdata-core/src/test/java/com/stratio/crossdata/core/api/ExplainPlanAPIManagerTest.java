@@ -31,6 +31,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.google.common.collect.Sets;
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.CatalogName;
@@ -80,10 +81,11 @@ public class ExplainPlanAPIManagerTest {
         operationsC1.add(Operations.FILTER_PK_EQ);
         operationsC1.add(Operations.SELECT_INNER_JOIN);
 
+        String strClusterName = "TestCluster1";
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector(
-                "TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1, "actorRef1");
+                "TestConnector1", dataStoreName, Sets.newHashSet(new ClusterName(strClusterName)), operationsC1, "actorRef1");
         clusterName = MetadataManagerTestHelper.HELPER.
-                createTestCluster("TestCluster1", dataStoreName, connector1.getName());
+                createTestCluster(strClusterName, dataStoreName, connector1.getName());
 
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         String[] columnNames1 = { "id", "user" };

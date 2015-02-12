@@ -34,7 +34,7 @@ import com.stratio.crossdata.common.metadata.{ColumnType, CatalogMetadata, Table
 IndexMetadata, IMetadata, Operations, ConnectorAttachedMetadata}
 import com.stratio.crossdata.common.metadata.structures.TableType
 import com.stratio.crossdata.common.statements.structures.Selector
-import com.stratio.crossdata.common.utils.StringUtils
+import com.stratio.crossdata.common.utils.{Constants, StringUtils}
 import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.ExecutionManager
@@ -234,7 +234,7 @@ ImplicitSender with BeforeAndAfterAll{
     val clusterMetadata = MetadataManager.MANAGER.getCluster(testcluster)
     val connectorsMap = new java.util.HashMap[ConnectorName, ConnectorAttachedMetadata]()
     connectorsMap.put(new ConnectorName(connectorName.name), new ConnectorAttachedMetadata(new ConnectorName
-    (connectorName.name), testcluster, new util.HashMap[Selector, Selector]()))
+    (connectorName.name), testcluster, new util.HashMap[Selector, Selector](),Constants.DEFAULT_PRIORITY))
     clusterMetadata.setConnectorAttachedRefs(connectorsMap)
     MetadataManager.MANAGER.createCluster(clusterMetadata, false)
 

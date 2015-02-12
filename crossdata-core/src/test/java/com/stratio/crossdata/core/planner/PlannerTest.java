@@ -35,6 +35,7 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.google.common.collect.Sets;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -86,8 +87,8 @@ public class PlannerTest extends PlannerBaseTest {
     private TableMetadata table2 = null;
     private TableMetadata table3 = null;
 
-    @BeforeClass
-    public void setUp() throws ManifestException {
+    @BeforeClass(dependsOnMethods = {"setUp"})
+    public void init() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
         DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
@@ -114,12 +115,15 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_INNER_JOIN);
         operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
 
-        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
+        String strClusterName = "TestCluster1";
+
+        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
+                        Sets.newHashSet(new ClusterName(strClusterName)), operationsC1,
                 "actorRef1");
-        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
+        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName,  Sets.newHashSet(new ClusterName(strClusterName)), operationsC2,
                 "actorRef2");
 
-        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster("TestCluster1", dataStoreName, connector1.getName(), connector2.getName());
+        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName(), connector2.getName());
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         createTestTables();
     }
