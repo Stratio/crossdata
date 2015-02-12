@@ -399,6 +399,52 @@ public class InMemoryQueryEngine implements IQueryEngine{
         throw new UnsupportedException("Async query execution is not supported");
     }
 
+    @Override public void pagedExecute(
+            String queryId,
+            LogicalWorkflow workflow,
+            IResultHandler resultHandler,
+            int pageSize) throws ConnectorException {
+        QueryResult queryResult = execute(workflow);
+        ResultSet resultSet = queryResult.getResultSet();
+        List<Row> rows = resultSet.getRows();
+        int counter = 0;
+        int page = 0;
+        List<Row> partialRows = new ArrayList<>();
+        for(Row row: rows){
+            if(counter >= pageSize){
+                QueryResult partialQueryResult = buildPartialResult(
+                        partialRows,
+                        queryResult.getResultSet().getColumnMetadata(),
+                        queryId,
+                        page,
+                        false);
+                resultHandler.processResult(partialQueryResult);
+                counter = 0;
+                page++;
+                partialRows = new ArrayList<>();
+            }
+            partialRows.add(row);
+            counter++;
+        }
+        QueryResult partialQueryResult = buildPartialResult(
+                partialRows,
+                queryResult.getResultSet().getColumnMetadata(),
+                queryId,
+                page,
+                true);
+        resultHandler.processResult(partialQueryResult);
+    }
+
+    QueryResult buildPartialResult(List<Row> partialRows, List<ColumnMetadata> columnsMetadata, String queryId,
+            int page, boolean lastResult){
+        ResultSet partialResultSet = new ResultSet();
+        partialResultSet.setRows(partialRows);
+        partialResultSet.setColumnMetadata(columnsMetadata);
+        QueryResult partialQueryResult = QueryResult.createQueryResult(partialResultSet, page, lastResult);
+        partialQueryResult.setQueryId(queryId);
+        return partialQueryResult;
+    }
+
     @Override
     public void stop(String queryId) throws ConnectorException {
         throw new UnsupportedException("Stopping running queries is not supported");

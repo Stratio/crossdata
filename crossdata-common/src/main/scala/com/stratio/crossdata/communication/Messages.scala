@@ -112,6 +112,8 @@ case class Execute(override val queryId: String, workflow: LogicalWorkflow) exte
 
 case class AsyncExecute(override val queryId: String, workflow: LogicalWorkflow) extends ExecuteOperation(queryId)
 
+case class PagedExecute(override val queryId: String, workflow: LogicalWorkflow, pageSize: Int) extends ExecuteOperation(queryId)
+
 // ============================================================================
 //                                IMetadataEngine
 // ============================================================================
@@ -172,7 +174,8 @@ case class DetachCluster(override val queryId: String, targetCluster: ClusterNam
                          datastoreName:DataStoreName) extends ManagementOperation(queryId)
 
 case class AttachConnector(override val queryId: String, targetCluster: ClusterName,
-                           connectorName: ConnectorName, options: java.util.Map[Selector, Selector]) extends ManagementOperation(queryId)
+                           connectorName: ConnectorName, options: java.util.Map[Selector, Selector],
+                            pageSize: Int) extends ManagementOperation(queryId)
 
 case class DetachConnector(override val queryId: String, targetCluster: ClusterName,
                            connectorName: ConnectorName) extends ManagementOperation(queryId)

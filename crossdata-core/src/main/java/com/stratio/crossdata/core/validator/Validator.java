@@ -50,6 +50,7 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
@@ -121,6 +122,8 @@ public class Validator {
             case MUST_NOT_EXIST_DATASTORE:
                 validateDatastore(parsedQuery.getStatement(), false);
                 break;
+            case VALID_DATASTORE_MANIFEST:
+                break;
             case VALID_CLUSTER_OPTIONS:
                 validateOptions(parsedQuery.getStatement());
                 break;
@@ -129,6 +132,8 @@ public class Validator {
                 break;
             case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
                 validateConnectorAttachedRefs(parsedQuery.getStatement());
+                break;
+            case VALID_CONNECTOR_MANIFEST:
                 break;
             case MUST_EXIST_PROPERTIES:
                 validateExistsProperties(parsedQuery.getStatement());
@@ -157,6 +162,9 @@ public class Validator {
             case MUST_BE_UNIQUE_DATASTORE:
                 validatePreviousAttachment(parsedQuery.getStatement());
                 break;
+            case PAGINATION_SUPPORT:
+                validatePaginationSupport(parsedQuery.getStatement());
+                break;
             default:
                 break;
             }
@@ -177,6 +185,19 @@ public class Validator {
         }
 
         return validatedQuery;
+    }
+
+    private void validatePaginationSupport(CrossdataStatement crossdataStatement) throws BadFormatException {
+        AttachConnectorStatement acs = (AttachConnectorStatement) crossdataStatement;
+        int pageSize = acs.getPagination();
+        if(pageSize > 0){
+            ConnectorName connectorName = acs.getConnectorName();
+            ConnectorMetadata connector = MetadataManager.MANAGER.getConnector(connectorName);
+            Set<Operations> supportedOperations = connector.getSupportedOperations();
+            if(!supportedOperations.contains(Operations.PAGINATION)){
+                throw new BadFormatException("Pagination is not supported by the connector " + connectorName);
+            }
+        }
     }
 
     private void validatePreviousAttachment(CrossdataStatement statement) throws BadFormatException {

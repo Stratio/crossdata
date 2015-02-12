@@ -23,9 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import com.stratio.crossdata.common.metadata.Operations;
-import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
@@ -100,21 +99,6 @@ public class Select extends TransformationStep {
             result.add(selector);
         }
         return result;
-    }
-
-    /**
-     * @deprecated
-     * Get the columns in the expected order. With the introduction of function support
-     * this method is marked as Deprecated in favour of #getOutputSelectorOrder().
-     * @return A list of {@link com.stratio.crossdata.common.data.ColumnName}.
-     */
-    @Deprecated
-    public List<ColumnName> getColumnOrder(){
-        List<ColumnName> results = new ArrayList<>();
-        for(Selector selector: columnMap.keySet()){
-            results.add(selector.getColumnName());
-        }
-        return results;
     }
 
     @Override
