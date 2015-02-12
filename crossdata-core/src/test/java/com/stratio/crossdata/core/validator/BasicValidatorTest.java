@@ -41,6 +41,7 @@ import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.PropertyType;
@@ -84,7 +85,9 @@ public class BasicValidatorTest {
         MetadataManager.MANAGER.init(metadataMap, lock, tm);
         */
         MetadataManager.MANAGER.createDataStore(createDataStoreMetadata(), false);
-        MetadataManager.MANAGER.createConnector(createConnectorMetadata(), false);
+        ConnectorMetadata connectorMetadata = createConnectorMetadata();
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false);
+        MetadataManager.MANAGER.setConnectorStatus(connectorMetadata.getName(), Status.ONLINE);
         MetadataManager.MANAGER.createCluster(createClusterMetadata(), false);
         MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata(), false);
         MetadataManager.MANAGER.createTable(createTable(), false);
@@ -214,7 +217,7 @@ public class BasicValidatorTest {
     private static ClusterMetadata createClusterMetadata() throws ManifestException {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         ConnectorAttachedMetadata connectorAttachedMetadata = new ConnectorAttachedMetadata(
-                new ConnectorName("CassandraConnector"), new ClusterName("cluster"), null);
+                new ConnectorName("CassandraConnector"), new ClusterName("cluster"), null,5);
         connectorAttachedRefs.put(new ConnectorName("CassandraConnector"), connectorAttachedMetadata);
         ClusterMetadata clusterMetadata = new ClusterMetadata(new ClusterName("cluster"),
                 new DataStoreName("Cassandra"), null, connectorAttachedRefs);

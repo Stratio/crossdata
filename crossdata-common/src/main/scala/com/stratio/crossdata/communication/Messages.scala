@@ -173,9 +173,9 @@ case class AlterCluster(override val queryId: String, targetCluster: ClusterName
 case class DetachCluster(override val queryId: String, targetCluster: ClusterName,
                          datastoreName:DataStoreName) extends ManagementOperation(queryId)
 
-case class AttachConnector(override val queryId: String, targetCluster: ClusterName,
-                           connectorName: ConnectorName, options: java.util.Map[Selector, Selector],
-                            pageSize: Int) extends ManagementOperation(queryId)
+case class AttachConnector(override val queryId: String, targetCluster: ClusterName, connectorName: ConnectorName, options: java.util.Map[Selector, Selector],
+                           priority: Int, pageSize: Int) extends ManagementOperation(queryId)
+
 
 case class DetachConnector(override val queryId: String, targetCluster: ClusterName,
                            connectorName: ConnectorName) extends ManagementOperation(queryId)

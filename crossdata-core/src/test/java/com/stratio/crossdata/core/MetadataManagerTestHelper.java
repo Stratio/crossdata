@@ -67,6 +67,7 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.api.APIManager;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
@@ -283,7 +284,7 @@ public enum MetadataManagerTestHelper {
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(),
+                clusterProperties, new HashMap<ClusterName,Integer>(),new HashSet<PropertyType>(), new HashSet<PropertyType>(),
                 new HashSet<Operations>(),null);
         connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
@@ -305,6 +306,10 @@ public enum MetadataManagerTestHelper {
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
+        Map<ClusterName, Integer> clusterPriorities = new HashMap<>();
+        for (ClusterName clusterName : clusterList) {
+            clusterPriorities.put(clusterName, Constants.DEFAULT_PRIORITY);
+        }
         ConnectorFunctionsType functions = new ConnectorFunctionsType();
         List<FunctionType> functionsList = new ArrayList<>();
         FunctionType functionType = new FunctionType();
@@ -314,7 +319,7 @@ public enum MetadataManagerTestHelper {
         functionsList.add(functionType);
         functions.setFunction(functionsList);
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterProperties, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
+                clusterProperties, clusterPriorities, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
         connectorMetadata.setClusterRefs(clusterList);
         connectorMetadata.setActorRef(actorRef);
         connectorMetadata.setPageSize(5);
@@ -354,7 +359,7 @@ public enum MetadataManagerTestHelper {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = new HashMap<>();
         for (ConnectorName connectorName : connectorNames) {
             connectorAttachedRefs.put(connectorName,
-                    new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>()));
+                    new ConnectorAttachedMetadata(connectorName, clusterName, new HashMap<Selector, Selector>(),Constants.DEFAULT_PRIORITY));
         }
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, dataStoreName, options,
                 connectorAttachedRefs);

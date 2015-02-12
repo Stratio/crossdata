@@ -51,11 +51,17 @@ public class AttachConnectorStatement extends MetadataStatement {
     private final int pagination;
 
     /**
+     * The priority passed to the connector during its attachment.
+     */
+    private Integer priority;
+
+    /**
      * Constructor class.
      *
      * @param connectorName The connector name.
      * @param clusterName   The cluster where the connector will be attached.
      * @param json          A json with the options of the attach connector sentence.
+     * @param priority      The connector's priority for the associated cluster.
      */
     public AttachConnectorStatement(ConnectorName connectorName, ClusterName clusterName, String json,
             int priority, int pagination) {
@@ -63,6 +69,8 @@ public class AttachConnectorStatement extends MetadataStatement {
         this.clusterName = clusterName;
         this.options = StringUtils.convertJsonToOptions(null, json);
         this.pagination = pagination;
+        this.priority = priority;
+
     }
 
     /**
@@ -75,7 +83,9 @@ public class AttachConnectorStatement extends MetadataStatement {
                 .add(ValidationTypes.MUST_EXIST_CONNECTOR)
                 .add(ValidationTypes.VALID_CONNECTOR_OPTIONS)
                 .add(ValidationTypes.MUST_BE_CONNECTED)
-                .add(ValidationTypes.PAGINATION_SUPPORT);
+                .add(ValidationTypes.PAGINATION_SUPPORT)
+                .add(ValidationTypes.VALIDATE_PRIORITY);
+
     }
 
     /**
@@ -111,6 +121,14 @@ public class AttachConnectorStatement extends MetadataStatement {
     }
 
     /**
+     * Get the priority. The maximum priority is 1, whereas the minimum is 10.
+     * @return The connector's priority for the associated cluster.
+     */
+    public Integer getPriority() {
+        return priority;
+    }
+
+    /**
      * Transform the options of the attach connector to a String.
      * @param options The map of options.
      * @return A String.
@@ -133,6 +151,6 @@ public class AttachConnectorStatement extends MetadataStatement {
     @Override
     public String toString() {
         return "ATTACH CONNECTOR " + connectorName + " TO " + clusterName + " WITH OPTIONS " + getStringFromOptions(
-                options);
+                options) +" AND PRIORITY = "+priority+" AND PAGINATION = "+pagination;
     }
 }
