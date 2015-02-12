@@ -193,7 +193,7 @@ public enum ColumnType {
             clazz = String.class;
             break;
         case NATIVE:
-            clazz = null;
+            clazz = Object.class;
             break;
         case SET:
             clazz = Set.class;

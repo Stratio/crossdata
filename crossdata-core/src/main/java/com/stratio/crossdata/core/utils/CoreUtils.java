@@ -76,9 +76,11 @@ public final class CoreUtils {
         case TEXT:
             result = convertSelectorToString(selector);
             break;
+        case NATIVE:
+            result = convertSelectorToObject(selector);
+            break;
         case LIST:
         case MAP:
-        case NATIVE:
         case SET:
             throw new PlanningException("ColumnType: " + columnMetadata.getColumnType() + " not supported yet");
         }
@@ -86,6 +88,17 @@ public final class CoreUtils {
     }
 
     private static String convertSelectorToString(Selector selector) throws PlanningException {
+        String result;
+        try {
+            StringSelector stringSelector = (StringSelector) selector;
+            result = stringSelector.getValue();
+        } catch (ClassCastException cce) {
+            throw new PlanningException(selector + " cannot be converted to String", cce);
+        }
+        return result;
+    }
+
+    private static Object convertSelectorToObject(Selector selector) throws PlanningException {
         String result;
         try {
             StringSelector stringSelector = (StringSelector) selector;
