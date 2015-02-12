@@ -227,7 +227,7 @@ public class InMemoryQueryEngine implements IQueryEngine{
      * @return The equivalent InMemory selector.
      */
     private InMemorySelector transformCrossdataSelector(Selector selector){
-        InMemorySelector result = null;
+        InMemorySelector result;
         if(FunctionSelector.class.isInstance(selector)){
             FunctionSelector xdFunction = FunctionSelector.class.cast(selector);
             String name = xdFunction.getFunctionName();

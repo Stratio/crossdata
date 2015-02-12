@@ -608,7 +608,8 @@ public class Validator {
             }
             break;
         case STRING:
-            if (columnMetadata.getColumnType() != ColumnType.TEXT) {
+            if ((columnMetadata.getColumnType() != ColumnType.TEXT) &&
+                    (columnMetadata.getColumnType() != ColumnType.NATIVE)) {
                 notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
