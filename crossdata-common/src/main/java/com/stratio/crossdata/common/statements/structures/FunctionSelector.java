@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class FunctionSelector extends Selector {
 
+    private static final long serialVersionUID = -713392181217425684L;
     /**
      * Name of the includes.
      */

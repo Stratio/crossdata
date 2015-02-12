@@ -23,6 +23,8 @@ package com.stratio.crossdata.common.result;
  */
 public class InProgressResult extends Result {
 
+    private static final long serialVersionUID = -8835406950326992822L;
+
     /**
      * Constructor class.
      * @param queryId The query Id.

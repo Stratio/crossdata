@@ -37,6 +37,7 @@ import com.stratio.crossdata.communication.ManagementOperation;
  */
 public class ManagementWorkflow extends ExecutionWorkflow {
 
+    private static final long serialVersionUID = -7714871332885230278L;
     /**
      * Name of the cluster.
      */

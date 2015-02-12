@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.logicalplan.LogicalStep;
  */
 public class ExecutionWorkflow implements Serializable {
 
+    private static final long serialVersionUID = 7116736928129281156L;
     /**
      * Query identification string.
      */

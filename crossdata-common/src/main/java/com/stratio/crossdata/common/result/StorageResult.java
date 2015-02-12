@@ -26,6 +26,8 @@ public final class StorageResult extends Result {
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
      */
+    private static final long serialVersionUID = -9065306974920274686L;
+
     /**
      * Execution result.
      */

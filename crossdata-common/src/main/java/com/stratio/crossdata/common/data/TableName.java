@@ -27,6 +27,7 @@ package com.stratio.crossdata.common.data;
  */
 public class TableName extends Name {
 
+    private static final long serialVersionUID = -8396126000294795537L;
     private final String name;
 
     private CatalogName catalogName;

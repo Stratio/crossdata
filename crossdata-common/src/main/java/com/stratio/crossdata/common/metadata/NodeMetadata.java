@@ -26,6 +26,7 @@ import com.stratio.crossdata.common.data.NodeName;
  */
 public class NodeMetadata implements IMetadata {
 
+    private static final long serialVersionUID = -2016064453164369892L;
     private final NodeName name;
     private Status status;
 

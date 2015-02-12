@@ -25,6 +25,7 @@ import com.stratio.crossdata.common.metadata.Operations;
  */
 public class Limit extends TransformationStep {
 
+    private static final long serialVersionUID = -8755883109886275085L;
     /**
      * The number of tuples to be returned.
      */

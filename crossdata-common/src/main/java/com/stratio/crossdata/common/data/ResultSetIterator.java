@@ -18,13 +18,15 @@
 
 package com.stratio.crossdata.common.data;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * Iterator for ResultSet.
  */
-public class ResultSetIterator implements Iterator<com.stratio.crossdata.common.data.Row> {
+public class ResultSetIterator implements Iterator<com.stratio.crossdata.common.data.Row>, Serializable {
 
+    private static final long serialVersionUID = 6460848724602816958L;
     /**
      * Set representing a result.
      */

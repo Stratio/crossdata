@@ -30,6 +30,7 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class ColumnSelector extends Selector {
 
+    private static final long serialVersionUID = 1912743509341730253L;
     /**
      * Name of the selected column.
      */

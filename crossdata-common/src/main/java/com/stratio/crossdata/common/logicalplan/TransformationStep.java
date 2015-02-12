@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.metadata.Operations;
  */
 public class TransformationStep extends LogicalStep {
 
+    private static final long serialVersionUID = -1043700197197777113L;
     /**
      * Single previous step.
      */

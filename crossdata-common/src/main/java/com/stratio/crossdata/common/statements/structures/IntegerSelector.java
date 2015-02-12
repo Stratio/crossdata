@@ -25,6 +25,7 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class IntegerSelector extends Selector {
 
+    private static final long serialVersionUID = -2138111486252645291L;
     /**
      * The integer value with long precision.
      */

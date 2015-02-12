@@ -25,6 +25,9 @@ import com.stratio.crossdata.common.data.Name;
  * Exception class that is thrown by the normalizator when a Name not exists yet in Metadata Manager.
  */
 public class NotExistNameException extends ValidationException {
+
+    private static final long serialVersionUID = 7697679437898208681L;
+
     /**
      * Constructor Class.
      * @param name The Name that is not found in Metadata Manager.

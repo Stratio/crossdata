@@ -22,6 +22,8 @@ package com.stratio.crossdata.common.data;
  * Index name class that implements the characteristics of the indexes.
  */
 public class IndexName extends Name {
+
+    private static final long serialVersionUID = 6514636090477922675L;
     /**
      * Name of the index.
      */

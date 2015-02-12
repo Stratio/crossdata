@@ -42,6 +42,7 @@ import com.stratio.crossdata.common.statements.structures.Selector;
  */
 public class ConnectorMetadata implements IMetadata {
 
+    private static final long serialVersionUID = 3609482909652076494L;
     /**
      * Connector name.
      */

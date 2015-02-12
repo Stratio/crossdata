@@ -36,6 +36,8 @@ import com.stratio.crossdata.common.manifest.PropertyType;
  * Class that implements the metadata of a Data Store.
  */
 public class DataStoreMetadata implements IMetadata {
+
+    private static final long serialVersionUID = 474261232147023217L;
     private DataStoreName name;
     private String version;
     private Set<PropertyType> requiredProperties;

@@ -38,8 +38,9 @@ import com.stratio.crossdata.communication.Update;
 /**
  * Storage related operations.
  */
-public class StorageWorkflow extends ExecutionWorkflow{
+public class StorageWorkflow extends ExecutionWorkflow {
 
+    private static final long serialVersionUID = 3929350966531076463L;
     private ClusterName clusterName = null;
 
     private TableMetadata tableMetadata = null;

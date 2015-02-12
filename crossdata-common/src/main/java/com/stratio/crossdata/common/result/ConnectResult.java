@@ -26,6 +26,7 @@ public final class ConnectResult extends Result {
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.
      */
+    private static final long serialVersionUID = 5731347024563712574L;
 
     /**
      * Session identifier.

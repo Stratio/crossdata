@@ -32,6 +32,7 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class Project extends TransformationStep {
 
+    private static final long serialVersionUID = 413155415353651161L;
     /**
      * CLUSTER name.
      */

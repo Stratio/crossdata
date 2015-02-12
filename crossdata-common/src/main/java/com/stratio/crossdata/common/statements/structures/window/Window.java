@@ -25,6 +25,7 @@ import java.io.Serializable;
  */
 public class Window implements Serializable {
 
+    private static final long serialVersionUID = -2350741953612341330L;
     /**
      * Type of window.
      */

@@ -24,6 +24,9 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
  * YodaCondition Exception class thrown when the order of the operators are inverted.
  */
 public class YodaConditionException extends ValidationException {
+
+    private static final long serialVersionUID = -6414362502033820053L;
+
     /**
      * Constructor class.
      */

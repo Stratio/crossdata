@@ -22,6 +22,8 @@ package com.stratio.crossdata.common.data;
  * Catalog Name class.
  */
 public class CatalogName extends FirstLevelName {
+
+    private static final long serialVersionUID = 840034320670440604L;
     private final String name;
 
     /**

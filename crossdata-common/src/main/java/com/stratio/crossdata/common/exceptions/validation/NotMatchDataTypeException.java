@@ -25,6 +25,9 @@ import com.stratio.crossdata.common.data.ColumnName;
  * No match data type exception class.
  */
 public class NotMatchDataTypeException extends ValidationException {
+
+    private static final long serialVersionUID = -7990282097001772291L;
+
     /**
      * Constructor class.
      * @param name The name od the column that cause the exception.

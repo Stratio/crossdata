@@ -30,6 +30,7 @@ import com.stratio.crossdata.common.statements.structures.Selector;
  */
 public class CatalogMetadata implements IMetadata {
 
+    private static final long serialVersionUID = 1366045716958459009L;
     /**
      * The catalog name.
      */

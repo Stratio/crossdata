@@ -25,6 +25,8 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class RelationSelector extends Selector {
 
+    private static final long serialVersionUID = 5420806618352269424L;
+
     /**
      * The relation associated with the selector.
      */

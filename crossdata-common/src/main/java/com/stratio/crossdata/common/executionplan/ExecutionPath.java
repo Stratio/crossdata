@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.executionplan;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
@@ -26,8 +27,9 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 /**
  * Execution path of a logical workflow.
  */
-public class ExecutionPath {
+public class ExecutionPath implements Serializable {
 
+    private static final long serialVersionUID = -2712382478581678360L;
     private final LogicalStep initial;
 
     private LogicalStep last;

@@ -25,6 +25,8 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
  */
 public class ConnectionHasNoRefsException extends ValidationException {
 
+    private static final long serialVersionUID = -1188672684884505667L;
+
     /**
      * Constructor class.
      * @param msg The cause of the exception.
