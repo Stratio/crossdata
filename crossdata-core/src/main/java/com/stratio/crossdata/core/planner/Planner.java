@@ -378,6 +378,10 @@ public class Planner {
 
         updateFunctionsFromSelect(workflow, connectorMetadata.getName());
 
+        if(connectorMetadata.getPageSize() > 0){
+            workflow.setPagination(connectorMetadata.getPageSize());
+        }
+
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
@@ -1097,6 +1101,7 @@ public class Planner {
             managementWorkflow.setConnectorName(attachConnectorStatement.getConnectorName());
             managementWorkflow.setClusterName(attachConnectorStatement.getClusterName());
             managementWorkflow.setOptions(attachConnectorStatement.getOptions());
+            managementWorkflow.setPageSize(attachConnectorStatement.getPagination());
 
         } else if (metadataStatement instanceof DetachConnectorStatement) {
             DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) metadataStatement;

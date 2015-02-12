@@ -59,6 +59,19 @@ public interface IQueryEngine {
             throws ConnectorException;
 
     /**
+     * Execute query that returns partial results according to a page size.
+     *
+     * @param queryId Query identifier
+     * @param workflow The {@link com.stratio.crossdata.common.logicalplan.LogicalWorkflow} that
+     *                      contains the {@link com.stratio.crossdata.common.logicalplan.LogicalStep} to be
+     *                      executed.
+     * @param resultHandler A result handler to receive incoming results.
+     * @param pageSize Size of the pagination.
+     * @throws ConnectorException
+     */
+    void pagedExecute(String queryId, LogicalWorkflow workflow, IResultHandler resultHandler, int pageSize) throws ConnectorException;
+
+    /**
      * Stop an asynchronous query.
      *
      * @param queryId The query identifier.

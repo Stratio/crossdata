@@ -48,6 +48,8 @@ public class AttachConnectorStatement extends MetadataStatement {
      */
     private Map<Selector, Selector> options = null;
 
+    private final int pagination;
+
     /**
      * Constructor class.
      *
@@ -55,22 +57,25 @@ public class AttachConnectorStatement extends MetadataStatement {
      * @param clusterName   The cluster where the connector will be attached.
      * @param json          A json with the options of the attach connector sentence.
      */
-    public AttachConnectorStatement(ConnectorName connectorName, ClusterName clusterName, String json) {
+    public AttachConnectorStatement(ConnectorName connectorName, ClusterName clusterName, String json,
+            int priority, int pagination) {
         this.connectorName = connectorName;
         this.clusterName = clusterName;
         this.options = StringUtils.convertJsonToOptions(null, json);
+        this.pagination = pagination;
     }
 
     /**
      * Get the validation requirements to attach connector.
      *
-     * @return A {@link com.sun.xml.internal.ws.developer.MemberSubmissionAddressing.Validation} .
+     * @return An array of {@link com.stratio.crossdata.core.validator.requirements.ValidationRequirements} .
      */
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CLUSTER)
                 .add(ValidationTypes.MUST_EXIST_CONNECTOR)
                 .add(ValidationTypes.VALID_CONNECTOR_OPTIONS)
-                .add(ValidationTypes.MUST_BE_CONNECTED);
+                .add(ValidationTypes.MUST_BE_CONNECTED)
+                .add(ValidationTypes.PAGINATION_SUPPORT);
     }
 
     /**
@@ -99,6 +104,10 @@ public class AttachConnectorStatement extends MetadataStatement {
      */
     public Map<Selector, Selector> getOptions() {
         return options;
+    }
+
+    public int getPagination() {
+        return pagination;
     }
 
     /**

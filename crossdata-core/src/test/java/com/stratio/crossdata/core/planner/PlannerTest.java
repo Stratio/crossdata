@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -77,11 +76,6 @@ import com.stratio.crossdata.core.query.StorageValidatedQuery;
  * and generating a ExecutionWorkflow.
  */
 public class PlannerTest extends PlannerBaseTest {
-
-    /**
-     * Class logger.
-     */
-    private static final Logger LOG = Logger.getLogger(PlannerTest.class);
 
     private ConnectorMetadata connector1 = null;
     private ConnectorMetadata connector2 = null;
@@ -448,6 +442,19 @@ public class PlannerTest extends PlannerBaseTest {
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
         assertEquals(queryWorkflow.getActorRef(), connector1.getActorRef(), "Wrong target actor");
+    }
+
+    @Test
+    public void pagination() {
+
+        String inputText = "SELECT * FROM demo.table1;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "pagination", false, table1);
+
+        int expectedPagedSize = 5;
+
+        assertEquals(queryWorkflow.getWorkflow().getPagination(), expectedPagedSize, "Pagination plan failed.");
     }
 
 }

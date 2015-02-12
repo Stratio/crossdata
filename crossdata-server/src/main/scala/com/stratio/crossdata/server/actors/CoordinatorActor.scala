@@ -299,8 +299,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             val clusterName = detachConnectorOperation.targetCluster
             val connectorClusterConfig = new ConnectorClusterConfig(
-              clusterName, SelectorHelper.convertSelectorMapToStringMap
-                (MetadataManager.MANAGER.getCluster(detachConnectorOperation.targetCluster).getOptions))
+              clusterName,
+              SelectorHelper.convertSelectorMapToStringMap(
+              MetadataManager.MANAGER.getConnector(
+                new ConnectorName(detachConnectorOperation.connectorName.getName)).getClusterProperties.get(clusterName)),
+              SelectorHelper.convertSelectorMapToStringMap(
+                MetadataManager.MANAGER.getCluster(clusterName).getOptions)
+            )
             val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
             connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
 

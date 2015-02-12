@@ -57,7 +57,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   extends HeartbeatActor with ActorLogging with IResultHandler {
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
-  val metadata: util.Map[FirstLevelName, IMetadata]=new util.HashMap[FirstLevelName,IMetadata]()
+  val metadata: util.Map[FirstLevelName, IMetadata] = new util.HashMap[FirstLevelName,IMetadata]()
 
   logger.info("Lifting connector actor")
 
@@ -278,6 +278,10 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       logger.info("Processing asynchronous query: " + aex)
       methodAsyncExecute(aex, sender)
     }
+    case pex: PagedExecute => {
+      logger.info("Processing paged query: " + pex)
+      methodPagedExecute(pex, sender)
+    }
     case metadataOp: MetadataOperation => {
       methodMetadataOp(metadataOp, sender)
     }
@@ -285,7 +289,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       methodStorageOp(storageOp, sender)
     }
     case msg: getConnectorName => {
-      logger.info(sender + " asked for my name")
+      logger.info(sender + " asked for my name: " + connectorName)
       connectedServers += sender.path.address.toString
       logger.info("Connected to Servers: " + connectedServers)
       sender ! replyConnectorName(connectorName)
@@ -364,7 +368,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
   }
 
-  private def methodAsyncExecute(aex: AsyncExecute, sender:ActorRef) : Unit = {
+  private def methodAsyncExecute(aex: AsyncExecute, sender: ActorRef) : Unit = {
     val asyncSender = sender
     try {
       runningJobs.put(aex.queryId, asyncSender)
@@ -378,8 +382,27 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         runningJobs.remove(aex.queryId)
       }
       case err: Error =>
-        logger.error("error in ConnectorActor( receiving async LogicalWorkflow )")
+        logger.error("error in ConnectorActor (Receiving async LogicalWorkflow)")
     }
+  }
+
+  private def methodPagedExecute(pex: PagedExecute, sender: ActorRef): Unit = {
+    val pagedSender = sender
+    try {
+      runningJobs.put(pex.queryId, pagedSender)
+      connector.getQueryEngine().pagedExecute(pex.queryId, pex.workflow, this, pex.pageSize)
+      pagedSender ! ACK(pex.queryId, QueryStatus.IN_PROGRESS)
+    } catch {
+      case e: Exception => {
+        val result = Result.createExecutionErrorResult(e.getMessage())
+        result.setQueryId(pex.queryId)
+        pagedSender ! result
+        runningJobs.remove(pex.queryId)
+      }
+      case err: Error =>
+        logger.error("error in ConnectorActor (Receiving paged LogicalWorkflow)")
+    }
+
   }
 
   private def methodMetadataOp(metadataOp: MetadataOperation, s: ActorRef): Unit = {
