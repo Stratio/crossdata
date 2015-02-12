@@ -367,13 +367,18 @@ public class Planner {
 
         //Define the list of initial steps.
         List<LogicalStep> initialSteps = new ArrayList<>(executionPaths.size());
+        List<ClusterName> involvedClusters = new ArrayList<>(executionPaths.size());
+
         for (ExecutionPath path : executionPaths) {
+            Project project = (Project) path.getInitial();
+            involvedClusters.add(project.getClusterName());
             initialSteps.add(path.getInitial());
         }
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         //Select an actor
-        ConnectorMetadata connectorMetadata = bestConnector(connectors);
+        ConnectorMetadata connectorMetadata = bestConnector(connectors,involvedClusters);
+
         String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
 
         updateFunctionsFromSelect(workflow, connectorMetadata.getName());
@@ -381,10 +386,21 @@ public class Planner {
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
-    private ConnectorMetadata bestConnector(List<ConnectorMetadata> connectors) {
+    private ConnectorMetadata bestConnector(List<ConnectorMetadata> connectors, List<ClusterName> clusters) {
         //TODO: Add logic to this method according to native or not
         //TODO: Add logic to this method according to statistics
-        return connectors.get(0);
+        ConnectorMetadata highestPriorityConnector = null;
+        int minPriority = Integer.MAX_VALUE;
+
+        for (ConnectorMetadata connector : connectors) {
+            if(connector.getPriorityFromClusterNames(clusters) < minPriority){
+                minPriority = connector.getPriorityFromClusterNames(clusters);
+                highestPriorityConnector = connector;
+                LOG.debug("New top priority connector found: " +connector.getName());
+            }
+        }
+
+        return highestPriorityConnector;
     }
 
     private void updateFunctionsFromSelect(LogicalWorkflow workflow, ConnectorName connectorName) {
@@ -431,17 +447,20 @@ public class Planner {
 
         //Define the list of initial steps.
         List<LogicalStep> initialSteps = new ArrayList<>(executionPaths.size());
+        List<ClusterName> involvedClusters = new ArrayList<>(executionPaths.size());
+
         for (ExecutionPath path : executionPaths) {
-            initialSteps.add(path.getInitial());
+            Project project = (Project) path.getInitial();
+            involvedClusters.add(project.getClusterName());
+            initialSteps.add(project);
             path.getLast().setNextStep(mergePath.getInitial());
         }
 
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         //Select an actor
-        //TODO Improve actor selection based on cost analysis.
-        String selectedActorUri = StringUtils
-                        .getAkkaActorRefUri(mergePath.getAvailableConnectors().get(0).getActorRef());
+        ConnectorMetadata connectorMetadata = bestConnector(mergePath.getAvailableConnectors(),involvedClusters);
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
@@ -1097,6 +1116,7 @@ public class Planner {
             managementWorkflow.setConnectorName(attachConnectorStatement.getConnectorName());
             managementWorkflow.setClusterName(attachConnectorStatement.getClusterName());
             managementWorkflow.setOptions(attachConnectorStatement.getOptions());
+            managementWorkflow.setPriority(attachConnectorStatement.getPriority());
 
         } else if (metadataStatement instanceof DetachConnectorStatement) {
             DetachConnectorStatement detachConnectorStatement = (DetachConnectorStatement) metadataStatement;

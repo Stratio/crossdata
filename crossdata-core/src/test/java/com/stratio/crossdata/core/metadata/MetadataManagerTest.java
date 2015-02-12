@@ -127,6 +127,8 @@ public class MetadataManagerTest {
         // Create catalog
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("testCatalog").getName();
 
+
+
         //Check catalog persistence
         assertEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), catalogName,
                 "Expected: " + catalogName + System.lineSeparator() +
@@ -304,10 +306,13 @@ public class MetadataManagerTest {
 
     @Test(dependsOnMethods = { "testCreateCatalog" } )
     public void testGetCatalogs() {
+        // TODO We should avoid dependencies between tests.
+
         String catalog = "catalogTest";
         MetadataManagerTestHelper.HELPER.createTestCatalog(catalog);
 
         List<CatalogMetadata> catalogs = MetadataManager.MANAGER.getCatalogs();
+
 
         int expectedNumber = 1;
 
@@ -412,12 +417,14 @@ public class MetadataManagerTest {
     @Test
     public void testGetConnectors() {
 
+        //TODO there should be no dependency with other tests.
+
         testCreateConnector();
 
         Status status = Status.ONLINE;
         List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors(status);
 
-        int expectedSize = 4;
+        int expectedSize =  4;
 
         assertTrue(connectors.size() == expectedSize,
                 "Connectors size is wrong." + System.lineSeparator() +

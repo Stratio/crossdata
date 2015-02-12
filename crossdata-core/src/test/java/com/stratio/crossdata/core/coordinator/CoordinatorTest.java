@@ -62,6 +62,7 @@ import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.communication.ManagementOperation;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
@@ -202,6 +203,7 @@ public class CoordinatorTest {
         managementWorkflow.setConnectorName(connectorName);
         options.put(new StringSelector("Limit"), new IntegerSelector(100));
         managementWorkflow.setOptions(options);
+        managementWorkflow.setPriority(Constants.DEFAULT_PRIORITY);
 
         Coordinator coordinator = new Coordinator();
 

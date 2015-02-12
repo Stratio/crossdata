@@ -69,6 +69,7 @@ public class PlannerBaseTest {
 
     Planner planner = new Planner();
 
+
     @BeforeClass
     public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();

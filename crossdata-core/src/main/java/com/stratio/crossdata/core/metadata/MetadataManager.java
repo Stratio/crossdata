@@ -697,11 +697,12 @@ public enum MetadataManager {
             String version = null;
             Set<DataStoreName> dataStoreRefs = new HashSet<>();
             Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
+            Map<ClusterName, Integer> clusterPriorities = new HashMap<>();
             Set<PropertyType> requiredProperties = new HashSet<>();
             Set<PropertyType> optionalProperties = new HashSet<>();
             Set<Operations> supportedOperations = new HashSet<>();
             ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
-                    clusterProperties, requiredProperties, optionalProperties, supportedOperations, null);
+                    clusterProperties, clusterPriorities, requiredProperties, optionalProperties, supportedOperations, null);
             connectorMetadata.setActorRef(actorRef);
             try {
                 writeLock.lock();

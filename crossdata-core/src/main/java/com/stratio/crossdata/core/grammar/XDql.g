@@ -385,7 +385,7 @@ attachConnectorStatement returns [AttachConnectorStatement acs]
         new ClusterName($clusterName.text), optionsJson, priority);
     }:
     T_ATTACH T_CONNECTOR connectorName=T_IDENT T_TO clusterName=T_IDENT (T_WITH (T_OPTIONS)? optionsJson=getJson)?
-    (T_AND T_PRIORITY T_EQUAL number=T_CONSTANT { priority = Integer.parseInt($number.text) } )?
+    (T_AND T_WITH T_PRIORITY T_EQUAL number=T_CONSTANT { priority = Integer.parseInt($number.text); } )?
 ;
 
 detachConnectorStatement returns [DetachConnectorStatement dcs]

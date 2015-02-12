@@ -382,11 +382,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         var sendResultToClient = true
 
-        val it = MetadataManager.MANAGER.getTables.iterator()
-        while(it.hasNext){
-          log.info("TableMetadata.name = " + it.next().getName)
-        }
-
         if(!result.hasError){
           if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
             val storedWorkflow = executionInfo.asInstanceOf[ExecutionInfo].getWorkflow

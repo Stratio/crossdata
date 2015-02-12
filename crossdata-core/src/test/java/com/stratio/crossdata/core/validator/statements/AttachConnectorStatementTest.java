@@ -26,6 +26,7 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
@@ -41,7 +42,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
                 ("CassandraConnector"),
-                new ClusterName("Cassandra"), "{'comment':'a comment'}");
+                new ClusterName("Cassandra"), "{'comment':'a comment'}", Constants.DEFAULT_PRIORITY);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("system"));
@@ -63,7 +64,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName("unknown"),
                 new ClusterName("myCluster"),
-                "{'comment':'a comment'}");
+                "{'comment':'a comment'}",Constants.DEFAULT_PRIORITY);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
@@ -85,7 +86,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
                 ("CassandraConnector"),
-                new ClusterName("unknown"), "{'comment':'a comment'}");
+                new ClusterName("unknown"), "{'comment':'a comment'}",Constants.DEFAULT_PRIORITY);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
@@ -107,7 +108,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
                 ("CassandraConnector"),
-                new ClusterName("Cassandra"), "");
+                new ClusterName("Cassandra"), "",Constants.DEFAULT_PRIORITY);
         Validator validator = new Validator();
 
         BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
@@ -120,6 +121,27 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
             Assert.assertTrue(true);
+        }
+    }
+
+
+    @Test
+    public void attachClusterWithWrongPriority() throws IgnoreQueryException {
+        String query = "ATTACH CONNECTOR CassandraConnector TO cluster WITH OPTIONS {}";
+
+        AttachConnectorStatement attachConnectorStatement = new AttachConnectorStatement(new ConnectorName
+                        ("CassandraConnector"),
+                        new ClusterName("cluster"), "{}",0);
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("system"));
+
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("The priority 0 cannot be validated");
+        } catch (ValidationException e) {
+            Assert.assertEquals("The priority is out of range: Must be [1-9]", e.getMessage(), "The message is not the expected");
         }
     }
 

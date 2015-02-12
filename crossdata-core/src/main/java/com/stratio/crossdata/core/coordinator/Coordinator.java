@@ -135,7 +135,7 @@ public class Coordinator implements Serializable {
             result = persistDetachCluster(dc.targetCluster());
         } else if (AttachConnector.class.isInstance(workflow)) {
             AttachConnector ac = AttachConnector.class.cast(workflow);
-            result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
+            result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options(), ac.priority());
         } else if (DetachConnector.class.isInstance(workflow)) {
             DetachConnector dc = DetachConnector.class.cast(workflow);
             result = persistDetachConnector(dc.targetCluster(), dc.connectorName());
@@ -349,10 +349,11 @@ public class Coordinator implements Serializable {
      * @param clusterName   The cluster name.
      * @param connectorName The connector name.
      * @param options       The map of connector options.
+     * @param priority      The priority of the connector for the associated cluster.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistAttachConnector(ClusterName clusterName, ConnectorName connectorName,
-            Map<Selector, Selector> options) {
+            Map<Selector, Selector> options, Integer priority) {
 
         // Update information in Cluster
         ClusterMetadata clusterMetadata =
@@ -360,7 +361,7 @@ public class Coordinator implements Serializable {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
                 clusterMetadata.getConnectorAttachedRefs();
         ConnectorAttachedMetadata value =
-                new ConnectorAttachedMetadata(connectorName, clusterName, options);
+                new ConnectorAttachedMetadata(connectorName, clusterName, options, priority);
         connectorAttachedRefs.put(connectorName, value);
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
@@ -368,6 +369,7 @@ public class Coordinator implements Serializable {
         // Update information in Connector
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
         connectorMetadata.addClusterProperties(clusterName, options);
+        connectorMetadata.addClusterPriority(clusterName, priority);
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
 
         return CommandResult.createCommandResult("Connector started its session successfully");
@@ -392,9 +394,11 @@ public class Coordinator implements Serializable {
 
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
 
+
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
         connectorMetadata.getClusterRefs().remove(clusterName);
         connectorMetadata.getClusterProperties().remove(clusterName);
+        connectorMetadata.getClusterPriorities().remove(clusterName);
 
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
 

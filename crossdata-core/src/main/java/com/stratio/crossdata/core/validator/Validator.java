@@ -157,6 +157,9 @@ public class Validator {
             case MUST_BE_UNIQUE_DATASTORE:
                 validatePreviousAttachment(parsedQuery.getStatement());
                 break;
+            case VALIDATE_PRIORITY:
+                validatePriority(parsedQuery.getStatement());
+                break;
             default:
                 break;
             }
@@ -177,6 +180,16 @@ public class Validator {
         }
 
         return validatedQuery;
+    }
+
+    private void validatePriority(CrossdataStatement statement) throws BadFormatException {
+        if (statement instanceof AttachConnectorStatement) {
+            Integer priority = ((AttachConnectorStatement) statement).getPriority();
+
+            if (priority < 1 || priority > 9) {
+                throw new BadFormatException("The priority is out of range: Must be [1-9]");
+            }
+        }
     }
 
     private void validatePreviousAttachment(CrossdataStatement statement) throws BadFormatException {

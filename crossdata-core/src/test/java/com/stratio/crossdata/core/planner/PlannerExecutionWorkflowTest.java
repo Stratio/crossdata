@@ -37,6 +37,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
+import com.google.common.collect.Sets;
 import com.stratio.crossdata.common.data.AlterOperation;
 import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
@@ -107,6 +108,38 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
     private TableMetadata table1 = null;
     private TableMetadata table2 = null;
 
+    @BeforeClass(dependsOnMethods = {"setUp"})
+    public void init() throws ManifestException {
+        DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
+
+        //Connector with join.
+        Set<Operations> operationsC1 = new HashSet<>();
+        operationsC1.add(Operations.PROJECT);
+        operationsC1.add(Operations.SELECT_OPERATOR);
+        operationsC1.add(Operations.FILTER_PK_EQ);
+        operationsC1.add(Operations.SELECT_INNER_JOIN);
+        operationsC1.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
+        operationsC1.add(Operations.ALTER_TABLE);
+
+        //Streaming connector.
+        Set<Operations> operationsC2 = new HashSet<>();
+        operationsC2.add(Operations.PROJECT);
+        operationsC2.add(Operations.SELECT_OPERATOR);
+        operationsC2.add(Operations.SELECT_WINDOW);
+
+        String strClusterName = "TestCluster1";
+
+        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, Sets.newHashSet(new ClusterName(strClusterName)), operationsC1,
+                        "actorRef1");
+        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, Sets.newHashSet(new ClusterName(strClusterName)), operationsC2,
+                        "actorRef2");
+
+        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName());
+        MetadataManagerTestHelper.HELPER.createTestCatalog("demo");
+        MetadataManagerTestHelper.HELPER.createTestCatalog("demo2");
+        createTestTables();
+    }
+
     /**
      * Create a test Project operator.
      *
@@ -157,36 +190,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         return j;
     }
 
-    @BeforeClass
-    public void setUp() throws ManifestException {
-        //super.setUp();
-        DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
-        //Connector with join.
-        Set<Operations> operationsC1 = new HashSet<>();
-        operationsC1.add(Operations.PROJECT);
-        operationsC1.add(Operations.SELECT_OPERATOR);
-        operationsC1.add(Operations.FILTER_PK_EQ);
-        operationsC1.add(Operations.SELECT_INNER_JOIN);
-        operationsC1.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
-        operationsC1.add(Operations.ALTER_TABLE);
-
-        //Streaming connector.
-        Set<Operations> operationsC2 = new HashSet<>();
-        operationsC2.add(Operations.PROJECT);
-        operationsC2.add(Operations.SELECT_OPERATOR);
-        operationsC2.add(Operations.SELECT_WINDOW);
-
-        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
-                "actorRef1");
-        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
-                "actorRef2");
-
-        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster("TestCluster1", dataStoreName, connector1.getName());
-        MetadataManagerTestHelper.HELPER.createTestCatalog("demo");
-        MetadataManagerTestHelper.HELPER.createTestCatalog("demo2");
-        createTestTables();
-    }
 
     public void createTestTables() {
         String[] columnNames1 = { "id", "user" };
@@ -595,14 +599,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operations.add(Operations.INSERT);
         operations.add(Operations.INSERT_IF_NOT_EXISTS);
         ConnectorMetadata connectorMetadata = null;
+
+        String strClusterName = "cluster";
         try {
             connectorMetadata = MetadataManagerTestHelper.HELPER.createTestConnector("cassandraConnector", dataStoreName,
-                    new HashSet<ClusterName>(), operations, "ActorRefTest");
+                    Sets.newHashSet(new ClusterName(strClusterName)), operations, "ActorRefTest");
         } catch (ManifestException e) {
             fail();
         }
         try {
-            MetadataManagerTestHelper.HELPER.createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
+            MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connectorMetadata.getName());
         } catch (ManifestException e) {
             fail();
         }

@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.grammar.statements;
 
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.grammar.ParsingTest;
 
 public class AttachConnectorStatementTest extends ParsingTest {
@@ -28,7 +29,7 @@ public class AttachConnectorStatementTest extends ParsingTest {
     public void attachConnectorSimple1() {
         String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {\"ConsistencyLevel\": \"Quorum\", 'DefaultLimit': 999};";
         String expectedText = "ATTACH CONNECTOR connector.cass_con_native TO cluster.cassandraCluster WITH OPTIONS " +
-                "{'ConsistencyLevel': 'Quorum', 'DefaultLimit': 999};";
+                "{'ConsistencyLevel': 'Quorum', 'DefaultLimit': 999} AND WITH PRIORITY = "+ Constants.DEFAULT_PRIORITY+";";
         testRegularStatement(inputText, expectedText, "attachConnectorSimple1");
     }
 
@@ -36,8 +37,16 @@ public class AttachConnectorStatementTest extends ParsingTest {
     public void attachConnectorSimple2() {
         String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {'ConsistencyLevel': 'Quorum', \"DefaultLimit\": 999};";
         String expectedText = "ATTACH CONNECTOR connector.cass_con_native TO cluster.cassandraCluster WITH OPTIONS " +
-                "{'ConsistencyLevel': 'Quorum', 'DefaultLimit': 999};";
+                "{'ConsistencyLevel': 'Quorum', 'DefaultLimit': 999} AND WITH PRIORITY = "+ Constants.DEFAULT_PRIORITY+";";
         testRegularStatement(inputText, expectedText, "attachConnectorSimple2");
+    }
+
+    @Test
+    public void attachConnectorWithPriority() {
+        String inputText = "ATTACH CONNECTOR cass_con_native TO cassandraCluster WITH OPTIONS {'ConsistencyLevel': 'Quorum', \"DefaultLimit\": 999} AND WITH PRIORITY = 9;";
+        String expectedText ="ATTACH CONNECTOR connector.cass_con_native TO cluster.cassandraCluster WITH OPTIONS " +
+                        "{'ConsistencyLevel': 'Quorum', 'DefaultLimit': 999} AND WITH PRIORITY = 9;";
+        testRegularStatement(inputText, expectedText, "attachConnectorWithPriority");
     }
 
     @Test
