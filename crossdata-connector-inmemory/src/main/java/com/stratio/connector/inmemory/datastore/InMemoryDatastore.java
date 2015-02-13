@@ -21,7 +21,6 @@ package com.stratio.connector.inmemory.datastore;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -57,6 +56,10 @@ public class InMemoryDatastore {
     public InMemoryDatastore(int tableRowLimit){
         TABLE_ROW_LIMIT = tableRowLimit;
         LOG.info("InMemoryDatastore created with row limit: " + TABLE_ROW_LIMIT);
+    }
+
+    public Map<String, InMemoryCatalog> getCatalogs() {
+        return catalogs;
     }
 
     /**

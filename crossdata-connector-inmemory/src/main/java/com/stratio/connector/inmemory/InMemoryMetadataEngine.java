@@ -28,7 +28,9 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.stratio.connector.inmemory.datastore.InMemoryCatalog;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
+import com.stratio.connector.inmemory.datastore.InMemoryTable;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
 import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
@@ -172,6 +174,16 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
 
     @Override
     public List<CatalogMetadata> provideMetadata(ClusterName clusterName) throws ConnectorException {
+        InMemoryDatastore datastore = connector.getDatastore(clusterName);
+        List<CatalogMetadata> result = new ArrayList<>();
+        if(datastore != null){
+            Map<String, InMemoryCatalog> catalogs = datastore.getCatalogs();
+            for(InMemoryCatalog inMemoryCatalog: catalogs.values()){
+                CatalogMetadata catalogMetadata = convertToXdCatalog(clusterName, inMemoryCatalog);
+            }
+        }
+        return result;
+        /////////////////////////////////////////////////////////////////////////////////////////////
         CatalogName name = new CatalogName("InMemoryCatalog");
         Map<Selector, Selector> options = new HashMap<>();
         Map<TableName, TableMetadata> tables = new HashMap<>();
@@ -207,9 +219,49 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
         return Arrays.asList(catalogMetadata);
     }
 
+    private CatalogMetadata convertToXdCatalog(ClusterName clusterName, InMemoryCatalog inMemoryCatalog) {
+        CatalogName catalogName = new CatalogName(inMemoryCatalog.getName());
+        Map<Selector, Selector> options = new HashMap<>();
+        Map<TableName, TableMetadata> tables = new HashMap<>();
+        for(InMemoryTable inMemoryTable: inMemoryCatalog.getTables().values()){
+            TableName tableName = new TableName(inMemoryCatalog.getName(), inMemoryCatalog.getName());
+            TableMetadata tableMetadata = convertToXdTable(clusterName, inMemoryCatalog.getName(), inMemoryTable);
+            tables.put(tableName, tableMetadata);
+        }
+        CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, tables);
+        return catalogMetadata;
+    }
+
+    private TableMetadata convertToXdTable(ClusterName clusterName, String catalogName, InMemoryTable inMemoryTable) {
+        TableName name = new TableName(catalogName, inMemoryTable.getTableName());
+
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
+
+        String[] columnNames = inMemoryTable.getColumnNames();
+        Class[] columnTypes = inMemoryTable.getColumnTypes();
+        for(int i = 0; i < columnNames.length; i++){
+            ColumnMetadata columnMetadata = ;
+            columns.put()
+        }
+
+        Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+        Map<String, Integer> inMemoryIndexes = inMemoryTable.getColumnIndex();
+
+        Map<Selector, Selector> options = new HashMap<>();
+
+        List<ColumnName> partitionKey = new ArrayList<>();
+        partitionKey.add(new ColumnName(name, columnNames[0]));
+
+        List<ColumnName> clusterKey = new ArrayList<>();
+
+        TableMetadata tableMetadata = new TableMetadata(name, options, columns, indexes, clusterName, partitionKey, clusterKey);
+        return tableMetadata;
+    }
+
     @Override
     public CatalogMetadata provideCatalogMetadata(ClusterName clusterName, CatalogName catalogName)
             throws ConnectorException {
+        /////////////////////////////////////////////////////////////////////////////////////////////
         CatalogMetadata foundCatalog = null;
         List<CatalogMetadata> catalogs = provideMetadata(clusterName);
         for(CatalogMetadata catalog: catalogs){
@@ -227,6 +279,7 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
     @Override
     public TableMetadata provideTableMetadata(ClusterName clusterName, TableName tableName)
             throws ConnectorException {
+        /////////////////////////////////////////////////////////////////////////////////////////////
         return provideCatalogMetadata(clusterName, tableName.getCatalogName()).getTables().get(tableName);
     }
 }

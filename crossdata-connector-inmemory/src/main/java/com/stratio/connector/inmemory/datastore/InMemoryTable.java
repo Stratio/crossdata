@@ -92,6 +92,10 @@ public class InMemoryTable {
         this.maxRows = maxRows;
     }
 
+    public String getTableName() {
+        return tableName;
+    }
+
     /**
      * Get the types of the columns.
      * @return An array of Java classes.

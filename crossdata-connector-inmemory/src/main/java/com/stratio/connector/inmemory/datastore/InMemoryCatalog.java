@@ -47,6 +47,14 @@ public class InMemoryCatalog {
         this.name = name;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public Map<String, InMemoryTable> getTables() {
+        return tables;
+    }
+
     /**
      * Create a new table.
      * @param tableName The name of the table.
