@@ -43,6 +43,8 @@ import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotConnectionException;
 import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
+import com.stratio.crossdata.common.exceptions.validation.NotValidTableException;
+import com.stratio.crossdata.common.exceptions.validation.NotValidCatalogException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -166,6 +168,8 @@ public class Validator {
                 validatePaginationSupport(parsedQuery.getStatement());
             case VALIDATE_PRIORITY:
                 validatePriority(parsedQuery.getStatement());
+            case VALIDATE_SCOPE:
+                validateScope(parsedQuery.getStatement());
                 break;
             default:
                 break;
@@ -212,6 +216,31 @@ public class Validator {
 
             }
         }
+    }
+
+    /**
+     * Checks if the columns used in the query are within the scope of the table affected by the statement
+     * @param statement the Crossdata statement
+     */
+    private void validateScope(CrossdataStatement statement) throws ValidationException{
+
+        if (statement instanceof StorageStatement) {
+            StorageStatement storageStatement = (StorageStatement) statement;
+            TableName affectedTableName = storageStatement.getTableName();
+
+            for (ColumnName columnName : storageStatement.getColumns()) {
+                if( columnName.getTableName() != null) {
+                    if (!columnName.getTableName().getName().equals(affectedTableName.getName())) {
+                        throw new NotValidTableException(columnName.getTableName());
+                    }
+                    if (columnName.getTableName().getCatalogName() != null && !columnName.getTableName()
+                                    .getCatalogName().getName().equals(affectedTableName.getCatalogName().getName())) {
+                        throw new NotValidCatalogException(columnName.getTableName().getCatalogName());
+                    }
+                }
+            }
+        }
+
     }
 
     private void validatePreviousAttachment(CrossdataStatement statement) throws BadFormatException {
