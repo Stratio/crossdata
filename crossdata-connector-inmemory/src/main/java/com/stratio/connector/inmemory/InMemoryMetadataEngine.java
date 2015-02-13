@@ -19,10 +19,8 @@
 package com.stratio.connector.inmemory;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -180,10 +178,11 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
             Map<String, InMemoryCatalog> catalogs = datastore.getCatalogs();
             for(InMemoryCatalog inMemoryCatalog: catalogs.values()){
                 CatalogMetadata catalogMetadata = convertToXdCatalog(clusterName, inMemoryCatalog);
+                result.add(catalogMetadata);
             }
         }
         return result;
-        /////////////////////////////////////////////////////////////////////////////////////////////
+        /*
         CatalogName name = new CatalogName("InMemoryCatalog");
         Map<Selector, Selector> options = new HashMap<>();
         Map<TableName, TableMetadata> tables = new HashMap<>();
@@ -217,6 +216,7 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
         tables.put(tableName, tableMetadata);
         CatalogMetadata catalogMetadata = new CatalogMetadata(name, options, tables);
         return Arrays.asList(catalogMetadata);
+        */
     }
 
     private CatalogMetadata convertToXdCatalog(ClusterName clusterName, InMemoryCatalog inMemoryCatalog) {
@@ -240,12 +240,11 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
         String[] columnNames = inMemoryTable.getColumnNames();
         Class[] columnTypes = inMemoryTable.getColumnTypes();
         for(int i = 0; i < columnNames.length; i++){
-            ColumnMetadata columnMetadata = ;
-            columns.put()
+            ColumnMetadata columnMetadata = convertToXdColumn(name, columnNames[i], columnTypes[i]);
+            columns.put(columnMetadata.getName(), columnMetadata);
         }
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
-        Map<String, Integer> inMemoryIndexes = inMemoryTable.getColumnIndex();
 
         Map<Selector, Selector> options = new HashMap<>();
 
@@ -258,10 +257,48 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
         return tableMetadata;
     }
 
+    private ColumnMetadata convertToXdColumn(TableName tableName, String columnName, Class columnType) {
+        ColumnName name = new ColumnName(tableName, columnName);
+        Object[] parameters = new Object[]{};
+        ColumnType columnXdType = convertToXdColumnType(columnType);
+        ColumnMetadata columnMetadata = new ColumnMetadata(name, parameters, columnXdType);
+        return columnMetadata;
+    }
+
+    private ColumnType convertToXdColumnType(Class columnType) {
+        ColumnType ct = ColumnType.NATIVE;
+        if(columnType == Long.class){
+            ct = ColumnType.BIGINT;
+        } else if (columnType == Boolean.class) {
+            ct = ColumnType.BOOLEAN;
+        } else if (columnType == Double.class) {
+            ct = ColumnType.DOUBLE;
+        } else if (columnType == Float.class) {
+            ct = ColumnType.FLOAT;
+        } else if (columnType == Integer.class) {
+            ct = ColumnType.INT;
+        } else if (columnType == String.class) {
+            ct = ColumnType.TEXT;
+        } else {
+            ct.setDBMapping(columnType.getSimpleName(), Object.class);
+            ct.setODBCType(columnType.getSimpleName());
+        }
+        return ct;
+    }
+
     @Override
     public CatalogMetadata provideCatalogMetadata(ClusterName clusterName, CatalogName catalogName)
             throws ConnectorException {
-        /////////////////////////////////////////////////////////////////////////////////////////////
+        List<CatalogMetadata> catalogs = provideMetadata(clusterName);
+        CatalogMetadata result = null;
+        for(CatalogMetadata catalog: catalogs){
+            if(catalog.getName().equals(catalogName)){
+                result = catalog;
+                break;
+            }
+        }
+        return  result;
+        /*
         CatalogMetadata foundCatalog = null;
         List<CatalogMetadata> catalogs = provideMetadata(clusterName);
         for(CatalogMetadata catalog: catalogs){
@@ -274,12 +311,23 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
             throw new ExecutionException("Catalog " + catalogName + " not found.");
         }
         return foundCatalog;
+        */
     }
 
     @Override
     public TableMetadata provideTableMetadata(ClusterName clusterName, TableName tableName)
             throws ConnectorException {
-        /////////////////////////////////////////////////////////////////////////////////////////////
+        CatalogMetadata catalogMetadata = provideCatalogMetadata(clusterName, tableName.getCatalogName());
+        TableMetadata result = null;
+        for(Map.Entry<TableName, TableMetadata> table: catalogMetadata.getTables().entrySet()){
+            if(table.getKey().equals(tableName)){
+                result = table.getValue();
+                break;
+            }
+        }
+        return result;
+        /*
         return provideCatalogMetadata(clusterName, tableName.getCatalogName()).getTables().get(tableName);
+        */
     }
 }
