@@ -23,13 +23,7 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -63,6 +57,7 @@ import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
@@ -116,11 +111,13 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
 
         String strClusterName = "TestCluster1";
+        Map<ClusterName, Integer> clusterWithDefaultPriority = new LinkedHashMap<>();
+        clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
-                        Sets.newHashSet(new ClusterName(strClusterName)), operationsC1,
+                        clusterWithDefaultPriority, operationsC1,
                 "actorRef1");
-        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName,  Sets.newHashSet(new ClusterName(strClusterName)), operationsC2,
+        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, clusterWithDefaultPriority, operationsC2,
                 "actorRef2");
 
         clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName(), connector2.getName());
