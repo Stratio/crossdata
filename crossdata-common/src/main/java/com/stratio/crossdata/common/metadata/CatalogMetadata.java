@@ -82,6 +82,18 @@ public class CatalogMetadata implements IMetadata {
 
     @Override
     public String toString() {
-        throw new UnsupportedOperationException();
+        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+        sb.append("Catalog: ").append(getName()).append(System.lineSeparator());
+
+        sb.append("Options: ").append(System.lineSeparator());
+        for (Map.Entry<Selector, Selector> entry : getOptions().entrySet()) {
+            sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue())
+                    .append(System.lineSeparator());
+        }
+
+        sb.append("Tables: ").append(getTables().keySet()).append(System.lineSeparator());
+
+        return sb.toString();
     }
 }

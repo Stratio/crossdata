@@ -38,10 +38,8 @@ import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ApiException;
@@ -70,7 +68,6 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
-import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
@@ -86,7 +83,6 @@ import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.IValidatedQuery;
-import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
@@ -141,7 +137,7 @@ public class APIManager {
 
         result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_CATALOGS);
         List<String> catalogs = new ArrayList<>();
-        for (CatalogMetadata catalogMetadata : catalogsMetadata) {
+        for (CatalogMetadata catalogMetadata: catalogsMetadata) {
             catalogs.add(catalogMetadata.getName().getName());
         }
         ((MetadataResult) result).setCatalogList(catalogs);
@@ -406,6 +402,17 @@ public class APIManager {
 
     private Result describeCatalog(CatalogName name) {
         Result result;
+        LOG.info("Processing " + APICommand.DESCRIBE_CATALOG().toString());
+        LOG.info(PROCESSING + APICommand.DESCRIBE_CATALOG().toString());
+        CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(name);
+
+        result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_CATALOG);
+
+        ((MetadataResult) result).setCatalogMetadataList(Arrays.asList(catalogMetadata));
+
+        return result;
+        /*
+        Result result;
 
         try {
             CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name);
@@ -429,6 +436,7 @@ public class APIManager {
         }
 
         return result;
+        */
     }
 
     private Result describeTables(CatalogName name) {
@@ -452,6 +460,17 @@ public class APIManager {
     }
 
     private Result describeTable(TableName name) {
+        Result result;
+        LOG.info("Processing " + APICommand.DESCRIBE_TABLE().toString());
+        LOG.info(PROCESSING + APICommand.DESCRIBE_TABLE().toString());
+        TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(name);
+
+        result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_TABLE);
+
+        ((MetadataResult) result).setTableList(Arrays.asList(tableMetadata));
+
+        return result;
+        /*
         Result result;
 
         try{
@@ -500,6 +519,7 @@ public class APIManager {
         }
 
         return result;
+        */
     }
 
     private Result describeCluster(ClusterName name) {

@@ -99,7 +99,7 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
             Class [] columnTypes = new Class[tableMetadata.getColumns().size()];
 
             int index = 0;
-            for(Map.Entry<ColumnName, ColumnMetadata> column : tableMetadata.getColumns().entrySet()){
+            for(Map.Entry<ColumnName, ColumnMetadata> column: tableMetadata.getColumns().entrySet()){
                 columnNames[index] = column.getKey().getName();
                 columnTypes[index] = column.getValue().getColumnType().getDbClass();
                 index++;

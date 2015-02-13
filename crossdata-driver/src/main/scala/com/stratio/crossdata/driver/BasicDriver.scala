@@ -600,8 +600,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(catalogName)
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_CATALOG, params), 30 second)
-    if(result.isInstanceOf[CommandResult]){
-      result.asInstanceOf[CommandResult]
+    if(result.isInstanceOf[MetadataResult]){
+      result.asInstanceOf[MetadataResult]
     } else {
       result.asInstanceOf[ErrorResult]
     }
@@ -649,8 +649,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(tableName)
     val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.DESCRIBE_TABLE, params), 30 second)
-    if(result.isInstanceOf[CommandResult]){
-      result.asInstanceOf[CommandResult]
+    if(result.isInstanceOf[MetadataResult]){
+      result.asInstanceOf[MetadataResult]
     } else {
       result.asInstanceOf[ErrorResult]
     }

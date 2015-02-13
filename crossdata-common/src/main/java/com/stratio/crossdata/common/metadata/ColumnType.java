@@ -114,7 +114,11 @@ public enum ColumnType {
      * @return The class.
      */
     public Class<?> getDbClass() {
-        return dbClass;
+        Class<?> clazz = dbClass;
+        if(clazz == null){
+            clazz = getJavaType();
+        }
+        return clazz;
     }
 
     /**
