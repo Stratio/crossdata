@@ -1,7 +1,8 @@
 #!/bin/sh
 STRATIO_ENV=$1
-STRATIO_MODULE=crossdata
-STRATIO_MODULE_VERSION=$2
+STRATIO_MODULE="crossdata ova"
+STRATIO_MODULE_VERSION=0.2.0-001
+LOCK_FILE=/var/lock/sdslock
 
 ipaddress=$(ip -4 addr show dev eth0 | grep inet | sed 's/^ *//g' | cut -d' ' -f 2 | cut -d'/' -f1)
 
@@ -107,7 +108,11 @@ chkconfig connector_deep off
 echo "Starting services..."
 service cassandra start
 
-echo "curl -f -s -m 5 http://www.stratio.com/CheckUpdate/${STRATIO_MODULE}/${STRATIO_MODULE_VERSION}" >> /etc/rc.local
+if [ ! -f $LOCK_FILE ];
+   curl -f -s -m 5 http://www.stratio.com/CheckUpdate/${STRATIO_MODULE}/${STRATIO_MODULE_VERSION}
+   echo "ok" > ${LOCK_FILE}
+fi
+
 
 echo "Starting demo environment"
 cat >>/home/vagrant/.bash_profile <<EOF 
