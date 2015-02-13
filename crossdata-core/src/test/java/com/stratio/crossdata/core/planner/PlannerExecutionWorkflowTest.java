@@ -37,7 +37,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.google.common.collect.Sets;
+
 import com.stratio.crossdata.common.data.AlterOperation;
 import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
@@ -74,6 +74,7 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
@@ -100,7 +101,6 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
     private PlannerWrapper plannerWrapper = new PlannerWrapper();
 
     private ConnectorMetadata connector1 = null;
-
     private ConnectorMetadata connector2 = null;
 
     private ClusterName clusterName = null;
@@ -129,10 +129,18 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         String strClusterName = "TestCluster1";
 
-        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, Sets.newHashSet(new ClusterName(strClusterName)), operationsC1,
+
+        Map<ClusterName, Integer> clusterWithDefaultPriority = new LinkedHashMap<>();
+        clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
+
+        Map<ClusterName, Integer> clusterWithTopPriority = new LinkedHashMap<>();
+        clusterWithTopPriority.put(new ClusterName(strClusterName), 1);
+
+        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, clusterWithDefaultPriority, operationsC1,
                         "actorRef1");
-        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, Sets.newHashSet(new ClusterName(strClusterName)), operationsC2,
+        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, clusterWithDefaultPriority, operationsC2,
                         "actorRef2");
+
 
         clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName());
         MetadataManagerTestHelper.HELPER.createTestCatalog("demo");
@@ -601,9 +609,12 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ConnectorMetadata connectorMetadata = null;
 
         String strClusterName = "cluster";
+        Map<ClusterName, Integer> clusterWithDefaultPriority = new LinkedHashMap<>();
+        clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
+
         try {
             connectorMetadata = MetadataManagerTestHelper.HELPER.createTestConnector("cassandraConnector", dataStoreName,
-                    Sets.newHashSet(new ClusterName(strClusterName)), operations, "ActorRefTest");
+                            clusterWithDefaultPriority, operations, "ActorRefTest");
         } catch (ManifestException e) {
             fail();
         }
@@ -728,5 +739,6 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         }
 
     }
+
 
 }
