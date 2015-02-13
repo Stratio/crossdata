@@ -19,8 +19,10 @@
 package com.stratio.crossdata.common.statements.structures;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 
 /**
@@ -97,6 +99,30 @@ public class Relation implements Serializable {
      */
     public Set<TableName> getSelectorTables() {
         return leftTerm.getSelectorTables();
+    }
+
+
+    /**
+     * Get the columns involved in the relations.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.data.ColumnName}.
+     */
+    public Set<ColumnName> getSelectorColumns() {
+        Set<ColumnName> columns = new HashSet<>();
+
+        if( leftTerm instanceof ColumnSelector){
+            columns.add(leftTerm.getColumnName());
+        }else if(leftTerm instanceof RelationSelector){
+            columns.addAll(((RelationSelector)leftTerm).getRelation().getSelectorColumns());
+        }
+
+        if( rightTerm instanceof ColumnSelector){
+            columns.add(rightTerm.getColumnName());
+        }else if(rightTerm instanceof RelationSelector){
+            columns.addAll(((RelationSelector) rightTerm).getRelation().getSelectorColumns());
+        }
+
+        return columns;
     }
 
     @Override

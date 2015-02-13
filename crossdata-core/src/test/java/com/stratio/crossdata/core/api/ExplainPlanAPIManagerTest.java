@@ -25,13 +25,15 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.google.common.collect.Sets;
+
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.CatalogName;
@@ -46,6 +48,7 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.Result;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 /**
@@ -82,8 +85,11 @@ public class ExplainPlanAPIManagerTest {
         operationsC1.add(Operations.SELECT_INNER_JOIN);
 
         String strClusterName = "TestCluster1";
+        Map<ClusterName, Integer> clusterWithDefaultPriority = new LinkedHashMap<>();
+        clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
+
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector(
-                "TestConnector1", dataStoreName, Sets.newHashSet(new ClusterName(strClusterName)), operationsC1, "actorRef1");
+                "TestConnector1", dataStoreName, clusterWithDefaultPriority, operationsC1, "actorRef1");
         clusterName = MetadataManagerTestHelper.HELPER.
                 createTestCluster(strClusterName, dataStoreName, connector1.getName());
 

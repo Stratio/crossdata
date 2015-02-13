@@ -36,23 +36,30 @@ public abstract class StorageStatement extends CrossdataStatement implements ITa
     @Override
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_TABLE)
-                .add(ValidationTypes.MUST_EXIST_COLUMN);
+                        .add(ValidationTypes.MUST_EXIST_TABLE).add(ValidationTypes.MUST_EXIST_COLUMN)
+                        .add(ValidationTypes.VALIDATE_SCOPE);
     }
 
     /**
      * Get the table name of the storage statement.
      * @return A {@link com.stratio.crossdata.common.data.TableName} .
      */
-    public TableName getTableName() { return tableStatement.getTableName(); }
+    public TableName getTableName() {
+        return tableStatement.getTableName();
+    }
 
     /**
      * Set the table name for the storage statement.
      * @param tablename The table name.
      */
-    public void setTableName(TableName tablename) { tableStatement.setTableName(tablename); }
+    public void setTableName(TableName tablename) {
+        tableStatement.setTableName(tablename);
+    }
+
     @Override
-    public CatalogName getEffectiveCatalog() { return tableStatement.getEffectiveCatalog(); }
+    public CatalogName getEffectiveCatalog() {
+        return tableStatement.getEffectiveCatalog();
+    }
 
 
 }

@@ -155,8 +155,8 @@ public enum MetadataManagerTestHelper {
         createTestCluster(
                 "production",
                 datastoreName);
-        Set<ClusterName> clusterList = new HashSet<>();
-        clusterList.add(new ClusterName("production"));
+        Map<ClusterName, Integer> clusterWithPriorities = new LinkedHashMap<>();
+        clusterWithPriorities.put(new ClusterName("production"), Constants.DEFAULT_PRIORITY);
         Set<Operations> options = new HashSet<>();
         options.add(Operations.PROJECT);
         options.add(Operations.SELECT_OPERATOR);
@@ -165,7 +165,7 @@ public enum MetadataManagerTestHelper {
         createTestConnector(
                 "connector1",
                 datastoreName,
-                clusterList,
+                clusterWithPriorities,
                 options,
                 "actorRed1");
         createTestCatalog("testCatalog");
@@ -283,6 +283,7 @@ public enum MetadataManagerTestHelper {
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
+
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
                 clusterProperties, new HashMap<ClusterName,Integer>(),new HashSet<PropertyType>(), new HashSet<PropertyType>(),
                 new HashSet<Operations>(),null);
@@ -299,17 +300,13 @@ public enum MetadataManagerTestHelper {
      * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
      */
-    public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
+    public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Map<ClusterName, Integer> clusterWithPriorities,
             Set<Operations> options,
             String actorRef) throws ManifestException {
         final String version = "0.2.0";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
-        Map<ClusterName, Integer> clusterPriorities = new HashMap<>();
-        for (ClusterName clusterName : clusterList) {
-            clusterPriorities.put(clusterName, Constants.DEFAULT_PRIORITY);
-        }
         ConnectorFunctionsType functions = new ConnectorFunctionsType();
         List<FunctionType> functionsList = new ArrayList<>();
         FunctionType functionType = new FunctionType();
@@ -319,8 +316,8 @@ public enum MetadataManagerTestHelper {
         functionsList.add(functionType);
         functions.setFunction(functionsList);
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
-                clusterProperties, clusterPriorities, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
-        connectorMetadata.setClusterRefs(clusterList);
+                clusterProperties, clusterWithPriorities, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
+        connectorMetadata.setClusterRefs(new HashSet<>(clusterWithPriorities.keySet()));
         connectorMetadata.setActorRef(actorRef);
         connectorMetadata.setPageSize(5);
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);

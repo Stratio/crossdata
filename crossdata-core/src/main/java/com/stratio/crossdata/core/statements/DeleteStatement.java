@@ -18,8 +18,10 @@
 
 package com.stratio.crossdata.core.statements;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.utils.StringUtils;
@@ -75,6 +77,15 @@ public class DeleteStatement extends StorageStatement implements ITableStatement
             sb.append(StringUtils.stringList(whereClauses, " AND "));
         }
         return sb.toString();
+    }
+
+    @Override
+    public List<ColumnName> getColumns() {
+        List<ColumnName> columnsList = new ArrayList<>();
+        for (Relation whereClause : whereClauses) {
+            columnsList.addAll(whereClause.getSelectorColumns());
+        }
+        return  columnsList;
     }
 
 }

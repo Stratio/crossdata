@@ -213,8 +213,8 @@ ImplicitSender with BeforeAndAfterAll{
 
     //Create cluster
     val testcluster= metadataManager.createTestCluster(myClusterName, myDatastore)
-    val clusternames=new java.util.HashSet[ClusterName]()
-    clusternames.add(testcluster)
+    val clusterwithPriorities=new java.util.LinkedHashMap[ClusterName, Integer]()
+    clusterwithPriorities.put(testcluster, Constants.DEFAULT_PRIORITY)
 
     val future = connectorActor ? getConnectorName()
     val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
@@ -223,7 +223,7 @@ ImplicitSender with BeforeAndAfterAll{
 
     //Create connector
     val myConnector=metadataManager.createTestConnector(connectorName.name,new DataStoreName(myDatastore.getName()),
-      clusternames,
+      clusterwithPriorities,
       operations,
       StringUtils.getAkkaActorRefUri(connectorActor))
 
