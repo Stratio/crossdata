@@ -109,7 +109,7 @@ echo "Starting services..."
 service cassandra start
 
 cat >>/etc/rc.local <<EOF
-if [ ! -f $LOCK_FILE ];
+if [ ! -f $LOCK_FILE ]; then
    curl -f -s -m 5 http://www.stratio.com/CheckUpdate/${STRATIO_MODULE}/${STRATIO_MODULE_VERSION}
    echo "ok" > ${LOCK_FILE}
 fi
