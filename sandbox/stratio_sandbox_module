@@ -108,26 +108,11 @@ chkconfig connector_deep off
 echo "Starting services..."
 service cassandra start
 
-cat >/etc/rc.local <<EOF
-#!/bin/sh -e
-#
-# rc.local
-#
-# This script is executed at the end of each multiuser runlevel.
-# Make sure that the script will "exit 0" on success or any other
-# value on error.
-#
-# In order to enable or disable this script just change the execution
-# bits.
-#
-# By default this script does nothing.
-
+cat >>/etc/rc.local <<EOF
 if [ ! -f $LOCK_FILE ];
    curl -f -s -m 5 http://www.stratio.com/CheckUpdate/${STRATIO_MODULE}/${STRATIO_MODULE_VERSION}
    echo "ok" > ${LOCK_FILE}
 fi
-
-exit 0
 EOF
 
 
