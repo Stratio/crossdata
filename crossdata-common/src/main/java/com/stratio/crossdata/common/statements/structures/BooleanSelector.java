@@ -25,6 +25,7 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class BooleanSelector extends Selector {
 
+    private static final long serialVersionUID = -8920414197466776631L;
     /**
      * Boolean value.
      */

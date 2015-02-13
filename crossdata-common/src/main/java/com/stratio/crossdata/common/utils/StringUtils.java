@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.utils;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -49,7 +50,9 @@ import difflib.PatchFailedException;
 /**
  * Utility class for String transformation operations.
  */
-public final class StringUtils {
+public final class StringUtils implements Serializable {
+
+    private static final long serialVersionUID = 4917945078917981844L;
 
     /**
      * Private constructor as StringUtils is a utility class.

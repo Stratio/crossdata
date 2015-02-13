@@ -25,8 +25,9 @@ import com.stratio.crossdata.common.statements.structures.window.WindowType;
 /**
  * Window operator.
  */
-public class Window extends TransformationStep{
+public class Window extends TransformationStep {
 
+    private static final long serialVersionUID = 3857926010316900299L;
     /**
      * Type of window.
      */

@@ -30,6 +30,7 @@ import com.stratio.crossdata.common.statements.structures.OrderByClause;
  */
 public class OrderBy extends TransformationStep {
 
+    private static final long serialVersionUID = 5002531611664685013L;
     /**
      * Identifiers.
      */

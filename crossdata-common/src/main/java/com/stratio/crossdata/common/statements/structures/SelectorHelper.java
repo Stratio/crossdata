@@ -18,13 +18,16 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Selector Helper class that implements a converter of selector map to String map.
  */
-public final class SelectorHelper {
+public final class SelectorHelper implements Serializable {
+
+    private static final long serialVersionUID = 1879880769835840341L;
 
     /**
      * Constructor class.

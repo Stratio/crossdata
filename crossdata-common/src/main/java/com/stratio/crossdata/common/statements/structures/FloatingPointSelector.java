@@ -25,6 +25,7 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class FloatingPointSelector extends Selector {
 
+    private static final long serialVersionUID = -3771498141964584163L;
     /**
      * Double precision value.
      */

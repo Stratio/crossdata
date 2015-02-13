@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.utils;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import com.google.common.collect.Sets;
@@ -25,7 +26,9 @@ import com.google.common.collect.Sets;
 /**
  * Utility class for error messages management.
  */
-public final class XDshUtils {
+public final class XDshUtils implements Serializable {
+
+    private static final long serialVersionUID = 5133240276761110019L;
 
     public static final Set<String> INITIALS = Sets.newHashSet(
             "ADD",

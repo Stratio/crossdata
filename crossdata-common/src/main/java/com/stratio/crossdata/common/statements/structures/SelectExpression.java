@@ -29,6 +29,7 @@ import java.util.List;
  */
 public class SelectExpression implements Serializable {
 
+    private static final long serialVersionUID = -6978154423835994360L;
     /**
      * List of selectors.
      */

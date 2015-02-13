@@ -31,6 +31,7 @@ import com.stratio.crossdata.communication.PagedExecute;
  */
 public class QueryWorkflow extends ExecutionWorkflow {
 
+    private static final long serialVersionUID = -600963332114323650L;
     /**
      * Workflow to be executed.
      */

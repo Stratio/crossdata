@@ -23,6 +23,8 @@ package com.stratio.crossdata.common.data;
  */
 public abstract class FirstLevelName extends Name {
 
+    private static final long serialVersionUID = 599258431452757425L;
+
     /**
      * Return if the name is qualified or not.
      * @return A Boolean.

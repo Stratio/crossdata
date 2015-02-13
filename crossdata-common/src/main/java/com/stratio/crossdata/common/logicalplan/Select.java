@@ -33,6 +33,7 @@ import com.stratio.crossdata.common.statements.structures.Selector;
  */
 public class Select extends TransformationStep {
 
+    private static final long serialVersionUID = -2816531584230162082L;
     /**
      * Map of columns associating the name given in the Project logical steps with the name expected in the results.
      */

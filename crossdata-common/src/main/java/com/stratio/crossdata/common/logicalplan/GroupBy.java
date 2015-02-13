@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.statements.structures.Selector;
  */
 public class GroupBy extends TransformationStep {
 
+    private static final long serialVersionUID = 7228005355186801643L;
     /**
      * Identifiers.
      */

@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.statements.structures.Relation;
  */
 public class Join extends UnionStep {
 
+    private static final long serialVersionUID = -5886407607386975852L;
     /**
      * Join identifier.
      */

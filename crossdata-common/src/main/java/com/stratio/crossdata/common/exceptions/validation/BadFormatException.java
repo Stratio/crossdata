@@ -24,6 +24,9 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
  * BadFormatException Class.
  */
 public class BadFormatException extends ValidationException {
+
+    private static final long serialVersionUID = 2776720401920045882L;
+
     /**
      * Constructor class.
      * @param cause The message of the exception.

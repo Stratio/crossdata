@@ -26,6 +26,7 @@ import com.stratio.crossdata.common.data.ResultSet;
  */
 public class PartialResults extends TransformationStep{
 
+    private static final long serialVersionUID = 2180826506482075833L;
     private ResultSet results = null;
 
     /**

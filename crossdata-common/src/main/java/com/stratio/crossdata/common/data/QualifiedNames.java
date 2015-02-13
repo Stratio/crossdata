@@ -18,17 +18,20 @@
 
 package com.stratio.crossdata.common.data;
 
+import java.io.Serializable;
+
 /**
  * Helper class to provide qualified names for cluster, tables, and columns.
  */
-public final class QualifiedNames {
+public final class QualifiedNames implements Serializable {
+
+    private static final long serialVersionUID = 3409400422750005391L;
 
     /**
      * Private constructor as all methods are static.
      */
     private QualifiedNames() {
     }
-
 
     /**
      * Get the qualified name for a catalog.

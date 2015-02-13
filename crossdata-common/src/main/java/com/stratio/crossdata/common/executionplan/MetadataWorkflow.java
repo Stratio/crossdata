@@ -46,6 +46,7 @@ import com.stratio.crossdata.communication.ProvideTableMetadata;
  */
 public class MetadataWorkflow extends ExecutionWorkflow {
 
+    private static final long serialVersionUID = -1493230411166411507L;
     private CatalogName catalogName = null;
 
     private ClusterName clusterName = null;

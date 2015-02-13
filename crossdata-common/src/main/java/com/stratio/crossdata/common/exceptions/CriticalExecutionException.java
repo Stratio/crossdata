@@ -21,7 +21,9 @@ package com.stratio.crossdata.common.exceptions;
 /**
  * Critical execution exceptions.
  */
-public class CriticalExecutionException extends ExecutionException{
+public class CriticalExecutionException extends ExecutionException {
+
+    private static final long serialVersionUID = -2333941596529953292L;
 
     /**
      * Constructor class.

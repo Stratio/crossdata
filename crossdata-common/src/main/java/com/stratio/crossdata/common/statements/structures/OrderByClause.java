@@ -24,6 +24,8 @@ import java.io.Serializable;
  * OrderByClause Class.
  */
 public class OrderByClause implements Serializable {
+
+    private static final long serialVersionUID = 738701511608570694L;
     private Selector selector;
     private OrderDirection direction = OrderDirection.ASC;
 

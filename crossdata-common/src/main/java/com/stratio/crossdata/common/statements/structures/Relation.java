@@ -30,6 +30,8 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class Relation implements Serializable {
 
+    private static final long serialVersionUID = 7159938239857521288L;
+
     /**
      * Identifier in the left part of the relationship.
      */

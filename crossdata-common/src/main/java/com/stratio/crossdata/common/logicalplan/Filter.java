@@ -26,6 +26,7 @@ import com.stratio.crossdata.common.statements.structures.Relation;
  */
 public class Filter extends TransformationStep {
 
+    private static final long serialVersionUID = -1527718582002849918L;
     /**
      * Relationship.
      */

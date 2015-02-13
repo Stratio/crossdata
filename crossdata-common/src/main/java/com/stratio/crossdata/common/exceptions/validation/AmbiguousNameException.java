@@ -18,13 +18,16 @@
 
 package com.stratio.crossdata.common.exceptions.validation;
 
-import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 
 /**
  * Exception class thrown when a column name has an ambiguous name in validator phase.
  */
 public class AmbiguousNameException extends ValidationException {
+
+    private static final long serialVersionUID = 4317649750806406160L;
+
     /**
      * Constructor class.
      * @param columnName The column name affected.

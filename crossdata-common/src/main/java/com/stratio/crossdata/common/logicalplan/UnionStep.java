@@ -31,6 +31,7 @@ import com.stratio.crossdata.common.metadata.Operations;
  */
 public class UnionStep extends LogicalStep {
 
+    private static final long serialVersionUID = 5166613389223372850L;
     private List<LogicalStep> previousSteps = new ArrayList<>();
 
     /**

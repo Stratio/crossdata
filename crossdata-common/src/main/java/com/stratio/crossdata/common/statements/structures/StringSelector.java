@@ -25,6 +25,7 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class StringSelector extends Selector {
 
+    private static final long serialVersionUID = 1606966682293837040L;
     /**
      * The string value.
      */
