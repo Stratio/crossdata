@@ -224,7 +224,7 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
         Map<Selector, Selector> options = new HashMap<>();
         Map<TableName, TableMetadata> tables = new HashMap<>();
         for(InMemoryTable inMemoryTable: inMemoryCatalog.getTables().values()){
-            TableName tableName = new TableName(inMemoryCatalog.getName(), inMemoryCatalog.getName());
+            TableName tableName = new TableName(inMemoryCatalog.getName(), inMemoryTable.getTableName());
             TableMetadata tableMetadata = convertToXdTable(clusterName, inMemoryCatalog.getName(), inMemoryTable);
             tables.put(tableName, tableMetadata);
         }
