@@ -110,8 +110,26 @@ public class MetadataResultTest {
         tableList.add(tableMetadata);
         result.setTableList(tableList);
 
-        Assert.assertEquals(result.toString().substring(0, result.toString().indexOf('@'))+ ']',
-                "[com.stratio.crossdata.common.metadata.TableMetadata]");
+        String expectedResult =
+                "["+ System.lineSeparator() +
+                "Table: demo.users" + System.lineSeparator() +
+                "Cluster: cluster.cluster" + System.lineSeparator() +
+                "Columns: " + System.lineSeparator() +
+                "\t" + "demo.users.name: TEXT" + System.lineSeparator() +
+                "\t" + "demo.users.gender: TEXT" + System.lineSeparator() +
+                "\t" + "demo.users.age: INT" + System.lineSeparator() +
+                "\t" + "demo.users.bool: BOOLEAN" + System.lineSeparator() +
+                "\t" + "demo.users.phrase: TEXT" + System.lineSeparator() +
+                "\t" + "demo.users.email: TEXT" + System.lineSeparator() +
+                "Partition key: []" + System.lineSeparator() +
+                "Cluster key: []" + System.lineSeparator() +
+                "Indexes: " + System.lineSeparator() +
+                "Options: " + System.lineSeparator() + "]";
+
+        Assert.assertEquals(
+                result.toString(),
+                expectedResult,
+                "testMetadataResultListTables failed.");
     }
 
     @Test
