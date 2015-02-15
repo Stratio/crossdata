@@ -71,6 +71,7 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
@@ -1554,13 +1555,13 @@ public class Planner {
                 typeMap.put(alias, ct);
 
             } else if (IntegerSelector.class.isInstance(s)) {
-                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.INT);
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.INT));
             } else if (FloatingPointSelector.class.isInstance(s)) {
-                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.DOUBLE);
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.DOUBLE));
             } else if (BooleanSelector.class.isInstance(s)) {
-                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.BOOLEAN);
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.BOOLEAN));
             } else if (StringSelector.class.isInstance(s)) {
-                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, ColumnType.TEXT);
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.TEXT));
             } else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
             }

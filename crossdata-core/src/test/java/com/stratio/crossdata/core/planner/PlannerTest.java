@@ -23,13 +23,19 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.google.common.collect.Sets;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -47,6 +53,7 @@ import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
@@ -132,21 +139,21 @@ public class PlannerTest extends PlannerBaseTest {
 
     public void createTestTables() {
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
         table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table1",
                 columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
-        ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes2 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
         table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table2",
                 columnNames2, columnTypes2, partitionKeys2, clusteringKeys2, null);
 
         String[] columnNames3 = { "id_aux", "address" };
-        ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes3 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys3 = { "id_aux" };
         String[] clusteringKeys3 = { };
         table3 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table3",
@@ -297,7 +304,7 @@ public class PlannerTest extends PlannerBaseTest {
         columns.put(columnName, new ColumnMetadata(
                 columnName,
                 null,
-                ColumnType.TEXT));
+                new ColumnType(DataType.TEXT)));
         assertEquals(indexMetadata.getColumns().size(), columns.size(), "Column sizes differ");
         assertEquals(indexMetadata.getColumns().values().iterator().next().getColumnType(),
                 columns.values().iterator().next().getColumnType(),
@@ -319,7 +326,7 @@ public class PlannerTest extends PlannerBaseTest {
         ColumnMetadata colMetadata = new ColumnMetadata(
                 new ColumnName("demo", "table1", "user"),
                 null,
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         cols.put(colMetadata.getName(), colMetadata);
         IndexMetadata indexMetadata = new IndexMetadata(
                 indexName,
@@ -351,7 +358,7 @@ public class PlannerTest extends PlannerBaseTest {
         columns.put(columnName, new ColumnMetadata(
                 columnName,
                 null,
-                ColumnType.TEXT));
+                new ColumnType(DataType.TEXT)));
         assertEquals(indexMetadata.getColumns().size(), columns.size(), "Column sizes differ");
 
         ColumnMetadata columnMetadata = indexMetadata.getColumns().values().iterator().next();

@@ -52,6 +52,7 @@ import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
@@ -116,17 +117,17 @@ public class InMemoryQueryEngineTest {
         Object[] parameters = { };
         columns.put(new ColumnName(targetTable, "text_column"),
                 new ColumnMetadata(new ColumnName(targetTable, "text_column"), parameters,
-                        ColumnType.TEXT)
+                        new ColumnType(DataType.TEXT))
         );
         partitionKey.add(columns.keySet().iterator().next());
 
         columns.put(new ColumnName(targetTable, "int_column"),
                 new ColumnMetadata(new ColumnName(targetTable, "int_column"), parameters,
-                        ColumnType.INT)
+                        new ColumnType(DataType.INT))
         );
         columns.put(new ColumnName(targetTable, "bool_column"),
                 new ColumnMetadata(new ColumnName(targetTable, "bool_column"), parameters,
-                        ColumnType.BOOLEAN)
+                        new ColumnType(DataType.BOOLEAN))
         );
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
@@ -207,7 +208,7 @@ public class InMemoryQueryEngineTest {
     @Test
     public void simpleSelect() {
         String [] columnNames = {"text_column"};
-        ColumnType[] types = { ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.TEXT) };
 
         Project project = generateProjectAndSelect(columnNames, types);
         LogicalWorkflow workflow = new LogicalWorkflow(Arrays.asList((LogicalStep)project));
@@ -227,7 +228,10 @@ public class InMemoryQueryEngineTest {
     @Test
     public void simpleSelectAllColumns() {
         String [] columnNames = {"text_column", "int_column", "bool_column"};
-        ColumnType[] types = { ColumnType.TEXT, ColumnType.INT, ColumnType.BOOLEAN };
+        ColumnType[] types = {
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.BOOLEAN) };
 
         Project project = generateProjectAndSelect(columnNames, types);
         LogicalWorkflow workflow = new LogicalWorkflow(Arrays.asList((LogicalStep)project));
@@ -247,7 +251,7 @@ public class InMemoryQueryEngineTest {
     @Test
     public void simpleSelectFilterTextEQ() {
         String [] columnNames = {"text_column"};
-        ColumnType[] types = { ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.TEXT) };
 
         Project project = generateProjectAndSelect(columnNames, types);
 
@@ -277,7 +281,7 @@ public class InMemoryQueryEngineTest {
     @Test
     public void simpleSelectFilterBoolEQ() {
         String [] columnNames = {"bool_column"};
-        ColumnType[] types = { ColumnType.BOOLEAN };
+        ColumnType[] types = { new ColumnType(DataType.BOOLEAN) };
 
         Project project = generateProjectAndSelect(columnNames, types);
 
@@ -307,7 +311,7 @@ public class InMemoryQueryEngineTest {
     @Test
     public void simpleSelectFilterIntEQ() {
         String [] columnNames = {"int_column"};
-        ColumnType[] types = { ColumnType.INT };
+        ColumnType[] types = { new ColumnType(DataType.INT) };
 
         Project project = generateProjectAndSelect(columnNames, types);
 
@@ -337,7 +341,7 @@ public class InMemoryQueryEngineTest {
     @Test
     public void simpleSelectFilterNonIndexedIntGT() {
         String [] columnNames = {"int_column"};
-        ColumnType[] types = { ColumnType.INT };
+        ColumnType[] types = { new ColumnType(DataType.INT) };
 
         Project project = generateProjectAndSelect(columnNames, types);
 

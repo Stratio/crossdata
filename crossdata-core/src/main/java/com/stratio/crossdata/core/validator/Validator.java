@@ -43,8 +43,8 @@ import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotConnectionException;
 import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
-import com.stratio.crossdata.common.exceptions.validation.NotValidTableException;
 import com.stratio.crossdata.common.exceptions.validation.NotValidCatalogException;
+import com.stratio.crossdata.common.exceptions.validation.NotValidTableException;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -52,6 +52,7 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
@@ -646,19 +647,19 @@ public class Validator {
             badFormatException = new BadFormatException("Asterisk not supported in relations.");
             break;
         case BOOLEAN:
-            if (columnMetadata.getColumnType() != ColumnType.BOOLEAN) {
+            if (columnMetadata.getColumnType().getDataType() != DataType.BOOLEAN) {
                 notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case STRING:
-            if ((columnMetadata.getColumnType() != ColumnType.TEXT) &&
-                    (columnMetadata.getColumnType() != ColumnType.NATIVE)) {
+            if ((columnMetadata.getColumnType().getDataType() != DataType.TEXT) &&
+                    (columnMetadata.getColumnType().getDataType() != DataType.NATIVE)) {
                 notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case INTEGER:
-            if (columnMetadata.getColumnType() != ColumnType.INT &&
-                    columnMetadata.getColumnType() != ColumnType.BIGINT) {
+            if ((columnMetadata.getColumnType().getDataType() != DataType.INT) &&
+                    (columnMetadata.getColumnType().getDataType() != DataType.BIGINT)) {
                 if(tryConversion){
                     resultingSelector = convertIntegerSelector(
                             (IntegerSelector) querySelector,
@@ -670,8 +671,8 @@ public class Validator {
             }
             break;
         case FLOATING_POINT:
-            if (columnMetadata.getColumnType() != ColumnType.FLOAT &&
-                    columnMetadata.getColumnType() != ColumnType.DOUBLE) {
+            if ((columnMetadata.getColumnType().getDataType() != DataType.FLOAT) &&
+                    (columnMetadata.getColumnType().getDataType() != DataType.DOUBLE)) {
                 notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
@@ -693,7 +694,7 @@ public class Validator {
     private Selector convertIntegerSelector(IntegerSelector querySelector, ColumnType columnType, ColumnName name)
             throws NotMatchDataTypeException {
         Selector resultingSelector;
-        if(columnType == ColumnType.DOUBLE || columnType == ColumnType.FLOAT){
+        if(columnType.getDataType() == DataType.DOUBLE || columnType.getDataType() == DataType.FLOAT){
             resultingSelector = new FloatingPointSelector(querySelector.getTableName(), querySelector.getValue());
         } else {
             throw new NotMatchDataTypeException(name);

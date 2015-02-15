@@ -40,8 +40,8 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
-import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.data.Status;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.PropertyType;
@@ -52,6 +52,7 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
@@ -131,27 +132,28 @@ public class BasicValidatorTest {
         Object[] parameters = null;
         columns.put(new ColumnName(new TableName("demo", "users"), "name"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "name"), parameters,
-                        ColumnType.TEXT));
+                        new ColumnType(DataType.TEXT)));
         columns.put(new ColumnName(new TableName("demo", "users"), "gender"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "gender"), parameters,
-                        ColumnType.TEXT));
+                        new ColumnType(DataType.TEXT)));
         columns.put(new ColumnName(new TableName("demo", "users"), "age"),
-                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "age"), parameters, ColumnType.INT));
+                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "age"), parameters,
+                        new ColumnType(DataType.INT)));
         columns.put(new ColumnName(new TableName("demo", "users"), "bool"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "bool"), parameters,
-                        ColumnType.BOOLEAN));
+                        new ColumnType(DataType.BOOLEAN)));
         columns.put(new ColumnName(new TableName("demo", "users"), "phrase"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "phrase"), parameters,
-                        ColumnType.TEXT));
+                        new ColumnType(DataType.TEXT)));
         columns.put(new ColumnName(new TableName("demo", "users"), "email"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "email"), parameters,
-                        ColumnType.TEXT));
+                        new ColumnType(DataType.TEXT)));
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
         Map<ColumnName, ColumnMetadata> columnsIndex = new HashMap<>();
         ColumnMetadata columnMetadataIndex = new ColumnMetadata(
                 new ColumnName(new TableName("demo", "users"), "gender"),
-                parameters, ColumnType.TEXT);
+                parameters, new ColumnType(DataType.TEXT));
         columnsIndex.put(new ColumnName(new TableName("demo", "users"), "gender"), columnMetadataIndex);
 
         IndexMetadata indexMetadata = new IndexMetadata(new IndexName("demo", "users", "gender_idx"), columnsIndex,
@@ -175,10 +177,10 @@ public class BasicValidatorTest {
         Object[] parameters = null;
         columns.put(new ColumnName(new TableName("demo", "users_info"), "name"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users_info"), "name"), parameters,
-                        ColumnType.TEXT));
+                        new ColumnType(DataType.TEXT)));
         columns.put(new ColumnName(new TableName("demo", "users_info"), "info"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users_info"), "info"), parameters,
-                        ColumnType.TEXT));
+                        new ColumnType(DataType.TEXT)));
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
         tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);

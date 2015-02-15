@@ -28,6 +28,7 @@ import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.window.TimeUnit;
@@ -50,7 +51,7 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         String[] expectedColumns = { "demo.t1.a" };
 
         String[] columnsT1 = { "a" };
-        ColumnType[] columnTypes1 = { ColumnType.INT };
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT) };
         String[] partitionKeys1 = { "a" };
         String[] clusteringKeys1 = { };
         TableMetadata t1 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t1", columnsT1,
@@ -74,7 +75,8 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         String[] expectedColumns = { "demo.t1.a", "demo.t1.b", "demo.t1.c" };
 
         String[] columnsT1 = { "a", "b", "c" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.INT };
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT), new ColumnType(DataType.INT) };
         String[] partitionKeys1 = { "a" };
         String[] clusteringKeys1 = { };
         TableMetadata t1 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
@@ -96,7 +98,10 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         String[] expectedColumns = { "demo.t1.a", "demo.t1.b", "demo.t1.c" };
 
         String[] columnsT1 = { "a", "b", "c" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.INT };
+        ColumnType[] columnTypes1 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT) };
         String[] partitionKeys1 = { "a" };
         String[] clusteringKeys1 = { };
         TableMetadata t1 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
@@ -119,14 +124,20 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
                 " INNER JOIN demo.t2 ON demo.t1.aa = demo.t2.aa;";
 
         String[] columnsT1 = { "a", "b", "aa" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes1 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.TEXT) };
         String[] partitionKeys1 = { "a" };
         String[] clusteringKeys1 = { };
         TableMetadata t1 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
         String[] columnsT2 = { "c", "d", "aa" };
-        ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes2 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.TEXT) };
         String[] partitionKeys2 = { "c" };
         String[] clusteringKeys2 = { };
         TableMetadata t2 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t2", columnsT2, columnTypes2,
@@ -156,14 +167,20 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
                 " ON demo.t1.aa = demo.t2.aa WHERE demo.t1.b > 10 AND demo.t2.d < 10;";
 
         String[] columnsT1 = { "a", "b", "aa" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes1 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.TEXT) };
         String[] partitionKeys1 = { "a" };
         String[] clusteringKeys1 = { };
         TableMetadata t1 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
                 partitionKeys1, clusteringKeys1);
 
         String[] columnsT2 = { "c", "d", "aa" };
-        ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes2 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.TEXT) };
         String[] partitionKeys2 = { "c" };
         String[] clusteringKeys2 = { };
         TableMetadata t2 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t2", columnsT2, columnTypes2,
@@ -193,7 +210,10 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
     public void selectBasicWhere() {
         String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t1.c FROM demo.t1 WHERE demo.t1.a = 3;";
         String[] columns1 = { "a", "b", "c" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.INT };
+        ColumnType[] columnTypes1 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT) };
         String[] partitionKeys1 = { "a" };
         String[] clusteringKeys1 = { };
         TableMetadata t1 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t1", columns1, columnTypes1,
@@ -217,7 +237,10 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
                 " WITH WINDOW 5 SECONDS WHERE demo.t1.a = 3;";
 
         String[] columns1 = { "a", "b", "c" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.INT, ColumnType.INT };
+        ColumnType[] columnTypes1 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT) };
         String[] partitionKeys1 = { "a" };
         String[] clusteringKeys1 = { };
         TableMetadata t1 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t1", columns1, columnTypes1,

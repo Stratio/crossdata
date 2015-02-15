@@ -746,28 +746,28 @@ getDataType returns [ColumnType dataType]:
 ;
 
 getBasicType returns [ColumnType dataType]:
-    T_BIGINT { $dataType=ColumnType.BIGINT; }
-    | T_BOOL { $dataType=ColumnType.BOOLEAN; }
-    | T_BOOLEAN { $dataType=ColumnType.BOOLEAN; }
-    | T_DOUBLE { $dataType=ColumnType.DOUBLE; }
-    | T_FLOAT { $dataType=ColumnType.FLOAT; }
-    | T_INT { $dataType=ColumnType.INT; }
-    | T_INTEGER { $dataType=ColumnType.INT; }
-    | T_TEXT { $dataType=ColumnType.TEXT; }
-    | T_VARCHAR { $dataType=ColumnType.VARCHAR; }
-    | nativeType=T_IDENT { $dataType = ColumnType.NATIVE;
+    T_BIGINT { $dataType=new ColumnType(DataType.BIGINT); }
+    | T_BOOL { $dataType=new ColumnType(DataType.BOOLEAN); }
+    | T_BOOLEAN { $dataType=new ColumnType(DataType.BOOLEAN); }
+    | T_DOUBLE { $dataType=new ColumnType(DataType.DOUBLE); }
+    | T_FLOAT { $dataType=new ColumnType(DataType.FLOAT); }
+    | T_INT { $dataType=new ColumnType(DataType.INT); }
+    | T_INTEGER { $dataType=new ColumnType(DataType.INT); }
+    | T_TEXT { $dataType=new ColumnType(DataType.TEXT); }
+    | T_VARCHAR { $dataType=new ColumnType(DataType.VARCHAR); }
+    | nativeType=T_IDENT { $dataType = new ColumnType(DataType.NATIVE);
                            $dataType.setDBMapping($nativeType.text, Object.class);
                            $dataType.setODBCType($nativeType.text);
                          }
 ;
 
 getCollectionType returns [ColumnType dataType]:
-    T_SET { $dataType = ColumnType.SET; }
-    | T_LIST { $dataType = ColumnType.LIST; }
+    T_SET { $dataType = new ColumnType(DataType.SET); }
+    | T_LIST { $dataType = new ColumnType(DataType.LIST); }
 ;
 
 getMapType returns [ColumnType dataType]:
-    T_MAP { $dataType = ColumnType.MAP; }
+    T_MAP { $dataType = new ColumnType(DataType.MAP); }
 ;
 
 getOrdering[TableName tablename] returns [List<OrderByClause> orderByClauses]

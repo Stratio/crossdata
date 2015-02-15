@@ -49,6 +49,7 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -147,7 +148,7 @@ public class MetadataManagerTest {
 
         // Create and add test table to the MetadataManager
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
         TableMetadata table = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(),
@@ -488,7 +489,7 @@ public class MetadataManagerTest {
         String catalogName = "catalogTest";
         String tableName = "tableTest";
         String[] columnNames = { "firstCol", "SecondCol" };
-        ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys = { "firstCol" };
         String[] clusteringKeys = new String[0];
         MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,

@@ -56,6 +56,7 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
@@ -270,7 +271,7 @@ public class CoordinatorTest {
 
         TableName tableName = new TableName(catalog, tableString);
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys = { "id" };
         String[] clusteringKeys = { };
         TableMetadata tableMetadata = MetadataManagerTestHelper.HELPER.defineTable(
@@ -315,14 +316,15 @@ public class CoordinatorTest {
 
         TableName tableName = new TableName(catalog, table);
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys = { "id" };
         String[] clusteringKeys = { };
 
         Set<IndexMetadata> indexes = new HashSet<>();
         IndexName indexName = new IndexName(new ColumnName(catalog, table, index));
         Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
-        ColumnMetadata column = new ColumnMetadata(new ColumnName(catalog, table, "user"), null, ColumnType.TEXT);
+        ColumnMetadata column = new ColumnMetadata(new ColumnName(catalog, table, "user"), null,
+                new ColumnType(DataType.TEXT));
         columns.put(column.getName(), column);
         IndexType indexType = IndexType.DEFAULT;
         Map<Selector, Selector> options = new HashMap<>();

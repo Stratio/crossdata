@@ -27,33 +27,48 @@ import java.util.Set;
  * Types of columns supported by CROSSDATA with their equivalence in ODBC data types. Notice that a
  * NATIVE type has been added to map those types that are not generic and database dependant.
  */
-public enum ColumnType implements Serializable {
-    BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"),
-    INT("SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"),
-    NATIVE("NATIVE") {
-        @Override
-        public String toString() {
-            return getDbType();
+public class ColumnType implements Serializable {
+
+    public ColumnType(DataType dataType) {
+        this.dataType = dataType;
+        switch (dataType){
+        case BIGINT:
+            this.odbcType = "SQL_BIGINT";
+            break;
+        case BOOLEAN:
+            this.odbcType = "BOOLEAN";
+            break;
+        case DOUBLE:
+            this.odbcType = "SQL_DOUBLE";
+            break;
+        case FLOAT:
+            this.odbcType = "SQL_FLOAT";
+            break;
+        case INT:
+            this.odbcType = "SQL_INTEGER";
+            break;
+        case TEXT:
+            this.odbcType = "SQL_VARCHAR";
+            break;
+        case VARCHAR:
+            this.odbcType = "SQL_VARCHAR";
+            break;
+        case NATIVE:
+            this.odbcType = "NATIVE";
+            break;
+        case SET:
+            this.odbcType = "SET";
+            break;
+        case LIST:
+            this.odbcType = "LIST";
+            break;
+        case MAP:
+            this.odbcType = "MAP";
+            break;
         }
-    },
-    SET("SET") {
-        @Override
-        public String toString() {
-            return "SET<" + getDBInnerType() + ">";
-        }
-    },
-    LIST("LIST") {
-        @Override
-        public String toString() {
-            return "LIST<" + getDBInnerType() + ">";
-        }
-    },
-    MAP("MAP") {
-        @Override
-        public String toString() {
-            return "MAP<" + getDBInnerType() + ", " + getDBInnerValueType() + ">";
-        }
-    };
+    }
+
+    private DataType dataType;
 
     /**
      * ODBC type equivalent.
@@ -80,13 +95,20 @@ public enum ColumnType implements Serializable {
      */
     private ColumnType dbInnerValueType;
 
-    /**
-     * Build a new column type.
-     *
-     * @param odbcType The ODBC equivalent type.
-     */
-    ColumnType(String odbcType) {
-        this.odbcType = odbcType;
+    public DataType getDataType() {
+        return dataType;
+    }
+
+    public String getOdbcType() {
+        return odbcType;
+    }
+
+    public ColumnType getDbInnerType() {
+        return dbInnerType;
+    }
+
+    public ColumnType getDbInnerValueType() {
+        return dbInnerValueType;
     }
 
     /**
@@ -181,7 +203,7 @@ public enum ColumnType implements Serializable {
      */
     public Class getJavaType(){
         Class clazz = null;
-        switch (this){
+        switch (dataType){
         case BIGINT:
             clazz = Long.class;
             break;
@@ -225,7 +247,7 @@ public enum ColumnType implements Serializable {
      */
     public String getCrossdataType(){
         String clazz = null;
-        switch (this){
+        switch (dataType){
         case BIGINT:
             clazz = "BigInt";
             break;
@@ -263,5 +285,77 @@ public enum ColumnType implements Serializable {
         return clazz;
     }
 
+    public static ColumnType valueOf(String name){
+        return new ColumnType(DataType.valueOf(name));
+    }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(dataType.toString());
+        switch (dataType){
+        case BIGINT:
+        case BOOLEAN:
+        case DOUBLE:
+        case FLOAT:
+        case INT:
+        case TEXT:
+        case VARCHAR:
+        case NATIVE:
+            break;
+        case SET:
+        case LIST:
+            sb.append("<").append(getDBInnerType()).append(">");
+            break;
+        case MAP:
+            sb.append("<").append(getDBInnerType()).append(", ").append(getDBInnerValueType()).append(">");
+            break;
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ColumnType that = (ColumnType) o;
+
+        if (dataType != that.dataType) {
+            return false;
+        }
+        if (dbClass != null ? !dbClass.equals(that.dbClass) : that.dbClass != null) {
+            return false;
+        }
+        if (dbInnerType != null ? !dbInnerType.equals(that.dbInnerType) : that.dbInnerType != null) {
+            return false;
+        }
+        if (dbInnerValueType != null ?
+                !dbInnerValueType.equals(that.dbInnerValueType) :
+                that.dbInnerValueType != null) {
+            return false;
+        }
+        if (dbType != null ? !dbType.equals(that.dbType) : that.dbType != null) {
+            return false;
+        }
+        if (odbcType != null ? !odbcType.equals(that.odbcType) : that.odbcType != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = dataType != null ? dataType.hashCode() : 0;
+        result = 31 * result + (odbcType != null ? odbcType.hashCode() : 0);
+        result = 31 * result + (dbType != null ? dbType.hashCode() : 0);
+        result = 31 * result + (dbClass != null ? dbClass.hashCode() : 0);
+        result = 31 * result + (dbInnerType != null ? dbInnerType.hashCode() : 0);
+        result = 31 * result + (dbInnerValueType != null ? dbInnerValueType.hashCode() : 0);
+        return result;
+    }
 }

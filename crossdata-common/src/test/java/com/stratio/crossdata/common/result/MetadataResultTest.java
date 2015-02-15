@@ -34,6 +34,7 @@ import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -66,7 +67,7 @@ public class MetadataResultTest {
 
         List<ColumnMetadata> columnList = new ArrayList<>();
         ColumnMetadata columnMetadata = new ColumnMetadata(new ColumnName("catalogTest","tableTest", "columnTest"),
-                null, ColumnType.VARCHAR);
+                null, new ColumnType(DataType.VARCHAR));
 
         columnList.add(columnMetadata);
 
@@ -137,13 +138,13 @@ public class MetadataResultTest {
         MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_COLUMNS);
         List<ColumnMetadata> columnList = new ArrayList<>();
         ColumnMetadata columnMetadata = new ColumnMetadata(new ColumnName("catalogTest","tableTest", "columnTest"),
-                null, ColumnType.BIGINT);
+                null, new ColumnType(DataType.BIGINT));
 
         columnList.add(columnMetadata);
 
         result.setColumnList(columnList);
 
-        Assert.assertEquals(result.getColumnList().get(0).getColumnType().name(), "BIGINT");
+        Assert.assertEquals(result.getColumnList().get(0).getColumnType().getDataType().name(), "BIGINT");
     }
 
     private TableMetadata createTableMetadata() {
@@ -156,22 +157,22 @@ public class MetadataResultTest {
         Object[] parameters = { };
         columns.put(new ColumnName(new TableName("demo", "users"), "name"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "name"), parameters,
-                        ColumnType.TEXT));
+                        new ColumnType(DataType.TEXT)));
         columns.put(new ColumnName(new TableName("demo", "users"), "gender"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "gender"), parameters,
-                        ColumnType.TEXT));
+                        new ColumnType(DataType.TEXT)));
         columns.put(new ColumnName(new TableName("demo", "users"), "age"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "age"), parameters,
-                        ColumnType.INT));
+                        new ColumnType(DataType.INT)));
         columns.put(new ColumnName(new TableName("demo", "users"), "bool"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "bool"), parameters,
-                        ColumnType.BOOLEAN));
+                        new ColumnType(DataType.BOOLEAN)));
         columns.put(new ColumnName(new TableName("demo", "users"), "phrase"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "phrase"), parameters,
-                        ColumnType.TEXT));
+                        new ColumnType(DataType.TEXT)));
         columns.put(new ColumnName(new TableName("demo", "users"), "email"),
                 new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "email"), parameters,
-                        ColumnType.TEXT));
+                        new ColumnType(DataType.TEXT)));
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
         TableMetadata table =

@@ -31,6 +31,7 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
@@ -49,9 +50,9 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         ColumnName partitionColumn1 = new ColumnName("demo", "users2", "name");
         primaryKey.add(partitionColumn1);
 
-        columns.put(new ColumnName(new TableName("demo", "users2"), "name"), ColumnType.TEXT);
-        columns.put(new ColumnName(new TableName("demo", "users2"), "gender"), ColumnType.TEXT);
-        columns.put(new ColumnName(new TableName("demo", "users2"), "age"), ColumnType.INT);
+        columns.put(new ColumnName(new TableName("demo", "users2"), "name"), new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users2"), "gender"), new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users2"), "age"), new ColumnType(DataType.INT));
 
         LinkedHashSet<ColumnName> clusterKey = new LinkedHashSet<>();
         CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "users2"),
@@ -82,9 +83,9 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         ColumnName partitionColumn1 = new ColumnName("demo", "users2", "name");
         primaryKey.add(partitionColumn1);
 
-        columns.put(new ColumnName(new TableName("demo", "users2"), "name"), ColumnType.TEXT);
-        columns.put(new ColumnName(new TableName("demo", "users2"), "gender"), ColumnType.TEXT);
-        columns.put(new ColumnName(new TableName("demo", "users2"), "age"), ColumnType.INT);
+        columns.put(new ColumnName(new TableName("demo", "users2"), "name"), new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users2"), "gender"), new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users2"), "age"), new ColumnType(DataType.INT));
 
         LinkedHashSet<ColumnName> clusterKey = new LinkedHashSet<>();
         CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "users2"),
@@ -119,9 +120,9 @@ public class CreateTableStatementTest extends BasicValidatorTest {
 
         TableName tableName = new TableName("unknown", "users2");
 
-        columns.put(new ColumnName(tableName, "name"), ColumnType.TEXT);
-        columns.put(new ColumnName(tableName, "gender"), ColumnType.TEXT);
-        columns.put(new ColumnName(tableName, "age"), ColumnType.INT);
+        columns.put(new ColumnName(tableName, "name"), new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(tableName, "gender"), new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(tableName, "age"), new ColumnType(DataType.INT));
 
         CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("unknown", "users2"),
                 new ClusterName("cluster"), columns, primaryKey, null);
@@ -151,9 +152,9 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         ColumnName partitionColumn1 = new ColumnName("demo", "users", "name");
         primaryKey.add(partitionColumn1);
 
-        columns.put(new ColumnName(new TableName("demo", "users"), "name"), ColumnType.TEXT);
-        columns.put(new ColumnName(new TableName("demo", "users"), "gender"), ColumnType.TEXT);
-        columns.put(new ColumnName(new TableName("demo", "users"), "age"), ColumnType.INT);
+        columns.put(new ColumnName(new TableName("demo", "users"), "name"), new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users"), "gender"), new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users"), "age"), new ColumnType(DataType.INT));
 
         CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "users"),
                 new ClusterName("cluster"), columns, primaryKey, null);

@@ -604,7 +604,7 @@ public class Normalizator {
 
     private SelectorType convertMetadataTypeToSelectorType(ColumnType columnType) throws ValidationException {
         SelectorType selectorType = null;
-        switch (columnType) {
+        switch (columnType.getDataType()) {
         case INT:
         case BIGINT:
             selectorType = SelectorType.INTEGER;
@@ -631,7 +631,7 @@ public class Normalizator {
 
     private void checkCompatibility(ColumnMetadata column, Operator operator, SelectorType valueType)
                     throws ValidationException {
-        switch (column.getColumnType()) {
+        switch (column.getColumnType().getDataType()) {
         case BOOLEAN:
             checkBooleanCompatibility(column, operator, valueType);
             break;
