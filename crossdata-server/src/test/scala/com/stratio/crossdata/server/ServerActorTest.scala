@@ -30,8 +30,7 @@ import com.stratio.crossdata.common.executionplan.{StorageWorkflow, ExecutionTyp
 QueryWorkflow}
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, Project, Select}
 import com.stratio.crossdata.common.manifest.PropertyType
-import com.stratio.crossdata.common.metadata.{ColumnType, CatalogMetadata, TableMetadata, ColumnMetadata,
-IndexMetadata, IMetadata, Operations, ConnectorAttachedMetadata}
+import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.metadata.structures.TableType
 import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.common.utils.{Constants, StringUtils}
@@ -95,7 +94,7 @@ ImplicitSender with BeforeAndAfterAll{
   val myClusterName ="myCluster"
   val myExecutionData="myExecutionData"
   val columnNames1: Array[String] = Array(id, "user")
-  val columnTypes1: Array[ColumnType] = Array(ColumnType.INT, ColumnType.TEXT)
+  val columnTypes1: Array[ColumnType] = Array(new ColumnType(DataType.INT), new ColumnType(DataType.TEXT))
   val partitionKeys1: Array[String] = Array(id)
   val clusteringKeys1: Array[String] = Array(id)
   val clusterName1: ClusterName = new ClusterName(myClusterName)
@@ -240,12 +239,12 @@ ImplicitSender with BeforeAndAfterAll{
 
     //create table
     val table1= metadataManager.createTestTable(clusterName1, catalogName, tableName, Array(name, "age"),
-      Array(ColumnType.TEXT, ColumnType.INT), Array(name), Array(name), null)
+      Array(new ColumnType(DataType.TEXT), new ColumnType(DataType.INT)), Array(name), Array(name), null)
 
     val initialSteps: java.util.List[LogicalStep] = new java.util.LinkedList[LogicalStep]
     val project: Project = getProject(tableName2)
     val columns: Array[ColumnName] = Array(new ColumnName(table1.getName, id), new ColumnName(table1.getName, "user"))
-    val types: Array[ColumnType] = Array(ColumnType.INT, ColumnType.TEXT)
+    val types: Array[ColumnType] = Array(new ColumnType(DataType.INT), new ColumnType(DataType.TEXT))
     val select: Select = plannerTest.getSelect(columns, types)
     project.setNextStep(select)
 

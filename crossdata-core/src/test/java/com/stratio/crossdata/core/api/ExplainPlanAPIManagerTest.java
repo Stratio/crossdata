@@ -43,6 +43,7 @@ import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
@@ -95,7 +96,7 @@ public class ExplainPlanAPIManagerTest {
 
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys = { "id" };
         String[] clusteringKeys = { };
         table1 = MetadataManagerTestHelper.HELPER.createTestTable(

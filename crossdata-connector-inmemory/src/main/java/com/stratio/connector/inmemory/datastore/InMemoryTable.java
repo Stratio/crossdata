@@ -133,7 +133,7 @@ public class InMemoryTable {
             // Check if it's a native data type
             Class clazz = getColumnTypes()[columnIndex.get(cols.getKey())];
             AbstractInMemoryDataType inMemoryDataType =
-                    AbstractInMemoryDataType.castToNativeDataType(clazz.getName());
+                    AbstractInMemoryDataType.castToNativeDataType(clazz.getSimpleName());
             if(inMemoryDataType != null){
                 rowObjects[columnIndex.get(cols.getKey())] =
                         inMemoryDataType.convertStringToInMemoryDataType(String.valueOf(cols.getValue()));

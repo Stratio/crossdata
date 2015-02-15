@@ -28,6 +28,7 @@ import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
 
 public class ResultSetIteratorTest {
 
@@ -75,20 +76,20 @@ public class ResultSetIteratorTest {
         List<ColumnMetadata> columnMetadataList = new ArrayList<>();
 
         ColumnMetadata cmStr = new ColumnMetadata(new ColumnName("catalogTest", "tableTest", "str"), null,
-                ColumnType.VARCHAR);
+                new ColumnType(DataType.VARCHAR));
         columnMetadataList.add(cmStr);
 
         ColumnMetadata cmInt = new ColumnMetadata(new ColumnName("catalogTest", "tableTest", "int"), null,
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columnMetadataList.add(cmInt);
 
         ColumnMetadata cmBool = new ColumnMetadata(new ColumnName("catalogTest", "tableTest", "bool"), null,
-                ColumnType.BOOLEAN);
+                new ColumnType(DataType.BOOLEAN));
 
         columnMetadataList.add(cmBool);
 
         ColumnMetadata cmLong = new ColumnMetadata(new ColumnName("catalogTest", "tableTest", "long"), null,
-                ColumnType.BIGINT);
+                new ColumnType(DataType.BIGINT));
         columnMetadataList.add(cmLong);
 
         rSet.setColumnMetadata(columnMetadataList);

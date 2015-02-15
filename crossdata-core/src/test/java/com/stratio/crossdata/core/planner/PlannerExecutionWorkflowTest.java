@@ -64,6 +64,7 @@ import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
@@ -202,21 +203,21 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     public void createTestTables() {
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
         table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes1,
                 partitionKeys1, clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
-        ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes2 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
         table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes2,
                 partitionKeys2, clusteringKeys2, null);
 
         String[] columnNames3 = { "id", "email" };
-        ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes3 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys3 = { "id" };
         String[] clusteringKeys3 = { };
         table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table3", columnNames3, columnTypes3,
@@ -234,7 +235,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         //Link the elements
@@ -262,7 +263,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
@@ -298,7 +299,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
@@ -333,7 +334,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
@@ -362,7 +363,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
@@ -401,7 +402,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns1, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
@@ -452,7 +453,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns1, types);
 
         Join join = getJoin("joinId");
@@ -493,7 +494,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns1, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
@@ -549,7 +550,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns1, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
@@ -625,9 +626,13 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         }
 
         String[] columnNames = { "name", "gender", "age", "bool", "phrase", "email" };
-        ColumnType[] columnTypes = { ColumnType.TEXT, ColumnType.TEXT, ColumnType.INT, ColumnType.BOOLEAN,
-                ColumnType.TEXT,
-                ColumnType.TEXT };
+        ColumnType[] columnTypes = {
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.BOOLEAN),
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.TEXT) };
         String[] partitionKeys = { "name", "age" };
         String[] clusteringKeys = { "gender" };
         MetadataManagerTestHelper.HELPER.createTestTable(new ClusterName("cluster"), "demo", "users", columnNames, columnTypes,
@@ -715,11 +720,11 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
     public void alterTableWorkflowTest() {
         Object[] parameters = { };
         ColumnMetadata columnMetadata = new ColumnMetadata(new ColumnName(new TableName("demo", "table3"),
-                "email"), parameters, ColumnType.VARCHAR);
+                "email"), parameters, new ColumnType(DataType.VARCHAR));
         AlterOptions alterOptions = new AlterOptions(AlterOperation.ALTER_COLUMN, null, columnMetadata);
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(columnMetadata.getName().getTableName(),
-                columnMetadata.getName(), ColumnType.VARCHAR, null, AlterOperation.ALTER_COLUMN);
+                columnMetadata.getName(), new ColumnType(DataType.VARCHAR), null, AlterOperation.ALTER_COLUMN);
         String query = "ALTER TABLE demo.table3 ALTER table3.email TYPE varchar;";
         BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);

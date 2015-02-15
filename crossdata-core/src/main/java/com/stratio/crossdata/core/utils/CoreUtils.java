@@ -56,7 +56,7 @@ public final class CoreUtils {
     public static Object convertSelectorToObject(Selector selector, ColumnName columnName) throws PlanningException {
         Object result = null;
         ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
-        switch (columnMetadata.getColumnType()) {
+        switch (columnMetadata.getColumnType().getDataType()) {
         case BIGINT:
             result = convertSelectorToLong(selector);
             break;

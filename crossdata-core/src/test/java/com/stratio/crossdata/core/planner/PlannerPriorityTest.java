@@ -39,6 +39,7 @@ import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
@@ -145,7 +146,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
 
     public void createTestTables() {
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
         table1 = MetadataManagerTestHelper.HELPER
@@ -153,7 +154,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
                                         clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
-        ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes2 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
         table2 = MetadataManagerTestHelper.HELPER
@@ -161,7 +162,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
                                         clusteringKeys2, null);
 
         String[] columnNames3 = { "id", "email" };
-        ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes3 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys3 = { "id" };
         String[] clusteringKeys3 = { };
         table2 = MetadataManagerTestHelper.HELPER
@@ -178,7 +179,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         //Link the elements

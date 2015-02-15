@@ -43,13 +43,13 @@ import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
 import com.stratio.crossdata.common.exceptions.validation.NotValidTableException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
@@ -59,8 +59,8 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
-import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
@@ -114,37 +114,37 @@ public class NormalizerTest {
         ColumnMetadata columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "clientId"),
                 new Object[] { },
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "clientId"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "colSales"),
                 new Object[] { },
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columns.put(new ColumnName(tableName, "colSales"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "gender"),
                 new Object[] { },
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "gender"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "colExpenses"),
                 new Object[] { },
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columns.put(new ColumnName(tableName, "colExpenses"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "year"),
                 new Object[] { },
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columns.put(new ColumnName(tableName, "year"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "colPlace"),
                 new Object[] { },
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "colPlace"), columnMetadata);
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
@@ -189,25 +189,25 @@ public class NormalizerTest {
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "assistantId"),
                 new Object[] { },
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "assistantId"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "age"),
                 new Object[] { },
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columns.put(new ColumnName(tableName, "age"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "colFee"),
                 new Object[] { },
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columns.put(new ColumnName(tableName, "colFee"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "colCity"),
                 new Object[] { },
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "colCity"), columnMetadata);
 
         indexes = new HashMap<>();

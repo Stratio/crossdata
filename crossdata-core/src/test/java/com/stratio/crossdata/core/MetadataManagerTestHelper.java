@@ -59,6 +59,7 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
@@ -173,7 +174,8 @@ public enum MetadataManagerTestHelper {
         Set<IndexMetadata> indexes = new HashSet<>();
         Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
         ColumnName columnName = new ColumnName("catalog1", "table1", "col3");
-        ColumnMetadata columnMetadata = new ColumnMetadata(columnName, new Object[]{"whatever"}, ColumnType.TEXT);
+        ColumnMetadata columnMetadata = new ColumnMetadata(columnName, new Object[]{"whatever"},
+                new ColumnType(DataType.TEXT));
         columns.put(columnName, columnMetadata);
         Map<Selector, Selector> indexOpts = new HashMap<>();
         IndexMetadata index = new IndexMetadata(indexName, columns, IndexType.DEFAULT, indexOpts);
@@ -181,7 +183,8 @@ public enum MetadataManagerTestHelper {
         indexName = new IndexName(new ColumnName("catalog1", "table1", "fulltextTest"));
         columns = new HashMap<>();
         columnName = new ColumnName("catalog1", "table1", "col4");
-        columnMetadata = new ColumnMetadata(columnName, new Object[]{}, ColumnType.DOUBLE);
+        columnMetadata = new ColumnMetadata(columnName, new Object[]{},
+                new ColumnType(DataType.DOUBLE));
         columns.put(columnName, columnMetadata);
         indexOpts.put(new StringSelector("Length"), new IntegerSelector(10));
         index = new IndexMetadata(indexName, columns, IndexType.FULL_TEXT, indexOpts);
@@ -191,8 +194,12 @@ public enum MetadataManagerTestHelper {
                 "testCatalog",
                 "testTable",
                 new String[] { "col1", "col2", "col3", "col4", "col5" },
-                new ColumnType[] { ColumnType.INT, ColumnType.INT, ColumnType.TEXT, ColumnType.DOUBLE,
-                        ColumnType.BOOLEAN },
+                new ColumnType[] {
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.DOUBLE),
+                        new ColumnType(DataType.BOOLEAN) },
                 new String[] { "col1" },
                 new String[] { "col2" },
                 indexes

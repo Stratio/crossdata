@@ -43,6 +43,7 @@ import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -273,19 +274,19 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
     }
 
     private ColumnType convertToXdColumnType(Class columnType) {
-        ColumnType ct = ColumnType.NATIVE;
+        ColumnType ct = new ColumnType(DataType.NATIVE);
         if(columnType == Long.class){
-            ct = ColumnType.BIGINT;
+            ct = new ColumnType(DataType.BIGINT);
         } else if (columnType == Boolean.class) {
-            ct = ColumnType.BOOLEAN;
+            ct = new ColumnType(DataType.BOOLEAN);
         } else if (columnType == Double.class) {
-            ct = ColumnType.DOUBLE;
+            ct = new ColumnType(DataType.DOUBLE);
         } else if (columnType == Float.class) {
-            ct = ColumnType.FLOAT;
+            ct = new ColumnType(DataType.FLOAT);
         } else if (columnType == Integer.class) {
-            ct = ColumnType.INT;
+            ct = new ColumnType(DataType.INT);
         } else if (columnType == String.class) {
-            ct = ColumnType.TEXT;
+            ct = new ColumnType(DataType.TEXT);
         } else {
             ct.setDBMapping(columnType.getSimpleName(), Object.class);
             ct.setODBCType(columnType.getSimpleName());
