@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.metadata;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +27,7 @@ import java.util.Set;
  * Types of columns supported by CROSSDATA with their equivalence in ODBC data types. Notice that a
  * NATIVE type has been added to map those types that are not generic and database dependant.
  */
-public enum ColumnType {
+public enum ColumnType implements Serializable {
     BIGINT("SQL_BIGINT"), BOOLEAN("BOOLEAN"), DOUBLE("SQL_DOUBLE"), FLOAT("SQL_FLOAT"),
     INT("SQL_INTEGER"), TEXT("SQL_VARCHAR"), VARCHAR("SQL_VARCHAR"),
     NATIVE("NATIVE") {

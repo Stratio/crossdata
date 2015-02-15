@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import com.stratio.connector.inmemory.datastore.InMemoryCatalog;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.connector.inmemory.datastore.InMemoryTable;
+import com.stratio.connector.inmemory.datastore.datatypes.AbstractInMemoryDataType;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
 import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
@@ -102,6 +103,12 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
             for(Map.Entry<ColumnName, ColumnMetadata> column: tableMetadata.getColumns().entrySet()){
                 columnNames[index] = column.getKey().getName();
                 columnTypes[index] = column.getValue().getColumnType().getDbClass();
+                // Check if it's a native data type
+                AbstractInMemoryDataType inMemoryDataType = AbstractInMemoryDataType.castToNativeDataType(
+                        column.getValue().getColumnType().getDbType());
+                if(inMemoryDataType != null){
+                    columnTypes[index] = inMemoryDataType.getClazz();
+                }
                 index++;
             }
 

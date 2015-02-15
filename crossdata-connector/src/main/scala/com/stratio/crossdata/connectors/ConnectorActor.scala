@@ -413,7 +413,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     try {
       val eng = connector.getMetadataEngine()
 
-      val answer = methodOpMetadata( metadataOp, eng)
+      val answer = methodOpMetadata(metadataOp, eng)
       qId = answer._1
       metadataOperation = answer._2
       result = MetadataResult.createSuccessMetadataResult(metadataOperation)
