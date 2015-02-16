@@ -411,32 +411,6 @@ public class APIManager {
         ((MetadataResult) result).setCatalogMetadataList(Arrays.asList(catalogMetadata));
 
         return result;
-        /*
-        Result result;
-
-        try {
-            CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name);
-            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
-
-            sb.append("Catalog: ").append(catalog.getName()).append(System.lineSeparator());
-
-            sb.append("Options: ").append(System.lineSeparator());
-            for (Map.Entry<Selector, Selector> entry : catalog.getOptions().entrySet()) {
-                sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue())
-                        .append(System.lineSeparator());
-            }
-
-            sb.append("Tables: ").append(catalog.getTables().keySet()).append(System.lineSeparator());
-
-            result = CommandResult.createCommandResult(sb.toString());
-
-        } catch (MetadataManagerException mme) {
-            LOG.info(mme.getMessage(),mme);
-            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
-        }
-
-        return result;
-        */
     }
 
     private Result describeTables(CatalogName name) {
@@ -470,56 +444,6 @@ public class APIManager {
         ((MetadataResult) result).setTableList(Arrays.asList(tableMetadata));
 
         return result;
-        /*
-        Result result;
-
-        try{
-            CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name.getCatalogName());
-            TableMetadata table = catalog.getTables().get(name);
-            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
-
-            if(table == null){
-                throw new MetadataManagerException("[" + name + "] doesn't exist yet");
-            }
-
-            sb.append("Table: ").append(table.getName()).append(System.lineSeparator());
-
-            sb.append("Cluster: ").append(table.getClusterRef()).append(System.lineSeparator());
-
-            sb.append("Columns: ").append(System.lineSeparator());
-            Map<ColumnName, ColumnMetadata> columns = table.getColumns();
-            for (Map.Entry<ColumnName, ColumnMetadata> entry : columns.entrySet()) {
-                sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue().getColumnType())
-                        .append(System.lineSeparator());
-            }
-
-            sb.append("Partition key: ").append(table.getPartitionKey()).append(System.lineSeparator());
-
-            sb.append("Cluster key: ").append(table.getClusterKey()).append(System.lineSeparator());
-
-            sb.append("Indexes: ").append(System.lineSeparator());
-            Map<IndexName, IndexMetadata> indexes = table.getIndexes();
-            for (Map.Entry<IndexName, IndexMetadata> idx : indexes.entrySet()) {
-                sb.append("\t").append(idx.getKey()).append("(").append(idx.getValue().getType()).append(")");
-                sb.append(": ").append(idx.getValue().getColumns().keySet());
-                sb.append(System.lineSeparator());
-            }
-
-            sb.append("Options: ").append(System.lineSeparator());
-            Map<Selector, Selector> options = table.getOptions();
-            for (Map.Entry<Selector, Selector> opt : options.entrySet()) {
-                sb.append("\t").append(opt.getKey()).append(": ").append(opt.getValue())
-                        .append(System.lineSeparator());
-            }
-
-            result = CommandResult.createCommandResult(sb.toString());
-        } catch (MetadataManagerException mme) {
-            LOG.info(mme.getMessage(),mme);
-            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
-        }
-
-        return result;
-        */
     }
 
     private Result describeCluster(ClusterName name) {
