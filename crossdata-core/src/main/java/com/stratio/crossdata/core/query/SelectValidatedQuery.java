@@ -153,7 +153,6 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
         for (Iterator<Relation> iterator = relations.iterator(); iterator.hasNext();) {
             Relation relation = iterator.next();
             if(relation.getOperator() == Operator.EQ){
-                //TODO only with columnType if(relation.getRightTerm().getType() == SelectorType.COLUMN)
                 if(relation.getLeftTerm().equals(relation.getRightTerm())){
                     iterator.remove();
                     trueRelationFound = true;
@@ -169,7 +168,6 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
         //TODO when multiple joins supported => tables.size() = joins.size();
         if(tables.size() == 1 ){
-            //TODO It should not modify the statment (warning: joinInc)
             relations.addAll(join.getRelations());
             this.getStatement().setWhere(relations);
             this.getStatement().setJoin(null);
