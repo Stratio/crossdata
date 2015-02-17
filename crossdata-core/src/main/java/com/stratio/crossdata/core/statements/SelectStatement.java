@@ -173,12 +173,8 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      * @param join The join clause.
      */
     public void setJoin(InnerJoin join) {
+        this.joinInc = join != null;
         this.join = join;
-        if(join != null){
-            this.joinInc = true;
-        } else {
-            this.joinInc = false;
-        }
     }
 
     /**
@@ -359,7 +355,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     public List<TableName> getFromTables() {
         ArrayList<TableName> tableNames = new ArrayList<>();
         tableNames.add(tableName);
-        if (joinInc) {
+        if (join != null) {
             tableNames.add(join.getTablename());
         }
         return tableNames;
