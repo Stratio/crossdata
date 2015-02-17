@@ -272,22 +272,6 @@ public class InMemoryQueryEngine implements IQueryEngine{
             columnMetadataList.add(metadata);
         }
 
-        /*final List<ColumnName> outputColumns = selectStep.getColumnOrder();
-
-        for(ColumnName columnName : outputColumns){
-            ColumnSelector selector = new ColumnSelector(columnName);
-            String alias = selectStep.getColumnMap().get(selector);
-            if(alias == null){
-                alias = columnName.getName();
-            }
-            columnAlias.add(alias);
-            columnName.setAlias(alias);
-            ColumnType columnType = selectStep.getTypeMapFromColumnName().get(selector);
-            ColumnMetadata metadata = new ColumnMetadata(
-                    columnName, null, columnType);
-            columnMetadataList.add(metadata);
-        }*/
-
         //Store the metadata information
         crossdataResults.setColumnMetadata(columnMetadataList);
 

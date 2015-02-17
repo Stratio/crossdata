@@ -29,11 +29,13 @@ import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
+import com.stratio.crossdata.core.query.SqlParsedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.statements.CrossdataStatement;
 import com.stratio.crossdata.core.statements.MetadataStatement;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
+import com.stratio.crossdata.core.statements.sql.SqlStatement;
 import com.stratio.crossdata.core.utils.AntlrError;
 import com.stratio.crossdata.core.utils.ErrorsHelper;
 
@@ -64,6 +66,8 @@ public class Parser {
             result = new StorageParsedQuery(baseQuery, (StorageStatement) crossdataStatement);
         } else if (crossdataStatement instanceof MetadataStatement) {
             result = new MetadataParsedQuery(baseQuery, (MetadataStatement) crossdataStatement);
+        } else if (crossdataStatement instanceof SqlStatement) {
+            result = new SqlParsedQuery(baseQuery, (SqlStatement) crossdataStatement);
         }
         return result;
     }
@@ -91,6 +95,9 @@ public class Parser {
         CrossdataStatement resultStatement = null;
         try {
             resultStatement = parser.query();
+            if(resultStatement instanceof SqlStatement){
+                ((SqlStatement) resultStatement).setQuery(query.substring(4).trim());
+            }
             foundErrors = parser.getFoundErrors();
         } catch (Exception e) {
             LOG.error("Cannot parse statement: " + e.getMessage());
