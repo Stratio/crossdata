@@ -198,6 +198,14 @@ public class ColumnType implements Serializable {
     }
 
     /**
+     * Set de data base original type.
+     * @param dbType The data base type.
+     */
+    public void setDbType(String dbType) {
+        this.dbType = dbType;
+    }
+
+    /**
      * Get the java class that is the equivalent with the crossdata enum column type.
      * @return The java class.
      */
