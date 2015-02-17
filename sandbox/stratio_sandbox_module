@@ -1,6 +1,7 @@
 #!/bin/sh
 STRATIO_ENV=$1
-STRATIO_MODULE_VERSION=$2
+STRATIO_MODULE="crossdata ova"
+STRATIO_MODULE_VERSION="0.3.0-SNAPSHOT"
 ipaddress=$(ip -4 addr show dev eth0 | grep inet | sed 's/^ *//g' | cut -d' ' -f 2 | cut -d'/' -f1)
 #######################################
 ## SERVICES
@@ -87,6 +88,14 @@ chkconfig connector_cassandra off
 chkconfig connector_deep off
 echo "Starting services..."
 service cassandra start
+
+cat >>/etc/rc.local <<EOF
+if [ ! -f $LOCK_FILE ]; then
+   curl -f -s -m 5 http://www.stratio.com/CheckUpdate/${STRATIO_MODULE}/${STRATIO_MODULE_VERSION}
+   echo "ok" > ${LOCK_FILE}
+fi
+EOF
+
 echo "Starting demo environment"
 cat >>/home/vagrant/.bash_profile <<EOF 
 echo "--- PLEASE READ /etc/sds/crossdata/README.txt ---" 
