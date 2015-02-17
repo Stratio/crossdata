@@ -60,7 +60,6 @@ public abstract class SqlStatement extends CrossdataStatement {
     @Override
     public ValidationRequirements getValidationRequirements() {
         return new ValidationRequirements()
-                .add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_TABLE);
+                .add(ValidationTypes.MUST_EXIST_TABLES);
     }
 }
