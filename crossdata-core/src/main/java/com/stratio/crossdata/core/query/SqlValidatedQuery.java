@@ -16,46 +16,26 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.executionplan;
+package com.stratio.crossdata.core.query;
 
-/**
- * Operations to be executed on the ConnectorActor.
- */
-public enum ExecutionType {
+import com.stratio.crossdata.common.result.QueryStatus;
 
-    //IMetadata
-    CREATE_CATALOG,
-    DROP_CATALOG,
-    ALTER_CATALOG,
-    CREATE_TABLE,
-    CREATE_TABLE_AND_CATALOG,
-    DROP_TABLE,
-    ALTER_TABLE,
-    CREATE_INDEX,
-    DROP_INDEX,
-    DISCOVER_METADATA,
-    IMPORT_CATALOGS,
-    IMPORT_CATALOG,
-    IMPORT_TABLE,
+public class SqlValidatedQuery extends SqlParsedQuery implements IValidatedQuery  {
 
-    //IStorage
-    INSERT,
-    INSERT_BATCH,
-    DELETE_ROWS,
-    UPDATE_TABLE,
-    TRUNCATE_TABLE,
+    /**
+     * Constructor class based in a Sql Statement that was parsed.
+     * @param sqlParsedQuery the parsed statement.
+     */
+    public SqlValidatedQuery(SqlParsedQuery sqlParsedQuery) {
+        super(sqlParsedQuery);
+        setQueryStatus(QueryStatus.VALIDATED);
+    }
 
-    //IQuery
-    SELECT,
-
-    //CONNECTOR operations
-    ATTACH_CLUSTER,
-    DETACH_CLUSTER,
-    ATTACH_CONNECTOR,
-    DETACH_CONNECTOR,
-    ALTER_CLUSTER,
-
-    //SQL Direct
-    SQL_INSERT,
-    SQL_SELECT
+    /**
+     * Constructor class based in a validated Sql statement.
+     * @param sqlValidatedQuery The validated Statement.
+     */
+    public SqlValidatedQuery(SqlValidatedQuery sqlValidatedQuery) {
+        this((SqlParsedQuery) sqlValidatedQuery);
+    }
 }

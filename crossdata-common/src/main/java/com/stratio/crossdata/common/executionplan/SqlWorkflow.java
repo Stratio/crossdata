@@ -18,44 +18,33 @@
 
 package com.stratio.crossdata.common.executionplan;
 
-/**
- * Operations to be executed on the ConnectorActor.
- */
-public enum ExecutionType {
+public class SqlWorkflow extends ExecutionWorkflow {
 
-    //IMetadata
-    CREATE_CATALOG,
-    DROP_CATALOG,
-    ALTER_CATALOG,
-    CREATE_TABLE,
-    CREATE_TABLE_AND_CATALOG,
-    DROP_TABLE,
-    ALTER_TABLE,
-    CREATE_INDEX,
-    DROP_INDEX,
-    DISCOVER_METADATA,
-    IMPORT_CATALOGS,
-    IMPORT_CATALOG,
-    IMPORT_TABLE,
+    private static final long serialVersionUID = 760343968145632806L;
 
-    //IStorage
-    INSERT,
-    INSERT_BATCH,
-    DELETE_ROWS,
-    UPDATE_TABLE,
-    TRUNCATE_TABLE,
+    private String sqlQuery;
 
-    //IQuery
-    SELECT,
+    /**
+     * Class constructor.
+     *
+     * @param queryId       Query identifier.
+     * @param actorRef      Target actor reference.
+     * @param executionType Type of execution.
+     * @param type          Type of results.
+     */
+    public SqlWorkflow(
+            String queryId,
+            String actorRef,
+            ExecutionType executionType,
+            ResultType type) {
+        super(queryId, actorRef, executionType, type);
+    }
 
-    //CONNECTOR operations
-    ATTACH_CLUSTER,
-    DETACH_CLUSTER,
-    ATTACH_CONNECTOR,
-    DETACH_CONNECTOR,
-    ALTER_CLUSTER,
+    public String getSqlQuery() {
+        return sqlQuery;
+    }
 
-    //SQL Direct
-    SQL_INSERT,
-    SQL_SELECT
+    public void setSqlQuery(String sqlQuery) {
+        this.sqlQuery = sqlQuery;
+    }
 }

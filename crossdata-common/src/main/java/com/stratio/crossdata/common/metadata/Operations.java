@@ -566,7 +566,12 @@ public enum Operations {
     /**
      * The engine supports chunking the result of a Select query.
      */
-    PAGINATION("PAGINATION");
+    PAGINATION("PAGINATION"),
+
+    /**
+     * The engine supports direct execution of SQL queries
+     */
+   SQL_DIRECT("SQL_DIRECT");
 
     private String operationsStr;
 
