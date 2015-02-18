@@ -39,10 +39,33 @@ object ServerConfig {
 
 trait ServerConfig extends GridConfig with NumberActorConfig {
 
+  
+
+  def getLocalIPs():List[String] = {
+    var result = scala.collection.mutable.ListBuffer[String]()
+    val nis = java.net.NetworkInterface.getNetworkInterfaces()
+    while (nis.hasMoreElements) {
+      val el = nis.nextElement()
+      val addresses = el.getInetAddresses
+      while (addresses.hasMoreElements) {
+        val current = addresses.nextElement.toString
+        result.append(current)
+      }
+    }
+    val filterNot = List(".*127.0.0.1", ".*localhost.*", ".*::1", ".*0:0:0:0:0:0:0:1")
+    for(
+      r <- result.toList;
+      accepted = for (n <- filterNot; if !r.matches(n)) yield r;
+      if(accepted.length==filterNot.length)
+    )yield r
+  }
+
+  val ips=getLocalIPs()
   lazy val logger: Logger = ???
   lazy val engineConfig: EngineConfig = {
     val result = new EngineConfig()
     result.setGridListenAddress(gridListenAddress)
+    if(ips.length==1)result.setGridListenAddress(ips(1))
     result.setGridContactHosts(gridContactHosts)
     result.setGridPort(gridPort)
     result.setGridMinInitialMembers(gridMinInitialMembers)
