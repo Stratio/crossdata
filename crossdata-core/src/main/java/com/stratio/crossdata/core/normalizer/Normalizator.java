@@ -388,9 +388,11 @@ public class Normalizator {
             checkRightSelector(columnSelector.getName(), relation.getOperator(), relation.getRightTerm());
             break;
         case RELATION:
-        case FUNCTION:
         case ASTERISK:
             throw new BadFormatException("Not supported yet.");
+        case FUNCTION:
+            break;
+
         }
     }
 
