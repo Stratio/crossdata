@@ -50,7 +50,6 @@ import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
 import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.QueryWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
-import com.stratio.crossdata.common.executionplan.SqlWorkflow;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.GroupBy;
@@ -94,13 +93,9 @@ import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
-import com.stratio.crossdata.core.query.SqlPlannedQuery;
-import com.stratio.crossdata.core.query.SqlValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.*;
-import com.stratio.crossdata.core.statements.sql.InsertSqlStatement;
-import com.stratio.crossdata.core.statements.sql.SelectSqlStatement;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.utils.CoreUtils;
 
@@ -157,69 +152,6 @@ public class Planner {
     public StoragePlannedQuery planQuery(StorageValidatedQuery query) throws PlanningException {
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
         return new StoragePlannedQuery(query, executionWorkflow);
-    }
-
-    /**
-     * Define an execution plan for sql queries.
-     *
-     * @param query A {@link com.stratio.crossdata.core.query.SqlValidatedQuery}.
-     * @return A {@link com.stratio.crossdata.core.query.SqlPlannedQuery}.
-     * @throws PlanningException If the query cannot be planned.
-     */
-    public SqlPlannedQuery planQuery(SqlValidatedQuery query) throws PlanningException {
-        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query);
-        return new SqlPlannedQuery(query, executionWorkflow);
-    }
-
-    private ExecutionWorkflow buildExecutionWorkflow(SqlValidatedQuery query) throws PlanningException {
-        SqlWorkflow sqlWorkflow;
-        String queryId = query.getQueryId();
-
-        if (query.getStatement() instanceof InsertSqlStatement
-            || query.getStatement() instanceof SelectSqlStatement) {
-            sqlWorkflow = buildExecutionWorkflowSql(query, queryId);
-        } else {
-            throw new PlanningException("This statement is not supported yet");
-        }
-
-        return sqlWorkflow;
-    }
-
-    private SqlWorkflow buildExecutionWorkflowSql(SqlValidatedQuery sqlValidatedQuery, String queryId)
-            throws PlanningException {
-        SqlWorkflow sqlWorkflow;
-
-        Map<ConnectorName, ConnectorMetadata> connectors = new HashMap<>();
-        List<ConnectorMetadata> partialCandidates = new ArrayList<>();
-        Set<ConnectorName> candidates = new HashSet<>();
-
-        List<TableName> tables = sqlValidatedQuery.getStatement().getTables();
-
-        for(TableName tableName: tables){
-            TableMetadata tableMetadata = getTableMetadata(tableName);
-            ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
-            partialCandidates = findConnectors(clusterMetadata, Status.ONLINE, Operations.SQL_DIRECT);
-            for(ConnectorMetadata partialCandidate: partialCandidates){
-                connectors.put(partialCandidate.getName(), partialCandidate);
-            }
-            if(candidates.isEmpty()){
-                for(ConnectorMetadata partialCandidate: partialCandidates){
-                    candidates.add(partialCandidate.getName());
-                }
-            } else {
-                
-            }
-        }
-
-        ExecutionType execType = ExecutionType.SQL_INSERT;
-        if(sqlValidatedQuery.getStatement() instanceof SelectSqlStatement){
-            execType = ExecutionType.SQL_SELECT;
-        }
-
-        sqlWorkflow = new SqlWorkflow(queryId, connectorMetadata.getActorRef(), execType, ResultType.RESULTS);
-        sqlWorkflow.setSqlQuery(sqlValidatedQuery.getQuery());
-
-        return sqlWorkflow;
     }
 
     /**

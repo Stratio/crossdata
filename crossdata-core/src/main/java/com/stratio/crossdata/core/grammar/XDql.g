@@ -32,7 +32,6 @@ options {
     import com.stratio.crossdata.common.statements.structures.*;
     import com.stratio.crossdata.common.statements.structures.window.*;
     import com.stratio.crossdata.core.statements.*;
-    import com.stratio.crossdata.core.statements.sql.*;
     import com.stratio.crossdata.core.structures.*;
     import com.stratio.crossdata.core.structures.*;
     import com.stratio.crossdata.core.utils.*;
@@ -306,7 +305,6 @@ T_DISCOVER: D I S C O V E R;
 T_METADATA: M E T A D A T A;
 T_PRIORITY: P R I O R I T Y;
 T_PAGINATION: P A G I N A T I O N;
-T_SQL: S Q L;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -710,66 +708,6 @@ importMetadataStatement returns [ImportMetadataStatement imst]
 ;
 
 // ========================================================
-// SQL: INSERT & SELECT
-// ========================================================
-
-sqlStatement returns [SqlStatement st]:
-    (T_INSERT sql_insert = sqlInsert { $st = sql_insert; }
-    | T_SELECT sql_select = sqlSelect { $st = sql_select; } )
-;
-
-sqlInsert returns [InsertSqlStatement iss]
-    @after{
-        $iss = new InsertSqlStatement(tableName);
-    }:
-    T_INTO
-    tableName = getTableName
-    (~(T_SEMICOLON))*
-;
-
-sqlSelect returns [SelectSqlStatement sss]
-    @init{
-        List<TableName> tables = new ArrayList<>();
-    }
-    @after{
-        $sss = new SelectSqlStatement(tables);
-    }:
-    (~(T_FROM))*
-    T_FROM
-    tableName = getTableName { tables.add(tableName); }
-    (
-    implicitJoin[tables]
-    | otherJoins[tables]
-    )?
-//    (T_COMMA tableName = getTableName { tables.add(tableName); })*
-//    (any_text T_JOIN tableName = getTableName { tables.add(tableName); } any_text)*
-;
-
-implicitJoin[List<TableName> tables]:
-    (T_COMMA tableName = getTableName { tables.add(tableName); })+
-;
-
-otherJoins[List<TableName> tables]:
-    ((~(T_JOIN))* T_JOIN tableName = getTableName { tables.add(tableName); } (~(T_SEMICOLON | T_JOIN))* )+
-;
-
-//any_text: any_char* ;
-
-//any_char: T_ANYCHAR;
-
-//T_ANYCHAR: .;
-
-//TEXT_BEFORE_SEMICOLON
-//    @init{
-//        StringBuilder sb = new StringBuilder();
-//    }
-//    @after{
-//        setText(sb.toString());
-//    }:
-//    (c=~(';') { sb.appendCodePoint(c); })*  (';')
-//;
-
-// ========================================================
 // CROSSDATA STATEMENT
 // ========================================================
 
@@ -778,8 +716,7 @@ crossdataStatement returns [CrossdataStatement st]:
         ( gID=getGenericID { sessionCatalog = gID;} )?
     T_END_BRACKET T_COMMA)?
     (
-    T_SQL T_COLON st_sql = sqlStatement {$st = st_sql;}
-    | st_nsnt  = insertIntoStatement { $st = st_nsnt;}
+    st_nsnt  = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
     | st_crta = createTableStatement { $st = st_crta;}
     | st_altt = alterTableStatement { $st = st_altt;}

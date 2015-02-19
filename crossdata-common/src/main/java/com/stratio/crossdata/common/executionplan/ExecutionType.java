@@ -53,9 +53,5 @@ public enum ExecutionType {
     DETACH_CLUSTER,
     ATTACH_CONNECTOR,
     DETACH_CONNECTOR,
-    ALTER_CLUSTER,
-
-    //SQL Direct
-    SQL_INSERT,
-    SQL_SELECT
+    ALTER_CLUSTER
 }
