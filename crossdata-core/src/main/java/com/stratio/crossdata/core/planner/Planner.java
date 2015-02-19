@@ -814,31 +814,33 @@ public class Planner {
     }
 
     private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId) {
-        MetadataWorkflow metadataWorkflow;
+        MetadataWorkflow metadataWorkflow = null;
         // Create parameters for metadata workflow
         CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
-
-        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
-
         String actorRefUri = null;
-        try {
-            actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
-        } catch (PlanningException pe) {
-            LOG.debug("No connector was found to execute CREATE_TABLE", pe);
+        ResultType type = ResultType.RESULTS;
+        ExecutionType executionType = ExecutionType.CREATE_TABLE;
+        ClusterMetadata clusterMetadata = null;
+
+        if(!createTableStatement.isExternal()){
+            clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
+            try {
+                actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
+            } catch (PlanningException pe) {
+                LOG.debug("No connector was found to execute CREATE_TABLE", pe);
+            }
         }
 
-        ExecutionType executionType = ExecutionType.CREATE_TABLE;
-        ResultType type = ResultType.RESULTS;
-
         metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
-
         metadataWorkflow.setIfNotExists(createTableStatement.isIfNotExists());
 
         if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
                         createTableStatement.getClusterName())) {
 
             try {
-                actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
+                if (!createTableStatement.isExternal()) {
+                    actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
+                }
 
                 executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
 
