@@ -23,6 +23,7 @@ import java.io.File
 import com.stratio.crossdata.core.engine.EngineConfig
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
+import scala.collection.JavaConversions.enumerationAsScalaIterator
 
 object ServerConfig {
   val SERVER_BASIC_CONFIG = "server-reference.conf"
@@ -39,25 +40,15 @@ object ServerConfig {
 
 trait ServerConfig extends GridConfig with NumberActorConfig {
 
-  
+
 
   def getLocalIPs():List[String] = {
-    var result = scala.collection.mutable.ListBuffer[String]()
-    val nis = java.net.NetworkInterface.getNetworkInterfaces()
-    while (nis.hasMoreElements) {
-      val el = nis.nextElement()
-      val addresses = el.getInetAddresses
-      while (addresses.hasMoreElements) {
-        val current = addresses.nextElement.toString
-        result.append(current)
-      }
-    }
-    val filterNot = List(".*127.0.0.1", ".*localhost.*", ".*::1", ".*0:0:0:0:0:0:0:1")
-    for(
-      r <- result.toList;
-      accepted = for (n <- filterNot; if !r.matches(n)) yield r;
-      if(accepted.length==filterNot.length)
-    )yield r
+    val addresses = for {
+      networkInterface <- java.net.NetworkInterface.getNetworkInterfaces()
+      address <- networkInterface.getInetAddresses
+    } yield address.toString
+    val filterthese = List(".*127.0.0.1", ".*localhost.*", ".*::1", ".*0:0:0:0:0:0:0:1")
+    for {r <- addresses.toList; if (filterthese.find(e => r.matches(e)).isEmpty)} yield r
   }
 
   val ips=getLocalIPs()
