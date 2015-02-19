@@ -573,7 +573,7 @@ public class Normalizator {
      * @param functionSelector The includes Selector to validate.
      * @throws ValidationException
      */
-    public void checkFunctionSelector(FunctionSelector functionSelector) throws ValidationException {
+    private void checkFunctionSelector(FunctionSelector functionSelector) throws ValidationException {
         // Check columns
         List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());
         functionSelector.getFunctionColumns().clear();
