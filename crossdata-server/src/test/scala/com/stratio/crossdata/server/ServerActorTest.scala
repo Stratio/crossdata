@@ -134,15 +134,15 @@ ImplicitSender with BeforeAndAfterAll{
   )
   val metadataPlannedQuery0 = new MetadataPlannedQuery(metadataValidatedQuery0,metadataWorkflow0)
 
-
+  val isExternal = false;
   val metadataStatement1: MetadataStatement =  new CreateTableStatement(TableType.DATABASE,
 
     new TableName(catalogName,tableName1),
     new ClusterName(myClusterName),
-
     new util.LinkedHashMap[ColumnName, ColumnType](),
     new util.LinkedHashSet[ColumnName](),
-    new util.LinkedHashSet[ColumnName]()
+    new util.LinkedHashSet[ColumnName](),
+    isExternal
   )
   val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table " + tableName1 + ";",
     new CatalogName(catalogName)),

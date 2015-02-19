@@ -77,16 +77,16 @@ import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
+import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
-import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
@@ -275,10 +275,6 @@ public class Planner {
                     //Add intermediate result node
                     PartialResults partialResults = new PartialResults(Operations.PARTIAL_RESULTS);
                     partialResults.setNextStep(mergeStep);
-
-                    // TODO: CROSSDATA-464
-                    // Add select step before merge step
-
 
                     mergeStep.addPreviousSteps(partialResults);
                     mergeStep.removePreviousStep(paths[index].getLast());
@@ -814,31 +810,33 @@ public class Planner {
     }
 
     private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId) {
-        MetadataWorkflow metadataWorkflow;
+        MetadataWorkflow metadataWorkflow = null;
         // Create parameters for metadata workflow
         CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
-
-        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
-
         String actorRefUri = null;
-        try {
-            actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
-        } catch (PlanningException pe) {
-            LOG.debug("No connector was found to execute CREATE_TABLE", pe);
+        ResultType type = ResultType.RESULTS;
+        ExecutionType executionType = ExecutionType.CREATE_TABLE;
+        ClusterMetadata clusterMetadata = null;
+
+        if(!createTableStatement.isExternal()){
+            clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
+            try {
+                actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
+            } catch (PlanningException pe) {
+                LOG.debug("No connector was found to execute CREATE_TABLE", pe);
+            }
         }
 
-        ExecutionType executionType = ExecutionType.CREATE_TABLE;
-        ResultType type = ResultType.RESULTS;
-
         metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
-
         metadataWorkflow.setIfNotExists(createTableStatement.isIfNotExists());
 
         if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
                         createTableStatement.getClusterName())) {
 
             try {
-                actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
+                if (!createTableStatement.isExternal()) {
+                    actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
+                }
 
                 executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
 
@@ -1327,7 +1325,6 @@ public class Planner {
     }
 
     protected ExecutionWorkflow buildExecutionWorkflow(StorageValidatedQuery query) throws PlanningException {
-
         StorageWorkflow storageWorkflow;
         String queryId = query.getQueryId();
 
@@ -1651,30 +1648,38 @@ public class Planner {
         typeMap.put(alias, columnType);
     }
 
-    private String findAnyActorRef(ClusterMetadata clusterMetadata, Status status, Operations... requiredOperations)
-                    throws PlanningException {
-        String actorRef = null;
+    private ConnectorMetadata findAnyConnector(
+            ClusterMetadata clusterMetadata,
+            Status status,
+            Operations... requiredOperations)
+            throws PlanningException {
+        ConnectorMetadata connectorMetadata = null;
 
-        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs = clusterMetadata
-                        .getConnectorAttachedRefs();
+        Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
+                clusterMetadata.getConnectorAttachedRefs();
 
         Iterator it = connectorAttachedRefs.keySet().iterator();
         boolean found = false;
         while (it.hasNext() && !found) {
             ConnectorName connectorName = (ConnectorName) it.next();
-            ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
-            if ((connectorMetadata.getStatus() == status) && connectorMetadata.getSupportedOperations()
-                            .containsAll(Arrays.asList(requiredOperations))) {
-                actorRef = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+            connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
+            if ((connectorMetadata.getStatus() == status) &&
+                    connectorMetadata.getSupportedOperations().containsAll(Arrays.asList(requiredOperations))) {
                 found = true;
             }
         }
         if (!found) {
             throw new PlanningException("There is no any attached connector supporting: " +
-                            System.lineSeparator() + Arrays.toString(requiredOperations));
+                    System.lineSeparator() + Arrays.toString(requiredOperations));
         }
 
-        return actorRef;
+        return connectorMetadata;
+    }
+
+    private String findAnyActorRef(ClusterMetadata clusterMetadata, Status status, Operations... requiredOperations)
+                    throws PlanningException {
+        ConnectorMetadata connectorMetadata = findAnyConnector(clusterMetadata, status, requiredOperations);
+        return StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
     }
 
 }

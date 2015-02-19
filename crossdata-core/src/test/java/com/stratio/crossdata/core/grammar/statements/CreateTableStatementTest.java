@@ -213,4 +213,13 @@ public class CreateTableStatementTest extends ParsingTest {
         testRegularStatementSession("demo", inputText, expectedText, "createTableWithOptions");
     }
 
+    @Test
+    public void registerTableBasic() {
+        String inputText = "[myCatalog], REGISTER TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
+                        "something2 int, something3 boolean);";
+        String expectedText = "REGISTER TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
+                        ".something=text, mycatalog.myTable.something2=int, mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+        testRegularStatement(inputText, expectedText, "createTableBasic");
+    }
+
 }

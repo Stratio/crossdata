@@ -70,8 +70,6 @@ import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.*;
-import com.stratio.crossdata.core.statements.sql.InsertSqlStatement;
-import com.stratio.crossdata.core.statements.sql.SelectSqlStatement;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
@@ -106,8 +104,6 @@ public class Validator {
             case MUST_EXIST_TABLE:
                 validateTable(parsedQuery.getStatement(), true);
                 break;
-            case MUST_EXIST_TABLES:
-                validateTables(parsedQuery.getStatement());
             case MUST_NOT_EXIST_TABLE:
                 validateTable(parsedQuery.getStatement(), false);
                 break;
@@ -534,24 +530,6 @@ public class Validator {
         }
 
         validateName(exist, tableName, hasIfExists);
-    }
-
-    private void validateTables(CrossdataStatement stmt)
-            throws NotExistNameException, IgnoreQueryException, ExistNameException {
-        List<TableName> tables;
-        boolean hasIfExists = false;
-
-        if (stmt instanceof InsertSqlStatement) {
-            tables = ((InsertSqlStatement) stmt).getTables();
-        } else if (stmt instanceof SelectSqlStatement) {
-            tables = ((SelectSqlStatement) stmt).getTables();
-        } else {
-            throw new IgnoreQueryException(stmt.getClass().getCanonicalName() + " not supported yet.");
-        }
-
-        for(TableName tableName: tables){
-            validateName(true, tableName, hasIfExists);
-        }
     }
 
     private void validateCatalog(CrossdataStatement stmt, boolean exist)

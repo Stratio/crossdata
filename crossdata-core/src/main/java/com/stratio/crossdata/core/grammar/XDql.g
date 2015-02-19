@@ -32,7 +32,6 @@ options {
     import com.stratio.crossdata.common.statements.structures.*;
     import com.stratio.crossdata.common.statements.structures.window.*;
     import com.stratio.crossdata.core.statements.*;
-    import com.stratio.crossdata.core.statements.sql.*;
     import com.stratio.crossdata.core.structures.*;
     import com.stratio.crossdata.core.structures.*;
     import com.stratio.crossdata.core.utils.*;
@@ -179,6 +178,7 @@ fragment POINT: '.';
 // Case-insensitive keywords
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
+T_REGISTER: R E G I S T E R;
 T_ALTER: A L T E R;
 T_NOT: N O T;
 T_WITH: W I T H;
@@ -306,7 +306,6 @@ T_DISCOVER: D I S C O V E R;
 T_METADATA: M E T A D A T A;
 T_PRIORITY: P R I O R I T Y;
 T_PAGINATION: P A G I N A T I O N;
-T_SQL: S Q L;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -530,8 +529,9 @@ createTableStatement returns [CreateTableStatement crtast]
         LinkedHashSet<ColumnName> partitionKey = new LinkedHashSet<>();
         LinkedHashSet<ColumnName> clusterKey = new LinkedHashSet<>();
         boolean ifNotExists = false;
+        boolean isExternal = false;
     }:
-    T_CREATE tableType=getTableType T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
+    (T_CREATE | T_REGISTER {isExternal = true;}) tableType=getTableType T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     tablename=getTableName { if(!tablename.isCompletedName()) throwParsingException("Catalog is missing") ; }
     T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS
@@ -560,7 +560,7 @@ createTableStatement returns [CreateTableStatement crtast]
     {
         if(partitionKey.isEmpty()) throwParsingException("Primary Key definition missing");
         $crtast = new CreateTableStatement(tableType, tablename, new ClusterName($clusterID.text), columns,
-        partitionKey, clusterKey);
+        partitionKey, clusterKey, isExternal);
         $crtast.setProperties(j);
         $crtast.setIfNotExists(ifNotExists);
     }
@@ -572,6 +572,7 @@ getTableType returns [TableType tableType]
     }:
     ( T_EPHEMERAL { tableType = TableType.EPHEMERAL; } )?
 ;
+
 
 alterTableStatement returns [AlterTableStatement altast]
     @init{
@@ -710,66 +711,6 @@ importMetadataStatement returns [ImportMetadataStatement imst]
 ;
 
 // ========================================================
-// SQL: INSERT & SELECT
-// ========================================================
-
-sqlStatement returns [SqlStatement st]:
-    (T_INSERT sql_insert = sqlInsert { $st = sql_insert; }
-    | T_SELECT sql_select = sqlSelect { $st = sql_select; } )
-;
-
-sqlInsert returns [InsertSqlStatement iss]
-    @after{
-        $iss = new InsertSqlStatement(tableName);
-    }:
-    T_INTO
-    tableName = getTableName
-    (~(T_SEMICOLON))*
-;
-
-sqlSelect returns [SelectSqlStatement sss]
-    @init{
-        List<TableName> tables = new ArrayList<>();
-    }
-    @after{
-        $sss = new SelectSqlStatement(tables);
-    }:
-    (~(T_FROM))*
-    T_FROM
-    tableName = getTableName { tables.add(tableName); }
-    (
-    implicitJoin[tables]
-    | otherJoins[tables]
-    )?
-//    (T_COMMA tableName = getTableName { tables.add(tableName); })*
-//    (any_text T_JOIN tableName = getTableName { tables.add(tableName); } any_text)*
-;
-
-implicitJoin[List<TableName> tables]:
-    (T_COMMA tableName = getTableName { tables.add(tableName); })+
-;
-
-otherJoins[List<TableName> tables]:
-    ((~(T_JOIN))* T_JOIN tableName = getTableName { tables.add(tableName); } (~(T_SEMICOLON | T_JOIN))* )+
-;
-
-//any_text: any_char* ;
-
-//any_char: T_ANYCHAR;
-
-//T_ANYCHAR: .;
-
-//TEXT_BEFORE_SEMICOLON
-//    @init{
-//        StringBuilder sb = new StringBuilder();
-//    }
-//    @after{
-//        setText(sb.toString());
-//    }:
-//    (c=~(';') { sb.appendCodePoint(c); })*  (';')
-//;
-
-// ========================================================
 // CROSSDATA STATEMENT
 // ========================================================
 
@@ -778,8 +719,7 @@ crossdataStatement returns [CrossdataStatement st]:
         ( gID=getGenericID { sessionCatalog = gID;} )?
     T_END_BRACKET T_COMMA)?
     (
-    T_SQL T_COLON st_sql = sqlStatement {$st = st_sql;}
-    | st_nsnt  = insertIntoStatement { $st = st_nsnt;}
+    st_nsnt  = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
     | st_crta = createTableStatement { $st = st_crta;}
     | st_altt = alterTableStatement { $st = st_altt;}
