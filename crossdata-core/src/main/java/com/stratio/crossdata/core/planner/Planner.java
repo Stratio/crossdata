@@ -172,22 +172,15 @@ public class Planner {
         Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
                         .getAttachedConnectors(Status.ONLINE, tables);
 
-        StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
-        for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()) {
-            for (ConnectorMetadata cm : tableEntry.getValue()) {
-                sb.append("table: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName()).append(" ")
-                                .append(cm.getActorRef()).append(System.lineSeparator());
-            }
-        }
-        LOG.info(sb.toString());
+        logCandidateConnectors(candidatesConnectors);
 
         List<ExecutionPath> executionPaths = new ArrayList<>();
         Map<UnionStep, Set<ExecutionPath>> unionSteps = new HashMap<>();
         //Iterate through the initial steps and build valid execution paths
-        for (LogicalStep step : workflow.getInitialSteps()) {
-            TableName targetTable = ((Project) step).getTableName();
+        for (LogicalStep initialStep : workflow.getInitialSteps()) {
+            TableName targetTable = ((Project) initialStep).getTableName();
             LOG.info("Table: " + targetTable);
-            ExecutionPath ep = defineExecutionPath(step, candidatesConnectors.get(targetTable));
+            ExecutionPath ep = defineExecutionPath(initialStep, candidatesConnectors.get(targetTable));
             LOG.info("Last step: " + ep.getLast());
             if (UnionStep.class.isInstance(ep.getLast())) {
                 Set<ExecutionPath> paths = unionSteps.get(ep.getLast());
@@ -213,6 +206,17 @@ public class Planner {
 
         //Merge execution paths
         return mergeExecutionPaths(queryId, executionPaths, unionSteps);
+    }
+
+    private void logCandidateConnectors(Map<TableName, List<ConnectorMetadata>> candidatesConnectors) {
+        StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
+        for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()) {
+            for (ConnectorMetadata cm : tableEntry.getValue()) {
+                sb.append("table: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName()).append(" ")
+                                .append(cm.getActorRef()).append(System.lineSeparator());
+            }
+        }
+        LOG.info(sb.toString());
     }
 
     /**
@@ -505,22 +509,10 @@ public class Planner {
                             case SELECT_FUNCTIONS:
                                 Select select = (Select) current;
                                 Set<Selector> cols = select.getColumnMap().keySet();
-                                for(Selector selector: cols){
-                                    if(selector instanceof FunctionSelector){
-                                        FunctionSelector fSelector = (FunctionSelector) selector;
-                                        if(!sFunctions.contains(fSelector.getFunctionName())) {
-                                            toRemove.add(connector);
-                                            break;
-                                        }else {
-                                            if (!MetadataManager.MANAGER.checkSignature(fSelector, connector.getName())) {
-                                                toRemove.add(connector);
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                 }
-                            break;
+                                if (!checkFunctionsConsistency(connector, sFunctions, cols)){
+                                    toRemove.add(connector);
+                                }
+                                break;
                             default:
                                  throw new PlanningException(current.getOperation() + " not supported yet.");
                         }
@@ -545,6 +537,40 @@ public class Planner {
 
         }
         return new ExecutionPath(initial, last, availableConnectors);
+    }
+
+    /**
+     * Checks whether the selectors are consistent with the functions supported by the connector.
+     * @param connectorMetadata     The connector metadata.
+     * @param supportedFunctions    The functions which are supported by the connector.
+     * @param selectors             The set of selector
+     * @return true if the selectors are consistent with the functions;
+     * @throws PlanningException
+     */
+    private boolean checkFunctionsConsistency(ConnectorMetadata connectorMetadata, Set<String> supportedFunctions, Set<Selector> selectors)
+                    throws PlanningException {
+
+        boolean areFunctionsConsistent = true;
+        Iterator<Selector> selectorIterator = selectors.iterator();
+
+        while(selectorIterator.hasNext() && areFunctionsConsistent){
+            Selector selector = selectorIterator.next();
+            if(selector instanceof FunctionSelector){
+                FunctionSelector fSelector = (FunctionSelector) selector;
+                if(!supportedFunctions.contains(fSelector.getFunctionName())) {
+                    areFunctionsConsistent = false;
+                    break;
+                }else {
+                    if (!MetadataManager.MANAGER.checkInputSignature(fSelector, connectorMetadata.getName())) {
+                        areFunctionsConsistent = false;
+                        break;
+                    }
+                }
+                areFunctionsConsistent = checkFunctionsConsistency(connectorMetadata, supportedFunctions,
+                                new HashSet<>(fSelector.getFunctionColumns()));
+            }
+         }
+        return areFunctionsConsistent;
     }
 
     /**

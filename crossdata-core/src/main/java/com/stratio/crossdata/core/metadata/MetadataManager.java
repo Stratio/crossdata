@@ -47,6 +47,7 @@ import com.stratio.crossdata.common.data.NodeName;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
@@ -62,6 +63,7 @@ import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.NodeMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -1194,31 +1196,36 @@ public enum MetadataManager {
     }
 
     /**
-     * Check if the connector has associated the signature of the function.
+     * Check if the connector has associated the input signature of the function.
      * @param fSelector The function Selector with the signature.
      * @param connectorName The name of the connector.
      * @return A boolean with the check result.
      */
-    public boolean checkSignature(FunctionSelector fSelector, ConnectorName connectorName){
+    public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName)
+                    throws PlanningException {
         boolean result = false;
         FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
         if(ft != null){
-            result = checkSignature(fSelector, ft);
+            String inputSignatureFromSelector = createInputSignature(fSelector, connectorName);
+            String storedSignature = ft.getSignature();
+            String inputStoredSignature = storedSignature.substring(0,storedSignature.lastIndexOf(":Tuple["));
+            result = inputStoredSignature.equals(inputSignatureFromSelector) || FunctionType
+                            .checkInputSignatureCompatibility(inputStoredSignature, inputSignatureFromSelector);
         }
         return result;
     }
 
     /**
-     *  Get the set of function types from all existing connectors.
+     * Get the function type from the specified connector.
      * @param connectorName The connector name.
      * @param functionName The function name.
-     * @return A set of {@link com.stratio.crossdata.common.manifest.FunctionType}.
+     * @return The {@link com.stratio.crossdata.common.manifest.FunctionType} if the function is defined; null otherwise.
      */
     public FunctionType getFunction(ConnectorName connectorName, String functionName) {
         FunctionType result = null;
         Set<FunctionType> candidateFunctions = getSupportedFunctions(connectorName);
         for(FunctionType ft: candidateFunctions){
-            if(ft.getFunctionName().equalsIgnoreCase(functionName)){
+            if(ft.getFunctionName().equals(functionName)){
                 result = ft;
                 break;
             }
@@ -1227,59 +1234,12 @@ public enum MetadataManager {
     }
 
     /**
-     * Check if the given statement signature is allowed by the registered function signature.
+     * Generates the input signature of a given function selector.
      * @param functionSelector The function selector.
-     * @param functionConnector The function Type.
-     * @return A boolean with the check result.
+     * @return A String with the input signature.
      */
-    public boolean checkSignature(FunctionSelector functionSelector, FunctionType functionConnector){
-        boolean result = false;
-        String signatureFromSelector = createSignature(functionSelector);
-        String storedSignature = functionConnector.getSignature();
-        if(storedSignature.equalsIgnoreCase(signatureFromSelector)){
-            result = true;
-        } else if(checkSignatureCompatibility(storedSignature, signatureFromSelector)){
-            result = true;
-        }
-        return result;
-    }
-
-    /**
-     * Check the signature of to functions.
-     * @param storedSignature The string with the first signature.
-     * @param querySignature The string with the second signature.
-     * @return A boolean with the check result.
-     */
-    private boolean checkSignatureCompatibility(String storedSignature, String querySignature) {
-        boolean result = false;
-        String querySignature1=querySignature;
-        if(storedSignature.contains("Any*]")){
-            String typesInStoresSignature = storedSignature.substring(
-                    storedSignature.indexOf("Tuple["),
-                    storedSignature.indexOf(']')+1);
-            querySignature1 = querySignature.replaceFirst("Tuple\\[[^\\]]*]", typesInStoresSignature);
-        }
-
-        String querySignature2=querySignature1;
-        if(storedSignature.endsWith(":Tuple[Any]")){
-            querySignature2 = querySignature1.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
-        }
-        String storedSignature1=storedSignature;
-        if(querySignature1.endsWith(":Tuple[Any]")){
-            storedSignature1 = storedSignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
-        }
-        if(storedSignature1.equalsIgnoreCase(querySignature2)){
-            result = true;
-        }
-        return result;
-    }
-
-    /**
-     * Generates the signature of a given function selector.
-     * @param functionSelector The function selector.
-     * @return A String with the signature.
-     */
-    public String createSignature(FunctionSelector functionSelector) {
+    private String createInputSignature(FunctionSelector functionSelector, ConnectorName connectorName)
+                    throws PlanningException {
         StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
         sb.append("(Tuple[");
         Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
@@ -1287,7 +1247,11 @@ public enum MetadataManager {
             Selector selector = iter.next();
             switch(selector.getType()){
             case FUNCTION:
-
+                FunctionSelector fs = (FunctionSelector) selector;
+                String fSignature = getFunction(connectorName, fs.getFunctionName()).getSignature();
+                String functionType = fSignature.substring(fSignature.lastIndexOf(":Tuple[") + 7,
+                                fSignature.length() - 1);
+                sb.append(functionType);
                 break;
             case COLUMN:
                 ColumnSelector cs = (ColumnSelector) selector;
@@ -1296,30 +1260,28 @@ public enum MetadataManager {
                 ColumnType columnType = column.getColumnType();
                 sb.append(columnType.getCrossdataType());
                 break;
-            case ASTERISK:
-
-                break;
             case BOOLEAN:
-
+                sb.append(new ColumnType(DataType.BOOLEAN).getCrossdataType());
                 break;
             case STRING:
-
+                sb.append(new ColumnType(DataType.TEXT).getCrossdataType());
                 break;
             case INTEGER:
-
+                sb.append(new ColumnType(DataType.INT).getCrossdataType());
                 break;
             case FLOATING_POINT:
-
+                sb.append(new ColumnType(DataType.DOUBLE).getCrossdataType());
                 break;
+            case ASTERISK:
             case RELATION:
-
-                break;
+            default:
+                throw new PlanningException("The input type : "+selector.getType()+" is not supported yet");
             }
             if(iter.hasNext()){
-                sb.append(", ");
+                sb.append(",");
             }
         }
-        sb.append("]):Tuple[Any]");
+        sb.append("])");
         return  sb.toString();
     }
 
