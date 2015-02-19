@@ -178,6 +178,7 @@ fragment POINT: '.';
 // Case-insensitive keywords
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
+T_REGISTER: R E G I S T E R;
 T_ALTER: A L T E R;
 T_NOT: N O T;
 T_WITH: W I T H;
@@ -528,8 +529,9 @@ createTableStatement returns [CreateTableStatement crtast]
         LinkedHashSet<ColumnName> partitionKey = new LinkedHashSet<>();
         LinkedHashSet<ColumnName> clusterKey = new LinkedHashSet<>();
         boolean ifNotExists = false;
+        boolean isExternal = false;
     }:
-    T_CREATE tableType=getTableType T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
+    (T_CREATE | T_REGISTER {isExternal = true;}) tableType=getTableType T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     tablename=getTableName { if(!tablename.isCompletedName()) throwParsingException("Catalog is missing") ; }
     T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS
@@ -558,7 +560,7 @@ createTableStatement returns [CreateTableStatement crtast]
     {
         if(partitionKey.isEmpty()) throwParsingException("Primary Key definition missing");
         $crtast = new CreateTableStatement(tableType, tablename, new ClusterName($clusterID.text), columns,
-        partitionKey, clusterKey);
+        partitionKey, clusterKey, isExternal);
         $crtast.setProperties(j);
         $crtast.setIfNotExists(ifNotExists);
     }
@@ -570,6 +572,7 @@ getTableType returns [TableType tableType]
     }:
     ( T_EPHEMERAL { tableType = TableType.EPHEMERAL; } )?
 ;
+
 
 alterTableStatement returns [AlterTableStatement altast]
     @init{
