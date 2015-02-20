@@ -70,21 +70,6 @@ public class BasicValidatorTest {
     public static void setUpBeforeClass() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
         MetadataManagerTestHelper.HELPER.createTestEnvironment();
-        /*
-        GridInitializer gridInitializer = Grid.initializer();
-        gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
-        path = "/tmp/metadatastore" + UUID.randomUUID();
-        gridInitializer.withPort(7800)
-                .withListenAddress("127.0.0.1")
-                .withMinInitialMembers(1)
-                .withJoinTimeoutInMs(3000)
-                .withPersistencePath(path).init();
-
-        metadataMap = Grid.INSTANCE.map("crossDatatest");
-        Lock lock = Grid.INSTANCE.lock("crossDatatest");
-        TransactionManager tm = Grid.INSTANCE.transactionManager("crossDatatest");
-        MetadataManager.MANAGER.init(metadataMap, lock, tm);
-        */
         MetadataManager.MANAGER.createDataStore(createDataStoreMetadata(), false);
         ConnectorMetadata connectorMetadata = createConnectorMetadata();
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);

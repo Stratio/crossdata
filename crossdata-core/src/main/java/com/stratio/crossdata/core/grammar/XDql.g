@@ -632,8 +632,6 @@ selectStatement returns [SelectStatement slctst]
         if(limitInc)
              $slctst.setLimit(Integer.parseInt($constant.text));
 
-        //$slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
-        //$slctst.updateTableNames();
     }
 ;
 

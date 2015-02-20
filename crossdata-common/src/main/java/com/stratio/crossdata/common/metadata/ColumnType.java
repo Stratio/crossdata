@@ -23,6 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
+
 /**
  * Types of columns supported by CROSSDATA with their equivalence in ODBC data types. Notice that a
  * NATIVE type has been added to map those types that are not generic and database dependant.
@@ -291,6 +297,43 @@ public class ColumnType implements Serializable {
             break;
         }
         return clazz;
+    }
+
+    public Selector createSelector() {
+        Selector selector = null;
+        switch (dataType){
+        case BIGINT:
+            selector = new IntegerSelector(0);
+            break;
+        case BOOLEAN:
+            selector = new BooleanSelector(false);
+            break;
+        case DOUBLE:
+            selector = new FloatingPointSelector(0);
+            break;
+        case FLOAT:
+            selector = new FloatingPointSelector(0);
+            break;
+        case INT:
+            selector = new IntegerSelector(0);
+            break;
+        case TEXT:
+            selector = new StringSelector("");
+            break;
+        case VARCHAR:
+            selector = new StringSelector("");
+            break;
+        case NATIVE:
+            selector = new StringSelector("");
+            break;
+        case SET:
+            break;
+        case LIST:
+            break;
+        case MAP:
+            break;
+        }
+        return selector;
     }
 
     public static ColumnType valueOf(String name){
