@@ -20,7 +20,7 @@ package com.stratio.crossdata.core.normalizer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,17 +44,17 @@ public class NormalizedFields {
     /**
      * Set of {@link com.stratio.crossdata.common.data.ColumnName} involved in a query.
      */
-    private Set<ColumnName> columnNames = new HashSet<>();
+    private Set<ColumnName> columnNames = new LinkedHashSet<>();
 
     /**
      * Set of {@link com.stratio.crossdata.common.data.TableName} involved in a query.
      */
-    private Set<TableName> tableNames = new HashSet<>();
+    private Set<TableName> tableNames = new LinkedHashSet<>();
 
     /**
      * Set of {@link com.stratio.crossdata.common.data.CatalogName} involved in a query.
      */
-    private Set<CatalogName> catalogNames = new HashSet<>();
+    private Set<CatalogName> catalogNames = new LinkedHashSet<>();
 
     /**
      * List of {@link com.stratio.crossdata.common.statements.structures.Selector} involved in a query including

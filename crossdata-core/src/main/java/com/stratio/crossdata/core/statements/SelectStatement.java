@@ -24,10 +24,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
+import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.window.Window;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.GroupByClause;
@@ -359,5 +361,14 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             tableNames.add(join.getTablename());
         }
         return tableNames;
+    }
+
+    @Override public List<ColumnName> getColumns() {
+        List<Selector> selectors = selectExpression.getSelectorList();
+        List<ColumnName> columns = new ArrayList<>();
+        for(Selector selector: selectors){
+            columns.add(selector.getColumnName());
+        }
+        return columns;
     }
 }
