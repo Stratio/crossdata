@@ -375,10 +375,6 @@ public class SelectStatementTest extends ParsingTest {
         }
     }
 
-
-
-
-
   /*
   @Test
   public void selectWithInClauseOk() {
@@ -575,6 +571,15 @@ public class SelectStatementTest extends ParsingTest {
         String expectedText = "SELECT * FROM myCatalog.table1 INNER JOIN myCatalog.table2 " +
                 "ON myCatalog.table1.id = myCatalog.table2.id;";
         testRegularStatementSession("myCatalog", inputText, expectedText, "implicitJoin");
+    }
+
+    @Test
+    public void testJoinAndStreaming() {
+        String inputText = "SELECT id, name, amount FROM demo.table1 WITH WINDOW 5 Mins " +
+                "JOIN demo.table2 ON table1.id = table2.id;";
+        String expectedText = "SELECT <UNKNOWN_NAME>.<UNKNOWN_NAME>.id, <UNKNOWN_NAME>.<UNKNOWN_NAME>.name, <UNKNOWN_NAME>.<UNKNOWN_NAME>.amount" +
+                " FROM demo.table1 WITH WINDOW 5 MINUTES INNER JOIN demo.table2 ON demo.table1.id = demo.table2.id;";
+        testRegularStatementSession("demo", inputText, expectedText, "testJoinAndStreaming");
     }
 
 }
