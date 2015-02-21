@@ -455,15 +455,16 @@ public class PlannerTest extends PlannerBaseTest {
 
     @Test
     public void pagination() {
-
         String inputText = "SELECT * FROM demo.table1;";
-
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "pagination", false, table1);
-
         int expectedPagedSize = 5;
-
         assertEquals(queryWorkflow.getWorkflow().getPagination(), expectedPagedSize, "Pagination plan failed.");
+    }
+
+    @Test
+    public void testJoinWithStreaming(){
+        
     }
 
 }

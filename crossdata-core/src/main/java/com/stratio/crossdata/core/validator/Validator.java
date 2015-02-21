@@ -648,6 +648,8 @@ public class Validator {
                     ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
                     validateColumnType(columnMetadata, columnFromSelect);
                 }
+
+                insertIntoStatement.setSelectStatement(selectValidatedQuery.getStatement());
             }
 
         }

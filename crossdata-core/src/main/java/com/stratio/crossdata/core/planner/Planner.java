@@ -89,8 +89,10 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
+import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
+import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
@@ -1203,6 +1205,19 @@ public class Planner {
                     throws PlanningException {
         StorageWorkflow storageWorkflow;
         InsertIntoStatement insertIntoStatement = (InsertIntoStatement) query.getStatement();
+
+        if(insertIntoStatement.getTypeValues() == InsertIntoStatement.TYPE_SELECT_CLAUSE){
+            SelectStatement selectStatement = insertIntoStatement.getSelectStatement();
+            BaseQuery selectBaseQuery = new BaseQuery(
+                    query.getQueryId(),
+                    selectStatement.toString(),
+                    query.getDefaultCatalog());
+            SelectParsedQuery selectParsedQuery = new SelectParsedQuery(selectBaseQuery, selectStatement);
+            SelectValidatedQuery selectValidatedQuery= new SelectValidatedQuery(selectParsedQuery);
+            selectValidatedQuery.optimizeQuery();
+            LogicalWorkflow workflow = buildWorkflow(selectValidatedQuery);
+            ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(selectValidatedQuery.getQueryId(), workflow);
+        }
 
         String actorRef;
 

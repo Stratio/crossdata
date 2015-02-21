@@ -207,6 +207,10 @@ public class InsertIntoStatement extends StorageStatement {
         return selectStatement;
     }
 
+    public void setSelectStatement(SelectStatement selectStatement) {
+        this.selectStatement = selectStatement;
+    }
+
     public int getTypeValues() {
         return typeValues;
     }

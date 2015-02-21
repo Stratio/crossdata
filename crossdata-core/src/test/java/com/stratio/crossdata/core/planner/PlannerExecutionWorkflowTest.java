@@ -199,8 +199,6 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         return j;
     }
 
-
-
     public void createTestTables() {
         String[] columnNames1 = { "id", "user" };
         ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
@@ -475,9 +473,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         paths.add(path2);
         unions.put(join, paths);
 
-        ExecutionWorkflow executionWorkflow = null;
         try {
-            executionWorkflow = plannerWrapper.mergeExecutionPaths("qid", new ArrayList<>(paths), unions);
+            plannerWrapper.mergeExecutionPaths("qid", new ArrayList<>(paths), unions);
             fail("Expecting planning exception");
         } catch (PlanningException e) {
             assertNotNull(e, "Expecting Planning exception");
