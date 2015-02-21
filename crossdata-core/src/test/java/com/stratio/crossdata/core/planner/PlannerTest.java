@@ -464,8 +464,8 @@ public class PlannerTest extends PlannerBaseTest {
 
     @Test
     public void testJoinWithStreaming(){
-        String inputText = "SELECT id, name, amount FROM demo.table1 " +
-                "JOIN demo.table2 ON table1.id = table2.id WITH WINDOW 5 MINS;";
+        String inputText = "SELECT id, name, amount FROM demo.table1 WITH WINDOW 5 Mins " +
+                "JOIN demo.table2 ON table1.id = table2.id;";
     }
 
 }
