@@ -45,6 +45,7 @@ options {
     import java.util.HashSet;
     import org.apache.commons.lang3.tuple.MutablePair;
     import com.stratio.crossdata.common.exceptions.*;
+    import java.util.UUID;
 }
 
 @members {
@@ -597,14 +598,16 @@ selectStatement returns [SelectStatement slctst]
         boolean limitInc = false;
         Map fieldsAliasesMap = new LinkedHashMap<String, String>();
         Map tablesAliasesMap = new LinkedHashMap<String, String>();
-        MutablePair<String, String> pair = new MutablePair<>();
         boolean implicitJoin = false;
+        boolean subqueryInc = false;
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
         slctst.setTablesAliases(tablesAliasesMap);
     }:
-    T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
+    T_SELECT selClause=getSelectExpression[fieldsAliasesMap]
+     T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS subqueryAlias=getSubqueryAlias{ subqueryInc = true;}
+            | tablename=getAliasedTableID[tablesAliasesMap])
     (T_COMMA { joinInc = true; implicitJoin = true; } identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     ((T_INNER)? T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
@@ -631,10 +634,25 @@ selectStatement returns [SelectStatement slctst]
              $slctst.setGroupByClause(new GroupByClause(groupByClause));
         if(limitInc)
              $slctst.setLimit(Integer.parseInt($constant.text));
+        if(subqueryInc)
+             $slctst.setSubquery(subquery);
 
         //$slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
         //$slctst.updateTableNames();
     }
+;
+
+getSubqueryAlias returns [String sAlias]
+   @init{
+        boolean aliasInc = false;
+   }
+   @after{
+        if(aliasInc)
+            $sAlias = $alias.text;
+        else
+            $sAlias = UUID.randomUUID().toString();
+   }:
+((T_AS)? alias=T_IDENT {aliasInc = true;})?
 ;
 
 insertIntoStatement returns [InsertIntoStatement nsntst]

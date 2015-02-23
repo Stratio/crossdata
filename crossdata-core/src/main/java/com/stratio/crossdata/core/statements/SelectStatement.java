@@ -92,6 +92,14 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     private boolean limitInc = false;
     /**
+     * Whether a subquery clause has been specified.
+     */
+    private boolean subqueryInc = false;
+    /**
+     * The list of selectors to be retrieved.
+     */
+    private SelectStatement subquery= null;
+    /**
      * The LIMIT in terms of the number of rows to be retrieved in the result of the SELECT statement.
      */
     private int limit = 0;
@@ -342,12 +350,23 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
     /**
      * Set the order by clause of the statement.
-     * @param orderByClauseClauses Tge list of columns that are implicated in the order by.
+     * @param orderByClauseClauses The list of columns that are implicated in the order by.
      */
     public void setOrderByClauses(List<OrderByClause> orderByClauseClauses) {
         if ((orderByClauseClauses != null) && (!orderByClauseClauses.isEmpty())) {
             this.orderInc = true;
             this.orderByClauseClauses = orderByClauseClauses;
+        }
+    }
+
+    /**
+     * Set the subquery of the statement.
+     * @param subquery The list of columns that are implicated in the order by.
+     */
+    public void setSubquery(SelectStatement subquery) {
+        if (subquery != null) {
+            this.subqueryInc = true;
+            this.subquery = subquery;
         }
     }
 
