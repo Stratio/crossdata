@@ -241,7 +241,7 @@ public class Planner {
         ExecutionPath[] paths = null;
         for (Map.Entry<UnionStep, Set<ExecutionPath>> entry : unionSteps.entrySet()) {
             paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
-            if (paths.length == 2 && TransformationStep.class.isInstance(paths[0].getLast()) && TransformationStep.class
+            if (TransformationStep.class.isInstance(paths[0].getLast()) && TransformationStep.class
                             .isInstance(paths[1].getLast())) {
                 mergeStep = entry.getKey();
             }
