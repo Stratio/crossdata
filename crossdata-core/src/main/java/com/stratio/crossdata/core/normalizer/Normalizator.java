@@ -601,7 +601,9 @@ public class Normalizator {
         }
 
         // Create compatibilities table for ColumnType, Operator and SelectorType
-        checkCompatibility(columnMetadata, operator, rightTermType);
+        if (operator!=Operator.MATCH){
+            checkCompatibility(columnMetadata, operator, rightTermType);
+        }
     }
 
     private SelectorType convertMetadataTypeToSelectorType(ColumnType columnType) throws ValidationException {
