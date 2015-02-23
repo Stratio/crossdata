@@ -57,6 +57,8 @@ public class StorageWorkflow extends ExecutionWorkflow {
 
     private boolean ifNotExists;
 
+    private ExecutionWorkflow previousExecutionWorkflow;
+
     /**
      * Class constructor.
      *
@@ -154,5 +156,15 @@ public class StorageWorkflow extends ExecutionWorkflow {
 
     public void setIfNotExists(boolean ifNotExists) {
         this.ifNotExists = ifNotExists;
+    }
+
+
+
+    public ExecutionWorkflow getPreviousExecutionWorkflow() {
+        return previousExecutionWorkflow;
+    }
+
+    public void setPreviousExecutionWorkflow(ExecutionWorkflow previousExecutionWorkflow) {
+        this.previousExecutionWorkflow = previousExecutionWorkflow;
     }
 }

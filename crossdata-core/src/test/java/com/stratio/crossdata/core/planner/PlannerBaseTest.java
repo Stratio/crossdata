@@ -33,8 +33,10 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.logicalplan.Filter;
@@ -53,7 +55,11 @@ import com.stratio.crossdata.core.grammar.ParsingTest;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
+import com.stratio.crossdata.core.query.StorageParsedQuery;
+import com.stratio.crossdata.core.query.StoragePlannedQuery;
+import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.validator.Validator;
 
 /**
  * Base class for planner tests.
@@ -105,6 +111,35 @@ public class PlannerBaseTest {
         SelectPlannedQuery plannedQuery = null;
         try {
             plannedQuery = planner.planQuery(svqw);
+            if (shouldFail) {
+                fail("Expecting planning to fail");
+            }
+        } catch (PlanningException e) {
+            if (!shouldFail) {
+                fail("Expecting planning to succeed");
+            } else {
+                assertNotNull(e, "Exception should not be null");
+                assertEquals(e.getClass(), PlanningException.class, "Exception class does not match.");
+            }
+        }
+        LOG.info(plannedQuery.getExecutionWorkflow());
+        return plannedQuery.getExecutionWorkflow();
+    }
+
+    public ExecutionWorkflow getPlannedStorageQuery(
+            String statement,
+            String methodName,
+            boolean shouldFail) throws ValidationException, IgnoreQueryException {
+
+        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+        StorageParsedQuery spq = StorageParsedQuery.class.cast(stmt);
+
+        Validator validator = new Validator();
+        StorageValidatedQuery storageValidatedQuery = (StorageValidatedQuery) validator.validate(spq);
+
+        StoragePlannedQuery plannedQuery = null;
+        try {
+            plannedQuery = planner.planQuery(storageValidatedQuery);
             if (shouldFail) {
                 fail("Expecting planning to fail");
             }

@@ -42,8 +42,10 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.QueryWorkflow;
@@ -468,7 +470,28 @@ public class PlannerTest extends PlannerBaseTest {
                 "INNER JOIN demo.table2 ON demo.table2.id_aux = demo.table1.id;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testJoinWithStreaming", false, table1, table2);
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
+        assertNotNull(queryWorkflow.getTriggerStep(), "Planner failed.");
+        assertNotNull(queryWorkflow.getNextExecutionWorkflow(), "Planner failed.");
         assertNotNull(queryWorkflow, "Planner failed");
+    }
+
+    @Test
+    public void testInsertIntoFromSelect(){
+        String inputText = "INSERT INTO demo.table1 (demo.table1.id, demo.table1.user) SELECT * FROM demo.table2;";
+        StorageWorkflow storageWorkflow = null;
+        try {
+            storageWorkflow = (StorageWorkflow) getPlannedStorageQuery(
+                    inputText, "testInsertIntoFromSelect", false);
+        } catch (ValidationException e) {
+            fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            fail(e.getMessage());
+        }
+        assertEquals(storageWorkflow.getExecutionType(), ExecutionType.INSERT_BATCH, "Planner failed.");
+        assertNotNull(storageWorkflow.getTriggerStep(), "Planner failed.");
+        assertNotNull(storageWorkflow.getNextExecutionWorkflow(), "Planner failed.");
+        assertNotNull(storageWorkflow, "Planner failed");
     }
 
 }
