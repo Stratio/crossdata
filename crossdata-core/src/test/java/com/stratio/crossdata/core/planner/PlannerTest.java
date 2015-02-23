@@ -464,8 +464,11 @@ public class PlannerTest extends PlannerBaseTest {
 
     @Test
     public void testJoinWithStreaming(){
-        String inputText = "SELECT id, name, amount FROM demo.table1 WITH WINDOW 5 Mins " +
-                "JOIN demo.table2 ON table1.id = table2.id;";
+        String inputText = "SELECT * FROM demo.table1 WITH WINDOW 5 MINUTES " +
+                "INNER JOIN demo.table2 ON demo.table2.id_aux = demo.table1.id;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testJoinWithStreaming", false, table1, table2);
+        assertNotNull(queryWorkflow, "Planner failed");
     }
 
 }
