@@ -140,10 +140,13 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeJoins() throws ValidationException {
-        InnerJoin innerJoin = ((SelectStatement) parsedQuery.getStatement()).getJoin();
-        if (innerJoin != null) {
-            normalizeJoins(innerJoin);
-            fields.setJoin(innerJoin);
+        List<InnerJoin> innerJoinList = ((SelectStatement) parsedQuery.getStatement()).getJoinList();
+
+        if (!innerJoinList.isEmpty()) {
+            for(InnerJoin innerJoin: innerJoinList) {
+                normalizeJoins(innerJoin);
+                fields.addJoin(innerJoin);
+            }
         }
     }
 

@@ -188,7 +188,7 @@ public class Validator {
             ((SelectValidatedQuery) validatedQuery).getColumns().addAll(fields.getColumnNames());
             ((SelectValidatedQuery) validatedQuery).getTables().addAll(fields.getTableNames());
             ((SelectValidatedQuery) validatedQuery).getRelations().addAll(fields.getWhere());
-            ((SelectValidatedQuery) validatedQuery).setJoin(fields.getJoin());
+            ((SelectValidatedQuery) validatedQuery).setJoinList(fields.getJoinList());
         }
 
         return validatedQuery;

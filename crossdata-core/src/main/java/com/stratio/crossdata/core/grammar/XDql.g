@@ -620,9 +620,9 @@ selectStatement returns [SelectStatement slctst]
             $slctst.setWindow(window);
         if(joinInc)
             if(implicitJoin)
-                $slctst.setJoin(new InnerJoin(identJoin, whereClauses));
+                $slctst.addJoin(new InnerJoin(identJoin, whereClauses));
             else
-                $slctst.setJoin(new InnerJoin(identJoin, joinRelations));
+                $slctst.addJoin(new InnerJoin(identJoin, joinRelations));
         if(whereInc)
              $slctst.setWhere(whereClauses);
         if(orderInc)

@@ -455,7 +455,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     }
 
-
+/*
     @Test
     public void mergeExecutionPathsJoinMultiple() {
 
@@ -519,7 +519,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
                 new String[] { connector1.getActorRef().toString() });
 
     }
-
+*/
 
     @Test
     public void mergeExecutionPathsJoinException() {
