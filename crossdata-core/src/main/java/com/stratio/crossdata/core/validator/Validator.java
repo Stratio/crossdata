@@ -55,6 +55,7 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
@@ -630,7 +631,20 @@ public class Validator {
             } else if (insertIntoStatement.getTypeValues() == InsertIntoStatement.TYPE_SELECT_CLAUSE){
                 SelectStatement ss = insertIntoStatement.getSelectStatement();
 
-                checkValuesLength(columnNameList.size(), ss.getColumns().size());
+                List<ColumnName> cols = ss.getColumns();
+
+                List<Selector> selectorList = ss.getSelectExpression().getSelectorList();
+                if((selectorList.size()) == 1 && (selectorList.get(0) instanceof AsteriskSelector)){
+                    cols.clear();
+                    List<ColumnMetadata> columnsMetadata = MetadataManager.MANAGER.getColumnByTable(
+                            ss.getTableName().getCatalogName().getName(),
+                            ss.getTableName().getName());
+                    for(ColumnMetadata cm: columnsMetadata){
+                        cols.add(cm.getName());
+                    }
+                }
+
+                checkValuesLength(columnNameList.size(), cols.size());
 
                 BaseQuery baseQuery = new BaseQuery(
                         UUID.randomUUID().toString(),
@@ -640,7 +654,7 @@ public class Validator {
                 SelectParsedQuery spq = new SelectParsedQuery(baseQuery, ss);
                 SelectValidatedQuery selectValidatedQuery = (SelectValidatedQuery) validate(spq);
 
-                List<ColumnName> cols = selectValidatedQuery.getColumns();
+                cols = selectValidatedQuery.getColumns();
 
                 for (int i = 0; i < columnNameList.size(); i++) {
                     ColumnName columnName = columnNameList.get(i);

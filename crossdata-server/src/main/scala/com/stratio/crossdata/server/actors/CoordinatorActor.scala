@@ -244,10 +244,39 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
           executionInfo.setWorkflow(storageWorkflow)
           executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
-          ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
 
-          val actorRef = context.actorSelection(storageWorkflow.getActorRef())
-          actorRef ! storageWorkflow.getStorageOperation()
+          log.info("\nCoordinate workflow: " + storageWorkflow.toString)
+
+          if ((storageWorkflow.getPreviousExecutionWorkflow == null)
+            && (ResultType.RESULTS.equals(storageWorkflow.getResultType))) {
+
+            ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
+
+            val actorRef = context.actorSelection(storageWorkflow.getActorRef())
+            actorRef ! storageWorkflow.getStorageOperation()
+
+          } else if ((storageWorkflow.getPreviousExecutionWorkflow != null)
+            && (ResultType.TRIGGER_EXECUTION.equals(storageWorkflow.getResultType))) {
+            val actorRef = StringUtils.getAkkaActorRefUri(storageWorkflow.getActorRef())
+            val actorSelection = context.actorSelection(actorRef)
+
+            //Register the top level workflow
+            val operation = storageWorkflow.getPreviousExecutionWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(
+              queryId + CoordinatorActor.TriggerToken)
+            executionInfo.setRemoveOnSuccess(Execute.getClass.isInstance(operation))
+            ExecutionManager.MANAGER.createEntry(queryId + CoordinatorActor.TriggerToken, executionInfo)
+
+            //Register the result workflow
+            val nextExecutionInfo = new ExecutionInfo
+            nextExecutionInfo.setSender(StringUtils.getAkkaActorRefUri(sender))
+            nextExecutionInfo.setWorkflow(storageWorkflow)
+            nextExecutionInfo.setRemoveOnSuccess(executionInfo.isRemoveOnSuccess)
+            ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo)
+
+            actorSelection.asInstanceOf[ActorSelection] ! operation
+            log.info("\nMessage sent to " + actorRef.toString())
+          }
+
         }
 
         case managementWorkflow: ManagementWorkflow => {
@@ -351,8 +380,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val actorSelection = context.actorSelection(actorRef)
 
             //Register the top level workflow
-            val operation = queryWorkflow.getExecuteOperation(queryId + CoordinatorActor
-              .TriggerToken)
+            val operation = queryWorkflow.getExecuteOperation(
+              queryId + CoordinatorActor.TriggerToken)
             executionInfo.setRemoveOnSuccess(Execute.getClass.isInstance(operation))
             ExecutionManager.MANAGER.createEntry(queryId + CoordinatorActor.TriggerToken, executionInfo)
 

@@ -42,7 +42,9 @@ import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
@@ -100,6 +102,7 @@ import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.*;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.utils.CoreUtils;
+import com.stratio.crossdata.core.validator.Validator;
 
 /**
  * Class in charge of defining the set of {@link com.stratio.crossdata.common.logicalplan.LogicalStep}
@@ -1202,7 +1205,7 @@ public class Planner {
     }
 
     private StorageWorkflow buildExecutionWorkflowInsert(StorageValidatedQuery query, String queryId)
-                    throws PlanningException {
+            throws PlanningException {
         StorageWorkflow storageWorkflow = null;
         InsertIntoStatement insertIntoStatement = (InsertIntoStatement) query.getStatement();
 
@@ -1237,7 +1240,15 @@ public class Planner {
                     selectStatement.toString(),
                     query.getDefaultCatalog());
             SelectParsedQuery selectParsedQuery = new SelectParsedQuery(selectBaseQuery, selectStatement);
-            SelectValidatedQuery selectValidatedQuery= new SelectValidatedQuery(selectParsedQuery);
+
+            Validator validator = new Validator();
+            SelectValidatedQuery selectValidatedQuery;
+            try {
+                selectValidatedQuery = (SelectValidatedQuery) validator.validate(selectParsedQuery);
+            } catch (ValidationException | IgnoreQueryException e) {
+                throw new PlanningException(e.getMessage());
+            }
+
             selectValidatedQuery.optimizeQuery();
             LogicalWorkflow selectLogicalWorkflow = buildWorkflow(selectValidatedQuery);
             ExecutionWorkflow selectExecutionWorkflow = buildExecutionWorkflow(
@@ -1261,7 +1272,14 @@ public class Planner {
                     involvedClusters,
                     requiredOperations);
 
-            if((candidates == null) || (candidates.isEmpty())){
+            selectExecutionWorkflow.setResultType(ResultType.TRIGGER_EXECUTION);
+            if (insertIntoStatement.isIfNotExists()) {
+                selectExecutionWorkflow.setTriggerStep(new PartialResults(Operations.INSERT_IF_NOT_EXISTS));
+            } else {
+                selectExecutionWorkflow.setTriggerStep(new PartialResults(Operations.INSERT));
+            }
+
+            if((candidates != null) && (!candidates.isEmpty())){
                 // Build a unique workflow
                 ConnectorMetadata bestConnector = findBestConnector(candidates, involvedClusters);
 
@@ -1273,17 +1291,10 @@ public class Planner {
                 storageWorkflow.setClusterName(tableMetadata.getClusterRef());
                 storageWorkflow.setTableMetadata(tableMetadata);
                 storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
-                storageWorkflow.setNextExecutionWorkflow(selectExecutionWorkflow);
+                storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
 
             } else {
                 // Build a workflow for select and insert
-                selectExecutionWorkflow.setResultType(ResultType.TRIGGER_EXECUTION);
-                if (insertIntoStatement.isIfNotExists()) {
-                    selectExecutionWorkflow.setTriggerStep(new PartialResults(Operations.INSERT_IF_NOT_EXISTS));
-                } else {
-                    selectExecutionWorkflow.setTriggerStep(new PartialResults(Operations.INSERT));
-                }
-
                 storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT_BATCH, ResultType.RESULTS);
                 storageWorkflow.setClusterName(tableMetadata.getClusterRef());
                 storageWorkflow.setTableMetadata(tableMetadata);

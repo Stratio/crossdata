@@ -363,7 +363,8 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         return tableNames;
     }
 
-    @Override public List<ColumnName> getColumns() {
+    @Override
+    public List<ColumnName> getColumns() {
         List<Selector> selectors = selectExpression.getSelectorList();
         List<ColumnName> columns = new ArrayList<>();
         for(Selector selector: selectors){
