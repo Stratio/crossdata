@@ -608,7 +608,7 @@ selectStatement returns [SelectStatement slctst]
     (T_COMMA { joinInc = true; implicitJoin = true; } identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     ((T_INNER)? T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
-    joinRelations=getWhereClauses[null])?
+    joinRelations=getWhereClauses[null])*
     (T_WHERE { if(!implicitJoin) whereInc = true; } whereClauses=getWhereClauses[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
