@@ -354,9 +354,11 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       runningJobs.put(ex.queryId, s)
       
       //TODO: remove sleep
+      /*
       System.out.println("\n\n\n\n\nwaiting\n\n\n\n\n");
       Thread.sleep(30000);
       System.out.println("\n\n\n\n\nfinished\n\n\n\n\n");
+      */
       
       val result = connector.getQueryEngine().execute(ex.workflow)
       result.setQueryId(ex.queryId)
