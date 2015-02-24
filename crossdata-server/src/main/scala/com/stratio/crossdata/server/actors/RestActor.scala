@@ -3,6 +3,16 @@ package com.stratio.crossdata.server.actors
 import akka.actor.{Actor, Props}
 import spray.http.MediaTypes._
 import spray.routing.HttpService
+import spray.httpx.SprayJsonSupport._
+import spray.json._
+
+
+
+case class JsonQuery(query: String)
+
+object JsonImplicits extends DefaultJsonProtocol {
+  implicit val impJsonQuery= jsonFormat1(JsonQuery)
+}
 
 object RestActor {
   def props(): Props = Props(new RestActor())
@@ -16,6 +26,7 @@ class RestActor extends Actor with RestService {
 
 trait RestService extends HttpService {
 
+  import JsonImplicits._
   val rootPath =
     path("") {
       get {
@@ -24,13 +35,21 @@ trait RestService extends HttpService {
           complete {
             <html>
               <body>
-                <img src="http://cdn.meme.am/instances/500x/59501523.jpg" alt="Crossdata" />
+                <img src="http://cdn.meme.am/instances/500x/59501523.jpg" alt="Crossdata"/>
               </body>
             </html>
           }
         }
       }
-    }
-
-
+    } ~
+      path("query") {
+        post {
+          entity(as[JsonQuery]) {
+            query : JsonQuery=>
+              complete {
+               "Received " + query.query
+              }
+          }
+        }
+      }
 }
