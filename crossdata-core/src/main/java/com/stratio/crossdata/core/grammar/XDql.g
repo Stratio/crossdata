@@ -605,24 +605,20 @@ selectStatement returns [SelectStatement slctst]
         slctst.setTablesAliases(tablesAliasesMap);
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
-    (T_COMMA { joinInc = true; implicitJoin = true; } identJoin=getAliasedTableID[tablesAliasesMap])?
+    {$slctst = new SelectStatement(selClause, tablename);}
+    (T_COMMA { joinInc = true; implicitJoin = true; $slctst.addJoin(new InnerJoin(identJoin, whereClauses));} identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     ((T_INNER)? T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
-    joinRelations=getWhereClauses[null])*
+    joinRelations=getWhereClauses[null]  {$slctst.addJoin(new InnerJoin(identJoin, joinRelations));})*
     (T_WHERE { if(!implicitJoin) whereInc = true; } whereClauses=getWhereClauses[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
         if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
-        $slctst = new SelectStatement(selClause, tablename);
+
         if(windowInc)
             $slctst.setWindow(window);
-        if(joinInc)
-            if(implicitJoin)
-                $slctst.addJoin(new InnerJoin(identJoin, whereClauses));
-            else
-                $slctst.addJoin(new InnerJoin(identJoin, joinRelations));
         if(whereInc)
              $slctst.setWhere(whereClauses);
         if(orderInc)
