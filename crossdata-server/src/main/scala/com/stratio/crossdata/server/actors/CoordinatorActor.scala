@@ -21,7 +21,7 @@ package com.stratio.crossdata.server.actors
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
-import com.stratio.crossdata.common.data.ConnectorName
+import com.stratio.crossdata.common.data.{Row, ConnectorName}
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.executionplan.{ExecutionType, ManagementWorkflow, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
 import com.stratio.crossdata.common.result._
@@ -34,6 +34,8 @@ import com.stratio.crossdata.core.query.IPlannedQuery
 import com.stratio.crossdata.common.logicalplan.PartialResults
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.exceptions.validation.CoordinationException
+import com.stratio.crossdata.core.utils.CoreUtils
+import java.util
 
 object CoordinatorActor {
 
@@ -256,7 +258,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             actorRef ! storageWorkflow.getStorageOperation()
 
           } else if ((storageWorkflow.getPreviousExecutionWorkflow != null)
-            && (ResultType.TRIGGER_EXECUTION.equals(storageWorkflow.getResultType))) {
+            && (ResultType.TRIGGER_EXECUTION.equals(storageWorkflow.getPreviousExecutionWorkflow.getResultType))) {
             val actorRef = StringUtils.getAkkaActorRefUri(storageWorkflow.getActorRef())
             val actorSelection = context.actorSelection(actorRef)
 
@@ -272,6 +274,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             nextExecutionInfo.setWorkflow(storageWorkflow)
             nextExecutionInfo.setRemoveOnSuccess(executionInfo.isRemoveOnSuccess)
             ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo)
+
+            log.info("Sending operation: " + operation + " to: " + actorSelection.asInstanceOf[ActorSelection])
 
             actorSelection.asInstanceOf[ActorSelection] ! operation
             log.info("\nMessage sent to " + actorRef.toString())
@@ -434,11 +438,21 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             log.info("Retrieving Triggering queryId: " + triggerQueryId);
             val executionInfo = ExecutionManager.MANAGER.getValue(triggerQueryId).asInstanceOf[ExecutionInfo]
             val partialResults = result.asInstanceOf[QueryResult].getResultSet
-            executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
             val actorRef = StringUtils.getAkkaActorRefUri(executionInfo.getWorkflow.getActorRef())
             val actorSelection = context.actorSelection(actorRef)
-            actorSelection.asInstanceOf[ActorSelection] ! executionInfo.getWorkflow.asInstanceOf[QueryWorkflow]
-              .getExecuteOperation(queryId + CoordinatorActor.TriggerToken)
+
+            var operation: Operation = new Operation(queryId)
+
+            if(ExecutionType.INSERT_BATCH.equals(executionInfo.getWorkflow.getExecutionType)){
+              val rowsToBeInserted = partialResults.getRows
+              executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].setRows(rowsToBeInserted)
+              operation = executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
+            } else {
+              executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+              operation = executionInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(queryId + CoordinatorActor.TriggerToken)
+            }
+            log.info("Sending operation: " + operation + " to: " + actorSelection.asInstanceOf[ActorSelection])
+            actorSelection.asInstanceOf[ActorSelection] ! operation
           }
         }
 
