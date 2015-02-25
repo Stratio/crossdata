@@ -60,7 +60,7 @@ class CrossdataServer extends Daemon with ServerConfig {
 
     implicit val timeout = Timeout(5.seconds)
 
-    val RestActorRef = system.actorOf(RestActor.props(), "RestActor")
+    val RestActorRef = system.actorOf(RestActor.props(serverActor), "RestActor")
     IO(Http)(system) ? Http.Bind(RestActorRef, interface = "localhost", port = 8085)
   }
 }

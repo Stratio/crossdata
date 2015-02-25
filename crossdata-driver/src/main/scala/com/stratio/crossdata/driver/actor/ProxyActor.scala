@@ -122,7 +122,7 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
     }
 
     case _ => {
-      logger.error("Unknown message");
+      logger.error("Unknown message")
     }
   }
 }

@@ -1,32 +1,37 @@
 package com.stratio.crossdata.server.actors
 
-import akka.actor.{Actor, Props}
+import akka.actor.{ActorRef, Actor, Props}
+import com.stratio.crossdata.common.ask.Query
 import spray.http.MediaTypes._
 import spray.routing.HttpService
 import spray.httpx.SprayJsonSupport._
 import spray.json._
 
 
-
 case class JsonQuery(query: String)
 
 object JsonImplicits extends DefaultJsonProtocol {
-  implicit val impJsonQuery= jsonFormat1(JsonQuery)
+  implicit val impJsonQuery = jsonFormat1(JsonQuery)
 }
 
 object RestActor {
-  def props(): Props = Props(new RestActor())
+  def props(server: ActorRef): Props = Props(new RestActor(server))
 }
 
-class RestActor extends Actor with RestService {
+class RestActor(server: ActorRef) extends Actor with RestService {
   def actorRefFactory = context
-
+  def sendToServer (q:String) = {
+                server! new Query("id", "catalog", q, "user")
+                "Received " + q
+}
   def receive = runRoute(rootPath)
 }
 
 trait RestService extends HttpService {
 
   import JsonImplicits._
+
+  def sendToServer(q: String):String
   val rootPath =
     path("") {
       get {
@@ -45,9 +50,9 @@ trait RestService extends HttpService {
       path("query") {
         post {
           entity(as[JsonQuery]) {
-            query : JsonQuery=>
+            query: JsonQuery =>
               complete {
-               "Received " + query.query
+                sendToServer(query.query)
               }
           }
         }
