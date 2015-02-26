@@ -63,9 +63,9 @@ public class NormalizedFields {
     private List<Selector> selectors = new ArrayList<>();
 
     /**
-     * Inner join information.
+     * List of Inner join information.
      */
-    private InnerJoin join;
+    private List<InnerJoin> joinList=new ArrayList<>();
 
     /**
      * List of {@link com.stratio.crossdata.common.statements.structures.Relation} in the where clause.
@@ -174,8 +174,8 @@ public class NormalizedFields {
      *
      * @return A {@link com.stratio.crossdata.core.structures.InnerJoin}.
      */
-    public InnerJoin getJoin() {
-        return join;
+    public List<InnerJoin> getJoinList() {
+        return joinList;
     }
 
     /**
@@ -183,8 +183,8 @@ public class NormalizedFields {
      *
      * @param join A {@link com.stratio.crossdata.core.structures.InnerJoin}.
      */
-    public void setJoin(InnerJoin join) {
-        this.join = join;
+    public void addJoin(InnerJoin join) {
+        this.joinList.add(join);
     }
 
     /**
