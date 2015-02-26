@@ -1497,23 +1497,21 @@ public class Planner {
     private Map<String, LogicalStep> addJoin(Map<String, LogicalStep> stepMap, String targetTable,
                     SelectValidatedQuery query) {
 
+        Join j = new Join(Operations.SELECT_INNER_JOIN, "MultiJoin");
+        StringBuilder sb = new StringBuilder(targetTable);
         for(InnerJoin queryJoin: query.getJoinList()) {
-            String id = new StringBuilder(targetTable).append("$").append(queryJoin.getTablename().getQualifiedName())
-                    .toString();
-            Join j = new Join(Operations.SELECT_INNER_JOIN, id);
             j.addSourceIdentifier(targetTable);
             j.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
             j.addJoinRelations(queryJoin.getOrderedRelations());
-            StringBuilder sb = new StringBuilder(targetTable).append("$")
-                    .append(queryJoin.getTablename().getQualifiedName());
+            sb.append("$").append(queryJoin.getTablename().getQualifiedName());
             //Attach to input tables path
             LogicalStep t1 = stepMap.get(targetTable);
             LogicalStep t2 = stepMap.get(queryJoin.getTablename().getQualifiedName());
             t1.setNextStep(j);
             t2.setNextStep(j);
             j.addPreviousSteps(t1, t2);
-            stepMap.put(sb.toString(), j);
         }
+        stepMap.put(sb.toString(), j);
         return stepMap;
     }
 
