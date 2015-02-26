@@ -69,8 +69,11 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
+
     runningJobs.foreach {
-      keyVal: (String, ActorRef) => keyVal._2 ! IAmAlive(keyVal._1)
+      keyVal: (String, ActorRef) => {
+        context.actorSelection(StringUtils.getAkkaActorRefUri(keyVal._2)) ! IAmAlive(keyVal._1)
+      }
     }
   }
 
@@ -349,6 +352,14 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   private def methodExecute(ex:Execute, s:ActorRef): Unit ={
     try {
       runningJobs.put(ex.queryId, s)
+      
+      //TODO: remove sleep
+      /*
+      System.out.println("\n\n\n\n\nwaiting\n\n\n\n\n");
+      Thread.sleep(30000);
+      System.out.println("\n\n\n\n\nfinished\n\n\n\n\n");
+      */
+      
       val result = connector.getQueryEngine().execute(ex.workflow)
       result.setQueryId(ex.queryId)
       s ! result
@@ -364,6 +375,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         result.setQueryId(ex.queryId)
         s ! result
     } finally {
+      //TODO: remove done job
+      System.out.println("\n\n\n\n\nremoving done job\n\n\n\n\n");
       runningJobs.remove(ex.queryId)
     }
   }
