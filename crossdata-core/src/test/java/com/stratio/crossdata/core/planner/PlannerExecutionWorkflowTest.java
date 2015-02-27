@@ -108,6 +108,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     private TableMetadata table1 = null;
     private TableMetadata table2 = null;
+    private TableMetadata table4 = null;
 
     @BeforeClass(dependsOnMethods = {"setUp"})
     public void init() throws ManifestException {
@@ -222,6 +223,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         String[] clusteringKeys3 = { };
         table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table3", columnNames3, columnTypes3,
                 partitionKeys3, clusteringKeys3, null);
+
+
+        String[] columnNames4 = { "id", "description" };
+        ColumnType[] columnTypes4 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
+        String[] partitionKeys4 = { "id" };
+        String[] clusteringKeys4 = { };
+        table4 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table4", columnNames4,
+                columnTypes4,
+                partitionKeys4, clusteringKeys4, null);
+
     }
 
     /**
@@ -443,6 +454,72 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
                 new String[] { connector1.getActorRef().toString() });
 
     }
+
+/*
+    @Test
+    public void mergeExecutionPathsJoinMultiple() {
+
+        ColumnName[] columns1 = getColumnNames(table1);
+        ColumnName[] columns2 = getColumnNames(table2);
+        ColumnName[] columns4 = getColumnNames(table4);
+
+        Project project1 = getProject("table1", columns1);
+        Project project2 = getProject("table2", columns2);
+        Project project4 = getProject("table4", columns4);
+
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
+        Select select = getSelect(columns1, types);
+
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
+
+        Filter filter2 = getFilter(Operations.FILTER_PK_EQ, columns4[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
+
+        Join join = getJoin("joinId");
+        Join join2 = getJoin("joinId2");
+
+        //Link the elements
+        project1.setNextStep(filter);
+        filter.setNextStep(join);
+
+        project2.setNextStep(join);
+        join.setNextStep(select);
+
+        project4.setNextStep(filter2);
+        filter2.setNextStep(join2);
+        join.setNextStep(join2);
+
+        List<ConnectorMetadata> availableConnectors = new ArrayList<>();
+        availableConnectors.add(connector1);
+        availableConnectors.add(connector2);
+
+        ExecutionPath path1 = new ExecutionPath(project1, filter, availableConnectors);
+        ExecutionPath path2 = new ExecutionPath(project2, project2, availableConnectors);
+        ExecutionPath path3 = new ExecutionPath(project4, filter2, availableConnectors);
+
+        HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
+        Set<ExecutionPath> paths = new HashSet<>();
+        paths.add(path1);
+        paths.add(path2);
+        paths.add(path3);
+        unions.put(join, paths);
+
+        ExecutionWorkflow executionWorkflow = null;
+        try {
+            executionWorkflow = plannerWrapper.mergeExecutionPaths(
+                    "qid", new ArrayList<>(paths),
+                    unions);
+        } catch (PlanningException e) {
+            fail("Not expecting Planning Exception", e);
+        }
+
+        assertNotNull(executionWorkflow, "Null execution workflow received");
+        assertExecutionWorkflow(executionWorkflow, 1,
+                new String[] { connector1.getActorRef().toString() });
+
+    }
+*/
 
     @Test
     public void mergeExecutionPathsJoinException() {

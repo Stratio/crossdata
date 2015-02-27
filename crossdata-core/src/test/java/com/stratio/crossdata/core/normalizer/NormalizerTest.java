@@ -370,7 +370,8 @@ public class NormalizerTest {
                 new ColumnSelector(new ColumnName(null, "clientId")));
         joinRelations.add(relation);
         InnerJoin innerJoin = new InnerJoin(new TableName("myCatalog", "tableCostumers"), joinRelations);
-        selectStatement.setJoin(innerJoin);
+        selectStatement.addJoin(innerJoin);
+
 
         // WHERE CLAUSES
         List<Relation> where = new ArrayList<>();
@@ -440,7 +441,7 @@ public class NormalizerTest {
                         new ColumnSelector(new ColumnName(null, "clientId")));
         joinRelations.add(relation);
         InnerJoin innerJoin = new InnerJoin(new TableName("demo", "tableClients"), joinRelations);
-        selectStatement.setJoin(innerJoin);
+        selectStatement.addJoin(innerJoin);
 
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);

@@ -62,9 +62,10 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     private boolean joinInc = false;
     /**
-     * The {@link com.stratio.crossdata.core.structures.InnerJoin} clause.
+     * The List of {@link com.stratio.crossdata.core.structures.InnerJoin} for the statement.
      */
-    private InnerJoin join = null;
+    private List<InnerJoin> joinList = new ArrayList<>();
+
     /**
      * Whether the Select contains a WHERE clause.
      */
@@ -158,23 +159,44 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         this.selectExpression = selectExpression;
     }
 
+
+
     /**
-     * Get the Join clause.
-     *
-     * @return The Join or null if not set.
+     * Get the list of joins of the statement.
+     * @return A list of {@link com.stratio.crossdata.core.structures.InnerJoin} .
      */
-    public InnerJoin getJoin() {
-        return join;
+    public List<InnerJoin> getJoinList() {
+        return joinList;
     }
 
     /**
-     * Set the {@link com.stratio.crossdata.core.structures.InnerJoin} clause.
-     *
-     * @param join The join clause.
+     * Set the join list.
+     * @param joinList The list of {@link com.stratio.crossdata.core.structures.InnerJoin} .
      */
-    public void setJoin(InnerJoin join) {
-        this.joinInc = join != null;
-        this.join = join;
+    public void setJoinList(List<InnerJoin> joinList) {
+        this.joinList = joinList;
+        if (!joinList.isEmpty()){
+            joinInc=true;
+        }else{
+            joinInc=false;
+        }
+    }
+
+    /**
+     * Add a new join to the list of joins.
+     * @param join The join.
+     */
+    public void addJoin(InnerJoin join){
+        joinList.add(join);
+        joinInc=true;
+    }
+
+    /**
+     * Remove the specified join of the list of joins.
+     * @param join The join.
+     */
+    public void removeJoin(InnerJoin join){
+        joinList.remove(join);
     }
 
     /**
@@ -311,7 +333,9 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(" WITH WINDOW ").append(window.toString());
         }
         if (joinInc) {
-            sb.append(" INNER JOIN ").append(join.toString());
+            for (InnerJoin myJoin:joinList) {
+                sb.append(" INNER JOIN ").append(myJoin.toString());
+            }
         }
         if (whereInc) {
             sb.append(" WHERE ");
@@ -355,8 +379,10 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     public List<TableName> getFromTables() {
         ArrayList<TableName> tableNames = new ArrayList<>();
         tableNames.add(tableName);
-        if (join != null) {
-            tableNames.add(join.getTablename());
+        if (!joinList.isEmpty()) {
+            for (InnerJoin myJoin:joinList) {
+                tableNames.add(myJoin.getTablename());
+            }
         }
         return tableNames;
     }
