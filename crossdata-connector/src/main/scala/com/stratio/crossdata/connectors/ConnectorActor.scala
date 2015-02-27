@@ -194,7 +194,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       }catch{
         case _=>false
       }
-      println("result="+r)
+      //println("result="+r)
     }
 
     case u: UpdateMetadata=> {
