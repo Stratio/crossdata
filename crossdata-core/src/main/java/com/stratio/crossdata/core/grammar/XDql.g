@@ -606,11 +606,11 @@ selectStatement returns [SelectStatement slctst]
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
     {$slctst = new SelectStatement(selClause, tablename);}
-    (T_COMMA { joinInc = true; implicitJoin = true; $slctst.addJoin(new InnerJoin(identJoin, whereClauses));} identJoin=getAliasedTableID[tablesAliasesMap])?
+    (T_COMMA { joinInc = true; implicitJoin = true;} identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     ((T_INNER)? T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
     joinRelations=getWhereClauses[null]  {$slctst.addJoin(new InnerJoin(identJoin, joinRelations));})*
-    (T_WHERE { if(!implicitJoin) whereInc = true; } whereClauses=getWhereClauses[null])?
+    (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getWhereClauses[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
@@ -627,6 +627,8 @@ selectStatement returns [SelectStatement slctst]
              $slctst.setGroupByClause(new GroupByClause(groupByClause));
         if(limitInc)
              $slctst.setLimit(Integer.parseInt($constant.text));
+        if(implicitJoin)
+             $slctst.addJoin(new InnerJoin(identJoin, whereClauses));
 
         //$slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
         //$slctst.updateTableNames();
