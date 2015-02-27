@@ -259,6 +259,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
           } else if ((storageWorkflow.getPreviousExecutionWorkflow != null)
             && (ResultType.TRIGGER_EXECUTION.equals(storageWorkflow.getPreviousExecutionWorkflow.getResultType))) {
+
             val actorRef = StringUtils.getAkkaActorRefUri(storageWorkflow.getActorRef())
             val actorSelection = context.actorSelection(actorRef)
 
@@ -444,8 +445,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             var operation: Operation = new Operation(queryId)
 
             if(ExecutionType.INSERT_BATCH.equals(executionInfo.getWorkflow.getExecutionType)){
-              val rowsToBeInserted = partialResults.getRows
-              executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].setRows(rowsToBeInserted)
+              executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].setRows(partialResults.getRows)
               operation = executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
             } else {
               executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)

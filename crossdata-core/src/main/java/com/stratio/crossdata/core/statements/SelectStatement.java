@@ -334,8 +334,8 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes
-                .VALIDATE_SELECT);
+        return new ValidationRequirements().add(
+                ValidationTypes.VALIDATE_SELECT);
     }
 
     public List<OrderByClause> getOrderByClauses() {

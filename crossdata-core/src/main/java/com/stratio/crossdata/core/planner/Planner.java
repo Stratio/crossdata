@@ -1235,6 +1235,10 @@ public class Planner {
 
             // PLAN SELECT
             SelectStatement selectStatement = insertIntoStatement.getSelectStatement();
+
+            selectStatement = addAliasFromInsertToSelect(insertIntoStatement, selectStatement);
+            insertIntoStatement.setSelectStatement(selectStatement);
+
             BaseQuery selectBaseQuery = new BaseQuery(
                     query.getQueryId(),
                     selectStatement.toString(),
@@ -1305,6 +1309,22 @@ public class Planner {
         }
 
         return storageWorkflow;
+    }
+
+    private SelectStatement addAliasFromInsertToSelect(
+            InsertIntoStatement insertIntoStatement,
+            SelectStatement selectStatement) {
+        // Map<alias, ColumnName.toString()>
+        Map<String, String> fieldsAliasesMap = new HashMap<>();
+        List<ColumnName> selectColumns = selectStatement.getColumns();
+        List<ColumnName> insertColumns = insertIntoStatement.getColumns();
+        for(int i=0; i<selectColumns.size(); i++){
+            fieldsAliasesMap.put(
+                    insertColumns.get(i).getName(),
+                    selectColumns.get(i).toString());
+        }
+        selectStatement.setFieldsAliases(fieldsAliasesMap);
+        return selectStatement;
     }
 
     private List<ConnectorMetadata> findCandidates(List<ClusterName> involvedClusters,
