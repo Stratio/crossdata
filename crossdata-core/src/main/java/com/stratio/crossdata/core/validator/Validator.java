@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -54,6 +55,7 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
@@ -61,6 +63,7 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
 import com.stratio.crossdata.core.normalizer.NormalizedFields;
+import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
@@ -154,7 +157,7 @@ public class Validator {
                 validateColumn(parsedQuery.getStatement(), false);
                 break;
             case VALIDATE_TYPES:
-                validateInsertTypes(parsedQuery.getStatement());
+                validateInsertTypes(parsedQuery);
                 break;
             case VALIDATE_SELECT:
                 validateSelect(parsedQuery);
@@ -607,25 +610,82 @@ public class Validator {
         validateName(exist, name, hasIfExist);
     }
 
-    private void validateInsertTypes(CrossdataStatement stmt)
-            throws BadFormatException, NotMatchDataTypeException {
+    private void validateInsertTypes(IParsedQuery parsedQuery)
+            throws ValidationException, IgnoreQueryException {
+        CrossdataStatement stmt = parsedQuery.getStatement();
         if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
             List<ColumnName> columnNameList = insertIntoStatement.getIds();
-            List<Selector> selectorList = insertIntoStatement.getCellValues();
 
-            List<Selector> resultingList = new ArrayList<>();
-            for (int i = 0; i < columnNameList.size(); i++) {
-                ColumnName columnName = columnNameList.get(i);
-                Selector valueSelector = selectorList.get(i);
-                ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+            if(insertIntoStatement.getTypeValues() == InsertIntoStatement.TYPE_VALUES_CLAUSE) {
+                List<Selector> selectorList = insertIntoStatement.getCellValues();
+                List<Selector> resultingList = new ArrayList<>();
+                for (int i = 0; i < columnNameList.size(); i++) {
+                    ColumnName columnName = columnNameList.get(i);
+                    Selector valueSelector = selectorList.get(i);
+                    ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+                    Selector resultingSelector = validateColumnType(columnMetadata, valueSelector, true);
+                    resultingList.add(resultingSelector);
+                }
+                insertIntoStatement.setCellValues(resultingList);
+            } else if (insertIntoStatement.getTypeValues() == InsertIntoStatement.TYPE_SELECT_CLAUSE){
+                SelectStatement ss = insertIntoStatement.getSelectStatement();
 
-                Selector resultingSelector = validateColumnType(columnMetadata, valueSelector, true);
-                resultingList.add(resultingSelector);
+                List<ColumnName> cols = ss.getColumns();
+
+                List<Selector> selectorList = ss.getSelectExpression().getSelectorList();
+                if((selectorList.size()) == 1 && (selectorList.get(0) instanceof AsteriskSelector)){
+                    cols.clear();
+                    List<ColumnMetadata> columnsMetadata = MetadataManager.MANAGER.getColumnByTable(
+                            ss.getTableName().getCatalogName().getName(),
+                            ss.getTableName().getName());
+                    for(ColumnMetadata cm: columnsMetadata){
+                        cols.add(cm.getName());
+                    }
+                }
+
+                checkValuesLength(columnNameList.size(), cols.size());
+
+                BaseQuery baseQuery = new BaseQuery(
+                        UUID.randomUUID().toString(),
+                        ss.toString(),
+                        parsedQuery.getDefaultCatalog());
+
+                SelectParsedQuery spq = new SelectParsedQuery(baseQuery, ss);
+                SelectValidatedQuery selectValidatedQuery = (SelectValidatedQuery) validate(spq);
+
+                cols = selectValidatedQuery.getColumns();
+
+                for (int i = 0; i < columnNameList.size(); i++) {
+                    ColumnName columnName = columnNameList.get(i);
+                    ColumnMetadata columnFromSelect = MetadataManager.MANAGER.getColumn(cols.get(i));
+                    ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+                    validateColumnType(columnMetadata, columnFromSelect);
+                }
+
+                insertIntoStatement.setSelectStatement(selectValidatedQuery.getStatement());
             }
-            insertIntoStatement.setCellValues(resultingList);
+
         }
     }
+
+    private void checkValuesLength(int idsLength, int valuesLength) throws BadFormatException {
+        if(idsLength != valuesLength){
+            throw new BadFormatException(
+                    "Values length doesn't correspond to the identifiers length" +
+                    System.lineSeparator() +
+                    "Identifiers Length = " + idsLength +
+                    System.lineSeparator() +
+                    "Values Length = " + valuesLength);
+        }
+    }
+
+    private void validateColumnType(ColumnMetadata columnMetadata, ColumnMetadata columnFromSelect)
+            throws NotMatchDataTypeException, BadFormatException {
+        Selector selector = columnFromSelect.getColumnType().createSelector();
+        validateColumnType(columnMetadata, selector, false);
+    }
+
 
     private Selector validateColumnType(ColumnMetadata columnMetadata, Selector querySelector, boolean tryConversion)
             throws BadFormatException, NotMatchDataTypeException {

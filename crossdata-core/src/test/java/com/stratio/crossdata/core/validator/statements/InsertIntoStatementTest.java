@@ -30,13 +30,16 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
+import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
@@ -197,6 +200,94 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
             Assert.fail("There is an error in the types");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void insertIntoFromSelect() {
+        String query = "INSERT INTO demo.users(name, age, bool) SELECT phrase, age, bool FROM customers;";
+
+        // CREATE INSERT PART
+        List<ColumnName> columns = new ArrayList<>();
+        TableName insertTable = new TableName("demo", "users");
+        columns.add(new ColumnName(insertTable, "name"));
+        columns.add(new ColumnName(insertTable, "age"));
+        columns.add(new ColumnName(insertTable, "bool"));
+
+        // CREATE SELECT STATEMENT
+        TableName selectTable = new TableName(null, "customers");
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(selectTable, "phrase")));
+        selectorList.add(new ColumnSelector(new ColumnName(selectTable, "age")));
+        selectorList.add(new ColumnSelector(new ColumnName(selectTable, "bool")));
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+        SelectStatement ss = new SelectStatement(selectExpression, selectTable);
+
+        StorageStatement insertIntoStatement = new InsertIntoStatement(
+                insertTable,
+                columns,
+                ss,
+                null,
+                false,
+                null,
+                null,
+                InsertIntoStatement.TYPE_SELECT_CLAUSE);
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("insertIntoFromSelect", query, new CatalogName("sales"));
+
+        IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void insertIntoFromSelectWrongTypes() {
+        String query = "INSERT INTO demo.users(name, age, bool) SELECT email, name, bool FROM customers;";
+
+        // CREATE INSERT PART
+        List<ColumnName> columns = new ArrayList<>();
+        TableName insertTable = new TableName("demo", "users");
+        columns.add(new ColumnName(insertTable, "name"));
+        columns.add(new ColumnName(insertTable, "age"));
+        columns.add(new ColumnName(insertTable, "bool"));
+
+        // CREATE SELECT STATEMENT
+        TableName selectTable = new TableName(null, "customers");
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(selectTable, "email")));
+        selectorList.add(new ColumnSelector(new ColumnName(selectTable, "name")));
+        selectorList.add(new ColumnSelector(new ColumnName(selectTable, "bool")));
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+        SelectStatement ss = new SelectStatement(selectExpression, selectTable);
+
+        StorageStatement insertIntoStatement = new InsertIntoStatement(
+                insertTable,
+                columns,
+                ss,
+                null,
+                false,
+                null,
+                null,
+                InsertIntoStatement.TYPE_SELECT_CLAUSE);
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("insertIntoFromSelectWrongTypes", query, new CatalogName("sales"));
+
+        IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("insertIntoFromSelectWrongTypes: Validation should have failed");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true, "ValidationException expected");
         } catch (IgnoreQueryException e) {
             Assert.fail(e.getMessage());
         }

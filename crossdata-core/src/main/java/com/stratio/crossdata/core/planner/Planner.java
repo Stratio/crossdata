@@ -42,7 +42,9 @@ import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.executionplan.ExecutionPath;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
@@ -89,8 +91,10 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
+import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
+import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
@@ -98,6 +102,7 @@ import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.*;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.utils.CoreUtils;
+import com.stratio.crossdata.core.validator.Validator;
 
 /**
  * Class in charge of defining the set of {@link com.stratio.crossdata.common.logicalplan.LogicalStep}
@@ -379,9 +384,9 @@ public class Planner {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         //Select an actor
-        ConnectorMetadata connectorMetadata = bestConnector(connectors, involvedClusters);
+        ConnectorMetadata connectorMetadata = findBestConnector(connectors, involvedClusters);
 
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
 
         updateFunctionsFromSelect(workflow, connectorMetadata.getName());
 
@@ -393,13 +398,13 @@ public class Planner {
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
-    private ConnectorMetadata bestConnector(List<ConnectorMetadata> connectors, List<ClusterName> clusters) {
+    private ConnectorMetadata findBestConnector(List<ConnectorMetadata> connectors, List<ClusterName> clusters) {
         //TODO: Add logic to this method according to native or not
         //TODO: Add logic to this method according to statistics
         ConnectorMetadata highestPriorityConnector = null;
         int minPriority = Integer.MAX_VALUE;
 
-        for (ConnectorMetadata connector : connectors) {
+        for (ConnectorMetadata connector: connectors) {
             if(connector.getPriorityFromClusterNames(clusters) < minPriority){
                 minPriority = connector.getPriorityFromClusterNames(clusters);
                 highestPriorityConnector = connector;
@@ -466,8 +471,8 @@ public class Planner {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         //Select an actor
-        ConnectorMetadata connectorMetadata = bestConnector(mergePath.getAvailableConnectors(),involvedClusters);
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+        ConnectorMetadata connectorMetadata = findBestConnector(mergePath.getAvailableConnectors(), involvedClusters);
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
@@ -845,7 +850,7 @@ public class Planner {
             try {
                 actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
             } catch (PlanningException pe) {
-                LOG.debug("No connector was found to execute CREATE_TABLE", pe);
+                LOG.debug("No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
             }
         }
 
@@ -871,7 +876,8 @@ public class Planner {
                 metadataWorkflow.setCatalogMetadata(MetadataManager.MANAGER
                                 .getCatalog(createTableStatement.getTableName().getCatalogName()));
             } catch (PlanningException pe) {
-                LOG.debug("Cannot determine any connector for the operation: " + Operations.CREATE_CATALOG, pe);
+                LOG.debug("Cannot determine any connector for the operation: " + Operations.CREATE_CATALOG
+                                + System.lineSeparator() + pe.getMessage());
             }
         }
 
@@ -1222,17 +1228,15 @@ public class Planner {
     }
 
     private StorageWorkflow buildExecutionWorkflowInsert(StorageValidatedQuery query, String queryId)
-                    throws PlanningException {
-        StorageWorkflow storageWorkflow;
+            throws PlanningException {
+        StorageWorkflow storageWorkflow = null;
         InsertIntoStatement insertIntoStatement = (InsertIntoStatement) query.getStatement();
 
-        String actorRef;
-
         TableName tableName = insertIntoStatement.getTableName();
-        Row row = getInsertRow(insertIntoStatement);
-
         TableMetadata tableMetadata = getTableMetadata(tableName);
         ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
+
+        String actorRef;
 
         if (insertIntoStatement.isIfNotExists()) {
             actorRef = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.INSERT_IF_NOT_EXISTS);
@@ -1240,13 +1244,134 @@ public class Planner {
             actorRef = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.INSERT);
         }
 
-        storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT, ResultType.RESULTS);
-        storageWorkflow.setClusterName(tableMetadata.getClusterRef());
-        storageWorkflow.setTableMetadata(tableMetadata);
-        storageWorkflow.setRow(row);
-        storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
+        if(insertIntoStatement.getTypeValues() == InsertIntoStatement.TYPE_VALUES_CLAUSE) {
+
+            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT, ResultType.RESULTS);
+            storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+            storageWorkflow.setTableMetadata(tableMetadata);
+            storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
+
+            Row row = getInsertRow(insertIntoStatement);
+            storageWorkflow.setRow(row);
+
+        } else if(insertIntoStatement.getTypeValues() == InsertIntoStatement.TYPE_SELECT_CLAUSE){
+
+            // PLAN SELECT
+            SelectStatement selectStatement = insertIntoStatement.getSelectStatement();
+
+            selectStatement = addAliasFromInsertToSelect(insertIntoStatement, selectStatement);
+            insertIntoStatement.setSelectStatement(selectStatement);
+
+            BaseQuery selectBaseQuery = new BaseQuery(
+                    query.getQueryId(),
+                    selectStatement.toString(),
+                    query.getDefaultCatalog());
+            SelectParsedQuery selectParsedQuery = new SelectParsedQuery(selectBaseQuery, selectStatement);
+
+            Validator validator = new Validator();
+            SelectValidatedQuery selectValidatedQuery;
+            try {
+                selectValidatedQuery = (SelectValidatedQuery) validator.validate(selectParsedQuery);
+            } catch (ValidationException | IgnoreQueryException e) {
+                throw new PlanningException(e.getMessage());
+            }
+
+            selectValidatedQuery.optimizeQuery();
+            LogicalWorkflow selectLogicalWorkflow = buildWorkflow(selectValidatedQuery);
+            ExecutionWorkflow selectExecutionWorkflow = buildExecutionWorkflow(
+                    selectValidatedQuery.getQueryId(),
+                    selectLogicalWorkflow);
+
+            // FIND CANDIDATES
+            List<ClusterName> involvedClusters = new ArrayList<>();
+            involvedClusters.add(clusterMetadata.getName());
+            for(TableName tableNameFromSelect: insertIntoStatement.getSelectStatement().getFromTables()){
+                TableMetadata tableMetadataFromSelect = getTableMetadata(tableNameFromSelect);
+                if(!involvedClusters.contains(tableMetadataFromSelect.getClusterRef())){
+                    involvedClusters.add(tableMetadataFromSelect.getClusterRef());
+                }
+            }
+
+            Set<Operations> requiredOperations = new HashSet<>();
+            requiredOperations.add(Operations.INSERT_FROM_SELECT);
+
+            List<ConnectorMetadata> candidates = findCandidates(
+                    involvedClusters,
+                    requiredOperations);
+
+            selectExecutionWorkflow.setResultType(ResultType.TRIGGER_EXECUTION);
+            if (insertIntoStatement.isIfNotExists()) {
+                selectExecutionWorkflow.setTriggerStep(new PartialResults(Operations.INSERT_IF_NOT_EXISTS));
+            } else {
+                selectExecutionWorkflow.setTriggerStep(new PartialResults(Operations.INSERT));
+            }
+
+            if((candidates != null) && (!candidates.isEmpty())){
+                // Build a unique workflow
+                ConnectorMetadata bestConnector = findBestConnector(candidates, involvedClusters);
+
+                storageWorkflow = new StorageWorkflow(
+                        queryId,
+                        bestConnector.getActorRef(),
+                        ExecutionType.INSERT_FROM_SELECT,
+                        ResultType.RESULTS);
+                storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+                storageWorkflow.setTableMetadata(tableMetadata);
+                storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
+                storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
+
+            } else {
+                // Build a workflow for select and insert
+                storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT_BATCH, ResultType.RESULTS);
+                storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+                storageWorkflow.setTableMetadata(tableMetadata);
+                storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
+                storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
+            }
+
+        }
 
         return storageWorkflow;
+    }
+
+    private SelectStatement addAliasFromInsertToSelect(
+            InsertIntoStatement insertIntoStatement,
+            SelectStatement selectStatement) {
+        // Map<alias, ColumnName.toString()>
+        Map<String, String> fieldsAliasesMap = new HashMap<>();
+        List<ColumnName> selectColumns = selectStatement.getColumns();
+        List<ColumnName> insertColumns = insertIntoStatement.getColumns();
+        for(int i=0; i<selectColumns.size(); i++){
+            fieldsAliasesMap.put(
+                    insertColumns.get(i).getName(),
+                    selectColumns.get(i).toString());
+        }
+        selectStatement.setFieldsAliases(fieldsAliasesMap);
+        List<Selector> selectors = new ArrayList<>();
+        int i = 0;
+        for(Selector selector: selectStatement.getSelectExpression().getSelectorList()){
+            selector.setAlias(insertColumns.get(i).getName());
+            selectors.add(selector);
+            i++;
+        }
+        selectStatement.setSelectExpression(new SelectExpression(selectors));
+        return selectStatement;
+    }
+
+    private List<ConnectorMetadata> findCandidates(List<ClusterName> involvedClusters,
+            Set<Operations> requiredOperations) {
+        List<ConnectorMetadata> candidates = new ArrayList<>();
+        if((involvedClusters != null) && (requiredOperations != null)){
+            List<ConnectorMetadata> allConnectors = MetadataManager.MANAGER.getConnectors();
+            for(ConnectorMetadata connectorMetadata: allConnectors){
+                if(connectorMetadata.getClusterRefs().containsAll(involvedClusters)){
+                    if(connectorMetadata.getSupportedOperations().containsAll(requiredOperations)){
+                        candidates.add(connectorMetadata);
+                    }
+                }
+            }
+        }
+        return candidates;
     }
 
     private StorageWorkflow buildExecutionWorkflowDelete(StorageValidatedQuery query, String queryId)
@@ -1384,7 +1509,6 @@ public class Planner {
 
     private ClusterMetadata getClusterMetadata(ClusterName clusterRef) throws PlanningException {
         ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterRef);
-
         if (clusterMetadata == null) {
             throw new PlanningException("There is not cluster metadata for Storage Operation");
         }
@@ -1704,7 +1828,7 @@ public class Planner {
     private String findAnyActorRef(ClusterMetadata clusterMetadata, Status status, Operations... requiredOperations)
                     throws PlanningException {
         ConnectorMetadata connectorMetadata = findAnyConnector(clusterMetadata, status, requiredOperations);
-        return StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+        return StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
     }
 
 }
