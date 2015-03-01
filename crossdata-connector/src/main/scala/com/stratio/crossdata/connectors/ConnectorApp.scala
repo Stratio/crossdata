@@ -75,6 +75,15 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   }
 
   override def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+    /*TODO: for querying actor internal state, only messages should be used.
+      i.e.{{{
+        import scala.concurrent.duration._
+        val timeout: akka.util.Timeout = 2.seconds
+        val response: Option[TableMetadata] = 
+          actorClusterNode.map(actor => Await.result((actor ? GetTableMetadata).mapTo[TableMetadata],timeout))
+        response.getOrElse(throw new IlegalStateException("Actor cluster node is not initialized"))
+      }}}
+    */
     actorClusterNode.asInstanceOf[ConnectorActor].getTableMetadata(clusterName, tableName)
   }
 

@@ -23,7 +23,7 @@ import java.util.UUID
 import akka.actor.{Actor, Props, ReceiveTimeout}
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
-import com.stratio.crossdata.common.result.{DisconnectResult, ConnectResult, Result}
+import com.stratio.crossdata.common.result.{ConnectResult, DisconnectResult, Result}
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.config.ServerConfig
@@ -50,6 +50,11 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
     withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
 
   def receive : Receive= {
+    /*
+    case keepalive:IAmAlive =>{
+          logger.debug("receiving keepalive message from "+sender)
+    }
+    */
     case query: Query => {
       logger.info("query: " + query + " sender: " + sender.path.address)
       parserActorRef forward query
