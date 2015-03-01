@@ -854,7 +854,8 @@ public class Planner {
                 metadataWorkflow.setCatalogMetadata(MetadataManager.MANAGER
                                 .getCatalog(createTableStatement.getTableName().getCatalogName()));
             } catch (PlanningException pe) {
-                LOG.debug("Cannot determine any connector for the operation: " + Operations.CREATE_CATALOG, pe);
+                LOG.debug("Cannot determine any connector for the operation: " + Operations.CREATE_CATALOG
+                                + System.lineSeparator() + pe.getMessage());
             }
         }
 
