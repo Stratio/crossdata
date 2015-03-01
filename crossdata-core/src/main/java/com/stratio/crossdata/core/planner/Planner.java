@@ -386,7 +386,7 @@ public class Planner {
         //Select an actor
         ConnectorMetadata connectorMetadata = findBestConnector(connectors, involvedClusters);
 
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
 
         updateFunctionsFromSelect(workflow, connectorMetadata.getName());
 
@@ -472,7 +472,7 @@ public class Planner {
 
         //Select an actor
         ConnectorMetadata connectorMetadata = findBestConnector(mergePath.getAvailableConnectors(), involvedClusters);
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
 
@@ -1803,7 +1803,7 @@ public class Planner {
     private String findAnyActorRef(ClusterMetadata clusterMetadata, Status status, Operations... requiredOperations)
                     throws PlanningException {
         ConnectorMetadata connectorMetadata = findAnyConnector(clusterMetadata, status, requiredOperations);
-        return StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef());
+        return StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
     }
 
 }

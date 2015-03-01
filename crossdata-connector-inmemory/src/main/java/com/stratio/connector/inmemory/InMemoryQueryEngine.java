@@ -388,6 +388,13 @@ public class InMemoryQueryEngine implements IQueryEngine{
             LogicalWorkflow workflow,
             IResultHandler resultHandler,
             int pageSize) throws ConnectorException {
+        try {
+            int secondsToMillis = 1000;
+            int seconds = 130;
+            Thread.sleep(seconds*secondsToMillis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         QueryResult queryResult = execute(workflow);
         ResultSet resultSet = queryResult.getResultSet();
         List<Row> rows = resultSet.getRows();

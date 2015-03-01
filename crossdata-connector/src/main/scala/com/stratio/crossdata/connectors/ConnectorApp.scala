@@ -57,7 +57,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
       connector, connectedServers).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
     connector.init(new IConfiguration {})
-    val actorSelection = system.actorSelection(StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString()))
+    val actorSelection = system.actorSelection(StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString(), false))
 
     metricName = MetricRegistry.name(connector.getConnectorName, "connection", "status")
     Metrics.getRegistry.register(metricName,

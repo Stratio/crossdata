@@ -117,7 +117,7 @@ ImplicitSender with BeforeAndAfterAll{
     new CatalogName(catalogName)), storageStatement)
   val storageValidatedQuery = new StorageValidatedQuery(storageParsedQuery)
   val storagePlannedQuery = new StoragePlannedQuery(storageValidatedQuery, new StorageWorkflow(queryId + queryIdIncrement,
-    StringUtils.getAkkaActorRefUri(connectorActor), ExecutionType.INSERT, ResultType.RESULTS))
+    StringUtils.getAkkaActorRefUri(connectorActor, false), ExecutionType.INSERT, ResultType.RESULTS))
 
   val metadataStatement0: MetadataStatement = new CreateCatalogStatement(
     new CatalogName(catalogName),true,"")
@@ -148,7 +148,7 @@ ImplicitSender with BeforeAndAfterAll{
     new CatalogName(catalogName)),
     metadataStatement1)
   val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
-  val metadataWorkflow1=new MetadataWorkflow(queryId + queryIdIncrement,  StringUtils.getAkkaActorRefUri(connectorActor),
+  val metadataWorkflow1=new MetadataWorkflow(queryId + queryIdIncrement,  StringUtils.getAkkaActorRefUri(connectorActor, false),
     ExecutionType.CREATE_TABLE,
     ResultType.RESULTS)
   metadataWorkflow1.setCatalogMetadata(
@@ -224,7 +224,7 @@ ImplicitSender with BeforeAndAfterAll{
     val myConnector=metadataManager.createTestConnector(connectorName.name,new DataStoreName(myDatastore.getName()),
       clusterwithPriorities,
       operations,
-      StringUtils.getAkkaActorRefUri(connectorActor))
+      StringUtils.getAkkaActorRefUri(connectorActor, false))
 
     //create catalog
     metadataManager.createTestCatalog(catalogName)
@@ -255,7 +255,7 @@ ImplicitSender with BeforeAndAfterAll{
 
     selectPlannedQuery = new SelectPlannedQuery(selectValidatedQueryWrapper,
       new QueryWorkflow(queryId + queryIdIncrement,
-        StringUtils.getAkkaActorRefUri(connectorActor),
+        StringUtils.getAkkaActorRefUri(connectorActor, false),
         ExecutionType.SELECT, ResultType.RESULTS,workflow))
   }
 
