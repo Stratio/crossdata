@@ -39,6 +39,7 @@ import org.testng.annotations.Test;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
@@ -52,8 +53,10 @@ import com.stratio.crossdata.common.executionplan.QueryWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
@@ -68,6 +71,7 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataPlannedQuery;
@@ -145,25 +149,29 @@ public class PlannerTest extends PlannerBaseTest {
     }
 
     public void createTestTables(CatalogName catalogName) {
+        createTestTables(catalogName, "table1", "table2", "table3");
+    }
+
+    public void createTestTables(CatalogName catalogName, String... tableNames) {
         String[] columnNames1 = { "id", "user" };
         ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
-        table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), "table1",
+        table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[0],
                 columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
         ColumnType[] columnTypes2 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
-        table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), "table2",
+        table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[1],
                 columnNames2, columnTypes2, partitionKeys2, clusteringKeys2, null);
 
         String[] columnNames3 = { "id_aux", "address" };
         ColumnType[] columnTypes3 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys3 = { "id_aux" };
         String[] clusteringKeys3 = { };
-        table3 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), "table3",
+        table3 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[2],
                 columnNames3, columnTypes3, partitionKeys3, clusteringKeys3, null);
     }
 
@@ -470,7 +478,10 @@ public class PlannerTest extends PlannerBaseTest {
     }
 
     @Test
-    public void testJoinWithStreaming(){
+    public void testJoinWithStreaming() throws ManifestException {
+
+        init();
+
         String inputText = "SELECT * FROM demo.table1 WITH WINDOW 5 MINUTES " +
                 "INNER JOIN demo.table2 ON demo.table2.id_aux = demo.table1.id;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
@@ -534,11 +545,11 @@ public class PlannerTest extends PlannerBaseTest {
                 strClusterName, new DataStoreName("greatDatastore"),
                 connector3.getName());
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("greatCatalog").getName();
-        createTestTables(catalogName);
+        createTestTables(catalogName, "table4", "table5", "table6");
 
         // Generate query
-        String inputText = "INSERT INTO greatCatalog.table1 (greatCatalog.table1.id, greatCatalog.table1.user)"
-                + " SELECT * FROM greatCatalog.table2;";
+        String inputText = "INSERT INTO greatCatalog.table4 (greatCatalog.table4.id, greatCatalog.table4.user)"
+                + " SELECT * FROM greatCatalog.table5;";
         StorageWorkflow storageWorkflow = null;
         try {
             storageWorkflow = (StorageWorkflow) getPlannedStorageQuery(
@@ -548,6 +559,36 @@ public class PlannerTest extends PlannerBaseTest {
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
+
+        try {
+            // DETACH CLUSTER
+            ClusterMetadata clusterMetadata =
+                    MetadataManager.MANAGER.getCluster(clusterName);
+
+            Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
+                    clusterMetadata.getConnectorAttachedRefs();
+
+            connectorAttachedRefs.remove(connector3.getName());
+            clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
+
+            MetadataManager.MANAGER.createCluster(clusterMetadata, false);
+
+
+            ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connector3.getName());
+            connectorMetadata.getClusterRefs().remove(clusterName);
+            connectorMetadata.getClusterProperties().remove(clusterName);
+            connectorMetadata.getClusterPriorities().remove(clusterName);
+
+            MetadataManager.MANAGER.createConnector(connectorMetadata, false);
+
+            // DELETE OTHER STRUCTURES
+            MetadataManager.MANAGER.deleteCluster(clusterName, false);
+            MetadataManager.MANAGER.deleteConnector(connector3.getName());
+            MetadataManager.MANAGER.deleteCatalog(new CatalogName("greatCatalog"), false);
+        } catch (Exception e) {
+            fail("Test failed: " + System.lineSeparator() + e.getMessage());
+        }
+
         assertNotNull(storageWorkflow, "Planner failed");
         assertEquals(storageWorkflow.getExecutionType(), ExecutionType.INSERT_BATCH, "Planner failed.");
         assertNotNull(storageWorkflow.getPreviousExecutionWorkflow(), "Planner failed.");
