@@ -828,7 +828,7 @@ public class Planner {
             try {
                 actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
             } catch (PlanningException pe) {
-                LOG.debug("No connector was found to execute CREATE_TABLE", pe);
+                LOG.debug("No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
             }
         }
 
@@ -1324,6 +1324,14 @@ public class Planner {
                     selectColumns.get(i).toString());
         }
         selectStatement.setFieldsAliases(fieldsAliasesMap);
+        List<Selector> selectors = new ArrayList<>();
+        int i = 0;
+        for(Selector selector: selectStatement.getSelectExpression().getSelectorList()){
+            selector.setAlias(insertColumns.get(i).getName());
+            selectors.add(selector);
+            i++;
+        }
+        selectStatement.setSelectExpression(new SelectExpression(selectors));
         return selectStatement;
     }
 
