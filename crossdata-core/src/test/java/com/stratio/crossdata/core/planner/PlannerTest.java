@@ -470,7 +470,10 @@ public class PlannerTest extends PlannerBaseTest {
     }
 
     @Test
-    public void testJoinWithStreaming(){
+    public void testJoinWithStreaming() throws ManifestException {
+
+        init();
+
         String inputText = "SELECT * FROM demo.table1 WITH WINDOW 5 MINUTES " +
                 "INNER JOIN demo.table2 ON demo.table2.id_aux = demo.table1.id;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
