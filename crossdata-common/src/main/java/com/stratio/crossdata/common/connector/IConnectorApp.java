@@ -59,4 +59,6 @@ public interface IConnectorApp {
      * @return A {@link com.stratio.crossdata.common.data.ConnectionStatus}.
      */
     ConnectionStatus getConnectionStatus();
+
+    void subscribeToMetadataUpdate(IMetadataListener metadataListener);
 }
