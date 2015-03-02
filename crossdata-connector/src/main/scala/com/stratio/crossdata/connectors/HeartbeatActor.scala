@@ -18,33 +18,20 @@
 
 package com.stratio.crossdata.connectors
 
-import java.util.concurrent.{TimeUnit, Executors}
-
 import akka.actor.Actor
 import com.stratio.crossdata.communication.HeartbeatSig
 import org.apache.log4j.Logger
+import scala.concurrent.ExecutionContext.Implicits.global
+
+import scala.concurrent.duration._
+
 
 trait HeartbeatActor extends Actor {
-
   lazy val logger = Logger.getLogger(classOf[HeartbeatActor])
-  private val scheduler = Executors.newSingleThreadScheduledExecutor()
+  private val scheduler = context.system.scheduler.schedule(0.seconds,1.seconds,self,new HeartbeatSig())
 
-  private val callback = new Runnable {
-    def run:Unit = {
-      self ! new HeartbeatSig()
-    }
-  }
-
-  val initialDelay:Long=0
-  val period:Long=500
-
- /**
-  * command: the task to execute.
-  * initialDelay: the time to delay first execution.
-  * period: the period between successive executions.
-  * unit: the time unit of the initialDelay and period parameters.
-  */
-  scheduler.scheduleAtFixedRate(callback, initialDelay, period, TimeUnit.MILLISECONDS)
+  //val initialDelay:Long=0
+  //val period:Long=500
 
   def receive: Receive = {
     case heartbeat: HeartbeatSig =>  handleHeartbeat(heartbeat)

@@ -630,8 +630,6 @@ selectStatement returns [SelectStatement slctst]
         if(implicitJoin)
              $slctst.addJoin(new InnerJoin(identJoin, whereClauses));
 
-        //$slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
-        //$slctst.updateTableNames();
     }
 ;
 
