@@ -229,6 +229,9 @@ T_LAST: L A S T;
 T_ROWS: R O W S;
 T_INNER: I N N E R;
 T_JOIN: J O I N;
+T_OUTER: O U T E R;
+T_LEFT: L E F T;
+T_RIGHT: R I G H T;
 T_BY: B Y;
 T_LIMIT: L I M I T;
 T_AS: A S;
@@ -599,6 +602,8 @@ selectStatement returns [SelectStatement slctst]
         Map tablesAliasesMap = new LinkedHashMap<String, String>();
         MutablePair<String, String> pair = new MutablePair<>();
         boolean implicitJoin = false;
+        JoinType joinType=JoinType.INNER;
+
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
@@ -608,8 +613,9 @@ selectStatement returns [SelectStatement slctst]
     {$slctst = new SelectStatement(selClause, tablename);}
     (T_COMMA { joinInc = true; implicitJoin = true;} identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
-    ((T_INNER)? T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
-    joinRelations=getWhereClauses[null]  {$slctst.addJoin(new InnerJoin(identJoin, joinRelations));})*
+    ((T_INNER | T_OUTER {joinType=JoinType.OUTER;}| T_RIGHT {joinType=JoinType.RIGHT;}| T_LEFT {joinType=JoinType
+    .LEFT;})? T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
+    joinRelations=getWhereClauses[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
     (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getWhereClauses[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
