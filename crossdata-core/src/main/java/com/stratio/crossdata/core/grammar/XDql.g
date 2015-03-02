@@ -815,8 +815,13 @@ getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     @init{
         clauses = new ArrayList<>();
     }:
-    T_START_PARENTHESIS rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})* T_END_PARENTHESIS (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
-    | rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    T_START_PARENTHESIS
+        rel1=getRelation[tablename] {clauses.add(rel1);}
+        (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    T_END_PARENTHESIS
+    (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    | rel1=getRelation[tablename] {clauses.add(rel1);}
+        (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]
