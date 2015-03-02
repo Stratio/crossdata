@@ -41,6 +41,7 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     private List<Relation> relations = new ArrayList<>();
     private List<TableName> tables = new ArrayList<>();
     private List<InnerJoin> joinList=new ArrayList<>();
+    private String sqlQuery;
 
     /**
      * Constructor class.
@@ -147,6 +148,21 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
         this.joinList=innerJoinList;
     }
 
+    /**
+     * Get the sql direct query.
+     * @return a String.
+     */
+    public String getSqlQuery() {
+        return sqlQuery;
+    }
+
+    /**
+     * Set the sql query obtained once normalizator phase is done.
+     * @param sqlQuery The sql obtained in the normalizator phase.
+     */
+    public void setSqlQuery(String sqlQuery) {
+        this.sqlQuery = sqlQuery;
+    }
     /** Try to optimize the query in order to reduce its complexity.
     */
     public void optimizeQuery() {

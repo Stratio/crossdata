@@ -1380,6 +1380,8 @@ public class SelectStatementTest extends BasicValidatorTest {
 
     }
 
+
+
     @Test
     public void simpleJoinAlias() {
         String inputText =
