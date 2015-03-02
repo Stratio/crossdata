@@ -51,7 +51,7 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
 
   def receive : Receive= {
     case keepalive:IAmAlive =>{
-          logger.debug("receiving keepalive message from "+sender)
+          //logger.debug("receiving keepalive message from "+sender)
     }
     case query: Query => {
       logger.info("query: " + query + " sender: " + sender.path.address)

@@ -774,6 +774,10 @@ public class Planner {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
         workflow.setLastStep(finalSelect);
 
+
+        //Add the sql direct query to the logical workflow.
+        workflow.setSqlDirectQuery(query.getSqlQuery());
+
         return workflow;
     }
 
