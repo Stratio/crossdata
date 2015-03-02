@@ -26,7 +26,7 @@ import com.stratio.crossdata.common.data.{ClusterName, ConnectionStatus, TableNa
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
 import com.stratio.crossdata.connectors.config.ConnectConfig
-import com.stratio.crossdata.common.connector.{IConnectorApp, IConfiguration, IConnector}
+import com.stratio.crossdata.common.connector.{IMetadataListener, IConnectorApp, IConfiguration, IConnector}
 import com.stratio.crossdata.communication.Shutdown
 import org.apache.log4j.Logger
 import scala.collection.mutable.Set
@@ -101,6 +101,11 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       status = ConnectionStatus.DISCONNECTED
     }
     status
+  }
+
+  override def subscribeToMetadataUpdate(mapListener: IMetadataListener) = {
+    actorClusterNode.asInstanceOf[ConnectorActor].subscribeToMetadataUpdate(mapListener)
+
   }
 
 }
