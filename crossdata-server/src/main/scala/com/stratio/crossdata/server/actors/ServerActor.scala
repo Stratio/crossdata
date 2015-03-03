@@ -30,12 +30,13 @@ import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 
 object ServerActor {
+
+
   def props(engine: Engine): Props = Props(new ServerActor(engine))
 }
 
 class ServerActor(engine: Engine) extends Actor with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
-
   val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props().
     withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
   val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).
