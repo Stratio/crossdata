@@ -28,10 +28,12 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.RelationSelector;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.window.Window;
 import com.stratio.crossdata.common.utils.StringUtils;
+import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
@@ -384,6 +386,17 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         if (!joinList.isEmpty()) {
             for (InnerJoin myJoin:joinList) {
                 tableNames.add(myJoin.getTablename());
+            }
+        }
+        if((where != null) && (!where.isEmpty())){
+            for(Relation relation: where){
+                Selector rightTerm = relation.getRightTerm();
+                if(rightTerm instanceof ExtendedSelectSelector){
+                    ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                    selectSelector.getSelectStatement();
+                } else if (rightTerm instanceof RelationSelector){
+                    RelationSelector relationSelector = (RelationSelector) rightTerm;
+                }
             }
         }
         return tableNames;

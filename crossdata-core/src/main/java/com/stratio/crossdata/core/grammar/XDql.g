@@ -881,7 +881,7 @@ getSelector[TableName tablename] returns [Selector s]
     }:
     (
         T_START_PARENTHESIS
-            selectStmnt=selectStatement { s = new SelectSelector(tablename, selectStmnt.toString()); }
+            selectStmnt=selectStatement { s = new ExtendedSelectSelector(selectStmnt); }
         T_END_PARENTHESIS
     |
         functionName=getFunctionName
