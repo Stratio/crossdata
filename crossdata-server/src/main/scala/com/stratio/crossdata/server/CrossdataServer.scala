@@ -20,12 +20,17 @@ package com.stratio.crossdata.server
 
 import akka.actor.ActorSystem
 import akka.contrib.pattern.ClusterReceptionistExtension
+import akka.io.IO
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.core.engine.Engine
-import com.stratio.crossdata.server.actors.ServerActor
+import com.stratio.crossdata.server.actors.{RestActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
+import spray.can.Http
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.concurrent.duration._
 
 class CrossdataServer extends Daemon with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[CrossdataServer])
@@ -49,8 +54,15 @@ class CrossdataServer extends Daemon with ServerConfig {
   }
 
   override def init(p1: DaemonContext): Unit = {
-    logger.info("Init Crossdata Server --- v0.2.0")
+    logger.info("Init Crossdata Server --- v0.3.0")
     val serverActor = system.actorOf(ServerActor.props(engine).withRouter(RoundRobinRouter(nrOfInstances = num_server_actor)), actorName)
     ClusterReceptionistExtension(system).registerService(serverActor)
+
+    implicit val timeout = Timeout(5.seconds)
+    logger.info("apiRest value is "+apiRest)
+    if (apiRest) {
+      val RestActorRef = system.actorOf(RestActor.props(serverActor), "RestActor")
+      IO(Http)(system) ? Http.Bind(RestActorRef, interface = apiRestHostname, port = apiRestPort)
+    }
   }
 }

@@ -141,7 +141,7 @@ public final class StringUtils implements Serializable {
     }
 
     public static String getAkkaActorRefUri(Object object) {
-        return getAkkaActorRefUri(object, false);
+        return getAkkaActorRefUri(object, true);
     }
 
     /**
