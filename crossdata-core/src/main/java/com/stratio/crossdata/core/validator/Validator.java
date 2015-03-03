@@ -59,6 +59,7 @@ import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
@@ -73,6 +74,8 @@ import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.*;
+import com.stratio.crossdata.core.structures.GroupByClause;
+import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
 /**
@@ -184,6 +187,7 @@ public class Validator {
             validatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) parsedQuery);
         } else if (parsedQuery instanceof StorageParsedQuery) {
             validatedQuery = new StorageValidatedQuery((StorageParsedQuery) parsedQuery);
+            ((StorageValidatedQuery)validatedQuery).setSqlQuery(parsedQuery.getStatement().toString());
         } else if (parsedQuery instanceof SelectParsedQuery) {
             validatedQuery = new SelectValidatedQuery((SelectParsedQuery) parsedQuery);
             NormalizedFields fields = normalizator.getFields();
@@ -192,10 +196,12 @@ public class Validator {
             ((SelectValidatedQuery) validatedQuery).getTables().addAll(fields.getTableNames());
             ((SelectValidatedQuery) validatedQuery).getRelations().addAll(fields.getWhere());
             ((SelectValidatedQuery) validatedQuery).setJoinList(fields.getJoinList());
+            ((SelectValidatedQuery) validatedQuery).setSqlQuery(parsedQuery.getStatement().toString());
         }
 
         return validatedQuery;
     }
+
 
 
     private void validatePaginationSupport(CrossdataStatement crossdataStatement) throws BadFormatException {

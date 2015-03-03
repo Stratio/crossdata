@@ -779,6 +779,10 @@ public class Planner {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
         workflow.setLastStep(finalSelect);
 
+
+        //Add the sql direct query to the logical workflow.
+        workflow.setSqlDirectQuery(query.getSqlQuery());
+
         return workflow;
     }
 
@@ -1259,9 +1263,6 @@ public class Planner {
             // PLAN SELECT
             SelectStatement selectStatement = insertIntoStatement.getSelectStatement();
 
-            selectStatement = addAliasFromInsertToSelect(insertIntoStatement, selectStatement);
-            insertIntoStatement.setSelectStatement(selectStatement);
-
             BaseQuery selectBaseQuery = new BaseQuery(
                     query.getQueryId(),
                     selectStatement.toString(),
@@ -1278,6 +1279,7 @@ public class Planner {
 
             selectValidatedQuery.optimizeQuery();
             LogicalWorkflow selectLogicalWorkflow = buildWorkflow(selectValidatedQuery);
+            selectLogicalWorkflow = addAliasFromInsertToSelect(insertIntoStatement, selectLogicalWorkflow);
             ExecutionWorkflow selectExecutionWorkflow = buildExecutionWorkflow(
                     selectValidatedQuery.getQueryId(),
                     selectLogicalWorkflow);
@@ -1334,28 +1336,53 @@ public class Planner {
         return storageWorkflow;
     }
 
-    private SelectStatement addAliasFromInsertToSelect(
+    private LogicalWorkflow addAliasFromInsertToSelect(
             InsertIntoStatement insertIntoStatement,
-            SelectStatement selectStatement) {
-        // Map<alias, ColumnName.toString()>
-        Map<String, String> fieldsAliasesMap = new HashMap<>();
-        List<ColumnName> selectColumns = selectStatement.getColumns();
+            LogicalWorkflow selectLogicalWorkflow) {
+        Select lastStep = (Select) selectLogicalWorkflow.getLastStep();
+
         List<ColumnName> insertColumns = insertIntoStatement.getColumns();
-        for(int i=0; i<selectColumns.size(); i++){
-            fieldsAliasesMap.put(
-                    insertColumns.get(i).getName(),
-                    selectColumns.get(i).toString());
-        }
-        selectStatement.setFieldsAliases(fieldsAliasesMap);
-        List<Selector> selectors = new ArrayList<>();
+
+        // COLUMN MAP
+        Map<Selector, String> columnMap = lastStep.getColumnMap();
+        Map<Selector, String> newColumnMap = new LinkedHashMap<>();
         int i = 0;
-        for(Selector selector: selectStatement.getSelectExpression().getSelectorList()){
-            selector.setAlias(insertColumns.get(i).getName());
-            selectors.add(selector);
+        for(Map.Entry<Selector, String> column: columnMap.entrySet()){
+            ColumnName columnName = insertColumns.get(i);
+            Selector newSelector = column.getKey();
+            newSelector.setAlias(columnName.getName());
+            newColumnMap.put(newSelector, columnName.getName());
             i++;
         }
-        selectStatement.setSelectExpression(new SelectExpression(selectors));
-        return selectStatement;
+        lastStep.setColumnMap(newColumnMap);
+
+        //
+        Map<String, ColumnType> typeMap = lastStep.getTypeMap();
+        Map<String, ColumnType> newTypeMap = new LinkedHashMap<>();
+        i = 0;
+        for(Map.Entry<String, ColumnType> column: typeMap.entrySet()){
+            ColumnName columnName = insertColumns.get(i);
+            ColumnType columnType = column.getValue();
+            newTypeMap.put(columnName.getName(), columnType);
+            i++;
+        }
+        lastStep.setTypeMap(newTypeMap);
+
+        //
+        Map<Selector, ColumnType> typeMapFromColumnName = lastStep.getTypeMapFromColumnName();
+        Map<Selector, ColumnType> newTypeMapFromColumnName = new LinkedHashMap<>();
+        i = 0;
+        for(Map.Entry<Selector, ColumnType> column: typeMapFromColumnName.entrySet()){
+            ColumnName columnName = insertColumns.get(i);
+            Selector newSelector = column.getKey();
+            newSelector.setAlias(columnName.getName());
+            ColumnType columnType = column.getValue();
+            newTypeMapFromColumnName.put(newSelector, columnType);
+            i++;
+        }
+        lastStep.setTypeMapFromColumnName(newTypeMapFromColumnName);
+
+        return selectLogicalWorkflow;
     }
 
     private List<ConnectorMetadata> findCandidates(List<ClusterName> involvedClusters,

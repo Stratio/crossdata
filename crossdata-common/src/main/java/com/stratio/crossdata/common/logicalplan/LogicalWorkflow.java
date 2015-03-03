@@ -43,6 +43,8 @@ public class LogicalWorkflow implements Serializable {
 
     private int pagination = 0;
 
+    private String sqlDirectQuery;
+
     /**
      * Workflow constructor.
      *
@@ -145,5 +147,21 @@ public class LogicalWorkflow implements Serializable {
         }
 
         return sb.toString();
+    }
+
+    /**
+     * Get the sql query in sql 92 standard.
+     * @return A String with the query.
+     */
+    public String getSqlDirectQuery() {
+        return sqlDirectQuery;
+    }
+
+    /**
+     * Set the sql query in a sql 92  standard format.
+     * @param sqlDirectQuery The query.
+     */
+    public void setSqlDirectQuery(String sqlDirectQuery) {
+        this.sqlDirectQuery = sqlDirectQuery;
     }
 }
