@@ -110,6 +110,7 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_FUNCTIONS);
         operationsC1.add(Operations.SELECT_WINDOW);
         operationsC1.add(Operations.SELECT_GROUP_BY);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_EQ);
         operationsC1.add(Operations.DELETE_PK_EQ);
         operationsC1.add(Operations.CREATE_INDEX);
         operationsC1.add(Operations.DROP_INDEX);
@@ -180,7 +181,7 @@ public class PlannerTest extends PlannerBaseTest {
 
         init();
 
-        String inputText = "SELECT demo.table1.id FROM demo.table1;";
+        String inputText = "SELECT demo.table1.id FROM demo.table1 WHERE demo.table1.user = 'test';";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "selectSingleColumn", false, table1);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
@@ -506,7 +507,7 @@ public class PlannerTest extends PlannerBaseTest {
 
         init();
 
-        String inputText = "SELECT * FROM demo.table1;";
+        String inputText = "SELECT * FROM demo.table1 WHERE demo.table1.name = 'test';";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "pagination", false, table1);
         int expectedPagedSize = 5;

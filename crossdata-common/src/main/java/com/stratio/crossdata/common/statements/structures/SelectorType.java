@@ -29,5 +29,6 @@ public enum SelectorType {
     STRING,
     INTEGER,
     FLOATING_POINT,
-    RELATION
+    RELATION,
+    SELECT
 }
