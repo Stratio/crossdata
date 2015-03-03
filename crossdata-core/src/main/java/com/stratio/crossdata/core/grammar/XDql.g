@@ -815,8 +815,13 @@ getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     @init{
         clauses = new ArrayList<>();
     }:
-    T_START_PARENTHESIS rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})* T_END_PARENTHESIS (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
-    | rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    T_START_PARENTHESIS
+        rel1=getRelation[tablename] {clauses.add(rel1);}
+        (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    T_END_PARENTHESIS
+    (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    | rel1=getRelation[tablename] {clauses.add(rel1);}
+        (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]
@@ -875,6 +880,10 @@ getSelector[TableName tablename] returns [Selector s]
         String name = null;
     }:
     (
+        T_START_PARENTHESIS
+            selectStmnt=selectStatement { s = new SelectSelector(tablename, selectStmnt.toString()); }
+        T_END_PARENTHESIS
+    |
         functionName=getFunctionName
         T_START_PARENTHESIS
             (select1=getSelector[tablename] {params.add(select1);}
@@ -882,7 +891,7 @@ getSelector[TableName tablename] returns [Selector s]
             )?
         T_END_PARENTHESIS { String functionStr = functionName;
                             s = new FunctionSelector(tablename, functionStr, params);}
-        |
+    |
         (
             columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);}
             | floatingNumber=T_FLOATING {s = new FloatingPointSelector(tablename, $floatingNumber.text);}

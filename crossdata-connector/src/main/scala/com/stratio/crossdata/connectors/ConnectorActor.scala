@@ -38,10 +38,6 @@ import org.apache.log4j.Logger
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.duration.DurationInt
-import akka.cluster.ClusterEvent.MemberRemoved
-import akka.cluster.ClusterEvent.UnreachableMember
-import akka.cluster.ClusterEvent.MemberUp
-import akka.cluster.ClusterEvent.CurrentClusterState
 import com.stratio.crossdata.communication.CreateIndex
 import com.stratio.crossdata.communication.Update
 import akka.cluster.ClusterEvent.MemberRemoved
@@ -358,8 +354,12 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       }
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
     }
-    case _: MemberEvent => {
-      logger.info("Receiving anything else")
+    case memberEvent: MemberEvent => {
+      logger.info("MemberEvent received: " + memberEvent.toString)
+    }
+    case listener: IMetadataListener => {
+      logger.info("Adding new metadata listener")
+      subscribeToMetadataUpdate(listener)
     }
   }
 
