@@ -16,29 +16,24 @@
  * under the License.
  */
 
-package com.stratio.crossdata.connectors
+package com.stratio.connector.inmemory.metadata;
 
-import akka.actor.Actor
-import com.stratio.crossdata.communication.HeartbeatSig
-import org.apache.log4j.Logger
-import scala.concurrent.ExecutionContext.Implicits.global
+import com.stratio.crossdata.common.connector.IMetadataListener;
+import com.stratio.crossdata.common.metadata.IMetadata;
 
-import scala.concurrent.duration._
+public class MetadataListener implements IMetadataListener {
 
+    @Override
+    public void updateMetadata(IMetadata iMetadata) {
+        System.out.println("UPDATE METADATA: "
+                + System.lineSeparator()
+                + iMetadata.toString());
+    }
 
-trait HeartbeatActor extends Actor {
-  lazy val logger = Logger.getLogger(classOf[HeartbeatActor])
-  private val scheduler = context.system.scheduler.schedule(0.seconds,1.seconds,self,new HeartbeatSig())
-
-  //val initialDelay:Long=0
-  //val period:Long=500
-
-  def receive: Receive = {
-    case heartbeat: HeartbeatSig =>  handleHeartbeat(heartbeat)
-  }
-
-  def handleHeartbeat(heartbeat: HeartbeatSig):Unit = {
-    logger.debug("HeartbeatActor receives a heartbeat message")
-  }
-
+    @Override
+    public void deleteMetadata(IMetadata iMetadata) {
+        System.out.println("DELETE METADATA: "
+                + System.lineSeparator()
+                + iMetadata.toString());
+    }
 }

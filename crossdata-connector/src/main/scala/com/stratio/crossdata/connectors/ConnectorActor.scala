@@ -20,24 +20,58 @@ package com.stratio.crossdata.connectors
 
 import java.util
 
-import akka.actor.{ActorLogging, ActorRef, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
 import akka.util.Timeout
 import com.stratio.crossdata
-import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
+import com.stratio.crossdata.common.connector._
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata, _}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{ACK, AlterCatalog, AlterTable, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DeleteRows, DropCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, ProvideCatalogMetadata, ProvideCatalogsMetadata, ProvideMetadata, ProvideTableMetadata, Truncate, Update, UpdateMetadata, getConnectorName, replyConnectorName, _}
+import com.stratio.crossdata.communication._
 import difflib.Patch
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable.{ListMap, Map, Set}
+import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.duration.DurationInt
+import akka.cluster.ClusterEvent.MemberRemoved
+import akka.cluster.ClusterEvent.UnreachableMember
+import akka.cluster.ClusterEvent.MemberUp
+import akka.cluster.ClusterEvent.CurrentClusterState
+import com.stratio.crossdata.communication.CreateIndex
+import com.stratio.crossdata.communication.Update
+import akka.cluster.ClusterEvent.MemberRemoved
+import com.stratio.crossdata.communication.ACK
+import com.stratio.crossdata.communication.CreateTableAndCatalog
+import com.stratio.crossdata.communication.AlterTable
+import com.stratio.crossdata.communication.Truncate
+import com.stratio.crossdata.communication.CreateTable
+import com.stratio.crossdata.communication.AlterCatalog
+import com.stratio.crossdata.communication.InsertBatch
+import com.stratio.crossdata.communication.AsyncExecute
+import akka.cluster.ClusterEvent.UnreachableMember
+import com.stratio.crossdata.communication.ProvideCatalogMetadata
+import com.stratio.crossdata.communication.ProvideCatalogsMetadata
+import com.stratio.crossdata.communication.CreateCatalog
+import com.stratio.crossdata.communication.ProvideTableMetadata
+import com.stratio.crossdata.communication.PagedExecute
+import com.stratio.crossdata.communication.replyConnectorName
+import com.stratio.crossdata.communication.Execute
+import akka.cluster.ClusterEvent.MemberUp
+import com.stratio.crossdata.communication.getConnectorName
+import com.stratio.crossdata.communication.ProvideMetadata
+import com.stratio.crossdata.communication.DropIndex
+import com.stratio.crossdata.communication.UpdateMetadata
+import akka.cluster.ClusterEvent.CurrentClusterState
+import com.stratio.crossdata.communication.DeleteRows
+import com.stratio.crossdata.communication.DropCatalog
+import com.stratio.crossdata.communication.PatchMetadata
+import com.stratio.crossdata.communication.DropTable
+import com.stratio.crossdata.communication.Insert
 
 
 object State extends Enumeration {
@@ -54,10 +88,10 @@ object ClassExtractor{
 }
 
 class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String])
-  extends HeartbeatActor with ActorLogging with IResultHandler {
+  extends Actor with ActorLogging with IResultHandler {
 
-  override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
-  val metadata: util.Map[FirstLevelName, IMetadata] = new util.HashMap[FirstLevelName,IMetadata]()
+  lazy val logger = Logger.getLogger(classOf[ConnectorActor])
+  val metadata: ObservableMap[FirstLevelName, IMetadata] = new ObservableMap[FirstLevelName, IMetadata]()
 
   logger.info("Lifting connector actor")
 
@@ -66,13 +100,19 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
   var state = State.Stopped
-  var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
+  val runningJobs: ListMap[String, ActorRef] = new ListMap[String, ActorRef]()
 
+  /*
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
+    logger.info(s"heartbeat (no of simultaneous running jobs = ${runningJobs.size}")
     runningJobs.foreach {
-      keyVal: (String, ActorRef) => keyVal._2 ! IAmAlive(keyVal._1)
+      keyVal: (String, ActorRef) => {
+        logger.info("sending iamalive to "+StringUtils.getAkkaActorRefUri(keyVal._2) )
+        context.actorSelection(StringUtils.getAkkaActorRefUri(keyVal._2)) ! IAmAlive(keyVal._1)
+      }
     }
   }
+  */
 
   override def preStart():Unit = {
     Cluster(context.system).subscribe(self,classOf[ClusterDomainEvent])
@@ -93,7 +133,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   }
 
   def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
-    val r=new util.HashMap[CatalogName,CatalogMetadata]()
+    val r = new util.HashMap[CatalogName,CatalogMetadata]()
     //for(entry:java.util.Map.Entry[FirstLevelName,IMetadata] <- metadata.entrySet()){
     for((k,v) <- metadata){
        k match {
@@ -109,6 +149,10 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       }
     }
     return new util.ArrayList(r.values())
+  }
+
+  def subscribeToMetadataUpdate(listener: IMetadataListener) = {
+    metadata.addListener(listener)
   }
 
   def class2String(clazz:Class[_]):String=clazz.getName
@@ -180,7 +224,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     true
   })
 
-  override def receive: Receive = super.receive orElse {
+  override def receive: Receive = {
     case u: PatchMetadata=> {
       //TODO: continue
       val r=try{
@@ -188,7 +232,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       }catch{
         case _=>false
       }
-      println("result="+r)
+      //println("result="+r)
     }
 
     case u: UpdateMetadata=> {
@@ -349,6 +393,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   private def methodExecute(ex:Execute, s:ActorRef): Unit ={
     try {
       runningJobs.put(ex.queryId, s)
+      
       val result = connector.getQueryEngine().execute(ex.workflow)
       result.setQueryId(ex.queryId)
       s ! result
@@ -379,17 +424,21 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         val result = Result.createExecutionErrorResult(e.getMessage())
         result.setQueryId(aex.queryId)
         asyncSender ! result
-        runningJobs.remove(aex.queryId)
       }
       case err: Error =>
         logger.error("error in ConnectorActor (Receiving async LogicalWorkflow)")
+    }finally {
+      runningJobs.remove(aex.queryId)
     }
   }
 
   private def methodPagedExecute(pex: PagedExecute, sender: ActorRef): Unit = {
     val pagedSender = sender
     try {
+      logger.info("new running job: "+pex.queryId)
       runningJobs.put(pex.queryId, pagedSender)
+      logger.info("concurrent running Jobs = "+runningJobs.size)
+      //Thread.sleep(4*60*1000)
       connector.getQueryEngine().pagedExecute(pex.queryId, pex.workflow, this, pex.pageSize)
       pagedSender ! ACK(pex.queryId, QueryStatus.IN_PROGRESS)
     } catch {
@@ -397,10 +446,12 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         val result = Result.createExecutionErrorResult(e.getMessage())
         result.setQueryId(pex.queryId)
         pagedSender ! result
-        runningJobs.remove(pex.queryId)
       }
       case err: Error =>
         logger.error("error in ConnectorActor (Receiving paged LogicalWorkflow)")
+    }finally {
+      runningJobs.remove(pex.queryId)
+      logger.info("end new running job")
     }
 
   }

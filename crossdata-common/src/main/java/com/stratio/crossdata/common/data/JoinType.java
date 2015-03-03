@@ -15,30 +15,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package com.stratio.crossdata.common.data;
 
-package com.stratio.crossdata.connectors
-
-import akka.actor.Actor
-import com.stratio.crossdata.communication.HeartbeatSig
-import org.apache.log4j.Logger
-import scala.concurrent.ExecutionContext.Implicits.global
-
-import scala.concurrent.duration._
-
-
-trait HeartbeatActor extends Actor {
-  lazy val logger = Logger.getLogger(classOf[HeartbeatActor])
-  private val scheduler = context.system.scheduler.schedule(0.seconds,1.seconds,self,new HeartbeatSig())
-
-  //val initialDelay:Long=0
-  //val period:Long=500
-
-  def receive: Receive = {
-    case heartbeat: HeartbeatSig =>  handleHeartbeat(heartbeat)
-  }
-
-  def handleHeartbeat(heartbeat: HeartbeatSig):Unit = {
-    logger.debug("HeartbeatActor receives a heartbeat message")
-  }
-
+/**
+ * Join types.
+ */
+public enum JoinType {
+    INNER,
+    CROSS,
+    NATURAL,
+    LEFT,
+    RIGHT,
+    LEFT_OUTER,
+    FULL_OUTER,
+    RIGHT_OUTER
 }

@@ -140,15 +140,41 @@ public final class StringUtils implements Serializable {
         return selector;
     }
 
+    public static String getAkkaActorRefUri(Object object) {
+        return getAkkaActorRefUri(object, false);
+    }
+
     /**
      * Get the string representation of a AKKA actor reference URI.
      *
      * @param object The object with the Actor ref.
      * @return A string with the URI
      */
-    public static String getAkkaActorRefUri(Object object) {
+    public static String getAkkaActorRefUri(Object object, boolean resultForActorSelection) {
         if (object != null) {
-            return object.toString().replace("Actor[", "").replace("]", "").split("\\$")[0].split("#")[0];
+            // context.actorSelection("akka.tcp://app@otherhost:1234/user/serviceB")
+            String result = object.toString().replace("Actor[", "").replace("]", "").split("\\$")[0].split("#")[0];
+            if(resultForActorSelection){
+                if (result.contains("akka.tcp")) {
+                    result = result.substring(result.indexOf("akka.tcp"));
+                }
+                if(result.contains("%3A%2F%2F")) {
+                    result = result.replace("%3A%2F%2F", "://");
+                }
+                if(result.contains("%40")) {
+                    result = result.replace("%40", "@");
+                }
+                if(result.contains("%3A")){
+                    result = result.replace("%3A", ":");
+                }
+                if(result.contains("%2F")) {
+                    result = result.replace("%2F", "/");
+                }
+                if(result.contains("%")) {
+                    result = result.substring(0, result.lastIndexOf("%"));
+                }
+            }
+            return result;
         }
         return null;
     }

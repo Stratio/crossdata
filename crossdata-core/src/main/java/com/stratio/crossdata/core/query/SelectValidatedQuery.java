@@ -40,7 +40,8 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     private List<ColumnName> columns = new ArrayList<>();
     private List<Relation> relations = new ArrayList<>();
     private List<TableName> tables = new ArrayList<>();
-    private InnerJoin join;
+    private List<InnerJoin> joinList=new ArrayList<>();
+    private String sqlQuery;
 
     /**
      * Constructor class.
@@ -125,24 +126,47 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
     /**
      * Get the list of Joins of the validated select query.
-     * @return A  {@link com.stratio.crossdata.core.structures.InnerJoin} .
+     * @return A  list of {@link com.stratio.crossdata.core.structures.InnerJoin} .
      */
-    public InnerJoin getJoin() {
-        return join;
+    public List<InnerJoin> getJoinList() {
+        return joinList;
     }
 
     /**
-     * Set the join metadata to the select validated query.
+     * Add a join metadata to the select validated query.
      * @param join The {@link com.stratio.crossdata.core.structures.InnerJoin} .
      */
-    public void setJoin(InnerJoin join) {
-        this.join = join;
+    public void addJoin(InnerJoin join) {
+        this.joinList.add(join);
     }
 
+    /**
+     * set a complete list of inner joins.
+     * @param innerJoinList The inner join list.
+     */
+    public void setJoinList(List<InnerJoin> innerJoinList){
+        this.joinList=innerJoinList;
+    }
+
+    /**
+     * Get the sql direct query.
+     * @return a String.
+     */
+    public String getSqlQuery() {
+        return sqlQuery;
+    }
+
+    /**
+     * Set the sql query obtained once normalizator phase is done.
+     * @param sqlQuery The sql obtained in the normalizator phase.
+     */
+    public void setSqlQuery(String sqlQuery) {
+        this.sqlQuery = sqlQuery;
+    }
     /** Try to optimize the query in order to reduce its complexity.
     */
     public void optimizeQuery() {
-        if(join != null ) {
+        if(!joinList.isEmpty()) {
             optimizeJoins();
         }
         optimizeRelations();
@@ -167,11 +191,12 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     private void optimizeJoins() {
 
         //TODO when multiple joins supported => tables.size() = joins.size();
-        if(tables.size() == 1 ){
-            relations.addAll(join.getRelations());
-            this.getStatement().setWhere(relations);
-            this.getStatement().setJoin(null);
-            join = null;
+        if(tables.size() == joinList.size() ){
+            for(InnerJoin innerJoin:joinList) {
+                relations.addAll(innerJoin.getRelations());
+                this.getStatement().setWhere(relations);
+                this.getStatement().removeJoin(innerJoin);
+            }
         }
     }
 

@@ -404,11 +404,13 @@ public class APIManager {
         Result result;
         LOG.info("Processing " + APICommand.DESCRIBE_CATALOG().toString());
         LOG.info(PROCESSING + APICommand.DESCRIBE_CATALOG().toString());
-        CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(name);
-
-        result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_CATALOG);
-
-        ((MetadataResult) result).setCatalogMetadataList(Arrays.asList(catalogMetadata));
+        try {
+            CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(name);
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_CATALOG);
+            ((MetadataResult) result).setCatalogMetadataList(Arrays.asList(catalogMetadata));
+        }catch(MetadataManagerException e){
+            result=MetadataResult.createExecutionErrorResult(e.getMessage());
+        }
 
         return result;
     }
@@ -437,11 +439,14 @@ public class APIManager {
         Result result;
         LOG.info("Processing " + APICommand.DESCRIBE_TABLE().toString());
         LOG.info(PROCESSING + APICommand.DESCRIBE_TABLE().toString());
-        TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(name);
 
-        result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_TABLE);
-
-        ((MetadataResult) result).setTableList(Arrays.asList(tableMetadata));
+        try {
+            TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(name);
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_TABLE);
+            ((MetadataResult) result).setTableList(Arrays.asList(tableMetadata));
+        }catch(MetadataManagerException e){
+            result=MetadataResult.createExecutionErrorResult(e.getMessage());
+        }
 
         return result;
     }

@@ -38,7 +38,7 @@ public enum Operations {
      */
     DROP_CATALOG("DROP_CATALOG"),
 
-   /**
+    /**
      * The engine supports creating new tables given an existing catalog.
      */
     CREATE_TABLE("CREATE_TABLE"),
@@ -569,9 +569,14 @@ public enum Operations {
     PAGINATION("PAGINATION"),
 
     /**
-     * The engine supports direct execution of SQL queries
+     * The engine supports direct execution of SQL queries.
      */
-   SQL_DIRECT("SQL_DIRECT");
+    SQL_DIRECT("SQL_DIRECT"),
+
+    /**
+     * The engine support insert into from select queries.
+     */
+    INSERT_FROM_SELECT("INSERT_FROM_SELECT");
 
     private String operationsStr;
 

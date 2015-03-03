@@ -26,7 +26,7 @@ import com.stratio.crossdata.common.data.{ClusterName, ConnectionStatus, TableNa
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
 import com.stratio.crossdata.connectors.config.ConnectConfig
-import com.stratio.crossdata.common.connector.{IConnectorApp, IConfiguration, IConnector}
+import com.stratio.crossdata.common.connector.{IMetadataListener, IConnectorApp, IConfiguration, IConnector}
 import com.stratio.crossdata.communication.Shutdown
 import org.apache.log4j.Logger
 import scala.collection.mutable.Set
@@ -57,7 +57,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
       connector, connectedServers).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
     connector.init(new IConfiguration {})
-    val actorSelection = system.actorSelection(StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString()))
+    val actorSelection = system.actorSelection(StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString(), false))
 
     metricName = MetricRegistry.name(connector.getConnectorName, "connection", "status")
     Metrics.getRegistry.register(metricName,
@@ -75,6 +75,15 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   }
 
   override def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+    /*TODO: for querying actor internal state, only messages should be used.
+      i.e.{{{
+        import scala.concurrent.duration._
+        val timeout: akka.util.Timeout = 2.seconds
+        val response: Option[TableMetadata] = 
+          actorClusterNode.map(actor => Await.result((actor ? GetTableMetadata).mapTo[TableMetadata],timeout))
+        response.getOrElse(throw new IlegalStateException("Actor cluster node is not initialized"))
+      }}}
+    */
     actorClusterNode.asInstanceOf[ConnectorActor].getTableMetadata(clusterName, tableName)
   }
 
@@ -92,6 +101,11 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       status = ConnectionStatus.DISCONNECTED
     }
     status
+  }
+
+  override def subscribeToMetadataUpdate(mapListener: IMetadataListener) = {
+    actorClusterNode.asInstanceOf[ConnectorActor].subscribeToMetadataUpdate(mapListener)
+
   }
 
 }
