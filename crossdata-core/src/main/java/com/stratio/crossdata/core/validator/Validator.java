@@ -167,8 +167,10 @@ public class Validator {
                 break;
             case PAGINATION_SUPPORT:
                 validatePaginationSupport(parsedQuery.getStatement());
+                break;
             case VALIDATE_PRIORITY:
                 validatePriority(parsedQuery.getStatement());
+                break;
             case VALIDATE_SCOPE:
                 validateScope(parsedQuery.getStatement());
                 break;
@@ -182,18 +184,33 @@ public class Validator {
         } else if (parsedQuery instanceof StorageParsedQuery) {
             validatedQuery = new StorageValidatedQuery((StorageParsedQuery) parsedQuery);
         } else if (parsedQuery instanceof SelectParsedQuery) {
-            validatedQuery = new SelectValidatedQuery((SelectParsedQuery) parsedQuery);
-            NormalizedFields fields = normalizator.getFields();
-            ((SelectValidatedQuery) validatedQuery).setTableMetadata(fields.getTablesMetadata());
-            ((SelectValidatedQuery) validatedQuery).getColumns().addAll(fields.getColumnNames());
-            ((SelectValidatedQuery) validatedQuery).getTables().addAll(fields.getTableNames());
-            ((SelectValidatedQuery) validatedQuery).getRelations().addAll(fields.getWhere());
-            ((SelectValidatedQuery) validatedQuery).setJoin(fields.getJoin());
+            validatedQuery = createValidatedQuery(normalizator, ((SelectParsedQuery) parsedQuery));
         }
 
         return validatedQuery;
     }
 
+    private SelectValidatedQuery createValidatedQuery(Normalizator normalizer,
+                    SelectParsedQuery selectParsedQuery) {
+
+        SelectValidatedQuery partialValidatedQuery = new SelectValidatedQuery(selectParsedQuery);
+        NormalizedFields fields = normalizer.getFields();
+
+        //Prepare nextQuery
+        if(selectParsedQuery.getChildParsedQuery() != null) {
+            partialValidatedQuery.setSubqueryValidatedQuery(createValidatedQuery(normalizer.getSubqueryNormalizator(),selectParsedQuery.getChildParsedQuery()));
+        }
+
+        partialValidatedQuery.setTableMetadata(fields.getTablesMetadata());
+        partialValidatedQuery.getColumns().addAll(fields.getColumnNames());
+        partialValidatedQuery.getTables().addAll(fields.getTableNames());
+        partialValidatedQuery.getRelations().addAll(fields.getWhere());
+        partialValidatedQuery.setJoin(fields.getJoin());
+
+        
+
+        return  partialValidatedQuery;
+    }
 
     private void validatePaginationSupport(CrossdataStatement crossdataStatement) throws BadFormatException {
         AttachConnectorStatement acs = (AttachConnectorStatement) crossdataStatement;
@@ -305,7 +322,7 @@ public class Validator {
         }
     }
 
-    private void validateSelect(IParsedQuery parsedQuery) throws ValidationException {
+    private void  validateSelect(IParsedQuery parsedQuery) throws ValidationException {
         SelectParsedQuery selectParsedQuery = (SelectParsedQuery) parsedQuery;
         normalizator = new Normalizator(selectParsedQuery);
         normalizator.execute();

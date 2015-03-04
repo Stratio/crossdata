@@ -96,9 +96,20 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     private boolean subqueryInc = false;
     /**
-     * The list of selectors to be retrieved.
+     * The subquery.
      */
     private SelectStatement subquery= null;
+    /**
+     * The subquery alias.
+     */
+    private String subqueryAlias= null;
+
+    /**
+     * The list of alias given to the subquery selectors. The same order in which the values are returned is assumed.
+     */
+    private List<String> subqueryAliases= null;
+
+
     /**
      * The LIMIT in terms of the number of rows to be retrieved in the result of the SELECT statement.
      */
@@ -147,6 +158,10 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     public void setCatalog(CatalogName catalog) {
         this.catalogInc = true;
         this.catalog = catalog;
+    }
+
+    public List<String> getSubqueryAliases() {
+        return subqueryAliases;
     }
 
     /**
@@ -252,6 +267,15 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     public boolean isWhereInc() {
         return whereInc;
+    }
+
+    /**
+     * Check if a subquery is included.
+     *
+     * @return Whether it is included.
+     */
+    public boolean isSubqueryInc() {
+        return subqueryInc;
     }
 
     public int getLimit() {
@@ -362,12 +386,32 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     /**
      * Set the subquery of the statement.
      * @param subquery The list of columns that are implicated in the order by.
+     * @param alias    The alias.
      */
-    public void setSubquery(SelectStatement subquery) {
-        if (subquery != null) {
+    public void setSubquery(SelectStatement subquery, String alias, List<String> selectorAliases) {
+        if (subquery != null && alias != null) {
             this.subqueryInc = true;
             this.subquery = subquery;
+            this.subqueryAlias = alias;
+
+            if(selectorAliases!= null && !selectorAliases.isEmpty()){
+                  this.subqueryAliases = selectorAliases;
+            }
         }
+    }
+
+    /**
+     * Get the subquery of the statement.
+     */
+    public SelectStatement getSubquery() {
+        return subquery;
+    }
+
+    /**
+     * Get the subquery alias of the statement.
+     */
+    public String getSubqueryAlias() {
+        return subqueryAlias;
     }
 
     @Override

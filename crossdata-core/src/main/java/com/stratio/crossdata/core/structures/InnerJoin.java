@@ -73,7 +73,7 @@ public class InnerJoin implements Serializable {
             String joinTable = tableName.getQualifiedName();
             String rightTable = relation.getRightTerm().getColumnName().getTableName().getQualifiedName();
 
-            if(!joinTable.equalsIgnoreCase(rightTable)){
+            if(!joinTable.equals(rightTable)){
                 orderedRelation = new Relation(
                         relation.getRightTerm(),
                         relation.getOperator(),

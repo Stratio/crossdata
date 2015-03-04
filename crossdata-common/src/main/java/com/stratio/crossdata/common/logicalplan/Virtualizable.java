@@ -15,29 +15,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.stratio.crossdata.common.utils;
+package com.stratio.crossdata.common.logicalplan;
 
-/**
- * Class holding several constants.
- */
-public final class Constants {
-
-    /**
-     * Default priority value.
-     */
-     public static final int DEFAULT_PRIORITY = 5;
-
-    /**
-     * Default pagination.
-     */
-    public static final int DEFAULT_PAGINATION = 0;
-
-    /**
-     * Default virtual catalog name. Used in nested queries as catalog of the virtual table.
-     */
-    public static final String DEFAULT_VIRTUAL_CATALOG = "virtual";
-
-
-    private Constants() {
-    }
+public interface Virtualizable {
+    public boolean isVirtual();
 }

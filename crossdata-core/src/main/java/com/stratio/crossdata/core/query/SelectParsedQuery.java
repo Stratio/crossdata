@@ -32,6 +32,12 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
     private SelectStatement statement;
 
     /**
+     * The child parsed select statement.
+     */
+    private SelectParsedQuery parsedSelectStatement;
+
+
+    /**
      * Constructor class based in a Base Query and a Statement.
      * @param baseQuery The query previous to be parsed.
      * @param statement The statement with the query.
@@ -40,6 +46,10 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
             SelectStatement statement) {
         super(baseQuery);
         this.statement = statement;
+        SelectStatement subquery = statement.getSubquery();
+        if(subquery != null){
+            parsedSelectStatement = new SelectParsedQuery(baseQuery,subquery);
+        }
         setQueryStatus(QueryStatus.PARSED);
     }
 
@@ -54,6 +64,11 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
     @Override
     public SelectStatement getStatement() {
         return (SelectStatement) statement;
+    }
+
+
+    public SelectParsedQuery getChildParsedQuery() {
+        return parsedSelectStatement;
     }
 
     @Override public String toString() {

@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
+import com.stratio.crossdata.core.normalizer.NormalizedFields;
 import com.stratio.crossdata.core.structures.InnerJoin;
 
 /**
@@ -41,6 +42,7 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     private List<Relation> relations = new ArrayList<>();
     private List<TableName> tables = new ArrayList<>();
     private InnerJoin join;
+    private SelectValidatedQuery subqueryValidatedQuery;
 
     /**
      * Constructor class.
@@ -138,6 +140,22 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     public void setJoin(InnerJoin join) {
         this.join = join;
     }
+
+
+    /**
+     * Add a new subquery.
+     *
+     * @param subqueryValidatedQuery Subquery's normalized fields.
+     */
+    public void setSubqueryValidatedQuery(SelectValidatedQuery subqueryValidatedQuery) {
+        this.subqueryValidatedQuery = subqueryValidatedQuery;
+    }
+
+
+    public SelectValidatedQuery getSubqueryValidatedQuery() {
+        return subqueryValidatedQuery;
+    }
+
 
     /** Try to optimize the query in order to reduce its complexity.
     */

@@ -35,4 +35,9 @@ public class AmbiguousNameException extends ValidationException {
     public AmbiguousNameException(ColumnName columnName) {
         super("COLUMN name [" + columnName + "] is ambiguous");
     }
+
+    public AmbiguousNameException(String message) {
+        super(message);
+    }
+
 }

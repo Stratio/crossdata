@@ -571,7 +571,12 @@ public enum Operations {
     /**
      * The engine supports direct execution of SQL queries
      */
-   SQL_DIRECT("SQL_DIRECT");
+   SQL_DIRECT("SQL_DIRECT"),
+
+    /**
+     * The engine supports operations which refer using aliases to the result of previous queries.
+     */
+    SELECT_SUBQUERY("SELECT_SUBQUERY");
 
     private String operationsStr;
 
