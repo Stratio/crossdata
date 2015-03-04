@@ -574,7 +574,7 @@ public enum Operations {
    SQL_DIRECT("SQL_DIRECT"),
 
     /**
-     * The engine supports operations which refer using aliases to the result of previous queries.
+     * The engine supports operations which refer to the result of previous queries by using aliases.
      */
     SELECT_SUBQUERY("SELECT_SUBQUERY");
 

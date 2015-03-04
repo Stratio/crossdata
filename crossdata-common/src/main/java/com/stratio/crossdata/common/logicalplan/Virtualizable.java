@@ -17,6 +17,14 @@
  */
 package com.stratio.crossdata.common.logicalplan;
 
+/**
+ * Virtualizable interface for {@link com.stratio.crossdata.common.logicalplan.LogicalStep} used when working with logical steps planned from a subquery.
+ */
 public interface Virtualizable {
+
+    /**
+     * Return whether operates with virtual tables or not.
+     * @return true when operates with virtual {@link com.stratio.crossdata.common.data.TableName}.
+     */
     public boolean isVirtual();
 }

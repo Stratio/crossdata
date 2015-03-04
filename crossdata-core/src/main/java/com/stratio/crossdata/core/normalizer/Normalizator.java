@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
@@ -584,7 +583,7 @@ public class Normalizator {
             }*/
 
             if (! columnFromVirtualTableFound ){
-                if(!columnName.isCompletedName() || Constants.DEFAULT_VIRTUAL_CATALOG.equals(columnName.getTableName().getCatalogName().getName())) {
+                if(!columnName.isCompletedName() && !Constants.DEFAULT_VIRTUAL_CATALOG.equals(columnName.getTableName().getCatalogName().getName())) {
                     if (columnName.getTableName() != null) {
                         TableName searched = fields.getTableName(columnName.getTableName().getName());
                         if(searched == null){

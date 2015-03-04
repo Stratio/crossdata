@@ -143,6 +143,6 @@ public class Project extends TransformationStep implements Virtualizable{
 
     @Override
     public final boolean isVirtual() {
-        return Constants.DEFAULT_VIRTUAL_CATALOG.equals(tableName.getCatalogName().getName());
+        return tableName.isVirtual();
     }
 }
