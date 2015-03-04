@@ -222,9 +222,16 @@ Example:
 
 ATTACH CONNECTOR \<connector-name\> TO \<cluster-name\> WITH OPTIONS \<JSON\>';'
 
-Example:
+It is possible to extend this command to add pagination and priority to the connector.
+
+ATTACH CONNECTOR \<connector-name\> TO \<cluster-name\> WITH OPTIONS \<JSON\>' (AND PRIORITY=<1-9>)? (AND PAGINATION=<number of rows>)?;'
+
+Examples:
 
     ATTACH CONNECTOR con_native_cassandra TO cassandra_production WITH OPTIONS {'DefaultLimit': '1000'};
+    ATTACH CONNECTOR con_native_cassandra TO cassandra_production WITH OPTIONS {'DefaultLimit': '1000'} AND PRIORITY=3;
+    ATTACH CONNECTOR con_native_cassandra TO cassandra_production WITH OPTIONS {'DefaultLimit': '1000'} AND PAGINATION=50;
+    ATTACH CONNECTOR con_native_cassandra TO cassandra_production WITH OPTIONS {'DefaultLimit': '1000'} AND PRIORITY=3 AND PAGINATION=50;
 
 ### DETACH CONNECTOR
 

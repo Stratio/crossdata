@@ -595,7 +595,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
 
         InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
 
         Validator validator = new Validator();
 
@@ -639,7 +639,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
 
         InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
 
         Validator validator = new Validator();
 
@@ -682,7 +682,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
 
         InnerJoin join = new InnerJoin(new TableName("unknown", "users"), joinRelations);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
 
         Validator validator = new Validator();
 
@@ -725,7 +725,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
 
         InnerJoin join = new InnerJoin(new TableName("demo", "unknown"), joinRelations);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
 
         Validator validator = new Validator();
 
@@ -768,7 +768,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
 
         InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
 
         Validator validator = new Validator();
 
@@ -811,7 +811,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
 
         InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
 
         Validator validator = new Validator();
 
@@ -854,7 +854,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
 
         InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
 
         Validator validator = new Validator();
 
@@ -897,7 +897,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
 
         InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
 
         Validator validator = new Validator();
 
@@ -941,7 +941,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
 
         InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
 
         List<Relation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("demo", "users", "name"));
@@ -993,7 +993,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
 
         InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
 
         List<Relation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("demo", "users", "name"));
@@ -1380,6 +1380,8 @@ public class SelectStatementTest extends BasicValidatorTest {
 
     }
 
+
+
     @Test
     public void simpleJoinAlias() {
         String inputText =
@@ -1422,7 +1424,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         where.add(relationWh);
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        selectStatement.setJoin(join);
+        selectStatement.addJoin(join);
         selectStatement.setWhere(where);
 
         Validator validator = new Validator();

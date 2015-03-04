@@ -16,19 +16,24 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures;
+package com.stratio.connector.inmemory.metadata;
 
-/**
- * Enumerator that defines the different types of selectors of crossdata.
- */
-public enum SelectorType {
-    FUNCTION,
-    COLUMN,
-    ASTERISK,
-    BOOLEAN,
-    STRING,
-    INTEGER,
-    FLOATING_POINT,
-    RELATION,
-    SELECT
+import com.stratio.crossdata.common.connector.IMetadataListener;
+import com.stratio.crossdata.common.metadata.IMetadata;
+
+public class MetadataListener implements IMetadataListener {
+
+    @Override
+    public void updateMetadata(IMetadata iMetadata) {
+        System.out.println("UPDATE METADATA: "
+                + System.lineSeparator()
+                + iMetadata.toString());
+    }
+
+    @Override
+    public void deleteMetadata(IMetadata iMetadata) {
+        System.out.println("DELETE METADATA: "
+                + System.lineSeparator()
+                + iMetadata.toString());
+    }
 }

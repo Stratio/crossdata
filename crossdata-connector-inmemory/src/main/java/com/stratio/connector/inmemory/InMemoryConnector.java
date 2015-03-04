@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
+import com.stratio.connector.inmemory.metadata.MetadataListener;
 import com.stratio.crossdata.common.connector.AbstractExtendedConnector;
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.connector.IConfiguration;
@@ -164,5 +165,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         ConnectorApp connectorApp = new ConnectorApp();
         InMemoryConnector inMemoryConnector = new InMemoryConnector(connectorApp);
         connectorApp.startup(inMemoryConnector);
+        MetadataListener metadataListener = new MetadataListener();
+        connectorApp.subscribeToMetadataUpdate(metadataListener);
     }
 }

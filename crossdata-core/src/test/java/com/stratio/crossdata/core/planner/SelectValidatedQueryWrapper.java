@@ -62,9 +62,10 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
     public List<TableName> getTables() {
         List<TableName> tableNames = new ArrayList<>();
         tableNames.add(stmt.getTableName());
-        InnerJoin join = stmt.getJoin();
-        if (join != null) {
-            tableNames.add(join.getTablename());
+        for(InnerJoin join :stmt.getJoinList()) {
+            if (join != null) {
+                tableNames.add(join.getTablename());
+            }
         }
         return tableNames;
     }
@@ -75,10 +76,11 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
         for (Selector s : stmt.getSelectExpression().getSelectorList()) {
             columnNames.addAll(getSelectorColumns(s));
         }
-        InnerJoin join = stmt.getJoin();
-        if (join != null) {
-            for (Relation r : join.getRelations()) {
-                columnNames.addAll(getRelationColumns(r));
+        for(InnerJoin join :stmt.getJoinList()) {
+            if (join != null) {
+                for (Relation r : join.getRelations()) {
+                    columnNames.addAll(getRelationColumns(r));
+                }
             }
         }
         return columnNames;
@@ -99,8 +101,8 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
     }
 
     @Override
-    public InnerJoin getJoin() {
-        return stmt.getJoin();
+    public List<InnerJoin> getJoinList() {
+        return stmt.getJoinList();
     }
 
     @Override

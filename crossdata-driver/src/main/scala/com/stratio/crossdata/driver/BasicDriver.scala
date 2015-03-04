@@ -22,26 +22,20 @@ import java.util.UUID
 
 import akka.actor.{ActorSelection, ActorSystem}
 import akka.contrib.pattern.ClusterClient
-import akka.pattern.ask
-import com.stratio.crossdata.common.ask.APICommand
-import com.stratio.crossdata.common.exceptions.{ManifestException, UnsupportedException, ExecutionException,
-ValidationException, ParsingException, ConnectionException}
+import com.stratio.crossdata.common.ask.{APICommand, Command, Connect, Query}
+import com.stratio.crossdata.common.data.{ConnectorName, DataStoreName, _}
+import com.stratio.crossdata.common.exceptions.validation.NotExistNameException
+import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException, ManifestException, ParsingException, UnsupportedException, ValidationException}
+import com.stratio.crossdata.common.manifest.CrossdataManifest
 import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
 import com.stratio.crossdata.driver.utils.{ManifestUtils, RetryPolitics}
 import org.apache.log4j.Logger
-import com.stratio.crossdata.common.manifest.CrossdataManifest
 
 import scala.concurrent.duration._
-import com.stratio.crossdata.common.data._
-import com.stratio.crossdata.common.data.{DataStoreName, ConnectorName}
-import com.stratio.crossdata.common.ask.Connect
-import com.stratio.crossdata.communication.Disconnect
-import com.stratio.crossdata.common.ask.Command
-import com.stratio.crossdata.common.ask.Query
-import com.stratio.crossdata.common.exceptions.validation.NotExistNameException
 
 object BasicDriver extends DriverConfig {
   /**
@@ -175,7 +169,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
-    proxyActor.ask(message)(5 second)
+    proxyActor ! message
   }
 
   /**

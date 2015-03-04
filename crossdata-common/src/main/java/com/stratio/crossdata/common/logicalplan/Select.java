@@ -37,7 +37,7 @@ public class Select extends TransformationStep {
     /**
      * Map of columns associating the name given in the Project logical steps with the name expected in the results.
      */
-    private final Map<Selector, String> columnMap;
+    private Map<Selector, String> columnMap;
 
     /**
      * Map of {@link com.stratio.crossdata.common.metadata.ColumnType} associated with each column.
@@ -79,6 +79,10 @@ public class Select extends TransformationStep {
 
     public Map<Selector, ColumnType> getTypeMapFromColumnName() {
         return typeMapFromColumnName;
+    }
+
+    public void setColumnMap(Map<Selector, String> columnMap) {
+        this.columnMap = columnMap;
     }
 
     public void setTypeMap(Map<String, ColumnType> typeMap) {
