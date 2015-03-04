@@ -46,6 +46,7 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.IValidatedQuery;
@@ -81,6 +82,30 @@ public class SelectStatementTest extends BasicValidatorTest {
             fail(e.getMessage());
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
+        }
+
+    }
+
+    @Test
+    public void validateSelectsInWhereClauses() {
+        String query = "SELECT * FROM demo.users " +
+                "WHERE rating = 25 * 3 + (SELECT * FROM table1) - count + (SELECT col1 FROM table2)" +
+                "AND col2 = 25*(SELECT col1 FROM table3);";
+
+        BaseQuery baseQuery = new BaseQuery("validateSelectsInWhereClauses", query, new CatalogName("demo"));
+
+        Parser parser = new Parser();
+        SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
+
+        Validator validator = new Validator();
+
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
         }
 
     }

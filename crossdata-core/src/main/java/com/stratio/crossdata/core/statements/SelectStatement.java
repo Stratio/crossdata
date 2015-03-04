@@ -20,8 +20,10 @@ package com.stratio.crossdata.core.statements;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -381,7 +383,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
     @Override
     public List<TableName> getFromTables() {
-        ArrayList<TableName> tableNames = new ArrayList<>();
+        Set<TableName> tableNames = new HashSet<>();
         tableNames.add(tableName);
         if (!joinList.isEmpty()) {
             for (InnerJoin myJoin:joinList) {
@@ -393,13 +395,24 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
                 Selector rightTerm = relation.getRightTerm();
                 if(rightTerm instanceof ExtendedSelectSelector){
                     ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
-                    selectSelector.getSelectStatement();
-                } else if (rightTerm instanceof RelationSelector){
+                    tableNames.addAll(selectSelector.getSelectStatement().getFromTables());
+                }
+                while(rightTerm instanceof RelationSelector){
+                    Selector leftTerm = relation.getLeftTerm();
+                    if(leftTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
+                        tableNames.addAll(selectSelector.getSelectStatement().getFromTables());
+                    }
                     RelationSelector relationSelector = (RelationSelector) rightTerm;
+                    rightTerm = relationSelector.getRelation().getRightTerm();
+                    if(rightTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
+                        tableNames.addAll(selectSelector.getSelectStatement().getFromTables());
+                    }
                 }
             }
         }
-        return tableNames;
+        return new ArrayList<>(tableNames);
     }
 
     @Override

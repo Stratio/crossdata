@@ -54,8 +54,7 @@ public class UpdateTableStatementTest extends ParsingTest {
                 + " field2 = 'value2' WHERE field3 = 'value3' AND field4 = 'value4' WITH {'TTL': 400};";
         String expectedText = "UPDATE demo.table1 SET demo.table1.field1 = 'value1',"
                 + " demo.table1.field2 = 'value2' WHERE demo.table1.field3 = 'value3' AND demo.table1.field4 = 'value4'"
-                +
-                " WITH {'TTL'=400};";
+                + " WITH {'TTL'=400};";
         testRegularStatementSession("demo", inputText, expectedText, "updateWhere");
     }
 

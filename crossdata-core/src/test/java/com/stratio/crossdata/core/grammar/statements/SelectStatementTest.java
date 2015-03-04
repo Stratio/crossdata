@@ -191,17 +191,17 @@ public class SelectStatementTest extends ParsingTest {
     }
 
     @Test
-    public void selectWithParenthesisInWhere() {
-        String inputText = "SELECT * FROM demo.emp WHERE a = 10 AND ( b = 20 AND ( c = 30 AND d = 40));";
+    public void selectSimpleWithWhere() {
+        String inputText = "SELECT * FROM demo.emp WHERE a = 10 AND b = 20 AND c = 30 AND d = 40;";
         String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a = 10 AND <unknown_name>.<unknown_name>.b = 20 AND <unknown_name>.<unknown_name>.c = 30 AND <unknown_name>.<unknown_name>.d = 40;";
-        testRegularStatement(inputText, expectedText, "selectWithParenthesisInWhere");
+        testRegularStatement(inputText, expectedText, "selectSimpleWithWhere");
     }
 
     @Test
-    public void selectWithParenthesisInWhere2() {
-        String inputText = "SELECT * FROM demo.emp WHERE (a = 10 AND b = 20) AND (c = 30 AND (d = 40 AND e = 50));";
+    public void selectSimpleWithWhere2() {
+        String inputText = "SELECT * FROM demo.emp WHERE a = 10 AND b = 20 AND c = 30 AND d = 40 AND e = 50;";
         String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a = 10 AND <unknown_name>.<unknown_name>.b = 20 AND <unknown_name>.<unknown_name>.c = 30 AND <unknown_name>.<unknown_name>.d = 40 AND <unknown_name>.<unknown_name>.e = 50;";
-        testRegularStatement(inputText, expectedText, "selectWithParenthesisInWhere2");
+        testRegularStatement(inputText, expectedText, "selectSimpleWithWhere2");
     }
 
     //
@@ -287,7 +287,7 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void selectStatementJoinWithParenthesis() {
         String inputText = "[catalogTest], " +
-                "SELECT c.a, c.b FROM c INNER JOIN tablename t ON (field1=field2) WHERE c.x = y;";
+                "SELECT c.a, c.b FROM c INNER JOIN tablename t ON field1=field2 WHERE c.x = y;";
         String expectedText =
                 "SELECT catalogTest.c.a, catalogTest.c.b FROM catalogTest.c INNER JOIN catalogTest.tablename AS t " +
                         "ON <unknown_name>.<unknown_name>.field1 = <unknown_name>.<unknown_name>.field2 " +

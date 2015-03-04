@@ -53,6 +53,17 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   var metricName: String = "connector"
 
+  logger.info("Connector Name: " + connectorName)
+
+  if((connectorName.isEmpty) || (connectorName.equalsIgnoreCase("XconnectorX"))){
+    logger.error("##########################################################################################");
+    logger.error("# ERROR ##################################################################################");
+    logger.error("##########################################################################################");
+    logger.error("# USING DEFAULT CONNECTOR NAME: XconnectorX                                              #")
+    logger.error("# CHANGE PARAMETER crossdata-connector.config.connector.name FROM THE CONFIGURATION FILE #")
+    logger.error("##########################################################################################");
+  }
+
   def stop():Unit = {
     actorClusterNode.get ! Shutdown()
     system.shutdown()
