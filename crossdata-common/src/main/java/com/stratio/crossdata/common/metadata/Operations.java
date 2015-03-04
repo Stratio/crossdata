@@ -576,7 +576,32 @@ public enum Operations {
     /**
      * The engine support insert into from select queries.
      */
-    INSERT_FROM_SELECT("INSERT_FROM_SELECT");
+    INSERT_FROM_SELECT("INSERT_FROM_SELECT"),
+
+    /**
+     * The engine supports left outer joins.
+     */
+    SELECT_LEFT_OUTER_JOIN("SELECT_LEFT_OUTER_JOIN"),
+
+    /**
+     * The engine supports right outer joins.
+     */
+    SELECT_RIGHT_OUTER_JOIN("SELECT_OUTER_RIGHT_JOIN"),
+
+    /**
+     * The engine supports FULL outer joins.
+     */
+    SELECT_FULL_OUTER_JOIN("SELECT_FULL_OUTER_JOIN"),
+
+    /**
+     * The engine supports natural joins.
+     */
+    SELECT_FULL_NATURAL_JOIN("SELECT_NATURAL_JOIN"),
+
+    /**
+     * The engine supports cross joins.
+     */
+    SELECT_CROSS_JOIN("SELECT_CROSS_JOIN");
 
     private String operationsStr;
 
