@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
@@ -34,9 +36,9 @@ import com.stratio.crossdata.common.exceptions.validation.AmbiguousNameException
 import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
 import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
+import com.stratio.crossdata.common.exceptions.validation.NotValidCatalogException;
 import com.stratio.crossdata.common.exceptions.validation.NotValidColumnException;
 import com.stratio.crossdata.common.exceptions.validation.NotValidTableException;
-import com.stratio.crossdata.common.exceptions.validation.NotValidCatalogException;
 import com.stratio.crossdata.common.exceptions.validation.YodaConditionException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
@@ -115,7 +117,7 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeTables() throws ValidationException {
-        List<TableName> tableNames = parsedQuery.getStatement().getFromTables();
+        List<TableName> tableNames = ((SelectStatement) parsedQuery.getStatement()).getAllTables();
         if (tableNames != null && !tableNames.isEmpty()) {
             normalizeTables(tableNames);
         }
@@ -219,9 +221,11 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeSelectExpression() throws ValidationException {
-        SelectExpression selectExpression = ((SelectStatement) parsedQuery.getStatement()).getSelectExpression();
-        if (selectExpression != null) {
-            normalizeSelectExpression(selectExpression);
+        List<Pair> selectExpressions = ((SelectStatement) parsedQuery.getStatement()).getAllSelectExpressions();
+        if (selectExpressions != null) {
+            for(Pair<SelectExpression, List<TableName>> pair: selectExpressions){
+                normalizeSelectExpression(pair.getLeft(), pair.getRight());
+            }
         }
     }
 
@@ -231,8 +235,9 @@ public class Normalizator {
      * @param selectExpression The select expression
      * @throws ValidationException
      */
-    public void normalizeSelectExpression(SelectExpression selectExpression) throws ValidationException {
-        List<Selector> normalizeSelectors = checkListSelector(selectExpression.getSelectorList());
+    public void normalizeSelectExpression(SelectExpression selectExpression,
+            List<TableName> preferredTables) throws ValidationException {
+        List<Selector> normalizeSelectors = checkListSelector(selectExpression.getSelectorList(), preferredTables);
         fields.getSelectors().addAll(normalizeSelectors);
     }
 
@@ -464,7 +469,7 @@ public class Normalizator {
         } else {
             if (columnName.getTableName() == null) {
                 boolean tableFind = false;
-                for (TableName tableName : fields.getTableNames()) {
+                for (TableName tableName: fields.getTableNames()) {
                     columnName.setTableName(tableName);
                     if (MetadataManager.MANAGER.exists(columnName)) {
                         if (tableFind) {
@@ -522,14 +527,16 @@ public class Normalizator {
      * @return List of Selectors
      * @throws ValidationException
      */
-    public List<Selector> checkListSelector(List<Selector> selectors) throws ValidationException {
+    public List<Selector> checkListSelector(List<Selector> selectors,
+            List<TableName> preferredTables) throws ValidationException {
         List<Selector> result = new ArrayList<>();
-        TableName firstTableName = fields.getTableNames().iterator().next();
+        //TableName firstTableName = fields.getTableNames().iterator().next();
+        TableName firstTableName = preferredTables.get(0);
         for (Selector selector : selectors) {
             switch (selector.getType()) {
             case FUNCTION:
                 FunctionSelector functionSelector = (FunctionSelector) selector;
-                checkFunctionSelector(functionSelector);
+                checkFunctionSelector(functionSelector, preferredTables);
                 functionSelector.setTableName(firstTableName);
                 result.add(functionSelector);
                 break;
@@ -538,13 +545,14 @@ public class Normalizator {
                 checkColumnSelector(columnSelector);
 
                 //check with selectFromTables to add the secondTableName
-                Iterator<TableName> tableNameIterator = fields.getTableNames().iterator();
+                //Iterator<TableName> tableNameIterator = fields.getTableNames().iterator();
+                Iterator<TableName> tableNameIterator = preferredTables.iterator();
 
                 TableName currentTableName = null;
                 boolean tableFound=false;
                 while (tableNameIterator.hasNext() && !tableFound){
                     currentTableName = tableNameIterator.next();
-                    if( columnSelector.getTableName() != null) {
+                    if(columnSelector.getTableName() != null) {
                         if (!columnSelector.getName().getTableName().getName().equals(currentTableName.getName()) && ! tableNameIterator.hasNext()) {
                             throw new NotValidTableException(columnSelector.getName().getTableName());
                         }else{
@@ -576,12 +584,14 @@ public class Normalizator {
     /**
      * Validate the Functions Selectors of a parsed query.
      *
+     *
      * @param functionSelector The includes Selector to validate.
+     * @param preferredTables
      * @throws ValidationException
      */
-    private void checkFunctionSelector(FunctionSelector functionSelector) throws ValidationException {
+    private void checkFunctionSelector(FunctionSelector functionSelector, List<TableName> preferredTables) throws ValidationException {
         // Check columns
-        List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns());
+        List<Selector> normalizeSelector = checkListSelector(functionSelector.getFunctionColumns(), preferredTables);
         functionSelector.getFunctionColumns().clear();
         functionSelector.getFunctionColumns().addAll(normalizeSelector);
     }

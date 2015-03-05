@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
@@ -161,11 +164,52 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         return selectExpression;
     }
 
+    public List<Pair> getAllSelectExpressions(){
+        List<Pair> selectExpressions = new ArrayList<>();
+        selectExpressions.add(new ImmutablePair(getSelectExpression(), getFromTables()));
+        if((where != null) && (!where.isEmpty())){
+            for(Relation relation: where){
+                Selector rightTerm = relation.getRightTerm();
+                if(rightTerm instanceof ExtendedSelectSelector){
+                    ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                    selectExpressions.addAll(selectSelector.getSelectStatement().getAllSelectExpressions());
+                    /*
+                    selectExpressions.add(new ImmutablePair(
+                            selectSelector.getSelectStatement().getSelectExpression(),
+                            selectSelector.getSelectStatement().getFromTables()));
+                    */
+                }
+                while(rightTerm instanceof RelationSelector){
+                    RelationSelector relationSelector = (RelationSelector) rightTerm;
+                    Selector leftTerm = relationSelector.getRelation().getLeftTerm();
+                    if(leftTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
+                        selectExpressions.addAll(selectSelector.getSelectStatement().getAllSelectExpressions());
+                        /*
+                        selectExpressions.add(new ImmutablePair(
+                                selectSelector.getSelectStatement().getSelectExpression(),
+                                selectSelector.getSelectStatement().getFromTables()));
+                        */
+                    }
+                    rightTerm = relationSelector.getRelation().getRightTerm();
+                    if(rightTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                        selectExpressions.addAll(selectSelector.getSelectStatement().getAllSelectExpressions());
+                        /*
+                        selectExpressions.add(new ImmutablePair(
+                                selectSelector.getSelectStatement().getSelectExpression(),
+                                selectSelector.getSelectStatement().getFromTables()));
+                        */
+                    }
+                }
+            }
+        }
+        return selectExpressions;
+    }
+
     public void setSelectExpression(SelectExpression selectExpression) {
         this.selectExpression = selectExpression;
     }
-
-
 
     /**
      * Get the list of joins of the statement.
@@ -390,6 +434,12 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
                 tableNames.add(myJoin.getTablename());
             }
         }
+        return new ArrayList<>(tableNames);
+    }
+
+    public List<TableName> getAllTables(){
+        Set<TableName> tableNames = new HashSet<>();
+        tableNames.addAll(getFromTables());
         if((where != null) && (!where.isEmpty())){
             for(Relation relation: where){
                 Selector rightTerm = relation.getRightTerm();
@@ -398,15 +448,15 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
                     tableNames.addAll(selectSelector.getSelectStatement().getFromTables());
                 }
                 while(rightTerm instanceof RelationSelector){
-                    Selector leftTerm = relation.getLeftTerm();
+                    RelationSelector relationSelector = (RelationSelector) rightTerm;
+                    Selector leftTerm = relationSelector.getRelation().getLeftTerm();
                     if(leftTerm instanceof ExtendedSelectSelector){
                         ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
                         tableNames.addAll(selectSelector.getSelectStatement().getFromTables());
                     }
-                    RelationSelector relationSelector = (RelationSelector) rightTerm;
                     rightTerm = relationSelector.getRelation().getRightTerm();
                     if(rightTerm instanceof ExtendedSelectSelector){
-                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
                         tableNames.addAll(selectSelector.getSelectStatement().getFromTables());
                     }
                 }

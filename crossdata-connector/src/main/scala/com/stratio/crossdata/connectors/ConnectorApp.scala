@@ -20,6 +20,7 @@ package com.stratio.crossdata.connectors
 
 import java.util
 
+import com.codahale.metrics.Metric
 import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.routing.RoundRobinRouter
