@@ -143,15 +143,18 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
 
     /**
-     * Add a new subquery.
+     * Set the subquery to the select validated query.
      *
-     * @param subqueryValidatedQuery Subquery's normalized fields.
+     * @param subqueryValidatedQuery the inner select validated query.
      */
     public void setSubqueryValidatedQuery(SelectValidatedQuery subqueryValidatedQuery) {
         this.subqueryValidatedQuery = subqueryValidatedQuery;
     }
 
-
+    /**
+     * Get the inner select validated query.
+     * @return A {@link com.stratio.crossdata.core.query.SelectValidatedQuery} .
+     */
     public SelectValidatedQuery getSubqueryValidatedQuery() {
         return subqueryValidatedQuery;
     }

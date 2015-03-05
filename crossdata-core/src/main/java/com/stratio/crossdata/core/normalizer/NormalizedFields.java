@@ -242,7 +242,7 @@ public class NormalizedFields {
 
             //recover all Metadata about a tableName
             for (TableName tableName : tableNames) {
-                if(!Constants.DEFAULT_VIRTUAL_CATALOG.equals(tableName.getCatalogName().getName())) {
+                if(!tableName.isVirtual()) {
                     tablesMetadata.add(MetadataManager.MANAGER.getTable(tableName));
                 }
             }

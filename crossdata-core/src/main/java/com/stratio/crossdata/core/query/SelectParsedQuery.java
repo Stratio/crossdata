@@ -32,9 +32,9 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
     private SelectStatement statement;
 
     /**
-     * The child parsed select statement.
+     * The select parsed query of the nested subquery.
      */
-    private SelectParsedQuery parsedSelectStatement;
+    private SelectParsedQuery childSelectParsedQuery;
 
 
     /**
@@ -48,7 +48,7 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
         this.statement = statement;
         SelectStatement subquery = statement.getSubquery();
         if(subquery != null){
-            parsedSelectStatement = new SelectParsedQuery(baseQuery,subquery);
+            childSelectParsedQuery = new SelectParsedQuery(baseQuery,subquery);
         }
         setQueryStatus(QueryStatus.PARSED);
     }
@@ -66,9 +66,12 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
         return (SelectStatement) statement;
     }
 
-
+    /**
+     * Get the inner parsed query.
+     * @return The parsed query of the subquery.
+     */
     public SelectParsedQuery getChildParsedQuery() {
-        return parsedSelectStatement;
+        return childSelectParsedQuery;
     }
 
     @Override public String toString() {

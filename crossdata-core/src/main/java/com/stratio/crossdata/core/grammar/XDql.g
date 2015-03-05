@@ -607,8 +607,7 @@ selectStatement returns [SelectStatement slctst]
         slctst.setTablesAliases(tablesAliasesMap);
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap]
-     T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS subqueryAlias=getSubqueryAlias subquerySelectorAliases = getSubquerySelectorsAliases
-                     { tablename = new TableName(Constants.DEFAULT_VIRTUAL_CATALOG, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
+     T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_CATALOG_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
             | tablename=getAliasedTableID[tablesAliasesMap])
     (T_COMMA { joinInc = true; implicitJoin = true; } identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
@@ -637,7 +636,7 @@ selectStatement returns [SelectStatement slctst]
         if(limitInc)
              $slctst.setLimit(Integer.parseInt($constant.text));
         if(subqueryInc)
-             $slctst.setSubquery(subquery, subqueryAlias, subquerySelectorAliases);
+             $slctst.setSubquery(subquery, subqueryAlias);
 
         //$slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
         //$slctst.updateTableNames();
@@ -655,13 +654,6 @@ getSubqueryAlias returns [String sAlias]
             $sAlias = UUID.randomUUID().toString();
    }:
 ((T_AS)? alias=T_IDENT {aliasInc = true;})?
-;
-
-getSubquerySelectorsAliases returns [List<String> ssAliases]
- @init{
-        ssAliases = new ArrayList<String>();
-   }:
-(T_START_PARENTHESIS ident1=T_IDENT {ssAliases.add($ident1.text);} (T_COMMA identN=T_IDENT {ssAliases.add($identN.text);})* T_END_PARENTHESIS)?
 ;
 
 

@@ -65,6 +65,7 @@ import com.stratio.crossdata.core.structures.InnerJoin;
 public class Normalizator {
 
     private NormalizedFields fields = new NormalizedFields();
+
     private SelectParsedQuery parsedQuery;
 
     private Normalizator subqueryNormalizator;
@@ -79,7 +80,7 @@ public class Normalizator {
         this.parsedQuery = parsedQuery;
     }
 
-/**
+    /**
      * Get the parsed query to Normalize.
      *
      * @return com.stratio.crossdata.core.query.SelectParsedQuery;
@@ -88,6 +89,11 @@ public class Normalizator {
         return parsedQuery;
     }
 
+    /**
+     * Get the Normalizator of the subquery.
+     *
+     * @return com.stratio.crossdata.core.normalizer.Normalizator;
+     */
     public Normalizator getSubqueryNormalizator() {
         return subqueryNormalizator;
     }
@@ -108,10 +114,10 @@ public class Normalizator {
      */
     public void execute() throws ValidationException {
 
-        if (((SelectStatement) parsedQuery.getStatement()).isSubqueryInc()) {
+        if (parsedQuery.getStatement().isSubqueryInc()) {
             subqueryNormalizator = new Normalizator(parsedQuery.getChildParsedQuery());
             subqueryNormalizator.execute();
-            checkDuplicateSelectors(subqueryNormalizator.getFields().getSelectors());
+            checkSubquerySelectors(subqueryNormalizator.getFields().getSelectors());
         }
 
         normalizeTables();
@@ -121,136 +127,29 @@ public class Normalizator {
         normalizeOrderBy();
         normalizeGroupBy();
         validateColumnsScope();
-        //TODO validate subqueries=> selectors and where => must exist
 
     }
 
-    private void checkDuplicateSelectors(List<Selector> selectors) throws ValidationException {
+
+    private void checkSubquerySelectors(List<Selector> selectors) throws ValidationException {
         Set<String> uniqueSelectors = new HashSet<>();
+
         for (Selector selector : selectors) {
             if(selector.getAlias() != null){
                     if(!uniqueSelectors.add(selector.getAlias())){
                         throw new AmbiguousNameException("The alias [" + selector.getAlias() + "] is duplicate");
                     }
             }else if(selector instanceof  ColumnSelector) {
-                if(!uniqueSelectors.add(((ColumnSelector)selector).getColumnName().getName())){
-                    throw new AmbiguousNameException("The selector [" + ((ColumnSelector)selector).getColumnName().getName() + "] is ambiguous");
+                if(!uniqueSelectors.add(selector.getColumnName().getName())){
+                    throw new AmbiguousNameException("The selector [" + selector.getColumnName().getName() + "] is ambiguous. Try using alias");
                 }
             }else{
                 if(!uniqueSelectors.add(selector.getStringValue())){
-                    throw new AmbiguousNameException("The selector [" + selector.getStringValue() + "] is duplicate");
+                    throw new AmbiguousNameException("The selector [" + selector.getStringValue() + "] is duplicate. Try using alias");
                 }
             }
         }
 
-
-
-
-
-    }
-
-    private void normalizeSelectWithSubquery() throws ValidationException {
-
-
-        //Verify that when exists specific selectors with alias => Selectors with these alias must exist in the subquery. More unused selectors could exist.
-        //Selectors names must be as alias in the subquery or as alias in the outer query
-
-    }
-
-    /**
-     * Validate the joins of a parsed query.
-     *
-     * @param relations A list of Relation to check.
-     * @throws ValidationException
-     */
-    public void checkJoinRelations(InnerJoin relations) throws ValidationException {
-        checkJoinRelations(relations, false);
-    }
-
-    /**
-     * Validate the joins of a parsed query.
-     *
-     * @param relations A list of Relation to check.
-     * @throws ValidationException
-     */
-    public void checkJoinRelations(InnerJoin relations, boolean isVirtual) throws ValidationException {
-        if (relations != null) {
-            for (Relation relation : relations.getRelations()) {
-                checkRelation(relation);
-                switch (relation.getOperator()) {
-                case EQ:
-                    if (relation.getLeftTerm().getType() == SelectorType.COLUMN && relation.getRightTerm().getType() == SelectorType.COLUMN) {
-
-                        checkColumnSelector((ColumnSelector) relation.getRightTerm());
-                        checkColumnSelector((ColumnSelector) relation.getLeftTerm());
-                    } else {
-                        throw new BadFormatException("You must compare between columns");
-                    }
-                    break;
-                default:
-                    throw new BadFormatException("Only equal operation are just valid");
-                }
-            }
-        }
-    }
-
-    private void validateScopeSubquery(TableName virtualTableName, ColumnName virtualColumnName)
-                    throws NotValidTableException, NotValidCatalogException {
-        TableName tName = virtualColumnName.getTableName();
-        if (tName != null) {
-            if (tName.getName() != virtualTableName.getName()) {
-                throw new NotValidTableException("The table " + tName.getName() + "is not within the scope of the table"
-                                + virtualTableName.getName());
-            }
-            if (tName.getCatalogName() != null) {
-                throw new NotValidCatalogException(tName.getCatalogName());
-            }
-
-        }
-        virtualColumnName.setTableName(tName);
-    }
-
-    private List<ColumnName> checkVirtualAlias(Selector selector) {
-        List<ColumnName> colNames = new ArrayList<>();
-
-        //TODO setColumnName in Selectors??
-        //TODO setAlias??
-
-        switch (selector.getType()) {
-        case FUNCTION:
-            for (Selector fSelector : ((FunctionSelector) selector).getFunctionColumns()) {
-                colNames.addAll(checkVirtualAlias(fSelector));
-            }
-            break;
-        case COLUMN:
-            colNames.add(((ColumnSelector) selector).getName());
-            break;
-        case RELATION:
-            Relation relation = ((RelationSelector) selector).getRelation();
-            colNames.addAll(checkVirtualAlias(relation.getLeftTerm()));
-            colNames.addAll(checkVirtualAlias(relation.getRightTerm()));
-            break;
-        default:
-        }
-
-        return colNames;
-    }
-
-    private void checkAlias(Selector selector, SelectExpression selectExpression) throws BadFormatException {
-        //TODO
-        /*switch (selector.getType()) {
-        case FUNCTION:
-            break;
-        case COLUMN:
-            ColumnName name = ((ColumnSelector) selector).getName();
-            if (!columnNames.contains(name)) {
-                throw new BadFormatException(
-                                "All columns in the select clause must be in the group by or it must be aggregation includes.");
-            }
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk is not valid with group by statements");
-        }*/
     }
 
     /**
@@ -273,7 +172,7 @@ public class Normalizator {
      */
     public void normalizeTables(List<TableName> fromTables) throws ValidationException {
         for (TableName tableName : fromTables) {
-            if(!Constants.DEFAULT_VIRTUAL_CATALOG.equals(tableName.getCatalogName().getName())) {
+            if(!tableName.isVirtual()) {
                 checkTable(tableName);
             }
             fields.getCatalogNames().add(tableName.getCatalogName());
@@ -287,7 +186,7 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeJoins() throws ValidationException {
-        InnerJoin innerJoin = ((SelectStatement) parsedQuery.getStatement()).getJoin();
+        InnerJoin innerJoin = parsedQuery.getStatement().getJoin();
         if (innerJoin != null) {
             normalizeJoins(innerJoin);
             fields.setJoin(innerJoin);
@@ -362,7 +261,7 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeSelectExpression() throws ValidationException {
-        SelectExpression selectExpression = ((SelectStatement) parsedQuery.getStatement()).getSelectExpression();
+        SelectExpression selectExpression = (parsedQuery.getStatement()).getSelectExpression();
         if (selectExpression != null) {
             normalizeSelectExpression(selectExpression);
         }
@@ -377,10 +276,8 @@ public class Normalizator {
     public void normalizeSelectExpression(SelectExpression selectExpression) throws ValidationException {
         List<Selector> normalizeSelectors = checkListSelector(selectExpression.getSelectorList());
         fields.getSelectors().addAll(normalizeSelectors);
-        //TODO check below statements
         selectExpression.getSelectorList().clear();
         selectExpression.getSelectorList().addAll(normalizeSelectors);
-
     }
 
     /**
@@ -412,7 +309,7 @@ public class Normalizator {
         }
     }
 
-    private void checkColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
+    private void checkGroupByColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
         switch (selector.getType()) {
         case FUNCTION:
             break;
@@ -441,7 +338,7 @@ public class Normalizator {
         }
         // Check if all columns are correct
         for (Selector selector : fields.getSelectors()) {
-            checkColumns(selector, columnNames);
+            checkGroupByColumns(selector, columnNames);
         }
     }
 
@@ -569,76 +466,13 @@ public class Normalizator {
     public void checkColumnSelector(ColumnSelector selector) throws ValidationException {
         ColumnName columnName = applyAlias(selector.getName());
         boolean columnFromVirtualTableFound = false;
-        SelectStatement selectStatement = ((SelectStatement) parsedQuery.getStatement());
 
-        if(selectStatement.isSubqueryInc() ) {
-            /*if(selectStatement.getSubqueryAliases() != null && !selectStatement.getSubqueryAliases().isEmpty()){
-                for (String s : selectStatement.getSubqueryAliases()) {
-                    if (s.equals(columnName.getName())){
-                        columnName.setTableName(selectStatement.getTableName());
-                        columnFromVirtualTableFound = true;
-                        break;
-                    }
-                }
-            }*/
-
-            if (! columnFromVirtualTableFound ){
-                if(!columnName.isCompletedName() && !Constants.DEFAULT_VIRTUAL_CATALOG.equals(columnName.getTableName().getCatalogName().getName())) {
-                    if (columnName.getTableName() != null) {
-                        TableName searched = fields.getTableName(columnName.getTableName().getName());
-                        if(searched == null){
-                            throw new NotValidTableException(columnName.getTableName());
-                        }
-                        columnName.setTableName(searched);
-                        selector.setTableName(searched);
-                        columnFromVirtualTableFound = true;
-                        //TODO validate with the subquery, reuse the code below
-                    } else {
-                        /*try {
-                            //subqueryNormalizator.checkColumnSelector(selector);
-                            TableName tableName = new TableName(Constants.DEFAULT_VIRTUAL_CATALOG, selectStatement.getSubqueryAlias());
-                            columnName.setTableName(tableName);
-                            selector.setTableName(tableName);
-                            columnFromVirtualTableFound = true;
-                        } catch (ValidationException v) {
-                        }*/
-
-                        for (Selector subquerySelector : subqueryNormalizator.getFields().getSelectors()) {
-                            if(subquerySelector.getAlias() != null){
-                                if (selector.getName().getName().equals(subquerySelector.getAlias())) {
-
-                                    TableName tableName = new TableName(Constants.DEFAULT_VIRTUAL_CATALOG,
-                                                    selectStatement.getSubqueryAlias());
-                                    columnName.setTableName(tableName);
-                                    selector.setTableName(tableName);
-                                    columnFromVirtualTableFound = true;
-                                    break;
-                                }
-                            }else if(subquerySelector instanceof  ColumnSelector){
-                                if (selector.getColumnName().getName().equals(((ColumnSelector)subquerySelector).getColumnName().getName())){
-                                    TableName tableName = new TableName(Constants.DEFAULT_VIRTUAL_CATALOG,
-                                                    selectStatement.getSubqueryAlias());
-                                    columnName.setTableName(tableName);
-                                    selector.setTableName(tableName);
-                                    columnFromVirtualTableFound = true;
-                                    break;
-                                }
-
-                            }
-
-                        }
-
-                    /*//search as columnName or alias in the subquery => if not found => it could be a real table within the join expression
-                    //TODO check selectStatement.getSubquery.getSelectExpression to validate
-                    //TODO remove subqueryAlias => use tableName.getAlias instead
-                    selectStatement.getS;
-                    //if sth columnFromVirtualTableFound
-                    columnName.setTableName();*/
-                    }
-                }
+        if(parsedQuery.getStatement().isSubqueryInc() ) {
+            //when the name is not completed and the table is not virtual
+            if(!columnName.isCompletedName() || columnName.getTableName().isVirtual()) {
+                columnFromVirtualTableFound = checkVirtualColumnSelector(selector, columnName);
             }
         }
-
 
         if(!columnFromVirtualTableFound) {
             if (columnName.isCompletedName()) {
@@ -654,6 +488,75 @@ public class Normalizator {
         fields.addColumnName(columnName, selector.getAlias());
         selector.setName(columnName);
 
+    }
+
+    private boolean checkVirtualColumnSelector(ColumnSelector selector, ColumnName columnName) throws NotValidTableException {
+
+        boolean columnFromVirtualTableFound = false;
+        TableName tableName;
+
+        if (columnName.getTableName() != null) {
+            tableName = fields.getTableName(columnName.getTableName().getName());
+            if (tableName == null) {
+                throw new NotValidTableException(columnName.getTableName());
+            }
+        }else {
+            tableName = new TableName(Constants.VIRTUAL_CATALOG_NAME,parsedQuery.getStatement().getSubqueryAlias());
+        }
+
+        for (Selector subquerySelector : subqueryNormalizator.getFields().getSelectors()) {
+
+            if (subquerySelector.getAlias() != null) {
+                columnFromVirtualTableFound = selector.getName().getName().equals(subquerySelector.getAlias());
+            } else if (subquerySelector instanceof ColumnSelector) {
+                columnFromVirtualTableFound = selector.getColumnName().getName()
+                                .equals(subquerySelector.getColumnName().getName());
+            }
+
+            if (columnFromVirtualTableFound) {
+                columnName.setTableName(tableName);
+                selector.setTableName(tableName);
+                columnFromVirtualTableFound = true;
+                break;
+            }
+        }
+
+        return columnFromVirtualTableFound;
+
+
+        /*boolean columnFromVirtualTableFound = false;
+        TableName tableName;
+
+        if (columnName.getTableName() != null) {
+            tableName = fields.getTableName(columnName.getTableName().getName());
+            if(tableName == null){
+                throw new NotValidTableException(columnName.getTableName());
+            }
+            columnName.setTableName(tableName);
+            selector.setTableName(tableName);
+            columnFromVirtualTableFound = true;
+            //TODO validate with the subquery, reuse the code below
+        } else {
+
+            for (Selector subquerySelector : subqueryNormalizator.getFields().getSelectors()) {
+                if(subquerySelector.getAlias() != null){
+                    columnFromVirtualTableFound = selector.getName().getName().equals(subquerySelector.getAlias());
+                }else if(subquerySelector instanceof ColumnSelector){
+                    columnFromVirtualTableFound = selector.getColumnName().getName().equals(subquerySelector.getColumnName().getName());
+                }
+
+                if (columnFromVirtualTableFound) {
+                    tableName = new TableName(Constants.VIRTUAL_CATALOG_NAME,parsedQuery.getStatement().getSubqueryAlias());
+                    columnName.setTableName(tableName);
+                    selector.setTableName(tableName);
+                    columnFromVirtualTableFound = true;
+                    break;
+                }
+
+            }
+
+        }
+        return columnFromVirtualTableFound;*/
     }
 
     private ColumnName applyAlias(ColumnName columnName) {
@@ -722,46 +625,19 @@ public class Normalizator {
      */
     public List<Selector> checkAsteriskSelector() throws ValidationException{
         List<Selector> aSelectors = new ArrayList<>();
-        SelectStatement selectStatement = ((SelectStatement) parsedQuery.getStatement());
+        SelectStatement selectStatement = parsedQuery.getStatement();
         for (TableName table : fields.getTableNames()) {
 
-            if (Constants.DEFAULT_VIRTUAL_CATALOG.equals(table.getCatalogName().getName())) {
-                if(selectStatement.getSubqueryAliases() != null ){
-                    //TODO delete these kind of alias
-                    if(selectStatement.getSubqueryAliases().size() != selectStatement.getSelectExpression().getSelectorList().size()){
-                        throw new BadFormatException("Subquery aliases size is different from the subquery selected fields size");
-                    }else{
-                        Iterator<String> aliasIterator = selectStatement.getSubqueryAliases().iterator();
-                        Iterator<Selector> selectIterator = selectStatement.getSubquery().getSelectExpression().getSelectorList().iterator();
-                        while (aliasIterator.hasNext()){
-                            Selector selector = selectIterator.next();
-                            selector.setTableName(selectStatement.getTableName());
-                            selector.setAlias(aliasIterator.next());
-                            aSelectors.add(selector);
-                        }
-                    }
-                }else{
-
-                    for (Selector selector : selectStatement.getSubquery().getSelectExpression().getSelectorList()) {
-
-                        String strColName;
-                        if(selector.getAlias() != null){
-                            strColName = selector.getAlias();
-                        }else if(selector instanceof  ColumnSelector) {
-                            strColName = ((ColumnSelector)selector).getColumnName().getName();
-                        }else{
-                            strColName = selector.getStringValue();
-                        }
-
-                        ColumnName colName = new ColumnName(table,strColName);
-                        Selector defaultSelector = new ColumnSelector(colName);
-                        defaultSelector.setAlias(selector.getAlias());
-                        defaultSelector.setTableName(selectStatement.getTableName());
-                        aSelectors.add(defaultSelector);
-                        fields.addColumnName(colName, defaultSelector.getAlias());
-
-                    }
+            if (table.isVirtual()) {
+                for (Selector selector : selectStatement.getSubquery().getSelectExpression().getSelectorList()) {
+                    ColumnName colName = new ColumnName(table,getVirtualAliasFromSelector(selector));
+                    Selector defaultSelector = new ColumnSelector(colName);
+                    defaultSelector.setAlias(selector.getAlias());
+                    defaultSelector.setTableName(selectStatement.getTableName());
+                    aSelectors.add(defaultSelector);
+                    fields.addColumnName(colName, defaultSelector.getAlias());
                 }
+
             } else {
                 TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(table);
                 for (ColumnName columnName : tableMetadata.getColumns().keySet()) {
@@ -773,6 +649,18 @@ public class Normalizator {
 
         }
         return aSelectors;
+    }
+
+    private String getVirtualAliasFromSelector(Selector selector) {
+        String strColName;
+        if(selector.getAlias() != null){
+            strColName = selector.getAlias();
+        }else if(selector instanceof ColumnSelector) {
+            strColName = selector.getColumnName().getName();
+        }else{
+            strColName = selector.getStringValue();
+        }
+        return strColName;
     }
 
     /**

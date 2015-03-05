@@ -741,43 +741,39 @@ public class Planner {
 
 
         if(query.getSubqueryValidatedQuery() != null){
-            LogicalWorkflow lWorkflow = buildWorkflow(query.getSubqueryValidatedQuery());
-
-
-            if( workflow.getInitialSteps().size() == 1){
-                lWorkflow.getLastStep().setNextStep(workflow.getInitialSteps().get(0));
-            }else {
-                Iterator<LogicalStep> iterator = workflow.getInitialSteps().iterator();
-                boolean subqueryUnionFound = false;
-                int lStepIndex = -1;
-                while(iterator.hasNext() /*&& ! subqueryUnionFound*/) {
-                    Collection<String> outputAliasSelectors = ((Select) lWorkflow.getLastStep()).getColumnMap().values();
-
-                    Collection<String> inputAliasSelectors = new HashSet<>();
-                    for (ColumnName columnName : ((Project) iterator.next()).getColumnList()) {
-                        inputAliasSelectors.add(columnName.getName());
-                    }
-                    subqueryUnionFound = outputAliasSelectors.containsAll(inputAliasSelectors);
-                    //lStepIndex++;
-                    if(!subqueryUnionFound){
-                        //throw new PlanningException("Cannot associate the superquery project with the previous steps of the subquery");
-                        lWorkflow.getInitialSteps().add(workflow.getInitialSteps().get(++lStepIndex));
-                    }else{
-                        lWorkflow.getLastStep().setNextStep(workflow.getInitialSteps().get(++lStepIndex));
-                    }
-                }
-
-              /*  if(!subqueryUnionFound){
-                    throw new PlanningException("Cannot associate the superquery project with the previous steps of the subquery");
-                }else{
-                    lWorkflow.getLastStep().setNextStep(workflow.getInitialSteps().get(lStepIndex));
-                }*/
-            }
-            workflow = lWorkflow;
+            LogicalWorkflow subqueryWorkflow = buildWorkflow(query.getSubqueryValidatedQuery());
+            workflow = rearrangeWorkflow(workflow, subqueryWorkflow);
         }
+
         workflow.setLastStep(finalSelect);
 
         return workflow;
+    }
+
+    private LogicalWorkflow rearrangeWorkflow(LogicalWorkflow workflow, LogicalWorkflow subqueryWorkflow) {
+
+        if( workflow.getInitialSteps().size() == 1){
+            subqueryWorkflow.getLastStep().setNextStep(workflow.getInitialSteps().get(0));
+        }else {
+
+            Collection<String> outputAliasSelectors = ((Select) subqueryWorkflow.getLastStep()).getColumnMap().values();
+            Collection<String> inputAliasSelectors;
+            Iterator<LogicalStep> workflowIterator = workflow.getInitialSteps().iterator();
+            while(workflowIterator.hasNext()) {
+                inputAliasSelectors = new HashSet<>();
+                Project wProject = (Project) workflowIterator.next();
+                for (ColumnName columnName : wProject.getColumnList()) {
+                    inputAliasSelectors.add(columnName.getName());
+                }
+                if(outputAliasSelectors.containsAll(inputAliasSelectors)){
+                    subqueryWorkflow.getLastStep().setNextStep(wProject);
+                    //throw new PlanningException("Cannot associate the superquery project with the previous steps of the subquery");
+                }else{
+                    subqueryWorkflow.getInitialSteps().add(wProject);
+                }
+            }
+        }
+        return subqueryWorkflow;
     }
 
     protected ExecutionWorkflow buildExecutionWorkflow(MetadataValidatedQuery query) throws PlanningException {
@@ -1456,25 +1452,22 @@ public class Planner {
         Selector s;
         for (Relation r : query.getRelations()) {
             s = r.getLeftTerm();
+            Operations op = null;
             //TODO Support left-side functions that contain columns of several tables.
+
             tm = tableMetadataMap.get(s.getSelectorTablesAsString());
             if (tm != null) {
-                Operations op = getFilterOperation(tm, "FILTER", s, r.getOperator());
-                Filter f = new Filter(op, r);
-                previous = lastSteps.get(s.getSelectorTablesAsString());
-                previous.setNextStep(f);
-                f.setPrevious(previous);
-                lastSteps.put(s.getSelectorTablesAsString(), f);
-            } else if (Constants.DEFAULT_VIRTUAL_CATALOG.equals(s.getTableName().getCatalogName().getName())){
-                //TODO Include real columns filter within the non-virtual project
-                //validate the right selector
-                Operations op = Operations.valueOf("FILTER_NON_INDEXED_" + r.getOperator().name());
-                Filter f = new Filter(op, r);
-                previous = lastSteps.get(s.getSelectorTablesAsString());
-                previous.setNextStep(f);
-                f.setPrevious(previous);
-                lastSteps.put(s.getSelectorTablesAsString(), f);
+                op = getFilterOperation(tm, "FILTER", s, r.getOperator());
+            } else if (s.getTableName().isVirtual()) {
+                op = Operations.valueOf("FILTER_NON_INDEXED_" + r.getOperator().name());
+            }
 
+            if(op != null){
+                Filter f = new Filter(op, r);
+                previous = lastSteps.get(s.getSelectorTablesAsString());
+                previous.setNextStep(f);
+                f.setPrevious(previous);
+                lastSteps.put(s.getSelectorTablesAsString(), f);
             } else{
                 LOG.error("Cannot determine Filter for relation " + r.toString() + " on table " + s
                                 .getSelectorTablesAsString());
@@ -1542,10 +1535,8 @@ public class Planner {
         Map<String, LogicalStep> projects = new HashMap<>();
         for (TableName tn : query.getTables()) {
             Project p;
-            if(Constants.DEFAULT_VIRTUAL_CATALOG.equals(tn.getCatalogName().getName())){
-                //TODO child clusterName??
-                ClusterName childCN = new ClusterName(Constants.DEFAULT_VIRTUAL_CATALOG);
-                p = new Project(Operations.PROJECT, tn, childCN);
+            if(tn.isVirtual()){
+                p = new Project(Operations.PROJECT, tn, new ClusterName(Constants.VIRTUAL_CATALOG_NAME));
                 projects.put(tn.getQualifiedName(), p);
             }else {
                 p = new Project(Operations.PROJECT, tn,
@@ -1577,7 +1568,6 @@ public class Planner {
             } else if (ColumnSelector.class.isInstance(s)) {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
 
-
                 String alias;
                 if (cs.getAlias() != null) {
 
@@ -1601,7 +1591,7 @@ public class Planner {
 
                 ColumnType colType = null;
                 //TODO avoid null types
-                if(!Constants.DEFAULT_VIRTUAL_CATALOG.equals(cs.getTableName().getCatalogName().getName())){
+                if(!cs.getTableName().isVirtual()){
                     colType = tableMetadataMap.get(cs.getSelectorTablesAsString()).getColumns()
                                     .get(cs.getName()).getColumnType();
                 }
@@ -1644,15 +1634,7 @@ public class Planner {
         }
 
         if (addAll) {
-/*
-            //TODO add support for functions and other selectors with *
-            SelectStatement partialStatement = selectStatement;
-            while(partialStatement.isSubqueryInc() && partialStatement.getSelectExpression().getSelectorList().contains(new AsteriskSelector())){
-                partialStatement = partialStatement.getSubquery();
-            }
-            TableMetadata metadata = tableMetadataMap.get(partialStatement.getTableName().getQualifiedName());
-*/
-
+            //TODO check whether it is dead code
             TableMetadata metadata = tableMetadataMap.get(selectStatement.getTableName().getQualifiedName());
             for (Map.Entry<ColumnName, ColumnMetadata> column : metadata.getColumns().entrySet()) {
                 ColumnSelector cs = new ColumnSelector(column.getKey());

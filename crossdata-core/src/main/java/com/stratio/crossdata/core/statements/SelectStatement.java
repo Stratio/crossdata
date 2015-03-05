@@ -104,11 +104,6 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     private String subqueryAlias= null;
 
-    /**
-     * The list of alias given to the subquery selectors. The same order in which the values are returned is assumed.
-     */
-    private List<String> subqueryAliases= null;
-
 
     /**
      * The LIMIT in terms of the number of rows to be retrieved in the result of the SELECT statement.
@@ -158,10 +153,6 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     public void setCatalog(CatalogName catalog) {
         this.catalogInc = true;
         this.catalog = catalog;
-    }
-
-    public List<String> getSubqueryAliases() {
-        return subqueryAliases;
     }
 
     /**
@@ -385,30 +376,28 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
     /**
      * Set the subquery of the statement.
-     * @param subquery The list of columns that are implicated in the order by.
+     * @param subquery The subquery statement,
      * @param alias    The alias.
      */
-    public void setSubquery(SelectStatement subquery, String alias, List<String> selectorAliases) {
+    public void setSubquery(SelectStatement subquery, String alias) {
         if (subquery != null && alias != null) {
             this.subqueryInc = true;
             this.subquery = subquery;
             this.subqueryAlias = alias;
-
-            if(selectorAliases!= null && !selectorAliases.isEmpty()){
-                  this.subqueryAliases = selectorAliases;
-            }
         }
     }
 
     /**
      * Get the subquery of the statement.
+     * @return the inner select statemnet.
      */
     public SelectStatement getSubquery() {
         return subquery;
     }
 
     /**
-     * Get the subquery alias of the statement.
+     * Get the subquery alias.
+     * @return The alias of the inner statement.
      */
     public String getSubqueryAlias() {
         return subqueryAlias;
