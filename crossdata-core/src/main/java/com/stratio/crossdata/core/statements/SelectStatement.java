@@ -336,7 +336,8 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         }
         if (joinInc) {
             for (InnerJoin myJoin:joinList) {
-                sb.append(" INNER JOIN ").append(myJoin.toString());
+                sb.append(" ").append(myJoin.getType().toString().replace("_"," ")).append(" JOIN ").append(myJoin
+                        .toString());
             }
         }
         if (whereInc) {
