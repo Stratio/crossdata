@@ -15,20 +15,18 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package com.stratio.crossdata.common.statements.structures;
+package com.stratio.crossdata.common.data;
 
 /**
- * Enumerator that defines the different types of selectors of crossdata.
+ * Join types.
  */
-public enum SelectorType {
-    FUNCTION,
-    COLUMN,
-    ASTERISK,
-    BOOLEAN,
-    STRING,
-    INTEGER,
-    FLOATING_POINT,
-    RELATION,
-    SELECT
+public enum JoinType {
+    INNER,
+    CROSS,
+    NATURAL,
+    LEFT,
+    RIGHT,
+    LEFT_OUTER,
+    FULL_OUTER,
+    RIGHT_OUTER
 }

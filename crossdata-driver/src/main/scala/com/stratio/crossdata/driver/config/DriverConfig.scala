@@ -41,6 +41,7 @@ object DriverConfig {
    * Key to duration limit
    */
   val DRIVER_RETRY_SECONDS_KEY = "config.retry.duration"
+
   /**
    *
    */
@@ -52,6 +53,7 @@ trait DriverConfig extends CrossdataServerConfig {
   lazy val logger: Logger = ???
   lazy val retryTimes: Int = config.getInt(DriverConfig.DRIVER_RETRY_TIMES_KEY)
   lazy val retryDuration: Timeout = new Timeout(config.getMilliseconds(DriverConfig.DRIVER_RETRY_SECONDS_KEY))
+
   override val config: Config = {
     var defaultConfig = ConfigFactory.load(DriverConfig.BASIC_DRIVER_CONFIG).getConfig(DriverConfig.PARENT_CONFIG_NAME)
     val configFile = defaultConfig.getString(DriverConfig.DRIVER_CONFIG_FILE)

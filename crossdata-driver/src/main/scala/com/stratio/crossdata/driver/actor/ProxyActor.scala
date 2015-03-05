@@ -104,6 +104,7 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
       clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor), message, localAffinity = true)
     }
     case result: Result => {
+      println(s"\nReceiving result ${result}")
       val handler = driver.getResultHandler(result.getQueryId)
       if (handler != null) {
         if (!result.isInstanceOf[ErrorResult]) {
@@ -119,10 +120,6 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
     case unknown: Any => {
       logger.error("Unknown message: " + unknown)
       sender ! "Message type not supported"
-    }
-
-    case _ => {
-      logger.error("Unknown message");
     }
   }
 }

@@ -48,5 +48,16 @@ public class StringUtilsTest {
         assertTrue(result.equals(b), result + "should be equals to " + b);
     }
 
+    @Test
+    public void testStringUtils() throws PatchFailedException, IOException {
+        String a=StringUtils.getAkkaActorRefUri("akka.tcp://app@otherhost:1234/user/serviceB",true);
+        String b=StringUtils.getAkkaActorRefUri("akka://app@otherhost:1234/user/akka" +
+                ".tcp://app@otherhost:1234/user/serviceB",true);
+        String c=StringUtils.getAkkaActorRefUri("/user/receptionist/akka" +
+                ".tcp://app@otherhost:1234/user/serviceB",true);
+        assertTrue(a.equals(b));
+        assertTrue(b.equals(c));
+    }
+
 
 }

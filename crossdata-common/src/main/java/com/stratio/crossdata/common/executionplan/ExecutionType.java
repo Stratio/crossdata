@@ -41,6 +41,7 @@ public enum ExecutionType {
     //IStorage
     INSERT,
     INSERT_BATCH,
+    INSERT_FROM_SELECT,
     DELETE_ROWS,
     UPDATE_TABLE,
     TRUNCATE_TABLE,

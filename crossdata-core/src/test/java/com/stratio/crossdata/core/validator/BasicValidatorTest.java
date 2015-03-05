@@ -38,7 +38,6 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
@@ -53,7 +52,6 @@ import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.DataType;
-import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
@@ -63,36 +61,20 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class BasicValidatorTest {
 
-    static Map<FirstLevelName, IMetadata> metadataMap;
-    private static String path = "";
-
     @BeforeClass
     public static void setUpBeforeClass() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
         MetadataManagerTestHelper.HELPER.createTestEnvironment();
-        /*
-        GridInitializer gridInitializer = Grid.initializer();
-        gridInitializer = gridInitializer.withContactPoint("127.0.0.1");
-        path = "/tmp/metadatastore" + UUID.randomUUID();
-        gridInitializer.withPort(7800)
-                .withListenAddress("127.0.0.1")
-                .withMinInitialMembers(1)
-                .withJoinTimeoutInMs(3000)
-                .withPersistencePath(path).init();
-
-        metadataMap = Grid.INSTANCE.map("crossDatatest");
-        Lock lock = Grid.INSTANCE.lock("crossDatatest");
-        TransactionManager tm = Grid.INSTANCE.transactionManager("crossDatatest");
-        MetadataManager.MANAGER.init(metadataMap, lock, tm);
-        */
         MetadataManager.MANAGER.createDataStore(createDataStoreMetadata(), false);
         ConnectorMetadata connectorMetadata = createConnectorMetadata();
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
         MetadataManager.MANAGER.setConnectorStatus(connectorMetadata.getName(), Status.ONLINE);
         MetadataManager.MANAGER.createCluster(createClusterMetadata(), false);
-        MetadataManager.MANAGER.createCatalog(generateCatalogsMetadata(), false);
-        MetadataManager.MANAGER.createTable(createTable(), false);
+        MetadataManager.MANAGER.createCatalog(generateCatalogMetadata("demo"), false);
+        MetadataManager.MANAGER.createTable(createTable("demo", "users"), false);
         MetadataManager.MANAGER.createTable(createJoinTable(), false);
+        MetadataManager.MANAGER.createCatalog(generateCatalogMetadata("sales"), false);
+        MetadataManager.MANAGER.createTable(createTable("sales", "customers"), false);
     }
 
     @AfterClass
@@ -100,66 +82,54 @@ public class BasicValidatorTest {
         MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
-    //@AfterClass
-    /*
-    public void tearDown() throws Exception {
-        TransactionManager tm = Grid.INSTANCE.transactionManager("com.stratio.crossdata-test");
-        tm.begin();
-        metadataMap.clear();
-        tm.commit();
-        Grid.INSTANCE.close();
-        FileUtils.deleteDirectory(new File(path));
-    }
-    */
-
-    private static CatalogMetadata generateCatalogsMetadata() {
+    private static CatalogMetadata generateCatalogMetadata(String catalog) {
         CatalogMetadata catalogMetadata;
-        CatalogName catalogName = new CatalogName("demo");
+        CatalogName catalogName = new CatalogName(catalog);
         Map<Selector, Selector> options = new HashMap<>();
         Map<TableName, TableMetadata> tables = new HashMap<>();
         catalogMetadata = new CatalogMetadata(catalogName, options, tables);
         return catalogMetadata;
     }
 
-    private static TableMetadata createTable() {
+    private static TableMetadata createTable(String catalog, String table) {
         TableMetadata tableMetadata;
-        TableName targetTable = new TableName("demo", "users");
+        TableName targetTable = new TableName(catalog, table);
         Map<Selector, Selector> options = new HashMap<>();
         LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
         ClusterName clusterRef = new ClusterName("cluster");
         LinkedList<ColumnName> partitionKey = new LinkedList<>();
         LinkedList<ColumnName> clusterKey = new LinkedList<>();
         Object[] parameters = null;
-        columns.put(new ColumnName(new TableName("demo", "users"), "name"),
-                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "name"), parameters,
+        columns.put(new ColumnName(new TableName(catalog, table), "name"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "name"), parameters,
                         new ColumnType(DataType.TEXT)));
-        columns.put(new ColumnName(new TableName("demo", "users"), "gender"),
-                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "gender"), parameters,
+        columns.put(new ColumnName(new TableName(catalog, table), "gender"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "gender"), parameters,
                         new ColumnType(DataType.TEXT)));
-        columns.put(new ColumnName(new TableName("demo", "users"), "age"),
-                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "age"), parameters,
+        columns.put(new ColumnName(new TableName(catalog, table), "age"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "age"), parameters,
                         new ColumnType(DataType.INT)));
-        columns.put(new ColumnName(new TableName("demo", "users"), "bool"),
-                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "bool"), parameters,
+        columns.put(new ColumnName(new TableName(catalog, table), "bool"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "bool"), parameters,
                         new ColumnType(DataType.BOOLEAN)));
-        columns.put(new ColumnName(new TableName("demo", "users"), "phrase"),
-                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "phrase"), parameters,
+        columns.put(new ColumnName(new TableName(catalog, table), "phrase"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "phrase"), parameters,
                         new ColumnType(DataType.TEXT)));
-        columns.put(new ColumnName(new TableName("demo", "users"), "email"),
-                new ColumnMetadata(new ColumnName(new TableName("demo", "users"), "email"), parameters,
+        columns.put(new ColumnName(new TableName(catalog, table), "email"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "email"), parameters,
                         new ColumnType(DataType.TEXT)));
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
         Map<ColumnName, ColumnMetadata> columnsIndex = new HashMap<>();
         ColumnMetadata columnMetadataIndex = new ColumnMetadata(
-                new ColumnName(new TableName("demo", "users"), "gender"),
+                new ColumnName(new TableName(catalog, table), "gender"),
                 parameters, new ColumnType(DataType.TEXT));
-        columnsIndex.put(new ColumnName(new TableName("demo", "users"), "gender"), columnMetadataIndex);
+        columnsIndex.put(new ColumnName(new TableName(catalog, table), "gender"), columnMetadataIndex);
 
-        IndexMetadata indexMetadata = new IndexMetadata(new IndexName("demo", "users", "gender_idx"), columnsIndex,
+        IndexMetadata indexMetadata = new IndexMetadata(new IndexName(catalog, table, "gender_idx"), columnsIndex,
                 IndexType.DEFAULT, options);
 
-        indexes.put(new IndexName("demo", "users", "gender_idx"), indexMetadata);
+        indexes.put(new IndexName(catalog, table, "gender_idx"), indexMetadata);
 
         tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);
 

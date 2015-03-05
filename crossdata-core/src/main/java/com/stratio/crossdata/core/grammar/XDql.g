@@ -231,6 +231,12 @@ T_LAST: L A S T;
 T_ROWS: R O W S;
 T_INNER: I N N E R;
 T_JOIN: J O I N;
+T_OUTER: O U T E R;
+T_LEFT: L E F T;
+T_RIGHT: R I G H T;
+T_CROSS: C R O S S;
+T_NATURAL: N A T U R A L;
+T_FULL: F U L L;
 T_BY: B Y;
 T_LIMIT: L I M I T;
 T_AS: A S;
@@ -592,7 +598,6 @@ alterTableStatement returns [AlterTableStatement altast]
 selectStatement returns [SelectStatement slctst]
     @init{
         boolean windowInc = false;
-        boolean joinInc = false;
         boolean whereInc = false;
         boolean orderInc = false;
         boolean groupInc = false;
@@ -601,32 +606,34 @@ selectStatement returns [SelectStatement slctst]
         Map tablesAliasesMap = new LinkedHashMap<String, String>();
         boolean implicitJoin = false;
         boolean subqueryInc = false;
+        JoinType joinType=JoinType.INNER;
+
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
         slctst.setTablesAliases(tablesAliasesMap);
     }:
+
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap]
      T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_CATALOG_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
             | tablename=getAliasedTableID[tablesAliasesMap])
-    (T_COMMA { joinInc = true; implicitJoin = true; } identJoin=getAliasedTableID[tablesAliasesMap])?
+    (T_COMMA { implicitJoin = true;} identJoin=getAliasedTableID[tablesAliasesMap])?
+    {$slctst = new SelectStatement(selClause, tablename);}
+    (T_COMMA { implicitJoin = true;} identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
-    ((T_INNER)? T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
-    joinRelations=getWhereClauses[null])?
-    (T_WHERE { if(!implicitJoin) whereInc = true; } whereClauses=getWhereClauses[null])?
+    ((T_INNER {joinType=JoinType.INNER;}| T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}| T_RIGHT {joinType=JoinType
+    .RIGHT;}| T_LEFT {joinType=JoinType.LEFT;} |T_LEFT T_OUTER {joinType=JoinType.LEFT_OUTER;}| T_FULL T_OUTER {joinType=JoinType
+    .FULL_OUTER;}| T_NATURAL {joinType=JoinType.NATURAL;} | T_CROSS {joinType=JoinType.CROSS;})? T_JOIN identJoin=getAliasedTableID[tablesAliasesMap] T_ON
+    joinRelations=getWhereClauses[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
+    (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getWhereClauses[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
         if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
-        $slctst = new SelectStatement(selClause, tablename);
+
         if(windowInc)
             $slctst.setWindow(window);
-        if(joinInc)
-            if(implicitJoin)
-                $slctst.setJoin(new InnerJoin(identJoin, whereClauses));
-            else
-                $slctst.setJoin(new InnerJoin(identJoin, joinRelations));
         if(whereInc)
              $slctst.setWhere(whereClauses);
         if(orderInc)
@@ -637,9 +644,9 @@ selectStatement returns [SelectStatement slctst]
              $slctst.setLimit(Integer.parseInt($constant.text));
         if(subqueryInc)
              $slctst.setSubquery(subquery, subqueryAlias);
+        if(implicitJoin)
+             $slctst.addJoin(new InnerJoin(identJoin, whereClauses));
 
-        //$slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
-        //$slctst.updateTableNames();
     }
 ;
 
@@ -828,8 +835,13 @@ getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     @init{
         clauses = new ArrayList<>();
     }:
-    T_START_PARENTHESIS rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})* T_END_PARENTHESIS (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
-    | rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    T_START_PARENTHESIS
+        rel1=getRelation[tablename] {clauses.add(rel1);}
+        (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    T_END_PARENTHESIS
+    (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    | rel1=getRelation[tablename] {clauses.add(rel1);}
+        (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]
@@ -888,6 +900,10 @@ getSelector[TableName tablename] returns [Selector s]
         String name = null;
     }:
     (
+        T_START_PARENTHESIS
+            selectStmnt=selectStatement { s = new SelectSelector(tablename, selectStmnt.toString()); }
+        T_END_PARENTHESIS
+    |
         functionName=getFunctionName
         T_START_PARENTHESIS
             (select1=getSelector[tablename] {params.add(select1);}
@@ -895,7 +911,7 @@ getSelector[TableName tablename] returns [Selector s]
             )?
         T_END_PARENTHESIS { String functionStr = functionName;
                             s = new FunctionSelector(tablename, functionStr, params);}
-        |
+    |
         (
             columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);}
             | floatingNumber=T_FLOATING {s = new FloatingPointSelector(tablename, $floatingNumber.text);}

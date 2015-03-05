@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.stratio.crossdata.common.data.JoinType;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.Relation;
 
@@ -34,6 +35,8 @@ public class InnerJoin implements Serializable {
     private TableName tableName;
 
     private List<Relation> relations;
+
+    private JoinType type;
 
     private InnerJoin(TableName tableName) {
         this.tableName = tableName;
@@ -47,6 +50,19 @@ public class InnerJoin implements Serializable {
     public InnerJoin(TableName tableName, List<Relation> joinRelations) {
         this(tableName);
         this.relations = joinRelations;
+        this.type=JoinType.INNER;
+    }
+
+    /**
+     * Constructor class.
+     * @param tableName The table name of the join.
+     * @param joinRelations The list of relations of the join.
+     * @param type The type of the join.
+     */
+    public InnerJoin(TableName tableName, List<Relation> joinRelations, JoinType type) {
+        this(tableName);
+        this.relations = joinRelations;
+        this.type=type;
     }
 
     public TableName getTablename() {
@@ -83,6 +99,22 @@ public class InnerJoin implements Serializable {
             orderedRelations.add(orderedRelation);
         }
         return orderedRelations;
+    }
+
+    /**
+     * Get the type of the Join.
+     * @return A {@link com.stratio.crossdata.common.data.JoinType} .
+     */
+    public JoinType getType() {
+        return type;
+    }
+
+    /**
+     * Set the type of the join.
+     * @param type {@link com.stratio.crossdata.common.data.JoinType} .
+     */
+    public void setType(JoinType type) {
+        this.type = type;
     }
 
     @Override

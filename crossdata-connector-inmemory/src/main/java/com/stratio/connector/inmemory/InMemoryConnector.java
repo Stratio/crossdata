@@ -24,12 +24,14 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
-import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
+import com.stratio.connector.inmemory.metadata.MetadataListener;
 import com.stratio.crossdata.common.connector.AbstractExtendedConnector;
+import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.connector.IConfiguration;
 import com.stratio.crossdata.common.connector.IConnectorApp;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
 import com.stratio.crossdata.common.connector.IQueryEngine;
+import com.stratio.crossdata.common.connector.ISqlEngine;
 import com.stratio.crossdata.common.connector.IStorageEngine;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
@@ -38,8 +40,6 @@ import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.connectors.ConnectorApp;
-
-import akka.cluster.Cluster;
 
 /**
  * InMemory connector that demonstrates the internals of a crossdata connector.
@@ -138,6 +138,11 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         return new InMemoryMetadataEngine(this);
     }
 
+    @Override
+    public ISqlEngine getSqlEngine() throws UnsupportedException {
+        throw new UnsupportedException("SQL queries are not supported yet.");
+    }
+
     /**
      * Get the datastore associated to a given cluster.
      * @param cluster The cluster name.
@@ -160,5 +165,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         ConnectorApp connectorApp = new ConnectorApp();
         InMemoryConnector inMemoryConnector = new InMemoryConnector(connectorApp);
         connectorApp.startup(inMemoryConnector);
+        MetadataListener metadataListener = new MetadataListener();
+        connectorApp.subscribeToMetadataUpdate(metadataListener);
     }
 }

@@ -40,6 +40,7 @@ import com.stratio.crossdata.common.exceptions.validation.NotValidCatalogExcepti
 import com.stratio.crossdata.common.exceptions.validation.YodaConditionException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
@@ -186,10 +187,13 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeJoins() throws ValidationException {
-        InnerJoin innerJoin = parsedQuery.getStatement().getJoin();
-        if (innerJoin != null) {
-            normalizeJoins(innerJoin);
-            fields.setJoin(innerJoin);
+        List<InnerJoin> innerJoinList =  parsedQuery.getStatement().getJoinList();
+
+        if (!innerJoinList.isEmpty()) {
+            for(InnerJoin innerJoin: innerJoinList) {
+                normalizeJoins(innerJoin);
+                fields.addJoin(innerJoin);
+            }
         }
     }
 
@@ -436,9 +440,11 @@ public class Normalizator {
             checkRightSelector(columnSelector.getName(), relation.getOperator(), relation.getRightTerm());
             break;
         case RELATION:
-        case FUNCTION:
         case ASTERISK:
             throw new BadFormatException("Not supported yet.");
+        case FUNCTION:
+            break;
+
         }
     }
 
@@ -737,10 +743,8 @@ public class Normalizator {
     private void checkRightSelector(ColumnName name, Operator operator, Selector rightTerm) throws ValidationException {
 
         if(!parsedQuery.getStatement().isSubqueryInc()) {
-
             // Get column type from MetadataManager
             ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(name);
-
             SelectorType rightTermType = rightTerm.getType();
 
             if (rightTerm.getType() == SelectorType.COLUMN) {
@@ -752,12 +756,17 @@ public class Normalizator {
                 columnSelector.getName().setTableName(foundTableName);
 
                 ColumnMetadata columnMetadataRightTerm = MetadataManager.MANAGER.getColumn(columnSelector.getName());
-                rightTermType = convertMetadataTypeToSelectorType(columnMetadataRightTerm.getColumnType());
-            }
 
+                if (columnMetadataRightTerm.getColumnType().getDataType() != DataType.NATIVE) {
+                    rightTermType = convertMetadataTypeToSelectorType(columnMetadataRightTerm.getColumnType());
+                }
+            }
             // Create compatibilities table for ColumnType, Operator and SelectorType
-            checkCompatibility(columnMetadata, operator, rightTermType);
+            if (operator!=Operator.MATCH){
+                checkCompatibility(columnMetadata, operator, rightTermType);
+            }
         }
+
     }
 
     private SelectorType convertMetadataTypeToSelectorType(ColumnType columnType) throws ValidationException {
@@ -803,11 +812,13 @@ public class Normalizator {
         case VARCHAR:
             checkStringCompatibility(column, operator, valueType);
             break;
-        case NATIVE:
         case SET:
         case LIST:
         case MAP:
             throw new BadFormatException("Native and Collections not supported yet.");
+        case NATIVE:
+            //we don't check native types
+            break;
         }
     }
 

@@ -21,16 +21,22 @@ package com.stratio.crossdata.connectors
 import java.util
 
 import akka.actor.{ActorSelection, ActorRef, ActorSystem}
+import akka.pattern.ask
 import akka.routing.RoundRobinRouter
-import com.stratio.crossdata.common.data.{ClusterName, ConnectionStatus, TableName, CatalogName}
+import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
 import com.stratio.crossdata.connectors.config.ConnectConfig
-import com.stratio.crossdata.common.connector.{IConnectorApp, IConfiguration, IConnector}
-import com.stratio.crossdata.communication.Shutdown
+import com.stratio.crossdata.common.connector.{IMetadataListener, IConnectorApp, IConfiguration, IConnector}
 import org.apache.log4j.Logger
 import scala.collection.mutable.Set
 import com.codahale.metrics.{Gauge, MetricRegistry}
+import scala.Some
+import com.stratio.crossdata.communication.Shutdown
+import scala.concurrent.Await
+import akka.util.Timeout
+import scala.concurrent.duration.Duration
+import java.util.concurrent.TimeUnit
 
 object ConnectorApp extends App {
   args.length==2
@@ -38,7 +44,7 @@ object ConnectorApp extends App {
 
 class ConnectorApp extends ConnectConfig with IConnectorApp {
 
-  type OptionMap = Map[Symbol, String]
+  lazy val defaultTimeout: Timeout = new Timeout(Duration(5, TimeUnit.SECONDS))
   lazy val system = ActorSystem(clusterName, config)
   val connectedServers: Set[String] = Set()
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
@@ -57,7 +63,8 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
       connector, connectedServers).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
     connector.init(new IConfiguration {})
-    val actorSelection = system.actorSelection(StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString()))
+    val actorSelection: ActorSelection = system.actorSelection(
+      StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString(), false))
 
     metricName = MetricRegistry.name(connector.getConnectorName, "connection", "status")
     Metrics.getRegistry.register(metricName,
@@ -70,20 +77,37 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
           return status
         }
       })
-
     actorSelection
   }
 
   override def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
-    actorClusterNode.asInstanceOf[ConnectorActor].getTableMetadata(clusterName, tableName)
+    /*TODO: for querying actor internal state, only messages should be used.
+      i.e.{{{
+        import scala.concurrent.duration._
+        val timeout: akka.util.Timeout = 2.seconds
+        val response: Option[TableMetadata] = 
+          actorClusterNode.map(actor => Await.result((actor ? GetTableMetadata).mapTo[TableMetadata],timeout))
+        response.getOrElse(throw new IllegalStateException("Actor cluster node is not initialized"))
+      }}}
+    */
+    //actorClusterNode.get.asInstanceOf[ConnectorActor].getTableMetadata(clusterName, tableName)
+    val future = actorClusterNode.get.ask(clusterName, tableName)(defaultTimeout)
+    val result = Await.result(future, defaultTimeout.duration)
+    result.asInstanceOf[TableMetadata]
   }
 
-  override def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata= {
-    actorClusterNode.asInstanceOf[ConnectorActor].getCatalogMetadata(catalogName)
+  override def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata ={
+    //actorClusterNode.get.asInstanceOf[ConnectorActor].getCatalogMetadata(catalogName)
+    val future = actorClusterNode.get.ask(catalogName)(defaultTimeout)
+    val result = Await.result(future, defaultTimeout.duration)
+    result.asInstanceOf[CatalogMetadata]
   }
 
-  override def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
-    actorClusterNode.asInstanceOf[ConnectorActor].getCatalogs(cluster);
+  override def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] ={
+    //actorClusterNode.get.asInstanceOf[ConnectorActor].getCatalogs(cluster);
+    val future = actorClusterNode.get.ask(cluster)(defaultTimeout)
+    val result = Await.result(future, defaultTimeout.duration)
+    result.asInstanceOf[util.List[CatalogMetadata]]
   }
 
   override def getConnectionStatus(): ConnectionStatus = {
@@ -92,6 +116,11 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       status = ConnectionStatus.DISCONNECTED
     }
     status
+  }
+
+  override def subscribeToMetadataUpdate(mapListener: IMetadataListener) ={
+    //actorClusterNode.get.asInstanceOf[ConnectorActor].subscribeToMetadataUpdate(mapListener)
+    actorClusterNode.get ! mapListener
   }
 
 }

@@ -111,4 +111,12 @@ public interface IConnector {
      */
     IMetadataEngine getMetadataEngine() throws UnsupportedException;
 
+    /**
+     * Get the SQL queries engine.
+     *
+     * @return An implementation of {@link com.stratio.crossdata.common.connector.ISqlEngine}.
+     * @throws UnsupportedException If the connector does not provide this functionality.
+     */
+    ISqlEngine getSqlEngine() throws UnsupportedException;
+
 }

@@ -58,7 +58,7 @@ public class ExecutionWorkflow implements Serializable {
     /**
      * Type of execution.
      */
-    private final ResultType resultType;
+    private ResultType resultType;
 
     /**
      * If the previous execution step triggers another execution step, this variable contains
@@ -146,6 +146,10 @@ public class ExecutionWorkflow implements Serializable {
 
     public void setActorRef(String actorRef) {
         this.actorRef = actorRef;
+    }
+
+    public void setResultType(ResultType resultType) {
+        this.resultType = resultType;
     }
 
     @Override

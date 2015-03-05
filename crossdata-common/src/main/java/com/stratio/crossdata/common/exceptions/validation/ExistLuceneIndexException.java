@@ -16,19 +16,23 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.statements.structures;
+package com.stratio.crossdata.common.exceptions.validation;
+
+import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 
 /**
- * Enumerator that defines the different types of selectors of crossdata.
+ * ExistLuceneIndex class exception thrown when exists a Lucene index for a table .
  */
-public enum SelectorType {
-    FUNCTION,
-    COLUMN,
-    ASTERISK,
-    BOOLEAN,
-    STRING,
-    INTEGER,
-    FLOATING_POINT,
-    RELATION,
-    SELECT
+public class ExistLuceneIndexException extends ValidationException {
+
+    private static final long serialVersionUID = 400679530936713775L;
+
+    /**
+     * Constructor class.
+     * @param name The name of the table.
+     */
+    public ExistLuceneIndexException(Name name) {
+        super("Other Lucene Index exists for table:" + name  );
+    }
 }

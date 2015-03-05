@@ -91,7 +91,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
      */
     case msg: replyConnectorName => {
       logger.info("Connector Name " + msg.name + " received from " + sender)
-      val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
+      val actorRefUri = StringUtils.getAkkaActorRefUri(sender, false)
       logger.info("Registering connector at: " + actorRefUri)
       val connectorName = new ConnectorName(msg.name)
       ExecutionManager.MANAGER.createEntry(actorRefUri, connectorName, true)
@@ -165,7 +165,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
     case member: MemberRemoved => {
       logger.info("Member is Removed: " + member.member.address)
       logger.info("Member info: " + member.toString)
-      val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address)
+      val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address, false)
       if(ExecutionManager.MANAGER.exists(actorRefUri + "/user/ConnectorActor/")){
         val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri + "/user/ConnectorActor/")
         MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName], Status.OFFLINE)
@@ -175,7 +175,7 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
 
     case member: MemberExited => {
       logger.info("Member is exiting: " + member.member.address)
-      val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
+      val actorRefUri = StringUtils.getAkkaActorRefUri(sender, false)
       val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
       MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName], Status.SHUTTING_DOWN)
       MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
