@@ -15,33 +15,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
-package com.stratio.crossdata.common.exceptions.validation;
-
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.exceptions.ValidationException;
+package com.stratio.crossdata.common.logicalplan;
 
 /**
- * Exception class thrown when a column name has an ambiguous name in validation phase.
+ * Virtualizable interface for {@link com.stratio.crossdata.common.logicalplan.LogicalStep} used when working with logical steps planned from a subquery.
  */
-public class AmbiguousNameException extends ValidationException {
-
-    private static final long serialVersionUID = 4317649750806406160L;
+public interface Virtualizable {
 
     /**
-     * Constructor class.
-     * @param columnName The column name affected.
+     * Return whether operates with virtual tables or not.
+     * @return true when operates with virtual {@link com.stratio.crossdata.common.data.TableName}.
      */
-    public AmbiguousNameException(ColumnName columnName) {
-        super("COLUMN name [" + columnName + "] is ambiguous");
-    }
-
-    /**
-     * Constructor with an explicit message.
-     * @param message The message.
-     */
-    public AmbiguousNameException(String message) {
-        super(message);
-    }
-
+    public boolean isVirtual();
 }

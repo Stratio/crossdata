@@ -62,4 +62,6 @@ public interface IConnectorApp {
     ConnectionStatus getConnectionStatus();
 
     void subscribeToMetadataUpdate(IMetadataListener metadataListener);
+
+    void registerMetric(String name, Metric metric);
 }

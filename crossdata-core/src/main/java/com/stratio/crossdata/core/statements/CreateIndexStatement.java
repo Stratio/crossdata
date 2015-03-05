@@ -261,11 +261,21 @@ public class CreateIndexStatement extends IndexStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        ValidationRequirements vr = new ValidationRequirements()
-                .add(ValidationTypes.MUST_EXIST_TABLE)
-                .add(ValidationTypes.MUST_EXIST_COLUMN);
-        if(!createIfNotExists){
-            vr.add(ValidationTypes.MUST_NOT_EXIST_INDEX);
+        ValidationRequirements vr;
+        if (type==IndexType.FULL_TEXT){
+            vr=new ValidationRequirements()
+                    .add(ValidationTypes.MUST_EXIST_TABLE)
+                    .add(ValidationTypes.MUST_EXIST_COLUMN);
+            if (!createIfNotExists) {
+                vr.add(ValidationTypes.MUST_NOT_EXIST_FULL_TEXT_INDEX);
+            }
+        }else {
+            vr=new ValidationRequirements()
+                    .add(ValidationTypes.MUST_EXIST_TABLE)
+                    .add(ValidationTypes.MUST_EXIST_COLUMN);
+            if (!createIfNotExists) {
+                vr.add(ValidationTypes.MUST_NOT_EXIST_INDEX);
+            }
         }
         return vr;
     }

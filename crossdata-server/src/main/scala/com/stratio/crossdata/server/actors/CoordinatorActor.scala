@@ -21,21 +21,19 @@ package com.stratio.crossdata.server.actors
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
-import com.stratio.crossdata.common.data.{Row, ConnectorName}
+import com.stratio.crossdata.common.data.ConnectorName
 import com.stratio.crossdata.common.exceptions.ExecutionException
+import com.stratio.crossdata.common.exceptions.validation.CoordinationException
 import com.stratio.crossdata.common.executionplan.{ExecutionType, ManagementWorkflow, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
+import com.stratio.crossdata.common.logicalplan.PartialResults
 import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
 import com.stratio.crossdata.core.coordinator.Coordinator
-import com.stratio.crossdata.core.execution.{ExecutionManagerException, ExecutionInfo, ExecutionManager}
+import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, ExecutionManagerException}
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.IPlannedQuery
-import com.stratio.crossdata.common.logicalplan.PartialResults
-import com.stratio.crossdata.common.statements.structures.SelectorHelper
-import com.stratio.crossdata.common.exceptions.validation.CoordinationException
-import com.stratio.crossdata.core.utils.CoreUtils
-import java.util
 
 object CoordinatorActor {
 
@@ -62,7 +60,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         case metadataWorkflow: MetadataWorkflow => {
 
           val executionInfo = new ExecutionInfo
-          executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
+          executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
           val queryId = plannedQuery.getQueryId
           executionInfo.setWorkflow(metadataWorkflow)
 
@@ -98,7 +96,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(false)
             executionInfo.setRemoveOnSuccess(true)
-            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
+            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
             executionInfo.setWorkflow(metadataWorkflow)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
@@ -107,7 +105,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             executionInfo.setRemoveOnSuccess(true)
-            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
+            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
             executionInfo.setWorkflow(metadataWorkflow)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
@@ -126,7 +124,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
               executionInfo.setPersistOnSuccess(true)
               executionInfo.setRemoveOnSuccess(true)
-              executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
+              executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
               executionInfo.setWorkflow(metadataWorkflow)
               ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
@@ -146,7 +144,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
               executionInfo.setPersistOnSuccess(true)
               executionInfo.setRemoveOnSuccess(true)
-              executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
+              executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
               executionInfo.setWorkflow(metadataWorkflow)
               ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
@@ -160,7 +158,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(false)
             executionInfo.setRemoveOnSuccess(true)
-            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
+            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
             executionInfo.setWorkflow(metadataWorkflow)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
@@ -175,7 +173,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
               executionInfo.setPersistOnSuccess(true)
               executionInfo.setRemoveOnSuccess(true)
-              executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
+              executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
               executionInfo.setWorkflow(metadataWorkflow)
               ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
@@ -392,7 +390,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             //Register the result workflow
             val nextExecutionInfo = new ExecutionInfo
-            nextExecutionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
+            nextExecutionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
             nextExecutionInfo.setWorkflow(queryWorkflow.getNextExecutionWorkflow)
             nextExecutionInfo.setRemoveOnSuccess(executionInfo.isRemoveOnSuccess)
             ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo)

@@ -32,6 +32,10 @@ public final class Constants {
      */
     public static final int DEFAULT_PAGINATION = 0;
 
+    /**
+     * Virtual catalog name. It is used in nested queries as the catalog name of the virtual table.
+     */
+    public static final String VIRTUAL_CATALOG_NAME = "#virtual";
 
     private Constants() {
     }

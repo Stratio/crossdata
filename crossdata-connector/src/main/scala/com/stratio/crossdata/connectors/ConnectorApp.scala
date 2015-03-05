@@ -31,7 +31,7 @@ import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.common.connector.{IMetadataListener, IConnectorApp, IConfiguration, IConnector}
 import org.apache.log4j.Logger
 import scala.collection.mutable.Set
-import com.codahale.metrics.{Gauge, MetricRegistry}
+import com.codahale.metrics.{Metric, Gauge, MetricRegistry}
 import scala.Some
 import com.stratio.crossdata.communication.Shutdown
 import scala.concurrent.Await
@@ -135,4 +135,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorClusterNode.get ! mapListener
   }
 
+  override def registerMetric(name: String, metric: Metric): Unit = {
+    Metrics.getRegistry.register(name, metric)
+  }
 }
