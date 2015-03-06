@@ -97,7 +97,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      * The {@link com.stratio.crossdata.core.structures.GroupByClause} clause.
      */
     private GroupByClause groupByClause = null;
-    private List<OrderByClause> orderByClauseClauses = new ArrayList<>();
+    private List<OrderByClause> orderByClauses = new ArrayList<>();
     /**
      * Whether a LIMIT clause has been specified.
      */
@@ -188,11 +188,6 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
                 if(rightTerm instanceof ExtendedSelectSelector){
                     ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
                     selectExpressions.addAll(selectSelector.getSelectStatement().getAllSelectExpressions());
-                    /*
-                    selectExpressions.add(new ImmutablePair(
-                            selectSelector.getSelectStatement().getSelectExpression(),
-                            selectSelector.getSelectStatement().getFromTables()));
-                    */
                 }
                 while(rightTerm instanceof RelationSelector){
                     RelationSelector relationSelector = (RelationSelector) rightTerm;
@@ -200,21 +195,11 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
                     if(leftTerm instanceof ExtendedSelectSelector){
                         ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
                         selectExpressions.addAll(selectSelector.getSelectStatement().getAllSelectExpressions());
-                        /*
-                        selectExpressions.add(new ImmutablePair(
-                                selectSelector.getSelectStatement().getSelectExpression(),
-                                selectSelector.getSelectStatement().getFromTables()));
-                        */
                     }
                     rightTerm = relationSelector.getRelation().getRightTerm();
                     if(rightTerm instanceof ExtendedSelectSelector){
                         ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
                         selectExpressions.addAll(selectSelector.getSelectStatement().getAllSelectExpressions());
-                        /*
-                        selectExpressions.add(new ImmutablePair(
-                                selectSelector.getSelectStatement().getSelectExpression(),
-                                selectSelector.getSelectStatement().getFromTables()));
-                        */
                     }
                 }
             }
@@ -232,6 +217,34 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     public List<InnerJoin> getJoinList() {
         return joinList;
+    }
+
+    public List<Pair> getAllJoins(){
+        List<Pair> joins = new ArrayList<>();
+        joins.add(new ImmutablePair(getJoinList(), getFromTables()));
+        if((where != null) && (!where.isEmpty())){
+            for(Relation relation: where){
+                Selector rightTerm = relation.getRightTerm();
+                if(rightTerm instanceof ExtendedSelectSelector){
+                    ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                    joins.addAll(selectSelector.getSelectStatement().getAllJoins());
+                }
+                while(rightTerm instanceof RelationSelector){
+                    RelationSelector relationSelector = (RelationSelector) rightTerm;
+                    Selector leftTerm = relationSelector.getRelation().getLeftTerm();
+                    if(leftTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
+                        joins.addAll(selectSelector.getSelectStatement().getAllJoins());
+                    }
+                    rightTerm = relationSelector.getRelation().getRightTerm();
+                    if(rightTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                        joins.addAll(selectSelector.getSelectStatement().getAllJoins());
+                    }
+                }
+            }
+        }
+        return joins;
     }
 
     /**
@@ -273,6 +286,34 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         return where;
     }
 
+    public List<Pair> getAllWhereClauses(){
+        List<Pair> whereClauses = new ArrayList<>();
+        whereClauses.add(new ImmutablePair(getWhere(), getFromTables()));
+        if((where != null) && (!where.isEmpty())){
+            for(Relation relation: where){
+                Selector rightTerm = relation.getRightTerm();
+                if(rightTerm instanceof ExtendedSelectSelector){
+                    ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                    whereClauses.addAll(selectSelector.getSelectStatement().getAllWhereClauses());
+                }
+                while(rightTerm instanceof RelationSelector){
+                    RelationSelector relationSelector = (RelationSelector) rightTerm;
+                    Selector leftTerm = relationSelector.getRelation().getLeftTerm();
+                    if(leftTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
+                        whereClauses.addAll(selectSelector.getSelectStatement().getAllWhereClauses());
+                    }
+                    rightTerm = relationSelector.getRelation().getRightTerm();
+                    if(rightTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                        whereClauses.addAll(selectSelector.getSelectStatement().getAllWhereClauses());
+                    }
+                }
+            }
+        }
+        return whereClauses;
+    }
+
     /**
      * Set the list of {@link Relation} in the where clause.
      *
@@ -303,6 +344,34 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     public GroupByClause getGroupByClause() {
         return groupByClause;
+    }
+
+    public List<Pair> getAllGroupByClauses(){
+        List<Pair> groupByClauses = new ArrayList<>();
+        groupByClauses.add(new ImmutablePair(getGroupByClause(), getFromTables()));
+        if((where != null) && (!where.isEmpty())){
+            for(Relation relation: where){
+                Selector rightTerm = relation.getRightTerm();
+                if(rightTerm instanceof ExtendedSelectSelector){
+                    ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                    groupByClauses.addAll(selectSelector.getSelectStatement().getAllGroupByClauses());
+                }
+                while(rightTerm instanceof RelationSelector){
+                    RelationSelector relationSelector = (RelationSelector) rightTerm;
+                    Selector leftTerm = relationSelector.getRelation().getLeftTerm();
+                    if(leftTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
+                        groupByClauses.addAll(selectSelector.getSelectStatement().getAllGroupByClauses());
+                    }
+                    rightTerm = relationSelector.getRelation().getRightTerm();
+                    if(rightTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                        groupByClauses.addAll(selectSelector.getSelectStatement().getAllGroupByClauses());
+                    }
+                }
+            }
+        }
+        return groupByClauses;
     }
 
     /**
@@ -423,7 +492,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(StringUtils.stringList(where, " AND "));
         }
         if (orderInc) {
-            sb.append(" ORDER BY ").append(orderByClauseClauses);
+            sb.append(" ORDER BY ").append(orderByClauses);
         }
         if (groupInc) {
             sb.append(" GROUP BY ").append(StringUtils.stringList(groupByClause.getSelectorIdentifier(), ", "));
@@ -452,7 +521,35 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     }
 
     public List<OrderByClause> getOrderByClauses() {
-        return orderByClauseClauses;
+        return orderByClauses;
+    }
+
+    public List<Pair> getAllOrderByClauses(){
+        List<Pair> orderByClauses = new ArrayList<>();
+        orderByClauses.add(new ImmutablePair(getOrderByClauses(), getFromTables()));
+        if((where != null) && (!where.isEmpty())){
+            for(Relation relation: where){
+                Selector rightTerm = relation.getRightTerm();
+                if(rightTerm instanceof ExtendedSelectSelector){
+                    ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                    orderByClauses.addAll(selectSelector.getSelectStatement().getAllOrderByClauses());
+                }
+                while(rightTerm instanceof RelationSelector){
+                    RelationSelector relationSelector = (RelationSelector) rightTerm;
+                    Selector leftTerm = relationSelector.getRelation().getLeftTerm();
+                    if(leftTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
+                        orderByClauses.addAll(selectSelector.getSelectStatement().getAllOrderByClauses());
+                    }
+                    rightTerm = relationSelector.getRelation().getRightTerm();
+                    if(rightTerm instanceof ExtendedSelectSelector){
+                        ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
+                        orderByClauses.addAll(selectSelector.getSelectStatement().getAllOrderByClauses());
+                    }
+                }
+            }
+        }
+        return orderByClauses;
     }
 
     /**
@@ -462,7 +559,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     public void setOrderByClauses(List<OrderByClause> orderByClauseClauses) {
         if ((orderByClauseClauses != null) && (!orderByClauseClauses.isEmpty())) {
             this.orderInc = true;
-            this.orderByClauseClauses = orderByClauseClauses;
+            this.orderByClauses = orderByClauseClauses;
         }
     }
 
@@ -515,19 +612,19 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
                 Selector rightTerm = relation.getRightTerm();
                 if(rightTerm instanceof ExtendedSelectSelector){
                     ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
-                    tableNames.addAll(selectSelector.getSelectStatement().getFromTables());
+                    tableNames.addAll(selectSelector.getSelectStatement().getAllTables());
                 }
                 while(rightTerm instanceof RelationSelector){
                     RelationSelector relationSelector = (RelationSelector) rightTerm;
                     Selector leftTerm = relationSelector.getRelation().getLeftTerm();
                     if(leftTerm instanceof ExtendedSelectSelector){
                         ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) leftTerm;
-                        tableNames.addAll(selectSelector.getSelectStatement().getFromTables());
+                        tableNames.addAll(selectSelector.getSelectStatement().getAllTables());
                     }
                     rightTerm = relationSelector.getRelation().getRightTerm();
                     if(rightTerm instanceof ExtendedSelectSelector){
                         ExtendedSelectSelector selectSelector = (ExtendedSelectSelector) rightTerm;
-                        tableNames.addAll(selectSelector.getSelectStatement().getFromTables());
+                        tableNames.addAll(selectSelector.getSelectStatement().getAllTables());
                     }
                 }
             }

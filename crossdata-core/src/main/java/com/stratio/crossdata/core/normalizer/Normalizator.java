@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
@@ -51,10 +52,10 @@ import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.RelationSelector;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
-import com.stratio.crossdata.common.statements.structures.RelationSelector;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
@@ -66,6 +67,11 @@ import com.stratio.crossdata.core.structures.InnerJoin;
  * Normalizator Class.
  */
 public class Normalizator {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(Normalizator.class);
 
     private NormalizedFields fields = new NormalizedFields();
 
@@ -161,7 +167,7 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeTables() throws ValidationException {
-        List<TableName> tableNames = ((SelectStatement) parsedQuery.getStatement()).getAllTables();
+        List<TableName> tableNames = parsedQuery.getStatement().getAllTables();
         if (tableNames != null && !tableNames.isEmpty()) {
             normalizeTables(tableNames);
         }
@@ -189,14 +195,20 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeJoins() throws ValidationException {
-        List<InnerJoin> innerJoinList =  parsedQuery.getStatement().getJoinList();
-
-        if (!innerJoinList.isEmpty()) {
-            for(InnerJoin innerJoin: innerJoinList) {
-                normalizeJoins(innerJoin);
-                fields.addJoin(innerJoin);
+        List<Pair> allJoins = parsedQuery.getStatement().getAllJoins();
+        if(allJoins != null){
+            for(Pair<List<InnerJoin>, List<TableName>> pair: allJoins){
+                List<InnerJoin> innerJoinList =  pair.getLeft();
+                fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
+                if (!innerJoinList.isEmpty()) {
+                    for(InnerJoin innerJoin: innerJoinList) {
+                        normalizeJoins(innerJoin);
+                        fields.addJoin(innerJoin);
+                    }
+                }
             }
         }
+        fields.setPreferredTableNames(new HashSet<TableName>());
     }
 
     /**
@@ -210,11 +222,18 @@ public class Normalizator {
     }
 
     private void normalizeWhere() throws ValidationException {
-        List<Relation> where = ((SelectStatement) parsedQuery.getStatement()).getWhere();
-        if (where != null && !where.isEmpty()) {
-            normalizeWhere(where);
-            fields.setWhere(where);
+        List<Pair> whereClauses = parsedQuery.getStatement().getAllWhereClauses();
+        if(whereClauses != null){
+            for(Pair<List<Relation>, List<TableName>> pair: whereClauses){
+                List<Relation> where = pair.getLeft();
+                fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
+                if (where != null && !where.isEmpty()) {
+                    normalizeWhere(where);
+                    fields.setWhere(where);
+                }
+            }
         }
+        fields.setPreferredTableNames(new HashSet<TableName>());
     }
 
     private void normalizeWhere(List<Relation> where) throws ValidationException {
@@ -227,13 +246,18 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeOrderBy() throws ValidationException {
-
-        List<OrderByClause> orderByClauseClauses = ((SelectStatement) parsedQuery.getStatement()).getOrderByClauses();
-
-        if (orderByClauseClauses != null) {
-            normalizeOrderBy(orderByClauseClauses);
-            fields.setOrderByClauses(orderByClauseClauses);
+        List<Pair> allOrderByClauses = parsedQuery.getStatement().getAllOrderByClauses();
+        if(allOrderByClauses != null){
+            for(Pair<List<OrderByClause>, List<TableName>> pair: allOrderByClauses){
+                List<OrderByClause> orderByClauses = pair.getLeft();
+                fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
+                if (orderByClauses != null) {
+                    normalizeOrderBy(orderByClauses);
+                    fields.setOrderByClauses(orderByClauses);
+                }
+            }
         }
+        fields.setPreferredTableNames(new HashSet<TableName>());
     }
 
     /**
@@ -270,9 +294,11 @@ public class Normalizator {
         List<Pair> selectExpressions = parsedQuery.getStatement().getAllSelectExpressions();
         if (selectExpressions != null) {
             for(Pair<SelectExpression, List<TableName>> pair: selectExpressions){
+                fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
                 normalizeSelectExpression(pair.getLeft(), pair.getRight());
             }
         }
+        fields.setPreferredTableNames(new HashSet<TableName>());
     }
 
     /**
@@ -295,11 +321,18 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeGroupBy() throws ValidationException {
-        GroupByClause groupByClause = ((SelectStatement) parsedQuery.getStatement()).getGroupByClause();
-        if (groupByClause != null) {
-            normalizeGroupBy(groupByClause);
-            fields.setGroupByClause(groupByClause);
+        List<Pair> allGroupByClauses = parsedQuery.getStatement().getAllGroupByClauses();
+        if(allGroupByClauses != null){
+            for(Pair<GroupByClause, List<TableName>> pair: allGroupByClauses){
+                GroupByClause groupByClause = pair.getLeft();
+                fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
+                if (groupByClause != null) {
+                    normalizeGroupBy(groupByClause);
+                    fields.setGroupByClause(groupByClause);
+                }
+            }
         }
+        fields.setPreferredTableNames(new HashSet<TableName>());
     }
 
     private void checkFormatBySelectorIdentifier(Selector selector, Set<ColumnName> columnNames)
@@ -430,7 +463,9 @@ public class Normalizator {
         case FLOATING_POINT:
         case BOOLEAN:
         case INTEGER:
-            throw new YodaConditionException();
+            if(relation.getOperator() == Operator.EQ){
+                throw new YodaConditionException();
+            }
         }
     }
 
@@ -445,6 +480,10 @@ public class Normalizator {
             checkRightSelector(columnSelector.getName(), relation.getOperator(), relation.getRightTerm());
             break;
         case RELATION:
+            RelationSelector relationSelector = (RelationSelector) relation.getRightTerm();
+            checkRelationFormatLeft(relationSelector.getRelation());
+            checkRelationFormatRight(relationSelector.getRelation());
+            break;
         case ASTERISK:
             throw new BadFormatException("Not supported yet.");
         case FUNCTION:
@@ -597,22 +636,14 @@ public class Normalizator {
             }
         } else {
             if (columnName.getTableName() == null) {
-                boolean tableFind = false;
-                for (TableName tableName: fields.getTableNames()) {
-                    columnName.setTableName(tableName);
-                    if (MetadataManager.MANAGER.exists(columnName)) {
-                        if (tableFind) {
-                            throw new AmbiguousNameException(columnName);
-                        }
-                        selectTableName = tableName;
-                        tableFind = true;
-                    } else {
-                        columnName.setTableName(null);
-
-                    }
+                // Try to match with preferred tables
+                selectTableName = matchColumn(columnName, fields.getPreferredTableNames());
+                if(selectTableName == null){
+                    // Try to match with other tables from super queries
+                    selectTableName = matchColumn(columnName, fields.getTableNames());
                 }
             } else {
-                for (TableName tableName : fields.getTableNames()) {
+                for (TableName tableName: fields.getTableNames()) {
                     if (tableName.getName().equals(columnName.getTableName().getName())) {
                         columnName.setTableName(tableName);
                         selectTableName = tableName;
@@ -629,6 +660,24 @@ public class Normalizator {
         return selectTableName;
     }
 
+    private TableName matchColumn(ColumnName columnName, Set<TableName> tableNames) throws AmbiguousNameException {
+        boolean tableFind = false;
+        TableName selectTableName = null;
+        for(TableName tableName: tableNames){
+            columnName.setTableName(tableName);
+            if (MetadataManager.MANAGER.exists(columnName)) {
+                if (tableFind) {
+                    throw new AmbiguousNameException(columnName);
+                }
+                selectTableName = tableName;
+                tableFind = true;
+            } else {
+                columnName.setTableName(null);
+            }
+        }
+        return selectTableName;
+    }
+
     /**
      * Validate the conditions that have an asterisk.
      *
@@ -637,8 +686,11 @@ public class Normalizator {
     public List<Selector> checkAsteriskSelector() throws ValidationException{
         List<Selector> aSelectors = new ArrayList<>();
         SelectStatement selectStatement = parsedQuery.getStatement();
-        for (TableName table : fields.getTableNames()) {
-
+        Set<TableName> tableNames = fields.getPreferredTableNames();
+        if((tableNames == null) || (tableNames.isEmpty())){
+            tableNames = fields.getTableNames();
+        }
+        for (TableName table: tableNames) {
             if (table.isVirtual()) {
                 for (Selector selector : selectStatement.getSubquery().getSelectExpression().getSelectorList()) {
                     ColumnName colName = new ColumnName(table,getVirtualAliasFromSelector(selector));
@@ -648,7 +700,6 @@ public class Normalizator {
                     aSelectors.add(defaultSelector);
                     fields.addColumnName(colName, defaultSelector.getAlias());
                 }
-
             } else {
                 TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(table);
                 for (ColumnName columnName : tableMetadata.getColumns().keySet()) {
@@ -657,7 +708,6 @@ public class Normalizator {
                     fields.getColumnNames().add(columnName);
                 }
             }
-
         }
         return aSelectors;
     }
@@ -737,7 +787,6 @@ public class Normalizator {
 
     /**
      * Validate the Functions Selectors of a parsed query.
-     *
      *
      * @param functionSelector The includes Selector to validate.
      * @param preferredTables

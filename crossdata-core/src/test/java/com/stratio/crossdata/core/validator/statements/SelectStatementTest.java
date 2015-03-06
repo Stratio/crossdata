@@ -51,6 +51,7 @@ import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
@@ -87,6 +88,27 @@ public class SelectStatementTest extends BasicValidatorTest {
     }
 
     @Test
+    public void validateSelectWithSubquery() {
+        String query = "SELECT age, email FROM (SELECT * FROM test.table1);";
+
+        BaseQuery baseQuery = new BaseQuery("validateSelectWithSubquery", query, new CatalogName("demo"));
+
+        Parser parser = new Parser();
+        SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
+
+        Validator validator = new Validator();
+
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
     public void validateSelectsInWhereClauses() {
         String query = "SELECT age, email FROM demo.users " +
                 "WHERE age = 25 * 3 + (SELECT * FROM test.table1) - phrase + (SELECT rating FROM test.table2)" +
@@ -101,8 +123,9 @@ public class SelectStatementTest extends BasicValidatorTest {
         Validator validator = new Validator();
 
         try {
-            validator.validate(parsedQuery);
-            Assert.assertTrue(true);
+            SelectValidatedQuery normalizedQuery = (SelectValidatedQuery) validator.validate(parsedQuery);
+            assertNotNull(normalizedQuery, "normalizedQuery is null");
+            Assert.assertTrue(true, "Test failed.");
         } catch (ValidationException e) {
             Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
