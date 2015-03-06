@@ -22,6 +22,7 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -52,13 +53,16 @@ import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
@@ -480,6 +484,60 @@ public class NormalizerTest {
         Normalizer normalizer = new Normalizer();
         normalizer.normalize(selectParsedQuery);
 
+
+    }
+
+
+
+    @Test
+    public void testNormalizeSubquery() throws Exception {
+
+        insertData();
+
+        String methodName = "testNormalizeSubquery";
+
+        String inputText = "SELECT * FROM  "
+                        + "( SELECT colsales, 1 FROM tableClients ) AS t";
+
+        String virtualTableQN = Constants.VIRTUAL_CATALOG_NAME+".t";
+
+        String expectedText = "SELECT "+virtualTableQN+".colSales, "+virtualTableQN+".1 FROM ( SELECT demo.tableClients.colsales, 1 FROM demo.tableClients ) AS t";
+
+        // BASE QUERY
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("Constants.VIRTUAL_CATALOG_NAME"));
+
+        // SELECTORS
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
+        selectorList.add(new IntegerSelector(1));
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        // SELECT STATEMENT
+        SelectStatement subqueryStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
+
+
+        //SELECT
+        List<Selector> selectorList2 = new ArrayList<>();
+        selectorList2.add(new AsteriskSelector(new TableName(Constants.VIRTUAL_CATALOG_NAME,"t")));
+        SelectExpression selectExpression2 = new SelectExpression(selectorList2);
+        SelectStatement selectStatement = new SelectStatement(selectExpression2,new TableName(Constants.VIRTUAL_CATALOG_NAME,"t"));
+        selectStatement.setSubquery(subqueryStatement,"t");
+
+        SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        Normalizer normalizer = new Normalizer();
+
+        SelectValidatedQuery result = null;
+        try {
+            result = normalizer.normalize(selectParsedQuery);
+        } catch (ValidationException e) {
+            fail("Test failed: " + methodName + System.lineSeparator(), e);
+        }
+
+        assertTrue(result.toString().equalsIgnoreCase(expectedText),
+                        "Test failed: " + methodName + System.lineSeparator() +
+                                        "Result:   " + result.toString() + System.lineSeparator() +
+                                        "Expected: " + expectedText);
 
     }
 

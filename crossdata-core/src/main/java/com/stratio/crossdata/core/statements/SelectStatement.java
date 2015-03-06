@@ -367,7 +367,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         sb.append(" FROM ");
 
         if(subqueryInc){
-            sb.append("( ").append(subquery.toString()).append(" ) " ).append(subqueryAlias);
+            sb.append("( ").append(subquery.toString()).append(" ) AS " ).append(subqueryAlias);
         }else{
             if (catalogInc) {
                 sb.append(catalog).append(".");
