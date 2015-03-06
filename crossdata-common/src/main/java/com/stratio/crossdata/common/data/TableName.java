@@ -29,7 +29,7 @@ import com.stratio.crossdata.common.utils.Constants;
  */
 public class TableName extends Name {
 
-    private static final long serialVersionUID = -8396126000294795537L;
+    private static final long serialVersionUID = -1224192139573160759L;
     private final String name;
 
     private CatalogName catalogName;

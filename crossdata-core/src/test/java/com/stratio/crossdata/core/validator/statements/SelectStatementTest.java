@@ -35,6 +35,8 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
+import com.stratio.crossdata.common.exceptions.validation.AmbiguousNameException;
+import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
@@ -47,6 +49,7 @@ import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.parser.Parser;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.IValidatedQuery;
@@ -1506,5 +1509,91 @@ public class SelectStatementTest extends BasicValidatorTest {
         assertEquals(inputText, expectedText, "Invalid alias result");
 
     }*/
+
+
+    @Test
+    public void simpleSubqueryTest(){
+
+        String inputText = "SELECT * FROM ( SELECT demo.users.name AS n, demo.users.age FROM demo.users ) t WHERE n = 'name_1'";
+        String expectedText = "SELECT "+Constants.VIRTUAL_CATALOG_NAME+".t.n AS n, "+Constants.VIRTUAL_CATALOG_NAME+".t.age FROM ( SELECT demo.users.name AS n, demo.users.age FROM demo.users ) AS t " +
+                        "WHERE "+ Constants.VIRTUAL_CATALOG_NAME+".t.n = 'name_1'";
+
+        ColumnName n1 = new ColumnName("demo", "users", "name");
+        Selector selector1 = new ColumnSelector(n1);
+        selector1.setAlias("n");
+        Selector selector2 = new ColumnSelector(new ColumnName("demo", "users", "age"));
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+        TableName tablename = new TableName("demo", "users");
+        SelectStatement subquerySelectStatement = new SelectStatement(selectExpression, tablename);
+
+        List<Selector> selectorListSuperquery = new ArrayList<>();
+        selectorListSuperquery.add(new AsteriskSelector());
+        TableName virtualTable = new TableName(Constants.VIRTUAL_CATALOG_NAME, "t");
+        virtualTable.setAlias("t");
+        SelectStatement selectStatement = new SelectStatement(new SelectExpression(selectorListSuperquery), virtualTable);
+        selectStatement.setSubquery(subquerySelectStatement, "t");
+
+
+        List<Relation> where = new ArrayList<>();
+        Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
+        Selector rightWh = new StringSelector(new TableName("", ""), "name_1");
+        Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
+        where.add(relationWh);
+        selectStatement.setWhere(where);
+
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+
+    }
+
+    @Test
+    public void simpleSubqueryWithAmbiguousNameTest(){
+
+        String inputText = "SELECT * FROM ( SELECT demo.users.name , demo.users.age AS name FROM demo.users )'";
+
+        ColumnName n1 = new ColumnName("demo", "users", "name");
+        Selector selector1 = new ColumnSelector(n1);
+        Selector selector2 = new ColumnSelector(new ColumnName("demo", "users", "age"));
+        selector2.setAlias("name");
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+        TableName tablename = new TableName("demo", "users");
+        SelectStatement subquerySelectStatement = new SelectStatement(selectExpression, tablename);
+
+        List<Selector> selectorListSuperquery = new ArrayList<>();
+        selectorListSuperquery.add(new AsteriskSelector());
+        TableName virtualTable = new TableName(Constants.VIRTUAL_CATALOG_NAME, "t");
+        virtualTable.setAlias("t");
+        SelectStatement selectStatement = new SelectStatement(new SelectExpression(selectorListSuperquery), virtualTable);
+        selectStatement.setSubquery(subquerySelectStatement, "t");
+
+
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+        try {
+            validator.validate(parsedQuery);
+            fail("Duplicate names within the subquery should not be validated");
+        } catch (ValidationException | IgnoreQueryException e) {
+            Assert.assertTrue( e instanceof AmbiguousNameException);
+        }
+
+    }
+
 
 }
