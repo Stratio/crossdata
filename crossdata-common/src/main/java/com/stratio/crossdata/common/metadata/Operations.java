@@ -601,7 +601,12 @@ public enum Operations {
     /**
      * The engine supports cross joins.
      */
-    SELECT_CROSS_JOIN("SELECT_CROSS_JOIN");
+    SELECT_CROSS_JOIN("SELECT_CROSS_JOIN"),
+    /**
+     * The engine supports operations which refer to the result of previous queries by using aliases.
+     */
+    SELECT_SUBQUERY("SELECT_SUBQUERY");
+
 
     private String operationsStr;
 

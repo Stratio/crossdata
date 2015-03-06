@@ -45,6 +45,8 @@ options {
     import java.util.HashSet;
     import org.apache.commons.lang3.tuple.MutablePair;
     import com.stratio.crossdata.common.exceptions.*;
+    import com.stratio.crossdata.common.utils.Constants;
+    import java.util.UUID;
 }
 
 @members {
@@ -596,15 +598,14 @@ alterTableStatement returns [AlterTableStatement altast]
 selectStatement returns [SelectStatement slctst]
     @init{
         boolean windowInc = false;
-        boolean joinInc = false;
         boolean whereInc = false;
         boolean orderInc = false;
         boolean groupInc = false;
         boolean limitInc = false;
         Map fieldsAliasesMap = new LinkedHashMap<String, String>();
         Map tablesAliasesMap = new LinkedHashMap<String, String>();
-        MutablePair<String, String> pair = new MutablePair<>();
         boolean implicitJoin = false;
+        boolean subqueryInc = false;
         JoinType joinType=JoinType.INNER;
 
     }
@@ -612,14 +613,17 @@ selectStatement returns [SelectStatement slctst]
         slctst.setFieldsAliases(fieldsAliasesMap);
         slctst.setTablesAliases(tablesAliasesMap);
     }:
-    T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
+
+    T_SELECT selClause=getSelectExpression[fieldsAliasesMap]
+     T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_CATALOG_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
+            | tablename=getAliasedTableID[tablesAliasesMap])
+    (T_COMMA { implicitJoin = true;} identJoin=getAliasedTableID[tablesAliasesMap])?
     {$slctst = new SelectStatement(selClause, tablename);}
-    (T_COMMA { joinInc = true; implicitJoin = true;} identJoin=getAliasedTableID[tablesAliasesMap])?
+    (T_COMMA { implicitJoin = true;} identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     ((T_INNER {joinType=JoinType.INNER;}| T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}| T_RIGHT {joinType=JoinType
     .RIGHT;}| T_LEFT {joinType=JoinType.LEFT;} |T_LEFT T_OUTER {joinType=JoinType.LEFT_OUTER;}| T_FULL T_OUTER {joinType=JoinType
-    .FULL_OUTER;}| T_NATURAL {joinType=JoinType.NATURAL;} | T_CROSS {joinType=JoinType.CROSS;})? T_JOIN { joinInc
-    = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
+    .FULL_OUTER;}| T_NATURAL {joinType=JoinType.NATURAL;} | T_CROSS {joinType=JoinType.CROSS;})? T_JOIN identJoin=getAliasedTableID[tablesAliasesMap] T_ON
     joinRelations=getWhereClauses[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
     (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getWhereClauses[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
@@ -638,11 +642,27 @@ selectStatement returns [SelectStatement slctst]
              $slctst.setGroupByClause(new GroupByClause(groupByClause));
         if(limitInc)
              $slctst.setLimit(Integer.parseInt($constant.text));
+        if(subqueryInc)
+             $slctst.setSubquery(subquery, subqueryAlias);
         if(implicitJoin)
              $slctst.addJoin(new InnerJoin(identJoin, whereClauses));
 
     }
 ;
+
+getSubqueryAlias returns [String sAlias]
+   @init{
+        boolean aliasInc = false;
+   }
+   @after{
+        if(aliasInc)
+            $sAlias = $alias.text;
+        else
+            $sAlias = UUID.randomUUID().toString();
+   }:
+((T_AS)? alias=T_IDENT {aliasInc = true;})?
+;
+
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
     @init{

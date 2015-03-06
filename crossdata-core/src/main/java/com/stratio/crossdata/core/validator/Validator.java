@@ -175,8 +175,10 @@ public class Validator {
                 break;
             case PAGINATION_SUPPORT:
                 validatePaginationSupport(parsedQuery.getStatement());
+                break;
             case VALIDATE_PRIORITY:
                 validatePriority(parsedQuery.getStatement());
+                break;
             case VALIDATE_SCOPE:
                 validateScope(parsedQuery.getStatement());
                 break;
@@ -193,17 +195,29 @@ public class Validator {
             validatedQuery = new StorageValidatedQuery((StorageParsedQuery) parsedQuery);
             ((StorageValidatedQuery) validatedQuery).setSqlQuery(parsedQuery.getStatement().toString());
         } else if (parsedQuery instanceof SelectParsedQuery) {
-            validatedQuery = new SelectValidatedQuery((SelectParsedQuery) parsedQuery);
-            NormalizedFields fields = normalizator.getFields();
-            ((SelectValidatedQuery) validatedQuery).setTableMetadata(fields.getTablesMetadata());
-            ((SelectValidatedQuery) validatedQuery).getColumns().addAll(fields.getColumnNames());
-            ((SelectValidatedQuery) validatedQuery).getTables().addAll(fields.getTableNames());
-            ((SelectValidatedQuery) validatedQuery).getRelations().addAll(fields.getWhere());
-            ((SelectValidatedQuery) validatedQuery).setJoinList(fields.getJoinList());
-            ((SelectValidatedQuery) validatedQuery).setSqlQuery(parsedQuery.getStatement().toString());
+            validatedQuery = createValidatedQuery(normalizator, ((SelectParsedQuery) parsedQuery));
         }
 
         return validatedQuery;
+    }
+
+    private SelectValidatedQuery createValidatedQuery(Normalizator normalizer,SelectParsedQuery selectParsedQuery) {
+
+        SelectValidatedQuery partialValidatedQuery = new SelectValidatedQuery(selectParsedQuery);
+        NormalizedFields fields = normalizer.getFields();
+
+        //Prepare nextQuery
+        if(selectParsedQuery.getChildParsedQuery() != null) {
+            partialValidatedQuery.setSubqueryValidatedQuery(createValidatedQuery(normalizer.getSubqueryNormalizator(),selectParsedQuery.getChildParsedQuery()));
+        }
+
+        partialValidatedQuery.setTableMetadata(fields.getTablesMetadata());
+        partialValidatedQuery.getColumns().addAll(fields.getColumnNames());
+        partialValidatedQuery.getTables().addAll(fields.getTableNames());
+        partialValidatedQuery.getRelations().addAll(fields.getWhere());
+        partialValidatedQuery.setJoinList(fields.getJoinList());
+
+        return  partialValidatedQuery;
     }
 
     private void validateNotExistLuceneIndex(CrossdataStatement statement) throws ExistLuceneIndexException {
@@ -218,6 +232,7 @@ public class Validator {
             }
         }
     }
+
 
 
     private void validatePaginationSupport(CrossdataStatement crossdataStatement) throws BadFormatException {
@@ -331,7 +346,7 @@ public class Validator {
         }
     }
 
-    private void validateSelect(IParsedQuery parsedQuery) throws ValidationException {
+    private void  validateSelect(IParsedQuery parsedQuery) throws ValidationException {
         SelectParsedQuery selectParsedQuery = (SelectParsedQuery) parsedQuery;
         normalizator = new Normalizator(selectParsedQuery);
         normalizator.execute();
