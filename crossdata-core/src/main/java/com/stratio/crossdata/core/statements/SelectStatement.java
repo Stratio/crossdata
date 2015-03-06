@@ -346,6 +346,20 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     @Override
     public String toString() {
+        return toString(false);
+    }
+
+
+    /**
+     * Creates a String representing the Statement with SQL_92 syntax.
+     *
+     * @return String
+     */
+    public String toSQLString() {
+      return toString(true);
+    }
+
+    private String toString(boolean withSQLSyntax){
         StringBuilder sb = new StringBuilder("SELECT ");
         if (selectExpression != null) {
             sb.append(selectExpression.toString());
@@ -361,13 +375,13 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(tableName);
         }
 
-        if (windowInc) {
+        if (!withSQLSyntax && windowInc) {
             sb.append(" WITH WINDOW ").append(window.toString());
         }
         if (joinInc) {
             for (InnerJoin myJoin:joinList) {
                 sb.append(" ").append(myJoin.getType().toString().replace("_"," ")).append(" JOIN ").append(myJoin
-                        .toString());
+                                .toString());
             }
         }
         if (whereInc) {
@@ -383,18 +397,9 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         if (limitInc) {
             sb.append(" LIMIT ").append(limit);
         }
+        String strSelectStatement = sb.toString().replaceAll("  ", " ");
 
-        return sb.toString().replaceAll("  ", " ").replaceAll(Constants.VIRTUAL_CATALOG_NAME+"\\.", "");
-    }
-
-
-    /**
-     * Creates a String representing the Statement with SQL_92 syntax.
-     *
-     * @return String
-     */
-    public String toSQLString() {
-      return toString();
+        return (withSQLSyntax) ? strSelectStatement.replaceAll(Constants.VIRTUAL_CATALOG_NAME+"\\.", "") : strSelectStatement;
     }
 
     @Override
