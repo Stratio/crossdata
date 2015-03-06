@@ -1648,13 +1648,41 @@ public class Planner {
     private Map<String, LogicalStep> addJoin(Map<String, LogicalStep> stepMap, String targetTable,
                     SelectValidatedQuery query) {
 
+        List<Join> innerJoins=new ArrayList<>();
+        List<Join> leftOuterJoins=new ArrayList<>();
+        List<Join> rightOuterJoins=new ArrayList<>();
+        List<Join> fullOuterJoins=new ArrayList<>();
+        List<Join> crossJoins=new ArrayList<>();
+
         Join j = new Join(Operations.SELECT_INNER_JOIN, "MultiJoin");
         StringBuilder sb = new StringBuilder(targetTable);
         for(InnerJoin queryJoin: query.getJoinList()) {
+
             j.addSourceIdentifier(targetTable);
             j.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
             j.addJoinRelations(queryJoin.getOrderedRelations());
             sb.append("$").append(queryJoin.getTablename().getQualifiedName());
+            /*
+            switch (queryJoin.getType()){
+            case CROSS:
+                crossJoins.add(j);
+                break;
+            case LEFT:
+            case LEFT_OUTER:
+                leftOuterJoins.add(j);
+                break;
+            case FULL_OUTER:
+                fullOuterJoins.add(j);
+                break;
+            case RIGHT:
+            case RIGHT_OUTER:
+                rightOuterJoins.add(j);
+                break;
+            default:
+                innerJoins.add(j);
+
+            }*/
+
             //Attach to input tables path
             LogicalStep t1 = stepMap.get(targetTable);
             LogicalStep t2 = stepMap.get(queryJoin.getTablename().getQualifiedName());
