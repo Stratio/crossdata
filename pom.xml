@@ -95,6 +95,7 @@
         <module>crossdata-connector</module>
         <module>crossdata-connector-maven-plugin</module>
         <module>crossdata-connector-inmemory</module>
+        <module>crossdata-client-examples</module>
     </modules>
     <properties>
         <scala.version>2.10.4</scala.version>
