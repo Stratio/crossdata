@@ -621,9 +621,14 @@ selectStatement returns [SelectStatement slctst]
     {$slctst = new SelectStatement(selClause, tablename);}
     (T_COMMA { implicitJoin = true;} identJoin=getAliasedTableID[tablesAliasesMap])?
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
-    ((T_INNER {joinType=JoinType.INNER;}| T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}| T_RIGHT {joinType=JoinType
-    .RIGHT;}| T_LEFT {joinType=JoinType.LEFT;} |T_LEFT T_OUTER {joinType=JoinType.LEFT_OUTER;}| T_FULL T_OUTER {joinType=JoinType
-    .FULL_OUTER;}| T_NATURAL {joinType=JoinType.NATURAL;} | T_CROSS {joinType=JoinType.CROSS;})? T_JOIN identJoin=getAliasedTableID[tablesAliasesMap] T_ON
+    ((T_INNER {joinType=JoinType.INNER;}
+        | T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}
+        | T_RIGHT {joinType=JoinType.RIGHT_OUTER;}
+        | T_LEFT {joinType=JoinType.LEFT_OUTER;}
+        | T_LEFT T_OUTER {joinType=JoinType.LEFT_OUTER;}
+        | T_FULL T_OUTER {joinType=JoinType.FULL_OUTER;}
+        | T_CROSS {joinType=JoinType.CROSS;})?
+    T_JOIN identJoin=getAliasedTableID[tablesAliasesMap] T_ON
     joinRelations=getWhereClauses[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
     (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getWhereClauses[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?

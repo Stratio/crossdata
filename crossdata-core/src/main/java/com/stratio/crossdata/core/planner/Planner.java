@@ -40,6 +40,7 @@ import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.IndexName;
+import com.stratio.crossdata.common.data.JoinType;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
@@ -1703,50 +1704,77 @@ public class Planner {
      */
     private Map<String, LogicalStep> addJoin(Map<String, LogicalStep> stepMap, String targetTable,
                     SelectValidatedQuery query) {
+        
 
-        List<Join> innerJoins=new ArrayList<>();
-        List<Join> leftOuterJoins=new ArrayList<>();
-        List<Join> rightOuterJoins=new ArrayList<>();
-        List<Join> fullOuterJoins=new ArrayList<>();
-        List<Join> crossJoins=new ArrayList<>();
-
-        Join j = new Join(Operations.SELECT_INNER_JOIN, "MultiJoin");
+        Join innerJoin = new Join(Operations.SELECT_INNER_JOIN, "innerJoin");
+        Join leftJoin = new Join(Operations.SELECT_LEFT_OUTER_JOIN, "leftJoin");
+        Join rightJoin = new Join(Operations.SELECT_RIGHT_OUTER_JOIN, "rightJoin");
+        Join fullOuterJoin = new Join(Operations.SELECT_FULL_OUTER_JOIN, "fullOuterJoin");
+        Join crossJoin = new Join(Operations.SELECT_CROSS_JOIN, "crossJoin");
         StringBuilder sb = new StringBuilder(targetTable);
+
+        String lastTargetTable=targetTable;
         for(InnerJoin queryJoin: query.getJoinList()) {
-
-            j.addSourceIdentifier(targetTable);
-            j.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
-            j.addJoinRelations(queryJoin.getOrderedRelations());
             sb.append("$").append(queryJoin.getTablename().getQualifiedName());
-            /*
-            switch (queryJoin.getType()){
-            case CROSS:
-                crossJoins.add(j);
-                break;
-            case LEFT:
-            case LEFT_OUTER:
-                leftOuterJoins.add(j);
-                break;
-            case FULL_OUTER:
-                fullOuterJoins.add(j);
-                break;
-            case RIGHT:
-            case RIGHT_OUTER:
-                rightOuterJoins.add(j);
-                break;
-            default:
-                innerJoins.add(j);
-
-            }*/
 
             //Attach to input tables path
             LogicalStep t1 = stepMap.get(targetTable);
             LogicalStep t2 = stepMap.get(queryJoin.getTablename().getQualifiedName());
-            t1.setNextStep(j);
-            t2.setNextStep(j);
-            j.addPreviousSteps(t1, t2);
+
+            switch (queryJoin.getType()){
+            case INNER:
+                innerJoin.setType(JoinType.INNER);
+                innerJoin.addSourceIdentifier(lastTargetTable);
+                innerJoin.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+                innerJoin.addJoinRelations(queryJoin.getOrderedRelations());
+                t1.setNextStep(innerJoin);
+                t2.setNextStep(innerJoin);
+                innerJoin.addPreviousSteps(t1,t2);
+                stepMap.put(sb.toString(), innerJoin);
+                break;
+            case CROSS:
+                crossJoin.setType(JoinType.CROSS);
+                crossJoin.addSourceIdentifier(lastTargetTable);
+                crossJoin.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+                crossJoin.addJoinRelations(queryJoin.getOrderedRelations());
+                t1.setNextStep(crossJoin);
+                t2.setNextStep(crossJoin);
+                crossJoin.addPreviousSteps(t1,t2);
+                stepMap.put(sb.toString(), crossJoin);
+                break;
+            case LEFT_OUTER:
+                leftJoin.setType(JoinType.LEFT_OUTER);
+                leftJoin.addSourceIdentifier(lastTargetTable);
+                leftJoin.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+                leftJoin.addJoinRelations(queryJoin.getOrderedRelations());
+                t1.setNextStep(leftJoin);
+                t2.setNextStep(leftJoin);
+                leftJoin.addPreviousSteps(t1,t2);
+                stepMap.put(sb.toString(), leftJoin);
+                break;
+            case FULL_OUTER:
+                fullOuterJoin.setType(JoinType.FULL_OUTER);
+                fullOuterJoin.addSourceIdentifier(lastTargetTable);
+                fullOuterJoin.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+                fullOuterJoin.addJoinRelations(queryJoin.getOrderedRelations());
+                t1.setNextStep(fullOuterJoin);
+                t2.setNextStep(fullOuterJoin);
+                fullOuterJoin.addPreviousSteps(t1,t2);
+                stepMap.put(sb.toString(), fullOuterJoin);
+                break;
+            case RIGHT_OUTER:
+                rightJoin.setType(JoinType.RIGHT_OUTER);
+                rightJoin.addSourceIdentifier(lastTargetTable);
+                rightJoin.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+                rightJoin.addJoinRelations(queryJoin.getOrderedRelations());
+                t1.setNextStep(rightJoin);
+                t2.setNextStep(rightJoin);
+                rightJoin.addPreviousSteps(t1,t2);
+                stepMap.put(sb.toString(), rightJoin);
+                break;
+            }
+            lastTargetTable=queryJoin.getTablename().getQualifiedName();
         }
-        stepMap.put(sb.toString(), j);
         return stepMap;
     }
 
