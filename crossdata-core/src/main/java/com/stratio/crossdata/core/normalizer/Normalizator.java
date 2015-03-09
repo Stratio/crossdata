@@ -211,7 +211,7 @@ public class Normalizator {
         if(allJoins != null){
             for(Pair<List<InnerJoin>, List<TableName>> pair: allJoins){
                 List<InnerJoin> innerJoinList =  pair.getLeft();
-                fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
+                //fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
                 if (!innerJoinList.isEmpty()) {
                     for(InnerJoin innerJoin: innerJoinList) {
                         normalizeJoins(innerJoin);
@@ -220,7 +220,7 @@ public class Normalizator {
                 }
             }
         }
-        fields.setPreferredTableNames(new HashSet<TableName>());
+        //fields.setPreferredTableNames(new HashSet<TableName>());
     }
 
     /**
@@ -269,14 +269,14 @@ public class Normalizator {
         if(allOrderByClauses != null){
             for(Pair<List<OrderByClause>, List<TableName>> pair: allOrderByClauses){
                 List<OrderByClause> orderByClauses = pair.getLeft();
-                fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
+                //fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
                 if (orderByClauses != null) {
                     normalizeOrderBy(orderByClauses);
                     fields.setOrderByClauses(orderByClauses);
                 }
             }
         }
-        fields.setPreferredTableNames(new HashSet<TableName>());
+        //fields.setPreferredTableNames(new HashSet<TableName>());
     }
 
     /**
@@ -350,14 +350,14 @@ public class Normalizator {
         if(allGroupByClauses != null){
             for(Pair<GroupByClause, List<TableName>> pair: allGroupByClauses){
                 GroupByClause groupByClause = pair.getLeft();
-                fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
+                //fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
                 if (groupByClause != null) {
                     normalizeGroupBy(groupByClause);
                     fields.setGroupByClause(groupByClause);
                 }
             }
         }
-        fields.setPreferredTableNames(new HashSet<TableName>());
+        //fields.setPreferredTableNames(new HashSet<TableName>());
     }
 
     private void checkFormatBySelectorIdentifier(Selector selector, Set<ColumnName> columnNames)

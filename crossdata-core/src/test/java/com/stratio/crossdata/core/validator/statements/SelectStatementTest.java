@@ -115,8 +115,8 @@ public class SelectStatementTest extends BasicValidatorTest {
     public void validateSelectsInWhereClauses() {
         String query = "SELECT age, email FROM users " +
                 "WHERE age = 25 * 3 + (SELECT * FROM test.table1) - phrase + (SELECT rating FROM test.table2)" +
-                " AND email = 25*(SELECT member FROM table3)+(SELECT name, address FROM table3" +
-                " WHERE address = (SELECT * FROM sales.customers) + age);";
+                " AND email = 25*(SELECT member FROM table3)" +
+                "               +(SELECT name, address FROM table3 WHERE address=(SELECT * FROM sales.customers)+age);";
 
         BaseQuery baseQuery = new BaseQuery("validateSelectsInWhereClauses", query, new CatalogName("demo"));
 
