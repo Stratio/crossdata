@@ -624,7 +624,7 @@ public class Planner {
 
         List<LogicalStep> initialSteps = new ArrayList<>();
 
-        Map<String, TableMetadata> tableMetadataMap = new HashMap<>();
+        Map<String, TableMetadata> tableMetadataMap = new LinkedHashMap<>();
         for (TableMetadata tm : query.getTableMetadata()) {
             tableMetadataMap.put(tm.getName().getQualifiedName(), tm);
         }
@@ -648,7 +648,7 @@ public class Planner {
 
         //Add join
         if (!query.getJoinList().isEmpty()) {
-            processed = addJoin(processed, selectTable, query);
+            processed = addJoin((LinkedHashMap)processed, selectTable, query);
         }
 
         //Prepare the result.
@@ -666,7 +666,7 @@ public class Planner {
             }
         }
 
-        //Include Select step for join queries
+        //Include previous Select step for join queries
         boolean firstPath = true;
         for (LogicalStep initialStep : initialSteps) {
             LogicalStep step = initialStep;
@@ -681,7 +681,7 @@ public class Planner {
                 // Create Select step here
                 UnionStep unionStep = (UnionStep) step;
                 //Store all the project steps
-                Map<String, TableMetadata> partialTableMetadataMap = new HashMap<>();
+                Map<String, TableMetadata> partialTableMetadataMap = new LinkedHashMap<>();
                 for (String key : tableMetadataMap.keySet()) {
                     if (Project.class.isInstance(initialStep)) {
                         Project projectStep = (Project) initialStep;
@@ -690,6 +690,27 @@ public class Planner {
                             break;
                         }
                     }
+                }
+
+                if(unionStep.getNextStep()==null) {
+                    List<Selector> selectorJoinList = new ArrayList<>();
+                    Map<String, TableMetadata> joinTableMetadataMap = new HashMap<>();
+                    TableName tableName = new TableName("", "");
+                    for (String s : ((Join) unionStep).getSourceIdentifiers()) {
+                        joinTableMetadataMap.put(s, tableMetadataMap.get(s));
+                        List<LogicalStep> projects = unionStep.getPreviousSteps();
+                        for (LogicalStep ls : projects) {
+                            List<ColumnName> columnsFromProject = ((Project) ls).getColumnList();
+                            for (ColumnName col : columnsFromProject) {
+                                selectorJoinList.add(new ColumnSelector(col));
+                            }
+                        }
+                        tableName = tableMetadataMap.get(s).getName();
+                    }
+                    SelectStatement joinNextSelect = new SelectStatement(new SelectExpression(selectorJoinList),
+                            tableName);
+                    Select joinSelect = generateSelect(joinNextSelect, joinTableMetadataMap);
+                    unionStep.setNextStep(joinSelect);
                 }
 
                 // Generate a list of fake Select for Join Table
@@ -716,8 +737,8 @@ public class Planner {
                                }
                            }
                            SelectExpression selectExpression = new SelectExpression(selectorList);
-                           TableName tableName = innerJoin.getTablename();
-                           partialSelectList.add(new SelectStatement(selectExpression, tableName));
+                           TableName tableNameJoin = innerJoin.getTablename();
+                           partialSelectList.add(new SelectStatement(selectExpression, tableNameJoin));
                        } else {
                            List<Selector> selectorList = new ArrayList<>();
                            Project currentProject = (Project) initialStep;
@@ -729,6 +750,7 @@ public class Planner {
                                    ss.getTableName()));
 
                        }
+
                    }
                 }else{
                     List<Selector> selectorList = new ArrayList<>();
@@ -759,6 +781,8 @@ public class Planner {
                     previousStepsToUnion.add(selectStep);
                     unionStep.setPreviousSteps(previousStepsToUnion);
                 }
+
+
             }
         }
 
@@ -1702,7 +1726,7 @@ public class Planner {
      * @param query       The query.
      * @return The resulting map of logical steps.
      */
-    private Map<String, LogicalStep> addJoin(Map<String, LogicalStep> stepMap, String targetTable,
+    private Map<String, LogicalStep> addJoin(LinkedHashMap<String, LogicalStep> stepMap, String targetTable,
                     SelectValidatedQuery query) {
         
 
@@ -1711,31 +1735,42 @@ public class Planner {
         Join rightJoin = new Join(Operations.SELECT_RIGHT_OUTER_JOIN, "rightJoin");
         Join fullOuterJoin = new Join(Operations.SELECT_FULL_OUTER_JOIN, "fullOuterJoin");
         Join crossJoin = new Join(Operations.SELECT_CROSS_JOIN, "crossJoin");
-        StringBuilder sb = new StringBuilder(targetTable);
 
-        String lastTargetTable=targetTable;
         for(InnerJoin queryJoin: query.getJoinList()) {
-            sb.append("$").append(queryJoin.getTablename().getQualifiedName());
+            StringBuilder sb = new StringBuilder();
+            sb.append(queryJoin.getRelations().get(0).getLeftTerm().getTableName().getQualifiedName
+                    ()).append("$").append(queryJoin.getRelations().get(0).getRightTerm().getTableName()
+                    .getQualifiedName
+                            ());
 
             //Attach to input tables path
-            LogicalStep t1 = stepMap.get(targetTable);
-            LogicalStep t2 = stepMap.get(queryJoin.getTablename().getQualifiedName());
-
+            LogicalStep t1 = stepMap.get(queryJoin.getRelations().get(0).getLeftTerm().getTableName().getQualifiedName
+                    ());
+            LogicalStep t2 = stepMap.get(queryJoin.getRelations().get(0).getRightTerm().getTableName().getQualifiedName());
+            List<Relation> relations;
             switch (queryJoin.getType()){
             case INNER:
                 innerJoin.setType(JoinType.INNER);
-                innerJoin.addSourceIdentifier(lastTargetTable);
-                innerJoin.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+                relations=queryJoin.getRelations();
+                for (Relation r:relations){
+                    innerJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    innerJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
+                }
                 innerJoin.addJoinRelations(queryJoin.getOrderedRelations());
-                t1.setNextStep(innerJoin);
-                t2.setNextStep(innerJoin);
-                innerJoin.addPreviousSteps(t1,t2);
+                LogicalStep ijls1=t1;
+                LogicalStep ijls2=t2;
+                ijls1.setNextStep(innerJoin);
+                ijls2.setNextStep(innerJoin);
+                innerJoin.addPreviousSteps(ijls1,ijls2);
                 stepMap.put(sb.toString(), innerJoin);
                 break;
             case CROSS:
                 crossJoin.setType(JoinType.CROSS);
-                crossJoin.addSourceIdentifier(lastTargetTable);
-                crossJoin.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+                relations=queryJoin.getRelations();
+                for (Relation r:relations){
+                    crossJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    crossJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
+                }
                 crossJoin.addJoinRelations(queryJoin.getOrderedRelations());
                 t1.setNextStep(crossJoin);
                 t2.setNextStep(crossJoin);
@@ -1744,8 +1779,12 @@ public class Planner {
                 break;
             case LEFT_OUTER:
                 leftJoin.setType(JoinType.LEFT_OUTER);
-                leftJoin.addSourceIdentifier(lastTargetTable);
-                leftJoin.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+                relations=queryJoin.getRelations();
+                for (Relation r:relations){
+                    leftJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    leftJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
+                }
+
                 leftJoin.addJoinRelations(queryJoin.getOrderedRelations());
                 t1.setNextStep(leftJoin);
                 t2.setNextStep(leftJoin);
@@ -1754,8 +1793,12 @@ public class Planner {
                 break;
             case FULL_OUTER:
                 fullOuterJoin.setType(JoinType.FULL_OUTER);
-                fullOuterJoin.addSourceIdentifier(lastTargetTable);
-                fullOuterJoin.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+                relations=queryJoin.getRelations();
+                for (Relation r:relations){
+                    fullOuterJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    fullOuterJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
+                }
+
                 fullOuterJoin.addJoinRelations(queryJoin.getOrderedRelations());
                 t1.setNextStep(fullOuterJoin);
                 t2.setNextStep(fullOuterJoin);
@@ -1764,8 +1807,11 @@ public class Planner {
                 break;
             case RIGHT_OUTER:
                 rightJoin.setType(JoinType.RIGHT_OUTER);
-                rightJoin.addSourceIdentifier(lastTargetTable);
-                rightJoin.addSourceIdentifier(queryJoin.getTablename().getQualifiedName());
+                relations=queryJoin.getRelations();
+                for (Relation r:relations){
+                    rightJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    rightJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
+                }
                 rightJoin.addJoinRelations(queryJoin.getOrderedRelations());
                 t1.setNextStep(rightJoin);
                 t2.setNextStep(rightJoin);
@@ -1773,7 +1819,7 @@ public class Planner {
                 stepMap.put(sb.toString(), rightJoin);
                 break;
             }
-            lastTargetTable=queryJoin.getTablename().getQualifiedName();
+
         }
         return stepMap;
     }
@@ -1788,7 +1834,7 @@ public class Planner {
     protected Map<String, LogicalStep> getProjects(SelectValidatedQuery query,
                     Map<String, TableMetadata> tableMetadataMap) {
 
-        Map<String, LogicalStep> projects = new HashMap<>();
+        Map<String, LogicalStep> projects = new LinkedHashMap<>();
         for (TableName tn : query.getTables()) {
             Project p;
             if (tn.isVirtual()) {
