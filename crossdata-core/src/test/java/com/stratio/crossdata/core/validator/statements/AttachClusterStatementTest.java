@@ -135,7 +135,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             fail("Execution should have failed because comment options is not in the manifest");
         } catch (ValidationException e) {
             String errorMsg = System.lineSeparator() +
-                    "Expected: Some properties are not found in the datastore manifest" + System.lineSeparator() +
+                    "Expected: Some properties are not found in the manifest" + System.lineSeparator() +
                     "   Found: " + e.getMessage().trim();
             assertTrue(e.getMessage().trim().equalsIgnoreCase("Some properties are not found in the manifest"),
                     errorMsg);
