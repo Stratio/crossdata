@@ -583,7 +583,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
     /**
      * Get the subquery of the statement.
-     * @return the inner select statemnet.
+     * @return the inner select statement.
      */
     public SelectStatement getSubquery() {
         return subquery;

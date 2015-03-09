@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.ColumnName;
@@ -207,6 +206,14 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeJoins() throws ValidationException {
+        List<InnerJoin> innerJoinList =  parsedQuery.getStatement().getJoinList();
+        if (!innerJoinList.isEmpty()) {
+            for(InnerJoin innerJoin: innerJoinList) {
+                normalizeJoins(innerJoin);
+                fields.addJoin(innerJoin);
+            }
+        }
+        /*
         List<Pair> allJoins = parsedQuery.getStatement().getAllJoins();
         if(allJoins != null){
             for(Pair<List<InnerJoin>, List<TableName>> pair: allJoins){
@@ -221,6 +228,7 @@ public class Normalizator {
             }
         }
         //fields.setPreferredTableNames(new HashSet<TableName>());
+        */
     }
 
     /**
@@ -265,6 +273,12 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeOrderBy() throws ValidationException {
+        List<OrderByClause> orderByClauseClauses = parsedQuery.getStatement().getOrderByClauses();
+        if (orderByClauseClauses != null) {
+            normalizeOrderBy(orderByClauseClauses);
+            fields.setOrderByClauses(orderByClauseClauses);
+        }
+        /*
         List<Pair> allOrderByClauses = parsedQuery.getStatement().getAllOrderByClauses();
         if(allOrderByClauses != null){
             for(Pair<List<OrderByClause>, List<TableName>> pair: allOrderByClauses){
@@ -277,6 +291,7 @@ public class Normalizator {
             }
         }
         //fields.setPreferredTableNames(new HashSet<TableName>());
+        */
     }
 
     /**
@@ -346,6 +361,12 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeGroupBy() throws ValidationException {
+        GroupByClause groupByClause = parsedQuery.getStatement().getGroupByClause();
+        if (groupByClause != null) {
+            normalizeGroupBy(groupByClause);
+            fields.setGroupByClause(groupByClause);
+        }
+        /*
         List<Pair> allGroupByClauses = parsedQuery.getStatement().getAllGroupByClauses();
         if(allGroupByClauses != null){
             for(Pair<GroupByClause, List<TableName>> pair: allGroupByClauses){
@@ -358,6 +379,7 @@ public class Normalizator {
             }
         }
         //fields.setPreferredTableNames(new HashSet<TableName>());
+        */
     }
 
     private void checkFormatBySelectorIdentifier(Selector selector, Set<ColumnName> columnNames)
