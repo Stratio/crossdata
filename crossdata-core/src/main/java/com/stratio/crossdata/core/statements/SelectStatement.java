@@ -288,8 +288,8 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
     public List<Pair> getAllWhereClauses(){
         List<Pair> whereClauses = new ArrayList<>();
-        whereClauses.add(new ImmutablePair(getWhere(), getFromTables()));
         if((where != null) && (!where.isEmpty())){
+            whereClauses.add(new ImmutablePair(getWhere(), getFromTables()));
             for(Relation relation: where){
                 Selector rightTerm = relation.getRightTerm();
                 if(rightTerm instanceof ExtendedSelectSelector){

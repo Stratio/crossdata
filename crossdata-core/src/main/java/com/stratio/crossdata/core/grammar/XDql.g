@@ -919,7 +919,7 @@ getSelector[TableName tablename] returns [Selector sel]
     }:
     (
         T_START_PARENTHESIS
-            selectStmnt=selectStatement { firstSelector = new ExtendedSelectSelector(selectStmnt); }
+            selectStmnt=selectStatement { firstSelector = new ExtendedSelectSelector(selectStmnt, sessionCatalog); }
         T_END_PARENTHESIS
     |
         functionName=getFunctionName

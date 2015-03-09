@@ -18,23 +18,47 @@
 
 package com.stratio.crossdata.core.structures;
 
+import java.util.UUID;
+
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.statements.structures.SelectSelector;
+import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.SelectParsedQuery;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 
 public class ExtendedSelectSelector extends SelectSelector {
 
-    private SelectStatement selectStatement;
+    private SelectParsedQuery selectParsedQuery;
 
-    public ExtendedSelectSelector(SelectStatement selectStatement) {
+    private SelectValidatedQuery selectValidatedQuery;
+
+    public ExtendedSelectSelector(SelectStatement selectStatement, String sessionCatalog) {
         super(selectStatement.getTableName(), selectStatement.toString());
-        this.selectStatement = selectStatement;
+        this.selectParsedQuery = new SelectParsedQuery(
+                new BaseQuery(
+                        UUID.randomUUID().toString(),
+                        selectStatement.toString().replaceAll(Name.UNKNOWN_NAME+".", ""),
+                        new CatalogName(sessionCatalog)),
+                selectStatement);
     }
+
 
     public SelectStatement getSelectStatement() {
-        return selectStatement;
+        return selectParsedQuery.getStatement();
     }
 
-    public void setSelectStatement(SelectStatement selectStatement) {
-        this.selectStatement = selectStatement;
+    public SelectParsedQuery getSelectParsedQuery() {
+        return selectParsedQuery;
     }
+
+    public SelectValidatedQuery getSelectValidatedQuery() {
+        return selectValidatedQuery;
+    }
+
+    public void setSelectValidatedQuery(SelectValidatedQuery selectValidatedQuery) {
+        this.selectValidatedQuery = selectValidatedQuery;
+    }
+
 }
