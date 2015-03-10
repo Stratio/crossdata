@@ -25,7 +25,7 @@ import akka.cluster.{MemberStatus, Cluster}
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
 import com.stratio.crossdata.common.result.{ConnectResult, DisconnectResult, Result}
-import com.stratio.crossdata.communication.{reroutedCommand, reroutedQuery, Disconnect}
+import com.stratio.crossdata.communication.{ReroutedCommand, ReroutedQuery, Disconnect}
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
@@ -65,25 +65,20 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
   def reroute(message: Command): Unit ={
     val reroutee = chooseReroutee()
     logger.info("reroutee=" + reroutee)
-    context.actorSelection(reroutee) ! reroutedCommand(message)
+    context.actorSelection(reroutee) ! ReroutedCommand(message)
   }
   def reroute(message: Query): Unit ={
     val reroutee = chooseReroutee()
     logger.info("reroutee=" + reroutee)
-    context.actorSelection(reroutee) ! reroutedQuery(message)
+    context.actorSelection(reroutee) ! ReroutedQuery(message)
   }
 
   def receive : Receive= {
-    /*
-    case keepalive:IAmAlive =>{
-          //logger.debug("receiving keepalive message from "+sender)
-    }
-    */
     case query: Query =>{
       logger.info("Query rerouted " + query.statement.toString)
       reroute(query)
     } 
-    case reroutedQuery(query)=> {
+    case ReroutedQuery(query)=> {
       logger.info("query: " + query + " sender: " + sender.path.address)
       parserActorRef forward query
     }
@@ -99,7 +94,7 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
       logger.info("API Command call rerouted " + cmd.commandType)
       reroute(cmd)
     }
-    case reroutedCommand(cmd) => {
+    case ReroutedCommand(cmd) => {
       logger.info("API Command call " + cmd.commandType)
       APIActorRef forward cmd
     }

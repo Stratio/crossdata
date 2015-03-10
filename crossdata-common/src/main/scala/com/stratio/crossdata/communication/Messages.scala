@@ -39,10 +39,10 @@ import com.stratio.crossdata.common.statements.structures.{Relation, Selector}
 class Operation(val queryId: String) extends Serializable
 
 @SerialVersionUID(-4855628367894852859L)
-case class reroutedQuery(msg:Query)
+case class ReroutedQuery(msg:Query) extends Serializable
 
 @SerialVersionUID(-4875628367874857859L)
-case class reroutedCommand(msg:Command)
+case class ReroutedCommand(msg:Command) extends Serializable
 
 @SerialVersionUID(-4155622367894752659L)
 case class ACK(queryId: String, status: QueryStatus) extends Serializable
