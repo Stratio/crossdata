@@ -32,6 +32,7 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
@@ -238,10 +239,14 @@ public class NormalizedFields {
      * @return A list of {@link com.stratio.crossdata.common.metadata.TableMetadata}.
      */
     public List<TableMetadata> getTablesMetadata() {
-        //recover all Metadata about a tableName
-        for (TableName tableName : tableNames) {
-            tablesMetadata.add(MetadataManager.MANAGER.getTable(tableName));
-        }
+
+            //recover all Metadata about a tableName
+            for (TableName tableName : tableNames) {
+                if(!tableName.isVirtual()) {
+                    tablesMetadata.add(MetadataManager.MANAGER.getTable(tableName));
+                }
+            }
+
         return tablesMetadata;
     }
 

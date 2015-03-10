@@ -18,30 +18,21 @@
 
 package com.stratio.crossdata.common.exceptions.validation;
 
-import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 
 /**
- * Exception class thrown when a column name has an ambiguous name in validation phase.
+ * ExistLuceneIndex class exception thrown when exists a Lucene index for a table .
  */
-public class AmbiguousNameException extends ValidationException {
+public class ExistLuceneIndexException extends ValidationException {
 
-    private static final long serialVersionUID = 4317649750806406160L;
+    private static final long serialVersionUID = 400679530936713775L;
 
     /**
      * Constructor class.
-     * @param columnName The column name affected.
+     * @param name The name of the table.
      */
-    public AmbiguousNameException(ColumnName columnName) {
-        super("COLUMN name [" + columnName + "] is ambiguous");
+    public ExistLuceneIndexException(Name name) {
+        super("Other Lucene Index exists for table:" + name  );
     }
-
-    /**
-     * Constructor with an explicit message.
-     * @param message The message.
-     */
-    public AmbiguousNameException(String message) {
-        super(message);
-    }
-
 }

@@ -374,7 +374,9 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     logger.info("Processing exception for async query: " + queryId)
     val source = runningJobs.get(queryId).get
     if(source != None) {
-      source ! Result.createErrorResult(exception)
+      val res = Result.createErrorResult(exception)
+      res.setQueryId(queryId)
+      source ! res
     }else{
       logger.error("Exception for query " + queryId + " cannot be sent", exception)
     }

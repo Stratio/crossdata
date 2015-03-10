@@ -582,4 +582,12 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatementSession("demo", inputText, expectedText, "testJoinAndStreaming");
     }
 
+
+    @Test
+    public void selectSubquery() {
+        String inputText = "SELECT * FROM ( SELECT * FROM test.table1 ) t;";
+        String expectedText = "SELECT * FROM ( SELECT * FROM test.table1 ) AS t;";
+        testRegularStatement(inputText, expectedText, "basicSelectDoubleColumn");
+    }
+
 }

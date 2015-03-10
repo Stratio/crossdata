@@ -30,7 +30,7 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.DataType;
 
-public class CassandraResultSetTest {
+public class ResultSetTest {
 
     ResultSet rSet;
     private Random rand;

@@ -144,10 +144,13 @@ public class Shell {
 
         Shell sh = new Shell(async);
         if (sh.connect()) {
+            boolean enterLoop = true;
             if (initScript != null) {
-                sh.executeScript(initScript);
+                enterLoop = sh.executeScript(initScript);
             }
-            sh.loop();
+            if(enterLoop){
+                sh.loop();
+            }
         }
         sh.closeConsole();
     }
@@ -399,7 +402,8 @@ public class Shell {
      *
      * @param scriptPath The script path.
      */
-    public void executeScript(String scriptPath) {
+    public boolean executeScript(String scriptPath) {
+        boolean enterLoop = true;
         BufferedReader input = null;
         String query;
         int numberOps = 0;
@@ -414,14 +418,19 @@ public class Shell {
                 query = query.trim();
                 if (query.length() > 0 && !query.startsWith("#")) {
                     LOG.info("Executing: "+query);
-                    if(useAsync){
-                        result = crossdataDriver.executeAsyncRawQuery(query, resultHandler);
-                        Thread.sleep(1000);
+                    if(query.startsWith("exit") || query.startsWith("quit")){
+                        enterLoop = false;
+                        break;
                     } else {
-                        result = crossdataDriver.executeRawQuery(query);
+                        if(useAsync){
+                            result = crossdataDriver.executeAsyncRawQuery(query, resultHandler);
+                            Thread.sleep(1000);
+                        } else {
+                            result = crossdataDriver.executeRawQuery(query);
+                        }
+                        LOG.info(ConsoleUtils.stringResult(result));
+                        updatePrompt(result);
                     }
-                    LOG.info(ConsoleUtils.stringResult(result));
-                    updatePrompt(result);
                     numberOps++;
                 }
             }
@@ -443,6 +452,7 @@ public class Shell {
             }
         }
         println("Script " + scriptPath + " executed (" + numberOps + " sentences)");
+        return enterLoop;
     }
 
 }

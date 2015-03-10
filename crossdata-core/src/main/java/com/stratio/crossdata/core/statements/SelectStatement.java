@@ -31,6 +31,7 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.window.Window;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
@@ -94,6 +95,20 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      * Whether a LIMIT clause has been specified.
      */
     private boolean limitInc = false;
+    /**
+     * Whether a subquery clause has been specified.
+     */
+    private boolean subqueryInc = false;
+    /**
+     * The subquery.
+     */
+    private SelectStatement subquery= null;
+    /**
+     * The subquery alias.
+     */
+    private String subqueryAlias= null;
+
+
     /**
      * The LIMIT in terms of the number of rows to be retrieved in the result of the SELECT statement.
      */
@@ -270,6 +285,15 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         return whereInc;
     }
 
+    /**
+     * Check if a subquery is included.
+     *
+     * @return Whether it is included.
+     */
+    public boolean isSubqueryInc() {
+        return subqueryInc;
+    }
+
     public int getLimit() {
         return limit;
     }
@@ -322,21 +346,42 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     @Override
     public String toString() {
+        return toString(false);
+    }
+
+
+    /**
+     * Creates a String representing the Statement with SQL_92 syntax.
+     *
+     * @return String
+     */
+    public String toSQLString() {
+      return toString(true);
+    }
+
+    private String toString(boolean withSQLSyntax){
         StringBuilder sb = new StringBuilder("SELECT ");
         if (selectExpression != null) {
             sb.append(selectExpression.toString());
         }
         sb.append(" FROM ");
-        if (catalogInc) {
-            sb.append(catalog).append(".");
+
+        if(subqueryInc){
+            sb.append("( ").append(subquery.toString()).append(" ) AS " ).append(subqueryAlias);
+        }else{
+            if (catalogInc) {
+                sb.append(catalog).append(".");
+            }
+            sb.append(tableName);
         }
-        sb.append(tableName);
-        if (windowInc) {
+
+        if (!withSQLSyntax && windowInc) {
             sb.append(" WITH WINDOW ").append(window.toString());
         }
         if (joinInc) {
             for (InnerJoin myJoin:joinList) {
-                sb.append(" INNER JOIN ").append(myJoin.toString());
+                sb.append(" ").append(myJoin.getType().toString().replace("_"," ")).append(" JOIN ").append(myJoin
+                                .toString());
             }
         }
         if (whereInc) {
@@ -352,8 +397,9 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         if (limitInc) {
             sb.append(" LIMIT ").append(limit);
         }
+        String strSelectStatement = sb.toString().replaceAll("  ", " ");
 
-        return sb.toString().replace("  ", " ");
+        return (withSQLSyntax) ? strSelectStatement.replaceAll(Constants.VIRTUAL_CATALOG_NAME+"\\.", "") : strSelectStatement;
     }
 
     @Override
@@ -368,13 +414,42 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
     /**
      * Set the order by clause of the statement.
-     * @param orderByClauseClauses Tge list of columns that are implicated in the order by.
+     * @param orderByClauseClauses The list of columns that are implicated in the order by.
      */
     public void setOrderByClauses(List<OrderByClause> orderByClauseClauses) {
         if ((orderByClauseClauses != null) && (!orderByClauseClauses.isEmpty())) {
             this.orderInc = true;
             this.orderByClauseClauses = orderByClauseClauses;
         }
+    }
+
+    /**
+     * Set the subquery of the statement.
+     * @param subquery The subquery statement,
+     * @param alias    The alias.
+     */
+    public void setSubquery(SelectStatement subquery, String alias) {
+        if (subquery != null && alias != null) {
+            this.subqueryInc = true;
+            this.subquery = subquery;
+            this.subqueryAlias = alias;
+        }
+    }
+
+    /**
+     * Get the subquery of the statement.
+     * @return the inner select statemnet.
+     */
+    public SelectStatement getSubquery() {
+        return subquery;
+    }
+
+    /**
+     * Get the subquery alias.
+     * @return The alias of the inner statement.
+     */
+    public String getSubqueryAlias() {
+        return subqueryAlias;
     }
 
     @Override

@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.data;
 
+import com.stratio.crossdata.common.utils.Constants;
+
 /**
  * TABLE name recognized by the parser. The name may contain:
  * <ul>
@@ -27,7 +29,7 @@ package com.stratio.crossdata.common.data;
  */
 public class TableName extends Name {
 
-    private static final long serialVersionUID = -8396126000294795537L;
+    private static final long serialVersionUID = -1224192139573160759L;
     private final String name;
 
     private CatalogName catalogName;
@@ -70,6 +72,14 @@ public class TableName extends Name {
 
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    /**
+     * Return whether the table is virtual or not.
+     * @return true if the table is created using a select statement; false if the table is associated to a real data store.
+     */
+    public boolean isVirtual(){
+        return (catalogName != null) ? Constants.VIRTUAL_CATALOG_NAME.equals(catalogName.getName()) : false;
     }
 
     @Override public boolean isCompletedName() {

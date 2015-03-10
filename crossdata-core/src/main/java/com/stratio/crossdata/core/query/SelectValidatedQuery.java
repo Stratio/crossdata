@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.result.QueryStatus;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
+import com.stratio.crossdata.core.normalizer.NormalizedFields;
 import com.stratio.crossdata.core.structures.InnerJoin;
 
 /**
@@ -40,8 +41,8 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     private List<ColumnName> columns = new ArrayList<>();
     private List<Relation> relations = new ArrayList<>();
     private List<TableName> tables = new ArrayList<>();
+    private SelectValidatedQuery subqueryValidatedQuery;
     private List<InnerJoin> joinList=new ArrayList<>();
-    private String sqlQuery;
 
     /**
      * Constructor class.
@@ -141,28 +142,31 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     }
 
     /**
-     * set a complete list of inner joins.
+     * Set the subquery to the select validated query.
+     *
+     * @param subqueryValidatedQuery the inner select validated query.
+     */
+    public void setSubqueryValidatedQuery(SelectValidatedQuery subqueryValidatedQuery) {
+        this.subqueryValidatedQuery = subqueryValidatedQuery;
+    }
+
+    /**
+     * Get the inner select validated query.
+     * @return A {@link com.stratio.crossdata.core.query.SelectValidatedQuery} .
+     */
+    public SelectValidatedQuery getSubqueryValidatedQuery() {
+        return subqueryValidatedQuery;
+    }
+
+
+    /**
+     * Set a complete list of inner joins.
      * @param innerJoinList The inner join list.
      */
     public void setJoinList(List<InnerJoin> innerJoinList){
         this.joinList=innerJoinList;
     }
 
-    /**
-     * Get the sql direct query.
-     * @return a String.
-     */
-    public String getSqlQuery() {
-        return sqlQuery;
-    }
-
-    /**
-     * Set the sql query obtained once normalizator phase is done.
-     * @param sqlQuery The sql obtained in the normalizator phase.
-     */
-    public void setSqlQuery(String sqlQuery) {
-        this.sqlQuery = sqlQuery;
-    }
     /** Try to optimize the query in order to reduce its complexity.
     */
     public void optimizeQuery() {
@@ -190,13 +194,13 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
     private void optimizeJoins() {
 
-        //TODO when multiple joins supported => tables.size() = joins.size();
-        if(tables.size() == joinList.size() ){
+        if(tables.size() == 1 ){
             for(InnerJoin innerJoin:joinList) {
                 relations.addAll(innerJoin.getRelations());
                 this.getStatement().setWhere(relations);
                 this.getStatement().removeJoin(innerJoin);
             }
+            joinList.clear();
         }
     }
 

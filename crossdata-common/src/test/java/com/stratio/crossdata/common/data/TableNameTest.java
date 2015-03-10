@@ -15,28 +15,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.stratio.crossdata.common.utils;
+package com.stratio.crossdata.common.data;
 
-/**
- * Class holding several constants.
- */
-public final class Constants {
+import org.testng.Assert;
+import org.testng.annotations.Test;
+import com.stratio.crossdata.common.utils.Constants;
 
-    /**
-     * Default priority value.
-     */
-     public static final int DEFAULT_PRIORITY = 5;
+public class TableNameTest {
 
-    /**
-     * Default pagination.
-     */
-    public static final int DEFAULT_PAGINATION = 0;
+    @Test
+    public void isVirtualTest() {
 
-    /**
-     * Virtual catalog name. It is used in nested queries as the catalog name of the virtual table.
-     */
-    public static final String VIRTUAL_CATALOG_NAME = "#virtual";
-
-    private Constants() {
+        Assert.assertFalse((new TableName("virtual","virtual").isVirtual()));
+        Assert.assertFalse((new TableName("virtual", Constants.VIRTUAL_CATALOG_NAME).isVirtual()));
+        Assert.assertTrue((new TableName(Constants.VIRTUAL_CATALOG_NAME, "").isVirtual()));
     }
 }
