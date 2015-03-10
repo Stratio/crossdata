@@ -138,12 +138,16 @@ public class Planner {
     public SelectPlannedQuery planQuery(SelectValidatedQuery query) throws PlanningException {
         query.optimizeQuery();
         LogicalWorkflow workflow = buildWorkflow(query);
-        //Add the sql direct query to the logical workflow.
-        workflow.setSqlDirectQuery(query.getStatement().toSQLString());
         //Plan the workflow execution into different connectors.
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query.getQueryId(), workflow);
         //Return the planned query.
-        return new SelectPlannedQuery(query, executionWorkflow);
+        SelectPlannedQuery plannedQuery = new SelectPlannedQuery(query, executionWorkflow);
+        //Add the sql direct query to the logical workflow.
+        ((QueryWorkflow)plannedQuery
+                .getExecutionWorkflow())
+                .getWorkflow()
+                .setSqlDirectQuery(query.getStatement().toSQLString());
+        return plannedQuery;
     }
 
     /**
