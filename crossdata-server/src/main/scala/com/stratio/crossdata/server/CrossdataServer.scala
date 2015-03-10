@@ -19,18 +19,19 @@
 package com.stratio.crossdata.server
 
 import akka.actor.ActorSystem
+import akka.cluster.Cluster
 import akka.cluster.routing.AdaptiveLoadBalancingRouter
 import akka.contrib.pattern.ClusterReceptionistExtension
 import akka.io.IO
-import akka.routing.RoundRobinRouter
+import akka.pattern.ask
+import akka.util.Timeout
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.actors.{RestActor, ServerActor}
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.commons.daemon.{Daemon, DaemonContext}
 import org.apache.log4j.Logger
 import spray.can.Http
-import akka.pattern.ask
-import akka.util.Timeout
+
 import scala.concurrent.duration._
 
 class CrossdataServer extends Daemon with ServerConfig {
@@ -39,6 +40,8 @@ class CrossdataServer extends Daemon with ServerConfig {
   lazy val engine = new Engine(engineConfig)
   // Create an Akka system
   lazy val system = ActorSystem(clusterName, config)
+
+  val cluster=Cluster(system)
 
   override def destroy(): Unit = {
 
@@ -56,7 +59,8 @@ class CrossdataServer extends Daemon with ServerConfig {
 
   override def init(p1: DaemonContext): Unit = {
     logger.info("Init Crossdata Server --- v0.3.0")
-    val serverActor = system.actorOf(ServerActor.props(engine).withRouter(AdaptiveLoadBalancingRouter(nrOfInstances = num_server_actor)), actorName)
+    val serverActor = system.actorOf(ServerActor.props(engine,cluster).withRouter(AdaptiveLoadBalancingRouter
+      (nrOfInstances = num_server_actor)), actorName)
     ClusterReceptionistExtension(system).registerService(serverActor)
 
     implicit val timeout = Timeout(5.seconds)

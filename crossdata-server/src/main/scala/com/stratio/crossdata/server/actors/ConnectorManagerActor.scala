@@ -38,10 +38,10 @@ import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import java.util.UUID
 
 object ConnectorManagerActor {
-  def props(): Props = Props(new ConnectorManagerActor)
+  def props(cluster:Cluster): Props = Props(new ConnectorManagerActor(cluster))
 }
 
-class ConnectorManagerActor() extends Actor with ActorLogging {
+class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
@@ -51,11 +51,11 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
   log.info("Lifting connector manager actor")
 
   override def preStart(): Unit = {
-    Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
+    cluster.subscribe(self, classOf[ClusterDomainEvent])
   }
 
   override def postStop(): Unit = {
-    Cluster(context.system).unsubscribe(self)
+    cluster.unsubscribe(self)
   }
 
   def receive : Receive= {

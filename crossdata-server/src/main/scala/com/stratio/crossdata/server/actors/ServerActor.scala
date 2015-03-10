@@ -18,13 +18,14 @@
 
 package com.stratio.crossdata.server.actors
 
-import java.util.UUID
+import java.util.{Random, UUID}
 
 import akka.actor.{Actor, Props, ReceiveTimeout}
+import akka.cluster.{MemberStatus, Cluster}
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
 import com.stratio.crossdata.common.result.{ConnectResult, DisconnectResult, Result}
-import com.stratio.crossdata.communication.Disconnect
+import com.stratio.crossdata.communication.{reroutedCommand, reroutedQuery, Disconnect}
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
@@ -32,12 +33,14 @@ import org.apache.log4j.Logger
 object ServerActor {
 
 
-  def props(engine: Engine): Props = Props(new ServerActor(engine))
+  def props(engine: Engine,cluster: Cluster): Props = Props(new ServerActor(engine,cluster))
 }
 
-class ServerActor(engine: Engine) extends Actor with ServerConfig {
+class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
-  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props().
+  val random=new Random
+
+  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(cluster).
     withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
   val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).
     withRouter(RoundRobinRouter(nrOfInstances = num_coordinator_actor)), "CoordinatorActor")
@@ -50,13 +53,33 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
   val APIActorRef = context.actorOf(APIActor.props(engine.getAPIManager()).
     withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
 
+
+
+  def reroute(message: Command): Unit = {
+    val n=cluster.state.members.collect{
+        case m if m.status == MemberStatus.Up => s"${m.address}/user/ServerActor"
+    }.toSeq
+    val receiver=n(random.nextInt(n.length))
+    context.actorSelection(receiver) ! reroutedCommand(message)
+  }
+  
+  def reroute(message: Query): Unit = {
+    val n=cluster.state.members.collect{
+        case m if m.status == MemberStatus.Up => s"${m.address}/user/ServerActor"
+    }.toSeq
+    val receiver=n(random.nextInt(n.length))
+    context.actorSelection(receiver) ! reroutedQuery(message)
+  }
+
+
   def receive : Receive= {
     /*
     case keepalive:IAmAlive =>{
           //logger.debug("receiving keepalive message from "+sender)
     }
     */
-    case query: Query => {
+    case query: Query => reroute(query) 
+    case reroutedQuery(query)=> {
       logger.info("query: " + query + " sender: " + sender.path.address)
       parserActorRef forward query
     }
@@ -68,11 +91,11 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
       logger.info("Goodbye " + user + ".")
       sender ! DisconnectResult.createDisconnectResult(user)
     }
-    case cmd: Command => {
+    case cmd: Command =>  reroute(cmd)
+    case reroutedCommand(cmd) => {
       logger.info("API Command call " + cmd.commandType)
       APIActorRef forward cmd
     }
-
     case ReceiveTimeout => {
       logger.warn("ReceiveTimeout")
       //TODO Process ReceiveTimeout
