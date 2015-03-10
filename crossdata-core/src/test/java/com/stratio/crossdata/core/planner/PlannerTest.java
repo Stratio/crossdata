@@ -121,6 +121,7 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC1.add(Operations.INSERT);
         operationsC1.add(Operations.INSERT_IF_NOT_EXISTS);
         operationsC1.add(Operations.INSERT_FROM_SELECT);
+        operationsC1.add(Operations.SELECT_SUBQUERY);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -232,6 +233,23 @@ public class PlannerTest extends PlannerBaseTest {
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
         assertEquals(queryWorkflow.getActorRef(), connector2.getActorRef(), "Wrong target actor");
+    }
+
+    @Test
+    public void complexSubqueries() throws ManifestException {
+
+        init();
+
+        String inputText = "SELECT id FROM " +
+                "( SELECT * FROM demo.table1 " +
+                    "WHERE demo.table1.user = 18 + (SELECT demo.table2.email FROM demo.table2) * 'my comment' )"
+                + " AS myTable;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "complexSubqueries", false, false, table1, table2);
+
+        assertNotNull(queryWorkflow, "Null workflow received.");
+
     }
 
     @Test

@@ -55,6 +55,10 @@ public class ParsingTest {
     protected final Parser parser = new Parser();
 
     public IParsedQuery testRegularStatement(String inputText, String methodName) {
+        return testRegularStatement(inputText, methodName, true);
+    }
+
+    public IParsedQuery testRegularStatement(String inputText, String methodName, boolean checkParser) {
         IParsedQuery st = null;
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
@@ -73,10 +77,13 @@ public class ParsingTest {
             fail(sb.toString(), e);
         }
 
-        assertTrue(inputText.replaceAll("\"", "").equalsIgnoreCase(st.toString() + ";"),
-                "Cannot parse " + methodName
-                        + ": " + System.lineSeparator() + " expecting" + System.lineSeparator() + "'" + inputText
-                        + "' " + System.lineSeparator() + "from" + System.lineSeparator() + "'" + st.toString() + ";'");
+        if(checkParser){
+            assertTrue(inputText.replaceAll("\"", "").equalsIgnoreCase(st.toString() + ";"),
+                    "Cannot parse " + methodName
+                            + ": " + System.lineSeparator() + " expecting" + System.lineSeparator() + "'" + inputText
+                            + "' " + System.lineSeparator() + "from" + System.lineSeparator() + "'" + st.toString() + ";'");
+        }
+
         return st;
     }
 

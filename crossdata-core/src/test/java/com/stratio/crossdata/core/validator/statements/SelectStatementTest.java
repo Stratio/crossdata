@@ -165,6 +165,57 @@ public class SelectStatementTest extends BasicValidatorTest {
 
     }
 
+    @Test
+    public void validateComplexSubqueries(){
+        String query = "SELECT name, gender, age FROM " +
+                "(SELECT * FROM users WHERE email = 18 + (SELECT email FROM sales.customers) * 'my comment');";
+
+        BaseQuery baseQuery = new BaseQuery("validateComplexSubqueries", query, new CatalogName("demo"));
+
+        Parser parser = new Parser();
+        SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
+
+        Validator validator = new Validator();
+
+        try {
+            SelectValidatedQuery normalizedQuery = (SelectValidatedQuery) validator.validate(parsedQuery);
+            assertNotNull(normalizedQuery, "normalizedQuery is null");
+            Assert.assertTrue(true, "Test failed.");
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void validateComplexSubqueries2(){
+        String query = "SELECT name FROM " +
+                "(SELECT * FROM users " +
+                    "WHERE age = 18 + (SELECT rating FROM table3) / 'my comment') AS myTable;";
+
+        BaseQuery baseQuery = new BaseQuery("validateComplexSubqueries2", query, new CatalogName("demo"));
+
+        Parser parser = new Parser();
+        SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
+
+        Validator validator = new Validator();
+
+        try {
+            SelectValidatedQuery normalizedQuery = (SelectValidatedQuery) validator.validate(parsedQuery);
+            assertNotNull(normalizedQuery, "normalizedQuery is null");
+            Assert.assertTrue(true, "Test failed.");
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
     /*
     @Test
     public void validateBasicCountOk() {

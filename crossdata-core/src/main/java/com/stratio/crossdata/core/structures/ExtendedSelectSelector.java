@@ -61,4 +61,15 @@ public class ExtendedSelectSelector extends SelectSelector {
         this.selectValidatedQuery = selectValidatedQuery;
     }
 
+    @Override
+     public String toString() {
+        String result = getSelectStatement().toString();
+        if(selectParsedQuery != null){
+            result = selectParsedQuery.getStatement().toString();
+        }
+        if(selectValidatedQuery != null){
+            result = selectValidatedQuery.getStatement().toString();
+        }
+        return "("+ result+")";
+    }
 }

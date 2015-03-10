@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
@@ -55,6 +56,7 @@ import com.stratio.crossdata.core.grammar.ParsingTest;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
@@ -87,36 +89,53 @@ public class PlannerBaseTest {
         MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
+    public ExecutionWorkflow getPlannedQuery(String statement, String methodName,
+            boolean shouldFail, TableMetadata... tableMetadataList) {
+        return getPlannedQuery(statement, methodName, true, shouldFail, tableMetadataList);
+    }
+
     /**
      * Get the execution workflow from a statement.
      *
      * @param statement         A valid statement.
      * @param methodName        The test name.
+     * @param checkParser       Whether the planning should check parser result.
      * @param shouldFail        Whether the planning should succeed.
      * @param tableMetadataList The list of table metadata.
      * @return An {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow}.
      */
-    public ExecutionWorkflow getPlannedQuery(String statement, String methodName,
+    public ExecutionWorkflow getPlannedQuery(String statement, String methodName, boolean checkParser,
             boolean shouldFail, TableMetadata... tableMetadataList) {
 
-        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName, checkParser);
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
-        SelectStatement ss = spq.getStatement();
+        //SelectStatement ss = spq.getStatement();
 
-        SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
-        for (TableMetadata tm : tableMetadataList) {
-            svqw.addTableMetadata(tm);
+        //SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+
+        Validator validator = new Validator();
+        SelectValidatedQuery svq = null;
+        try {
+            svq = (SelectValidatedQuery) validator.validate(spq);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
         }
+
+        //for (TableMetadata tm : tableMetadataList) {
+        //    svq.addTableMetadata(tm);
+        //}
 
         SelectPlannedQuery plannedQuery = null;
         try {
-            plannedQuery = planner.planQuery(svqw);
+            plannedQuery = planner.planQuery(svq);
             if (shouldFail) {
                 fail("Expecting planning to fail");
             }
         } catch (PlanningException e) {
             if (!shouldFail) {
-                fail("Expecting planning to succeed");
+                fail("Expecting planning to succeed: " + e.getMessage());
             } else {
                 assertNotNull(e, "Exception should not be null");
                 assertEquals(e.getClass(), PlanningException.class, "Exception class does not match.");
