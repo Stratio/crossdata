@@ -75,6 +75,10 @@ public class BasicValidatorTest {
         MetadataManager.MANAGER.createTable(createJoinTable(), false);
         MetadataManager.MANAGER.createCatalog(generateCatalogMetadata("sales"), false);
         MetadataManager.MANAGER.createTable(createTable("sales", "customers"), false);
+        MetadataManager.MANAGER.createCatalog(generateCatalogMetadata("test"), false);
+        MetadataManager.MANAGER.createTable(createTable("test", "table1"), false);
+        MetadataManager.MANAGER.createTable(createTable2("test", "table2"), false);
+        MetadataManager.MANAGER.createTable(createTable2("demo", "table3"), false);
     }
 
     @AfterClass
@@ -117,6 +121,51 @@ public class BasicValidatorTest {
                         new ColumnType(DataType.TEXT)));
         columns.put(new ColumnName(new TableName(catalog, table), "email"),
                 new ColumnMetadata(new ColumnName(new TableName(catalog, table), "email"), parameters,
+                        new ColumnType(DataType.TEXT)));
+
+        Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+        Map<ColumnName, ColumnMetadata> columnsIndex = new HashMap<>();
+        ColumnMetadata columnMetadataIndex = new ColumnMetadata(
+                new ColumnName(new TableName(catalog, table), "gender"),
+                parameters, new ColumnType(DataType.TEXT));
+        columnsIndex.put(new ColumnName(new TableName(catalog, table), "gender"), columnMetadataIndex);
+
+        IndexMetadata indexMetadata = new IndexMetadata(new IndexName(catalog, table, "gender_idx"), columnsIndex,
+                IndexType.DEFAULT, options);
+
+        indexes.put(new IndexName(catalog, table, "gender_idx"), indexMetadata);
+
+        tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);
+
+        return tableMetadata;
+    }
+
+    private static TableMetadata createTable2(String catalog, String table) {
+        TableMetadata tableMetadata;
+        TableName targetTable = new TableName(catalog, table);
+        Map<Selector, Selector> options = new HashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
+        ClusterName clusterRef = new ClusterName("cluster");
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
+        Object[] parameters = null;
+        columns.put(new ColumnName(new TableName(catalog, table), "name"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "name"), parameters,
+                        new ColumnType(DataType.TEXT)));
+        columns.put(new ColumnName(new TableName(catalog, table), "surname"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "surname"), parameters,
+                        new ColumnType(DataType.TEXT)));
+        columns.put(new ColumnName(new TableName(catalog, table), "rating"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "rating"), parameters,
+                        new ColumnType(DataType.FLOAT)));
+        columns.put(new ColumnName(new TableName(catalog, table), "member"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "member"), parameters,
+                        new ColumnType(DataType.BOOLEAN)));
+        columns.put(new ColumnName(new TableName(catalog, table), "address"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "address"), parameters,
+                        new ColumnType(DataType.TEXT)));
+        columns.put(new ColumnName(new TableName(catalog, table), "comment"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "comment"), parameters,
                         new ColumnType(DataType.TEXT)));
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();

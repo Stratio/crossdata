@@ -20,13 +20,13 @@ package com.stratio.crossdata.common.statements.structures;
 
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.executionplan.QueryWorkflow;
+import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 
 public class SelectSelector extends Selector {
 
     private String selectQuery;
 
-    private QueryWorkflow queryWorkflow;
+    private LogicalWorkflow logicalWorkflow;
 
     public SelectSelector(String selectQuery) {
         this(null, selectQuery);
@@ -45,12 +45,12 @@ public class SelectSelector extends Selector {
         this.selectQuery = selectQuery;
     }
 
-    public QueryWorkflow getQueryWorkflow() {
-        return queryWorkflow;
+    public LogicalWorkflow getQueryWorkflow() {
+        return logicalWorkflow;
     }
 
-    public void setQueryWorkflow(QueryWorkflow queryWorkflow) {
-        this.queryWorkflow = queryWorkflow;
+    public void setQueryWorkflow(LogicalWorkflow queryWorkflow) {
+        this.logicalWorkflow = queryWorkflow;
     }
 
     /**
@@ -61,6 +61,14 @@ public class SelectSelector extends Selector {
     @Override
     public SelectorType getType() {
         return SelectorType.SELECT;
+    }
+
+    @Override public String toString() {
+        StringBuilder sb = new StringBuilder(selectQuery);
+        if(logicalWorkflow != null){
+            sb.append(System.lineSeparator()).append(logicalWorkflow.toString());
+        }
+        return sb.toString();
     }
 
     @Override

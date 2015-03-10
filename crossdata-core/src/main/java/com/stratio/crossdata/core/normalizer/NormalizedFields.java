@@ -32,7 +32,6 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
@@ -51,6 +50,8 @@ public class NormalizedFields {
      * Set of {@link com.stratio.crossdata.common.data.TableName} involved in a query.
      */
     private Set<TableName> tableNames = new LinkedHashSet<>();
+
+    private Set<TableName> preferredTableNames = new LinkedHashSet<>();
 
     /**
      * Set of {@link com.stratio.crossdata.common.data.CatalogName} involved in a query.
@@ -97,11 +98,6 @@ public class NormalizedFields {
      * Map of column alias associating alias with ColumnNames.
      */
     private Map<String, ColumnName> columnNameAlias = new HashMap<>();
-
-    /**
-     * Map associating function name and function signatures.
-     */
-    private Map<String, String> signatures = new HashMap<>();
 
     /**
      * Class constructor.
@@ -290,22 +286,11 @@ public class NormalizedFields {
         return columnNameAlias.get(alias);
     }
 
-    /**
-     * Get the map of functions with their a associated signatures.
-     *
-     * @return A map.
-     */
-    public Map<String, String> getSignatures() {
-        return signatures;
+    public Set<TableName> getPreferredTableNames() {
+        return preferredTableNames;
     }
 
-    /**
-     * Add a new signature.
-     *
-     * @param functionName The function name.
-     * @param signature    The signature.
-     */
-    public void addSignature(String functionName, String signature) {
-        signatures.put(functionName, signature);
+    public void setPreferredTableNames(Set<TableName> preferredTableNames) {
+        this.preferredTableNames = preferredTableNames;
     }
 }

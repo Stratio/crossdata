@@ -56,8 +56,9 @@ public class Parser {
      */
     public IParsedQuery parse(BaseQuery baseQuery) throws ParsingException {
         IParsedQuery result = null;
-        CrossdataStatement crossdataStatement = this
-                .parseStatement(baseQuery.getDefaultCatalog().toString(), baseQuery.getQuery());
+        CrossdataStatement crossdataStatement = parseStatement(
+                baseQuery.getDefaultCatalog().toString(),
+                baseQuery.getQuery());
         if (crossdataStatement instanceof SelectStatement) {
             result = new SelectParsedQuery(baseQuery, (SelectStatement) crossdataStatement);
         } else if (crossdataStatement instanceof StorageStatement) {

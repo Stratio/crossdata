@@ -54,7 +54,20 @@ import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.QueryWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
-import com.stratio.crossdata.common.logicalplan.*;
+import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.logicalplan.GroupBy;
+import com.stratio.crossdata.common.logicalplan.Join;
+import com.stratio.crossdata.common.logicalplan.Limit;
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
+import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
+import com.stratio.crossdata.common.logicalplan.OrderBy;
+import com.stratio.crossdata.common.logicalplan.PartialResults;
+import com.stratio.crossdata.common.logicalplan.Project;
+import com.stratio.crossdata.common.logicalplan.Select;
+import com.stratio.crossdata.common.logicalplan.TransformationStep;
+import com.stratio.crossdata.common.logicalplan.UnionStep;
+import com.stratio.crossdata.common.logicalplan.Virtualizable;
+import com.stratio.crossdata.common.logicalplan.Window;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
@@ -75,7 +88,9 @@ import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.RelationSelector;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
+import com.stratio.crossdata.common.statements.structures.SelectSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.utils.Constants;
@@ -89,26 +104,8 @@ import com.stratio.crossdata.core.query.SelectPlannedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
-import com.stratio.crossdata.core.statements.AlterCatalogStatement;
-import com.stratio.crossdata.core.statements.AlterClusterStatement;
-import com.stratio.crossdata.core.statements.AlterTableStatement;
-import com.stratio.crossdata.core.statements.AttachClusterStatement;
-import com.stratio.crossdata.core.statements.AttachConnectorStatement;
-import com.stratio.crossdata.core.statements.CreateCatalogStatement;
-import com.stratio.crossdata.core.statements.CreateIndexStatement;
-import com.stratio.crossdata.core.statements.CreateTableStatement;
-import com.stratio.crossdata.core.statements.DeleteStatement;
-import com.stratio.crossdata.core.statements.DetachClusterStatement;
-import com.stratio.crossdata.core.statements.DetachConnectorStatement;
-import com.stratio.crossdata.core.statements.DropCatalogStatement;
-import com.stratio.crossdata.core.statements.DropIndexStatement;
-import com.stratio.crossdata.core.statements.DropTableStatement;
-import com.stratio.crossdata.core.statements.ImportMetadataStatement;
-import com.stratio.crossdata.core.statements.InsertIntoStatement;
-import com.stratio.crossdata.core.statements.MetadataStatement;
-import com.stratio.crossdata.core.statements.SelectStatement;
-import com.stratio.crossdata.core.statements.TruncateStatement;
-import com.stratio.crossdata.core.statements.UpdateTableStatement;
+import com.stratio.crossdata.core.statements.*;
+import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.utils.CoreUtils;
 import com.stratio.crossdata.core.validator.Validator;
@@ -1650,7 +1647,7 @@ public class Planner {
      * @return The resulting map of logical steps.
      */
     private Map<String, LogicalStep> addFilter(Map<String, LogicalStep> lastSteps,
-                    Map<String, TableMetadata> tableMetadataMap, SelectValidatedQuery query) {
+                    Map<String, TableMetadata> tableMetadataMap, SelectValidatedQuery query) throws PlanningException {
         LogicalStep previous;
         TableMetadata tm;
         Selector s;
@@ -1667,18 +1664,47 @@ public class Planner {
             }
 
             if (op != null) {
+                convertSelectSelectors(r);
                 Filter f = new Filter(op, r);
                 previous = lastSteps.get(s.getSelectorTablesAsString());
                 previous.setNextStep(f);
                 f.setPrevious(previous);
                 lastSteps.put(s.getSelectorTablesAsString(), f);
             } else {
-                LOG.error("Cannot determine Filter for relation " + r.toString() + " on table " + s
-                                .getSelectorTablesAsString());
+                LOG.error("Cannot determine Filter for relation " + r.toString() +
+                          " on table " + s.getSelectorTablesAsString());
             }
 
         }
         return lastSteps;
+    }
+
+    private void convertSelectSelectors(Relation relation) throws PlanningException {
+        Relation currentRelation = relation;
+        while(currentRelation.getRightTerm() instanceof RelationSelector){
+            currentRelation.setLeftTerm(convertSelectSelector(currentRelation.getLeftTerm()));
+            currentRelation.setRightTerm(convertSelectSelector(currentRelation.getRightTerm()));
+            currentRelation = ((RelationSelector) currentRelation.getRightTerm()).getRelation();
+        }
+        currentRelation.setLeftTerm(convertSelectSelector(currentRelation.getLeftTerm()));
+        currentRelation.setRightTerm(convertSelectSelector(currentRelation.getRightTerm()));
+    }
+
+    private Selector convertSelectSelector(Selector selector) throws PlanningException {
+        Selector result = selector;
+        if(selector instanceof ExtendedSelectSelector){
+            ExtendedSelectSelector extendedSelectSelector = (ExtendedSelectSelector) selector;
+            SelectSelector selectSelector = new SelectSelector(selector.getTableName(), extendedSelectSelector.getSelectQuery());
+            LogicalWorkflow innerWorkflow = buildWorkflow(extendedSelectSelector.getSelectValidatedQuery());
+            //Planner innerPlanner = new Planner();
+            //SelectPlannedQuery innerSelectPlannedQuery =
+            //  innerPlanner.planQuery(extendedSelectSelector.getSelectValidatedQuery());
+            //QueryWorkflow queryWorkflow = (QueryWorkflow) innerSelectPlannedQuery.getExecutionWorkflow();
+            //selectSelector.setQueryWorkflow(queryWorkflow.getWorkflow());
+            selectSelector.setQueryWorkflow(innerWorkflow);
+            result = selectSelector;
+        }
+        return result;
     }
 
     /**
@@ -1737,7 +1763,8 @@ public class Planner {
                     Map<String, TableMetadata> tableMetadataMap) {
 
         Map<String, LogicalStep> projects = new HashMap<>();
-        for (TableName tn : query.getTables()) {
+        //for (TableName tn : query.getTables()) {
+        for (TableName tn : query.getStatement().getFromTables()) {
             Project p;
             if (tn.isVirtual()) {
                 p = new Project(Operations.PROJECT, tn, new ClusterName(Constants.VIRTUAL_CATALOG_NAME));
