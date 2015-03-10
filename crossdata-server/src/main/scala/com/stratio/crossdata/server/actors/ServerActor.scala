@@ -54,23 +54,15 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
     withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
 
 
-
-  def reroute(message: Command): Unit = {
+  def chooseReroutee(): String={
     val n=cluster.state.members.collect{
         case m if m.status == MemberStatus.Up => s"${m.address}/user/ServerActor"
     }.toSeq
-    val receiver=n(random.nextInt(n.length))
-    context.actorSelection(receiver) ! reroutedCommand(message)
-  }
-  
-  def reroute(message: Query): Unit = {
-    val n=cluster.state.members.collect{
-        case m if m.status == MemberStatus.Up => s"${m.address}/user/ServerActor"
-    }.toSeq
-    val receiver=n(random.nextInt(n.length))
-    context.actorSelection(receiver) ! reroutedQuery(message)
+    n(random.nextInt(n.length))
   }
 
+  def reroute(message: Command): Unit =  context.actorSelection(chooseReroutee()) ! reroutedCommand(message)
+  def reroute(message: Query): Unit =  context.actorSelection(chooseReroutee()) ! reroutedQuery(message)
 
   def receive : Receive= {
     /*
@@ -78,7 +70,10 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
           //logger.debug("receiving keepalive message from "+sender)
     }
     */
-    case query: Query => reroute(query) 
+    case query: Query =>{
+      logger.info("Query rerouted " + query.statement.toString)
+      reroute(query)
+    } 
     case reroutedQuery(query)=> {
       logger.info("query: " + query + " sender: " + sender.path.address)
       parserActorRef forward query
@@ -91,7 +86,10 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
       logger.info("Goodbye " + user + ".")
       sender ! DisconnectResult.createDisconnectResult(user)
     }
-    case cmd: Command =>  reroute(cmd)
+    case cmd: Command =>{
+      logger.info("API Command call rerouted " + cmd.commandType)
+      reroute(cmd)
+    }
     case reroutedCommand(cmd) => {
       logger.info("API Command call " + cmd.commandType)
       APIActorRef forward cmd
