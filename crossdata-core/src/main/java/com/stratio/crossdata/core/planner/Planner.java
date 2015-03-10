@@ -692,27 +692,6 @@ public class Planner {
                     }
                 }
 
-                if(unionStep.getNextStep()==null) {
-                    List<Selector> selectorJoinList = new ArrayList<>();
-                    Map<String, TableMetadata> joinTableMetadataMap = new HashMap<>();
-                    TableName tableName = new TableName("", "");
-                    for (String s : ((Join) unionStep).getSourceIdentifiers()) {
-                        joinTableMetadataMap.put(s, tableMetadataMap.get(s));
-                        List<LogicalStep> projects = unionStep.getPreviousSteps();
-                        for (LogicalStep ls : projects) {
-                            List<ColumnName> columnsFromProject = ((Project) ls).getColumnList();
-                            for (ColumnName col : columnsFromProject) {
-                                selectorJoinList.add(new ColumnSelector(col));
-                            }
-                        }
-                        tableName = tableMetadataMap.get(s).getName();
-                    }
-                    SelectStatement joinNextSelect = new SelectStatement(new SelectExpression(selectorJoinList),
-                            tableName);
-                    Select joinSelect = generateSelect(joinNextSelect, joinTableMetadataMap);
-                    unionStep.setNextStep(joinSelect);
-                }
-
                 // Generate a list of fake Select for Join Table
                 List<SelectStatement> partialSelectList=new ArrayList<>();
 
@@ -763,12 +742,11 @@ public class Planner {
                     partialTableMetadataMap = tableMetadataMap;
                 }
 
-                List<Select> selectList=new ArrayList<>();
+                //link previous select to the join
                 for (SelectStatement partialSelect:partialSelectList) {
                     Select selectStep = generateSelect(partialSelect, partialTableMetadataMap);
 
                     previousStepToUnion.setNextStep(selectStep);
-
 
                     selectStep.setPrevious(previousStepToUnion);
                     selectStep.setNextStep(unionStep);
@@ -781,16 +759,72 @@ public class Planner {
                     previousStepsToUnion.add(selectStep);
                     unionStep.setPreviousSteps(previousStepsToUnion);
                 }
-
-
             }
         }
+
+        //Inject select post union step
+        for (LogicalStep initialStep : initialSteps) {
+            LogicalStep step = initialStep;
+            while ((step != null) && (!UnionStep.class.isInstance(step))) {
+                step = step.getNextStep();
+            }
+            if (step == null) {
+                continue;
+            } else {
+                // Create Select step here
+                UnionStep unionStep = (UnionStep) step;
+                //Generate a select for next step of union step.
+                if ((unionStep.getNextStep() == null) || UnionStep.class.isInstance(unionStep.getNextStep())) {
+                    List<Selector> selectorJoinList = new ArrayList<>();
+                    Map<String, TableMetadata> joinTableMetadataMap = new HashMap<>();
+
+                    List<LogicalStep> projects = unionStep.getPreviousSteps();
+                    for (LogicalStep ls : projects) {
+                        if (Select.class.isInstance(ls)) {
+                            for (Selector selector : ((Select) ls).getColumnMap().keySet()) {
+                                selectorJoinList.add((ColumnSelector) selector);
+                                joinTableMetadataMap.put(selector.getColumnName().getTableName().getQualifiedName(),
+                                        tableMetadataMap.get(selector.getColumnName().getTableName().getQualifiedName
+                                                ()));
+                            }
+                        }
+                        if(Project.class.isInstance(ls)) {
+                            List<ColumnName> columnsFromProject = ((Project) ls).getColumnList();
+                            for (ColumnName col : columnsFromProject) {
+                                selectorJoinList.add(new ColumnSelector(col));
+                                joinTableMetadataMap.put(col.getTableName().getQualifiedName(),
+                                        tableMetadataMap.get(col.getTableName().getQualifiedName
+                                                ()));
+                            }
+                        }
+                    }
+                    TableName  tableName = tableMetadataMap.get(((Join) unionStep).getSourceIdentifiers().get(0))
+                            .getName();
+
+                    SelectStatement joinNextSelect = new SelectStatement(new SelectExpression(selectorJoinList),
+                            tableName);
+                    Select joinSelect = generateSelect(joinNextSelect, joinTableMetadataMap);
+                    if (UnionStep.class.isInstance(unionStep.getNextStep())) {
+                        LogicalStep nextUnion = unionStep.getNextStep();
+                        nextUnion.getPreviousSteps().add(joinSelect);
+                        joinSelect.setNextStep(nextUnion);
+                        joinSelect.setPrevious(unionStep);
+                        unionStep.setNextStep(joinSelect);
+                    } else {
+                        unionStep.setNextStep(joinSelect);
+                        joinSelect.setPrevious(unionStep);
+                    }
+                }
+            }
+        }
+
 
         //Find the last element
         LogicalStep last = initial;
         while (last.getNextStep() != null) {
             last = last.getNextStep();
         }
+
 
         // GROUP BY clause
         if (ss.isGroupInc()) {
@@ -818,6 +852,11 @@ public class Planner {
 
         //Add SELECT operator
         Select finalSelect = generateSelect(ss, tableMetadataMap);
+        if (Select.class.isInstance(last)){
+            while (last.getNextStep().getNextStep() != null) {
+                last = last.getNextStep();
+            }
+        }
         last.setNextStep(finalSelect);
         finalSelect.setPrevious(last);
 
@@ -1757,11 +1796,17 @@ public class Planner {
                     innerJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
                 }
                 innerJoin.addJoinRelations(queryJoin.getOrderedRelations());
-                LogicalStep ijls1=t1;
-                LogicalStep ijls2=t2;
-                ijls1.setNextStep(innerJoin);
-                ijls2.setNextStep(innerJoin);
-                innerJoin.addPreviousSteps(ijls1,ijls2);
+                if (t1.getNextStep()!=null) {
+                    t1.getNextStep().setNextStep(innerJoin);
+                }else{
+                    t1.setNextStep(innerJoin);
+                }
+                if(t2.getNextStep()!=null) {
+                    t2.getNextStep().setNextStep(innerJoin);
+                }else{
+                    t2.setNextStep(innerJoin);
+                }
+                innerJoin.addPreviousSteps(t1,t2);
                 stepMap.put(sb.toString(), innerJoin);
                 break;
             case CROSS:
@@ -1772,8 +1817,16 @@ public class Planner {
                     crossJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
                 }
                 crossJoin.addJoinRelations(queryJoin.getOrderedRelations());
-                t1.setNextStep(crossJoin);
-                t2.setNextStep(crossJoin);
+                if (t1.getNextStep()!=null) {
+                    t1.getNextStep().setNextStep(crossJoin);
+                }else{
+                    t1.setNextStep(crossJoin);
+                }
+                if(t2.getNextStep()!=null) {
+                    t2.getNextStep().setNextStep(crossJoin);
+                }else{
+                    t2.setNextStep(crossJoin);
+                }
                 crossJoin.addPreviousSteps(t1,t2);
                 stepMap.put(sb.toString(), crossJoin);
                 break;
@@ -1786,8 +1839,16 @@ public class Planner {
                 }
 
                 leftJoin.addJoinRelations(queryJoin.getOrderedRelations());
-                t1.setNextStep(leftJoin);
-                t2.setNextStep(leftJoin);
+                if (t1.getNextStep()!=null) {
+                    t1.getNextStep().setNextStep(leftJoin);
+                }else{
+                    t1.setNextStep(leftJoin);
+                }
+                if(t2.getNextStep()!=null) {
+                    t2.getNextStep().setNextStep(leftJoin);
+                }else{
+                    t2.setNextStep(leftJoin);
+                }
                 leftJoin.addPreviousSteps(t1,t2);
                 stepMap.put(sb.toString(), leftJoin);
                 break;
@@ -1800,8 +1861,16 @@ public class Planner {
                 }
 
                 fullOuterJoin.addJoinRelations(queryJoin.getOrderedRelations());
-                t1.setNextStep(fullOuterJoin);
-                t2.setNextStep(fullOuterJoin);
+                if (t1.getNextStep()!=null) {
+                    t1.getNextStep().setNextStep(fullOuterJoin);
+                }else{
+                    t1.setNextStep(fullOuterJoin);
+                }
+                if(t2.getNextStep()!=null) {
+                    t2.getNextStep().setNextStep(fullOuterJoin);
+                }else{
+                    t2.setNextStep(fullOuterJoin);
+                }
                 fullOuterJoin.addPreviousSteps(t1,t2);
                 stepMap.put(sb.toString(), fullOuterJoin);
                 break;
@@ -1813,8 +1882,16 @@ public class Planner {
                     rightJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
                 }
                 rightJoin.addJoinRelations(queryJoin.getOrderedRelations());
-                t1.setNextStep(rightJoin);
-                t2.setNextStep(rightJoin);
+                if (t1.getNextStep()!=null) {
+                    t1.getNextStep().setNextStep(rightJoin);
+                }else{
+                    t1.setNextStep(rightJoin);
+                }
+                if(t2.getNextStep()!=null) {
+                    t2.getNextStep().setNextStep(rightJoin);
+                }else{
+                    t2.setNextStep(rightJoin);
+                }
                 rightJoin.addPreviousSteps(t1,t2);
                 stepMap.put(sb.toString(), rightJoin);
                 break;
