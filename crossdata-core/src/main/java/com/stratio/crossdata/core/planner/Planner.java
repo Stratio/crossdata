@@ -143,7 +143,6 @@ public class Planner {
         //Return the planned query.
         SelectPlannedQuery plannedQuery = new SelectPlannedQuery(query, executionWorkflow);
         //Add the sql direct query to the logical workflow.
-        String sqlQuery = query.getStatement().toSQLString();
         ((QueryWorkflow)plannedQuery
                 .getExecutionWorkflow())
                 .getWorkflow()
