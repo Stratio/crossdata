@@ -66,12 +66,12 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
   def reroute(message: Command): Unit ={
     val reroutee = chooseReroutee()
     logger.info("reroutee=" + reroutee)
-    context.actorSelection(reroutee) ! ReroutedCommand(message)
+    context.actorSelection(reroutee) forward ReroutedCommand(message)
   }
   def reroute(message: Query): Unit ={
     val reroutee = chooseReroutee()
     logger.info("reroutee=" + reroutee)
-    context.actorSelection(reroutee) ! ReroutedQuery(message)
+    context.actorSelection(reroutee) forward ReroutedQuery(message)
   }
 
   def receive : Receive= {
