@@ -23,6 +23,9 @@ import java.lang.management.ManagementFactory
 import javax.management.{Attribute, AttributeList, MBeanServer, ObjectName}
 
 import akka.actor.{Actor, ActorLogging, Props}
+import com.stratio.crossdata.core.loadWatcher.LoadWatcherManager
+import com.stratio.crossdata.server.config.ServerConfig
+
 import scala.concurrent.duration._
 
 object LoadWatcherActor{
@@ -48,9 +51,10 @@ class LoadWatcherActor extends Actor with ActorLogging {
   def receive = {
     //CLIENT MESSAGES
     case "watchload"=>
-      self ! watchLoad()
+      //log.info(s"saving ${ServerConfig.SERVER_API_REST_HOSTNAME} -> ${watchLoad()} to infinispan")
+      LoadWatcherManager.MANAGER.createEntry(ServerConfig.SERVER_API_REST_HOSTNAME,watchLoad(),true)
     case msg => {
-      log.info(s"load watcher actor receives message: $msg and does not know what to do with it")
+     log.info(s"load watcher actor receives message: $msg and does not know what to do with it")
     }
   }
 }
