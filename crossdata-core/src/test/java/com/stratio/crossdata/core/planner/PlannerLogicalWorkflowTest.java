@@ -381,6 +381,66 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
     }
 
     @Test
+    public void selectMultipleDifferentJoinMultipleColumnsWithWhere() {
+        //TODO update on clause when fullyqualifed names are supported in the JOIN.
+        String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t2.c, demo.t2.d, demo.t3.e, " +
+                "demo.t3.f FROM demo.t1 INNER JOIN demo.t2" +
+                " ON demo.t1.aa = demo.t2.aa FULL OUTER JOIN demo.t3 ON demo.t1.aa = demo.t3.aa WHERE demo.t1.b > 10 " +
+                "AND demo.t2.d < 10;";
+
+        String[] columnsT1 = { "a", "b", "aa" };
+        ColumnType[] columnTypes1 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.TEXT) };
+        String[] partitionKeys1 = { "a" };
+        String[] clusteringKeys1 = { };
+        TableMetadata t1 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
+                partitionKeys1, clusteringKeys1);
+
+        String[] columnsT2 = { "c", "d", "aa" };
+        ColumnType[] columnTypes2 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.TEXT) };
+        String[] partitionKeys2 = { "c" };
+        String[] clusteringKeys2 = { };
+        TableMetadata t2 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t2", columnsT2, columnTypes2,
+                partitionKeys2, clusteringKeys2);
+
+        String[] columnsT3 = { "e", "f", "aa" };
+        ColumnType[] columnTypes3 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.TEXT) };
+        String[] partitionKeys3 = { "e" };
+        String[] clusteringKeys3 = { };
+        TableMetadata t3 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t3",
+                columnsT3, columnTypes3, partitionKeys3, clusteringKeys3);
+
+        String[] expectedColumnsT1 = { "demo.t1.a", "demo.t1.b", "demo.t1.aa" };
+        String[] expectedColumnsT2 = { "demo.t2.c", "demo.t2.d" };
+        String[] expectedColumnsT3 = { "demo.t3.e", "demo.t3.f" };
+
+        LogicalWorkflow workflow = null;
+        try {
+            workflow = getWorkflow(inputText, "selectSingleColumn", t1, t2, t3);
+        } catch (PlanningException e) {
+            fail("LogicalWorkflow couldn't be calculated");
+        }
+        assertNumberInitialSteps(workflow, 3);
+        Project project1 = assertColumnsInProject(workflow, "demo.t1", expectedColumnsT1);
+        Project project2 = assertColumnsInProject(workflow, "demo.t2", expectedColumnsT2);
+        Project project3 = assertColumnsInProject(workflow, "demo.t3", expectedColumnsT3);
+        assertJoin(workflow, "demo.t1", "demo.t2", "demo.t1.aa = demo.t2.aa");
+        assertFilterInPath(project1, Operations.FILTER_NON_INDEXED_GT);
+        assertFilterInPath(project2, Operations.FILTER_NON_INDEXED_LT);
+
+        assertSelect(workflow);
+
+    }
+
+    @Test
     public void selectBasicWhere() {
         String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t1.c FROM demo.t1 WHERE demo.t1.a = 3;";
         String[] columns1 = { "a", "b", "c" };
