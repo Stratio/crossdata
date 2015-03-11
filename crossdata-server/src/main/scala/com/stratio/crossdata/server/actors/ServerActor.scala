@@ -56,8 +56,9 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
 
   def chooseReroutee(): String={
     val n=cluster.state.members.collect{
-        case m if m.status == MemberStatus.Up => s"${m.address}/user/ServerActor"
+        case m if m.status == MemberStatus.Up => s"${m.address}/user/crossdata-server"
     }.toSeq
+    logger.info(s"cluster SeerverActors: $n")
     n(random.nextInt(n.length))
   }
 
