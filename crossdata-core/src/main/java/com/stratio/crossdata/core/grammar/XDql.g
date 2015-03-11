@@ -630,11 +630,10 @@ selectStatement returns [SelectStatement slctst]
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     ((T_INNER {joinType=JoinType.INNER;}
         | T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}
-        | T_RIGHT {joinType=JoinType.RIGHT;}
-        | T_LEFT {joinType=JoinType.LEFT;}
+        | T_RIGHT {joinType=JoinType.RIGHT_OUTER;}
+        | T_LEFT {joinType=JoinType.LEFT_OUTER;}
         | T_LEFT T_OUTER {joinType=JoinType.LEFT_OUTER;}
         | T_FULL T_OUTER {joinType=JoinType.FULL_OUTER;}
-        | T_NATURAL {joinType=JoinType.NATURAL;}
         | T_CROSS {joinType=JoinType.CROSS;})?
     T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
     identJoin=getAliasedTableID[workaroundTablesAliasesMap]
