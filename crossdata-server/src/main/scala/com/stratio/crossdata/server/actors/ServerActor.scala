@@ -40,6 +40,7 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
   val random=new Random
 
+  val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(), "loadWatcherActor")
   val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(cluster).
     withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
   val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).
@@ -66,12 +67,12 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
   def reroute(message: Command): Unit ={
     val reroutee = chooseReroutee()
     logger.info("reroutee=" + reroutee)
-    context.actorSelection(reroutee) ! ReroutedCommand(message)
+    context.actorSelection(reroutee) forward ReroutedCommand(message)
   }
   def reroute(message: Query): Unit ={
     val reroutee = chooseReroutee()
     logger.info("reroutee=" + reroutee)
-    context.actorSelection(reroutee) ! ReroutedQuery(message)
+    context.actorSelection(reroutee) forward ReroutedQuery(message)
   }
 
   def receive : Receive= {

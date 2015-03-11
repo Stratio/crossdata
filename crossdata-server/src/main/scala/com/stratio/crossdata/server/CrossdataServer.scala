@@ -20,7 +20,6 @@ package com.stratio.crossdata.server
 
 import akka.actor.ActorSystem
 import akka.cluster.Cluster
-import akka.cluster.routing.AdaptiveLoadBalancingRouter
 import akka.contrib.pattern.ClusterReceptionistExtension
 import akka.io.IO
 import akka.pattern.ask
@@ -59,8 +58,7 @@ class CrossdataServer extends Daemon with ServerConfig {
 
   override def init(p1: DaemonContext): Unit = {
     logger.info("Init Crossdata Server --- v0.3.0")
-    val serverActor = system.actorOf(ServerActor.props(engine,cluster).withRouter(AdaptiveLoadBalancingRouter
-      (nrOfInstances = num_server_actor)), actorName)
+    val serverActor = system.actorOf(ServerActor.props(engine,cluster), actorName)
     ClusterReceptionistExtension(system).registerService(serverActor)
 
     implicit val timeout = Timeout(5.seconds)
