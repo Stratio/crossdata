@@ -23,7 +23,7 @@ import com.stratio.crossdata.common.result.{Result, QueryStatus}
 import com.stratio.crossdata.communication.ACK
 import com.stratio.crossdata.core.query.{IValidatedQuery, MetadataValidatedQuery, SelectValidatedQuery}
 import org.apache.log4j.Logger
-import com.stratio.crossdata.common.metrics.TimeTracker
+import com.stratio.crossdata.server.actors.TimeTracker
 
 object MockPlannerActor {
   def props(): Props = Props(new MockPlannerActor())

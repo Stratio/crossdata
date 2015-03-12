@@ -23,7 +23,6 @@ import com.stratio.crossdata.common.ask.Command
 import com.stratio.crossdata.common.result.Result
 import com.stratio.crossdata.core.api.APIManager
 import org.apache.log4j.Logger
-import com.stratio.crossdata.common.metrics.TimeTracker
 
 object APIActor {
   def props(apiManager: APIManager): Props = Props(new APIActor(apiManager))

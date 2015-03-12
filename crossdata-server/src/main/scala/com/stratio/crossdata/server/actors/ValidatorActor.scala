@@ -25,7 +25,6 @@ import com.stratio.crossdata.core.metadata.MetadataManagerException
 import com.stratio.crossdata.core.query.{IParsedQuery, IValidatedQuery}
 import com.stratio.crossdata.core.validator.Validator
 import org.apache.log4j.Logger
-import com.stratio.crossdata.common.metrics.TimeTracker
 
 object ValidatorActor {
   def props(planner: ActorRef, validator: Validator): Props = Props(new ValidatorActor(planner, validator))

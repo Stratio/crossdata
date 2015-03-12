@@ -857,7 +857,13 @@ getConditions[TableName tablename] returns [ArrayList<AbstractRelation> clauses]
             (T_AND relN=getAbstractRelation[workaroundTable] { clauses.add(relN); })*
 ;
 
-getAbstractRelation[TableName tablename] returns [AbstractRelation arel]:
+getAbstractRelation[TableName tablename] returns [AbstractRelation result]
+    @init{
+        AbstractRelation arel;
+    }
+    @after{
+        result = arel;
+    }:
     arel=(getRelation[tablename] | getRelationConjunction[tablename])
 ;
 

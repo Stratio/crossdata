@@ -26,8 +26,6 @@ import com.stratio.crossdata.common.result.Result
 import com.stratio.crossdata.core.parser.Parser
 import com.stratio.crossdata.core.query.BaseQuery
 import org.apache.log4j.Logger
-import com.stratio.crossdata.common.metrics.TimeTracker
-import com.codahale.metrics.Timer
 
 object ParserActor {
   def props(validator: ActorRef, parser: Parser): Props = Props(new ParserActor(validator, parser))
