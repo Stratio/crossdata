@@ -23,9 +23,6 @@ package com.stratio.crossdata.common.data;
 public enum JoinType {
     INNER,
     CROSS,
-    NATURAL,
-    LEFT,
-    RIGHT,
     LEFT_OUTER,
     FULL_OUTER,
     RIGHT_OUTER

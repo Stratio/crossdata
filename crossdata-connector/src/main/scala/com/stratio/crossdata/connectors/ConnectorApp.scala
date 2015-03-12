@@ -20,6 +20,7 @@ package com.stratio.crossdata.connectors
 
 import java.util
 
+import com.codahale.metrics.Metric
 import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.routing.RoundRobinRouter
@@ -52,6 +53,17 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   var actorClusterNode: Option[ActorRef] = None
 
   var metricName: String = "connector"
+
+  logger.info("Connector Name: " + connectorName)
+
+  if((connectorName.isEmpty) || (connectorName.equalsIgnoreCase("XconnectorX"))){
+    logger.error("##########################################################################################");
+    logger.error("# ERROR ##################################################################################");
+    logger.error("##########################################################################################");
+    logger.error("# USING DEFAULT CONNECTOR NAME: XconnectorX                                              #")
+    logger.error("# CHANGE PARAMETER crossdata-connector.config.connector.name FROM THE CONFIGURATION FILE #")
+    logger.error("##########################################################################################");
+  }
 
   def stop():Unit = {
     actorClusterNode.get ! Shutdown()
@@ -123,7 +135,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorClusterNode.get ! mapListener
   }
 
-  override def registerMetric(name: String, metric: Metric): Unit = {
+  override def registerMetric(name: String, metric: Metric): Metric = {
     Metrics.getRegistry.register(name, metric)
   }
 }
