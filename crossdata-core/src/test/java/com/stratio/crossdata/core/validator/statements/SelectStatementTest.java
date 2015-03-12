@@ -48,11 +48,13 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
@@ -86,6 +88,132 @@ public class SelectStatementTest extends BasicValidatorTest {
             fail(e.getMessage());
         }
 
+    }
+
+    @Test
+    public void validateSelectWithSubquery() {
+        String query = "SELECT age, email FROM (SELECT * FROM test.table1);";
+
+        BaseQuery baseQuery = new BaseQuery("validateSelectWithSubquery", query, new CatalogName("demo"));
+
+        Parser parser = new Parser();
+        SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
+
+        Validator validator = new Validator();
+
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void validateSubqueriesInWhereClauses() {
+        String query = "SELECT age, email FROM users " +
+                "WHERE age = 25 * 3 + (SELECT * FROM test.table1) - phrase + (SELECT rating FROM test.table2)" +
+                " AND email = 25*(SELECT member FROM table3)" +
+                "               +(SELECT name, address FROM table3 WHERE address=(SELECT * FROM sales.customers)+age);";
+
+        BaseQuery baseQuery = new BaseQuery("validateSubqueriesInWhereClauses", query, new CatalogName("demo"));
+
+        Parser parser = new Parser();
+        SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
+
+        Validator validator = new Validator();
+
+        try {
+            SelectValidatedQuery normalizedQuery = (SelectValidatedQuery) validator.validate(parsedQuery);
+            assertNotNull(normalizedQuery, "normalizedQuery is null");
+            Assert.assertTrue(true, "Test failed.");
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+
+    }
+
+    @Test
+    public void validateTableSubqueryAndWhereSubquery() {
+        String query = "SELECT * FROM (SELECT name, surname, rating FROM table3) " +
+                "WHERE rating > (SELECT age FROM sales.customers);";
+
+        BaseQuery baseQuery = new BaseQuery("validateTableSubqueryAndWhereSubquery", query, new CatalogName("demo"));
+
+        Parser parser = new Parser();
+        SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
+
+        Validator validator = new Validator();
+
+        try {
+            SelectValidatedQuery normalizedQuery = (SelectValidatedQuery) validator.validate(parsedQuery);
+            assertNotNull(normalizedQuery, "normalizedQuery is null");
+            Assert.assertTrue(true, "Test failed.");
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+
+    }
+
+    @Test
+    public void validateComplexSubqueries(){
+        String query = "SELECT name, gender, age FROM " +
+                "(SELECT * FROM users WHERE email = 18 + (SELECT email FROM sales.customers) * 'my comment');";
+
+        BaseQuery baseQuery = new BaseQuery("validateComplexSubqueries", query, new CatalogName("demo"));
+
+        Parser parser = new Parser();
+        SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
+
+        Validator validator = new Validator();
+
+        try {
+            SelectValidatedQuery normalizedQuery = (SelectValidatedQuery) validator.validate(parsedQuery);
+            assertNotNull(normalizedQuery, "normalizedQuery is null");
+            Assert.assertTrue(true, "Test failed.");
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void validateComplexSubqueries2(){
+        String query = "SELECT name FROM " +
+                "(SELECT * FROM users " +
+                    "WHERE age = 18 + (SELECT rating FROM table3) / 'my comment') AS myTable;";
+
+        BaseQuery baseQuery = new BaseQuery("validateComplexSubqueries2", query, new CatalogName("demo"));
+
+        Parser parser = new Parser();
+        SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
+
+        Validator validator = new Validator();
+
+        try {
+            SelectValidatedQuery normalizedQuery = (SelectValidatedQuery) validator.validate(parsedQuery);
+            assertNotNull(normalizedQuery, "normalizedQuery is null");
+            Assert.assertTrue(true, "Test failed.");
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        } catch (Exception e) {
+            Assert.fail(e.getMessage());
+        }
     }
 
     /*

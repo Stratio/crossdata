@@ -21,6 +21,7 @@ package com.stratio.crossdata.common.logicalplan;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.stratio.crossdata.common.data.JoinType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.Relation;
 
@@ -34,6 +35,12 @@ public class Join extends UnionStep {
      * Join identifier.
      */
     private final String id;
+
+    /**
+     *
+     * Join type.
+     */
+    private JoinType type;
 
     /**
      * List of logical step identifiers involved in the join.
@@ -102,6 +109,22 @@ public class Join extends UnionStep {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * Get the type.
+     * @return a {@link com.stratio.crossdata.common.data.JoinType} .
+     */
+    public JoinType getType() {
+        return type;
+    }
+
+    /**
+     * Set the type.
+     * @param type The type.
+     */
+    public void setType(JoinType type) {
+        this.type = type;
     }
 
     @Override

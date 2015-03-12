@@ -90,6 +90,10 @@ public class Validator {
     private static final Logger LOG = Logger.getLogger(Validator.class);
     private Normalizator normalizator = null;
 
+    public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
+        return validate(parsedQuery, new ArrayList<TableName>());
+    }
+
     /**
      * validate a parsed query.
      *
@@ -98,7 +102,8 @@ public class Validator {
      * @throws ValidationException
      * @throws IgnoreQueryException
      */
-    public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
+    public IValidatedQuery validate(IParsedQuery parsedQuery, List<TableName> parentsTableNames)
+            throws ValidationException, IgnoreQueryException {
         IValidatedQuery validatedQuery = null;
         LOG.info("Validating CrossdataStatements...");
         for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
@@ -165,7 +170,7 @@ public class Validator {
                 validateInsertTypes(parsedQuery);
                 break;
             case VALIDATE_SELECT:
-                validateSelect(parsedQuery);
+                validateSelect(parsedQuery, parentsTableNames);
                 break;
             case MUST_BE_CONNECTED:
                 validateConnectorConnected(parsedQuery.getStatement());
@@ -346,10 +351,10 @@ public class Validator {
         }
     }
 
-    private void  validateSelect(IParsedQuery parsedQuery) throws ValidationException {
+    private void  validateSelect(IParsedQuery parsedQuery, List<TableName> parentsTableNames) throws ValidationException {
         SelectParsedQuery selectParsedQuery = (SelectParsedQuery) parsedQuery;
         normalizator = new Normalizator(selectParsedQuery);
-        normalizator.execute();
+        normalizator.execute(parentsTableNames);
     }
 
     private void validateConnector(CrossdataStatement stmt, boolean exist) throws IgnoreQueryException,

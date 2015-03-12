@@ -92,6 +92,14 @@ public class Relation implements Serializable {
         return rightTerm;
     }
 
+    public void setLeftTerm(Selector leftTerm) {
+        this.leftTerm = leftTerm;
+    }
+
+    public void setRightTerm(Selector rightTerm) {
+        this.rightTerm = rightTerm;
+    }
+
     /**
      * Get the tables queried on the selector.
      *
