@@ -18,11 +18,14 @@
 
 package com.stratio.connector.inmemory;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.codahale.metrics.Timer;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.connector.inmemory.metadata.MetadataListener;
 import com.stratio.crossdata.common.connector.AbstractExtendedConnector;
@@ -87,6 +90,12 @@ public class InMemoryConnector extends AbstractExtendedConnector {
 
     @Override
     public void connect(ICredentials credentials, ConnectorClusterConfig config) throws ConnectionException {
+        //Init Metric
+        Timer timer = new Timer();
+        String timerName = name(InMemoryConnector.class, "connect");
+        registerMetric(timerName, timer);
+
+        // Connection
         ClusterName targetCluster = config.getName();
         Map<String, String> options = config.getClusterOptions();
         LOG.info("clusterOptions: " + config.getClusterOptions().toString() + " connectorOptions: " + config.getConnectorOptions());
@@ -95,12 +104,18 @@ public class InMemoryConnector extends AbstractExtendedConnector {
             //we instantiate the Datastore instead.
             InMemoryDatastore datastore = new InMemoryDatastore(Integer.valueOf(options.get(DATASTORE_PROPERTY)));
             clusters.put(targetCluster, datastore);
-        }else{
+        } else {
+            long millis = timer.time().stop();
+            LOG.info("Connection took " + millis + " milliseconds");
             throw new ConnectionException("Invalid options, expecting TableRowLimit");
         }
 
         //Try to restore existing schema
         restoreSchema(targetCluster);
+
+        //End Metric
+        long millis = timer.time().stop();
+        LOG.info("Connection took " + millis + " milliseconds");
     }
 
     @Override

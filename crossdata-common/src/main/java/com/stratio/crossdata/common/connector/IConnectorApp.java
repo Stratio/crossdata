@@ -63,5 +63,5 @@ public interface IConnectorApp {
 
     void subscribeToMetadataUpdate(IMetadataListener metadataListener);
 
-    void registerMetric(String name, Metric metric);
+    Metric registerMetric(String name, Metric metric);
 }
