@@ -20,7 +20,7 @@ package com.stratio.crossdata.connectors
 
 import java.util
 
-import com.codahale.metrics.Metric
+import com.codahale.metrics._
 import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.routing.RoundRobinRouter
@@ -31,13 +31,14 @@ import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.common.connector.{IMetadataListener, IConnectorApp, IConfiguration, IConnector}
 import org.apache.log4j.Logger
 import scala.collection.mutable.Set
-import com.codahale.metrics.{Metric, Gauge, MetricRegistry}
 import scala.Some
 import com.stratio.crossdata.communication.Shutdown
 import scala.concurrent.Await
 import akka.util.Timeout
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
+import scala.Some
+import com.stratio.crossdata.communication.Shutdown
 
 object ConnectorApp extends App {
   args.length==2

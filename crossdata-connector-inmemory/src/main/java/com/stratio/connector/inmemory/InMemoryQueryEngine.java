@@ -83,6 +83,8 @@ public class InMemoryQueryEngine implements IQueryEngine {
      */
     private final InMemoryConnector connector;
 
+    private final Timer executeTimer;
+
     /**
      * Map with the equivalences between crossdata operators and the ones supported by our datastore.
      */
@@ -102,14 +104,15 @@ public class InMemoryQueryEngine implements IQueryEngine {
      */
     public InMemoryQueryEngine(InMemoryConnector connector){
         this.connector = connector;
+        executeTimer = new Timer();
+        String timerName = name(InMemoryQueryEngine.class, "execute");
+        connector.registerMetric(timerName, executeTimer);
     }
 
     @Override
     public QueryResult execute(LogicalWorkflow workflow) throws ConnectorException {
         //Init Metric
-        Timer timer = new Timer();
-        String timerName = name(InMemoryQueryEngine.class, "execute");
-        connector.registerMetric(timerName, timer);
+        Timer.Context executeTimerContext = executeTimer.time();
 
         List<Object[]> results;
         Project projectStep;
@@ -157,7 +160,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
         QueryResult finalResult = toCrossdataResults(selectStep, limit, results);
 
         //End Metric
-        long millis = timer.time().stop();
+        long millis = executeTimerContext.stop();
         LOG.info("Query took " + millis + " milliseconds");
 
         return finalResult;
