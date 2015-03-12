@@ -40,6 +40,7 @@ class CrossdataServer extends Daemon with ServerConfig {
   // Create an Akka system
   lazy val system = ActorSystem(clusterName, config)
 
+  //LoadWatcherManager.MANAGER.clear()
   val cluster=Cluster(system)
 
   override def destroy(): Unit = {

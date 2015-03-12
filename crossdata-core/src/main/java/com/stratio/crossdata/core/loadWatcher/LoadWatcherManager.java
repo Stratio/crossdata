@@ -222,7 +222,7 @@ public enum LoadWatcherManager {
         }
     }
 
-    /**
+     /**
      * Get the value associated with a key.
      *
      * @param key The key.
@@ -232,6 +232,24 @@ public enum LoadWatcherManager {
         shouldBeInit();
         shouldExist(key);
         return data.get(key);
+    }
+
+    /**
+     * Get the complete map.
+     * 
+     * @return
+     */
+    public Map<String, Serializable> getData() {
+        return data;
+    }
+    
+    /**
+     * Get all the keys.
+     * 
+     * @return
+     */
+    public java.util.Set<String> getKeySet() {
+        return data.keySet();
     }
 
 }

@@ -21,14 +21,16 @@ package com.stratio.crossdata.server.actors
 import java.util.{Random, UUID}
 
 import akka.actor.{Actor, Props, ReceiveTimeout}
-import akka.cluster.{MemberStatus, Cluster}
+import akka.cluster.{Cluster, MemberStatus}
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
 import com.stratio.crossdata.common.result.{ConnectResult, DisconnectResult, Result}
-import com.stratio.crossdata.communication.{ReroutedCommand, ReroutedQuery, Disconnect}
+import com.stratio.crossdata.communication.{Disconnect, ReroutedCommand, ReroutedQuery}
 import com.stratio.crossdata.core.engine.Engine
+import com.stratio.crossdata.core.loadWatcher.LoadWatcherManager
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
+import collection.JavaConversions._
 
 object ServerActor {
 
@@ -39,8 +41,9 @@ object ServerActor {
 class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
   val random=new Random
-
-  val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(), "loadWatcherActor")
+  val hostname=config.getString("akka.remote.netty.tcp.hostname")
+  
+  val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(hostname), "loadWatcherActor")
   val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(cluster).
     withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
   val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).
@@ -56,11 +59,18 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
 
 
   def chooseReroutee(): String={
+    //TODO: what happens if there is old data in infinispan?
+    //TODO: clean infinispan every time we start a node?
+    //TODO: clean infinispan every once in a while?
+    //TODO: what happens if the values can not be cast to double
+    logger.info("choosing reroutee")
     val n=cluster.state.members.collect{
         case m if m.status == MemberStatus.Up => s"${m.address}/user/crossdata-server"
     }.toSeq
-    logger.info(s"cluster SeerverActors: $n")
-    n(random.nextInt(n.length))
+    val infinispanNodes=LoadWatcherManager.MANAGER.getData.filter(i=>n.exists(nd=>nd.contains(i._1.toString)))
+    val min=infinispanNodes.minBy(_._2.toString.toDouble)
+    //n(random.nextInt(n.length))
+    n.filter(_.contains(min._1))(0)
   }
 
 
@@ -77,7 +87,7 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
 
   def receive : Receive= {
     case query: Query =>{
-      logger.info("Query rerouted " + query.statement.toString)
+      logger.info("Query rerouted : " + query.statement.toString)
       reroute(query)
     } 
     case ReroutedQuery(query)=> {
