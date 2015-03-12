@@ -25,7 +25,7 @@
     <artifactId>crossdata-parent</artifactId>
     <packaging>pom</packaging>
     <version>0.3.0-SNAPSHOT</version>
-    <name>Stratio Crossdata parent</name>
+    <name>Stratio Crossdata</name>
     <description>Stratio Crossdata parent</description>
     <url>http://stratio.github.io/crossdata/</url>
 
