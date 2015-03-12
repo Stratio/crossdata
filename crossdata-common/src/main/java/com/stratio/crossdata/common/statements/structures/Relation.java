@@ -108,7 +108,6 @@ public class Relation extends AbstractRelation {
         return leftTerm.getSelectorTables();
     }
 
-
     /**
      * Get the columns involved in the relations.
      *

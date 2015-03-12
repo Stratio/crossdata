@@ -24,7 +24,6 @@ import com.stratio.crossdata.common.result.Result
 import com.stratio.crossdata.core.planner.Planner
 import com.stratio.crossdata.core.query.{MetadataValidatedQuery, SelectValidatedQuery, StorageValidatedQuery}
 import org.apache.log4j.Logger
-import com.stratio.crossdata.common.metrics.TimeTracker
 
 object PlannerActor {
   def props(executor: ActorRef, planner: Planner): Props = Props(new PlannerActor(executor, planner))

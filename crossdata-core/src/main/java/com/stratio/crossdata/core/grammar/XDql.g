@@ -194,6 +194,7 @@ T_TABLES: T A B L E S;
 T_IF: I F;
 T_EXISTS: E X I S T S;
 T_AND: A N D;
+T_OR: O R;
 T_USE: U S E;
 T_SET: S E T;
 T_OPTIONS: O P T I O N S;
@@ -843,9 +844,34 @@ getGroupBy[TableName tablename] returns [ArrayList<Selector> groups]
     (T_COMMA identN=getSelector[tablename] {groups.add(identN);})*
 ;
 
-getConditions[TableName tablename] returns[ArrayList<Relation> clauses]:
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////// POC /////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 
+getConditions[TableName tablename] returns [ArrayList<AbstractRelation> clauses]
+    @init{
+        clauses = new ArrayList<>();
+        workaroundTable = tablename;
+    }:
+    rel1=getAbstractRelation[tablename] { clauses.add(rel1); }
+            (T_AND relN=getAbstractRelation[workaroundTable] { clauses.add(relN); })*
 ;
+
+getAbstractRelation[TableName tablename] returns [AbstractRelation arel]:
+    arel=(getRelation[tablename] | getRelationConjunction[tablename])
+;
+
+getRelationConjunction[TableName tablename] returns [RelationConjunction rc]
+    @after{
+        $rc = new RelationConjunction(leftOperand, rightOperand);
+    }:
+    leftOperand=getConditions[tablename]
+    T_OR
+    rightOperand=getConditions[tablename]
+;
+
+/////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     @init{

@@ -18,5 +18,27 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
-public class RelationConjunction {
+import java.util.ArrayList;
+import java.util.List;
+
+public class RelationConjunction extends AbstractRelation {
+
+    private static final long serialVersionUID = 2085700590246602145L;
+
+    private final List<AbstractRelation> leftRelations = new ArrayList<>();
+
+    private final List<AbstractRelation> rightRelations = new ArrayList<>();
+
+    public RelationConjunction(List<AbstractRelation> leftRelations, List<AbstractRelation> rightRelations) {
+        this.leftRelations.addAll(leftRelations);
+        this.rightRelations.addAll(rightRelations);
+    }
+
+    public List<AbstractRelation> getLeftRelations() {
+        return leftRelations;
+    }
+
+    public List<AbstractRelation> getRightRelations() {
+        return rightRelations;
+    }
 }
