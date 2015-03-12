@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{replyConnectorName, getConnectorName,Connect}
 import com.stratio.crossdata.core.execution.ExecutionManager
+import com.stratio.crossdata.core.loadWatcher.LoadWatcherManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
 
@@ -170,6 +171,11 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
         val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri + "/user/ConnectorActor/")
         MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName], Status.OFFLINE)
         MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
+      }
+      // example of member.member.address = akka.tcp://CrossdataServerCluster@127.0.0.1:13421
+      val lwmkey=member.member.address.toString.split("@")(1).split(":")(0)
+      if(LoadWatcherManager.MANAGER.exists(lwmkey)){
+        LoadWatcherManager.MANAGER.deleteEntry(lwmkey)
       }
     }
 

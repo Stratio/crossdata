@@ -59,10 +59,6 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
 
 
   def chooseReroutee(): String={
-    //TODO: what happens if there is old data in infinispan?
-    //TODO: clean infinispan every time we start a node?
-    //TODO: clean infinispan every once in a while?
-    //TODO: what happens if the values can not be cast to double
     logger.info("choosing reroutee")
     val n=cluster.state.members.collect{
         case m if m.status == MemberStatus.Up => s"${m.address}/user/crossdata-server"
