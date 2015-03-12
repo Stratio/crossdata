@@ -558,6 +558,11 @@ public enum Operations {
     FILTER_FUNCTION_DISTINCT("FILTER_FUNCTION_DISTINCT"),
 
     /**
+     * The engine supports OR operator.
+     */
+    FILTER_DISJUNCTION("FILTER_DISJUNCTION"),
+
+    /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.PartialResults} operations
      * to read a list of partial results.
      */

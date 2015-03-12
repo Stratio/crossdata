@@ -843,6 +843,10 @@ getGroupBy[TableName tablename] returns [ArrayList<Selector> groups]
     (T_COMMA identN=getSelector[tablename] {groups.add(identN);})*
 ;
 
+getConditions[TableName tablename] returns[ArrayList<Relation> clauses]:
+
+;
+
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     @init{
         clauses = new ArrayList<>();

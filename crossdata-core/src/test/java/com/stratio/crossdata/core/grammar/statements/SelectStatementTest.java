@@ -590,4 +590,23 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatement(inputText, expectedText, "basicSelectDoubleColumn");
     }
 
+    @Test
+    public void selectOrOperator() {
+        String inputText = "SELECT * FROM test.table1 WHERE"
+                + " col1 = col2"
+                + " AND col1 = 25"
+                + " AND col3 = 'test'"
+                + " AND ((col4 = 'Spain' AND col5 = 'USA')"
+                     + " OR (col4 = 'USA' AND col5 = 'Spain'))"
+                + " AND col6 = 13022013;";
+        String expectedText = "SELECT * FROM test.table1 WHERE"
+                + " test.table1.col1 = test.table1.col2"
+                + " AND test.table1.col1 = 25"
+                + " AND test.table1.col3 = 'test'"
+                + " AND ((test.table1.col4 = 'Spain' AND test.table1.col5 = 'USA')"
+                + " OR (test.table1.col4 = 'USA' AND test.table1.col5 = 'Spain'))"
+                + " AND test.table1.col6 = 13022013;";
+        testRegularStatement(inputText, expectedText, "selectOrOperator");
+    }
+
 }
