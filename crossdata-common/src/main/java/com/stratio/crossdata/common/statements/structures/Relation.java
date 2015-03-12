@@ -18,7 +18,6 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -28,9 +27,9 @@ import com.stratio.crossdata.common.data.TableName;
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
  */
-public class Relation implements Serializable {
+public class Relation extends AbstractRelation {
 
-    private static final long serialVersionUID = 7159938239857521288L;
+    private static final long serialVersionUID = -3836506017515944374L;
 
     /**
      * Identifier in the left part of the relationship.
