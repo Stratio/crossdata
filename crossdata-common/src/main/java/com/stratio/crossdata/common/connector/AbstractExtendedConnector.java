@@ -20,6 +20,7 @@ package com.stratio.crossdata.common.connector;
 
 import java.util.List;
 
+import com.codahale.metrics.Metric;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectionStatus;
@@ -80,5 +81,9 @@ public abstract class AbstractExtendedConnector implements IConnector {
      */
     public ConnectionStatus getConnectionStatus(){
         return connectorApp.getConnectionStatus();
+    }
+
+    public Metric registerMetric(String name, Metric metric){
+        return connectorApp.registerMetric(name, metric);
     }
 }

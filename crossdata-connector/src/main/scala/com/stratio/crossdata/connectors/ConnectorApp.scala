@@ -135,7 +135,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorClusterNode.get ! mapListener
   }
 
-  override def registerMetric(name: String, metric: Metric): Unit = {
+  override def registerMetric(name: String, metric: Metric): Metric = {
     Metrics.getRegistry.register(name, metric)
   }
 }
