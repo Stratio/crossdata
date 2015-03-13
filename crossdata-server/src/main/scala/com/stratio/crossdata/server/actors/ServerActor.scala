@@ -18,25 +18,35 @@
 
 package com.stratio.crossdata.server.actors
 
-import java.util.UUID
+import java.util.{Random, UUID}
 
 import akka.actor.{Actor, Props, ReceiveTimeout}
+import akka.cluster.{Cluster, MemberStatus}
 import akka.routing.RoundRobinRouter
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
 import com.stratio.crossdata.common.result.{ConnectResult, DisconnectResult, Result}
-import com.stratio.crossdata.communication.Disconnect
+import com.stratio.crossdata.communication.{Disconnect, ReroutedCommand, ReroutedQuery}
 import com.stratio.crossdata.core.engine.Engine
+import com.stratio.crossdata.core.loadWatcher.LoadWatcherManager
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
+import collection.JavaConversions._
 
 object ServerActor {
-  def props(engine: Engine): Props = Props(new ServerActor(engine))
+
+
+  def props(engine: Engine,cluster: Cluster): Props = Props(new ServerActor(engine,cluster))
 }
 
-class ServerActor(engine: Engine) extends Actor with ServerConfig {
+class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
+  val random=new Random
+  val hostname=config.getString("akka.remote.netty.tcp.hostname")
 
-  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props().
+  val balancing: String = config.getString("config.cluster.balancing")
+  
+  val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(hostname), "loadWatcherActor")
+  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(cluster).
     withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
   val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).
     withRouter(RoundRobinRouter(nrOfInstances = num_coordinator_actor)), "CoordinatorActor")
@@ -49,13 +59,45 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
   val APIActorRef = context.actorOf(APIActor.props(engine.getAPIManager()).
     withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
 
-  def receive : Receive= {
-    /*
-    case keepalive:IAmAlive =>{
-          //logger.debug("receiving keepalive message from "+sender)
+
+  def chooseReroutee(): String={
+    logger.info("choosing reroutee")
+    val n=cluster.state.members.collect{
+        case m if m.status == MemberStatus.Up => s"${m.address}/user/crossdata-server"
+    }.toSeq
+    val infinispanNodes=LoadWatcherManager.MANAGER.getData.filter(i=>n.exists(nd=>nd.contains(i._1.toString)))
+    val min=infinispanNodes.minBy(_._2.toString.toDouble)
+    //n(random.nextInt(n.length))
+    n.filter(_.contains(min._1))(0)
+  }
+
+
+  def reroute(message: Command): Unit ={
+    if(balancing.equals("on")){
+      val reroutee = chooseReroutee()
+      logger.info("reroutee=" + reroutee)
+      context.actorSelection(reroutee) forward ReroutedCommand(message)
+    } else {
+      APIActorRef forward message
     }
-    */
-    case query: Query => {
+  }
+
+  def reroute(message: Query): Unit ={
+    if(balancing.equals("on")){
+      val reroutee = chooseReroutee()
+      logger.info("reroutee=" + reroutee)
+      context.actorSelection(reroutee) forward ReroutedQuery(message)
+    } else {
+      parserActorRef forward message
+    }
+  }
+
+  def receive : Receive= {
+    case query: Query =>{
+      logger.info("Query rerouted : " + query.statement.toString)
+      reroute(query)
+    } 
+    case ReroutedQuery(query)=> {
       logger.info("query: " + query + " sender: " + sender.path.address)
       parserActorRef forward query
     }
@@ -67,11 +109,14 @@ class ServerActor(engine: Engine) extends Actor with ServerConfig {
       logger.info("Goodbye " + user + ".")
       sender ! DisconnectResult.createDisconnectResult(user)
     }
-    case cmd: Command => {
+    case cmd: Command =>{
+      logger.info("API Command call rerouted " + cmd.commandType)
+      reroute(cmd)
+    }
+    case ReroutedCommand(cmd) => {
       logger.info("API Command call " + cmd.commandType)
       APIActorRef forward cmd
     }
-
     case ReceiveTimeout => {
       logger.warn("ReceiveTimeout")
       //TODO Process ReceiveTimeout

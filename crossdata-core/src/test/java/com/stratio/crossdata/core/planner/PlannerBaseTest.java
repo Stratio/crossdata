@@ -218,8 +218,8 @@ public class PlannerBaseTest {
         boolean found = false;
         while (step != null && !found) {
             if (Filter.class.isInstance(step)) {
-                LOG.info("-> " + ((Filter) step).getOperation());
-                found = operation.equals(((Filter) step).getOperation());
+                LOG.info("-> " + step.getOperation());
+                found = operation.equals(step.getOperation());
             }
             step = step.getNextStep();
         }

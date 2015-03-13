@@ -22,12 +22,12 @@ import java.io.Serializable
 import java.util
 import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
+
+import akka.cluster.Cluster
 import akka.pattern.ask
 import akka.testkit.ImplicitSender
-import com.stratio.crossdata.common.data.{CatalogName, ClusterName, ColumnName, ConnectorName, Status,
-DataStoreName, FirstLevelName, IndexName, TableName}
-import com.stratio.crossdata.common.executionplan.{StorageWorkflow, ExecutionType, ResultType, MetadataWorkflow,
-QueryWorkflow}
+import com.stratio.crossdata.common.data.{CatalogName, ClusterName, ColumnName, ConnectorName, DataStoreName, FirstLevelName, IndexName, Status, TableName}
+import com.stratio.crossdata.common.executionplan.{ExecutionType, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, Project, Select}
 import com.stratio.crossdata.common.manifest.PropertyType
 import com.stratio.crossdata.common.metadata._
@@ -35,23 +35,22 @@ import com.stratio.crossdata.common.metadata.structures.TableType
 import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.common.utils.{Constants, StringUtils}
 import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
+import com.stratio.crossdata.core.MetadataManagerTestHelper
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.grid.Grid
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.planner.{PlannerExecutionWorkflowTest, SelectValidatedQueryWrapper}
-import com.stratio.crossdata.core.query.{SelectPlannedQuery, SelectParsedQuery, BaseQuery, StorageParsedQuery,
-StorageValidatedQuery, StoragePlannedQuery, MetadataParsedQuery, MetadataValidatedQuery, MetadataPlannedQuery}
-import com.stratio.crossdata.core.statements.{CreateCatalogStatement, CreateTableStatement, InsertIntoStatement,
-MetadataStatement, SelectStatement}
+import com.stratio.crossdata.core.query.{BaseQuery, MetadataParsedQuery, MetadataPlannedQuery, MetadataValidatedQuery, SelectParsedQuery, SelectPlannedQuery, StorageParsedQuery, StoragePlannedQuery, StorageValidatedQuery}
+import com.stratio.crossdata.core.statements.{CreateCatalogStatement, CreateTableStatement, InsertIntoStatement, MetadataStatement, SelectStatement}
 import com.stratio.crossdata.server.actors.{ConnectorManagerActor, CoordinatorActor}
 import com.stratio.crossdata.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.crossdata.server.mocks.MockConnectorActor
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
+
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import com.stratio.crossdata.core.MetadataManagerTestHelper
 
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
@@ -77,7 +76,7 @@ ImplicitSender with BeforeAndAfterAll{
   }
 
   //Actors in this tests
-  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(), "ConnectorManagerActor")
+  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(Cluster(system)), "ConnectorManagerActor")
   val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
     "CoordinatorActor")
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
