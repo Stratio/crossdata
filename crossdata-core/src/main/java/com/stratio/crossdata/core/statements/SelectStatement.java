@@ -31,6 +31,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationSelector;
@@ -85,6 +86,13 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      * in the WHERE clause.
      */
     private List<Relation> where = null;
+
+    private List<AbstractRelation> conditions;
+
+    public void setConditions(List<AbstractRelation> conditions) {
+        this.conditions = conditions;
+    }
+
     /**
      * Whether an ORDER BY clause has been specified.
      */
@@ -505,6 +513,12 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(" WHERE ");
             sb.append(StringUtils.stringList(where, " AND "));
         }
+
+        if ((conditions != null) && (!conditions.isEmpty())) {
+            sb.append(" WHEN ");
+            sb.append(StringUtils.stringList(conditions, " AND "));
+        }
+
         if (orderInc) {
             sb.append(" ORDER BY ").append(orderByClauses);
         }

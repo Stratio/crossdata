@@ -591,6 +591,44 @@ public class SelectStatementTest extends ParsingTest {
     }
 
     @Test
+    public void selectOrOperatorSimple() {
+        String inputText = "SELECT * FROM test.table1 WHERE"
+                + " col1 = col2"
+                + " AND col3 = 'test'"
+                + " AND col4 = 'Spain' OR col6 = 13022013;";
+        String expectedText = "SELECT * FROM test.table1 WHEN"
+                + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col3 = 'test'"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'Spain' OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013;";
+        testRegularStatement(inputText, expectedText, "selectOrOperatorSimple");
+    }
+
+    @Test
+    public void selectOrOperatorSimple2() {
+        String inputText = "SELECT * FROM test.table1 WHERE"
+                + " col1 = col2"
+                + " OR col6 = 13022013;";
+        String expectedText = "SELECT * FROM test.table1 WHEN"
+                + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
+                + " OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013;";
+        testRegularStatement(inputText, expectedText, "selectOrOperatorSimple2");
+    }
+
+    @Test
+    public void selectOrOperatorSimple3() {
+        String inputText = "SELECT * FROM test.table1 WHERE"
+                + " col1 = col2"
+                + " AND col3 = 'test'"
+                + " AND col4 = 'Spain' OR col6 = 13022013 AND col7 = 25;";
+        String expectedText = "SELECT * FROM test.table1 WHEN"
+                + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col3 = 'test'"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'Spain' OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013 "
+                                                                     + "AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col7 = 25;";
+        testRegularStatement(inputText, expectedText, "selectOrOperatorSimple3");
+    }
+
+    @Test
     public void selectOrOperator() {
         String inputText = "SELECT * FROM test.table1 WHERE"
                 + " col1 = col2"
@@ -600,12 +638,12 @@ public class SelectStatementTest extends ParsingTest {
                      + " OR (col4 = 'USA' AND col5 = 'Spain'))"
                 + " AND col6 = 13022013;";
         String expectedText = "SELECT * FROM test.table1 WHERE"
-                + " test.table1.col1 = test.table1.col2"
-                + " AND test.table1.col1 = 25"
-                + " AND test.table1.col3 = 'test'"
-                + " AND ((test.table1.col4 = 'Spain' AND test.table1.col5 = 'USA')"
-                + " OR (test.table1.col4 = 'USA' AND test.table1.col5 = 'Spain'))"
-                + " AND test.table1.col6 = 13022013;";
+                + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = 25"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col3 = 'test'"
+                + " AND ((<UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'Spain' AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col5 = 'USA')"
+                + " OR (<UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'USA' AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col5 = 'Spain'))"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013;";
         testRegularStatement(inputText, expectedText, "selectOrOperator");
     }
 

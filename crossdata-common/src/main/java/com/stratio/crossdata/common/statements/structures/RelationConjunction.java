@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.statements.structures;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class RelationConjunction extends AbstractRelation {
@@ -34,11 +35,39 @@ public class RelationConjunction extends AbstractRelation {
         this.rightRelations.addAll(rightRelations);
     }
 
+    public RelationConjunction(AbstractRelation leftRelation, AbstractRelation rightRelation) {
+        this.leftRelations.add(leftRelation);
+        this.rightRelations.add(rightRelation);
+    }
+
     public List<AbstractRelation> getLeftRelations() {
         return leftRelations;
     }
 
     public List<AbstractRelation> getRightRelations() {
         return rightRelations;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        Iterator<AbstractRelation> leftIter = leftRelations.iterator();
+        while(leftIter.hasNext()){
+            AbstractRelation leftRelation = leftIter.next();
+            sb.append(leftRelation);
+            if(leftIter.hasNext()){
+                sb.append(" AND ");
+            }
+        }
+        sb.append(" OR ");
+        Iterator<AbstractRelation> rightIter = rightRelations.iterator();
+        while(rightIter.hasNext()){
+            AbstractRelation rightRelation = rightIter.next();
+            sb.append(rightRelation);
+            if(rightIter.hasNext()){
+                sb.append(" AND ");
+            }
+        }
+        return sb.toString();
     }
 }

@@ -615,6 +615,7 @@ selectStatement returns [SelectStatement slctst]
         boolean implicitJoin = false;
         boolean subqueryInc = false;
         JoinType joinType=JoinType.INNER;
+        List<Relation> whereClauses = new ArrayList<>();
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
@@ -640,7 +641,8 @@ selectStatement returns [SelectStatement slctst]
     identJoin=getAliasedTableID[workaroundTablesAliasesMap]
     T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
     joinRelations=getWhereClauses[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
-    (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getWhereClauses[null])?
+    //(T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getWhereClauses[null])?
+    (T_WHERE conditions=getConditions[null] { slctst.setConditions(conditions); } )?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
@@ -848,33 +850,48 @@ getGroupBy[TableName tablename] returns [ArrayList<Selector> groups]
 /////////////////////////////////// POC /////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
 
-getConditions[TableName tablename] returns [ArrayList<AbstractRelation> clauses]
+getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
     @init{
         clauses = new ArrayList<>();
         workaroundTable = tablename;
     }:
-    rel1=getAbstractRelation[tablename] { clauses.add(rel1); }
+    rel1=getAbstractRelation[workaroundTable] { clauses.add(rel1); }
             (T_AND relN=getAbstractRelation[workaroundTable] { clauses.add(relN); })*
 ;
 
 getAbstractRelation[TableName tablename] returns [AbstractRelation result]
     @init{
-        AbstractRelation arel;
-    }
-    @after{
-        result = arel;
+        workaroundTable = tablename;
     }:
-    arel=(getRelation[tablename] | getRelationConjunction[tablename])
+    rel1=getRelation[workaroundTable] { result = rel1; }
+    (T_OR rel2=getRelation[workaroundTable]
+        { result = new RelationConjunction(rel1, rel2); } )?
 ;
 
+/*
+getAbstractRelation[TableName tablename] returns [AbstractRelation result]
+    @init{
+        workaroundTable = tablename;
+    }:
+    rel1=getRelation[workaroundTable] { result = rel1; }
+    | rel2=getRelationConjunction[workaroundTable] { result = rel2; }
+;
+*/
+
+/*
 getRelationConjunction[TableName tablename] returns [RelationConjunction rc]
+    @init{
+        workaroundTable = tablename;
+    }
     @after{
         $rc = new RelationConjunction(leftOperand, rightOperand);
     }:
-    leftOperand=getConditions[tablename]
+    rel1=getRelation[workaroundTable]
+    leftOperand=getConditions[workaroundTable]
     T_OR
-    rightOperand=getConditions[tablename]
+    rightOperand=getConditions[workaroundTable]
 ;
+*/
 
 /////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////
