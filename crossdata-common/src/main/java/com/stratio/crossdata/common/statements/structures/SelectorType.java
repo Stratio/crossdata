@@ -30,5 +30,6 @@ public enum SelectorType {
     INTEGER,
     FLOATING_POINT,
     RELATION,
-    SELECT
+    SELECT,
+    GROUP
 }
