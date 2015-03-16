@@ -644,7 +644,8 @@ selectStatement returns [SelectStatement slctst]
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
-        if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
+        //if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column
+       //name");
 
         if(windowInc)
             $slctst.setWindow(window);
@@ -848,15 +849,19 @@ getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
         clauses = new ArrayList<>();
         workaroundTable = tablename;
     }:
-    rel1=getRelation[tablename] {clauses.add(rel1);}
-        (T_AND relN=getRelation[workaroundTable] {clauses.add(relN);})*
+    rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND relN=getRelation[workaroundTable] {clauses.add(relN);})*
+
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]
+    @init{
+            workaroundTable = tablename;
+    }
     @after{
         $mrel = new Relation(s, operator, rs);
     }:
-    s=getSelector[tablename] operator=getComparator rs=getSelector[tablename]
+    s=getSelector[workaroundTable] operator=getComparator rs=getInterval[workaroundTable]
+     | s=getSelector[workaroundTable] operator=getComparator rs=getSelector[workaroundTable]
 ;
 
 getFields[MutablePair pair]:
@@ -940,6 +945,24 @@ getSelector[TableName tablename] returns [Selector sel]
     (operator=getOperator {relationSelector=true;} secondSelector=getSelector[workaroundTable])?
 ;
 
+getInterval[TableName tablename] returns [Selector sel]
+    @init{
+            Selector firstSelector = null;
+            Selector lastSelector=null;
+            workaroundTable = tablename;
+        }
+    @after{
+           sel = new GroupSelector(workaroundTable,firstSelector,lastSelector);
+        }:
+    (floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector( workaroundTable,$floatingNumber.text);}
+        | constant=T_CONSTANT {firstSelector = new IntegerSelector(workaroundTable, $constant.text);}
+        | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(workaroundTable, $qLiteral.text);})
+    T_AND
+    (floatingNumber=T_FLOATING {lastSelector = new FloatingPointSelector(workaroundTable,$floatingNumber.text);}
+        | constant=T_CONSTANT {lastSelector = new IntegerSelector(workaroundTable,$constant.text);}
+        | qLiteral=QUOTED_LITERAL {lastSelector = new StringSelector(workaroundTable,$qLiteral.text);})
+;
+
 getGenericSelector[TableName tablename] returns [Selector selector]
     @init{
         Selector firstSelector = null;
@@ -1007,6 +1030,7 @@ getComparator returns [Operator op]:
     | T_NOT_EQUAL {$op = Operator.DISTINCT;}
     | T_LIKE {$op = Operator.LIKE;}
     | T_MATCH {$op = Operator.MATCH;}
+    | T_BETWEEN {$op = Operator.BETWEEN;}
 ;
 
 getIds returns [ArrayList<String> listStrs]
