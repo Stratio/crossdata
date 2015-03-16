@@ -117,18 +117,6 @@ options {
         throw new ParsingException(message);
     }
 
-    public boolean checkWhereClauses(List<Relation> whereClauses){
-        if((whereClauses == null) || (whereClauses.isEmpty())){
-            return true;
-        }
-        for(Relation relation: whereClauses){
-            if(!(relation.getLeftTerm() instanceof ColumnSelector)){
-                return false;
-            }
-        }
-        return true;
-    }
-
     @Override
     public void displayRecognitionError(String[] tokenNames, RecognitionException e){        
         String hdr = getErrorHeader(e);
@@ -456,9 +444,7 @@ deleteStatement returns [DeleteStatement ds]
 		$ds = new DeleteStatement(tablename, whereClauses);
 	}:
 	T_DELETE T_FROM tablename=getTableName
-	(T_WHERE whereClauses=getWhereClauses[tablename]
-	    { if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name"); }
-	)?
+	(T_WHERE whereClauses=getWhereClauses[tablename])?
 ;
 
 //DROP INDEX IF EXISTS index_name;
@@ -532,7 +518,6 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     (T_WHERE whereClauses=getWhereClauses[tablename])?
     (T_WITH j=getJson)?
     {
-        if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
         $pdtbst = new UpdateTableStatement(tablename, assignations, whereClauses, j);
     }
 ;
@@ -615,7 +600,6 @@ selectStatement returns [SelectStatement slctst]
         boolean implicitJoin = false;
         boolean subqueryInc = false;
         JoinType joinType=JoinType.INNER;
-        List<Relation> whereClauses = new ArrayList<>();
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
@@ -640,15 +624,12 @@ selectStatement returns [SelectStatement slctst]
     T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
     identJoin=getAliasedTableID[workaroundTablesAliasesMap]
     T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
-    joinRelations=getWhereClauses[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
-    //(T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getWhereClauses[null])?
-    (T_WHERE conditions=getConditions[null] { slctst.setConditions(conditions); } )?
+    joinRelations=getConditions[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
+    (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getConditions[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
-        if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
-
         if(windowInc)
             $slctst.setWindow(window);
         if(whereInc)

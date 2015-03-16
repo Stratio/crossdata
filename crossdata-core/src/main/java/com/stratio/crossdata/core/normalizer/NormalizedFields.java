@@ -29,8 +29,8 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
-import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.structures.GroupByClause;
@@ -70,9 +70,9 @@ public class NormalizedFields {
     private List<InnerJoin> joinList=new ArrayList<>();
 
     /**
-     * List of {@link com.stratio.crossdata.common.statements.structures.Relation} in the where clause.
+     * List of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation} in the where clause.
      */
-    private List<Relation> where = new ArrayList<>();
+    private List<AbstractRelation> where = new ArrayList<>();
 
     /**
      * List of {@link com.stratio.crossdata.common.statements.structures.OrderByClause}.
@@ -187,18 +187,18 @@ public class NormalizedFields {
     /**
      * Get the list of relation on the where clause.
      *
-     * @return A list of {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     * @return A list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation}.
      */
-    public List<Relation> getWhere() {
+    public List<AbstractRelation> getWhere() {
         return where;
     }
 
     /**
      * Set the where clause.
      *
-     * @param where A list of {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     * @param where A list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation}.
      */
-    public void setWhere(List<Relation> where) {
+    public void setWhere(List<AbstractRelation> where) {
         this.where = where;
     }
 

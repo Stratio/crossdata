@@ -47,11 +47,13 @@ import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
 import com.stratio.crossdata.common.statements.structures.RelationSelector;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -141,7 +143,6 @@ public class Normalizator {
         normalizeOrderBy();
         normalizeGroupBy();
         validateColumnsScope();
-
     }
 
 
@@ -176,12 +177,6 @@ public class Normalizator {
         if (tableNames != null && !tableNames.isEmpty()) {
             normalizeTables(tableNames);
         }
-        /*
-        List<TableName> tableNames = parsedQuery.getStatement().getAllTables();
-        if (tableNames != null && !tableNames.isEmpty()) {
-            normalizeTables(tableNames);
-        }
-        */
     }
 
     /**
@@ -213,22 +208,6 @@ public class Normalizator {
                 fields.addJoin(innerJoin);
             }
         }
-        /*
-        List<Pair> allJoins = parsedQuery.getStatement().getAllJoins();
-        if(allJoins != null){
-            for(Pair<List<InnerJoin>, List<TableName>> pair: allJoins){
-                List<InnerJoin> innerJoinList =  pair.getLeft();
-                //fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
-                if (!innerJoinList.isEmpty()) {
-                    for(InnerJoin innerJoin: innerJoinList) {
-                        normalizeJoins(innerJoin);
-                        fields.addJoin(innerJoin);
-                    }
-                }
-            }
-        }
-        //fields.setPreferredTableNames(new HashSet<TableName>());
-        */
     }
 
     /**
@@ -242,28 +221,14 @@ public class Normalizator {
     }
 
     private void normalizeWhere() throws ValidationException {
-        List<Relation> whereClauses = parsedQuery.getStatement().getWhere();
+        List<AbstractRelation> whereClauses = parsedQuery.getStatement().getWhere();
         if((whereClauses != null) && (!whereClauses.isEmpty())){
             normalizeWhere(whereClauses);
             fields.setWhere(whereClauses);
         }
-        /*
-        List<Pair> whereClauses = parsedQuery.getStatement().getAllWhereClauses();
-        if(whereClauses != null){
-            for(Pair<List<Relation>, List<TableName>> pair: whereClauses){
-                List<Relation> where = pair.getLeft();
-                fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
-                if (where != null && !where.isEmpty()) {
-                    normalizeWhere(where);
-                    fields.setWhere(where);
-                }
-            }
-        }
-        fields.setPreferredTableNames(new HashSet<TableName>());
-        */
     }
 
-    private void normalizeWhere(List<Relation> where) throws ValidationException {
+    private void normalizeWhere(List<AbstractRelation> where) throws ValidationException {
         checkWhereRelations(where);
     }
 
@@ -278,20 +243,6 @@ public class Normalizator {
             normalizeOrderBy(orderByClauseClauses);
             fields.setOrderByClauses(orderByClauseClauses);
         }
-        /*
-        List<Pair> allOrderByClauses = parsedQuery.getStatement().getAllOrderByClauses();
-        if(allOrderByClauses != null){
-            for(Pair<List<OrderByClause>, List<TableName>> pair: allOrderByClauses){
-                List<OrderByClause> orderByClauses = pair.getLeft();
-                //fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
-                if (orderByClauses != null) {
-                    normalizeOrderBy(orderByClauses);
-                    fields.setOrderByClauses(orderByClauses);
-                }
-            }
-        }
-        //fields.setPreferredTableNames(new HashSet<TableName>());
-        */
     }
 
     /**
@@ -329,16 +280,6 @@ public class Normalizator {
         if (selectExpression != null) {
             normalizeSelectExpression(selectExpression);
         }
-        /*
-        List<Pair> selectExpressions = parsedQuery.getStatement().getAllSelectExpressions();
-        if (selectExpressions != null) {
-            for(Pair<SelectExpression, List<TableName>> pair: selectExpressions){
-                fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
-                normalizeSelectExpression(pair.getLeft(), pair.getRight());
-            }
-        }
-        fields.setPreferredTableNames(new HashSet<TableName>());
-        */
     }
 
     /**
@@ -366,20 +307,6 @@ public class Normalizator {
             normalizeGroupBy(groupByClause);
             fields.setGroupByClause(groupByClause);
         }
-        /*
-        List<Pair> allGroupByClauses = parsedQuery.getStatement().getAllGroupByClauses();
-        if(allGroupByClauses != null){
-            for(Pair<GroupByClause, List<TableName>> pair: allGroupByClauses){
-                GroupByClause groupByClause = pair.getLeft();
-                //fields.setPreferredTableNames(new HashSet<>(pair.getRight()));
-                if (groupByClause != null) {
-                    normalizeGroupBy(groupByClause);
-                    fields.setGroupByClause(groupByClause);
-                }
-            }
-        }
-        //fields.setPreferredTableNames(new HashSet<TableName>());
-        */
     }
 
     private void checkFormatBySelectorIdentifier(Selector selector, Set<ColumnName> columnNames)
@@ -451,14 +378,23 @@ public class Normalizator {
      * @param relations A list of Relation to check.
      * @throws ValidationException
      */
-    public void checkJoinRelations(List<Relation> relations) throws ValidationException {
-        for (Relation relation : relations) {
+    public void checkJoinRelations(List<AbstractRelation> relations) throws ValidationException {
+        for (AbstractRelation relation: relations) {
+            if(relation instanceof RelationDisjunction){
+                throw new BadFormatException("Join relations cannot contain or operators");
+            }
             checkRelation(relation);
+            checkJoinRelation(relation);
+        }
+    }
+
+    public void checkJoinRelation(AbstractRelation abstractRelation) throws ValidationException {
+        if(abstractRelation instanceof Relation){
+            Relation relation = (Relation) abstractRelation;
             switch (relation.getOperator()) {
             case EQ:
                 if (relation.getLeftTerm().getType() == SelectorType.COLUMN
-                                && relation.getRightTerm().getType() == SelectorType.COLUMN) {
-
+                        && relation.getRightTerm().getType() == SelectorType.COLUMN) {
                     checkColumnSelector((ColumnSelector) relation.getRightTerm());
                     checkColumnSelector((ColumnSelector) relation.getLeftTerm());
                 } else {
@@ -466,7 +402,15 @@ public class Normalizator {
                 }
                 break;
             default:
-                throw new BadFormatException("Only equal operation are just valid");
+                throw new BadFormatException("Only equal operation are valid");
+            }
+        } else if(abstractRelation instanceof RelationDisjunction) {
+            RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
+            for(AbstractRelation innerRelation: relationDisjunction.getLeftRelations()){
+                checkJoinRelation(innerRelation);
+            }
+            for(AbstractRelation innerRelation: relationDisjunction.getRightRelations()){
+                checkJoinRelation(innerRelation);
             }
         }
     }
@@ -477,8 +421,8 @@ public class Normalizator {
      * @param relations The list of Relation that contains the where clause to check
      * @throws ValidationException
      */
-    public void checkWhereRelations(List<Relation> relations) throws ValidationException {
-        for (Relation relation: relations) {
+    public void checkWhereRelations(List<AbstractRelation> relations) throws ValidationException {
+        for (AbstractRelation relation: relations) {
             checkRelation(relation);
         }
     }
@@ -486,15 +430,26 @@ public class Normalizator {
     /**
      * Validate the relation of a parsed query.
      *
-     * @param relation The relation of the query.
+     * @param abstractRelation The relation of the query.
      * @throws ValidationException
      */
-    public void checkRelation(Relation relation) throws ValidationException {
-        if (relation.getOperator().isInGroup(Operator.Group.ARITHMETIC)) {
-            throw new BadFormatException("Compare operations are just valid");
+    public void checkRelation(AbstractRelation abstractRelation) throws ValidationException {
+        if(abstractRelation instanceof Relation){
+            Relation relationConjunction = (Relation) abstractRelation;
+            if (relationConjunction.getOperator().isInGroup(Operator.Group.ARITHMETIC)) {
+                throw new BadFormatException("Comparing operations are the only valid ones");
+            }
+            checkRelationFormatLeft(relationConjunction);
+            checkRelationFormatRight(relationConjunction);
+        } else if(abstractRelation instanceof RelationDisjunction) {
+            RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
+            for(AbstractRelation innerRelation: relationDisjunction.getLeftRelations()){
+                checkRelation(innerRelation);
+            }
+            for(AbstractRelation innerRelation: relationDisjunction.getRightRelations()){
+                checkRelation(innerRelation);
+            }
         }
-        checkRelationFormatLeft(relation);
-        checkRelationFormatRight(relation);
     }
 
     private void checkRelationFormatLeft(Relation relation) throws ValidationException {
@@ -882,22 +837,9 @@ public class Normalizator {
                 // Get column type from MetadataManager
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(name);
                 SelectorType rightTermType = rightTerm.getType();
-
                 if (rightTerm.getType() == SelectorType.COLUMN) {
-
                     ColumnSelector columnSelector = addTableNameToRightSelector(rightTerm);
-
-                    /*
-                    ColumnSelector columnSelector = (ColumnSelector) rightTerm;
-                    ColumnName columnName = applyAlias(columnSelector.getName());
-                    columnSelector.setName(columnName);
-
-                    TableName foundTableName = this.searchTableNameByColumn(columnSelector.getName());
-                    columnSelector.getName().setTableName(foundTableName);
-                    */
-
                     ColumnMetadata columnMetadataRightTerm = MetadataManager.MANAGER.getColumn(columnSelector.getName());
-
                     if (columnMetadataRightTerm.getColumnType().getDataType() != DataType.NATIVE) {
                         rightTermType = convertMetadataTypeToSelectorType(columnMetadataRightTerm.getColumnType());
                     }
@@ -910,17 +852,8 @@ public class Normalizator {
         } else {
             if (rightTerm.getType() == SelectorType.COLUMN) {
                 addTableNameToRightSelector(rightTerm);
-                /*
-                ColumnSelector columnSelector = (ColumnSelector) rightTerm;
-                ColumnName columnName = applyAlias(columnSelector.getName());
-                columnSelector.setName(columnName);
-
-                TableName foundTableName = this.searchTableNameByColumn(columnSelector.getName());
-                columnSelector.getName().setTableName(foundTableName);
-                */
             }
         }
-
     }
 
     private ColumnSelector addTableNameToRightSelector(Selector rightTerm) throws ValidationException {

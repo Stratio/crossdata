@@ -26,10 +26,10 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.QueryStatus;
+import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.common.statements.structures.SelectorType;
-import com.stratio.crossdata.core.normalizer.NormalizedFields;
+import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
 import com.stratio.crossdata.core.structures.InnerJoin;
 
 /**
@@ -39,7 +39,7 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
     private List<TableMetadata> tableMetadata = new ArrayList<>();
     private List<ColumnName> columns = new ArrayList<>();
-    private List<Relation> relations = new ArrayList<>();
+    private List<AbstractRelation> relations = new ArrayList<>();
     private List<TableName> tables = new ArrayList<>();
     private SelectValidatedQuery subqueryValidatedQuery;
     private List<InnerJoin> joinList=new ArrayList<>();
@@ -95,17 +95,17 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
     /**
      * Get the list of relations of the validated select query.
-     * @return A list of {@link com.stratio.crossdata.common.statements.structures.Relation} .
+     * @return A list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation} .
      */
-    public List<Relation> getRelations() {
+    public List<AbstractRelation> getRelations() {
         return relations;
     }
 
     /**
      * Set the Relations metadata to the select validated query.
-     * @param relations The list of {@link com.stratio.crossdata.common.statements.structures.Relation} .
+     * @param relations The list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation} .
      */
-    public void setRelations(List<Relation> relations) {
+    public void setRelations(List<AbstractRelation> relations) {
         this.relations = relations;
     }
 
@@ -178,23 +178,35 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
     private void optimizeRelations() {
         boolean trueRelationFound = false;
-        for (Iterator<Relation> iterator = relations.iterator(); iterator.hasNext();) {
-            Relation relation = iterator.next();
-            if(relation.getOperator() == Operator.EQ){
-                if(relation.getLeftTerm().equals(relation.getRightTerm())){
-                    iterator.remove();
-                    trueRelationFound = true;
-                }
-            }
-        }
+        trueRelationFound = optimizeRelations(relations);
         if(trueRelationFound){
             this.getStatement().setWhere(relations);
         }
     }
 
-    private void optimizeJoins() {
+    private boolean optimizeRelations(List<AbstractRelation> relations){
+        boolean trueRelationFound = false;
+        for (Iterator<AbstractRelation> iterator = relations.iterator(); iterator.hasNext();) {
+            AbstractRelation abstractRelation = iterator.next();
+            if(abstractRelation instanceof Relation){
+                Relation relationConjunction = (Relation) abstractRelation;
+                if(relationConjunction.getOperator() == Operator.EQ){
+                    if(relationConjunction.getLeftTerm().equals(relationConjunction.getRightTerm())){
+                        iterator.remove();
+                        trueRelationFound = true;
+                    }
+                }
+            } else if(abstractRelation instanceof RelationDisjunction){
+                RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
+                optimizeRelations(relationDisjunction.getLeftRelations());
+                optimizeRelations(relationDisjunction.getRightRelations());
+            }
+        }
+        return trueRelationFound;
+    }
 
-        if(tables.size() == 1 ){
+    private void optimizeJoins() {
+        if(tables.size() == 1){
             for(InnerJoin innerJoin:joinList) {
                 relations.addAll(innerJoin.getRelations());
                 this.getStatement().setWhere(relations);
