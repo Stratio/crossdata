@@ -596,7 +596,7 @@ public class SelectStatementTest extends ParsingTest {
                 + " col1 = col2"
                 + " AND col3 = 'test'"
                 + " AND col4 = 'Spain' OR col6 = 13022013;";
-        String expectedText = "SELECT * FROM test.table1 WHEN"
+        String expectedText = "SELECT * FROM test.table1 WHERE"
                 + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
                 + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col3 = 'test'"
                 + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'Spain' OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013;";
@@ -608,7 +608,7 @@ public class SelectStatementTest extends ParsingTest {
         String inputText = "SELECT * FROM test.table1 WHERE"
                 + " col1 = col2"
                 + " OR col6 = 13022013;";
-        String expectedText = "SELECT * FROM test.table1 WHEN"
+        String expectedText = "SELECT * FROM test.table1 WHERE"
                 + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
                 + " OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013;";
         testRegularStatement(inputText, expectedText, "selectOrOperatorSimple2");
@@ -620,7 +620,7 @@ public class SelectStatementTest extends ParsingTest {
                 + " col1 = col2"
                 + " AND col3 = 'test'"
                 + " AND col4 = 'Spain' OR col6 = 13022013 AND col7 = 25;";
-        String expectedText = "SELECT * FROM test.table1 WHEN"
+        String expectedText = "SELECT * FROM test.table1 WHERE"
                 + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
                 + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col3 = 'test'"
                 + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'Spain' OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013 "
