@@ -50,7 +50,7 @@ public abstract class AbstractExtendedConnector implements IConnector {
     /**
      * Get the table metadata.
      * @param cluster target cluster.
-     * @param tableName target tablename.
+     * @param tableName target table name.
      * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata}.
      */
     public TableMetadata getTableMetadata(ClusterName cluster, TableName tableName){
@@ -84,6 +84,9 @@ public abstract class AbstractExtendedConnector implements IConnector {
     }
 
     public Metric registerMetric(String name, Metric metric){
+        if(connectorApp == null){
+            return null;
+        }
         return connectorApp.registerMetric(name, metric);
     }
 }
