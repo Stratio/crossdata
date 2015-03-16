@@ -156,7 +156,7 @@ public final class StringUtils implements Serializable {
             String result = object.toString().replace("Actor[", "").replace("]", "").split("\\$")[0].split("#")[0];
             if(resultForActorSelection){
                 if (result.contains("akka.tcp")) {
-                    result = result.substring(result.indexOf("akka.tcp"));
+                    result = result.substring(result.lastIndexOf("akka.tcp"));
                 }
                 if(result.contains("%3A%2F%2F")) {
                     result = result.replace("%3A%2F%2F", "://");
