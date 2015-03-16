@@ -32,6 +32,7 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
+import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationSelector;
@@ -280,11 +281,11 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     }
 
     /**
-     * Get the list of {@link Relation} in the where clause.
+     * Get the list of {@link AbstractRelation} in the where clause.
      *
      * @return The list of relations.
      */
-    public List<Relation> getWhere() {
+    public List<AbstractRelation> getWhere() {
         return where;
     }
 
@@ -506,8 +507,12 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         }
 
         if ((where != null) && (!where.isEmpty())) {
-            sb.append(" WHEN ");
-            sb.append(StringUtils.stringList(where, " AND "));
+            sb.append(" WHERE ");
+            if(withSQLSyntax) {
+                sb.append(StringUtils.stringList(where, " AND ").replaceAll(Operator.MATCH.toString(),"LIKE"));
+            } else{
+                sb.append(StringUtils.stringList(where, " AND "));
+            }
         }
 
         if (orderInc) {

@@ -31,14 +31,13 @@ import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.common.connector.{IMetadataListener, IConnectorApp, IConfiguration, IConnector}
 import org.apache.log4j.Logger
 import scala.collection.mutable.Set
-import scala.Some
-import com.stratio.crossdata.communication.Shutdown
 import scala.concurrent.Await
 import akka.util.Timeout
 import scala.concurrent.duration.Duration
 import java.util.concurrent.TimeUnit
 import scala.Some
 import com.stratio.crossdata.communication.Shutdown
+import scala.collection.JavaConversions._
 
 object ConnectorApp extends App {
   args.length==2
@@ -69,7 +68,8 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   def stop():Unit = {
     actorClusterNode.get ! Shutdown()
     system.shutdown()
-    Metrics.getRegistry.remove(metricName)
+    Metrics.getRegistry.getNames.foreach(Metrics.getRegistry.remove(_))
+
   }
 
   def startup(connector: IConnector): ActorSelection= {
