@@ -40,6 +40,8 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
   val random=new Random
   val hostname=config.getString("akka.remote.netty.tcp.hostname")
+
+  val balancing: String = config.getString("config.cluster.balancing")
   
   val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(hostname), "loadWatcherActor")
   val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(cluster).
@@ -69,14 +71,23 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
 
 
   def reroute(message: Command): Unit ={
-    val reroutee = chooseReroutee()
-    logger.info("reroutee=" + reroutee)
-    context.actorSelection(reroutee) forward ReroutedCommand(message)
+    if(balancing.equals("on")){
+      val reroutee = chooseReroutee()
+      logger.info("reroutee=" + reroutee)
+      context.actorSelection(reroutee) forward ReroutedCommand(message)
+    } else {
+      APIActorRef forward message
+    }
   }
+
   def reroute(message: Query): Unit ={
-    val reroutee = chooseReroutee()
-    logger.info("reroutee=" + reroutee)
-    context.actorSelection(reroutee) forward ReroutedQuery(message)
+    if(balancing.equals("on")){
+      val reroutee = chooseReroutee()
+      logger.info("reroutee=" + reroutee)
+      context.actorSelection(reroutee) forward ReroutedQuery(message)
+    } else {
+      parserActorRef forward message
+    }
   }
 
   def receive : Receive= {
