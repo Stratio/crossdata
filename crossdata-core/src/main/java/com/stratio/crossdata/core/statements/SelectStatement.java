@@ -31,6 +31,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationSelector;
@@ -503,7 +504,11 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         }
         if (whereInc) {
             sb.append(" WHERE ");
-            sb.append(StringUtils.stringList(where, " AND "));
+            if(withSQLSyntax) {
+                sb.append(StringUtils.stringList(where, " AND ").replaceAll(Operator.MATCH.toString(),"LIKE"));
+            } else{
+                sb.append(StringUtils.stringList(where, " AND "));
+            }
         }
         if (orderInc) {
             sb.append(" ORDER BY ").append(orderByClauses);

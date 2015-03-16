@@ -33,8 +33,6 @@ import org.apache.log4j.Logger
 import collection.JavaConversions._
 
 object ServerActor {
-
-
   def props(engine: Engine,cluster: Cluster): Props = Props(new ServerActor(engine,cluster))
 }
 
