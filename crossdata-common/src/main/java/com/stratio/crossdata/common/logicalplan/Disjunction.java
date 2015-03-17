@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.logicalplan;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.stratio.crossdata.common.metadata.Operations;
@@ -46,5 +47,29 @@ public class Disjunction extends TransformationStep implements IOperand {
 
     public List<IOperand> getRightOperand() {
         return rightOperand;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("DISJUNCTION - ");
+        sb.append(getOperation()).append(" - ");
+        Iterator<IOperand> iter = leftOperand.iterator();
+        while(iter.hasNext()){
+            IOperand operand = iter.next();
+            sb.append(operand);
+            if(iter.hasNext()){
+                sb.append(" AND ");
+            }
+        }
+        sb.append(" OR ");
+        iter = rightOperand.iterator();
+        while(iter.hasNext()){
+            IOperand operand = iter.next();
+            sb.append(operand);
+            if(iter.hasNext()){
+                sb.append(" AND ");
+            }
+        }
+        return sb.toString();
     }
 }

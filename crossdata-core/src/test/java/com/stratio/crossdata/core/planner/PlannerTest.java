@@ -52,7 +52,9 @@ import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
 import com.stratio.crossdata.common.executionplan.QueryWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
+import com.stratio.crossdata.common.logicalplan.Disjunction;
 import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
@@ -131,6 +133,7 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_INNER_JOIN);
         operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
         operationsC2.add(Operations.INSERT);
+        operationsC2.add(Operations.FILTER_DISJUNCTION);
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -651,6 +654,37 @@ public class PlannerTest extends PlannerBaseTest {
         assertEquals(storageWorkflow.getExecutionType(), ExecutionType.INSERT_BATCH, "Planner failed.");
         assertNotNull(storageWorkflow.getPreviousExecutionWorkflow(), "Planner failed.");
         assertNotNull(storageWorkflow.getPreviousExecutionWorkflow().getTriggerStep(), "Planner failed.");
+    }
+
+    @Test
+    public void testSelectWithDisjunction() throws ManifestException {
+
+        init();
+
+        String[] columnNames1 = { "id", "code" };
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.INT) };
+        String[] partitionKeys1 = { "id" };
+        String[] clusteringKeys1 = { };
+        table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table4",
+                columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
+
+        String inputText = "SELECT * FROM demo.table4 WHERE"
+                + " id = code"
+                + " AND id = 25"
+                + " AND code = 25 OR id = 25;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testSelectWithDisjunction", false, false, table1);
+
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 1,
+                "Only one initial step was expected");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().get(0).getClass(), Project.class,
+                "First step of the workflow should be a Project");
+        assertEquals(
+                queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep().getNextStep().getClass(),
+                Disjunction.class,
+                "Fourth step should be a Disjunction");
     }
 
 }
