@@ -33,6 +33,7 @@ import org.testng.annotations.Test;
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.connector.IConfiguration;
 import com.stratio.crossdata.common.connector.IConnector;
+import com.stratio.crossdata.common.connector.IConnectorApp;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -75,7 +76,9 @@ public class InMemoryQueryEngineTest {
 
     private TableMetadata tableMetadata = null;
 
-    private IConnector connector = new InMemoryConnector(null);
+    private IConnectorApp connectorApp = new MockConnectorApp();
+
+    private IConnector connector = new InMemoryConnector(connectorApp);
 
     private static final int NUM_ROWS = 100;
 

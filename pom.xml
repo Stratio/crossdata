@@ -41,6 +41,11 @@
         <connection>https://github.com/Stratio/crossdata/</connection>
     </scm>
 
+    <issueManagement>
+        <system>Jira</system>
+        <url>https://crossdata.atlassian.net/</url>
+    </issueManagement>
+
     <developers>
         <developer>
             <id>aagea</id>

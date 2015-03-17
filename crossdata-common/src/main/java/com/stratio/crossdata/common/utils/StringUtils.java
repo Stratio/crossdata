@@ -75,7 +75,7 @@ public final class StringUtils implements Serializable {
      */
     public static String stringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
-        for (Object value : ids) {
+        for (Object value: ids) {
             sb.append(value.toString()).append(separator);
         }
         if (sb.length() > separator.length()) {

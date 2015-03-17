@@ -26,8 +26,10 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
@@ -78,9 +80,21 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
         }
         for(InnerJoin join :stmt.getJoinList()) {
             if (join != null) {
-                for (Relation r : join.getRelations()) {
-                    columnNames.addAll(getRelationColumns(r));
-                }
+                columnNames.addAll(getColumns(join.getRelations()));
+            }
+        }
+        return columnNames;
+    }
+
+    public List<ColumnName> getColumns(List<AbstractRelation> relations){
+        List<ColumnName> columnNames = new ArrayList<>();
+        for (AbstractRelation r: relations) {
+            if(r instanceof Relation){
+                columnNames.addAll(getRelationColumns((Relation) r));
+            } else {
+                RelationDisjunction rd = (RelationDisjunction) r;
+                columnNames.addAll(getColumns(rd.getLeftRelations()));
+                columnNames.addAll(getColumns(rd.getRightRelations()));
             }
         }
         return columnNames;
@@ -106,7 +120,7 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
     }
 
     @Override
-    public List<Relation> getRelations() {
+    public List<AbstractRelation> getRelations() {
         return stmt.getWhere();
     }
 

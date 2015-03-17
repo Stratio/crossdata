@@ -22,8 +22,8 @@ import akka.actor.{Actor, Props}
 import com.stratio.crossdata.common.result.{Result, QueryStatus}
 import com.stratio.crossdata.communication.ACK
 import com.stratio.crossdata.core.query.{IValidatedQuery, MetadataValidatedQuery, SelectValidatedQuery}
-import com.stratio.crossdata.server.actors.TimeTracker
 import org.apache.log4j.Logger
+import com.stratio.crossdata.server.actors.TimeTracker
 
 object MockPlannerActor {
   def props(): Props = Props(new MockPlannerActor())
