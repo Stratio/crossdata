@@ -20,8 +20,10 @@ package com.stratio.crossdata.common.metadata;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.ClusterName;
@@ -84,7 +86,7 @@ public class ConnectorMetadata implements IMetadata {
     /**
      * The actor Akka reference.
      */
-    private String actorRef;
+    private Set<String> actorRefs = new HashSet<>();
 
     /**
      * The set of required properties.
@@ -128,8 +130,8 @@ public class ConnectorMetadata implements IMetadata {
             Map<ClusterName, Map<Selector, Selector>> clusterProperties, Map<ClusterName, Integer> clusterPriorities,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations, ConnectorFunctionsType functions) throws ManifestException {
-        this(name, version, dataStoreRefs, clusterProperties, clusterPriorities,Status.OFFLINE, null, requiredProperties,
-                optionalProperties, supportedOperations, functions);
+        this(name, version, dataStoreRefs, clusterProperties, clusterPriorities,Status.OFFLINE,
+                new HashSet<String>(), requiredProperties, optionalProperties, supportedOperations, functions);
     }
 
     /**
@@ -141,16 +143,20 @@ public class ConnectorMetadata implements IMetadata {
      * @param clusterProperties   The map of clusters associated with this connector and their associated properties.
      * @param clusterPriorities   The map of clusters associated with this connector and their associated priority.
      * @param status              The connector status.
-     * @param actorRef            The actor Akka reference.
+     * @param actorRefs           The set of actor Akka references.
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
      * @param supportedOperations The set of supported operations.
      * @param functions           The functions allow by the connector.
      */
-    public ConnectorMetadata(ConnectorName name, String version,
+    public ConnectorMetadata(
+            ConnectorName name,
+            String version,
             Set<DataStoreName> dataStoreRefs,
-            Map<ClusterName, Map<Selector, Selector>> clusterProperties, Map<ClusterName, Integer> clusterPriorities, Status status,
-            String actorRef,
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties,
+            Map<ClusterName, Integer> clusterPriorities,
+            Status status,
+            Set<String> actorRefs,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations,
@@ -197,7 +203,7 @@ public class ConnectorMetadata implements IMetadata {
             }
         }
         this.status = status;
-        this.actorRef = actorRef;
+        this.actorRefs = actorRefs;
     }
 
     /**
@@ -388,18 +394,20 @@ public class ConnectorMetadata implements IMetadata {
      *
      * @return A String Akka reference.
      */
-    public String getActorRef() {
-        return actorRef;
+    public Set<String> getActorRefs() {
+        return actorRefs;
     }
 
     /**
      * Sets the actor Akka reference.
      *
-     * @param actorRef String of the actor reference path.
+     * @param actorRefs Set of Strings of the actor reference paths.
      */
-    public void setActorRef(String actorRef) {
-        this.status = Status.ONLINE;
-        this.actorRef = actorRef;
+    public void setActorRefs(Set<String> actorRefs) {
+        if((actorRefs != null) && (!actorRefs.isEmpty())){
+            this.status = Status.ONLINE;
+        }
+        this.actorRefs = actorRefs;
     }
 
     /**
@@ -563,7 +571,7 @@ public class ConnectorMetadata implements IMetadata {
 
     /**
      * Get the excluded functions of the manifest.
-     * @return A set of strings with the exluded functions of the manifest.
+     * @return A set of strings with the excluded functions of the manifest.
      */
     public Set<String> getExcludedFunctions() {
         HashSet<String> exFunctionsLowercase = new HashSet<>();
@@ -574,13 +582,37 @@ public class ConnectorMetadata implements IMetadata {
     }
 
     /**
-     * Set the exluded functions of the connector.
-     * @param excludedFunctions A set of String with the exluded functions.
+     * Set the excluded functions of the connector.
+     * @param excludedFunctions A set of String with the excluded functions.
      */
     public void setExcludedFunctions(Set<String> excludedFunctions) {
         this.excludedFunctions = excludedFunctions;
     }
 
+    public void addActorRef(String actorRef){
+        actorRefs.add(actorRef);
+        this.status = Status.ONLINE;
+    }
+
+    public void removeActorRef(String actorRef){
+        actorRefs.remove(actorRef);
+        if(actorRefs.isEmpty()){
+            this.status = Status.OFFLINE;
+        }
+    }
+
+    public String getActorRef(){
+        // Random election (Kind of load balancing?)
+        int randomNum = (new Random()).nextInt(actorRefs.size());
+        int count = 0;
+        Iterator<String> iter = actorRefs.iterator();
+        String actorRef = iter.next();
+        while(count < randomNum){
+            actorRef = iter.next();
+            count++;
+        }
+        return actorRef;
+    }
 
     public int getPriorityFromClusterNames(List<ClusterName> clusterNames){
         int priority = 0;
@@ -597,7 +629,15 @@ public class ConnectorMetadata implements IMetadata {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Connector: ");
-        sb.append(name).append(" status: ").append(status).append(" actorRef: ").append(actorRef);
+        sb.append(name).append(" status: ").append(status).append(" actorRefs: ");
+        Iterator<String> iter = actorRefs.iterator();
+        while(iter.hasNext()){
+            String actorRef = iter.next();
+            sb.append(actorRef);
+            if(iter.hasNext()){
+                sb.append(" & ");
+            }
+        }
         return sb.toString();
     }
 

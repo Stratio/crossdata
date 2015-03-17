@@ -554,8 +554,10 @@ public class APIManager {
             for (ConnectorMetadata cm : connectors) {
                 if (cm.getStatus() == Status.ONLINE) {
                     ConnectorName connectorName = cm.getName();
-                    String actorRef = cm.getActorRef();
-                    MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+                    Set<String> actorRefs = cm.getActorRefs();
+                    for(String actorRef: actorRefs){
+                        MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+                    }
                     MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE);
                 }
             }

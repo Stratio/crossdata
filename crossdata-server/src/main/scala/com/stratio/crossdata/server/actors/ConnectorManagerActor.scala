@@ -102,7 +102,6 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
       val connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName)
       val clusterProps = connectorMetadata.getClusterProperties
 
-
       if((clusterProps != null) && (!clusterProps.isEmpty)){
 
         for(clusterProp <- clusterProps.entrySet()){
@@ -169,7 +168,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
       val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address, false)
       if(ExecutionManager.MANAGER.exists(actorRefUri + "/user/ConnectorActor/")){
         val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri + "/user/ConnectorActor/")
-        MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName], Status.OFFLINE)
+        MetadataManager.MANAGER.removeActorRefFromConnector(connectorName.asInstanceOf[ConnectorName], actorRefUri)
         MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
       }
       // example of member.member.address = akka.tcp://CrossdataServerCluster@127.0.0.1:13421
@@ -183,7 +182,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
       logger.info("Member is exiting: " + member.member.address)
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender, false)
       val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
-      MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName], Status.SHUTTING_DOWN)
+      MetadataManager.MANAGER.removeActorRefFromConnector(connectorName.asInstanceOf[ConnectorName], actorRefUri)
       MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
     }
 

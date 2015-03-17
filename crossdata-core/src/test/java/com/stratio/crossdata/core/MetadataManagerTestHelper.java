@@ -272,7 +272,7 @@ public enum MetadataManagerTestHelper {
         } catch (ManifestException e) {
             fail(e.getMessage());
         }
-        connectorMetadata.setActorRef(actorRef);
+        connectorMetadata.addActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
         return connectorName;
     }
@@ -295,7 +295,7 @@ public enum MetadataManagerTestHelper {
                 clusterProperties, new HashMap<ClusterName,Integer>(),new HashSet<PropertyType>(), new HashSet<PropertyType>(),
                 new HashSet<Operations>(),null);
         connectorMetadata.setClusterRefs(clusterList);
-        connectorMetadata.setActorRef(actorRef);
+        connectorMetadata.addActorRef(actorRef);
         MetadataManager.MANAGER.createConnector(connectorMetadata);
         return connectorName;
     }
@@ -325,7 +325,7 @@ public enum MetadataManagerTestHelper {
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
                 clusterProperties, clusterWithPriorities, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
         connectorMetadata.setClusterRefs(new HashSet<>(clusterWithPriorities.keySet()));
-        connectorMetadata.setActorRef(actorRef);
+        connectorMetadata.addActorRef(actorRef);
         connectorMetadata.setPageSize(5);
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
         return connectorMetadata;
