@@ -21,9 +21,9 @@ package com.stratio.crossdata.connectors
 import java.util
 
 import com.codahale.metrics._
-import akka.actor.{ActorSelection, ActorRef, ActorSystem}
+import akka.actor.{Props, ActorSelection, ActorRef, ActorSystem}
 import akka.pattern.ask
-import akka.routing.RoundRobinRouter
+import akka.routing.{DefaultResizer, RoundRobinPool}
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
@@ -73,8 +73,12 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   }
 
   def startup(connector: IConnector): ActorSelection= {
-    actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
-      connector, connectedServers).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
+    val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
+    val connectorManagerActorRef = system.actorOf(
+      RoundRobinPool(num_connector_actor, Some(resizer))
+        .props(new ConnectorActor(connector.getConnectorName, connector, connectedServers)),
+      "ConnectorActor")
+    actorClusterNode = Some(connectorManagerActorRef)
     connector.init(new IConfiguration {})
     val actorSelection: ActorSelection = system.actorSelection(
       StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString(), false))

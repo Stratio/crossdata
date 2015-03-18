@@ -22,7 +22,7 @@ import java.util.{Random, UUID}
 
 import akka.actor.{Actor, Props, ReceiveTimeout}
 import akka.cluster.{Cluster, MemberStatus}
-import akka.routing.RoundRobinRouter
+import akka.routing.{RoundRobinPool, DefaultResizer}
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
 import com.stratio.crossdata.common.result.{ConnectResult, DisconnectResult, Result}
 import com.stratio.crossdata.communication.{Disconnect, ReroutedCommand, ReroutedQuery}
@@ -36,14 +36,16 @@ object ServerActor {
   def props(engine: Engine,cluster: Cluster): Props = Props(new ServerActor(engine,cluster))
 }
 
-class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConfig {
+class ServerActor(engine: Engine, cluster: Cluster) extends Actor with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
   val random=new Random
   val hostname=config.getString("akka.remote.netty.tcp.hostname")
 
   val balancing: String = config.getString("config.cluster.balancing")
-  
+
   val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(hostname), "loadWatcherActor")
+
+  /*
   val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(cluster).
     withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
   val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).
@@ -56,7 +58,34 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
     withRouter(RoundRobinRouter(nrOfInstances = num_parser_actor)), "ParserActor")
   val APIActorRef = context.actorOf(APIActor.props(engine.getAPIManager()).
     withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
+  */
 
+  val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
+
+  val connectorManagerActorRef = context.actorOf(
+    RoundRobinPool(num_connector_manag_actor, Some(resizer))
+      .props(new ConnectorManagerActor(cluster)),
+    "ConnectorManagerActor")
+  val coordinatorActorRef = context.actorOf(
+    RoundRobinPool(num_coordinator_actor, Some(resizer))
+      .props(new CoordinatorActor(connectorManagerActorRef, engine.getCoordinator)),
+    "CoordinatorActor")
+  val plannerActorRef = context.actorOf(
+    RoundRobinPool(num_planner_actor, Some(resizer))
+      .props(new PlannerActor(coordinatorActorRef, engine.getPlanner)),
+    "PlannerActor")
+  val validatorActorRef = context.actorOf(
+    RoundRobinPool(num_validator_actor, Some(resizer))
+      .props(new ValidatorActor(plannerActorRef, engine.getValidator)),
+    "ValidatorActor")
+  val parserActorRef = context.actorOf(
+    RoundRobinPool(num_parser_actor, Some(resizer))
+      .props(new ParserActor(validatorActorRef, engine.getParser)),
+    "ParserActor")
+  val APIActorRef = context.actorOf(
+    RoundRobinPool(num_api_actor, Some(resizer))
+      .props(new APIActor(engine.getAPIManager)),
+    "APIActor")
 
   def chooseReroutee(): String={
     logger.info("choosing reroutee")
