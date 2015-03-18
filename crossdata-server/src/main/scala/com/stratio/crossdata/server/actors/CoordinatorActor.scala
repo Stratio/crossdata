@@ -34,6 +34,7 @@ import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, ExecutionManagerException}
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.IPlannedQuery
+import scala.collection.JavaConversions._
 
 object CoordinatorActor {
 
@@ -309,8 +310,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             connectorClusterConfig.setDataStoreName(datastoreName)
 
-            val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(managementWorkflow.getActorRef(), false))
-            connectorSelection ! new Connect(queryId, credentials, connectorClusterConfig)
+            val actorRefs = managementWorkflow.getActorRefs
+            var count = 1
+            for(actorRef <- actorRefs){
+              val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(actorRef, false))
+              connectorSelection ! new Connect(queryId+"#"+count, credentials, connectorClusterConfig)
+              count+=1
+            }
 
             log.info("connectorOptions: " + connectorClusterConfig.getConnectorOptions.toString + " clusterOptions: " +
               connectorClusterConfig.getClusterOptions.toString)
@@ -321,7 +327,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setWorkflow(managementWorkflow)
             executionInfo.setPersistOnSuccess(true)
             executionInfo.setRemoveOnSuccess(true)
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+            count = 1
+            for(actorRef <- actorRefs){
+              ExecutionManager.MANAGER.createEntry(queryId+"#"+count, executionInfo, true)
+              count+=1
+            }
 
             sendResultToClient = false
 
@@ -341,8 +351,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
             connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
 
-            val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(managementWorkflow.getActorRef(), false))
-            connectorSelection ! new DisconnectFromCluster(queryId, connectorClusterConfig.getName.getName)
+            val actorRefs = managementWorkflow.getActorRefs
+            for(actorRef <- actorRefs){
+              val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(actorRef, false))
+              connectorSelection ! new DisconnectFromCluster(queryId, connectorClusterConfig.getName.getName)
+            }
 
             val executionInfo = new ExecutionInfo()
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
@@ -418,6 +431,12 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         val clientActor = context.actorSelection(target)
 
         var sendResultToClient = true
+
+        if(queryId.contains("#")){
+          if(!queryId.endsWith("#1")){
+            sendResultToClient = false
+          }
+        }
 
         if(!result.hasError){
           if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {

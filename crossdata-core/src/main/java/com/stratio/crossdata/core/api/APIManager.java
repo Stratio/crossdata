@@ -505,12 +505,12 @@ public class APIManager {
                         .append(Arrays.toString(connector.getDataStoreRefs().toArray()));
             }
             // ActorRef
-            if (connector.getActorRef() == null) {
+            if ((connector.getActorRefs() == null) || (connector.getActorRefs().isEmpty())) {
                 sb = sb.append("\t")
                         .append("UNKNOWN");
             } else {
                 sb = sb.append("\t")
-                        .append(connector.getActorRef());
+                        .append(connector.getActorRefs());
             }
 
             sb = sb.append(System.getProperty("line.separator"));
@@ -550,12 +550,13 @@ public class APIManager {
         try {
             List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
             MetadataManager.MANAGER.clear();
-            ExecutionManager.MANAGER.clear();
             for (ConnectorMetadata cm : connectors) {
                 if (cm.getStatus() == Status.ONLINE) {
                     ConnectorName connectorName = cm.getName();
-                    String actorRef = cm.getActorRef();
-                    MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+                    Set<String> actorRefs = cm.getActorRefs();
+                    for(String actorRef: actorRefs){
+                        MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+                    }
                     MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE);
                 }
             }

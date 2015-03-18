@@ -705,7 +705,7 @@ public enum MetadataManager {
             Set<Operations> supportedOperations = new HashSet<>();
             ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
                     clusterProperties, clusterPriorities, requiredProperties, optionalProperties, supportedOperations, null);
-            connectorMetadata.setActorRef(actorRef);
+            connectorMetadata.addActorRef(actorRef);
             try {
                 writeLock.lock();
                 beginTransaction();
@@ -718,7 +718,7 @@ public enum MetadataManager {
             }
         } else {
             ConnectorMetadata connectorMetadata = getConnector(name);
-            connectorMetadata.setActorRef(actorRef);
+            connectorMetadata.addActorRef(actorRef);
             createConnector(connectorMetadata, false);
         }
     }
@@ -742,9 +742,22 @@ public enum MetadataManager {
      * @param status New connector status.
      */
     public void setConnectorStatus(List<ConnectorName> names, Status status) {
-        for (ConnectorName connectorName : names) {
+        for (ConnectorName connectorName: names) {
+            removeActorRefsFromConnector(connectorName);
             setConnectorStatus(connectorName, status);
         }
+    }
+
+    private void removeActorRefsFromConnector(ConnectorName name) {
+        ConnectorMetadata connectorMetadata = getConnector(name);
+        connectorMetadata.setActorRefs(new HashSet<String>());
+        createConnector(connectorMetadata, false);
+    }
+
+    public void removeActorRefFromConnector(ConnectorName name, String actorRef){
+        ConnectorMetadata connectorMetadata = getConnector(name);
+        connectorMetadata.removeActorRef(actorRef);
+        createConnector(connectorMetadata, false);
     }
 
     /**

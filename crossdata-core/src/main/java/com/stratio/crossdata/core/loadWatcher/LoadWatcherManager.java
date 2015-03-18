@@ -237,7 +237,7 @@ public enum LoadWatcherManager {
     /**
      * Get the complete map.
      * 
-     * @return
+     * @return data
      */
     public Map<String, Serializable> getData() {
         return data;

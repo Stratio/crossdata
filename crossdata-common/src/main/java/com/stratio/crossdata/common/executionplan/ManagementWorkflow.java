@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.executionplan;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
@@ -70,6 +71,8 @@ public class ManagementWorkflow extends ExecutionWorkflow {
      */
     private Integer priority = null;
 
+    private Set<String> actorRefs;
+
     /**
      * Class constructor.
      *
@@ -81,6 +84,12 @@ public class ManagementWorkflow extends ExecutionWorkflow {
     public ManagementWorkflow(String queryId, String actorRef,
             ExecutionType executionType, ResultType type) {
         super(queryId, actorRef, executionType, type);
+    }
+
+    public ManagementWorkflow(String queryId, Set<String> actorRefs,
+            ExecutionType executionType, ResultType type) {
+        super(queryId, null, executionType, type);
+        this.actorRefs = actorRefs;
     }
 
     public void setClusterName(ClusterName clusterName) {
@@ -95,7 +104,6 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         this.catalogName = catalogName;
     }
 
-
     public void setDatastoreName(DataStoreName datastoreName) {
         this.datastoreName = datastoreName;
     }
@@ -108,13 +116,21 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         this.options = options;
     }
 
-
     public void setPageSize(int pageSize) {
         this.pageSize = pageSize;
 
     }
+
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public Set<String> getActorRefs() {
+        return actorRefs;
+    }
+
+    public void setActorRefs(Set<String> actorRefs) {
+        this.actorRefs = actorRefs;
     }
 
     /**
