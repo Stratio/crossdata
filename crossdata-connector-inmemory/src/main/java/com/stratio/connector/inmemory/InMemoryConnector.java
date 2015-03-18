@@ -41,6 +41,7 @@ import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
+import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.connectors.ConnectorApp;
 
@@ -51,6 +52,7 @@ import com.stratio.crossdata.connectors.ConnectorApp;
  */
 public class InMemoryConnector extends AbstractExtendedConnector {
 
+    static ConnectorApp connectorApp;
     /**
      * Class logger.
      */
@@ -187,7 +189,10 @@ public class InMemoryConnector extends AbstractExtendedConnector {
 
 
     private void restoreSchema(ClusterName cluster){
-
+        /*FUTURE handle timeout exception
+        for (CatalogMetadata catalogMetadata : connectorApp.getCatalogs(cluster)) {
+            System.out.println(catalogMetadata.toString());
+        }*/
     }
 
     /**
@@ -195,10 +200,11 @@ public class InMemoryConnector extends AbstractExtendedConnector {
      * @param args The arguments.
      */
     public static void main(String [] args){
-        ConnectorApp connectorApp = new ConnectorApp();
+        connectorApp = new ConnectorApp();
         InMemoryConnector inMemoryConnector = new InMemoryConnector(connectorApp);
         connectorApp.startup(inMemoryConnector);
         MetadataListener metadataListener = new MetadataListener();
         connectorApp.subscribeToMetadataUpdate(metadataListener);
+
     }
 }

@@ -19,13 +19,15 @@
 package com.stratio.crossdata.server.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
+import akka.routing.Broadcast
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
-import com.stratio.crossdata.common.data.ConnectorName
+import com.stratio.crossdata.common.data.{Status, ConnectorName}
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.exceptions.validation.CoordinationException
 import com.stratio.crossdata.common.executionplan.{ExecutionType, ManagementWorkflow, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
 import com.stratio.crossdata.common.logicalplan.PartialResults
+import com.stratio.crossdata.common.metadata.ConnectorMetadata
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
@@ -199,6 +201,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                 val actorRef = context.actorSelection(metadataWorkflow.getActorRef)
                 executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
                 executionInfo.setPersistOnSuccess(true)
+                executionInfo.setBroadcastOnSuccess(true)
                 ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
                 log.info("ActorRef: " + actorRef.toString())
 
@@ -428,6 +431,43 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               coordinator.executeManagementOperation(storedWorkflow.asInstanceOf[ManagementWorkflow].createManagementOperationMessage())
             }
           }
+          if (executionInfo.asInstanceOf[ExecutionInfo].isBroadcastOnSuccess) {
+            val storedWorkflow = executionInfo.asInstanceOf[ExecutionInfo].getWorkflow
+            val connectorExucutorActorRef = storedWorkflow.getActorRef
+            storedWorkflow match {
+              case mw: MetadataWorkflow => mw.getExecutionType match {
+
+                case ExecutionType.CREATE_TABLE  | ExecutionType.CREATE_TABLE_AND_CATALOG => {
+                  val tableMetadata = mw.getTableMetadata
+                  val listConnectorMetadata = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,  tableMetadata.getClusterRef)
+                  import scala.collection.JavaConverters._
+
+                  listConnectorMetadata.asScala.toList.flatMap(actorToBroadcast).foreach(broadcastMetadata)
+
+                  def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
+                        case null => List()
+                        case strActorRefUri => List(context.actorSelection(strActorRefUri))
+                  }
+
+
+                  def broadcastMetadata(bcConnectorActor: ActorSelection) = {
+                    log.debug("Broadcastring to all instances of " + bcConnectorActor.toString)
+                    bcConnectorActor ! Broadcast(UpdateMetadata(tableMetadata))
+                  }
+
+                }
+
+                //TODO get the metadataOperation
+                //TODO get the metadataUpdatedNecessary to send to the connector
+                //TODO get the connectors associated with the cluster
+                //TODO send to them the UpdateMetadata or the Patch
+                case message => log.warning ("Sending metadata updates cannot be performed for the ExecutionType :" + message.toString)
+              }
+              case _ => log.warning ("Tried to broadcast an operation without an operation workflow :" +storedWorkflow.getClass)
+            }
+
+          }
+
           if (executionInfo.asInstanceOf[ExecutionInfo].isRemoveOnSuccess) {
             ExecutionManager.MANAGER.deleteEntry(queryId)
           }

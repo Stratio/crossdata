@@ -19,21 +19,21 @@
 package com.stratio.connector.inmemory.metadata;
 
 import com.stratio.crossdata.common.connector.IMetadataListener;
-import com.stratio.crossdata.common.metadata.IMetadata;
+import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
 public class MetadataListener implements IMetadataListener {
 
     @Override
-    public void updateMetadata(IMetadata iMetadata) {
+    public void updateMetadata(UpdatableMetadata uMetadata) {
         System.out.println("UPDATE METADATA: "
                 + System.lineSeparator()
-                + iMetadata.toString());
+                + uMetadata.toString());
     }
 
     @Override
-    public void deleteMetadata(IMetadata iMetadata) {
+    public void deleteMetadata(UpdatableMetadata uMetadata) {
         System.out.println("DELETE METADATA: "
                 + System.lineSeparator()
-                + iMetadata.toString());
+                + uMetadata.toString());
     }
 }

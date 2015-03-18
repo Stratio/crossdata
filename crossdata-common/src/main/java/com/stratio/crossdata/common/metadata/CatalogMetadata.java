@@ -28,9 +28,9 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 /**
  * Catalog metadatada class that implements the characteristics of a catalog.
  */
-public class CatalogMetadata implements IMetadata {
+public class CatalogMetadata implements IMetadata, UpdatableMetadata {
 
-    private static final long serialVersionUID = 1366045716958459009L;
+    private static final long serialVersionUID = -5571494130135311306L;
     /**
      * The catalog name.
      */

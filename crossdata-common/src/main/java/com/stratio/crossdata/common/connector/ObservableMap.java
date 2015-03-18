@@ -26,14 +26,16 @@ import java.util.Map;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.FirstLevelName;
+import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.IMetadata;
+import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
-public class ObservableMap<K extends FirstLevelName, V extends IMetadata>
+public class ObservableMap<K extends Name, V extends UpdatableMetadata>
         implements Map<K, V>, Serializable {
 
-    private Map<FirstLevelName, IMetadata> innerMap = new LinkedHashMap<>();
+    private static final long serialVersionUID = -5379923681871577907L;
+    private Map<Name, UpdatableMetadata> innerMap = new LinkedHashMap<>();
     private List<IMetadataListener> listeners = new ArrayList<>();
-
     public void addListener(IMetadataListener listener){
         listeners.add(listener);
     }
@@ -96,7 +98,7 @@ public class ObservableMap<K extends FirstLevelName, V extends IMetadata>
     @Override
     public void clear() {
         for(IMetadataListener listener: listeners){
-            for(Entry<FirstLevelName, IMetadata> entry: innerMap.entrySet()){
+            for(Entry<Name, UpdatableMetadata> entry: innerMap.entrySet()){
                 listener.deleteMetadata(entry.getValue());
             }
         }
@@ -116,8 +118,8 @@ public class ObservableMap<K extends FirstLevelName, V extends IMetadata>
     @Override
     public Set<Entry<K, V>> entrySet() {
         Set<Entry<K,V>> entrySet = new LinkedHashSet<>();
-        for(Entry<FirstLevelName, IMetadata> entry: innerMap.entrySet()){
-            ObservableEntry<FirstLevelName, IMetadata> observableEntry =
+        for(Entry<Name, UpdatableMetadata> entry: innerMap.entrySet()){
+            ObservableEntry<Name, UpdatableMetadata> observableEntry =
                     new ObservableEntry<>(entry.getKey(), entry.getValue());
             entrySet.add((Entry<K, V>) observableEntry);
         }
@@ -126,29 +128,29 @@ public class ObservableMap<K extends FirstLevelName, V extends IMetadata>
 
 }
 
-class ObservableEntry<FirstLevelName, IMetadata> implements Map.Entry<FirstLevelName, IMetadata>{
+class ObservableEntry<Name, UpdatableMetadata> implements Map.Entry<Name, UpdatableMetadata>{
 
-    private final FirstLevelName key;
-    private IMetadata value;
+    private final Name key;
+    private UpdatableMetadata value;
 
-    ObservableEntry(FirstLevelName key, IMetadata value) {
+    ObservableEntry(Name key, UpdatableMetadata value) {
         this.key = key;
         this.value = value;
     }
 
     @Override
-    public FirstLevelName getKey() {
+    public Name getKey() {
         return key;
     }
 
     @Override
-    public IMetadata getValue() {
+    public UpdatableMetadata getValue() {
         return value;
     }
 
     @Override
-    public IMetadata setValue(IMetadata value) {
-        IMetadata old = this.value;
+    public UpdatableMetadata setValue(UpdatableMetadata value) {
+        UpdatableMetadata old = this.value;
         this.value = value;
         return old;
     }

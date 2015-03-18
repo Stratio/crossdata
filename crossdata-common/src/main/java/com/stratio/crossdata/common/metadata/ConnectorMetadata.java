@@ -40,9 +40,9 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 /**
  * Metadata information associated with a Connector.
  */
-public class ConnectorMetadata implements IMetadata {
+public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
 
-    private static final long serialVersionUID = 3609482909652076494L;
+    private static final long serialVersionUID = -7255054732193616017L;
     /**
      * Connector name.
      */

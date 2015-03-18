@@ -34,9 +34,9 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 /**
  * TableMetadata class.
  */
-public class TableMetadata implements Serializable {
+public class TableMetadata implements Serializable, UpdatableMetadata {
 
-    private static final long serialVersionUID = 937637791215246279L;
+    private static final long serialVersionUID = 5060206162720173380L;
 
     private final TableName name;
 

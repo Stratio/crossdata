@@ -87,7 +87,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   extends Actor with ActorLogging with IResultHandler {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorActor])
-  val metadata: ObservableMap[FirstLevelName, IMetadata] = new ObservableMap[FirstLevelName, IMetadata]()
+  val metadata: ObservableMap[Name, UpdatableMetadata] = new ObservableMap[Name, UpdatableMetadata]()
 
   logger.info("Lifting connector actor")
 
@@ -148,6 +148,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   }
 
   def subscribeToMetadataUpdate(listener: IMetadataListener) = {
+    logger.debug()
     metadata.addListener(listener)
   }
 
@@ -248,25 +249,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         case _:TableMetadata => {
           val tableName = u.metadata.asInstanceOf[TableMetadata].getName
           val catalogName = tableName.getCatalogName
-          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.put(
-            tableName,u.metadata.asInstanceOf[TableMetadata]
-          )
-        }
-        case _:ColumnMetadata => {
-          val columName = u.metadata.asInstanceOf[ColumnMetadata].getName
-          val tableName = columName.getTableName
-          val catalogName = tableName.getCatalogName
-          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getColumns.put(
-            columName,u.metadata.asInstanceOf[ColumnMetadata]
-          )
-        }
-        case _:IndexMetadata => {
-          val indexName = u.metadata.asInstanceOf[IndexMetadata].getName
-          val tableName = indexName.getTableName
-          val catalogName = tableName.getCatalogName
-          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getIndexes.put(
-            indexName,u.metadata.asInstanceOf[IndexMetadata]
-          )
+          metadata.put(u.metadata.asInstanceOf[TableMetadata].getName,u.metadata.asInstanceOf[TableMetadata])
         }
       }
       sender ! true
