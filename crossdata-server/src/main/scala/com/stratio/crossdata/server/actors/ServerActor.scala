@@ -20,7 +20,7 @@ package com.stratio.crossdata.server.actors
 
 import java.util.{Random, UUID}
 
-import akka.actor.{Actor, Props, ReceiveTimeout}
+import akka.actor.{Props, Actor, ReceiveTimeout}
 import akka.cluster.{Cluster, MemberStatus}
 import akka.routing.{RoundRobinPool, DefaultResizer}
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
@@ -64,27 +64,27 @@ class ServerActor(engine: Engine, cluster: Cluster) extends Actor with ServerCon
 
   val connectorManagerActorRef = context.actorOf(
     RoundRobinPool(num_connector_manag_actor, Some(resizer))
-      .props(new ConnectorManagerActor(cluster)),
+      .props(Props(classOf[ConnectorManagerActor], cluster)),
     "ConnectorManagerActor")
   val coordinatorActorRef = context.actorOf(
     RoundRobinPool(num_coordinator_actor, Some(resizer))
-      .props(new CoordinatorActor(connectorManagerActorRef, engine.getCoordinator)),
+      .props(Props(classOf[CoordinatorActor], connectorManagerActorRef, engine.getCoordinator)),
     "CoordinatorActor")
   val plannerActorRef = context.actorOf(
     RoundRobinPool(num_planner_actor, Some(resizer))
-      .props(new PlannerActor(coordinatorActorRef, engine.getPlanner)),
+      .props(Props(classOf[PlannerActor], coordinatorActorRef, engine.getPlanner)),
     "PlannerActor")
   val validatorActorRef = context.actorOf(
     RoundRobinPool(num_validator_actor, Some(resizer))
-      .props(new ValidatorActor(plannerActorRef, engine.getValidator)),
+      .props(Props(classOf[ValidatorActor], plannerActorRef, engine.getValidator)),
     "ValidatorActor")
   val parserActorRef = context.actorOf(
     RoundRobinPool(num_parser_actor, Some(resizer))
-      .props(new ParserActor(validatorActorRef, engine.getParser)),
+      .props(Props(classOf[ParserActor], validatorActorRef, engine.getParser)),
     "ParserActor")
   val APIActorRef = context.actorOf(
     RoundRobinPool(num_api_actor, Some(resizer))
-      .props(new APIActor(engine.getAPIManager)),
+      .props(Props(classOf[APIActor], engine.getAPIManager)),
     "APIActor")
 
   def chooseReroutee(): String={
