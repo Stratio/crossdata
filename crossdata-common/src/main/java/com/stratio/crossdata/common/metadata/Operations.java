@@ -522,6 +522,12 @@ public enum Operations {
     FILTER_INDEXED_MATCH("FILTER_INDEXED_MATCH"),
 
     /**
+     * The engine supports full text search syntax in {@link com.stratio.crossdata.common.logicalplan.Filter}
+     * operations with a MATCH Operator in non indexed columns.
+     */
+    FILTER_NON_INDEXED_MATCH("FILTER_NON_INDEXED_MATCH"),
+
+    /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
      * a includes as part of a relation using with an equal operator.
      */

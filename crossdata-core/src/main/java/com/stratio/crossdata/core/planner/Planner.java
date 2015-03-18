@@ -232,8 +232,8 @@ public class Planner {
 
     private void logCandidateConnectors(Map<TableName, List<ConnectorMetadata>> candidatesConnectors) {
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
-        for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry : candidatesConnectors.entrySet()) {
-            for (ConnectorMetadata cm : tableEntry.getValue()) {
+        for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry: candidatesConnectors.entrySet()) {
+            for (ConnectorMetadata cm: tableEntry.getValue()) {
                 sb.append("table: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName()).append(" ")
                         .append(cm.getActorRef()).append(System.lineSeparator());
             }
@@ -1309,7 +1309,7 @@ public class Planner {
             ExecutionType executionType = ExecutionType.ATTACH_CLUSTER;
             ResultType type = ResultType.RESULTS;
 
-            managementWorkflow = new ManagementWorkflow(queryId, null, executionType, type);
+            managementWorkflow = new ManagementWorkflow(queryId, "", executionType, type);
 
             // Add required information
             managementWorkflow.setClusterName(attachClusterStatement.getClusterName());
@@ -1321,7 +1321,7 @@ public class Planner {
             ExecutionType executionType = ExecutionType.DETACH_CLUSTER;
             ResultType type = ResultType.RESULTS;
 
-            managementWorkflow = new ManagementWorkflow(queryId, null, executionType, type);
+            managementWorkflow = new ManagementWorkflow(queryId, "", executionType, type);
             String clusterName = detachClusterStatement.getClusterName();
             managementWorkflow.setClusterName(new ClusterName(clusterName));
 
@@ -1334,7 +1334,7 @@ public class Planner {
             ConnectorMetadata connector = MetadataManager.MANAGER
                     .getConnector(attachConnectorStatement.getConnectorName());
 
-            managementWorkflow = new ManagementWorkflow(queryId, connector.getActorRef(), executionType, type);
+            managementWorkflow = new ManagementWorkflow(queryId, connector.getActorRefs(), executionType, type);
 
             // Add required information
             managementWorkflow.setConnectorName(attachConnectorStatement.getConnectorName());
@@ -1351,7 +1351,7 @@ public class Planner {
             ConnectorMetadata connector = MetadataManager.MANAGER
                     .getConnector(detachConnectorStatement.getConnectorName());
 
-            managementWorkflow = new ManagementWorkflow(queryId, connector.getActorRef(), executionType, type);
+            managementWorkflow = new ManagementWorkflow(queryId, connector.getActorRefs(), executionType, type);
             managementWorkflow.setConnectorName(detachConnectorStatement.getConnectorName());
             managementWorkflow.setClusterName(detachConnectorStatement.getClusterName());
 
@@ -1363,7 +1363,7 @@ public class Planner {
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER
                     .getCluster(alterClusterStatement.getClusterName());
 
-            managementWorkflow = new ManagementWorkflow(queryId, null, executionType, type);
+            managementWorkflow = new ManagementWorkflow(queryId, "", executionType, type);
             managementWorkflow.setClusterName(alterClusterStatement.getClusterName());
             managementWorkflow.setOptions(alterClusterStatement.getOptions());
             managementWorkflow.setDatastoreName(clusterMetadata.getDataStoreRef());

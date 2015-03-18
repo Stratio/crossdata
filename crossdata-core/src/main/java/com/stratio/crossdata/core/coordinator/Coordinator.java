@@ -395,7 +395,6 @@ public class Coordinator implements Serializable {
 
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
 
-
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
         connectorMetadata.getClusterRefs().remove(clusterName);
         connectorMetadata.getClusterProperties().remove(clusterName);
