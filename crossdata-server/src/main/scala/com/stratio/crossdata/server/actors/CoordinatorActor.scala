@@ -311,9 +311,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             connectorClusterConfig.setDataStoreName(datastoreName)
 
             val actorRefs = managementWorkflow.getActorRefs
+            var count = 1
             for(actorRef <- actorRefs){
               val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(actorRef, false))
-              connectorSelection ! new Connect(queryId, credentials, connectorClusterConfig)
+              connectorSelection ! new Connect(queryId+"#"+count, credentials, connectorClusterConfig)
+              count+=1
             }
 
             log.info("connectorOptions: " + connectorClusterConfig.getConnectorOptions.toString + " clusterOptions: " +
@@ -325,7 +327,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setWorkflow(managementWorkflow)
             executionInfo.setPersistOnSuccess(true)
             executionInfo.setRemoveOnSuccess(true)
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+            count = 1
+            for(actorRef <- actorRefs){
+              ExecutionManager.MANAGER.createEntry(queryId+"#"+count, executionInfo, true)
+              count+=1
+            }
 
             sendResultToClient = false
 
@@ -425,6 +431,12 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         val clientActor = context.actorSelection(target)
 
         var sendResultToClient = true
+
+        if(queryId.contains("#")){
+          if(!queryId.endsWith("#1")){
+            sendResultToClient = false
+          }
+        }
 
         if(!result.hasError){
           if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {

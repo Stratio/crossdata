@@ -330,7 +330,11 @@ public class ConnectorMetadata implements IMetadata {
      * @return A set of {@link com.stratio.crossdata.common.data.ClusterName}.
      */
     public Set<ClusterName> getClusterRefs() {
-        return clusterRefs;
+        Set<ClusterName> clusters = clusterRefs;
+        if((clusters == null) || (clusters.isEmpty())){
+            clusters = clusterProperties.keySet();
+        }
+        return clusters;
     }
 
     /**
@@ -603,13 +607,16 @@ public class ConnectorMetadata implements IMetadata {
 
     public String getActorRef(){
         // Random election (Kind of load balancing?)
-        int randomNum = (new Random()).nextInt(actorRefs.size());
-        int count = 0;
-        Iterator<String> iter = actorRefs.iterator();
-        String actorRef = iter.next();
-        while(count < randomNum){
+        String actorRef = null;
+        if((actorRefs != null) & (!actorRefs.isEmpty())){
+            int randomNum = (new Random()).nextInt(actorRefs.size());
+            int count = 0;
+            Iterator<String> iter = actorRefs.iterator();
             actorRef = iter.next();
-            count++;
+            while(count < randomNum){
+                actorRef = iter.next();
+                count++;
+            }
         }
         return actorRef;
     }
@@ -640,6 +647,5 @@ public class ConnectorMetadata implements IMetadata {
         }
         return sb.toString();
     }
-
 
 }

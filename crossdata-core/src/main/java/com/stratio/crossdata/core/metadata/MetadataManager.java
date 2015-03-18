@@ -742,7 +742,7 @@ public enum MetadataManager {
      * @param status New connector status.
      */
     public void setConnectorStatus(List<ConnectorName> names, Status status) {
-        for (ConnectorName connectorName : names) {
+        for (ConnectorName connectorName: names) {
             removeActorRefsFromConnector(connectorName);
             setConnectorStatus(connectorName, status);
         }
@@ -751,6 +751,7 @@ public enum MetadataManager {
     private void removeActorRefsFromConnector(ConnectorName name) {
         ConnectorMetadata connectorMetadata = getConnector(name);
         connectorMetadata.setActorRefs(new HashSet<String>());
+        createConnector(connectorMetadata, false);
     }
 
     public void removeActorRefFromConnector(ConnectorName name, String actorRef){
