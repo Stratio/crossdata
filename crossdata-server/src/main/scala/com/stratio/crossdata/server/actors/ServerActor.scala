@@ -45,21 +45,6 @@ class ServerActor(engine: Engine, cluster: Cluster) extends Actor with ServerCon
 
   val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(hostname), "loadWatcherActor")
 
-  /*
-  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props(cluster).
-    withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
-  val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).
-    withRouter(RoundRobinRouter(nrOfInstances = num_coordinator_actor)), "CoordinatorActor")
-  val plannerActorRef = context.actorOf(PlannerActor.props(coordinatorActorRef, engine.getPlanner).
-    withRouter(RoundRobinRouter(nrOfInstances = num_planner_actor)), "PlannerActor")
-  val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef, engine.getValidator).
-    withRouter(RoundRobinRouter(nrOfInstances = num_validator_actor)), "ValidatorActor")
-  val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef, engine.getParser()).
-    withRouter(RoundRobinRouter(nrOfInstances = num_parser_actor)), "ParserActor")
-  val APIActorRef = context.actorOf(APIActor.props(engine.getAPIManager()).
-    withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
-  */
-
   val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
   val connectorManagerActorRef = context.actorOf(
