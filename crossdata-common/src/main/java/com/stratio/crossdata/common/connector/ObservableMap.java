@@ -25,9 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.stratio.crossdata.common.data.FirstLevelName;
 import com.stratio.crossdata.common.data.Name;
-import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
 public class ObservableMap<K extends Name, V extends UpdatableMetadata>
@@ -79,8 +77,12 @@ public class ObservableMap<K extends Name, V extends UpdatableMetadata>
 
     @Override
     public V remove(Object key) {
+        if(! (key instanceof Name) ){
+            throw new ClassCastException();
+        }
+
         for(IMetadataListener listener: listeners){
-            listener.deleteMetadata(innerMap.get(key));
+            listener.deleteMetadata((Name) key);
         }
         return (V) innerMap.remove(key);
     }
@@ -99,7 +101,7 @@ public class ObservableMap<K extends Name, V extends UpdatableMetadata>
     public void clear() {
         for(IMetadataListener listener: listeners){
             for(Entry<Name, UpdatableMetadata> entry: innerMap.entrySet()){
-                listener.deleteMetadata(entry.getValue());
+                listener.deleteMetadata(entry.getKey());
             }
         }
         innerMap.clear();

@@ -19,6 +19,7 @@
 package com.stratio.connector.inmemory.metadata;
 
 import com.stratio.crossdata.common.connector.IMetadataListener;
+import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
 public class MetadataListener implements IMetadataListener {
@@ -31,9 +32,9 @@ public class MetadataListener implements IMetadataListener {
     }
 
     @Override
-    public void deleteMetadata(UpdatableMetadata uMetadata) {
+    public void deleteMetadata(Name name) {
         System.out.println("DELETE METADATA: "
                 + System.lineSeparator()
-                + uMetadata.toString());
+                + name.toString());
     }
 }

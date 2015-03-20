@@ -16,12 +16,13 @@ package com.stratio.crossdata.common.connector;/*
  * under the License.
  */
 
+import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
 public interface IMetadataListener {
 
-    public void updateMetadata(UpdatableMetadata iMetadata);
+    public void updateMetadata(UpdatableMetadata uMetadata);
 
-    public void deleteMetadata(UpdatableMetadata iMetadata);
+    public void deleteMetadata(Name uName);
 
 }

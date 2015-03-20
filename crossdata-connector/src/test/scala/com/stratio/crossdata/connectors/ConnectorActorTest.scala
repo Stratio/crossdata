@@ -127,7 +127,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
     val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
     catalog.getTables.put(table.getName,table)
-    val future1 = ask(ca1, UpdateMetadata(catalog))
+    val future1 = ask(ca1, UpdateMetadata(catalog, true))
     val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
     assert(result == true)
   }

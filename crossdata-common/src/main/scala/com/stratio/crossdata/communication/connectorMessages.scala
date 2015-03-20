@@ -33,7 +33,7 @@ case class IAmAlive(queryId:String)
 
 case class Stop()
 
-case class UpdateMetadata(metadata: UpdatableMetadata)
+case class UpdateMetadata(metadata: UpdatableMetadata, remove: java.lang.Boolean)
 
 case class PatchMetadata(diffs:Patch,metadataClass:java.lang.Class[_],name:Name)
 

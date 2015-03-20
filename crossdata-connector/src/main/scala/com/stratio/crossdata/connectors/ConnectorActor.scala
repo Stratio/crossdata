@@ -37,6 +37,7 @@ import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{ListMap, Set}
+import scala.concurrent.Future
 import scala.concurrent.duration.DurationInt
 import com.stratio.crossdata.communication.CreateIndex
 import com.stratio.crossdata.communication.Update
@@ -232,28 +233,53 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       //println("result="+r)
     }
 
-    case u: UpdateMetadata=> {
-      u.metadata match{
+    case UpdateMetadata(umetadata, java.lang.Boolean.FALSE) => {
+      umetadata match{
         case _:CatalogMetadata => {
-          metadata.put(u.metadata.asInstanceOf[CatalogMetadata].getName,u.metadata)
+          metadata.put(umetadata.asInstanceOf[CatalogMetadata].getName,umetadata)
         }
         case _:ClusterMetadata => {
-          metadata.put(u.metadata.asInstanceOf[ClusterMetadata].getName,u.metadata)
+          metadata.put(umetadata.asInstanceOf[ClusterMetadata].getName,umetadata)
         }
         case _:ConnectorMetadata => {
-          metadata.put(u.metadata.asInstanceOf[ConnectorMetadata].getName,u.metadata)
+          metadata.put(umetadata.asInstanceOf[ConnectorMetadata].getName,umetadata)
         }
         case _:DataStoreMetadata =>{
-          metadata.put(u.metadata.asInstanceOf[DataStoreMetadata].getName,u.metadata)
+          metadata.put(umetadata.asInstanceOf[DataStoreMetadata].getName,umetadata)
         }
         case _:TableMetadata => {
-          val tableName = u.metadata.asInstanceOf[TableMetadata].getName
-          val catalogName = tableName.getCatalogName
-          metadata.put(u.metadata.asInstanceOf[TableMetadata].getName,u.metadata.asInstanceOf[TableMetadata])
+          metadata.put(umetadata.asInstanceOf[TableMetadata].getName,umetadata)
         }
+
       }
+      //TODO is it necessary?
       sender ! true
     }
+
+    case UpdateMetadata(umetadata, java.lang.Boolean.TRUE) => {
+      umetadata match{
+        case _:CatalogMetadata => {
+          metadata.remove(umetadata.asInstanceOf[CatalogMetadata].getName)
+        }
+        case _:ClusterMetadata => {
+          metadata.remove(umetadata.asInstanceOf[ClusterMetadata].getName)
+        }
+        case _:ConnectorMetadata => {
+          metadata.remove(umetadata.asInstanceOf[ConnectorMetadata].getName)
+        }
+        case _:DataStoreMetadata =>{
+          metadata.remove(umetadata.asInstanceOf[DataStoreMetadata].getName)
+        }
+        case _:TableMetadata => {
+          metadata.remove(umetadata.asInstanceOf[TableMetadata].getName)
+        }
+
+      }
+      //TODO is it necessary?
+      sender ! true
+    }
+
+
     case connectRequest: com.stratio.crossdata.communication.Connect => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received connect command")

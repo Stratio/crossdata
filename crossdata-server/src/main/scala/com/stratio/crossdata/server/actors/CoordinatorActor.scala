@@ -22,12 +22,12 @@ import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import akka.routing.Broadcast
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
-import com.stratio.crossdata.common.data.{Status, ConnectorName}
+import com.stratio.crossdata.common.data.{ClusterName, Status, ConnectorName}
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.exceptions.validation.CoordinationException
 import com.stratio.crossdata.common.executionplan.{ExecutionType, ManagementWorkflow, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
 import com.stratio.crossdata.common.logicalplan.PartialResults
-import com.stratio.crossdata.common.metadata.ConnectorMetadata
+import com.stratio.crossdata.common.metadata.{IMetadata, UpdatableMetadata, ConnectorMetadata}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
@@ -36,6 +36,7 @@ import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, ExecutionManagerException}
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.IPlannedQuery
+import scala.collection.JavaConverters._
 
 object CoordinatorActor {
 
@@ -51,6 +52,27 @@ object CoordinatorActor {
 class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends Actor with ActorLogging {
 
   log.info("Lifting coordinator actor")
+
+  /**
+   * Send a message to the connectors attached to a cluster to update its metadata. It is called any time an update's operation which persist data is finished.
+   * @param uMetadata the new metadata to be updated
+   * @param clusterInvolved the cluster which contains the metadata to update
+   * @param toRemove whether the metadata has been created or deleted
+   */
+  private def updateMetadata(uMetadata: UpdatableMetadata, clusterInvolved: ClusterName, toRemove: Boolean): Unit = {
+
+    val listConnectorMetadata = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE, clusterInvolved)
+    listConnectorMetadata.asScala.toList.flatMap(actorToBroadcast).foreach(actor => broadcastMetadata(actor, uMetadata))
+
+    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
+      case null => List()
+      case strActorRefUri => List(context.actorSelection(strActorRefUri))
+    }
+    def broadcastMetadata(bcConnectorActor: ActorSelection, uMetadata: UpdatableMetadata) = {
+      log.info("Broadcastring to all instances of " + bcConnectorActor.toString)
+      bcConnectorActor ! Broadcast(UpdateMetadata(uMetadata, toRemove))
+    }
+  }
 
   def receive: Receive = {
 
@@ -432,38 +454,29 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             }
           }
           if (executionInfo.asInstanceOf[ExecutionInfo].isBroadcastOnSuccess) {
-            val storedWorkflow = executionInfo.asInstanceOf[ExecutionInfo].getWorkflow
-            val connectorExucutorActorRef = storedWorkflow.getActorRef
-            storedWorkflow match {
+             executionInfo.asInstanceOf[ExecutionInfo].getWorkflow match {
+
               case mw: MetadataWorkflow => mw.getExecutionType match {
 
                 case ExecutionType.CREATE_TABLE  | ExecutionType.CREATE_TABLE_AND_CATALOG => {
                   val tableMetadata = mw.getTableMetadata
-                  val listConnectorMetadata = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE,  tableMetadata.getClusterRef)
-                  import scala.collection.JavaConverters._
-
-                  listConnectorMetadata.asScala.toList.flatMap(actorToBroadcast).foreach(broadcastMetadata)
-
-                  def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
-                        case null => List()
-                        case strActorRefUri => List(context.actorSelection(strActorRefUri))
-                  }
-
-
-                  def broadcastMetadata(bcConnectorActor: ActorSelection) = {
-                    log.debug("Broadcastring to all instances of " + bcConnectorActor.toString)
-                    bcConnectorActor ! Broadcast(UpdateMetadata(tableMetadata))
-                  }
+                  updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
 
                 }
 
+                case ExecutionType.DROP_TABLE => {
+                  val tableMetadata = mw.getTableMetadata
+                  updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = true)
+
+                }
                 //TODO get the metadataOperation
                 //TODO get the metadataUpdatedNecessary to send to the connector
                 //TODO get the connectors associated with the cluster
                 //TODO send to them the UpdateMetadata or the Patch
                 case message => log.warning ("Sending metadata updates cannot be performed for the ExecutionType :" + message.toString)
               }
-              case _ => log.warning ("Tried to broadcast an operation without an operation workflow :" +storedWorkflow.getClass)
+
+              case _ => log.warning ("Tried to broadcast an operation without an operation workflow :" +executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getClass)
             }
 
           }
