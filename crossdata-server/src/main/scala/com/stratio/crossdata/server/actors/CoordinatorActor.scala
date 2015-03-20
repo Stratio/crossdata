@@ -26,6 +26,7 @@ import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.exceptions.validation.CoordinationException
 import com.stratio.crossdata.common.executionplan.{ExecutionType, ManagementWorkflow, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
 import com.stratio.crossdata.common.logicalplan.PartialResults
+import com.stratio.crossdata.common.metadata.Operations
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
@@ -465,8 +466,15 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].setRows(partialResults.getRows)
               operation = executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
             } else {
-              executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
-              operation = executionInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(queryId + CoordinatorActor.TriggerToken)
+              if (executionInfo.getWorkflow.getTriggerStep!=null) {
+                executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+              }else{
+                val partialResultsStep: PartialResults = new PartialResults(Operations.PARTIAL_RESULTS)
+                executionInfo.getWorkflow.setTriggerStep(partialResultsStep)
+                executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+              }
+              operation = executionInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(queryId)
+
             }
             log.info("Sending operation: " + operation + " to: " + actorSelection.asInstanceOf[ActorSelection])
             actorSelection.asInstanceOf[ActorSelection] ! operation
