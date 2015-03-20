@@ -832,17 +832,37 @@ getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
         clauses = new ArrayList<>();
         workaroundTable = tablename;
     }:
-    rel1=getAbstractRelation[workaroundTable] { clauses.add(rel1); }
-            (T_AND relN=getAbstractRelation[workaroundTable] { clauses.add(relN); })*
+    rel1=getAbstractRelation[workaroundTable] { clauses.addAll(rel1); }
+            (T_AND relN=getAbstractRelation[workaroundTable] { clauses.addAll(relN); })*
 ;
 
-getAbstractRelation[TableName tablename] returns [AbstractRelation result]
+//getAbstractRelation[TableName tablename] returns [AbstractRelation result]
+//    @init{
+//        workaroundTable = tablename;
+//    }:
+//    (T_START_PARENTHESIS
+//        abstrRel=getAbstractRelation[workaroundTable] { abstrRel.setParenthesis(true); result = abstrRel;}
+//    T_END_PARENTHESIS)
+//    |
+//    ((T_START_PARENTHESIS rel1=getRelation[workaroundTable] T_END_PARENTHESIS { rel1.setParenthesis(true); }
+//        | rel1=getRelation[workaroundTable])
+//        {result = rel1;}
+//        (T_OR
+//            (T_START_PARENTHESIS rel2=getRelation[workaroundTable] T_END_PARENTHESIS { rel2.setParenthesis(true); }
+//            | rel2=getRelation[workaroundTable]) {result = new RelationDisjunction(rel1, rel2);})?)
+//;
+
+getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     @init{
         workaroundTable = tablename;
+        leftOperand = new ArrayList<>();
+        rightOperand = new ArrayList<>();
     }:
-    rel1=getRelation[workaroundTable] { result = rel1; }
-    (T_OR rel2=getRelation[workaroundTable]
-        { result = new RelationDisjunction(rel1, rel2); } )?
+    (T_START_PARENTHESIS leftOperand=getConditions[workaroundTable] T_END_PARENTHESIS
+    | rel1=getRelation[workaroundTable] {leftOperand.add(rel1);}) {result = leftOperand;}
+        (T_OR (T_START_PARENTHESIS rightOperand=getConditions[workaroundTable] T_END_PARENTHESIS
+               | rel2=getRelation[workaroundTable] {rightOperand.add(rel2);} )
+        { result = new ArrayList<>(); result.add(new RelationDisjunction(leftOperand, rightOperand));})?
 ;
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
@@ -928,11 +948,12 @@ getSelector[TableName tablename] returns [Selector sel]
     |
         functionName=getFunctionName
         T_START_PARENTHESIS
-            (select1=getSelector[tablename] {params.add(select1);}
-                (T_COMMA selectN=getSelector[tablename] {params.add(selectN);})*
+            (select1=getSelector[workaroundTable] {params.add(select1);}
+                (T_COMMA selectN=getSelector[workaroundTable] {params.add(selectN);})*
             )?
-        T_END_PARENTHESIS { String functionStr = functionName;
-                            firstSelector = new FunctionSelector(tablename, functionStr, params);}
+        T_END_PARENTHESIS
+            { String functionStr = functionName;
+            firstSelector = new FunctionSelector(tablename, functionStr, params);}
     |
         (columnName=getColumnName[tablename] {firstSelector = new ColumnSelector(columnName);}
         | floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}

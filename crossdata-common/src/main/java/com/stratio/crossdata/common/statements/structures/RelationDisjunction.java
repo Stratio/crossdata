@@ -53,6 +53,9 @@ public class RelationDisjunction extends AbstractRelation {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        if(isParenthesis()){
+            sb.append("(");
+        }
         Iterator<AbstractRelation> leftIter = leftRelations.iterator();
         while(leftIter.hasNext()){
             AbstractRelation leftRelation = leftIter.next();
@@ -69,6 +72,9 @@ public class RelationDisjunction extends AbstractRelation {
             if(rightIter.hasNext()){
                 sb.append(" AND ");
             }
+        }
+        if(isParenthesis()){
+            sb.append(")");
         }
         return sb.toString();
     }
