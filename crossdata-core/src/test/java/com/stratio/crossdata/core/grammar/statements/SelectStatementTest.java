@@ -628,7 +628,6 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatement(inputText, expectedText, "selectOrOperatorSimple3");
     }
 
-    /*
     @Test
     public void selectOrOperatorWithPreference() {
         String inputText = "SELECT * FROM test.table1 WHERE"
@@ -647,6 +646,5 @@ public class SelectStatementTest extends ParsingTest {
                 + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013;";
         testRegularStatement(inputText, expectedText, "selectOrOperatorWithPreference");
     }
-    */
 
 }

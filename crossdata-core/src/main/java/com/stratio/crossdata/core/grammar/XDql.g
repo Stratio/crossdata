@@ -827,10 +827,6 @@ getGroupBy[TableName tablename] returns [ArrayList<Selector> groups]
     (T_COMMA identN=getSelector[tablename] {groups.add(identN);})*
 ;
 
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////// POC /////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-
 getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
     @init{
         clauses = new ArrayList<>();
@@ -849,41 +845,12 @@ getAbstractRelation[TableName tablename] returns [AbstractRelation result]
         { result = new RelationDisjunction(rel1, rel2); } )?
 ;
 
-/*
-getAbstractRelation[TableName tablename] returns [AbstractRelation result]
-    @init{
-        workaroundTable = tablename;
-    }:
-    rel1=getRelation[workaroundTable] { result = rel1; }
-    | rel2=getRelationDisjunction[workaroundTable] { result = rel2; }
-;
-*/
-
-/*
-getRelationDisjunction[TableName tablename] returns [RelationDisjunction rc]
-    @init{
-        workaroundTable = tablename;
-    }
-    @after{
-        $rc = new RelationDisjunction(leftOperand, rightOperand);
-    }:
-    rel1=getRelation[workaroundTable]
-    leftOperand=getConditions[workaroundTable]
-    T_OR
-    rightOperand=getConditions[workaroundTable]
-;
-*/
-
-/////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////
-
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     @init{
         clauses = new ArrayList<>();
         workaroundTable = tablename;
     }:
     rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND relN=getRelation[workaroundTable] {clauses.add(relN);})*
-
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]
