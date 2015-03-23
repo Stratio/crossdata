@@ -665,7 +665,7 @@ public class PlannerTest extends PlannerBaseTest {
         ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.INT) };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
-        table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table4",
+        TableMetadata table4 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table4",
                 columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         String inputText = "SELECT * FROM demo.table4 WHERE"
@@ -674,7 +674,7 @@ public class PlannerTest extends PlannerBaseTest {
                 + " AND code = 25 OR id = 25;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
-                inputText, "testSelectWithDisjunction", false, false, table1);
+                inputText, "testSelectWithDisjunction", false, false, table4);
 
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 1,
@@ -685,6 +685,47 @@ public class PlannerTest extends PlannerBaseTest {
                 queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep().getNextStep().getClass(),
                 Disjunction.class,
                 "Fourth step should be a Disjunction");
+    }
+
+    @Test
+    public void testSelectWithDisjunctionAndParenthesis() throws ManifestException {
+
+        init();
+
+        String[] columnNames1 = { "id", "code" };
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.INT) };
+        String[] partitionKeys1 = { "id" };
+        String[] clusteringKeys1 = { };
+        TableMetadata table4 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table4",
+                columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
+
+        String inputText = "SELECT * FROM demo.table4 WHERE"
+                + " id = code"
+                + " AND ((id = 25 AND code = 25) OR (code = 14 AND id = 14))"
+                + " AND id = 25;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testSelectWithDisjunctionAndParenthesis", false, false, table4);
+
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 1,
+                "Only one initial step was expected");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().get(0).getClass(), Project.class,
+                "First step of the workflow should be a Project");
+        assertEquals(
+                queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep().getClass(),
+                Disjunction.class,
+                "Third step should be a Disjunction");
+        assertEquals(
+                ((Disjunction) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep())
+                        .getLeftOperand().size(),
+                2,
+                "Left operand of the disjunction should have 2 relations");
+        assertEquals(
+                ((Disjunction) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep())
+                        .getRightOperand().size(),
+                2,
+                "Right operand of the disjunction should have 2 relations");
     }
 
 }

@@ -116,13 +116,13 @@ public class Relation extends AbstractRelation {
     public Set<ColumnName> getSelectorColumns() {
         Set<ColumnName> columns = new HashSet<>();
 
-        if( leftTerm instanceof ColumnSelector){
+        if(leftTerm instanceof ColumnSelector){
             columns.add(leftTerm.getColumnName());
         }else if(leftTerm instanceof RelationSelector){
             columns.addAll(((RelationSelector)leftTerm).getRelation().getSelectorColumns());
         }
 
-        if( rightTerm instanceof ColumnSelector){
+        if(rightTerm instanceof ColumnSelector){
             columns.add(rightTerm.getColumnName());
         }else if(rightTerm instanceof RelationSelector){
             columns.addAll(((RelationSelector) rightTerm).getRelation().getSelectorColumns());
@@ -165,9 +165,16 @@ public class Relation extends AbstractRelation {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(leftTerm.toString());
+        StringBuilder sb = new StringBuilder();
+        if(isParenthesis()){
+            sb.append("(");
+        }
+        sb.append(leftTerm.toString());
         sb.append(" ").append(operator).append(" ");
         sb.append(rightTerm);
+        if(isParenthesis()){
+            sb.append(")");
+        }
         return sb.toString();
     }
 

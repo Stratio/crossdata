@@ -23,4 +23,14 @@ import java.io.Serializable;
 public abstract class AbstractRelation implements Serializable {
 
     private static final long serialVersionUID = 4458788192163528306L;
+
+    private boolean parenthesis = false;
+
+    public boolean isParenthesis() {
+        return parenthesis;
+    }
+
+    public void setParenthesis(boolean parenthesis) {
+        this.parenthesis = parenthesis;
+    }
 }
