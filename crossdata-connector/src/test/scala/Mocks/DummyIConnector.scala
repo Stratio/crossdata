@@ -36,6 +36,6 @@ class DummyIConnector extends IConnector{
   override def connect(credentials: ICredentials, config: ConnectorClusterConfig): Unit = {}
   val c:Option[IStorageEngine]=None
   override def getStorageEngine: IStorageEngine = c.get
-
-
+  val d:Option[ISqlEngine]=None
+  override def getSqlEngine: ISqlEngine = d.get
 }
