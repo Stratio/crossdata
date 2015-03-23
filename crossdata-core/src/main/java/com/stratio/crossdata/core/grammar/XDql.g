@@ -857,12 +857,20 @@ getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
         workaroundTable = tablename;
         leftOperand = new ArrayList<>();
         rightOperand = new ArrayList<>();
+        boolean leftParenthesis = false;
+        boolean rightParenthesis = false;
     }:
     (T_START_PARENTHESIS leftOperand=getConditions[workaroundTable] T_END_PARENTHESIS
+        { leftParenthesis=true; if(leftOperand.size()==1) leftOperand.get(0).setParenthesis(true); }
     | rel1=getRelation[workaroundTable] {leftOperand.add(rel1);}) {result = leftOperand;}
         (T_OR (T_START_PARENTHESIS rightOperand=getConditions[workaroundTable] T_END_PARENTHESIS
+                    {rightParenthesis=true;}
                | rel2=getRelation[workaroundTable] {rightOperand.add(rel2);} )
-        { result = new ArrayList<>(); result.add(new RelationDisjunction(leftOperand, rightOperand));})?
+        {result = new ArrayList<>();
+        RelationDisjunction rd = new RelationDisjunction(leftOperand, rightOperand);
+        rd.setLeftParenthesis(leftParenthesis);
+        rd.setRightParenthesis(rightParenthesis);
+        result.add(rd);} )?
 ;
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
