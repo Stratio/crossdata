@@ -1904,8 +1904,10 @@ public class Planner {
                     .getQualifiedName());
 
             //Attach to input tables path
-            LogicalStep t1 = stepMap.get(firstRelation.getLeftTerm().getSelectorTablesAsString());
-            LogicalStep t2 = stepMap.get(firstRelation.getRightTerm().getSelectorTablesAsString());
+            LogicalStep t1 = stepMap.get(firstRelation.getLeftTerm().getTableName().getQualifiedName
+                    ());
+            LogicalStep t2 = stepMap
+                    .get(firstRelation.getRightTerm().getTableName().getQualifiedName());
             List<AbstractRelation> relations;
             switch (queryJoin.getType()) {
             case INNER:
@@ -1913,24 +1915,8 @@ public class Planner {
                 relations = queryJoin.getRelations();
                 for (AbstractRelation ar: relations) {
                     Relation r = (Relation) ar;
-
-                    if(Filter.class.isInstance(t1)){
-                        innerJoin.addSourceIdentifier(((Filter)t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
-                    }else if (Project.class.isInstance(t1)){
-                        innerJoin.addSourceIdentifier(((Project)t1).getTableName().getQualifiedName());
-                    }else{
-                        innerJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
-                    }
-
-                    if(Filter.class.isInstance(t2)){
-                        innerJoin.addSourceIdentifier(((Filter)t2).getRelation().getLeftTerm().getTableName()
-                                .getQualifiedName());
-                    }else if (Project.class.isInstance(t2)){
-                        innerJoin.addSourceIdentifier(((Project)t2).getTableName().getQualifiedName());
-                    }else{
-                        innerJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
-                    }                                      
-
+                    innerJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    innerJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
                 }
                 innerJoin.addJoinRelations(queryJoin.getOrderedRelations());
 
@@ -1953,22 +1939,8 @@ public class Planner {
                 relations = queryJoin.getRelations();
                 for (AbstractRelation ar: relations) {
                     Relation r = (Relation) ar;
-                    if(Filter.class.isInstance(t1)){
-                        crossJoin.addSourceIdentifier(((Filter)t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
-                    }else if (Project.class.isInstance(t1)){
-                        crossJoin.addSourceIdentifier(((Project)t1).getTableName().getQualifiedName());
-                    }else{
-                        crossJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
-                    }
-
-                    if(Filter.class.isInstance(t2)){
-                        crossJoin.addSourceIdentifier(((Filter)t2).getRelation().getLeftTerm().getTableName()
-                                .getQualifiedName());
-                    }else if (Project.class.isInstance(t2)){
-                        crossJoin.addSourceIdentifier(((Project)t2).getTableName().getQualifiedName());
-                    }else{
-                        crossJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
-                    }
+                    crossJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    crossJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
                 }
                 crossJoin.addJoinRelations(queryJoin.getOrderedRelations());
 
@@ -1991,22 +1963,8 @@ public class Planner {
                 relations = queryJoin.getRelations();
                 for (AbstractRelation ar: relations) {
                     Relation r = (Relation) ar;
-                    if(Filter.class.isInstance(t1)){
-                        leftJoin.addSourceIdentifier(((Filter)t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
-                    }else if (Project.class.isInstance(t1)){
-                        leftJoin.addSourceIdentifier(((Project)t1).getTableName().getQualifiedName());
-                    }else{
-                        leftJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
-                    }
-
-                    if(Filter.class.isInstance(t2)){
-                        leftJoin.addSourceIdentifier(((Filter)t2).getRelation().getLeftTerm().getTableName()
-                                .getQualifiedName());
-                    }else if (Project.class.isInstance(t2)){
-                        leftJoin.addSourceIdentifier(((Project)t2).getTableName().getQualifiedName());
-                    }else{
-                        leftJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
-                    }
+                    leftJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    leftJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
                 }
                 leftJoin.addJoinRelations(queryJoin.getOrderedRelations());
 
@@ -2029,22 +1987,8 @@ public class Planner {
                 relations = queryJoin.getRelations();
                 for (AbstractRelation ar: relations) {
                     Relation r = (Relation) ar;
-                    if(Filter.class.isInstance(t1)){
-                        fullOuterJoin.addSourceIdentifier(((Filter)t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
-                    }else if (Project.class.isInstance(t1)){
-                        fullOuterJoin.addSourceIdentifier(((Project)t1).getTableName().getQualifiedName());
-                    }else{
-                        fullOuterJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
-                    }
-
-                    if(Filter.class.isInstance(t2)){
-                        fullOuterJoin.addSourceIdentifier(((Filter)t2).getRelation().getLeftTerm().getTableName()
-                                .getQualifiedName());
-                    }else if (Project.class.isInstance(t2)){
-                        fullOuterJoin.addSourceIdentifier(((Project)t2).getTableName().getQualifiedName());
-                    }else{
-                        fullOuterJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
-                    }
+                    fullOuterJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    fullOuterJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
                 }
                 fullOuterJoin.addJoinRelations(queryJoin.getOrderedRelations());
 
@@ -2067,22 +2011,8 @@ public class Planner {
                 relations = queryJoin.getRelations();
                 for (AbstractRelation ar: relations) {
                     Relation r = (Relation) ar;
-                    if(Filter.class.isInstance(t1)){
-                        rightJoin.addSourceIdentifier(((Filter)t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
-                    }else if (Project.class.isInstance(t1)){
-                        rightJoin.addSourceIdentifier(((Project)t1).getTableName().getQualifiedName());
-                    }else{
-                        rightJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
-                    }
-
-                    if(Filter.class.isInstance(t2)){
-                        rightJoin.addSourceIdentifier(((Filter)t2).getRelation().getLeftTerm().getTableName()
-                                .getQualifiedName());
-                    }else if (Project.class.isInstance(t2)){
-                        rightJoin.addSourceIdentifier(((Project)t2).getTableName().getQualifiedName());
-                    }else{
-                        rightJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
-                    }
+                    rightJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    rightJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
                 }
                 rightJoin.addJoinRelations(queryJoin.getOrderedRelations());
 
