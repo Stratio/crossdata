@@ -43,7 +43,7 @@ class DummyIMetadataEngine extends IMetadataEngine{
         logger.debug(i + " seconds gone by ----")
       }
       logger.debug("very Slow process (end)")
-      QueryResult.createQueryResult(new ResultSet(), 0, true)
+      QueryResult.createQueryResult(UUID.randomUUID().toString, new ResultSet(), 0, true)
   }
 
   override def createIndex(targetCluster: ClusterName, indexMetadata: IndexMetadata): Unit = {}

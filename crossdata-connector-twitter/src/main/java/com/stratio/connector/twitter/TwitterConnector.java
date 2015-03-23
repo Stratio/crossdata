@@ -22,9 +22,10 @@ import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.security.ICredentials;
+import com.stratio.crossdata.connectors.ConnectorApp;
 
-import twitter4j.Twitter;
-import twitter4j.TwitterFactory;
+import twitter4j.TwitterStream;
+import twitter4j.TwitterStreamFactory;
 import twitter4j.conf.ConfigurationBuilder;
 
 public class TwitterConnector extends AbstractExtendedConnector {
@@ -36,13 +37,17 @@ public class TwitterConnector extends AbstractExtendedConnector {
 
     private final Timer connectTimer;
 
+    private TwitterQueryEngine queryEngine;
+    private TwitterStorageEngine storageEngine;
+    private TwitterMetadataEngine metadataEngine;
+
     //https://apps.twitter.com/app/8096283/show
     private static final String CONSUMER_KEY = "consumer_key";
     private static final String CONSUMER_SECRET = "consumer_secret";
     private static final String ACCESS_TOKEN = "access_token";
     private static final String ACCESS_TOKEN_SECRET = "access_token_secret";
 
-    private final Map<ClusterName, Twitter> sessions = new HashMap<>();
+    private final Map<ClusterName, TwitterStream> sessions = new HashMap<>();
 
     /**
      * Class constructor.
@@ -109,21 +114,25 @@ public class TwitterConnector extends AbstractExtendedConnector {
             ConfigurationBuilder cb = new ConfigurationBuilder();
             cb.setDebugEnabled(true)
                     .setOAuthConsumerKey(options.get(CONSUMER_KEY))
-                    .setOAuthConsumerSecret(options.get(CONSUMER_KEY))
+                    .setOAuthConsumerSecret(options.get(CONSUMER_SECRET))
                     .setOAuthAccessToken(options.get(ACCESS_TOKEN))
                     .setOAuthAccessTokenSecret(options.get(ACCESS_TOKEN_SECRET));
-            TwitterFactory tf = new TwitterFactory(cb.build());
-            Twitter twitter = tf.getInstance();
-            sessions.put(targetCluster, twitter);
+            TwitterStreamFactory tf = new TwitterStreamFactory(cb.build());
+            TwitterStream twitterStream = tf.getInstance();
+            sessions.put(targetCluster, twitterStream);
         } else {
-            long millis = connectTimerContext.stop();
-            LOG.info("Connection took " + millis + " nanoseconds");
+            long millis = connectTimerContext.stop() / 1000;
+            LOG.info("Connection took " + millis + " milliseconds");
             throw new ConnectionException("Invalid options, cannot login twitter");
         }
 
         //End Metric
-        long millis = connectTimerContext.stop();
-        LOG.info("Connection took " + millis + " nanoseconds");
+        long millis = connectTimerContext.stop() / 1000;
+        LOG.info("Connection took " + millis + " milliseconds");
+    }
+
+    public TwitterStream getSession(ClusterName clusterName){
+        return sessions.get(clusterName);
     }
 
     /**
@@ -134,7 +143,9 @@ public class TwitterConnector extends AbstractExtendedConnector {
      */
     @Override
     public void close(ClusterName name) throws ConnectionException {
-        //TODO: close session with Twitter
+        sessions.get(name).shutdown();
+        sessions.remove(name);
+        LOG.info("Twitter Stream session closed. Disconnected from cluster: " + name);
     }
 
     /**
@@ -166,7 +177,10 @@ public class TwitterConnector extends AbstractExtendedConnector {
      */
     @Override
     public IStorageEngine getStorageEngine() throws UnsupportedException {
-        return null;
+        if(storageEngine == null){
+            storageEngine = new TwitterStorageEngine(this);
+        }
+        return storageEngine;
     }
 
     /**
@@ -177,7 +191,10 @@ public class TwitterConnector extends AbstractExtendedConnector {
      */
     @Override
     public IQueryEngine getQueryEngine() throws UnsupportedException {
-        return null;
+        if(queryEngine == null){
+            queryEngine = new TwitterQueryEngine(this);
+        }
+        return queryEngine;
     }
 
     /**
@@ -188,7 +205,10 @@ public class TwitterConnector extends AbstractExtendedConnector {
      */
     @Override
     public IMetadataEngine getMetadataEngine() throws UnsupportedException {
-        return null;
+        if(metadataEngine == null){
+            metadataEngine = new TwitterMetadataEngine(this);
+        }
+        return metadataEngine;
     }
 
     /**
@@ -201,4 +221,15 @@ public class TwitterConnector extends AbstractExtendedConnector {
     public ISqlEngine getSqlEngine() throws UnsupportedException {
         return null;
     }
+
+    /**
+     * Run an InMemory Connector using a {@link com.stratio.crossdata.connectors.ConnectorApp}.
+     * @param args The arguments.
+     */
+    public static void main(String [] args){
+        ConnectorApp connectorApp = new ConnectorApp();
+        TwitterConnector twitterConnector = new TwitterConnector(connectorApp);
+        connectorApp.startup(twitterConnector);
+    }
+
 }

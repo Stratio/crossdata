@@ -51,7 +51,7 @@ public interface IMetadataEngine {
     /**
      * Alter the definition of a catalog in a cluster.
      *
-     * @param targetCluster The targer cluster.
+     * @param targetCluster The target cluster.
      * @param catalogName   The {@link com.stratio.crossdata.common.data.CatalogName}.
      * @param options       A map of options as {@link com.stratio.crossdata.common.statements.structures.Selector}.
      * @throws ConnectorException A UnsupportedException is expected if the operation is not supported by a

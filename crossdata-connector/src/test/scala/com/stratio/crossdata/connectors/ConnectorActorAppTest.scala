@@ -83,7 +83,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val m = mock[IConnector]
     val qe = mock[IQueryEngine]
     (m.getQueryEngine _).expects().returning(qe)
-    (qe.execute(_:LogicalWorkflow)).expects(*).returning(QueryResult.createQueryResult(new ResultSet(), 0, true))
+    (qe.execute(_:LogicalWorkflow)).expects(*).returning(QueryResult.createQueryResult(UUID.randomUUID().toString, new ResultSet(), 0, true))
     (m.getConnectorName _).expects().returning(connector)
     (m.init _).expects(*).returning(None)
     (m.getConnectorName _).expects().returning(connector)
@@ -116,7 +116,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val port = "2560"
     val m = mock[IConnector]
     val me = mock[IMetadataEngine]
-    (me.createTable _).expects(*,*).returning(QueryResult.createQueryResult(new ResultSet(), 0, true))
+    (me.createTable _).expects(*,*).returning(QueryResult.createQueryResult(UUID.randomUUID().toString, new ResultSet(), 0, true))
     (m.getMetadataEngine _).expects().returning(me)
     (m.getConnectorName _).expects().returning("My New Connector")
     (m.init _).expects(*).returning(None)

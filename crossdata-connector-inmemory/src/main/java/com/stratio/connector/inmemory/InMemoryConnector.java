@@ -114,8 +114,8 @@ public class InMemoryConnector extends AbstractExtendedConnector {
             InMemoryDatastore datastore = new InMemoryDatastore(Integer.valueOf(options.get(DATASTORE_PROPERTY)));
             clusters.put(targetCluster, datastore);
         } else {
-            long millis = connectTimerContext.stop();
-            LOG.info("Connection took " + millis + " nanoseconds");
+            long millis = connectTimerContext.stop() / 1000;
+            LOG.info("Connection took " + millis + " milliseconds");
             throw new ConnectionException("Invalid options, expecting TableRowLimit");
         }
 
@@ -123,8 +123,8 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         restoreSchema(targetCluster);
 
         //End Metric
-        long millis = connectTimerContext.stop();
-        LOG.info("Connection took " + millis + " nanoseconds");
+        long millis = connectTimerContext.stop() / 1000;
+        LOG.info("Connection took " + millis + " milliseconds");
     }
 
     @Override
