@@ -128,7 +128,7 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
                 throw new ExecutionException(e);
             }
 
-        }else{
+        } else {
             throw new ExecutionException("No datastore connected to " + targetCluster);
         }
     }
