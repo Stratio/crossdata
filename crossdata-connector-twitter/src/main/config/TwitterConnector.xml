@@ -42,6 +42,7 @@
     Check crossdata/doc/ConnectorOperations.md for more information. -->
     <SupportedOperations>
         <operation>CREATE_TABLE</operation>
+        <operation>DROP_TABLE</operation>
         <operation>PROJECT</operation>
         <operation>SELECT_OPERATOR</operation>
         <operation>SELECT_WINDOW</operation>

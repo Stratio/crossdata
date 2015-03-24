@@ -39,6 +39,8 @@ import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+import twitter4j.TwitterStream;
+
 public class TwitterMetadataEngine implements IMetadataEngine {
 
     private final TwitterConnector connector;
@@ -132,7 +134,8 @@ public class TwitterMetadataEngine implements IMetadataEngine {
      */
     @Override
     public void dropTable(ClusterName targetCluster, TableName name) throws ConnectorException {
-        throw new UnsupportedException("Operation not supported");
+        TwitterStream session = connector.getSession(targetCluster.getName());
+        session.cleanUp();
     }
 
     /**
