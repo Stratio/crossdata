@@ -466,6 +466,31 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
     }
 
     @Test
+    public void selectBasicLikeWhere() {
+        String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t1.c FROM demo.t1 WHERE demo.t1.a like '?abc*';";
+        String[] columns1 = { "a", "b", "c" };
+        ColumnType[] columnTypes1 = {
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT) };
+        String[] partitionKeys1 = { "a" };
+        String[] clusteringKeys1 = { };
+        TableMetadata t1 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t1", columns1, columnTypes1,
+                partitionKeys1, clusteringKeys1);
+
+        String[] expectedColumns = { "demo.t1.a", "demo.t1.b", "demo.t1.c" };
+        LogicalWorkflow workflow = null;
+        try {
+            workflow = getWorkflow(inputText, "selectBasicWhere", t1);
+        } catch (PlanningException e) {
+            fail("LogicalWorkflow couldn't be calculated");
+        }
+        Project project1 = assertColumnsInProject(workflow, "demo.t1", expectedColumns);
+        assertFilterInPath(project1, Operations.FILTER_PK_LIKE);
+        assertSelect(workflow);
+    }
+
+    @Test
     public void selectBasicWhereWindow() {
         String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t1.c FROM demo.t1" +
                 " WITH WINDOW 5 SECONDS WHERE demo.t1.a = 3;";
