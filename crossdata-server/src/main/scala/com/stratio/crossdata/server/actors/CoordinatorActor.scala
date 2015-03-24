@@ -437,7 +437,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         var sendResultToClient = true
 
         if(queryId.contains("#")){
-          if(!queryId.endsWith("#1")){
+          if(queryId.endsWith("#1")){
+            result.setQueryId(queryId.split("#")(0))
+          } else {
             sendResultToClient = false
           }
         }
