@@ -21,14 +21,20 @@ package com.stratio.connector.twitter;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.text.WordUtils;
+
 import com.stratio.crossdata.common.connector.IMetadataEngine;
 import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -81,7 +87,26 @@ public class TwitterMetadataEngine implements IMetadataEngine {
     @Override
     public void createTable(ClusterName targetCluster, TableMetadata tableMetadata)
             throws ConnectorException {
-        return;
+        for(Map.Entry<ColumnName, ColumnMetadata> entry: tableMetadata.getColumns().entrySet()){
+            ColumnName columnName = entry.getKey();
+            ColumnType columnType = entry.getValue().getColumnType();
+            checkColumn(columnName, columnType);
+        }
+        connector.addTableMetadata(targetCluster.getName(), tableMetadata);
+    }
+
+    private void checkColumn(ColumnName columnName, ColumnType actualColumnType) throws ExecutionException {
+        String name = WordUtils.capitalize(columnName.getName());
+        Map<String, ColumnType> twitterColumns = connector.getAllowedColumns();
+        if(twitterColumns.containsKey(name)){
+            ColumnType expectedColumnType = twitterColumns.get(name);
+            if(actualColumnType.getDataType() != expectedColumnType.getDataType()){
+                throw new ExecutionException(
+                        "Field " + columnName.getName() + " is expected to be of type " + expectedColumnType.getDataType());
+            }
+        } else {
+            throw new ExecutionException("Field " + columnName.getName() + " is not included in the tweets metadata");
+        }
     }
 
     /**

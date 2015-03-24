@@ -206,6 +206,10 @@ public final class StringUtils implements Serializable {
         } else if (javaType.equalsIgnoreCase("Map")) {
             ct = new ColumnType(DataType.MAP);
         }
+        if(ct.getDataType() == DataType.NATIVE){
+            ct.setDbType(javaType);
+            ct.setODBCType(javaType);
+        }
         return ct;
     }
 
