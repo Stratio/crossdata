@@ -61,12 +61,11 @@ object ProxyActor {
  * @param remoteActor Remote actor's name.
  */
 class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: BasicDriver) extends Actor {
-  /*
+  import context.dispatcher
   if(driver.balancing)context.system.scheduler.schedule(
     driver.cpuLoadPingTimeInMillis seconds,
     driver.cpuLoadPingTimeInMillis seconds,
     self, "watchload")
-    */
 
   /**
    * Class logger.
