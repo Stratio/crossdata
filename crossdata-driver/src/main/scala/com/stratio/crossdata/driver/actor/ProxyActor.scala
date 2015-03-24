@@ -23,7 +23,7 @@ import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
 import com.stratio.crossdata.common.result.{ErrorResult, Result}
-import com.stratio.crossdata.communication.{ACK, Disconnect}
+import com.stratio.crossdata.communication.{ACK, CPUUsage, Disconnect}
 import com.stratio.crossdata.driver.BasicDriver
 import org.apache.log4j.Logger
 
@@ -61,20 +61,51 @@ object ProxyActor {
  * @param remoteActor Remote actor's name.
  */
 class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: BasicDriver) extends Actor {
+  /*
+  if(driver.balancing)context.system.scheduler.schedule(
+    driver.cpuLoadPingTimeInMillis seconds,
+    driver.cpuLoadPingTimeInMillis seconds,
+    self, "watchload")
+    */
 
   /**
    * Class logger.
    */
   lazy val logger = Logger.getLogger(getClass)
 
+  var CPUUsages = new scala.collection.immutable.TreeMap[Long,(String,Double)]()
+
   implicit val timeout = Timeout(5 seconds)
 
   logger.info("Up!")
 
+  def chooseServerNode():String={
+    logger.debug(s"choosing cluster target node from ${CPUUsages} different options (current time=${
+      System.currentTimeMillis() - 10000})")
+    CPUUsages.size match {
+     case 0=> ""
+     case _=>
+       val min = CPUUsages.minBy(_._2._2)
+       val destNode = min._2._1
+        s"akka.tcp://${driver.crossdataServerClusterName}@$destNode/user/${driver.serverPathName}"
+    }
+ }
+
+
   override def receive: Actor.Receive = {
+
+    case "watchload"=>
+      clusterClientActor forward ClusterClient.SendToAll(ProxyActor.remotePath(remoteActor), "watchload" )
+      
+    case CPUUsage(value)=>
+      val senderip=s"${sender.path.parent.parent.address.host.get}:${sender.path.parent.parent.address.port.get}"
+      CPUUsages = CPUUsages.dropWhile((System.currentTimeMillis() - (2*driver.cpuLoadPingTimeInMillis)) > _._1)+
+        (System.currentTimeMillis() ->   (senderip,value))
+      logger.debug(s"CPU Usages=${CPUUsages}")
 
     /* The driver sends the connect message. */
     case c: Connect => {
+      println(s"connecting from ${self.path.address}")
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
     }
 
@@ -85,8 +116,11 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
 
     /* API Command */
     case cmd: Command => {
-      logger.debug("Send command: " + cmd)
-      clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), cmd, localAffinity = true)
+      val dest=chooseServerNode()
+      if(dest.length<1)
+        clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), cmd, localAffinity = true)
+      else 
+        context.actorSelection(dest) forward cmd
     }
 
     /* ACK received */
@@ -101,7 +135,11 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
 
     /* Send a query to the remote com.stratio.crossdata-server infrastructure. */
     case message: Query => {
-      clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor), message, localAffinity = true)
+      val dest=chooseServerNode()
+      if(dest.length<1)
+        clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor), message, localAffinity = true)
+      else
+        context.actorSelection(dest) forward message
     }
     case result: Result => {
       println(s"\nReceiving result ${result}")
@@ -116,6 +154,10 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
         logger.info("Result not expected received for QID: " + result.getQueryId)
       }
 
+    }
+    case "test"=> {
+      logger.error("Unknown message: test" )
+      sender ! "Message type not supported"
     }
     case unknown: Any => {
       logger.error("Unknown message: " + unknown)
