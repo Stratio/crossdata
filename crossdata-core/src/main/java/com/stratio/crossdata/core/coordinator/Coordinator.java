@@ -105,9 +105,11 @@ public class Coordinator implements Serializable {
             break;
         case IMPORT_CATALOGS:
             persistImportCatalogs(result.getCatalogMetadataList());
+            persistCreateCatalogsInCluster(result.getCatalogMetadataList(), metadataWorkflow.getClusterName());
             break;
         case IMPORT_CATALOG:
             persistImportCatalogs(result.getCatalogMetadataList());
+            persistCreateCatalogsInCluster(result.getCatalogMetadataList(), metadataWorkflow.getClusterName());
             break;
         case IMPORT_TABLE:
             persistTables(result.getTableList(), metadataWorkflow.getClusterName());
@@ -288,6 +290,17 @@ public class Coordinator implements Serializable {
      */
     public void persistCreateCatalogInCluster(CatalogName catalog, ClusterName clusterName) {
         MetadataManager.MANAGER.addCatalogToCluster(catalog, clusterName);
+    }
+
+    /**
+     * Persist the Catalog into Metadata Manager into its cluster.
+     * @param catalogMetadataList The catalogs to persist.
+     * @param clusterName The catalog cluster to persist.
+     */
+    public void persistCreateCatalogsInCluster(List<CatalogMetadata> catalogMetadataList, ClusterName clusterName) {
+        for (CatalogMetadata catalog:catalogMetadataList) {
+            MetadataManager.MANAGER.addCatalogToCluster(catalog.getName(), clusterName);
+        }
     }
 
     /**
