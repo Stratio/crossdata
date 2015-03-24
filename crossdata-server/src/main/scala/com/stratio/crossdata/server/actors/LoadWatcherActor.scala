@@ -23,13 +23,17 @@ import java.lang.management.ManagementFactory
 import javax.management.{Attribute, AttributeList, MBeanServer, ObjectName}
 
 import akka.actor.{Actor, ActorLogging, Props}
-import com.stratio.crossdata.communication.CPUUsage
+import com.stratio.crossdata.core.loadWatcher.LoadWatcherManager
+
+import scala.concurrent.duration._
 
 object LoadWatcherActor{
   def props(hostname:String): Props = Props(new LoadWatcherActor(hostname))
 }
 
 class LoadWatcherActor(hostname:String) extends Actor with ActorLogging {
+  import context.dispatcher
+  context.system.scheduler.schedule(5 seconds,5 seconds,self,"watchload")
 
   def watchLoad():Double={
     val mbs:MBeanServer= ManagementFactory.getPlatformMBeanServer()
@@ -43,11 +47,10 @@ class LoadWatcherActor(hostname:String) extends Actor with ActorLogging {
     ((value * 1000) / 10.0)
   }
 
-
   def receive = {
     //CLIENT MESSAGES
     case "watchload"=>
-      sender ! CPUUsage(watchLoad())
+      LoadWatcherManager.MANAGER.createEntry(hostname,watchLoad(),true)
     case msg => {
       log.info(s"load watcher actor receives message: $msg and does not know what to do with it")
     }

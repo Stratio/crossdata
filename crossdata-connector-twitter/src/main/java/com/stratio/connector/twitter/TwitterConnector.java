@@ -15,7 +15,7 @@ import com.stratio.crossdata.common.connector.IConfiguration;
 import com.stratio.crossdata.common.connector.IConnectorApp;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
 import com.stratio.crossdata.common.connector.IQueryEngine;
-import com.stratio.crossdata.common.connector.ISqlEngine;
+
 import com.stratio.crossdata.common.connector.IStorageEngine;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
@@ -248,17 +248,6 @@ public class TwitterConnector extends AbstractExtendedConnector {
             metadataEngine = new TwitterMetadataEngine(this);
         }
         return metadataEngine;
-    }
-
-    /**
-     * Get the SQL queries engine.
-     *
-     * @return An implementation of {@link com.stratio.crossdata.common.connector.ISqlEngine}.
-     * @throws com.stratio.crossdata.common.exceptions.UnsupportedException If the connector does not provide this functionality.
-     */
-    @Override
-    public ISqlEngine getSqlEngine() throws UnsupportedException {
-        return null;
     }
 
     /**
