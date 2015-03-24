@@ -34,7 +34,7 @@ import com.stratio.crossdata.common.connector.IConfiguration;
 import com.stratio.crossdata.common.connector.IConnectorApp;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
 import com.stratio.crossdata.common.connector.IQueryEngine;
-import com.stratio.crossdata.common.connector.ISqlEngine;
+
 import com.stratio.crossdata.common.connector.IStorageEngine;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
@@ -171,10 +171,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         return metadataEngine;
     }
 
-    @Override
-    public ISqlEngine getSqlEngine() throws UnsupportedException {
-        throw new UnsupportedException("SQL queries are not supported yet.");
-    }
+
 
     /**
      * Get the datastore associated to a given cluster.
