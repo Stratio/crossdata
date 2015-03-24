@@ -628,7 +628,19 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatement(inputText, expectedText, "selectOrOperatorSimple3");
     }
 
-    /*
+    @Test
+    public void selectOrOperatorWithSimplePreference() {
+        String inputText = "SELECT * FROM test.table1 WHERE"
+                + " col1 = col2"
+                + " AND col1 = 25"
+                + " AND (col4 = 'Spain' OR col4 = 'USA');";
+        String expectedText = "SELECT * FROM test.table1 WHERE"
+                + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = 25"
+                + " AND (<UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'Spain' OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'USA');";
+        testRegularStatement(inputText, expectedText, "selectOrOperatorWithSimplePreference");
+    }
+
     @Test
     public void selectOrOperatorWithPreference() {
         String inputText = "SELECT * FROM test.table1 WHERE"
@@ -636,7 +648,7 @@ public class SelectStatementTest extends ParsingTest {
                 + " AND col1 = 25"
                 + " AND col3 = 'test'"
                 + " AND ((col4 = 'Spain' AND col5 = 'USA')"
-                     + " OR (col4 = 'USA' AND col5 = 'Spain'))"
+                + " OR (col4 = 'USA' AND col5 = 'Spain'))"
                 + " AND col6 = 13022013;";
         String expectedText = "SELECT * FROM test.table1 WHERE"
                 + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
@@ -647,6 +659,5 @@ public class SelectStatementTest extends ParsingTest {
                 + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013;";
         testRegularStatement(inputText, expectedText, "selectOrOperatorWithPreference");
     }
-    */
 
 }

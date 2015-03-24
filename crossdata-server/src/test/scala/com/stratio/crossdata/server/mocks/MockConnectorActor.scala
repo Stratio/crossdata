@@ -58,14 +58,14 @@ class MockConnectorActor() extends Actor with ActorLogging {
     }
     case lw:LogicalWorkflow=>{
       logger.debug(">>>>>>>>>>>>>>>>>>>>>>> lw ")
-      val result=QueryResult.createQueryResult(new ResultSet(), 0, true)
+      val result=QueryResult.createQueryResult(UUID.randomUUID().toString, new ResultSet(), 0, true)
       result.setQueryId(lastqueryid);
       sender ! result
     }
 
     case execute: Execute=> {
       logger.debug(">>>>>>>>>>>>>>>>>>>>>>> execute")
-      val result=QueryResult.createQueryResult(new ResultSet(), 0, true)
+      val result=QueryResult.createQueryResult(UUID.randomUUID().toString, new ResultSet(), 0, true)
       sender ! result
     }
 

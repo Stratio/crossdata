@@ -68,9 +68,15 @@
             <artifactId>crossdata-common</artifactId>
             <version>${crossdata.version}</version>
         </dependency>
+        <!-- TWITTER4J -->
         <dependency>
             <groupId>org.twitter4j</groupId>
             <artifactId>twitter4j-core</artifactId>
+            <version>${twitter4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.twitter4j</groupId>
+            <artifactId>twitter4j-stream</artifactId>
             <version>${twitter4j.version}</version>
         </dependency>
         <!-- SCALA AND AKKA -->

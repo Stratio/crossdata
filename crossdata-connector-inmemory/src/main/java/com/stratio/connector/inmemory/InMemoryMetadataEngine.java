@@ -83,7 +83,8 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
         }
     }
 
-    @Override public void alterCatalog(ClusterName targetCluster, CatalogName catalogName,
+    @Override
+    public void alterCatalog(ClusterName targetCluster, CatalogName catalogName,
             Map<Selector, Selector> options) throws ConnectorException {
         throw new UnsupportedException("Alter Catalog not implemented yet");
     }
@@ -190,41 +191,6 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
             }
         }
         return result;
-        /*
-        CatalogName name = new CatalogName("InMemoryCatalog");
-        Map<Selector, Selector> options = new HashMap<>();
-        Map<TableName, TableMetadata> tables = new HashMap<>();
-        TableName tableName = new TableName("InMemoryCatalog", "InMemoryTable");
-        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
-
-        // First column
-        ColumnName columnName = new ColumnName(tableName, "FirstCol");
-        Object[] parameters = new Object[0];
-        ColumnType columnType = ColumnType.TEXT;
-        ColumnMetadata col = new ColumnMetadata(columnName, parameters, columnType);
-        columns.put(col.getName(), col);
-        // Second column
-        columnName = new ColumnName(tableName, "SecondCol");
-        columnType = ColumnType.INT;
-        col = new ColumnMetadata(columnName, parameters, columnType);
-        columns.put(col.getName(), col);
-        // Third column
-        columnName = new ColumnName(tableName, "ThirdCol");
-        columnType = ColumnType.BOOLEAN;
-        col = new ColumnMetadata(columnName, parameters, columnType);
-        columns.put(col.getName(), col);
-
-        Map<IndexName, IndexMetadata> indexes = new HashMap<>();
-        ClusterName clusterRef = null;
-        LinkedList<ColumnName> partitionKey = new LinkedList<>();
-        partitionKey.add(columns.keySet().iterator().next());
-        LinkedList<ColumnName> clusterKey = new LinkedList<>();
-        TableMetadata tableMetadata = new TableMetadata(tableName, options, columns, indexes, clusterRef,
-                partitionKey, clusterKey);
-        tables.put(tableName, tableMetadata);
-        CatalogMetadata catalogMetadata = new CatalogMetadata(name, options, tables);
-        return Arrays.asList(catalogMetadata);
-        */
     }
 
     private CatalogMetadata convertToXdCatalog(ClusterName clusterName, InMemoryCatalog inMemoryCatalog) {
@@ -306,20 +272,6 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
             }
         }
         return  result;
-        /*
-        CatalogMetadata foundCatalog = null;
-        List<CatalogMetadata> catalogs = provideMetadata(clusterName);
-        for(CatalogMetadata catalog: catalogs){
-            if(catalog.getName().equals(catalogName)){
-                foundCatalog = catalog;
-                break;
-            }
-        }
-        if(foundCatalog == null){
-            throw new ExecutionException("Catalog " + catalogName + " not found.");
-        }
-        return foundCatalog;
-        */
     }
 
     @Override
@@ -334,8 +286,5 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
             }
         }
         return result;
-        /*
-        return provideCatalogMetadata(clusterName, tableName.getCatalogName()).getTables().get(tableName);
-        */
     }
 }

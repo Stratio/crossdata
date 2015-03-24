@@ -40,8 +40,8 @@
             <Description>ACCESS_TOKEN</Description>
         </Property>
         <Property>
-            <PropertyName>ACCESS_TOKEN_SECRET</PropertyName>
-            <Description>access_token_secret</Description>
+            <PropertyName>access_token_secret</PropertyName>
+            <Description>ACCESS_TOKEN_SECRET</Description>
         </Property>
     </RequiredProperties>
 
@@ -50,9 +50,6 @@
         <Behavior>STREAMING</Behavior>
     </Behaviors>
 
-    <!-- Functions -->
-    <Functions>
-    </Functions>
 </DataStore>
 
 

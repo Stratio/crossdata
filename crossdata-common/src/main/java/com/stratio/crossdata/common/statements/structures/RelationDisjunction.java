@@ -29,8 +29,10 @@ public class RelationDisjunction extends AbstractRelation {
     private static final long serialVersionUID = 2085700590246602145L;
 
     private final List<AbstractRelation> leftRelations = new ArrayList<>();
+    private boolean leftParenthesis = false;
 
     private final List<AbstractRelation> rightRelations = new ArrayList<>();
+    private boolean rightParenthesis = false;
 
     public RelationDisjunction(List<AbstractRelation> leftRelations, List<AbstractRelation> rightRelations) {
         this.leftRelations.addAll(leftRelations);
@@ -40,6 +42,14 @@ public class RelationDisjunction extends AbstractRelation {
     public RelationDisjunction(AbstractRelation leftRelation, AbstractRelation rightRelation) {
         this.leftRelations.add(leftRelation);
         this.rightRelations.add(rightRelation);
+    }
+
+    public void setLeftParenthesis(boolean leftParenthesis) {
+        this.leftParenthesis = leftParenthesis;
+    }
+
+    public void setRightParenthesis(boolean rightParenthesis) {
+        this.rightParenthesis = rightParenthesis;
     }
 
     public List<AbstractRelation> getLeftRelations() {
@@ -53,7 +63,13 @@ public class RelationDisjunction extends AbstractRelation {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        if(isParenthesis()){
+            sb.append("(");
+        }
         Iterator<AbstractRelation> leftIter = leftRelations.iterator();
+        if(leftParenthesis){
+            sb.append("(");
+        }
         while(leftIter.hasNext()){
             AbstractRelation leftRelation = leftIter.next();
             sb.append(leftRelation);
@@ -61,14 +77,26 @@ public class RelationDisjunction extends AbstractRelation {
                 sb.append(" AND ");
             }
         }
+        if(leftParenthesis){
+            sb.append(")");
+        }
         sb.append(" OR ");
         Iterator<AbstractRelation> rightIter = rightRelations.iterator();
+        if(rightParenthesis){
+            sb.append("(");
+        }
         while(rightIter.hasNext()){
             AbstractRelation rightRelation = rightIter.next();
             sb.append(rightRelation);
             if(rightIter.hasNext()){
                 sb.append(" AND ");
             }
+        }
+        if(rightParenthesis){
+            sb.append(")");
+        }
+        if(isParenthesis()){
+            sb.append(")");
         }
         return sb.toString();
     }

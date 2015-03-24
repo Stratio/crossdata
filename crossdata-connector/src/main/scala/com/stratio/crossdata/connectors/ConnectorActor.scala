@@ -393,7 +393,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
     if(result.isLastResultSet){
       runningJobs.remove(result.getQueryId)
-
     }
   }
 
@@ -433,7 +432,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         asyncSender ! result
       }
       case err: Error =>
-        logger.error("error in ConnectorActor (Receiving async LogicalWorkflow)")
+        logger.error("Error in ConnectorActor (Receiving async LogicalWorkflow)")
     }
   }
 

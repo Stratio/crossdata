@@ -423,6 +423,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
     case result: Result => {
       val queryId = result.getQueryId
       log.info("Receiving result from " + sender + " with queryId = " + queryId + " result: " + result)
+      if(result.isInstanceOf[ErrorResult]){
+        log.error(result.asInstanceOf[ErrorResult].getErrorMessage)
+      }
       try {
         val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
         //TODO Add two methods to StringUtils to retrieve AkkaActorRefUri tokening with # for connectors,
@@ -434,7 +437,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         var sendResultToClient = true
 
         if(queryId.contains("#")){
-          if(!queryId.endsWith("#1")){
+          if(queryId.endsWith("#1")){
+            result.setQueryId(queryId.split("#")(0))
+          } else {
             sendResultToClient = false
           }
         }
