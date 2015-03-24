@@ -393,7 +393,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
     if(result.isLastResultSet){
       runningJobs.remove(result.getQueryId)
-
     }
   }
 

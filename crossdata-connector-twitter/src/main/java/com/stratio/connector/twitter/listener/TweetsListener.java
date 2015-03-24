@@ -36,9 +36,10 @@ import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.utils.StringUtils;
 
 import twitter4j.StallWarning;
 import twitter4j.Status;
@@ -49,6 +50,7 @@ public class TweetsListener implements StatusListener {
 
     private final String queryId;
     private final IResultHandler resultHandler;
+    private final TableMetadata tableMetadata;
     private final List<Selector> outputSelectorOrder;
     private final long durationInSeconds;
     private final List<Status> tweets = new ArrayList<>();
@@ -63,10 +65,12 @@ public class TweetsListener implements StatusListener {
     public TweetsListener(
             String queryId,
             IResultHandler resultHandler,
+            TableMetadata tableMetadata,
             List<Selector> outputSelectorOrder,
             long durationInMilliseconds) {
         this.queryId = queryId;
         this.resultHandler = resultHandler;
+        this.tableMetadata = tableMetadata;
         this.outputSelectorOrder = outputSelectorOrder;
         this.durationInSeconds = (durationInMilliseconds / 1000);
         lastDelivery = new DateTime();
@@ -99,15 +103,24 @@ public class TweetsListener implements StatusListener {
                 }
                 Cell cell = new Cell(null);
                 try {
-                    Method method = tweet.getClass().getDeclaredMethod("get" + WordUtils.capitalize(alias));
+                    Method method;
+                    ColumnMetadata column = tableMetadata.getColumns().get(selector.getColumnName());
+                    if(column.getColumnType().getDataType() == DataType.BOOLEAN){
+                        method = tweet.getClass().getDeclaredMethod("is" + WordUtils.capitalize(alias));
+                    } else {
+                        method = tweet.getClass().getDeclaredMethod("get" + WordUtils.capitalize(alias));
+                    }
                     method.setAccessible(true);
                     Object result = method.invoke(tweet);
                     cell = new Cell(result);
                     if((resultSet.getColumnMetadata() == null) || resultSet.getColumnMetadata().isEmpty()){
-                        Class<?> clazz = method.getReturnType();
-                        ColumnName columnName = new ColumnName("twitter", "streaming", alias);
+                        ColumnName columnName = new ColumnName(selector.getTableName(), alias);
                         Object[] parameters = new Object[]{};
+                        /*
+                        Class<?> clazz = method.getReturnType();
                         ColumnType ct = StringUtils.convertJavaTypeToXdType(clazz.getSimpleName());
+                        */
+                        ColumnType ct = column.getColumnType();
                         ColumnMetadata columnMetadata = new ColumnMetadata(
                                 columnName,
                                 parameters,

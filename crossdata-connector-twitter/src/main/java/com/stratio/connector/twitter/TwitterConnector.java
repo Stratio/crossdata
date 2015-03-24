@@ -8,6 +8,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import com.codahale.metrics.Timer;
+import com.stratio.connector.twitter.metadata.TwitterCluster;
 import com.stratio.crossdata.common.connector.AbstractExtendedConnector;
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.connector.IConfiguration;
@@ -21,6 +22,8 @@ import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
+import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.connectors.ConnectorApp;
 
@@ -47,7 +50,8 @@ public class TwitterConnector extends AbstractExtendedConnector {
     private static final String ACCESS_TOKEN = "access_token";
     private static final String ACCESS_TOKEN_SECRET = "access_token_secret";
 
-    private final Map<ClusterName, TwitterStream> sessions = new HashMap<>();
+    private final Map<String, TwitterCluster> clusters = new HashMap<>();
+    private final Map<String, ColumnType> allowedColumns = new HashMap<>();
 
     /**
      * Class constructor.
@@ -59,6 +63,29 @@ public class TwitterConnector extends AbstractExtendedConnector {
         connectTimer = new Timer();
         String timerName = name(TwitterConnector.class, "connect");
         registerMetric(timerName, connectTimer);
+        allowedColumns.put("Contributors", ColumnType.valueOf("NATIVE"));
+        allowedColumns.put("CreatedAt", ColumnType.valueOf("NATIVE"));
+        allowedColumns.put("CurrentUserRetweetId", ColumnType.valueOf("BIGINT"));
+        allowedColumns.put("FavoriteCount", ColumnType.valueOf("INT"));
+        allowedColumns.put("GeoLocation", ColumnType.valueOf("INT"));
+        allowedColumns.put("Id", ColumnType.valueOf("BIGINT"));
+        allowedColumns.put("InReplyToScreenName", ColumnType.valueOf("TEXT"));
+        allowedColumns.put("InReplyToStatusId", ColumnType.valueOf("BIGINT"));
+        allowedColumns.put("InReplyToUserId", ColumnType.valueOf("BIGINT"));
+        allowedColumns.put("Lang", ColumnType.valueOf("TEXT"));
+        allowedColumns.put("Place", ColumnType.valueOf("NATIVE"));
+        allowedColumns.put("RetweetCount", ColumnType.valueOf("INT"));
+        allowedColumns.put("RetweetedStatus", ColumnType.valueOf("NATIVE"));
+        allowedColumns.put("Scopes", ColumnType.valueOf("NATIVE"));
+        allowedColumns.put("Source", ColumnType.valueOf("TEXT"));
+        allowedColumns.put("Text", ColumnType.valueOf("TEXT"));
+        allowedColumns.put("User", ColumnType.valueOf("NATIVE"));
+        allowedColumns.put("Favorited", ColumnType.valueOf("BOOLEAN"));
+        allowedColumns.put("PossiblySensitive", ColumnType.valueOf("BOOLEAN"));
+        allowedColumns.put("Retweet", ColumnType.valueOf("BOOLEAN"));
+        allowedColumns.put("Retweeted", ColumnType.valueOf("BOOLEAN"));
+        allowedColumns.put("RetweetedByMe", ColumnType.valueOf("BOOLEAN"));
+        allowedColumns.put("Truncated", ColumnType.valueOf("BOOLEAN"));
     }
 
     /**
@@ -80,6 +107,18 @@ public class TwitterConnector extends AbstractExtendedConnector {
     @Override
     public String[] getDatastoreName() {
         return new String[]{"TwitterDatastore"};
+    }
+
+    public Map<String, ColumnType> getAllowedColumns() {
+        return allowedColumns;
+    }
+
+    public void addTableMetadata(String targetCluster, TableMetadata tableMetadata) {
+        clusters.get(targetCluster).addTableMetadata(tableMetadata);
+    }
+
+    public TableMetadata getTableMetadata(String clusterName, String tableName) {
+        return clusters.get(clusterName).getTableMetadata(tableName);
     }
 
     /**
@@ -119,7 +158,7 @@ public class TwitterConnector extends AbstractExtendedConnector {
                     .setOAuthAccessTokenSecret(options.get(ACCESS_TOKEN_SECRET));
             TwitterStreamFactory tf = new TwitterStreamFactory(cb.build());
             TwitterStream twitterStream = tf.getInstance();
-            sessions.put(targetCluster, twitterStream);
+            clusters.put(targetCluster.getName(), new TwitterCluster(targetCluster.getName(), twitterStream));
         } else {
             long millis = connectTimerContext.stop() / 1000;
             LOG.info("Connection took " + millis + " milliseconds");
@@ -131,21 +170,21 @@ public class TwitterConnector extends AbstractExtendedConnector {
         LOG.info("Connection took " + millis + " milliseconds");
     }
 
-    public TwitterStream getSession(ClusterName clusterName){
-        return sessions.get(clusterName);
+    public TwitterStream getSession(String clusterName){
+        return clusters.get(clusterName).getSession();
     }
 
     /**
      * Close the connection with the underlying cluster.
      *
-     * @param name The Cluster name.
+     * @param clusterName The Cluster name.
      * @throws com.stratio.crossdata.common.exceptions.ConnectionException If the close operation cannot be performed.
      */
     @Override
-    public void close(ClusterName name) throws ConnectionException {
-        sessions.get(name).shutdown();
-        sessions.remove(name);
-        LOG.info("Twitter Stream session closed. Disconnected from cluster: " + name);
+    public void close(ClusterName clusterName) throws ConnectionException {
+        clusters.get(clusterName).getSession().shutdown();
+        clusters.remove(clusterName);
+        LOG.info("Twitter Stream session closed. Disconnected from cluster: " + clusterName);
     }
 
     /**
@@ -161,12 +200,12 @@ public class TwitterConnector extends AbstractExtendedConnector {
     /**
      * Retrieve the connectivity status with the datastore.
      *
-     * @param name The Cluster name.
+     * @param clusterName The Cluster name.
      * @return Whether it is connected or not.
      */
     @Override
-    public boolean isConnected(ClusterName name) {
-        return sessions.containsKey(name);
+    public boolean isConnected(ClusterName clusterName) {
+        return clusters.containsKey(clusterName) && (clusters.get(clusterName).getSession() != null);
     }
 
     /**

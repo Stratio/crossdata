@@ -27,8 +27,10 @@ import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.Window;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.QueryResult;
 
+import twitter4j.FilterQuery;
 import twitter4j.TwitterStream;
 
 public class TwitterQueryEngine implements IQueryEngine {
@@ -74,20 +76,27 @@ public class TwitterQueryEngine implements IQueryEngine {
         Project project = (Project) workflow.getInitialSteps().get(0);
         Window window = (Window) project.getNextStep();
         Select select = (Select) window.getNextStep();
-        TwitterStream session = connector.getSession(project.getClusterName());
+        TwitterStream session = connector.getSession(project.getClusterName().getName());
+        TableMetadata tableMetadata = connector.getTableMetadata(
+                project.getClusterName().getName(),
+                project.getTableName().getName());
         TweetsListener listener = new TweetsListener(
                 queryId,
                 resultHandler,
+                tableMetadata,
                 select.getOutputSelectorOrder(),
                 window.getDurationInMilliseconds());
         session.addListener(listener);
-        session.sample();
-        /*
-        FilterQuery fq = new FilterQuery();
-        String keywords[] = {"sport", "politics", "health"};
-        fq.track(keywords);
-        session.filter(fq);
-         */
+
+        if(project.getTableName().getName().equalsIgnoreCase("sample")){
+            session.sample();
+        } else {
+            FilterQuery fq = new FilterQuery();
+            String keywords[] = {project.getTableName().getName()};
+            fq.track(keywords);
+            session.filter(fq);
+        }
+
     }
 
     /**
