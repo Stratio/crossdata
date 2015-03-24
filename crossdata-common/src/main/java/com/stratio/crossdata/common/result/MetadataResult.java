@@ -104,6 +104,8 @@ public final class MetadataResult extends Result {
 
     public static final int OPERATION_IMPORT_TABLE = 17;
 
+    public static final int OPERATION_REGISTER_TABLE = 18;
+
     /**
      * Operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}.
      */
@@ -238,6 +240,8 @@ public final class MetadataResult extends Result {
             return "CATALOG created successfully";
         case MetadataResult.OPERATION_CREATE_TABLE:
             return "TABLE created successfully";
+        case MetadataResult.OPERATION_REGISTER_TABLE:
+            return "TABLE registered successfully";
         case MetadataResult.OPERATION_CREATE_INDEX:
             return "INDEX created successfully";
         case MetadataResult.OPERATION_DROP_CATALOG:

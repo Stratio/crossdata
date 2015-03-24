@@ -25,10 +25,11 @@ MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEv
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
+import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionType, ManagementWorkflow, ExecutionWorkflow}
 import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{replyConnectorName, getConnectorName,Connect}
-import com.stratio.crossdata.core.execution.ExecutionManager
+import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.crossdata.core.loadWatcher.LoadWatcherManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
@@ -46,7 +47,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
-  val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
+  val coordinatorActorRef = context.actorSelection("../../CoordinatorActor")//context.actorSelection("../CoordinatorActor")
   var connectorsAlreadyReset = false
 
   log.info("Lifting connector manager actor")
@@ -118,7 +119,17 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
 
           clusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
 
-          sender ! new Connect(UUID.randomUUID().toString, null, clusterConfig)
+
+          val reconnectQueryUUID = UUID.randomUUID().toString
+          val executionInfo = new ExecutionInfo
+          executionInfo.setRemoveOnSuccess(true)
+          executionInfo.setBroadcastOnSuccess(true)
+          val executionWorkflow = new ManagementWorkflow(reconnectQueryUUID, null, ExecutionType.ATTACH_CONNECTOR,ResultType.RESULTS)
+          executionWorkflow.setClusterName(clusterName)
+          executionInfo.setWorkflow(executionWorkflow)
+          ExecutionManager.MANAGER.createEntry(reconnectQueryUUID, executionInfo)
+
+          sender ! new Connect(reconnectQueryUUID, null, clusterConfig)
         }
       }
       MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
@@ -127,7 +138,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
 
     case c: ConnectResult => {
       logger.info("Connect result from " + sender + " => " + c.getSessionId)
-      coordinatorActorRef ! c
+      coordinatorActorRef forward c
     }
 
     case er: ErrorResult => {

@@ -21,6 +21,7 @@ package com.stratio.connector.inmemory;
 import static com.codahale.metrics.MetricRegistry.name;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -38,10 +39,12 @@ import com.stratio.crossdata.common.connector.ISqlEngine;
 import com.stratio.crossdata.common.connector.IStorageEngine;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
+import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.connectors.ConnectorApp;
 
@@ -107,7 +110,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         Timer.Context connectTimerContext = connectTimer.time();
 
         // Connection
-        ClusterName targetCluster = config.getName();
+        final ClusterName targetCluster = config.getName();
         Map<String, String> options = config.getClusterOptions();
         LOG.info("clusterOptions: " + config.getClusterOptions().toString() + " connectorOptions: " + config.getConnectorOptions());
         if(!options.isEmpty() && options.get(DATASTORE_PROPERTY) != null){
@@ -121,8 +124,22 @@ public class InMemoryConnector extends AbstractExtendedConnector {
             throw new ConnectionException("Invalid options, expecting TableRowLimit");
         }
 
-        //Try to restore existing schema
-        restoreSchema(targetCluster);
+        //Try to restore existing schema 2 seconds after the connection
+        new java.util.Timer().schedule(
+                        new java.util.TimerTask() {
+                            @Override
+                            public void run() {
+                                try {
+                                    restoreSchema(targetCluster);
+                                }catch(ConnectorException ce){
+                                    LOG.error("Error fetching existing schema from Crossdata server");
+                                }
+                            }
+                        },
+                        2000
+        );
+
+
 
         //End Metric
         long millis = connectTimerContext.stop();
@@ -188,11 +205,23 @@ public class InMemoryConnector extends AbstractExtendedConnector {
     }
 
 
-    private void restoreSchema(ClusterName cluster){
-        /*FUTURE handle timeout exception
-        for (CatalogMetadata catalogMetadata : connectorApp.getCatalogs(cluster)) {
-            System.out.println(catalogMetadata.toString());
-        }*/
+    private void restoreSchema(ClusterName cluster) throws ConnectorException {
+
+        List<CatalogMetadata> catalogList = connectorApp.getCatalogs(cluster);
+        if (catalogList != null){
+            // TODO FUTURE handle timeout exception
+            for (CatalogMetadata catalogMetadata : connectorApp.getCatalogs(cluster)) {
+                LOG.debug("Restoring catalog: "+catalogMetadata.toString());
+                getMetadataEngine().createCatalog(catalogMetadata.getTables().values().iterator().next().getClusterRef(),
+                                catalogMetadata);
+                for (TableMetadata tableMetadata : catalogMetadata.getTables().values()) {
+                    LOG.debug("Restoring table: "+tableMetadata.toString());
+                    getMetadataEngine().createTable(tableMetadata.getClusterRef(),tableMetadata);
+                }
+            }
+        }
+
+
     }
 
     /**

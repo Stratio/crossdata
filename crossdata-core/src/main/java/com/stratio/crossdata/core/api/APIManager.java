@@ -91,6 +91,8 @@ import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.validator.Validator;
 
+import scala.util.regexp.Base;
+
 /**
  * Class that manages the Crossdata API requests.
  */
@@ -570,6 +572,9 @@ public class APIManager {
     private Result cleanMetadata() {
         Result result = CommandResult.createCommandResult("Metadata cleaned.");
         try {
+            for (CatalogMetadata catalogMetadata : MetadataManager.MANAGER.getCatalogs()) {
+                MetadataManager.MANAGER.removeCatalogFromClusters(catalogMetadata.getName());
+            }
             MetadataManager.MANAGER.clearCatalogs();
             ExecutionManager.MANAGER.clear();
         } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException

@@ -35,57 +35,67 @@ import com.stratio.crossdata.common.statements.structures.{Relation, Selector}
  * @param queryId The query identifier.
  */
 
-@SerialVersionUID(-4155642367894752659L)
+@SerialVersionUID(-415564237894752659L)
 class Operation(val queryId: String) extends Serializable
 
-@SerialVersionUID(-4855628367894852859L)
-case class ReroutedQuery(msg:Query) extends Serializable
+@SerialVersionUID(-485628367894852859L)
+case class ReroutedQuery(msg:Query)
 
-@SerialVersionUID(-4875628367874857859L)
-case class ReroutedCommand(msg:Command) extends Serializable
+@SerialVersionUID(-487562836787485759L)
+case class ReroutedCommand(msg:Command)
 
-@SerialVersionUID(-4155622367894752659L)
-case class ACK(queryId: String, status: QueryStatus) extends Serializable
+@SerialVersionUID(-415562236789472659L)
+case class ACK(queryId: String, status: QueryStatus)
 
-@SerialVersionUID(-4225642367894752659L)
-case class Connect(queryId: String, credentials: ICredentials, connectorClusterConfig: ConnectorClusterConfig) extends Serializable
+@SerialVersionUID(-422564236794752659L)
+case class Connect(queryId: String, credentials: ICredentials, connectorClusterConfig: ConnectorClusterConfig)
 
-@SerialVersionUID(-2255642367894752659L)
-case class Reply(msg: String) extends Serializable
+@SerialVersionUID(-225564237894752659L)
+case class Reply(msg: String)
 
-@SerialVersionUID(-4155642367894752622L)
-case class Disconnect(userId: String) extends Serializable
+@SerialVersionUID(-415562367894752622L)
+case class Disconnect(userId: String)
 
-@SerialVersionUID(-3815643667894592648L)
+@SerialVersionUID(-315643667894592648L)
 case class DisconnectFromCluster(override val queryId: String, clusterName: String) extends Operation(queryId)
 
 //CONNECTOR messages
-@SerialVersionUID(-4155642367894222659L)
-case class ConnectToConnector(msg: String) extends Serializable
+@SerialVersionUID(-415564236789422659L)
+case class ConnectToConnector(msg: String)
 
-@SerialVersionUID(-3355642367894752659L)
-case class DisconnectFromConnector(msg: String) extends Serializable
+@SerialVersionUID(-335564237894752659L)
+case class DisconnectFromConnector(msg: String)
 
-@SerialVersionUID(-4133642367894752659L)
-case class Request(msg: String) extends Serializable
+@SerialVersionUID(-413364236784752659L)
+case class Request(msg: String)
 
-@SerialVersionUID(-4155642367894752633L)
-case class Response(msg: String) extends Serializable
+@SerialVersionUID(-415564236789472633L)
+case class Response(msg: String)
 
-@SerialVersionUID(-5555642367894752659L)
-case class MetadataStruct(clusterName: String, connectorName: String, metadata: String) extends Serializable
+@SerialVersionUID(-555564236789475265L)
+case class MetadataStruct(clusterName: String, connectorName: String, metadata: String)
 
-@SerialVersionUID(-4155552367894752659L)
-case class StorageQueryStruct(clusterName: String, connectorName: String, storageQuery: String) extends Serializable
+@SerialVersionUID(-415554367894752659L)
+case class StorageQueryStruct(clusterName: String, connectorName: String, storageQuery: String)
 
-@SerialVersionUID(-4155642367855752659L)
-case class WorkflowStruct(clusterName: String, connectorName: String, workFlow: LogicalWorkflow) extends Serializable
+@SerialVersionUID(-415542367855752659L)
+case class WorkflowStruct(clusterName: String, connectorName: String, workFlow: LogicalWorkflow)
 
-@SerialVersionUID(-4155642367894755559L)
-case class replyConnectorName(name: String) extends Serializable
+@SerialVersionUID(-415564236794755559L)
+case class replyConnectorName(name: String)
 
-@SerialVersionUID(-6655642367894752659L)
-case class getConnectorName() extends Serializable
+@SerialVersionUID(-665564236789475259L)
+case class getConnectorName()
+
+@SerialVersionUID(-665564236789475258L)
+case class GetCatalogs(clusterName: ClusterName)
+
+@SerialVersionUID(-665564236789475257L)
+case class GetTableMetadata(clusterName: ClusterName, tableName: TableName)
+
+@SerialVersionUID(-665564236789475256L)
+case class GetCatalogMetadata(catalogName: CatalogName)
+
 
 // ============================================================================
 //                                IStorageEngine
