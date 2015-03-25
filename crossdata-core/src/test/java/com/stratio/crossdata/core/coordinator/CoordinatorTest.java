@@ -96,7 +96,7 @@ public class CoordinatorTest {
     @Test
     public void testAttachCluster() throws Exception {
 
-        ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.ATTACH_CLUSTER,
+        ManagementWorkflow workflow = new ManagementWorkflow("", "", ExecutionType.ATTACH_CLUSTER,
                 ResultType.RESULTS);
         workflow.setClusterName(new ClusterName("clusterTest"));
         workflow.setConnectorName(new ConnectorName("myConnector"));
@@ -130,7 +130,7 @@ public class CoordinatorTest {
     @Test
     public void testDetachCluster() throws Exception {
 
-        ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.DETACH_CLUSTER,
+        ManagementWorkflow workflow = new ManagementWorkflow("", "", ExecutionType.DETACH_CLUSTER,
                 ResultType.RESULTS);
         workflow.setClusterName(new ClusterName("clusterTest"));
         workflow.setConnectorName(new ConnectorName("myConnector"));

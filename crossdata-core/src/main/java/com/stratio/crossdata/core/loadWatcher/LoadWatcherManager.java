@@ -237,7 +237,7 @@ public enum LoadWatcherManager {
     /**
      * Get the complete map.
      * 
-     * @return
+     * @return data
      */
     public Map<String, Serializable> getData() {
         return data;
@@ -246,7 +246,7 @@ public enum LoadWatcherManager {
     /**
      * Get all the keys.
      * 
-     * @return
+     * @return A {@link java.util.Set} with {@link java.lang.String}.
      */
     public java.util.Set<String> getKeySet() {
         return data.keySet();

@@ -36,6 +36,7 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.AmbiguousNameException;
+import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
@@ -48,8 +49,8 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
-import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.common.utils.Constants;
+import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.IValidatedQuery;
@@ -87,7 +88,6 @@ public class SelectStatementTest extends BasicValidatorTest {
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
-
     }
 
     @Test
@@ -136,7 +136,6 @@ public class SelectStatementTest extends BasicValidatorTest {
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
-
     }
 
     @Test
@@ -162,7 +161,6 @@ public class SelectStatementTest extends BasicValidatorTest {
         } catch (Exception e) {
             Assert.fail(e.getMessage());
         }
-
     }
 
     @Test
@@ -303,7 +301,6 @@ public class SelectStatementTest extends BasicValidatorTest {
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
-
     }
 
     @Test
@@ -321,7 +318,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector right = new StringSelector(tablename, "name_5");
         Relation relation = new Relation(left, Operator.EQ, right);
@@ -361,7 +358,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName(tablename, "name"));
         Selector right = new StringSelector(tablename, "name_5");
         Relation relation = new Relation(left, Operator.EQ, right);
@@ -407,7 +404,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName(tablename, "unknown"));
         Selector right = new StringSelector(tablename, "name_5");
         Relation relation = new Relation(left, Operator.EQ, right);
@@ -453,7 +450,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName(tablename, "unknown"));
         Selector right = new StringSelector(tablename, "name_5");
         Relation relation = new Relation(left, Operator.EQ, right);
@@ -500,7 +497,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName(tablename, "name"));
         Selector right = new IntegerSelector(tablename, 15);
         Relation relation = new Relation(left, Operator.EQ, right);
@@ -546,7 +543,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName(tablename, "name"));
         Selector right = new StringSelector(tablename, "name_5");
         Relation relation = null;
@@ -609,7 +606,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName(tablename, "bool"));
         Selector right = new BooleanSelector(tablename, true);
         Relation relation = null;
@@ -651,7 +648,6 @@ public class SelectStatementTest extends BasicValidatorTest {
             } catch (IgnoreQueryException e) {
                 fail(e.getMessage());
             }
-
         }
     }
 
@@ -673,7 +669,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "email"));
         Selector right = new StringSelector(tablename, "name_1@domain.com");
         Relation relation = new Relation(left, Operator.DISTINCT, right);
@@ -717,7 +713,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
 
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector right = new ColumnSelector(new ColumnName("demo", "users", "name"));
@@ -742,7 +738,6 @@ public class SelectStatementTest extends BasicValidatorTest {
         } catch (IgnoreQueryException e) {
             fail(e.getMessage());
         }
-
     }
 
     @Test
@@ -761,7 +756,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName tablename = new TableName("unknown", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
 
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector right = new ColumnSelector(new ColumnName("demo", "users", "name"));
@@ -804,7 +799,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
 
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector right = new ColumnSelector(new ColumnName("demo", "users", "name"));
@@ -847,7 +842,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
 
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector right = new ColumnSelector(new ColumnName("demo", "users", "name"));
@@ -890,7 +885,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
 
         Selector left = new ColumnSelector(new ColumnName("unknown", "users", "name"));
         Selector right = new ColumnSelector(new ColumnName("demo", "users", "name"));
@@ -933,7 +928,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
 
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector right = new ColumnSelector(new ColumnName("demo", "pepito", "name"));
@@ -976,7 +971,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
 
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "unknown"));
         Selector right = new ColumnSelector(new ColumnName("demo", "users", "name"));
@@ -1019,7 +1014,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
 
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector right = new ColumnSelector(new ColumnName("demo", "users", "unknown"));
@@ -1063,7 +1058,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
 
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector right = new ColumnSelector(new ColumnName("demo", "users", "unknown"));
@@ -1074,7 +1069,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
         selectStatement.addJoin(join);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector rightWh = new StringSelector(new TableName("demo", "users"), "name_3");
         Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
@@ -1115,7 +1110,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName tablename = new TableName("demo", "users");
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
 
         Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector right = new ColumnSelector(new ColumnName("demo", "users", "name"));
@@ -1126,7 +1121,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
         selectStatement.addJoin(join);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector rightWh = new StringSelector(new TableName("demo", "users"), "name_3");
         Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
@@ -1435,7 +1430,6 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         assertNotNull(validatedQuery, "Expecting validated query");
         assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
-
     }
 
     @Test
@@ -1466,7 +1460,6 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         assertNotNull(validatedQuery, "Expecting validated query");
         assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
-
     }
 
     @Test
@@ -1487,7 +1480,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         TableName tablename = new TableName("demo", "users");
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
         Selector rightWh = new StringSelector(new TableName("demo", "users"), "name_1");
         Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
@@ -1508,7 +1501,6 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         assertNotNull(validatedQuery, "Expecting validated query");
         assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
-
     }
 
 
@@ -1540,7 +1532,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         TableName joinTable = new TableName("demo", "users_info");
         joinTable.setAlias("ui");
 
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
         Selector left = new ColumnSelector(new ColumnName("", "", "n"));
         Selector right = new ColumnSelector(new ColumnName("", "ui", "name"));
 
@@ -1548,7 +1540,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         joinRelations.add(relation);
         InnerJoin join = new InnerJoin(joinTable, joinRelations);
 
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
         Selector rightWh = new StringSelector(new TableName("demo", "users"), "name_1");
         Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
@@ -1570,7 +1562,6 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         assertNotNull(validatedQuery, "Expecting validated query");
         assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
-
     }
 
     /*
@@ -1588,7 +1579,6 @@ public class SelectStatementTest extends BasicValidatorTest {
         assertEquals(inputText, expectedText, "Invalid alias result");
 
     }*/
-
 
     @Test
     public void simpleSubqueryTest(){
@@ -1615,8 +1605,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         SelectStatement selectStatement = new SelectStatement(new SelectExpression(selectorListSuperquery), virtualTable);
         selectStatement.setSubquery(subquerySelectStatement, "t");
 
-
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
         Selector rightWh = new StringSelector(new TableName("", ""), "name_1");
         Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
@@ -1635,7 +1624,6 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         assertNotNull(validatedQuery, "Expecting validated query");
         assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
-
     }
 
     @Test

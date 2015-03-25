@@ -21,10 +21,10 @@ package com.stratio.crossdata.connectors
 import java.util
 
 import com.codahale.metrics._
-import akka.actor.{ActorSelection, ActorRef, ActorSystem}
 import akka.agent.Agent
+import akka.actor.{Props, ActorSelection, ActorRef, ActorSystem}
 import akka.pattern.ask
-import akka.routing.RoundRobinRouter
+import akka.routing.{DefaultResizer, RoundRobinPool}
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.metadata.{UpdatableMetadata, CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
@@ -33,12 +33,11 @@ import com.stratio.crossdata.common.connector._
 import org.apache.log4j.Logger
 import scala.collection.mutable.Set
 import scala.concurrent.Await
-import akka.util.Timeout
 import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
 import com.stratio.crossdata.communication.{GetTableMetadata, GetCatalogMetadata, GetCatalogs, Shutdown}
-
 import scala.util.{Failure, Success, Try}
+import scala.collection.JavaConversions._
+
 
 object ConnectorApp extends App {
   args.length==2
@@ -70,15 +69,19 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   def stop():Unit = {
     actorClusterNode.get ! Shutdown()
     system.shutdown()
-    Metrics.getRegistry.remove(metricName)
+    Metrics.getRegistry.getNames.foreach(Metrics.getRegistry.remove(_))
 
   }
 
   def startup(connector: IConnector): ActorSelection = {
 
-    //TODO method close from agent has been removed.
-    actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
-      connector, connectedServers, agent).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
+    val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
+    val connectorManagerActorRef = system.actorOf(
+      RoundRobinPool(num_connector_actor, Some(resizer))
+        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServers)),
+      "ConnectorActor")
+
+    actorClusterNode = Some(connectorManagerActorRef)
     connector.init(new IConfiguration {})
 
     val actorSelection: ActorSelection = system.actorSelection(

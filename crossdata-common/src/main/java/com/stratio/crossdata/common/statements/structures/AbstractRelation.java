@@ -16,25 +16,21 @@
  * under the License.
  */
 
-package com.stratio.crossdata.sh;
+package com.stratio.crossdata.common.statements.structures;
 
-import static org.testng.Assert.assertNotNull;
+import java.io.Serializable;
 
-import java.net.URL;
+public abstract class AbstractRelation implements Serializable {
 
-import org.testng.annotations.Test;
+    private static final long serialVersionUID = 4458788192163528306L;
 
-public class CrossdatashTestIT {
+    private boolean parenthesis = false;
 
-    @Test(timeOut = 12000)
-    public void testSendManifest() throws Exception {
-        Shell xdsh = new Shell(false);
-        xdsh.connect();
-        URL url = Thread.currentThread().getContextClassLoader()
-                .getResource("com/stratio/crossdata/connector/DataStoreDefinition.xml");
-        String result = url.getPath();
-        assertNotNull(result, "testSendManifest returns NULL");
-        xdsh.closeConsole();
+    public boolean isParenthesis() {
+        return parenthesis;
     }
 
+    public void setParenthesis(boolean parenthesis) {
+        this.parenthesis = parenthesis;
+    }
 }

@@ -407,6 +407,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }else{
       logger.error("Exception for query " + queryId + " cannot be sent", exception)
     }
+    runningJobs.remove(queryId)
   }
 
   override def processResult(result: QueryResult): Unit = {
@@ -416,6 +417,9 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       source ! result
     }else{
       logger.error("Results for query " + result.getQueryId + " cannot be sent")
+    }
+    if(result.isLastResultSet){
+      runningJobs.remove(result.getQueryId)
     }
   }
 
@@ -455,9 +459,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         asyncSender ! result
       }
       case err: Error =>
-        logger.error("error in ConnectorActor (Receiving async LogicalWorkflow)")
-    }finally {
-      runningJobs.remove(aex.queryId)
+        logger.error("Error in ConnectorActor (Receiving async LogicalWorkflow)")
     }
   }
 
@@ -478,9 +480,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       }
       case err: Error =>
         logger.error("error in ConnectorActor (Receiving paged LogicalWorkflow)")
-    }finally {
-      runningJobs.remove(pex.queryId)
-      logger.info("end new running job")
     }
 
   }

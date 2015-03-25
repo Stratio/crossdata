@@ -75,8 +75,7 @@ public class ConsoleUtilsTest {
     @Test
     public void testStringResultWithQueryResultEmpty() throws Exception {
         String queryId = "testStringResultWithQueryResult";
-        Result result = QueryResult.createQueryResult(new ResultSet(), 0, true);
-        result.setQueryId(queryId);
+        Result result = QueryResult.createQueryResult(queryId, new ResultSet(), 0, true);
         String message = ConsoleUtils.stringResult(result);
         String expected = System.lineSeparator() + "0 results returned";
         /*
@@ -107,9 +106,8 @@ public class ConsoleUtilsTest {
         row.addCell("Number", new Cell(25));
         resultSet.add(row);
         String queryId = "testStringResultWithQueryResult";
-        Result result = QueryResult.createQueryResult(
+        Result result = QueryResult.createQueryResult(queryId,
                 resultSet, 0, true, "catalogTest");
-        result.setQueryId(queryId);
 
         String message = ConsoleUtils.stringResult(result);
         String expected = System.lineSeparator() +

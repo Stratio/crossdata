@@ -42,6 +42,9 @@ object BasicDriver extends DriverConfig {
    * Class logger.
    */
   override lazy val logger = Logger.getLogger(getClass)
+  val balancing: Boolean= config.getBoolean("config.balancing")
+  val serverPathName:String = config.getString("config.serverPathName")
+  val crossdataServerClusterName:String= config.getString("config.crossdataServerClusterName")
 
   def getBasicDriverConfigFromFile:BasicDriverConfig = {
     logger.debug("RetryTimes    --> " + retryTimes)
@@ -70,6 +73,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * Default user to connect to the com.stratio.crossdata server.
    */
   private final val DEFAULT_USER: String = "CROSSDATA_USER"
+  val balancing: Boolean=BasicDriver.balancing;
+  val serverPathName:String = BasicDriver.serverPathName
+  val crossdataServerClusterName=BasicDriver.crossdataServerClusterName
+  val cpuLoadPingTimeInMillis:Long = 5000
+  
   lazy val logger = BasicDriver.logger
   lazy val queries: java.util.Map[String, IDriverResultHandler] = new java.util.HashMap[String, IDriverResultHandler]
   lazy val system = ActorSystem("CrossdataDriverSystem", BasicDriver.config)
@@ -111,9 +119,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     val result = retryPolitics.askRetry(proxyActor, new Connect(user), 5 second)
     result match {
       case errorResult: ErrorResult => {
+        logger.info("connection error")
         throw new ConnectionException(errorResult.getErrorMessage)
       }
       case connectResult: ConnectResult => {
+        logger.info("connection stablished")
         userId = connectResult.getSessionId
         result
       }

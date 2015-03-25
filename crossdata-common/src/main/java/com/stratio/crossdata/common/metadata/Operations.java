@@ -431,11 +431,6 @@ public enum Operations {
      */
     FILTER_PK_DISTINCT("FILTER_PK_DISTINCT"),
 
-    /**
-     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
-     * that are part of the primary key with like operator.
-     */
-    FILTER_PK_LIKE("FILTER_PK_LIKE"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
@@ -522,6 +517,12 @@ public enum Operations {
     FILTER_INDEXED_MATCH("FILTER_INDEXED_MATCH"),
 
     /**
+     * The engine supports full text search syntax in {@link com.stratio.crossdata.common.logicalplan.Filter}
+     * operations with a MATCH Operator in non indexed columns.
+     */
+    FILTER_NON_INDEXED_MATCH("FILTER_NON_INDEXED_MATCH"),
+
+    /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
      * a includes as part of a relation using with an equal operator.
      */
@@ -556,6 +557,26 @@ public enum Operations {
      * a includes as part of a relation using with a distinct operator.
      */
     FILTER_FUNCTION_DISTINCT("FILTER_FUNCTION_DISTINCT"),
+
+    /**
+     * The engine supports OR operator.
+     */
+    FILTER_DISJUNCTION("FILTER_DISJUNCTION"),
+
+    /**
+     * The filter of like operator over a PK.
+     */
+    FILTER_PK_LIKE("FILTER_LIKE"),
+
+    /**
+     * The filter of like operator over an index.
+     */
+    FILTER_INDEXED_LIKE("FILTER_INDEXED_LIKE"),
+
+    /**
+     * The filter of like operator.
+     */
+    FILTER_NON_INDEXED_LIKE("FILTER_NON_INDEXED_LIKE"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.PartialResults} operations

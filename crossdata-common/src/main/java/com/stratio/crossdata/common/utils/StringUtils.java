@@ -75,7 +75,7 @@ public final class StringUtils implements Serializable {
      */
     public static String stringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
-        for (Object value : ids) {
+        for (Object value: ids) {
             sb.append(value.toString()).append(separator);
         }
         if (sb.length() > separator.length()) {
@@ -156,7 +156,7 @@ public final class StringUtils implements Serializable {
             String result = object.toString().replace("Actor[", "").replace("]", "").split("\\$")[0].split("#")[0];
             if(resultForActorSelection){
                 if (result.contains("akka.tcp")) {
-                    result = result.substring(result.indexOf("akka.tcp"));
+                    result = result.substring(result.lastIndexOf("akka.tcp"));
                 }
                 if(result.contains("%3A%2F%2F")) {
                     result = result.replace("%3A%2F%2F", "://");
@@ -205,6 +205,10 @@ public final class StringUtils implements Serializable {
             ct = new ColumnType(DataType.LIST);
         } else if (javaType.equalsIgnoreCase("Map")) {
             ct = new ColumnType(DataType.MAP);
+        }
+        if(ct.getDataType() == DataType.NATIVE){
+            ct.setDbType(javaType);
+            ct.setODBCType(javaType);
         }
         return ct;
     }

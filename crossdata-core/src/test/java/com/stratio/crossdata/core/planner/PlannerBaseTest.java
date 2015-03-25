@@ -109,9 +109,6 @@ public class PlannerBaseTest {
 
         IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName, checkParser);
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
-        //SelectStatement ss = spq.getStatement();
-
-        //SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
 
         Validator validator = new Validator();
         SelectValidatedQuery svq = null;

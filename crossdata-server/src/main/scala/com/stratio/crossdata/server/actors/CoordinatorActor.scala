@@ -28,6 +28,7 @@ import com.stratio.crossdata.common.exceptions.validation.CoordinationException
 import com.stratio.crossdata.common.executionplan._
 import com.stratio.crossdata.common.logicalplan.PartialResults
 import com.stratio.crossdata.common.metadata.{ UpdatableMetadata, ConnectorMetadata,TableMetadata}
+import com.stratio.crossdata.common.metadata.Operations
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
@@ -344,8 +345,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             connectorClusterConfig.setDataStoreName(datastoreName)
 
-            val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(managementWorkflow.getActorRef(), false))
-            connectorSelection ! new Connect(queryId, credentials, connectorClusterConfig)
+            val actorRefs = managementWorkflow.getActorRefs
+            var count = 1
+            for(actorRef <- actorRefs){
+              val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(actorRef, false))
+              connectorSelection ! new Connect(queryId+"#"+count, credentials, connectorClusterConfig)
+              count+=1
+            }
 
             log.info("connectorOptions: " + connectorClusterConfig.getConnectorOptions.toString + " clusterOptions: " +
               connectorClusterConfig.getClusterOptions.toString)
@@ -356,7 +362,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setWorkflow(managementWorkflow)
             executionInfo.setPersistOnSuccess(true)
             executionInfo.setRemoveOnSuccess(true)
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+            count = 1
+            for(actorRef <- actorRefs){
+              ExecutionManager.MANAGER.createEntry(queryId+"#"+count, executionInfo, true)
+              count+=1
+            }
 
             sendResultToClient = false
 
@@ -376,8 +386,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
             connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
 
-            val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(managementWorkflow.getActorRef(), false))
-            connectorSelection ! new DisconnectFromCluster(queryId, connectorClusterConfig.getName.getName)
+            val actorRefs = managementWorkflow.getActorRefs
+            for(actorRef <- actorRefs){
+              val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(actorRef, false))
+              connectorSelection ! new DisconnectFromCluster(queryId, connectorClusterConfig.getName.getName)
+            }
 
             val executionInfo = new ExecutionInfo()
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
@@ -491,6 +504,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
     case result: Result => {
       val queryId = result.getQueryId
       log.info("Receiving result from " + sender + " with queryId = " + queryId + " result: " + result)
+      if(result.isInstanceOf[ErrorResult]){
+        log.error(result.asInstanceOf[ErrorResult].getErrorMessage)
+      }
       try {
         val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
         //TODO Add two methods to StringUtils to retrieve AkkaActorRefUri tokening with # for connectors,
@@ -500,6 +516,14 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         val clientActor = context.actorSelection(target)
 
         var sendResultToClient = true
+
+        if(queryId.contains("#")){
+          if(queryId.endsWith("#1")){
+            result.setQueryId(queryId.split("#")(0))
+          } else {
+            sendResultToClient = false
+          }
+        }
 
         if(!result.hasError){
           if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
@@ -586,8 +610,15 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].setRows(partialResults.getRows)
               operation = executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
             } else {
-              executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
-              operation = executionInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(queryId + CoordinatorActor.TriggerToken)
+              if (executionInfo.getWorkflow.getTriggerStep!=null) {
+                executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+              }else{
+                val partialResultsStep: PartialResults = new PartialResults(Operations.PARTIAL_RESULTS)
+                executionInfo.getWorkflow.setTriggerStep(partialResultsStep)
+                executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+              }
+              operation = executionInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(queryId)
+
             }
             log.info("Sending operation: " + operation + " to: " + actorSelection.asInstanceOf[ActorSelection])
             actorSelection.asInstanceOf[ActorSelection] ! operation

@@ -22,7 +22,6 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -53,6 +52,7 @@ import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
@@ -294,7 +294,7 @@ public class NormalizerTest {
         SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
 
         // WHERE CLAUSES
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         where.add(new Relation(new ColumnSelector(new ColumnName(null, "colPlace")), Operator.EQ,
                 new StringSelector("Madrid")));
         selectStatement.setWhere(where);
@@ -367,7 +367,7 @@ public class NormalizerTest {
         // SELECT STATEMENT
         SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
 
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
         Relation relation = new Relation(
                 new ColumnSelector(new ColumnName(null, "assistantId")),
                 Operator.EQ,
@@ -378,7 +378,7 @@ public class NormalizerTest {
 
 
         // WHERE CLAUSES
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.EQ,
                 new StringSelector("Madrid")));
         selectStatement.setWhere(where);
@@ -438,7 +438,7 @@ public class NormalizerTest {
         // SELECT STATEMENT
         SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
 
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
         Relation relation = new Relation(
                         new ColumnSelector(new ColumnName(new TableName("myCatalog","tableCostumers"), "assistantId")),
                         Operator.EQ,

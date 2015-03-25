@@ -24,7 +24,7 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 /**
  * Filter the results retrieved through a Project operation.
  */
-public class Filter extends TransformationStep {
+public class Filter extends TransformationStep implements IOperand {
 
     private static final long serialVersionUID = -1527718582002849918L;
     /**

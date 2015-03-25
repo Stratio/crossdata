@@ -96,9 +96,8 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set(), agent))
     val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, Set(), agent))
     val routees = Vector[ActorRef](ca1, ca2)
-    val connectorActor = system1.actorOf(ConnectorActor.props(myconnector, m, Set(), agent).withRouter(RoundRobinRouter(routees
-    = routees)))
 
+    val connectorActor = system1.actorOf(ConnectorActor.props(myconnector, m, Set(),agent).withRouter(RoundRobinRouter(routees = routees)))
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))

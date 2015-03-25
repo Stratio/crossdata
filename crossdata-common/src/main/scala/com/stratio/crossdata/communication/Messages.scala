@@ -38,7 +38,11 @@ import com.stratio.crossdata.common.statements.structures.{Relation, Selector}
 @SerialVersionUID(-415564237894752659L)
 class Operation(val queryId: String) extends Serializable
 
-@SerialVersionUID(-485628367894852859L)
+
+@SerialVersionUID(-855342469894792659L)
+case class CPUUsage(val queryId: Double)
+
+@SerialVersionUID(-455628367894852859L)
 case class ReroutedQuery(msg:Query)
 
 @SerialVersionUID(-487562836787485759L)
