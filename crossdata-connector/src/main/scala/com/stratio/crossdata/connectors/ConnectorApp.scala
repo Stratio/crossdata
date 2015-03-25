@@ -76,7 +76,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   def startup(connector: IConnector): ActorSelection = {
 
-    //TODO method close from agent has been removed. How must we close the agent now?
+    //TODO method close from agent has been removed.
     actorClusterNode = Some(system.actorOf(ConnectorActor.props(connector.getConnectorName,
       connector, connectedServers, agent).withRouter(RoundRobinRouter(nrOfInstances = num_connector_actor)), "ConnectorActor"))
     connector.init(new IConfiguration {})

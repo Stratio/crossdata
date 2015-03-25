@@ -123,7 +123,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
           val reconnectQueryUUID = UUID.randomUUID().toString
           val executionInfo = new ExecutionInfo
           executionInfo.setRemoveOnSuccess(true)
-          executionInfo.setBroadcastOnSuccess(true)
+          executionInfo.setUpdateOnSuccess(true)
           val executionWorkflow = new ManagementWorkflow(reconnectQueryUUID, null, ExecutionType.ATTACH_CONNECTOR,ResultType.RESULTS)
           executionWorkflow.setClusterName(clusterName)
           executionInfo.setWorkflow(executionWorkflow)

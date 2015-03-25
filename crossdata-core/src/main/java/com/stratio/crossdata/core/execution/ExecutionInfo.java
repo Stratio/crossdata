@@ -45,9 +45,9 @@ public class ExecutionInfo implements Serializable {
     private boolean removeOnSuccess = true;
 
     /**
-     * Update the metadata of the connectors actors attached to the cluster affected by the execution when.
+     * Update the metadata of the connectors attached to the cluster affected by the execution.
      */
-    private boolean broadcastOnSuccess = false;
+    private boolean updateMetadataOnSuccess = false;
 
     public ExecutionInfo() {
     }
@@ -92,11 +92,11 @@ public class ExecutionInfo implements Serializable {
         this.removeOnSuccess = removeOnSuccess;
     }
 
-    public boolean isBroadcastOnSuccess() {
-        return broadcastOnSuccess;
+    public boolean isUpdateOnSuccess() {
+        return updateMetadataOnSuccess;
     }
 
-    public void setBroadcastOnSuccess(boolean broadcastOnSuccess) {
-        this.broadcastOnSuccess = broadcastOnSuccess;
+    public void setUpdateOnSuccess(boolean updateMetadataOnSuccess) {
+        this.updateMetadataOnSuccess = updateMetadataOnSuccess;
     }
 }

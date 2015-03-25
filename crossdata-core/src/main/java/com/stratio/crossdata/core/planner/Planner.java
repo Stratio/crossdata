@@ -1030,7 +1030,7 @@ public class Planner {
                     actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
                     executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
                 }else {
-                   LOG.debug("The catalog should have been created when registering table");
+                   LOG.debug("The catalog should have been created before registering table");
                 }
 
                 // Create MetadataWorkFlow

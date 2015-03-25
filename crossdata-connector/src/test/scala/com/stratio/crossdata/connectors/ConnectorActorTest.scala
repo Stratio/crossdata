@@ -63,8 +63,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val m = new DummyIConnector()
     val m2 =new DummyIConnector()
 
-    import scala.concurrent.ExecutionContext.Implicits.global
-    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])
+    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
 
     val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set(), agent))
     val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, Set(),agent))
@@ -93,8 +92,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val queryId = "queryId"
     val m=new DummyIConnector()
     val m2=new DummyIConnector()
-    import scala.concurrent.ExecutionContext.Implicits.global
-    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])
+    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
     val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set(), agent))
     val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, Set(), agent))
     val routees = Vector[ActorRef](ca1, ca2)
@@ -128,8 +126,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
   }
 
   test("Send updateMetadata to Connector") {
-    import scala.concurrent.ExecutionContext.Implicits.global
-    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])
+    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
     val m=new DummyIConnector()
     val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set(),agent))
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)

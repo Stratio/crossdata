@@ -21,6 +21,7 @@ package com.stratio.crossdata.server.actors
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
+import com.stratio.crossdata.common.metadata.CatalogMetadata
 import com.stratio.crossdata.common.data.{ClusterName, Status, ConnectorName}
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.exceptions.validation.CoordinationException
@@ -38,6 +39,7 @@ import com.stratio.crossdata.core.query.IPlannedQuery
 import scala.collection.JavaConverters._
 
 
+
 object CoordinatorActor {
 
   /**
@@ -53,48 +55,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
   log.info("Lifting coordinator actor")
 
-  /**
-   * Send a message to the connectors attached to a cluster to update its metadata. It is called any time an update's operation which persist data is finished.
-   * @param uMetadata the new metadata to be updated
-   * @param clusterInvolved the cluster which contains the metadata to update
-   * @param toRemove whether the metadata has been created or deleted
-   */
-  private def updateMetadata(uMetadata: UpdatableMetadata, clusterInvolved: ClusterName, toRemove: Boolean): Unit = {
 
-    val listConnectorMetadata = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE, clusterInvolved)
-    listConnectorMetadata.asScala.toList.flatMap(actorToBroadcast).foreach(actor => broadcastMetadata(actor, uMetadata))
-
-    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
-      case null => List()
-      case strActorRefUri => List(context.actorSelection(strActorRefUri))
-    }
-    def broadcastMetadata(bcConnectorActor: ActorSelection, uMetadata: UpdatableMetadata) = {
-      log.info("Broadcastring to all instances of " + bcConnectorActor.toString)
-      bcConnectorActor ! UpdateMetadata(uMetadata, toRemove)
-    }
-  }
-
-  /**
-   * Send a message to the connectors attached to a cluster to update its metadata. It is called any time an update's operation which persist data is finished.
-   * @param uMetadata the new metadata to be updated
-   * @param tableMetadataList the cluster which contains the metadata to update
-   * @param toRemove whether the metadata has been created or deleted
-   */
-  private def updateMetadata(uMetadata: UpdatableMetadata, tableMetadataList: List[TableMetadata], toRemove: Boolean): Unit = {
-
-    val setConnectorMetadata = tableMetadataList.flatMap( tableMetadata => MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE, tableMetadata.getClusterRef).asScala.toList).toSet
-
-    setConnectorMetadata.flatMap(actorToBroadcast).foreach(actor => broadcastMetadata(actor, uMetadata))
-
-    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
-      case null => List()
-      case strActorRefUri => List(context.actorSelection(strActorRefUri))
-    }
-    def broadcastMetadata(bcConnectorActor: ActorSelection, uMetadata: UpdatableMetadata) = {
-      log.info("Broadcastring to all instances of " + bcConnectorActor.toString)
-      bcConnectorActor ! UpdateMetadata(uMetadata, toRemove)
-    }
-  }
 
 
   def receive: Receive = {
@@ -116,7 +77,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(false)
             executionInfo.setRemoveOnSuccess(true)
-            executionInfo.setBroadcastOnSuccess(true)
+            executionInfo.setUpdateOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
             val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DROP_CATALOG)
             result.setQueryId(queryId)
@@ -126,7 +87,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
-            executionInfo.setBroadcastOnSuccess(true)
+            executionInfo.setUpdateOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
             val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_CATALOG)
             result.setQueryId(queryId)
@@ -145,7 +106,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(false)
             executionInfo.setRemoveOnSuccess(true)
-            executionInfo.setBroadcastOnSuccess(true)
+            executionInfo.setUpdateOnSuccess(true)
             executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
             executionInfo.setWorkflow(metadataWorkflow)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
@@ -155,7 +116,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(true)
             executionInfo.setRemoveOnSuccess(true)
-            executionInfo.setBroadcastOnSuccess(true)
+            executionInfo.setUpdateOnSuccess(true)
             executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
             executionInfo.setWorkflow(metadataWorkflow)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
@@ -175,7 +136,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
               executionInfo.setPersistOnSuccess(true)
               executionInfo.setRemoveOnSuccess(true)
-              executionInfo.setBroadcastOnSuccess(true)
+              executionInfo.setUpdateOnSuccess(true)
               executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
               executionInfo.setWorkflow(metadataWorkflow)
               ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
@@ -196,7 +157,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
               executionInfo.setPersistOnSuccess(true)
               executionInfo.setRemoveOnSuccess(true)
-              executionInfo.setBroadcastOnSuccess(true)
+              executionInfo.setUpdateOnSuccess(true)
               executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
               executionInfo.setWorkflow(metadataWorkflow)
               ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
@@ -211,7 +172,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setPersistOnSuccess(false)
             executionInfo.setRemoveOnSuccess(true)
-            executionInfo.setBroadcastOnSuccess(true)
+            executionInfo.setUpdateOnSuccess(true)
             executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
             executionInfo.setWorkflow(metadataWorkflow)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
@@ -227,7 +188,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
               executionInfo.setPersistOnSuccess(true)
               executionInfo.setRemoveOnSuccess(true)
-              executionInfo.setBroadcastOnSuccess(true)
+              executionInfo.setUpdateOnSuccess(true)
               executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
               executionInfo.setWorkflow(metadataWorkflow)
               ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
@@ -254,7 +215,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                 val actorRef = context.actorSelection(metadataWorkflow.getActorRef)
                 executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
                 executionInfo.setPersistOnSuccess(true)
-                executionInfo.setBroadcastOnSuccess(true)
+                executionInfo.setUpdateOnSuccess(true)
                 ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
                 log.info("ActorRef: " + actorRef.toString())
 
@@ -422,7 +383,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
             executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
             executionInfo.setWorkflow(managementWorkflow)
-            executionInfo.setBroadcastOnSuccess(true)
+            executionInfo.setUpdateOnSuccess(true)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
           }
 
@@ -498,7 +459,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             if (executionInfo.asInstanceOf[ExecutionInfo].isPersistOnSuccess) {
               coordinator.executeManagementOperation(managementWorkflow.createManagementOperationMessage())
             }
-            if (executionInfo.asInstanceOf[ExecutionInfo].isBroadcastOnSuccess) {
+            if (executionInfo.asInstanceOf[ExecutionInfo].isUpdateOnSuccess) {
                 for (catalogName <- MetadataManager.MANAGER.getCluster(managementWorkflow.getClusterName).getPersistedCatalogs.asScala.toList){
                   sender ! UpdateMetadata(MetadataManager.MANAGER.getCatalog(catalogName), remove = false)
                 }
@@ -549,7 +510,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               coordinator.executeManagementOperation(storedWorkflow.asInstanceOf[ManagementWorkflow].createManagementOperationMessage())
             }
           }
-          if (executionInfo.asInstanceOf[ExecutionInfo].isBroadcastOnSuccess) {
+          if (executionInfo.asInstanceOf[ExecutionInfo].isUpdateOnSuccess) {
              executionInfo.asInstanceOf[ExecutionInfo].getWorkflow match {
 
               case mw: MetadataWorkflow => mw.getExecutionType match {
@@ -567,8 +528,10 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
                 case ExecutionType.ALTER_CATALOG | ExecutionType.CREATE_CATALOG  => {
                   val catalogMetadata = mw.getCatalogMetadata
-                  for (tableMetadata <- mw.getCatalogMetadata.getTables.values.asScala.toList)
-                  yield updateMetadata(catalogMetadata, tableMetadata.asInstanceOf[TableMetadata].getClusterRef, toRemove = false)
+
+                  for (tableMetadata <- mw.getCatalogMetadata.getTables.values.asScala.toList){
+                    updateMetadata(catalogMetadata, tableMetadata.asInstanceOf[TableMetadata].getClusterRef, toRemove = false)
+                  }
                 }
 
                 case ExecutionType.DROP_CATALOG => {
@@ -586,7 +549,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                 case ExecutionType.IMPORT_CATALOGS | ExecutionType.IMPORT_CATALOG => {
                   for {
                     catalogMetadata <- result.asInstanceOf[MetadataResult].getCatalogMetadataList.asScala.toList
-                  } yield updateMetadata(catalogMetadata, catalogMetadata.getTables.values().asScala.toList, toRemove = false)
+                  } yield updateMetadata(catalogMetadata, toRemove = false)
                 }
 
                 case message => log.warning ("Sending metadata updates cannot be performed for the ExecutionType :" + message.toString)
@@ -600,9 +563,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                 case message => log.warning ("Sending metadata updates cannot be performed for the ExecutionType :" + message.toString)
               }
 
-
-
-              case _ => log.warning ("Tried to update the metadata after an operation without an operation workflow :" +executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getClass)
+              case _ => log.warning ("Attempt to update the metadata after an operation which is not expected :" +executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getClass)
             }
 
           }
@@ -658,6 +619,48 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       sender ! new ExecutionException("Non recognized workflow")
     }
 
+  }
+
+  /**
+   * Send a message to the connectors attached to a cluster to update its metadata. It is called any time an update's operation which persist data is finished.
+   * @param uMetadata the new metadata to be updated
+   * @param clusterInvolved the cluster which contains the metadata to update
+   * @param toRemove whether the metadata has been created or deleted
+   */
+  private def updateMetadata(uMetadata: UpdatableMetadata, clusterInvolved: ClusterName, toRemove: Boolean): Unit = {
+
+    val listConnectorMetadata = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE, clusterInvolved)
+    listConnectorMetadata.asScala.toList.flatMap(actorToBroadcast).foreach(actor => broadcastMetadata(actor, uMetadata))
+
+    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
+      case null => List()
+      case strActorRefUri => List(context.actorSelection(strActorRefUri))
+    }
+    def broadcastMetadata(bcConnectorActor: ActorSelection, uMetadata: UpdatableMetadata) = {
+      log.debug("Updating metadata in " + bcConnectorActor.toString)
+      bcConnectorActor ! UpdateMetadata(uMetadata, toRemove)
+    }
+  }
+
+  /**
+   * Send a message to the connectors attached to a cluster to update its metadata. It is called any time an update's operation which persist data is finished.
+   * @param cMetadata the new metadata to be updated
+   * @param toRemove whether the metadata has been created or deleted
+   */
+  private def updateMetadata(cMetadata: CatalogMetadata, toRemove: Boolean): Unit = {
+
+    val setConnectorMetadata = cMetadata.getTables.values().asScala.toList.flatMap( tableMetadata => MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE, tableMetadata.getClusterRef).asScala.toList).toSet
+
+    setConnectorMetadata.flatMap(actorToBroadcast).foreach(actor => broadcastMetadata(actor, cMetadata))
+
+    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
+      case null => List()
+      case strActorRefUri => List(context.actorSelection(strActorRefUri))
+    }
+    def broadcastMetadata(bcConnectorActor: ActorSelection, uMetadata: UpdatableMetadata) = {
+      log.debug("Updating metadata in " + bcConnectorActor.toString)
+      bcConnectorActor ! UpdateMetadata(uMetadata, toRemove)
+    }
   }
 
 }
