@@ -46,7 +46,6 @@ object ConnectorApp extends App {
 
 class ConnectorApp extends ConnectConfig with IConnectorApp {
 
-  lazy val defaultTimeout: Timeout = new Timeout(Duration(15, TimeUnit.SECONDS))
   lazy val system = ActorSystem(clusterName, config)
   val connectedServers: Set[String] = Set()
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
@@ -99,7 +98,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorSelection
   }
 
-  override def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+  override def getTableMetadata(clusterName: ClusterName, tableName: TableName, timeout: Int): TableMetadata = {
     /*TODO: for querying actor internal state, only messages should be used.
       i.e.{{{
         import scala.concurrent.duration._
@@ -110,8 +109,8 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       }}}
     */
     //actorClusterNode.get.asInstanceOf[ConnectorActor].getTableMetadata(clusterName, tableName)
-    val future = actorClusterNode.get.?(GetTableMetadata(clusterName,tableName ))(defaultTimeout)
-    Try(Await.result(future, defaultTimeout.duration)) match {
+    val future = actorClusterNode.get.?(GetTableMetadata(clusterName,tableName ))(timeout)
+    Try(Await.result(future, Duration.fromNanos(timeout*1000000L))) match {
       case Success(cMetadataList) =>
         cMetadataList.asInstanceOf[TableMetadata]
       case Failure(exception) =>
@@ -122,9 +121,9 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   }
 
-  override def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata ={
-    val future = actorClusterNode.get.?(GetCatalogMetadata(catalogName))(defaultTimeout)
-    Try(Await.result(future, defaultTimeout.duration)) match {
+  override def getCatalogMetadata(catalogName: CatalogName, timeout: Int): CatalogMetadata ={
+    val future = actorClusterNode.get.?(GetCatalogMetadata(catalogName))(timeout)
+    Try(Await.result(future,Duration.fromNanos(timeout*1000000L))) match {
       case Success(cMetadataList) =>
         cMetadataList.asInstanceOf[CatalogMetadata]
       case Failure(exception) =>
@@ -133,9 +132,15 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     }
   }
 
-  override def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] ={
-    val future = actorClusterNode.get.?(GetCatalogs(cluster))(defaultTimeout)
-    Try(Await.result(future, defaultTimeout.duration)) match {
+  /**
+   * Recover the list of catalogs associated to the specified cluster.
+   * @param cluster the cluster name.
+   * @param timeout the timeout in ms.
+   * @return The list of catalog metadata or null if the list is not ready after waiting the specified time.
+   */
+  override def getCatalogs(cluster: ClusterName,timeout: Int = 10000): util.List[CatalogMetadata] ={
+    val future = actorClusterNode.get.ask(GetCatalogs(cluster))(timeout)
+    Try(Await.result(future, Duration.fromNanos(timeout*1000000L))) match {
       case Success(cMetadataList) =>
         cMetadataList.asInstanceOf[util.List[CatalogMetadata]]
       case Failure(exception) =>

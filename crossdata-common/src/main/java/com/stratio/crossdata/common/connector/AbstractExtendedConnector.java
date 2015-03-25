@@ -32,7 +32,7 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
  * Abstract class to provided IConnector implementations an easy access to the parent
  * {@link com.stratio.crossdata.common.connector.IConnectorApp}.
  */
-public abstract class AbstractExtendedConnector implements IConnector {
+public abstract class AbstractExtendedConnector implements IConnector{
 
     /**
      * Parent connector application.
@@ -51,28 +51,31 @@ public abstract class AbstractExtendedConnector implements IConnector {
      * Get the table metadata.
      * @param cluster target cluster.
      * @param tableName target tablename.
+     * @param timeout the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata}.
      */
-    public TableMetadata getTableMetadata(ClusterName cluster, TableName tableName){
-        return connectorApp.getTableMetadata(cluster, tableName);
+    public TableMetadata getTableMetadata(ClusterName cluster, TableName tableName, int timeout){
+        return connectorApp.getTableMetadata(cluster, tableName, timeout);
     }
 
     /**
      * Get the catalog metadata.
      * @param catalogName target catalog.
+     * @param timeout the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    public CatalogMetadata getCatalogMetadata(CatalogName catalogName){
-        return connectorApp.getCatalogMetadata(catalogName);
+    public CatalogMetadata getCatalogMetadata(CatalogName catalogName, int timeout){
+        return connectorApp.getCatalogMetadata(catalogName, timeout);
     }
 
     /**
      * Get the list of existing catalogs in a cluster.
      * @param cluster target cluster.
+     * @param timeout the timeout in ms.
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    public List<CatalogMetadata> getCatalogs(ClusterName cluster){
-        return connectorApp.getCatalogs(cluster);
+    public List<CatalogMetadata> getCatalogs(ClusterName cluster, int timeout){
+        return connectorApp.getCatalogs(cluster,timeout);
     }
 
     /**

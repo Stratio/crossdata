@@ -60,6 +60,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(InMemoryConnector.class);
+    private static final int DEFAULT_TIMEOUT_IN_MS = 2000;
 
     /**
      * Map associating the {@link com.stratio.crossdata.common.data.ClusterName}s with
@@ -206,11 +207,10 @@ public class InMemoryConnector extends AbstractExtendedConnector {
 
 
     private void restoreSchema(ClusterName cluster) throws ConnectorException {
-
-        List<CatalogMetadata> catalogList = connectorApp.getCatalogs(cluster);
+        List<CatalogMetadata> catalogList = connectorApp.getCatalogs(cluster, DEFAULT_TIMEOUT_IN_MS);
         if (catalogList != null){
             // TODO FUTURE handle timeout exception
-            for (CatalogMetadata catalogMetadata : connectorApp.getCatalogs(cluster)) {
+            for (CatalogMetadata catalogMetadata : catalogList) {
                 LOG.debug("Restoring catalog: "+catalogMetadata.toString());
                 getMetadataEngine().createCatalog(catalogMetadata.getTables().values().iterator().next().getClusterRef(),
                                 catalogMetadata);
