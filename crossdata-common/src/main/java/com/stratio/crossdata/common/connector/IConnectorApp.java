@@ -37,23 +37,26 @@ public interface IConnectorApp {
      * Get the table metadata.
      * @param cluster target cluster.
      * @param tableName target tablename.
-     * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata}.
+     * @param timeout the timeout in ms.
+     * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata} or null if the table metadata is not ready after waiting the specified time.
      */
-    TableMetadata getTableMetadata(ClusterName cluster, TableName tableName);
+    TableMetadata getTableMetadata(ClusterName cluster, TableName tableName, int timeout);
 
     /**
      * Get the catalog metadata.
      * @param catalogName target catalog.
-     * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
+     * @param timeout the timeout in ms.
+     * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata} or null if the catalog metadata is not ready after waiting the specified time.
      */
-    CatalogMetadata getCatalogMetadata(CatalogName catalogName);
+    CatalogMetadata getCatalogMetadata(CatalogName catalogName, int timeout);
 
     /**
      * Get the list of existing catalogs in a cluster.
      * @param cluster target cluster.
-     * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
+     * @param timeout the timeout in ms.
+     * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata} or null if the table metadata is not ready after waiting the specified time..
      */
-    List<CatalogMetadata> getCatalogs(ClusterName cluster);
+    List<CatalogMetadata> getCatalogs(ClusterName cluster, int timeout);
 
     /**
      * Get the connection status with the Crossdata server.

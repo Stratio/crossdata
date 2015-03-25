@@ -96,6 +96,10 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         this.clusterName = clusterName;
     }
 
+    public ClusterName getClusterName() {
+        return clusterName;
+    }
+
     public CatalogName getCatalogName() {
         return catalogName;
     }

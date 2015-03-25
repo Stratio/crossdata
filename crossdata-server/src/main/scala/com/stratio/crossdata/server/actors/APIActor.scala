@@ -19,9 +19,13 @@
 package com.stratio.crossdata.server.actors
 
 import akka.actor.{Actor, Props}
-import com.stratio.crossdata.common.ask.Command
+import com.stratio.crossdata.common.data.Status
+import com.stratio.crossdata.common.ask.{APICommand, Command}
 import com.stratio.crossdata.common.result.Result
+import com.stratio.crossdata.common.utils.StringUtils
+import com.stratio.crossdata.communication.Request
 import com.stratio.crossdata.core.api.APIManager
+import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
 
 object APIActor {
@@ -36,7 +40,14 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
     case cmd: Command => {
       log.debug("command received " + cmd.toString)
       val timer = initTimer()
+      if(cmd.commandType == APICommand.CLEAN_METADATA) {
+        val connectorMetadataIterator = MetadataManager.MANAGER.getConnectors(Status.ONLINE).iterator()
+        while (connectorMetadataIterator.hasNext){
+          context.actorSelection(connectorMetadataIterator.next().getActorRef) ! Request(APICommand.CLEAN_METADATA.toString)
+        }
+      }
       sender ! apiManager.processRequest(cmd)
+
       finishTimer(timer)
     }
     case _ => {

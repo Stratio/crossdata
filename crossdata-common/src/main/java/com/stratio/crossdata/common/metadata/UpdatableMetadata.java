@@ -1,4 +1,4 @@
-package com.stratio.crossdata.common.connector;/*
+/*
  * Licensed to STRATIO (C) under one or more contributor license agreements.
  * See the NOTICE file distributed with this work for additional information
  * regarding copyright ownership.  The STRATIO (C) licenses this file
@@ -15,14 +15,12 @@ package com.stratio.crossdata.common.connector;/*
  * specific language governing permissions and limitations
  * under the License.
  */
+package com.stratio.crossdata.common.metadata;
 
-import com.stratio.crossdata.common.data.Name;
-import com.stratio.crossdata.common.metadata.UpdatableMetadata;
+import java.io.Serializable;
 
-public interface IMetadataListener {
-
-    public void updateMetadata(UpdatableMetadata uMetadata);
-
-    public void deleteMetadata(Name uName);
-
+/**
+ * Interface to Catalog, Table, Cluster, Datastore and Connector metadata classes.
+ */
+public interface UpdatableMetadata extends Serializable{
 }

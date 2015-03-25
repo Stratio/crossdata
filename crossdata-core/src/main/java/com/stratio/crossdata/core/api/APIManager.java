@@ -571,6 +571,9 @@ public class APIManager {
     private Result cleanMetadata() {
         Result result = CommandResult.createCommandResult("Metadata cleaned.");
         try {
+            for (CatalogMetadata catalogMetadata : MetadataManager.MANAGER.getCatalogs()) {
+                MetadataManager.MANAGER.removeCatalogFromClusters(catalogMetadata.getName());
+            }
             MetadataManager.MANAGER.clearCatalogs();
             ExecutionManager.MANAGER.clear();
         } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException

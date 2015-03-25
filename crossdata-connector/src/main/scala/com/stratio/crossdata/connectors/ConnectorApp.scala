@@ -21,23 +21,23 @@ package com.stratio.crossdata.connectors
 import java.util
 
 import com.codahale.metrics._
+import akka.agent.Agent
 import akka.actor.{Props, ActorSelection, ActorRef, ActorSystem}
 import akka.pattern.ask
 import akka.routing.{DefaultResizer, RoundRobinPool}
 import com.stratio.crossdata.common.data._
-import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata}
+import com.stratio.crossdata.common.metadata.{UpdatableMetadata, CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
 import com.stratio.crossdata.connectors.config.ConnectConfig
-import com.stratio.crossdata.common.connector.{IMetadataListener, IConnectorApp, IConfiguration, IConnector}
+import com.stratio.crossdata.common.connector._
 import org.apache.log4j.Logger
 import scala.collection.mutable.Set
 import scala.concurrent.Await
-import akka.util.Timeout
 import scala.concurrent.duration.Duration
-import java.util.concurrent.TimeUnit
-import scala.Some
-import com.stratio.crossdata.communication.Shutdown
+import com.stratio.crossdata.communication.{GetTableMetadata, GetCatalogMetadata, GetCatalogs, Shutdown}
+import scala.util.{Failure, Success, Try}
 import scala.collection.JavaConversions._
+
 
 object ConnectorApp extends App {
   args.length==2
@@ -45,7 +45,6 @@ object ConnectorApp extends App {
 
 class ConnectorApp extends ConnectConfig with IConnectorApp {
 
-  lazy val defaultTimeout: Timeout = new Timeout(Duration(5, TimeUnit.SECONDS))
   lazy val system = ActorSystem(clusterName, config)
   val connectedServers: Set[String] = Set()
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
@@ -53,6 +52,8 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   var actorClusterNode: Option[ActorRef] = None
 
   var metricName: String = "connector"
+
+  val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system.dispatcher)
 
   logger.info("Connector Name: " + connectorName)
 
@@ -72,14 +73,17 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   }
 
-  def startup(connector: IConnector): ActorSelection= {
+  def startup(connector: IConnector): ActorSelection = {
+
     val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
     val connectorManagerActorRef = system.actorOf(
       RoundRobinPool(num_connector_actor, Some(resizer))
-        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServers)),
+        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServers, agent)),
       "ConnectorActor")
+
     actorClusterNode = Some(connectorManagerActorRef)
     connector.init(new IConfiguration {})
+
     val actorSelection: ActorSelection = system.actorSelection(
       StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString(), false))
 
@@ -91,13 +95,13 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
           if (connectedServers.isEmpty) {
             status = false
           }
-          return status
+          status
         }
       })
     actorSelection
   }
 
-  override def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+  override def getTableMetadata(clusterName: ClusterName, tableName: TableName, timeout: Int): TableMetadata = {
     /*TODO: for querying actor internal state, only messages should be used.
       i.e.{{{
         import scala.concurrent.duration._
@@ -108,23 +112,44 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       }}}
     */
     //actorClusterNode.get.asInstanceOf[ConnectorActor].getTableMetadata(clusterName, tableName)
-    val future = actorClusterNode.get.ask(clusterName, tableName)(defaultTimeout)
-    val result = Await.result(future, defaultTimeout.duration)
-    result.asInstanceOf[TableMetadata]
+    val future = actorClusterNode.get.?(GetTableMetadata(clusterName,tableName ))(timeout)
+    Try(Await.result(future, Duration.fromNanos(timeout*1000000L))) match {
+      case Success(cMetadataList) =>
+        cMetadataList.asInstanceOf[TableMetadata]
+      case Failure(exception) =>
+        logger.debug("Error fetching the catalog metadata from the ObservableMap: "+exception.getMessage)
+        null
+    }
+
+
   }
 
-  override def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata ={
-    //actorClusterNode.get.asInstanceOf[ConnectorActor].getCatalogMetadata(catalogName)
-    val future = actorClusterNode.get.ask(catalogName)(defaultTimeout)
-    val result = Await.result(future, defaultTimeout.duration)
-    result.asInstanceOf[CatalogMetadata]
+  override def getCatalogMetadata(catalogName: CatalogName, timeout: Int): CatalogMetadata ={
+    val future = actorClusterNode.get.?(GetCatalogMetadata(catalogName))(timeout)
+    Try(Await.result(future,Duration.fromNanos(timeout*1000000L))) match {
+      case Success(cMetadataList) =>
+        cMetadataList.asInstanceOf[CatalogMetadata]
+      case Failure(exception) =>
+        logger.debug("Error fetching the catalog metadata from the ObservableMap: "+exception.getMessage)
+        null
+    }
   }
 
-  override def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] ={
-    //actorClusterNode.get.asInstanceOf[ConnectorActor].getCatalogs(cluster);
-    val future = actorClusterNode.get.ask(cluster)(defaultTimeout)
-    val result = Await.result(future, defaultTimeout.duration)
-    result.asInstanceOf[util.List[CatalogMetadata]]
+  /**
+   * Recover the list of catalogs associated to the specified cluster.
+   * @param cluster the cluster name.
+   * @param timeout the timeout in ms.
+   * @return The list of catalog metadata or null if the list is not ready after waiting the specified time.
+   */
+  override def getCatalogs(cluster: ClusterName,timeout: Int = 10000): util.List[CatalogMetadata] ={
+    val future = actorClusterNode.get.ask(GetCatalogs(cluster))(timeout)
+    Try(Await.result(future, Duration.fromNanos(timeout*1000000L))) match {
+      case Success(cMetadataList) =>
+        cMetadataList.asInstanceOf[util.List[CatalogMetadata]]
+      case Failure(exception) =>
+        logger.debug("Error fetching the catalogs from the ObservableMap: "+exception.getMessage)
+        null
+    }
   }
 
   override def getConnectionStatus(): ConnectionStatus = {

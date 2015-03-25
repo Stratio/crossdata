@@ -20,17 +20,18 @@ package com.stratio.crossdata.connectors
 
 import java.util
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.actor._
+import akka.agent.Agent
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
 import akka.util.Timeout
 import com.stratio.crossdata
+import com.stratio.crossdata.common.ask.APICommand
 import com.stratio.crossdata.common.connector._
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata, _}
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
 import difflib.Patch
 import org.apache.log4j.Logger
@@ -75,19 +76,19 @@ object State extends Enumeration {
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector, connectedServers: Set[String]):
-      Props = Props(new ConnectorActor(connectorName, connector, connectedServers))
+  def props(connectorName: String, connector: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]]):
+      Props = Props(new ConnectorActor(connectorName, connector, connectedServers, mapAgent))
 }
 
 object ClassExtractor{
  def unapply(myClass:Class[_]):Option[String]=Option(myClass.toString)
 }
 
-class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String])
+
+class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]])
   extends Actor with ActorLogging with IResultHandler {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorActor])
-  val metadata: ObservableMap[FirstLevelName, IMetadata] = new ObservableMap[FirstLevelName, IMetadata]()
 
   logger.info("Lifting connector actor")
 
@@ -116,7 +117,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
       val catalogName = tableName.getCatalogName
-      val catalogMetadata = metadata.get(catalogName).asInstanceOf[CatalogMetadata]
+      val catalogMetadata = mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
       val tableMetadata = catalogMetadata.getTables.get(tableName)
       if(tableMetadata.getClusterRef==clusterName)
         return tableMetadata
@@ -125,16 +126,16 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   }
 
   def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata={
-    return metadata.get(catalogName).asInstanceOf[CatalogMetadata]
+    return mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
   }
 
   def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
     val r = new util.HashMap[CatalogName,CatalogMetadata]()
     //for(entry:java.util.Map.Entry[FirstLevelName,IMetadata] <- metadata.entrySet()){
-    for((k,v) <- metadata){
+    for((k,v) <- mapAgent.get){
        k match {
         case name:CatalogName=>{
-          val catalogMetadata = metadata.get(k).asInstanceOf[CatalogMetadata]
+          val catalogMetadata = mapAgent.get.get(k).asInstanceOf[CatalogMetadata]
           val tables = catalogMetadata.getTables
           for((tableName, tableMetadata) <- tables){
             if(tables.get(tableName).getClusterRef==cluster){
@@ -148,13 +149,14 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   }
 
   def subscribeToMetadataUpdate(listener: IMetadataListener) = {
-    metadata.addListener(listener)
+    logger.debug()
+    mapAgent.send(oMap => {oMap.addListener(listener); oMap})
   }
 
   def class2String(clazz:Class[_]):String=clazz.getName
   val patchFunctionHash=new java.util.HashMap[String,(Patch,Name)=>Boolean]()
   //TODO: could it be more generic?
-  patchFunctionHash.put(class2String(classOf[CatalogMetadata]),(diff:Patch, catalogName:Name)=>{
+  /*patchFunctionHash.put(class2String(classOf[CatalogMetadata]),(diff:Patch, catalogName:Name)=>{
     val name = catalogName.asInstanceOf[CatalogName]
     val catalog = metadata.get(catalogName).asInstanceOf[CatalogMetadata]
     val jsonResult = StringUtils.patchObject(catalog, diff); // patch object
@@ -219,8 +221,10 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       .put( name,result.asInstanceOf[IndexMetadata] )
     true
   })
-
+*/
   override def receive: Receive = {
+
+
     case u: PatchMetadata=> {
       //TODO: continue
       val r=try{
@@ -231,46 +235,57 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       //println("result="+r)
     }
 
-    case u: UpdateMetadata=> {
-      u.metadata match{
-        case _:CatalogMetadata => {
-          metadata.put(u.metadata.asInstanceOf[CatalogMetadata].getName,u.metadata)
+    case UpdateMetadata(umetadata, java.lang.Boolean.FALSE) => {
+      umetadata match{
+        case cMetadata:CatalogMetadata => {
+          mapAgent.get.put(cMetadata.getName,cMetadata)
         }
+          //TODO remove asInstanceOf
         case _:ClusterMetadata => {
-          metadata.put(u.metadata.asInstanceOf[ClusterMetadata].getName,u.metadata)
+          mapAgent.send(oMap => {oMap.put(umetadata.asInstanceOf[ClusterMetadata].getName,umetadata); oMap })
+
         }
         case _:ConnectorMetadata => {
-          metadata.put(u.metadata.asInstanceOf[ConnectorMetadata].getName,u.metadata)
+          mapAgent.send(oMap => {oMap.put(umetadata.asInstanceOf[ConnectorMetadata].getName,umetadata); oMap })
         }
         case _:DataStoreMetadata =>{
-          metadata.put(u.metadata.asInstanceOf[DataStoreMetadata].getName,u.metadata)
+          mapAgent.send(oMap => {oMap.put(umetadata.asInstanceOf[DataStoreMetadata].getName,umetadata); oMap })
         }
+
         case _:TableMetadata => {
-          val tableName = u.metadata.asInstanceOf[TableMetadata].getName
-          val catalogName = tableName.getCatalogName
-          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.put(
-            tableName,u.metadata.asInstanceOf[TableMetadata]
-          )
+          mapAgent.send(oMap => {oMap.put(umetadata.asInstanceOf[TableMetadata].getName,umetadata); oMap })
         }
-        case _:ColumnMetadata => {
-          val columName = u.metadata.asInstanceOf[ColumnMetadata].getName
-          val tableName = columName.getTableName
-          val catalogName = tableName.getCatalogName
-          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getColumns.put(
-            columName,u.metadata.asInstanceOf[ColumnMetadata]
-          )
-        }
-        case _:IndexMetadata => {
-          val indexName = u.metadata.asInstanceOf[IndexMetadata].getName
-          val tableName = indexName.getTableName
-          val catalogName = tableName.getCatalogName
-          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getIndexes.put(
-            indexName,u.metadata.asInstanceOf[IndexMetadata]
-          )
-        }
+
       }
+      //TODO is it necessary?
       sender ! true
     }
+
+    case UpdateMetadata(umetadata, java.lang.Boolean.TRUE) => {
+       umetadata match{
+        case _:CatalogMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.asInstanceOf[CatalogMetadata].getName); oMap })
+        }
+        case _:ClusterMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.asInstanceOf[ClusterMetadata].getName); oMap })
+        }
+        case _:ConnectorMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.asInstanceOf[ConnectorMetadata].getName); oMap })
+        }
+        case _:DataStoreMetadata =>{
+          mapAgent.send(oMap => {oMap.remove(umetadata.asInstanceOf[DataStoreMetadata].getName); oMap })
+        }
+        case _:TableMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.asInstanceOf[TableMetadata].getName); oMap })
+        }
+
+      }
+      //TODO is it necessary?
+      sender ! true
+
+    }
+
+
     case connectRequest: com.stratio.crossdata.communication.Connect => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received connect command")
@@ -285,6 +300,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
           logger.error(e.getMessage)
           val result = Result.createConnectionErrorResult(e.getMessage)
           result.setQueryId(connectRequest.queryId)
+
           sender ! result
         }
       }
@@ -295,7 +311,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       var result: Result = null
       try {
         connector.close(new ClusterName(disconnectRequest.clusterName))
-        result = ConnectResult.createConnectResult(
+        result = DisconnectResult.createDisconnectResult(
           "Disconnected successfully from " + disconnectRequest.clusterName)
       } catch {
         case ex: ConnectionException => {
@@ -361,6 +377,17 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       logger.info("Adding new metadata listener")
       subscribeToMetadataUpdate(listener)
     }
+    case Request(message) if (message.equals(APICommand.CLEAN_METADATA.toString)) =>
+      mapAgent.send{ observableMap => observableMap.clear(); observableMap }
+
+    case GetCatalogs(clusterName) =>
+      sender ! getCatalogs(clusterName)
+
+    case GetTableMetadata(clusterName, tableName) =>
+      sender ! getTableMetadata(clusterName,tableName)
+
+    case  GetCatalogMetadata(catalogName) =>
+      sender ! getCatalogMetadata(catalogName)
   }
 
   def shutdown(): Unit = {

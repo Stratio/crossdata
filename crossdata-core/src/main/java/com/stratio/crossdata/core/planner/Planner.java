@@ -1006,10 +1006,11 @@ public class Planner {
         CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
         String actorRefUri = null;
         ResultType type = ResultType.RESULTS;
-        ExecutionType executionType = ExecutionType.CREATE_TABLE;
+        ExecutionType executionType = null;
         ClusterMetadata clusterMetadata = null;
 
         if (!createTableStatement.isExternal()) {
+            executionType = ExecutionType.CREATE_TABLE;
             clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
             try {
                 actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
@@ -1017,6 +1018,8 @@ public class Planner {
                 LOG.debug(
                         "No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
             }
+        }else{
+            executionType = ExecutionType.REGISTER_TABLE;
         }
 
         metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
@@ -1028,9 +1031,10 @@ public class Planner {
             try {
                 if (!createTableStatement.isExternal()) {
                     actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
+                    executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
+                }else {
+                   LOG.debug("The catalog should have been created before registering table");
                 }
-
-                executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
 
                 // Create MetadataWorkFlow
                 metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);

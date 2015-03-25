@@ -62,6 +62,12 @@ public class MetadataResultTest {
     }
 
     @Test
+    public void testMetadataResultRegisterTable() throws Exception {
+        MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_REGISTER_TABLE);
+        Assert.assertEquals(result.toString(), "TABLE registered successfully");
+    }
+
+    @Test
     public void testMetadataResultIndex() throws Exception {
         MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_INDEX);
 
