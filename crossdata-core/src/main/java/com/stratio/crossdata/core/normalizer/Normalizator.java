@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.ColumnName;
@@ -48,6 +49,7 @@ import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
+import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.GroupSelector;
@@ -815,6 +817,23 @@ public class Normalizator {
                 break;
             case ASTERISK:
                 result.addAll(checkAsteriskSelector());
+                break;
+            case CASE_WHEN:
+                CaseWhenSelector caseWhenSelector=(CaseWhenSelector)selector;
+                List<Pair<List<AbstractRelation>,Selector>> restrictions=caseWhenSelector.getRestrictions();
+                SelectorType lastType=restrictions.get(0).getRight().getType();
+                for (Pair<List<AbstractRelation>,Selector> pair:restrictions){
+                    List<AbstractRelation> relations=pair.getLeft();
+                    for(AbstractRelation relation:relations){
+                        checkRelation(relation);
+                    }
+                    if (lastType!=pair.getRight().getType()){
+                        throw new BadFormatException("All 'THEN' clauses in a CASE-WHEN select query must be of the " +
+                                "same type");
+                    }
+                    lastType=pair.getRight().getType();
+                }
+                result.add(caseWhenSelector);
                 break;
             default:
                 Selector defaultSelector = selector;

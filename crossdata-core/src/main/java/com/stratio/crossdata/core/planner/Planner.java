@@ -86,6 +86,7 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
@@ -2210,6 +2211,8 @@ public class Planner {
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.BOOLEAN));
             } else if (StringSelector.class.isInstance(s)) {
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.TEXT));
+            } else if (CaseWhenSelector.class.isInstance(s)){
+                generateCaseWhenSelect(aliasMap, typeMap, typeMapFromColumnName, s);
             } else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
             }
@@ -2252,6 +2255,28 @@ public class Planner {
         }
 
         return new Select(currentOperation, aliasMap, typeMap, typeMapFromColumnName);
+    }
+
+    private void generateCaseWhenSelect(LinkedHashMap<Selector, String> aliasMap,
+            LinkedHashMap<String, ColumnType> typeMap, LinkedHashMap<Selector, ColumnType> typeMapFromColumnName,
+            Selector selector) {
+
+        String alias;
+        if (selector.getAlias() != null) {
+            alias = selector.getAlias();
+            if (aliasMap.containsValue(alias)) {
+                alias = selector.getColumnName().getTableName().getName() + "_" + selector.getAlias();
+            }
+
+        } else {
+            alias = selector.getStringValue();
+            selector.setAlias(alias);
+
+        }
+        aliasMap.put(selector, alias);
+        ColumnType ct = null;
+        typeMapFromColumnName.put(selector, ct);
+        typeMap.put(alias, ct);
     }
 
     private void generateLiteralSelect(LinkedHashMap<Selector, String> aliasMap,
