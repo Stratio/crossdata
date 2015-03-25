@@ -38,6 +38,7 @@ import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, Ex
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.IPlannedQuery
 import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 
 
 

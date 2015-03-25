@@ -38,10 +38,11 @@ public class MockConnectorApp implements IConnectorApp {
      *
      * @param cluster   target cluster.
      * @param tableName target tablename.
+     * @param timeout the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata}.
      */
     @Override
-    public TableMetadata getTableMetadata(ClusterName cluster, TableName tableName) {
+    public TableMetadata getTableMetadata(ClusterName cluster, TableName tableName, int timeout) {
         return new TableMetadata(null, null, null, null, null, null, null);
     }
 
@@ -49,10 +50,11 @@ public class MockConnectorApp implements IConnectorApp {
      * Get the catalog metadata.
      *
      * @param catalogName target catalog.
+     * @param timeout the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
     @Override
-    public CatalogMetadata getCatalogMetadata(CatalogName catalogName) {
+    public CatalogMetadata getCatalogMetadata(CatalogName catalogName, int timeout) {
         return new CatalogMetadata(null, null, null);
     }
 
@@ -60,10 +62,11 @@ public class MockConnectorApp implements IConnectorApp {
      * Get the list of existing catalogs in a cluster.
      *
      * @param cluster target cluster.
+     * @param timeout the timeout in ms.
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
     @Override
-    public List<CatalogMetadata> getCatalogs(ClusterName cluster) {
+    public List<CatalogMetadata> getCatalogs(ClusterName cluster, int timeout) {
         return new ArrayList<>();
     }
 

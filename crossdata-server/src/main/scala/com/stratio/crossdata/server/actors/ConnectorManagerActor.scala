@@ -37,7 +37,7 @@ import org.apache.log4j.Logger
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
-import java.util.UUID
+import java.util.{Collections, UUID}
 
 object ConnectorManagerActor {
   def props(cluster:Cluster): Props = Props(new ConnectorManagerActor(cluster))
@@ -123,7 +123,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
           val executionInfo = new ExecutionInfo
           executionInfo.setRemoveOnSuccess(true)
           executionInfo.setUpdateOnSuccess(true)
-          val executionWorkflow = new ManagementWorkflow(reconnectQueryUUID, null, ExecutionType.ATTACH_CONNECTOR,ResultType.RESULTS)
+          val executionWorkflow = new ManagementWorkflow(reconnectQueryUUID, Collections.emptySet[String](), ExecutionType.ATTACH_CONNECTOR,ResultType.RESULTS)
           executionWorkflow.setClusterName(clusterName)
           executionInfo.setWorkflow(executionWorkflow)
           ExecutionManager.MANAGER.createEntry(reconnectQueryUUID, executionInfo)

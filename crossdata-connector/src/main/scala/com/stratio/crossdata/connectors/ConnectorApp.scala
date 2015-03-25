@@ -78,7 +78,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
     val connectorManagerActorRef = system.actorOf(
       RoundRobinPool(num_connector_actor, Some(resizer))
-        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServers)),
+        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServers, agent)),
       "ConnectorActor")
 
     actorClusterNode = Some(connectorManagerActorRef)
