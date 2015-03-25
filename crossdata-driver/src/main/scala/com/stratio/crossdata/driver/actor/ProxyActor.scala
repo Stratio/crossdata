@@ -104,7 +104,6 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
 
     /* The driver sends the connect message. */
     case c: Connect => {
-      println(s"connecting from ${self.path.address}")
       clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = true)
     }
 

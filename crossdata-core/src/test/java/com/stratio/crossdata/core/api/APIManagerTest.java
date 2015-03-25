@@ -310,12 +310,6 @@ public class APIManagerTest {
         Command cmd = new Command("QID", APICommand.DESCRIBE_CONNECTORS(), null);
         MetadataManagerTestHelper.HELPER.createTestConnector("connectorTest", new DataStoreName("datastoreTest"), "akkaActorRef");
         CommandResult result = (CommandResult) ApiManager.processRequest(cmd);
-
-        /*
-        String expectedResult = System.lineSeparator() + "Connector: connector.connectortest" +
-                "\tONLINE\t[]\t[datastore.datastoretest]\takkaActorRef" + System.lineSeparator();
-        */
-
         String str = String.valueOf(result.getResult());
         String[] connectors = str.split(System.lineSeparator());
 
@@ -326,11 +320,6 @@ public class APIManagerTest {
                 "testListConnectors failed." + System.lineSeparator() +
                 "Expected number of connectors: " + expectedSize + System.lineSeparator() +
                 "Number of connectors found:    " + (connectors.length-1));
-
-        /*
-        assertTrue(str.equalsIgnoreCase(expectedResult), "Expected: " + expectedResult + System.lineSeparator() +
-                "   Found: " + str);
-        */
     }
 
     @Test(dependsOnMethods = { "testListConnectors" })
