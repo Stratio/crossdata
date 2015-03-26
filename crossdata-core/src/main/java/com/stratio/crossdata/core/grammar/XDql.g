@@ -47,6 +47,8 @@ options {
     import com.stratio.crossdata.common.exceptions.*;
     import com.stratio.crossdata.common.utils.Constants;
     import java.util.UUID;
+    import org.apache.commons.lang3.tuple.ImmutablePair;
+    import org.apache.commons.lang3.tuple.Pair;
 }
 
 @members {
@@ -307,6 +309,11 @@ T_DISCOVER: D I S C O V E R;
 T_METADATA: M E T A D A T A;
 T_PRIORITY: P R I O R I T Y;
 T_PAGINATION: P A G I N A T I O N;
+
+T_CASE: C A S E;
+T_THEN: T H E N;
+T_ELSE: E L S E;
+T_END: E N D;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -940,14 +947,22 @@ getSelector[TableName tablename] returns [Selector sel]
         LinkedList<Selector> params = new LinkedList<>();
         String name = null;
         boolean relationSelector = false;
+        boolean caseWhenSelector = false;
         Selector firstSelector = null;
+        Selector defaultSelector = null;
+        RelationSelector rs=null;
+        CaseWhenSelector caseWhen=null;
         workaroundTable = tablename;
+        List<Pair<List<AbstractRelation>, Selector>> restrictions=new ArrayList<>();
     }
     @after{
-        if(relationSelector)
+        if(relationSelector){
             sel = new RelationSelector(new Relation(firstSelector, operator, secondSelector));
-        else
+        }else if (caseWhenSelector){
+            sel= new CaseWhenSelector(workaroundTable,restrictions,defaultSelector);
+        }else{
             sel = firstSelector;
+        }
     }:
     (
         T_START_PARENTHESIS
@@ -970,6 +985,26 @@ getSelector[TableName tablename] returns [Selector sel]
         | T_TRUE {firstSelector = new BooleanSelector(tablename, true);}
         | T_ASTERISK {firstSelector = new AsteriskSelector(tablename);}
         | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(tablename, $qLiteral.text);})
+
+    |
+        T_CASE (T_WHEN conditions=getConditions[null] T_THEN
+            (floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
+            | constant=T_CONSTANT {firstSelector = new IntegerSelector(tablename, $constant.text);}
+            | T_FALSE {firstSelector = new BooleanSelector(tablename, false);}
+            | T_TRUE {firstSelector = new BooleanSelector(tablename, true);}
+            | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(tablename, $qLiteral.text);})
+            {
+                Pair<List<AbstractRelation>,Selector> restriction = new ImmutablePair<>(conditions,firstSelector);
+                restrictions.add(restriction);
+            })*
+        T_ELSE
+            (floatingNumber=T_FLOATING {defaultSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
+            | constant=T_CONSTANT {defaultSelector = new IntegerSelector(tablename, $constant.text);}
+            | T_FALSE {defaultSelector = new BooleanSelector(tablename, false);}
+            | T_TRUE {defaultSelector = new BooleanSelector(tablename, true);}
+            | qLiteral=QUOTED_LITERAL {defaultSelector = new StringSelector(tablename, $qLiteral.text);})
+        T_END {caseWhenSelector=true;}
+
     )
     (operator=getOperator {relationSelector=true;} secondSelector=getSelector[workaroundTable])?
 ;

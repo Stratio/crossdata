@@ -34,7 +34,7 @@ import com.stratio.crossdata.sh.help.HelpStatement;
 
 public class ShellTest {
 
-    @Test
+    @Test(priority = 1)
     public void testMain() {
         boolean ok=false;
         Shell.main(new String[] { "--sync", "--script", "/path/file.xdql" });
@@ -153,12 +153,6 @@ public class ShellTest {
             HelpStatement helpStatement = (HelpStatement) obj;
             String result = helpStatement.toString();
             String expected = "HELP CREATE";
-            /*
-            assertTrue(result.equalsIgnoreCase(expected),
-                    "Result:   " + result +
-                            System.lineSeparator() +
-                            "Expected: " + expected);
-            */
             assertEquals(result, expected,
                     "Result:   " + result +
                     System.lineSeparator() +

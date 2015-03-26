@@ -62,6 +62,17 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatement(inputText, "singleColumnWithCatalog");
     }
 
+    /*
+    @Test
+    public void caseWhenColumn() {
+        String inputText = "SELECT case when newtb.a=5 and newtb.a=3 then 'hello' when newtb.a=2 then 'bye' else " +
+                "'puff' end " +
+                "FROM " +
+                "newks.newtb;";
+        testRegularStatement(inputText, "singleColumnWithCatalog");
+    }
+    */
+
     @Test
     public void functionSingleColumn() {
         String inputText = "SELECT sum(newtb.lucene) FROM newks.newtb;";

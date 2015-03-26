@@ -359,6 +359,11 @@ public enum Operations {
     SELECT_LIMIT("SELECT_LIMIT"),
 
     /**
+     * The engine supports case when selector.
+     */
+    SELECT_CASE_WHEN("SELECT_CASE_WHEN"),
+
+    /**
      * The engine supports inner joins.
      */
     SELECT_INNER_JOIN("SELECT_INNER_JOIN"),

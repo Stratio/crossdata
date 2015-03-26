@@ -119,11 +119,11 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     val result = retryPolitics.askRetry(proxyActor, new Connect(user), 5 second)
     result match {
       case errorResult: ErrorResult => {
-        logger.info("connection error")
+        logger.info("Connection error")
         throw new ConnectionException(errorResult.getErrorMessage)
       }
       case connectResult: ConnectResult => {
-        logger.info("connection stablished")
+        logger.info("Connection established")
         userId = connectResult.getSessionId
         result
       }

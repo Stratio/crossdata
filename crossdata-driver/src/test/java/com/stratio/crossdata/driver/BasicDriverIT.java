@@ -21,6 +21,7 @@ package com.stratio.crossdata.driver;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 import java.net.URL;
 
@@ -34,8 +35,10 @@ import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.ErrorResult;
+import com.stratio.crossdata.common.result.InProgressResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
+import com.stratio.crossdata.common.result.StorageResult;
 import com.stratio.crossdata.connectors.ConnectorApp;
 import com.stratio.crossdata.server.CrossdataServer;
 
@@ -79,6 +82,7 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testConnect"})
     public void testResetServerdata() throws Exception {
+        Thread.sleep(500);
         Result result = driver.resetServerdata();
 
         if(result instanceof ErrorResult){
@@ -93,6 +97,7 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testResetServerdata"})
     public void testAddDatastore() throws Exception {
+        Thread.sleep(500);
         URL url = Thread.currentThread().getContextClassLoader().getResource("InMemoryDataStore.xml");
         String path = url.getPath().replace("crossdata-driver", "crossdata-connector-inmemory");
         Result result = driver.addManifest(CrossdataManifest.TYPE_DATASTORE, path);
@@ -109,6 +114,7 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testAddDatastore"})
     public void testAttachCluster() throws Exception {
+        Thread.sleep(500);
         Result result = driver.executeQuery("ATTACH CLUSTER InMemoryCluster ON DATASTORE InMemoryDatastore WITH OPTIONS {'TableRowLimit': 100};");
 
         if(result instanceof ErrorResult){
@@ -123,6 +129,7 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testAttachCluster"})
     public void testAddConnector() throws Exception {
+        Thread.sleep(500);
         URL url = Thread.currentThread().getContextClassLoader().getResource("InMemoryConnector.xml");
         String path = url.getPath().replace("crossdata-driver", "crossdata-connector-inmemory");
         Result result = driver.addManifest(CrossdataManifest.TYPE_CONNECTOR, path);
@@ -139,6 +146,7 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testAddConnector"})
     public void testAttachConnector() throws Exception {
+        Thread.sleep(500);
         Result result = driver.executeQuery("ATTACH CONNECTOR InMemoryConnector TO InMemoryCluster AND PAGINATION = 5;");
 
         if(result instanceof ErrorResult){
@@ -153,6 +161,7 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testAttachConnector"})
     public void testCreateCatalog() throws Exception {
+        Thread.sleep(500);
         Result result = driver.executeQuery("CREATE CATALOG catalogTest;");
 
         if(result instanceof ErrorResult){
@@ -163,12 +172,199 @@ public class BasicDriverIT {
         MetadataResult metadataResult = (MetadataResult) result;
         assertNotNull(metadataResult.getOperation(), "Server returned a null object");
         LOG.info(metadataResult.getOperation());
+        Thread.sleep(500);
         driver.setCurrentCatalog("catalogTest");
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testCreateCatalog"})
+    public void testCreateTable() throws Exception {
+        Thread.sleep(500);
+        Result result = driver.executeQuery("CREATE TABLE tableTest ON CLUSTER InMemoryCluster" +
+                " (id INT PRIMARY KEY, name TEXT, description TEXT, rating FLOAT);");
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), MetadataResult.class, "CommandResult was expected");
+        MetadataResult metadataResult = (MetadataResult) result;
+        assertNotNull(metadataResult.getOperation(), "Server returned a null object");
+        LOG.info(metadataResult.getOperation());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testCreateTable"})
+    public void testInsert1() throws Exception {
+        Thread.sleep(500);
+        Result result = driver.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (1, 'stratio1', 'Big Data', 5.0);");
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), StorageResult.class, "StorageResult was expected");
+        StorageResult storageResult = (StorageResult) result;
+        assertNotNull(storageResult.getResult(), "Server returned a null object");
+        LOG.info(storageResult.getResult());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testInsert1"})
+    public void testInsert2() throws Exception {
+        Result result = driver.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (2, 'stratio2', 'Crossdata', 8.5);");
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), StorageResult.class, "StorageResult was expected");
+        StorageResult storageResult = (StorageResult) result;
+        assertNotNull(storageResult.getResult(), "Server returned a null object");
+        LOG.info(storageResult.getResult());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testInsert2"})
+    public void testInsert3() throws Exception {
+        Result result = driver.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (3, 'stratio3', 'One framework to rule all the databases', 4.0);");
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), StorageResult.class, "StorageResult was expected");
+        StorageResult storageResult = (StorageResult) result;
+        assertNotNull(storageResult.getResult(), "Server returned a null object");
+        LOG.info(storageResult.getResult());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testInsert3"})
+    public void testInsert4() throws Exception {
+        Result result = driver.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (4, 'worker', 'Happy', 9.2);");
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), StorageResult.class, "StorageResult was expected");
+        StorageResult storageResult = (StorageResult) result;
+        assertNotNull(storageResult.getResult(), "Server returned a null object");
+        LOG.info(storageResult.getResult());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testInsert4"})
+    public void testInsert5() throws Exception {
+        Result result = driver.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (5, 'worker', 'Learning', 6.5);");
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), StorageResult.class, "StorageResult was expected");
+        StorageResult storageResult = (StorageResult) result;
+        assertNotNull(storageResult.getResult(), "Server returned a null object");
+        LOG.info(storageResult.getResult());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testInsert5"})
+    public void testInsert6() throws Exception {
+        Result result = driver.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (6, 'employee', 'Working', 7.0);");
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), StorageResult.class, "StorageResult was expected");
+        StorageResult storageResult = (StorageResult) result;
+        assertNotNull(storageResult.getResult(), "Server returned a null object");
+        LOG.info(storageResult.getResult());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testInsert6"})
+    public void testInsert7() throws Exception {
+        Result result = driver.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (7, 'employee', 'Improving', 2);");
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), StorageResult.class, "StorageResult was expected");
+        StorageResult storageResult = (StorageResult) result;
+        assertNotNull(storageResult.getResult(), "Server returned a null object");
+        LOG.info(storageResult.getResult());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testInsert7"})
+    public void testAsyncSelect() throws Exception {
+        Thread.sleep(500);
+        TestResultHandler testResultHandler = new TestResultHandler(2);
+        Result result = driver.asyncExecuteQuery("SELECT * FROM tableTest;", testResultHandler);
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), InProgressResult.class, "InProgressResult was expected");
+        InProgressResult inProgressResult = (InProgressResult) result;
+        assertNotNull(inProgressResult.getQueryId(), "Query Identifier can't be null");
+        LOG.info(inProgressResult.getQueryId() + " in progress");
+
+        while(!testResultHandler.isResultAvailable()){
+            Thread.sleep(500);
+            if(testResultHandler.isResultAvailable()){
+                assertTrue(testResultHandler.wasSuccessfully(), "testAsyncSelect failed");
+            }
+        }
+        driver.removeResultHandler(result.getQueryId());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testInsert7"})
+    public void testAsyncSelectFail1() throws Exception {
+        Thread.sleep(500);
+        TestResultHandler testResultHandler = new TestResultHandler(1);
+        Result result = driver.asyncExecuteQuery("SELECT * FROM tableTest;", testResultHandler);
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), InProgressResult.class, "InProgressResult was expected");
+        InProgressResult inProgressResult = (InProgressResult) result;
+        assertNotNull(inProgressResult.getQueryId(), "Query Identifier can't be null");
+        LOG.info(inProgressResult.getQueryId() + " in progress");
+
+        while(!testResultHandler.isResultAvailable()){
+            Thread.sleep(500);
+            if(testResultHandler.isResultAvailable()){
+                assertFalse(testResultHandler.wasSuccessfully(), "testAsyncSelect failed");
+            }
+        }
+        driver.removeResultHandler(result.getQueryId());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = {"testInsert7"})
+    public void testAsyncSelectFail2() throws Exception {
+        Thread.sleep(500);
+        TestResultHandler testResultHandler = new TestResultHandler(3);
+        Result result = driver.asyncExecuteQuery("SELECT * FROM tableTest;", testResultHandler);
+
+        if(result instanceof ErrorResult){
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertEquals(result.getClass(), InProgressResult.class, "InProgressResult was expected");
+        InProgressResult inProgressResult = (InProgressResult) result;
+        assertNotNull(inProgressResult.getQueryId(), "Query Identifier can't be null");
+        LOG.info(inProgressResult.getQueryId() + " in progress");
+
+        while(!testResultHandler.isResultAvailable()){
+            Thread.sleep(500);
+            if(testResultHandler.isResultAvailable()){
+                assertFalse(testResultHandler.wasSuccessfully(), "testAsyncSelect failed");
+            }
+        }
+        driver.removeResultHandler(result.getQueryId());
     }
 
     @AfterClass
     public void tearDown() throws Exception {
-        driver.resetServerdata();
         connector.stop();
         server.stop();
         server.destroy();
