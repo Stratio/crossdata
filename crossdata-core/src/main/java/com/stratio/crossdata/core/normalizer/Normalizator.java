@@ -328,7 +328,9 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeHaving() throws ValidationException {
-
+        if (!parsedQuery.getStatement().isGroupInc()){
+            throw new BadFormatException("Having clause requires Group By clause.");
+        }
         HavingClause havingClause = parsedQuery.getStatement().getHavingClause();
         if (havingClause != null) {
             normalizeHaving(havingClause);

@@ -438,6 +438,10 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(" GROUP BY ").append(StringUtils.stringList(groupByClause.getSelectorIdentifier(), ", "));
         }
 
+        if (havingInc) {
+            sb.append(" HAVING ").append(StringUtils.stringList(havingClause.getSelectorIdentifier(), ", "));
+        }
+
         if (limitInc) {
             sb.append(" LIMIT ").append(limit);
         }
