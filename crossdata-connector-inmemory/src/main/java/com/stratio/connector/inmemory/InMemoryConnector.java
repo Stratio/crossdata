@@ -127,17 +127,17 @@ public class InMemoryConnector extends AbstractExtendedConnector {
 
         //Try to restore existing schema 2 seconds after the connection
         new java.util.Timer().schedule(
-                        new java.util.TimerTask() {
-                            @Override
-                            public void run() {
-                                try {
-                                    restoreSchema(targetCluster);
-                                }catch(ConnectorException ce){
-                                    LOG.error("Error fetching existing schema from Crossdata server");
-                                }
-                            }
-                        },
-                        2000
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        try {
+                            restoreSchema(targetCluster);
+                        }catch(ConnectorException ce){
+                            LOG.error("Error fetching existing schema from Crossdata server");
+                        }
+                    }
+                },
+                2000
         );
 
 

@@ -34,7 +34,7 @@ import com.stratio.crossdata.sh.help.HelpStatement;
 
 public class ShellTest {
 
-    @Test(priority = 1)
+    @Test(timeOut = 4000)
     public void testMain() {
         boolean ok=false;
         Shell.main(new String[] { "--sync", "--script", "/path/file.xdql" });
@@ -42,7 +42,7 @@ public class ShellTest {
         assertTrue(ok, "testMain failed.");
     }
 
-    @Test
+    @Test(timeOut = 4000)
     public void testFlush() {
         boolean ok = true;
         try {
@@ -54,7 +54,7 @@ public class ShellTest {
         assertEquals(true, ok, "testFlush failed.");
     }
 
-    @Test
+    @Test(timeOut = 4000)
     public void testSetPrompt() {
         boolean ok = true;
         try {
@@ -66,7 +66,7 @@ public class ShellTest {
         assertEquals(ok, true, "testSetPrompt failed.");
     }
 
-    @Test
+    @Test(timeOut = 4000)
     public void testShellConnectWithoutServer() {
         boolean ok = false;
         boolean result = true;
@@ -79,7 +79,7 @@ public class ShellTest {
         Assert.assertEquals(result, ok, "testShellConnectWithoutServer failed.");
     }
 
-    @Test
+    @Test(timeOut = 4000)
     public void testRemoveResultsHandler() {
         boolean ok = true;
         try {
@@ -91,7 +91,7 @@ public class ShellTest {
         Assert.assertEquals(true, ok, "testRemoveResultsHandler failed.");
     }
 
-    @Test
+    @Test(timeOut = 4000)
     public void testShellDisConnectWithoutServer() {
         boolean ok = true;
         Shell crossdataSh = new Shell(false);
@@ -103,7 +103,7 @@ public class ShellTest {
         assertEquals(true, ok, "testShellDisConnectWithoutServer failed.");
     }
 
-    @Test
+    @Test(timeOut = 4000)
     public void testUpdatePrompt() {
         boolean ok = true;
         try {
@@ -117,7 +117,7 @@ public class ShellTest {
         assertEquals(true, ok, "testUpdatePrompt failed.");
     }
 
-    @Test
+    @Test(timeOut = 4000)
     public void testPrintln() {
         boolean ok = true;
         Shell crossdataSh = new Shell(false);
@@ -129,7 +129,7 @@ public class ShellTest {
         assertEquals(ok, true, "An error happened in sh");
     }
 
-    @Test
+    @Test(timeOut = 4000)
     public void testExecuteScript() {
         boolean ok = true;
         Shell shell = new Shell(false);
@@ -142,7 +142,7 @@ public class ShellTest {
 
     }
 
-    @Test
+    @Test(timeOut = 4000)
     public void testParseHelp() {
         try {
             Shell shell = new Shell(false);
@@ -162,7 +162,7 @@ public class ShellTest {
         }
     }
 
-    @Test
+    @Test(timeOut = 4000)
     public void testShowHelp() {
         try {
             Shell shell = new Shell(false);
