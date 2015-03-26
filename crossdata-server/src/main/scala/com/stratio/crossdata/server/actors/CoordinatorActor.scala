@@ -459,6 +459,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
     case connectResult: ConnectResult =>
       val queryId = connectResult.getQueryId
       log.info("Receiving result from " + sender + " with queryId = " + queryId + " result: " + connectResult)
+      if(queryId.contains("#")){
+        if(queryId.endsWith("#1")){
+          connectResult.setQueryId(queryId.split("#")(0))
+        }
+      }
       try {
         val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
         val sendResultToClient = executionInfo.asInstanceOf[ExecutionInfo].getSender != null

@@ -287,6 +287,44 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/src/test/resources</outputDirectory>
+                            <overwrite>true</overwrite>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/../crossdata-connector-inmemory/src/main/config</directory>
+                                    <includes>
+                                        <include>InMemoryDataStore.xml</include>
+                                        <include>InMemoryConnector.xml</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>${basedir}/src/main/resources</directory>
+                                    <includes>
+                                        <include>driver-reference.conf</include>
+                                        <include>reference.conf</include>
+                                    </includes>
+                                </resource>
+                                <resource>
+                                    <directory>${basedir}/../crossdata-server/src/main/resources</directory>
+                                    <includes>
+                                        <include>server-reference.conf</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 </project>

@@ -98,8 +98,10 @@ public class BasicDriverIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testResetServerdata"})
     public void testAddDatastore() throws Exception {
         Thread.sleep(500);
-        URL url = Thread.currentThread().getContextClassLoader().getResource("InMemoryDataStore.xml");
-        String path = url.getPath().replace("crossdata-driver", "crossdata-connector-inmemory");
+        URL url = this.getClass().getClassLoader().getResource("InMemoryDataStore.xml");
+        //URL url = Thread.currentThread().getContextClassLoader().getResource("InMemoryDataStore.xml");
+        //String path = url.getPath().replace("crossdata-driver", "crossdata-connector-inmemory");
+        String path = url.getPath();
         Result result = driver.addManifest(CrossdataManifest.TYPE_DATASTORE, path);
 
         if(result instanceof ErrorResult){
@@ -131,7 +133,8 @@ public class BasicDriverIT {
     public void testAddConnector() throws Exception {
         Thread.sleep(500);
         URL url = Thread.currentThread().getContextClassLoader().getResource("InMemoryConnector.xml");
-        String path = url.getPath().replace("crossdata-driver", "crossdata-connector-inmemory");
+        //String path = url.getPath().replace("crossdata-driver", "crossdata-connector-inmemory");
+        String path = url.getPath();
         Result result = driver.addManifest(CrossdataManifest.TYPE_CONNECTOR, path);
 
         if(result instanceof ErrorResult){
