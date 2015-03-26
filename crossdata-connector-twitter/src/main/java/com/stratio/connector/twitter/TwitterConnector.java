@@ -174,6 +174,7 @@ public class TwitterConnector extends AbstractExtendedConnector {
         return clusters.get(clusterName).getSession();
     }
 
+
     /**
      * Close the connection with the underlying cluster.
      *

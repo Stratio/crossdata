@@ -37,6 +37,8 @@ public final class Constants {
      */
     public static final String VIRTUAL_CATALOG_NAME = "#virtual";
 
+    public static final String TRIGGER_TOKEN = "_T";
+
     private Constants() {
     }
 }

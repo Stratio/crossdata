@@ -24,6 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.transaction.HeuristicMixedException;
@@ -75,6 +76,7 @@ import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.core.execution.ExecutionInfo;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerException;
@@ -263,7 +265,10 @@ public class APIManager {
         } else if (APICommand.EXPLAIN_PLAN().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.EXPLAIN_PLAN().toString());
             result = explainPlan(cmd);
-        } else {
+        } else if (APICommand.STOP_PROCESS().equals(cmd.commandType())) {
+            LOG.info(PROCESSING + APICommand.STOP_PROCESS().toString());
+            result = stopProcess(cmd);
+        }else{
             result = Result.createUnsupportedOperationErrorResult("Command " + cmd.commandType() + " not supported");
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
@@ -582,6 +587,10 @@ public class APIManager {
             LOG.error(e.getMessage());
         }
         return result;
+    }
+
+    private Result stopProcess(Command command) {
+        return null;
     }
 
     private void persistManifest(CrossdataManifest manifest) throws ApiException {

@@ -334,6 +334,10 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       logger.info("Processing asynchronous query: " + aex)
       methodAsyncExecute(aex, sender)
     }
+    case StopProcess(queryId, targetQueryId) =>  {
+      logger.info("Processing stop process: " + queryId)
+      methodStopProcess(queryId, targetQueryId, sender)
+    }
     case pex: PagedExecute => {
       logger.info("Processing paged query: " + pex)
       methodPagedExecute(pex, sender)
@@ -457,6 +461,26 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         val result = Result.createExecutionErrorResult(e.getMessage())
         result.setQueryId(aex.queryId)
         asyncSender ! result
+      }
+      case err: Error =>
+        logger.error("Error in ConnectorActor (Receiving async LogicalWorkflow)")
+    }
+  }
+
+  private def methodStopProcess(queryId: String, targetQueryId: String, sender: ActorRef) : Unit = {
+    try {
+      runningJobs remove targetQueryId match {
+        case Some(_) => {
+          connector.getQueryEngine.stop(targetQueryId)
+          sender ! ACK(queryId, QueryStatus.EXECUTED)
+        }
+        case None => logger.debug("Received stop process for non-existing queryId "+targetQueryId)
+      }
+    } catch {
+      case e: Exception => {
+        val result = Result.createExecutionErrorResult(e.getMessage())
+        result.setQueryId(queryId)
+        sender ! result
       }
       case err: Error =>
         logger.error("Error in ConnectorActor (Receiving async LogicalWorkflow)")

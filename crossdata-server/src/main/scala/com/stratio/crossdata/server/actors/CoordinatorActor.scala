@@ -32,6 +32,7 @@ import com.stratio.crossdata.common.metadata.Operations
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
+import com.stratio.crossdata.common.utils.Constants
 import com.stratio.crossdata.communication._
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, ExecutionManagerException}
@@ -47,7 +48,7 @@ object CoordinatorActor {
   /**
    * Token attached to query identifiers when the query is part of a trigger execution workflow.
    */
-  val TriggerToken = "_T"
+  val TriggerToken = Constants.TRIGGER_TOKEN
 
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor
   (connectorMgr, coordinator))
