@@ -841,8 +841,8 @@ public class Normalizator {
                     lastType=pair.getRight().getType();
                 }
                 if (caseWhenSelector.getDefaultValue().getType()!=lastType){
-                    throw new BadFormatException("All 'THEN' clauses in a CASE-WHEN select query must be of the " +
-                            "same type");
+                    throw new BadFormatException("ELSE clause in a CASE-WHEN select query must be of the same type of" +
+                            " when clauses");
                 }
                 result.add(caseWhenSelector);
                 break;
