@@ -36,6 +36,16 @@ public class GroupBy extends TransformationStep {
     private List<Selector> ids = new ArrayList<>();
 
     /**
+     * Having Identifiers.
+     */
+    private List<Selector> havingIds = new ArrayList<>();
+
+    /**
+     * Whether a having clause has been specified.
+     */
+    private boolean havingInc=false;
+
+    /**
      * Class constructor.
      *
      * @param operation The operation to be applied.
@@ -44,6 +54,19 @@ public class GroupBy extends TransformationStep {
     public GroupBy(Operations operation, List<Selector> ids) {
         super(operation);
         this.ids = ids;
+    }
+
+    /**
+     * Class constructor.
+     *
+     * @param operation The operation to be applied.
+     * @param ids Identifiers.
+     */
+    public GroupBy(Operations operation, List<Selector> ids, List<Selector> havingIds) {
+        super(operation);
+        this.ids = ids;
+        this.havingIds=havingIds;
+        this.havingInc=true;
     }
 
     /**
@@ -62,6 +85,22 @@ public class GroupBy extends TransformationStep {
         this.ids = ids;
     }
 
+    /**
+     * Get Having Identifiers.
+     * @return Identifiers.
+     */
+    public List<Selector> getHavingIds() {
+        return havingIds;
+    }
+
+    /**
+     * Set identifiers.
+     * @param havingIds Identifiers to be assigned.
+     */
+    public void setHavingIds(List<Selector> havingIds) {
+        this.havingIds = havingIds;
+    }
+
     @Override public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("GROUP BY ");
@@ -71,6 +110,18 @@ public class GroupBy extends TransformationStep {
             sb.append(selector);
             if(iter.hasNext()){
                 sb.append(", ");
+            }
+        }
+
+        if (havingInc){
+            sb.append(" HAVING ");
+            Iterator<Selector> iter2 = havingIds.iterator();
+            while(iter2.hasNext()){
+                Selector selector = iter2.next();
+                sb.append(selector);
+                if(iter2.hasNext()){
+                    sb.append(", ");
+                }
             }
         }
         return sb.toString();

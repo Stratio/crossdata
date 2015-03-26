@@ -68,6 +68,7 @@ import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.GroupByClause;
+import com.stratio.crossdata.core.structures.HavingClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -145,6 +146,7 @@ public class Normalizator {
         normalizeWhere();
         normalizeOrderBy();
         normalizeGroupBy();
+        normalizeHaving();
         validateColumnsScope();
     }
 
@@ -320,6 +322,21 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Normalize the having of a parsed query.
+     *
+     * @throws ValidationException
+     */
+    public void normalizeHaving() throws ValidationException {
+
+        HavingClause havingClause = parsedQuery.getStatement().getHavingClause();
+        if (havingClause != null) {
+            normalizeHaving(havingClause);
+            fields.setHavingClause(havingClause);
+        }
+    }
+
+
     private void checkFormatBySelectorIdentifier(Selector selector, Set<ColumnName> columnNames)
             throws ValidationException {
         switch (selector.getType()) {
@@ -352,6 +369,17 @@ public class Normalizator {
         }
     }
 
+    private void checkHavingColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
+        switch (selector.getType()) {
+        case FUNCTION:
+            break;
+        case COLUMN:
+            break;
+        case ASTERISK:
+            throw new BadFormatException("Asterisk is not valid with having statements");
+        }
+    }
+
     /**
      * Normalize an specific group by of a parsed query.
      *
@@ -368,6 +396,24 @@ public class Normalizator {
             checkGroupByColumns(selector, columnNames);
         }
     }
+
+    /**
+     * Normalize an specific Having of a parsed query.
+     *
+     * @param havingClause
+     * @throws ValidationException
+     */
+    public void normalizeHaving(HavingClause havingClause) throws ValidationException {
+        Set<ColumnName> columnNames = new HashSet<>();
+        for (Selector selector : havingClause.getSelectorIdentifier()) {
+            checkFormatBySelectorIdentifier(selector, columnNames);
+        }
+        // Check if all columns are correct
+        for (Selector selector : fields.getSelectors()) {
+            checkHavingColumns(selector, columnNames);
+        }
+    }
+
 
     private void validateColumnsScope() throws ValidationException {
         for (ColumnName columnName : fields.getColumnNames()) {
