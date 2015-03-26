@@ -2213,6 +2213,7 @@ public class Planner {
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.TEXT));
             } else if (CaseWhenSelector.class.isInstance(s)){
                 generateCaseWhenSelect(aliasMap, typeMap, typeMapFromColumnName, s);
+                currentOperation=Operations.SELECT_CASE_WHEN;
             } else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
             }

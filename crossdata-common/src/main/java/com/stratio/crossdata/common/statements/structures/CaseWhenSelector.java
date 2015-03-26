@@ -128,13 +128,25 @@ public class CaseWhenSelector extends Selector {
     public String toString() {
         StringBuilder sb=new StringBuilder("case");
         for (Pair<List<AbstractRelation>,Selector> pair:restrictions) {
+            sb.append(" when ");
             List<AbstractRelation> relations = pair.getLeft();
+            boolean first=true;
             for (AbstractRelation relation : relations) {
-                sb.append(" when ").append(relation.toString());
+                if (!first) {
+                    sb.append(" AND ");
+                }
+                sb.append(relation.toString());
+                first=false;
             }
             sb.append(" then ").append(pair.getRight().toString());
         }
         sb.append(" else ").append(defaultValue.toString()).append(" ").append(" end");
+        return sb.toString();
+    }
+
+    @Override public String getStringValue() {
+        StringBuilder sb=new StringBuilder("CASE-WHEN_");
+        sb.append(hashCode());
         return sb.toString();
     }
 }

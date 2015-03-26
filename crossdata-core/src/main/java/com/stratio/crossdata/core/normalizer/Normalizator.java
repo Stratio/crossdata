@@ -306,6 +306,13 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeGroupBy() throws ValidationException {
+        //Ensure that there is not any case-when selector
+        for(Selector s:fields.getSelectors()){
+            if (CaseWhenSelector.class.isInstance(s)){
+                throw new BadFormatException("Group By clause is not possible with Case When Selector");
+            }
+        }
+
         GroupByClause groupByClause = parsedQuery.getStatement().getGroupByClause();
         if (groupByClause != null) {
             normalizeGroupBy(groupByClause);
@@ -832,6 +839,10 @@ public class Normalizator {
                                 "same type");
                     }
                     lastType=pair.getRight().getType();
+                }
+                if (caseWhenSelector.getDefaultValue().getType()!=lastType){
+                    throw new BadFormatException("All 'THEN' clauses in a CASE-WHEN select query must be of the " +
+                            "same type");
                 }
                 result.add(caseWhenSelector);
                 break;

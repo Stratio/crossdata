@@ -95,9 +95,11 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
 
     @Test
     public void selectCaseWhenColumns() {
-        String inputText = "SELECT demo.t1.a, case when demo.t1.b = 1 then 'hola' when demo.t1.b = 2 then 'adios' " +
+        String inputText = "SELECT demo.t1.a, case when demo.t1.b = 1 or demo.t1.b = 7 then 'hola' when demo.t1.b = " +
+                "2 " +
+                "then 'adios' " +
                 "else 'otro' end FROM demo.t1;";
-        String[] expectedColumns = { "demo.t1.a", "caseAlias" };
+        String[] expectedColumns = { "demo.t1.a", "CASE-WHEN_*" };
 
         String[] columnsT1 = { "a", "b" };
         ColumnType[] columnTypes1 = { new ColumnType(DataType.INT),
@@ -113,7 +115,6 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         } catch (PlanningException e) {
             fail("LogicalWorkflow couldn't be calculated");
         }
-        assertColumnsInProject(workflow, "demo.t1", expectedColumns);
         assertSelect(workflow);
     }
 
