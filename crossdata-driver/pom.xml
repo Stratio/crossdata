@@ -307,7 +307,7 @@
                                         <include>InMemoryConnector.xml</include>
                                     </includes>
                                 </resource>
-                                <resource>
+                                <!--resource>
                                     <directory>${basedir}/src/main/resources</directory>
                                     <includes>
                                         <include>driver-reference.conf</include>
@@ -319,12 +319,33 @@
                                     <includes>
                                         <include>server-reference.conf</include>
                                     </includes>
-                                </resource>
+                                </resource-->
                             </resources>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <!--plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <file>${basedir}/src/test/resources/server-reference.conf</file>
+                    <replacements>
+                        <replacement>
+                            <token>/tmp/metadata-store</token>
+                            <value>/tmp/metadata-store-test</value>
+                        </replacement>
+                    </replacements>
+                </configuration>
+            </plugin-->
         </plugins>
     </build>
 </project>
