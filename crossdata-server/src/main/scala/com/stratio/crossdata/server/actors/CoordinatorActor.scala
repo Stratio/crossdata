@@ -237,6 +237,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                   || metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG){
                   coordinator.persistCreateTable(metadataWorkflow.getTableMetadata)
                   val tableMetadata = metadataWorkflow.getTableMetadata
+
                   updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
                   executionInfo.setQueryStatus(QueryStatus.PLANNED)
                   result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_TABLE)

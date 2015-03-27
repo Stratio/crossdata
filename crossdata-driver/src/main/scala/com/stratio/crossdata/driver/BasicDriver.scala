@@ -302,12 +302,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add(processQueryId)
     val queryId = UUID.randomUUID().toString
-    val result = retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.STOP_PROCESS, params), 15 second)
-    if(result.isInstanceOf[CommandResult]){
-      result.asInstanceOf[CommandResult]
-    } else {
-      result.asInstanceOf[ErrorResult]
-    }
+    retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.STOP_PROCESS, params), 5 second)
+
   }
 
   def discoverMetadata(clusterName: String): Result = {

@@ -139,8 +139,9 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
       else
         context.actorSelection(dest) forward message
     }
+
     case result: Result => {
-      println(s"\nReceiving result ${result}")
+      logger.debug(s"\nReceiving result ${result}")
       val handler = driver.getResultHandler(result.getQueryId)
       if (handler != null) {
         if (!result.isInstanceOf[ErrorResult]) {

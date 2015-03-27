@@ -335,7 +335,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       methodAsyncExecute(aex, sender)
     }
     case StopProcess(queryId, targetQueryId) =>  {
-      logger.info("Processing stop process: " + queryId)
+      logger.debug("Processing stop process: " + queryId)
       methodStopProcess(queryId, targetQueryId, sender)
     }
     case pex: PagedExecute => {

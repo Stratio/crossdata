@@ -23,7 +23,7 @@ import akka.routing.Broadcast
 import com.stratio.crossdata.common.data.Status
 import com.stratio.crossdata.common.ask.{APICommand, Command}
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.common.utils.Constants
+import com.stratio.crossdata.common.utils.{StringUtils, Constants}
 import com.stratio.crossdata.communication.{ACK,StopProcess, Request}
 import com.stratio.crossdata.core.api.APIManager
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
@@ -47,7 +47,10 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
       log.debug("command received " + cmd.toString)
       val timer = initTimer()
       if (cmd.commandType == APICommand.STOP_PROCESS){
-        sender ! forwardStopProcess(cmd)
+        forwardStopProcess(cmd, sender) match {
+          case Some(result) => sender ! result
+          case None => log.debug("Sending stop process to the connectors")
+        }
       }else{
         if(cmd.commandType == APICommand.CLEAN_METADATA) {
           forwardCleanMetadata
@@ -64,7 +67,8 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
           ExecutionManager.MANAGER.deleteEntry(targetQueryId)
           if(!targetQueryId.endsWith(Constants.TRIGGER_TOKEN)){
             ExecutionManager.MANAGER.deleteEntry(queryId)
-            originalSender ! CommandResult.createCommandResult("Stop process "+targetQueryId)
+            log.info("Stop process ACK received. Forwarding to "+originalSender)
+            originalSender/*context.actorSelection(originalSender)*/ ! CommandResult.createCommandResult("The process ["+targetQueryId+"] was successfully stopped")
           }
         }
         case _ => log.debug("Unexpected ack received with queryId: "+queryId)
@@ -73,8 +77,8 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
 
     case result: Result => {
       Try(ExecutionManager.MANAGER.getValue(result.getQueryId)) match {
-        case Success((targetQueryId: String, originalSender: ActorRef))=> {
-          originalSender ! result
+        case Success((targetQueryId: String, originalSender: ActorRef/*String*/))=> {
+          originalSender/*context.actorSelection(originalSender)*/ ! result
           ExecutionManager.MANAGER.deleteEntry(result.getQueryId)
         }
         case _ => log.debug("Unexpected result received with queryId: "+result.getQueryId)
@@ -94,7 +98,7 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
     }
   }
 
-  private def forwardStopProcess(cmd: Command): Result = {
+  private def forwardStopProcess(cmd: Command, proxyActor: ActorRef): Option[Result] = {
 
     def stopTriggerQueries(baseQueryId: String): Unit = {
       val subQueryId = baseQueryId + Constants.TRIGGER_TOKEN
@@ -115,18 +119,16 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
       Try(ExecutionManager.MANAGER.getValue(cmd.params.get(0).toString)) match {
         case Success(exInfo:ExecutionInfo) => context.actorSelection(exInfo.getWorkflow.getActorRef) match {
           case connectorActor: ActorSelection =>
-            ExecutionManager.MANAGER.createEntry(cmd.queryId, (cmd.params.get(0).toString, sender) )
+            ExecutionManager.MANAGER.createEntry(cmd.queryId, (cmd.params.get(0).toString, proxyActor/*StringUtils.getAkkaActorRefUri(proxyActor,true)*/) )
             connectorActor ! Broadcast(StopProcess(cmd.queryId, cmd.params.get(0).toString))
-            InProgressResult.createInProgressResult(cmd.queryId)
-          case _ => Result.createUnsupportedOperationErrorResult("There is no connector related to query "+cmd.params.get(0).toString).withQueryId(cmd.queryId)
+            None//InProgressResult.createInProgressResult(cmd.queryId)
+          case _ => Some(Result.createUnsupportedOperationErrorResult("There is no connector related to query "+cmd.params.get(0).toString).withQueryId(cmd.queryId))
         }
-        case _ => Result.createUnsupportedOperationErrorResult("The process ["+ cmd.params.get(0).toString +"] doesn't exist").withQueryId(cmd.queryId)
-
+        case _ => Some(Result.createUnsupportedOperationErrorResult("The process ["+ cmd.params.get(0).toString +"] doesn't exist").withQueryId(cmd.queryId))
       }
     }else {
-      Result.createUnsupportedOperationErrorResult("Invalid number of parameters invoking stop process")
+       Some(Result.createUnsupportedOperationErrorResult("Invalid number of parameters invoking stop process"))
     }
-
 
   }
 
