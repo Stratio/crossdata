@@ -27,6 +27,7 @@ import java.util.UUID;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.testng.internal.thread.ThreadTimeoutException;
 
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.result.QueryResult;
@@ -34,12 +35,14 @@ import com.stratio.crossdata.sh.help.HelpStatement;
 
 public class ShellTest {
 
-    @Test(timeOut = 4000)
+    @Test(timeOut = 8000, expectedExceptions = ThreadTimeoutException.class)
     public void testMain() {
-        boolean ok=false;
-        Shell.main(new String[] { "--sync", "--script", "/path/file.xdql" });
-        ok=true;
-        assertTrue(ok, "testMain failed.");
+        try {
+            Shell.main(new String[] { "--sync", "--script", "/path/file.xdql" });
+        } catch (Exception ex){
+            assertTrue(true, "Impossible to happen");
+        }
+        fail("Connection with server should not have been established");
     }
 
     @Test(timeOut = 4000)
@@ -66,17 +69,15 @@ public class ShellTest {
         assertEquals(ok, true, "testSetPrompt failed.");
     }
 
-    @Test(timeOut = 4000)
+    @Test(timeOut = 4000, expectedExceptions = ThreadTimeoutException.class)
     public void testShellConnectWithoutServer() {
-        boolean ok = false;
-        boolean result = true;
         try {
             Shell crossdataSh = new Shell(false);
-            result = crossdataSh.connect();
+            boolean result = crossdataSh.connect();
         } catch (Exception e) {
-            fail("testShellConnectWithoutServer failed.");
+            assertTrue(true, "Impossible to happen");
         }
-        Assert.assertEquals(result, ok, "testShellConnectWithoutServer failed.");
+        fail("Connection with server should not have been established");
     }
 
     @Test(timeOut = 4000)
