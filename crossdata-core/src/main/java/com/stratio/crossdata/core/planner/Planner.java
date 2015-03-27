@@ -1001,7 +1001,7 @@ public class Planner {
         return metadataWorkflow;
     }
 
-    private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId) {
+    private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId) throws PlanningException{
         MetadataWorkflow metadataWorkflow = null;
         // Create parameters for metadata workflow
         CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
@@ -1013,11 +1013,19 @@ public class Planner {
         if (!createTableStatement.isExternal()) {
             executionType = ExecutionType.CREATE_TABLE;
             clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
+            Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
+            if (connectorNames.isEmpty()){
+                throw new PlanningException("There is no connector attached to cluster "+clusterMetadata.getName().getName());
+            }
             try {
                 actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
             } catch (PlanningException pe) {
-                LOG.debug(
-                        "No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
+                LOG.debug( "No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
+                for (ConnectorName connectorName : connectorNames) {
+                    if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_TABLE)){
+                        throw new PlanningException(connectorName.getQualifiedName()+" supports CREATE_TABLE but no connector was found to execute CREATE_TABLE");
+                    }
+                }
             }
         }else{
             executionType = ExecutionType.REGISTER_TABLE;
@@ -1035,6 +1043,11 @@ public class Planner {
                     executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
                 }else {
                    LOG.debug("The catalog should have been created before registering table");
+                    for (ConnectorName connectorName : clusterMetadata.getConnectorAttachedRefs().keySet()) {
+                        if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_CATALOG)){
+                            throw new PlanningException("The catalog should have been created before registering table. The connector: "+connectorName.getQualifiedName()+" supports CREATE_CATALOG");
+                        }
+                    }
                 }
 
                 // Create MetadataWorkFlow
@@ -1074,6 +1087,7 @@ public class Planner {
 
         return metadataWorkflow;
     }
+
 
     private MetadataWorkflow buildMetadataWorkflowDropCatalog(MetadataStatement metadataStatement, String queryId)
             throws PlanningException {
