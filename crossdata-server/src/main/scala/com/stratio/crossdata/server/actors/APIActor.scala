@@ -68,7 +68,7 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
           if(!targetQueryId.endsWith(Constants.TRIGGER_TOKEN)){
             ExecutionManager.MANAGER.deleteEntry(queryId)
             log.info("Stop process ACK received. Forwarding to "+originalSender)
-            originalSender/*context.actorSelection(originalSender)*/ ! CommandResult.createCommandResult("The process ["+targetQueryId+"] was successfully stopped")
+            originalSender ! CommandResult.createCommandResult("The process ["+targetQueryId+"] was successfully stopped")
           }
         }
         case _ => log.debug("Unexpected ack received with queryId: "+queryId)
@@ -77,8 +77,8 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
 
     case result: Result => {
       Try(ExecutionManager.MANAGER.getValue(result.getQueryId)) match {
-        case Success((targetQueryId: String, originalSender: ActorRef/*String*/))=> {
-          originalSender/*context.actorSelection(originalSender)*/ ! result
+        case Success((targetQueryId: String, originalSender: ActorRef))=> {
+          originalSender ! result
           ExecutionManager.MANAGER.deleteEntry(result.getQueryId)
         }
         case _ => log.debug("Unexpected result received with queryId: "+result.getQueryId)
@@ -119,9 +119,9 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
       Try(ExecutionManager.MANAGER.getValue(cmd.params.get(0).toString)) match {
         case Success(exInfo:ExecutionInfo) => context.actorSelection(exInfo.getWorkflow.getActorRef) match {
           case connectorActor: ActorSelection =>
-            ExecutionManager.MANAGER.createEntry(cmd.queryId, (cmd.params.get(0).toString, proxyActor/*StringUtils.getAkkaActorRefUri(proxyActor,true)*/) )
+            ExecutionManager.MANAGER.createEntry(cmd.queryId, (cmd.params.get(0).toString, proxyActor) )
             connectorActor ! Broadcast(StopProcess(cmd.queryId, cmd.params.get(0).toString))
-            None//InProgressResult.createInProgressResult(cmd.queryId)
+            None
           case _ => Some(Result.createUnsupportedOperationErrorResult("There is no connector related to query "+cmd.params.get(0).toString).withQueryId(cmd.queryId))
         }
         case _ => Some(Result.createUnsupportedOperationErrorResult("The process ["+ cmd.params.get(0).toString +"] doesn't exist").withQueryId(cmd.queryId))
