@@ -305,13 +305,22 @@
                                     <includes>
                                         <include>InMemoryDataStore.xml</include>
                                         <include>InMemoryConnector.xml</include>
+                                        <include>connector-application.conf</include>
                                     </includes>
                                 </resource>
-                                <!--resource>
+
+                                <resource>
+                                    <directory>${basedir}/../crossdata-connector/src/main/resources</directory>
+                                    <includes>
+                                        <include>connector-reference.conf</include>
+                                    </includes>
+                                </resource>
+
+                                <resource>
                                     <directory>${basedir}/src/main/resources</directory>
                                     <includes>
                                         <include>driver-reference.conf</include>
-                                        <include>reference.conf</include>
+                                        <!--include>reference.conf</include-->
                                     </includes>
                                 </resource>
                                 <resource>
@@ -319,7 +328,7 @@
                                     <includes>
                                         <include>server-reference.conf</include>
                                     </includes>
-                                </resource-->
+                                </resource>
                             </resources>
                         </configuration>
                     </execution>

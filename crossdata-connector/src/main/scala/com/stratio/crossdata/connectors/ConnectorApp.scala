@@ -120,8 +120,6 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
         logger.debug("Error fetching the catalog metadata from the ObservableMap: "+exception.getMessage)
         null
     }
-
-
   }
 
   override def getCatalogMetadata(catalogName: CatalogName, timeout: Int): CatalogMetadata ={

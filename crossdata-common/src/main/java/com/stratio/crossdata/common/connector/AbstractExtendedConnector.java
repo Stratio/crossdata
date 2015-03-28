@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.connector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.codahale.metrics.Metric;
@@ -75,6 +76,9 @@ public abstract class AbstractExtendedConnector implements IConnector{
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
     public List<CatalogMetadata> getCatalogs(ClusterName cluster, int timeout){
+        if((connectorApp == null) || (cluster == null)){
+            return new ArrayList<>();
+        }
         return connectorApp.getCatalogs(cluster,timeout);
     }
 

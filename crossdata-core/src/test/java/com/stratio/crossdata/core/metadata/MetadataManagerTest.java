@@ -427,6 +427,12 @@ public class MetadataManagerTest {
 
         int expectedSize =  4;
 
+        for(ConnectorMetadata connector: connectors){
+            if(connector.getName().equals(new ConnectorName("InMemoryConnector"))){
+                expectedSize++;
+            }
+        }
+
         assertTrue(connectors.size() == expectedSize,
                 "Connectors size is wrong." + System.lineSeparator() +
                 "Expected: " + expectedSize + System.lineSeparator() +
@@ -445,15 +451,16 @@ public class MetadataManagerTest {
 
         int expectedSize = 4;
 
+        for(ConnectorName connector: connectors){
+            if(connector.equals(new ConnectorName("InMemoryConnector"))){
+                expectedSize++;
+            }
+        }
+
         assertTrue(connectors.size() == expectedSize,
                 "Connectors size is wrong." + System.lineSeparator() +
                 "Expected: " + expectedSize + System.lineSeparator() +
                 "Found:    " + connectors.size());
-        /*
-        assertTrue(connectors.get(0).getName().equalsIgnoreCase("connectorTest"),
-                "Expected: " + "connectorTest" + System.lineSeparator() +
-                "Found:    " + connectors.get(0).getName());
-        */
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)

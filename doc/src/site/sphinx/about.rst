@@ -99,8 +99,6 @@ Connectors
 
 `Definition of Connector Operations <ConnectorOperations.html>`_
 
-`Crossdata Connector Challenge <https://stratio.github.io/crossdata/contest>`_
-
 
 Sandbox
 =======

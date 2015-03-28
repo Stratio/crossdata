@@ -315,6 +315,13 @@ public class APIManagerTest {
 
         int expectedSize = 1;
 
+        for(int i=0; i < connectors.length; i++){
+            String connector = connectors[i];
+            if(connector.contains("InMemoryConnector")){
+                expectedSize++;
+            }
+        }
+
         assertEquals((connectors.length-1), expectedSize,
                 System.lineSeparator() +
                 "testListConnectors failed." + System.lineSeparator() +

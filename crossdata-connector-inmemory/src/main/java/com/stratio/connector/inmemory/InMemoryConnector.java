@@ -35,7 +35,6 @@ import com.stratio.crossdata.common.connector.IConfiguration;
 import com.stratio.crossdata.common.connector.IConnectorApp;
 import com.stratio.crossdata.common.connector.IMetadataEngine;
 import com.stratio.crossdata.common.connector.IQueryEngine;
-
 import com.stratio.crossdata.common.connector.IStorageEngine;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
@@ -139,8 +138,6 @@ public class InMemoryConnector extends AbstractExtendedConnector {
                 },
                 2000
         );
-
-
 
         //End Metric
         long millis = connectTimerContext.stop() / 1000;

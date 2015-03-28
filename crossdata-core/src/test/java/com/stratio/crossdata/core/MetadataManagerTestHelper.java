@@ -131,7 +131,13 @@ public enum MetadataManagerTestHelper {
     public void closeHelper(){
         if(initialized){
             try {
+                List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
                 MetadataManager.MANAGER.clear();
+                for(ConnectorMetadata connector: connectors){
+                    if(connector.getName().equals(new ConnectorName("InMemoryConnector"))){
+                        MetadataManager.MANAGER.createConnector(connector);
+                    }
+                }
                 ExecutionManager.MANAGER.clear();
             } catch (Exception e) {
                 System.err.println(e.getMessage());
