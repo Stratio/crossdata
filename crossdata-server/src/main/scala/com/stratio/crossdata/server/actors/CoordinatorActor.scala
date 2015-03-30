@@ -545,10 +545,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
               case mw: MetadataWorkflow => mw.getExecutionType match {
 
-                case ExecutionType.CREATE_TABLE  | ExecutionType.CREATE_TABLE_AND_CATALOG | ExecutionType.ALTER_TABLE |
-                     ExecutionType.CREATE_INDEX | ExecutionType.DROP_INDEX => {
+                case ExecutionType.CREATE_TABLE  | ExecutionType.CREATE_TABLE_AND_CATALOG | ExecutionType.ALTER_TABLE => {
                   val tableMetadata = mw.getTableMetadata
                   updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
+                }
+
+                case ExecutionType.CREATE_INDEX | ExecutionType.DROP_INDEX => {
+
                 }
 
                 case ExecutionType.DROP_TABLE => {
