@@ -124,6 +124,8 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC1.add(Operations.INSERT_IF_NOT_EXISTS);
         operationsC1.add(Operations.INSERT_FROM_SELECT);
         operationsC1.add(Operations.SELECT_SUBQUERY);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_LET);
+        operationsC1.add(Operations.SELECT_ORDER_BY);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -543,7 +545,7 @@ public class PlannerTest extends PlannerBaseTest {
         String inputText = "SELECT * FROM demo.table1 WITH WINDOW 5 MINUTES " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
-                inputText, "testJoinWithStreaming", false, table1, table2);
+                inputText, "testJoinWithStreaming", false, table1, table3);
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
         assertNotNull(queryWorkflow.getTriggerStep(), "Planner failed.");
         assertNotNull(queryWorkflow.getNextExecutionWorkflow(), "Planner failed.");
@@ -728,4 +730,40 @@ public class PlannerTest extends PlannerBaseTest {
                 "Right operand of the disjunction should have 2 relations");
     }
 
+    @Test
+    public void testSelectWithOperatorsPreference() throws ManifestException {
+
+        init();
+
+        String[] columnNames1 = { "id", "name", "size", "retailprice", "date" };
+        ColumnType[] columnTypes1 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.FLOAT),
+                new ColumnType(DataType.NATIVE)};
+        String[] partitionKeys1 = { "id" };
+        String[] clusteringKeys1 = { };
+        TableMetadata table5 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "part",
+                columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
+
+        String inputText = "SELECT "
+                + "name, "
+                + "size*retailprice, "
+                + "(2*retailprice), "
+                + "sum(size*(1-size)*(1+retailprice)) as sum_charge, "
+                + "avg(size) as avg_size, "
+                + "count(*) as count_order "
+                + "FROM demo.part "
+                + "WHERE "
+                + "date <= '1998-12-01' - interval('1998-12-01', 3) "
+                + "GROUP BY name "
+                + "ORDER BY name;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testSelectWithDisjunctionAndParenthesis", false, false, table5);
+
+        assertNotNull(queryWorkflow, "Workflow is null for testSelectWithOperatorsPreference");
+
+    }
 }

@@ -516,7 +516,7 @@ public class Planner {
 
         while (!exit) {
             // Evaluate the connectors
-            for (ConnectorMetadata connector : availableConnectors) {
+            for (ConnectorMetadata connector: availableConnectors) {
                 if (!connector.supports(current.getOperation())) {
                     // Check selector functions
                     toRemove.add(connector);
@@ -2150,7 +2150,8 @@ public class Planner {
         LinkedHashMap<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
         boolean addAll = false;
         Operations currentOperation = Operations.SELECT_OPERATOR;
-        for (Selector s : selectStatement.getSelectExpression().getSelectorList()) {
+        boolean relationIncluded = false;
+        for (Selector s: selectStatement.getSelectExpression().getSelectorList()) {
             if (AsteriskSelector.class.isInstance(s)) {
                 addAll = true;
             } else if (ColumnSelector.class.isInstance(s)) {
@@ -2215,10 +2216,13 @@ public class Planner {
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.BOOLEAN));
             } else if (StringSelector.class.isInstance(s)) {
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.TEXT));
-            } else if (CaseWhenSelector.class.isInstance(s)){
+            } else if(RelationSelector.class.isInstance(s)){
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.DOUBLE));
+                relationIncluded = true;
+            } else if (CaseWhenSelector.class.isInstance(s)) {
                 generateCaseWhenSelect(aliasMap, typeMap, typeMapFromColumnName, s);
-                currentOperation=Operations.SELECT_CASE_WHEN;
-            } else {
+                currentOperation = Operations.SELECT_CASE_WHEN;
+            }  else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
             }
         }
@@ -2257,6 +2261,10 @@ public class Planner {
                     }
                 }
             }
+        }
+
+        if(relationIncluded){
+            currentOperation = Operations.SELECT_OPERATOR;
         }
 
         return new Select(currentOperation, aliasMap, typeMap, typeMapFromColumnName);
