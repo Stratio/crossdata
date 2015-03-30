@@ -837,7 +837,7 @@ public class Planner {
             GroupBy groupBy;
             if(ss.isHavingInc()){
                 groupBy = new GroupBy(Operations.SELECT_GROUP_BY, ss.getGroupByClause().getSelectorIdentifier(),
-                        ss.getHavingClause().getSelectorIdentifier());
+                        ss.getHavingClause());
             }else{
                 groupBy = new GroupBy(Operations.SELECT_GROUP_BY, ss.getGroupByClause().getSelectorIdentifier());
             }

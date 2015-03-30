@@ -637,7 +637,7 @@ selectStatement returns [SelectStatement slctst]
     (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getConditions[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
-    (T_HAVING {havingInc = true;} havingClause=getHaving[null])?
+    (T_HAVING {havingInc = true;} havingClause=getConditions[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
         if(windowInc)
@@ -649,7 +649,7 @@ selectStatement returns [SelectStatement slctst]
         if(groupInc)
              $slctst.setGroupByClause(new GroupByClause(groupByClause));
         if(havingInc)
-             $slctst.setHavingClause(new HavingClause(havingClause));
+             $slctst.setHavingClause(havingClause);
         if(limitInc)
              $slctst.setLimit(Integer.parseInt($constant.text));
         if(subqueryInc)

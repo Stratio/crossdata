@@ -99,7 +99,7 @@ public class NormalizedFields {
      * Map of column alias associating alias with ColumnNames.
      */
     private Map<String, ColumnName> columnNameAlias = new HashMap<>();
-    private HavingClause havingClause;
+    private List<AbstractRelation> havingClause;
 
     /**
      * Class constructor.
@@ -296,11 +296,11 @@ public class NormalizedFields {
         this.preferredTableNames = preferredTableNames;
     }
 
-    public void setHavingClause(HavingClause havingClause) {
+    public void setHavingClause(List<AbstractRelation> havingClause) {
         this.havingClause = havingClause;
     }
 
-    public HavingClause getHavingClause() {
+    public List<AbstractRelation> getHavingClause() {
         return havingClause;
     }
 }

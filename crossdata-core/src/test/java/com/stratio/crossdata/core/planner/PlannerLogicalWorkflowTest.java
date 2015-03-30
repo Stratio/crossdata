@@ -520,7 +520,7 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
     @Test
     public void selectBasicWhereGroupHaving() {
         String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t1.c FROM demo.t1 WHERE demo.t1.a = 'abc' GROUP BY demo" +
-                ".t1.a HAVING count(demo.t1.b);";
+                ".t1.a HAVING count(demo.t1.b)>5;";
         String[] columns1 = { "a", "b", "c" };
         ColumnType[] columnTypes1 = {
                 new ColumnType(DataType.TEXT),

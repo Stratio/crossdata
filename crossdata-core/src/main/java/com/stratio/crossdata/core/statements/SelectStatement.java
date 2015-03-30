@@ -105,7 +105,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     /**
      * The {@link com.stratio.crossdata.core.structures.HavingClause} clause.
      */
-    private HavingClause havingClause = null;
+    private List<AbstractRelation> havingClause = null;
 
     private List<OrderByClause> orderByClauses = new ArrayList<>();
     /**
@@ -285,18 +285,18 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     /**
      * Return Having clause.
      *
-     * @return list of {@link com.stratio.crossdata.core.structures.HavingClause}.
+     * @return list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation}.
      */
-    public HavingClause getHavingClause() {
+    public  List<AbstractRelation> getHavingClause() {
         return havingClause;
     }
 
     /**
      * Set the {@link com.stratio.crossdata.core.structures.HavingClause} clause.
      *
-     * @param havingClause The group by.
+     * @param havingClause The having.
      */
-    public void setHavingClause(HavingClause havingClause) {
+    public void setHavingClause(List<AbstractRelation> havingClause) {
         this.havingInc = true;
         this.havingClause = havingClause;
     }
@@ -438,8 +438,13 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(" GROUP BY ").append(StringUtils.stringList(groupByClause.getSelectorIdentifier(), ", "));
         }
 
-        if (havingInc) {
-            sb.append(" HAVING ").append(StringUtils.stringList(havingClause.getSelectorIdentifier(), ", "));
+        if ((havingInc)&& (havingClause!=null)) {
+            sb.append(" HAVING ");
+            if(withSQLSyntax) {
+                sb.append(StringUtils.stringList(havingClause, " AND ").replaceAll(Operator.MATCH.toString(),"LIKE"));
+            } else{
+                sb.append(StringUtils.stringList(havingClause, " AND "));
+            }
         }
 
         if (limitInc) {

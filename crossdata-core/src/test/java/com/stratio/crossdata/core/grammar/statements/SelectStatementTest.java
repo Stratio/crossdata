@@ -52,9 +52,9 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void basicSelectGroupHaving() {
         String inputText = "SELECT * FROM catalog1.table1 GROUP BY catalog1.table1.column1 HAVING count(catalog1" +
-                ".table1.comlumn2);";
+                ".table1.comlumn2)>5;";
         String expectedText="SELECT * FROM catalog1.table1 GROUP BY catalog1.table1.column1 HAVING count(catalog1" +
-                ".table1.comlumn2) AS count;";
+                ".table1.comlumn2) AS count > 5;";
         testRegularStatement(inputText, expectedText, "basicSelectGroupHaving");
     }
 

@@ -328,15 +328,18 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeHaving() throws ValidationException {
-        HavingClause havingClause = parsedQuery.getStatement().getHavingClause();
+        List<AbstractRelation> havingClause = parsedQuery.getStatement().getHavingClause();
         if (havingClause != null) {
 
             if (!parsedQuery.getStatement().isGroupInc()) {
                 throw new BadFormatException("Having clause requires Group By clause.");
             }
 
-            normalizeHaving(havingClause);
-            fields.setHavingClause(havingClause);
+            List<AbstractRelation> havingClauses = parsedQuery.getStatement().getHavingClause();
+            if ((havingClauses != null) && (!havingClauses.isEmpty())) {
+                normalizeHaving(havingClauses);
+                fields.setHavingClause(havingClauses);
+            }
         }
     }
 
@@ -422,14 +425,9 @@ public class Normalizator {
      * @param havingClause
      * @throws ValidationException
      */
-    public void normalizeHaving(HavingClause havingClause) throws ValidationException {
-        Set<ColumnName> columnNames = new HashSet<>();
-        for (Selector selector : havingClause.getSelectorIdentifier()) {
-            checkFormatBySelectorIdentifierHaving(selector, columnNames);
-        }
-        // Check if all columns are correct
-        for (Selector selector : fields.getSelectors()) {
-            checkHavingColumns(selector, columnNames);
+    public void normalizeHaving(List<AbstractRelation> havingClause) throws ValidationException {
+        for (AbstractRelation relation : havingClause) {
+            checkHavingRelation(relation);
         }
     }
 
@@ -528,10 +526,57 @@ public class Normalizator {
         }
     }
 
+    public void checkHavingRelation(AbstractRelation abstractRelation) throws ValidationException {
+        if (abstractRelation instanceof Relation) {
+            Relation relationConjunction = (Relation) abstractRelation;
+            if (relationConjunction.getOperator().isInGroup(Operator.Group.ARITHMETIC)) {
+                throw new BadFormatException("Comparing operations are the only valid ones");
+            }
+            checkHavingRelationFormatLeft(relationConjunction);
+            checkRelationFormatRight(relationConjunction);
+        } else if (abstractRelation instanceof RelationDisjunction) {
+            RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
+            for (AbstractRelation innerRelation : relationDisjunction.getLeftRelations()) {
+                checkHavingRelation(innerRelation);
+            }
+            for (AbstractRelation innerRelation : relationDisjunction.getRightRelations()) {
+                checkHavingRelation(innerRelation);
+            }
+        }
+    }
+
     private void checkRelationFormatLeft(Relation relation) throws ValidationException {
         switch (relation.getLeftTerm().getType()) {
         case FUNCTION:
-            throw new BadFormatException("Functions not supported yet");
+            throw new BadFormatException("Functions in the left side of a relation are not supported yet");
+        case COLUMN:
+            checkColumnSelector((ColumnSelector) relation.getLeftTerm());
+            break;
+        case ASTERISK:
+            throw new BadFormatException("Asterisk not supported in relations.");
+        case STRING:
+        case FLOATING_POINT:
+        case BOOLEAN:
+        case INTEGER:
+            if (relation.getOperator() == Operator.EQ) {
+                throw new YodaConditionException();
+            }
+            break;
+        case SELECT:
+            ExtendedSelectSelector extendedSelectSelector = (ExtendedSelectSelector) relation.getLeftTerm();
+            SelectValidatedQuery selectValidatedQuery = normalizeInnerSelect(
+                    extendedSelectSelector.getSelectParsedQuery(),
+                    new ArrayList<>(fields.getTableNames()));
+            extendedSelectSelector.setSelectValidatedQuery(selectValidatedQuery);
+            break;
+        case RELATION:
+            throw new BadFormatException("Relations can't be on the left side of other relations.");
+        }
+    }
+    private void checkHavingRelationFormatLeft(Relation relation) throws ValidationException {
+        switch (relation.getLeftTerm().getType()) {
+        case FUNCTION:
+            break;
         case COLUMN:
             checkColumnSelector((ColumnSelector) relation.getLeftTerm());
             break;

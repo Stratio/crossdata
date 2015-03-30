@@ -22,7 +22,10 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.statements.structures.AbstractRelation;
+import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.utils.StringUtils;
 
 /**
  * GroupBy class implements the step of a group by in a workflow.
@@ -38,7 +41,7 @@ public class GroupBy extends TransformationStep {
     /**
      * Having Identifiers.
      */
-    private List<Selector> havingIds = new ArrayList<>();
+    private List<AbstractRelation> havingIds = new ArrayList<>();
 
     /**
      * Whether a having clause has been specified.
@@ -62,7 +65,7 @@ public class GroupBy extends TransformationStep {
      * @param operation The operation to be applied.
      * @param ids Identifiers.
      */
-    public GroupBy(Operations operation, List<Selector> ids, List<Selector> havingIds) {
+    public GroupBy(Operations operation, List<Selector> ids, List<AbstractRelation> havingIds) {
         super(operation);
         this.ids = ids;
         this.havingIds=havingIds;
@@ -89,7 +92,7 @@ public class GroupBy extends TransformationStep {
      * Get Having Identifiers.
      * @return Identifiers.
      */
-    public List<Selector> getHavingIds() {
+    public List<AbstractRelation> getHavingIds() {
         return havingIds;
     }
 
@@ -97,7 +100,7 @@ public class GroupBy extends TransformationStep {
      * Set identifiers.
      * @param havingIds Identifiers to be assigned.
      */
-    public void setHavingIds(List<Selector> havingIds) {
+    public void setHavingIds(List<AbstractRelation> havingIds) {
         this.havingIds = havingIds;
     }
 
@@ -115,13 +118,14 @@ public class GroupBy extends TransformationStep {
 
         if (havingInc){
             sb.append(" HAVING ");
-            Iterator<Selector> iter2 = havingIds.iterator();
-            while(iter2.hasNext()){
-                Selector selector = iter2.next();
-                sb.append(selector);
-                if(iter2.hasNext()){
-                    sb.append(", ");
+            boolean first=true;
+            for (AbstractRelation relation:havingIds){
+                if (!first){
+                    sb.append(" AND ");
                 }
+                first=false;
+                sb.append(relation.toString());
+
             }
         }
         return sb.toString();
