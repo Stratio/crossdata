@@ -633,8 +633,8 @@ selectStatement returns [SelectStatement slctst]
     T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
     joinRelations=getConditions[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
     (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getConditions[null])?
-    (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
+    (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
         if(windowInc)
@@ -843,22 +843,6 @@ getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
             (T_AND relN=getAbstractRelation[workaroundTable] { clauses.addAll(relN); })*
 ;
 
-//getAbstractRelation[TableName tablename] returns [AbstractRelation result]
-//    @init{
-//        workaroundTable = tablename;
-//    }:
-//    (T_START_PARENTHESIS
-//        abstrRel=getAbstractRelation[workaroundTable] { abstrRel.setParenthesis(true); result = abstrRel;}
-//    T_END_PARENTHESIS)
-//    |
-//    ((T_START_PARENTHESIS rel1=getRelation[workaroundTable] T_END_PARENTHESIS { rel1.setParenthesis(true); }
-//        | rel1=getRelation[workaroundTable])
-//        {result = rel1;}
-//        (T_OR
-//            (T_START_PARENTHESIS rel2=getRelation[workaroundTable] T_END_PARENTHESIS { rel2.setParenthesis(true); }
-//            | rel2=getRelation[workaroundTable]) {result = new RelationDisjunction(rel1, rel2);})?)
-//;
-
 getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     @init{
         workaroundTable = tablename;
@@ -944,72 +928,94 @@ getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
 
 getSelector[TableName tablename] returns [Selector sel]
     @init{
-        LinkedList<Selector> params = new LinkedList<>();
         String name = null;
         boolean relationSelector = false;
         boolean caseWhenSelector = false;
-        Selector firstSelector = null;
-        Selector defaultSelector = null;
         RelationSelector rs=null;
         CaseWhenSelector caseWhen=null;
         workaroundTable = tablename;
-        List<Pair<List<AbstractRelation>, Selector>> restrictions=new ArrayList<>();
     }
     @after{
         if(relationSelector){
             sel = new RelationSelector(new Relation(firstSelector, operator, secondSelector));
-        }else if (caseWhenSelector){
-            sel= new CaseWhenSelector(workaroundTable,restrictions,defaultSelector);
-        }else{
+        } else {
             sel = firstSelector;
         }
     }:
-    (
-        T_START_PARENTHESIS
-            selectStmnt=selectStatement { firstSelector = new ExtendedSelectSelector(selectStmnt, sessionCatalog); }
-        T_END_PARENTHESIS
-    |
-        functionName=getFunctionName
-        T_START_PARENTHESIS
-            (select1=getSelector[workaroundTable] {params.add(select1);}
-                (T_COMMA selectN=getSelector[workaroundTable] {params.add(selectN);})*
-            )?
-        T_END_PARENTHESIS
-            { String functionStr = functionName;
-            firstSelector = new FunctionSelector(tablename, functionStr, params);}
-    |
-        (columnName=getColumnName[tablename] {firstSelector = new ColumnSelector(columnName);}
-        | floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
-        | constant=T_CONSTANT {firstSelector = new IntegerSelector(tablename, $constant.text);}
-        | T_FALSE {firstSelector = new BooleanSelector(tablename, false);}
-        | T_TRUE {firstSelector = new BooleanSelector(tablename, true);}
-        | T_ASTERISK {firstSelector = new AsteriskSelector(tablename);}
-        | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(tablename, $qLiteral.text);})
-
-    |
-        T_CASE (T_WHEN conditions=getConditions[null] T_THEN
-            (floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
-            | constant=T_CONSTANT {firstSelector = new IntegerSelector(tablename, $constant.text);}
-            | T_FALSE {firstSelector = new BooleanSelector(tablename, false);}
-            | T_TRUE {firstSelector = new BooleanSelector(tablename, true);}
-            | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(tablename, $qLiteral.text);})
-            {
-                Pair<List<AbstractRelation>,Selector> restriction = new ImmutablePair<>(conditions,firstSelector);
-                restrictions.add(restriction);
-            })*
-        T_ELSE
-            (floatingNumber=T_FLOATING {defaultSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
-            | constant=T_CONSTANT {defaultSelector = new IntegerSelector(tablename, $constant.text);}
-            | T_FALSE {defaultSelector = new BooleanSelector(tablename, false);}
-            | T_TRUE {defaultSelector = new BooleanSelector(tablename, true);}
-            | qLiteral=QUOTED_LITERAL {defaultSelector = new StringSelector(tablename, $qLiteral.text);})
-        T_END {caseWhenSelector=true;}
-
-    )
+    (T_START_PARENTHESIS
+        (selectStmnt=selectStatement { firstSelector = new ExtendedSelectSelector(selectStmnt, sessionCatalog); }
+        | firstSelector=getSelector[tablename]) { firstSelector.setParenthesis(true); }
+    T_END_PARENTHESIS
+    | firstSelector=getFunctionSelector[tablename]
+    | firstSelector=getSimpleSelector[tablename]
+    | firstSelector=getCaseWhenSelector[tablename])
     (operator=getOperator {relationSelector=true;} secondSelector=getSelector[workaroundTable])?
 ;
 
-getSimpleSelector[TableName tablename]
+getCaseWhenSelector[TableName tablename] returns [Selector selector]
+    @init{
+        List<Pair<List<AbstractRelation>, Selector>> restrictions=new ArrayList<>();
+    }
+    @after{
+        selector = new CaseWhenSelector(workaroundTable, restrictions, defaultSelector);
+    }:
+    T_CASE
+        (T_WHEN conditions=getConditions[tablename] T_THEN
+            firstSelector=getPartialSelector[tablename]
+            {
+                Pair<List<AbstractRelation>,Selector> restriction = new ImmutablePair<>(conditions, firstSelector);
+                restrictions.add(restriction);
+            })*
+    T_ELSE
+        defaultSelector=getPartialSelector[tablename]
+    T_END
+;
+
+getFunctionSelector[TableName tablename] returns [Selector selector]
+    @init{
+        LinkedList<Selector> params = new LinkedList<>();
+    }
+    @after{
+        String functionStr = functionName;
+        selector = new FunctionSelector(tablename, functionStr, params);
+    }:
+    functionName=getFunctionName
+    T_START_PARENTHESIS
+        (select1=getSelector[workaroundTable] {params.add(select1);}
+            (T_COMMA selectN=getSelector[workaroundTable] {params.add(selectN);})*)?
+    T_END_PARENTHESIS
+;
+
+getPartialSelector[TableName tablename] returns [Selector selector]
+    @init{
+        Selector defaultSelector = null;
+    }
+    @after{
+        selector = defaultSelector;
+    }:
+    (floatingNumber=T_FLOATING {defaultSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
+    | constant=T_CONSTANT {defaultSelector = new IntegerSelector(tablename, $constant.text);}
+    | T_FALSE {defaultSelector = new BooleanSelector(tablename, false);}
+    | T_TRUE {defaultSelector = new BooleanSelector(tablename, true);}
+    | qLiteral=QUOTED_LITERAL {defaultSelector = new StringSelector(tablename, $qLiteral.text);})
+;
+
+getSimpleSelector[TableName tablename] returns [Selector selector]
+    @init{
+        Selector firstSelector = null;
+        workaroundTable = tablename;
+    }
+    @after{
+        selector = firstSelector;
+    }:
+    (columnName=getColumnName[tablename] {firstSelector = new ColumnSelector(columnName);}
+    | floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
+    | constant=T_CONSTANT {firstSelector = new IntegerSelector(tablename, $constant.text);}
+    | T_FALSE {firstSelector = new BooleanSelector(tablename, false);}
+    | T_TRUE {firstSelector = new BooleanSelector(tablename, true);}
+    | T_ASTERISK {firstSelector = new AsteriskSelector(tablename);}
+    | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(tablename, $qLiteral.text);})
+;
 
 getInterval[TableName tablename] returns [Selector sel]
     @init{
@@ -1029,29 +1035,6 @@ getInterval[TableName tablename] returns [Selector sel]
         | qLiteral=QUOTED_LITERAL {lastSelector = new StringSelector(workaroundTable,$qLiteral.text);})
 ;
 
-getGenericSelector[TableName tablename] returns [Selector selector]
-    @init{
-        Selector firstSelector = null;
-        boolean relationSelector = false;
-        workaroundTable = tablename;
-    }
-    @after{
-        if(relationSelector)
-            selector = new RelationSelector(new Relation(firstSelector, operator, secondSelector));
-        else
-            selector = firstSelector;
-    }:
-    (columnName=getColumnName[tablename] {firstSelector = new ColumnSelector(columnName);}
-    | floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
-    | constant=T_CONSTANT {firstSelector = new IntegerSelector(tablename, $constant.text);}
-    | T_FALSE {firstSelector = new BooleanSelector(tablename, false);}
-    | T_TRUE {firstSelector = new BooleanSelector(tablename, true);}
-    | T_ASTERISK {firstSelector = new AsteriskSelector(tablename);}
-    | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(tablename, $qLiteral.text);})
-    (operator=getOperator
-        secondSelector=getRightTermInAssignment[workaroundTable] {relationSelector = true;} )?
-;
-
 getAssignment[TableName tablename] returns [Relation assign]
     @init{
         ColumnSelector leftTerm = null;
@@ -1061,7 +1044,6 @@ getAssignment[TableName tablename] returns [Relation assign]
     }:
     columnName=getColumnName[tablename] {leftTerm = new ColumnSelector(columnName);} T_EQUAL rightTerm=getRightTermInAssignment[tablename]
 ;
-
 
 getRightTermInAssignment[TableName tablename] returns [Selector leftSelector]
     @init{

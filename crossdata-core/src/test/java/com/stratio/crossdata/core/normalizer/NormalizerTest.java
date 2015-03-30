@@ -272,13 +272,13 @@ public class NormalizerTest {
 
         String inputText = "SELECT colSales, colExpenses FROM tableClients "
                 + "WHERE colCity = 'Madrid' "
-                + "ORDER BY age "
-                + "GROUP BY colSales, colExpenses;";
+                + "GROUP BY colSales, colExpenses "
+                + "ORDER BY age;";
 
         String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
                 + "WHERE demo.tableClients.colPlace = 'Madrid' "
-                + "ORDER BY [demo.tableClients.year] "
-                + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses";
+                + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses "
+                + "ORDER BY [demo.tableClients.year]";
 
         // BASE QUERY
         BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
@@ -344,15 +344,15 @@ public class NormalizerTest {
                 "SELECT colSales, colFee FROM tableClients "
                         + "INNER JOIN tableCostumers ON assistantId = clientId "
                         + "WHERE colCity = 'Madrid' "
-                        + "ORDER BY age "
-                        + "GROUP BY colSales, colFee;";
+                        + "GROUP BY colSales, colFee "
+                        + "ORDER BY age;";
 
         String expectedText =
                 "SELECT demo.tableClients.colSales, myCatalog.tableCostumers.colFee FROM demo.tableClients "
                         + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.tableClients.clientId "
                         + "WHERE myCatalog.tableCostumers.colCity = 'Madrid' "
-                        + "ORDER BY [myCatalog.tableCostumers.age] "
-                        + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee";
+                        + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee "
+                        + "ORDER BY [myCatalog.tableCostumers.age]";
 
         // BASE QUERY
         BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));

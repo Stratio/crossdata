@@ -284,14 +284,14 @@ public class SelectStatementTest extends ParsingTest {
                 "SELECT colSales, colRevenues FROM tableClients "
                 + "INNER JOIN tableCostumers ON AssistantId = clientId "
                 + "WHERE colCity = 'Madrid' "
-                + "ORDER BY age "
-                + "GROUP BY gender;";
+                + "GROUP BY gender "
+                + "ORDER BY age;";
         String expectedText =
                 "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
                         + "INNER JOIN test.tableCostumers ON <unknown_name>.<unknown_name>.AssistantId = <unknown_name>.<unknown_name>.clientId "
                         + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
-                        + "ORDER BY [<unknown_name>.<unknown_name>.age] "
-                        + "GROUP BY <unknown_name>.<unknown_name>.gender;";
+                        + "GROUP BY <unknown_name>.<unknown_name>.gender "
+                        + "ORDER BY [<unknown_name>.<unknown_name>.age];";
         testRegularStatement(inputText, expectedText, "selectStatementJoinComplex");
     }
 
@@ -354,10 +354,10 @@ public class SelectStatementTest extends ParsingTest {
                 " ASC, demo.b.extracol DESC", " DESC, demo.b.extracol DESC",
                 " DESC, demo.b.extracol ASC" }) {
             String inputText =
-                    "SELECT demo.b.a FROM demo.b ORDER BY demo.b.id1 " + s + " GROUP BY demo.b.col1 LIMIT 50;";
+                    "SELECT demo.b.a FROM demo.b GROUP BY demo.b.col1 ORDER BY demo.b.id1 " + s + " LIMIT 50;";
             String expectedText =
-                    "SELECT demo.b.a FROM demo.b ORDER BY [demo.b.id1" + (s.replace(" ASC", "")) + "]"
-                            + " GROUP BY demo.b.col1 LIMIT 50;";
+                    "SELECT demo.b.a FROM demo.b GROUP BY demo.b.col1 " +
+                            "ORDER BY [demo.b.id1" + (s.replace(" ASC", "")) + "] LIMIT 50;";
             testRegularStatement(inputText, expectedText, "selectStatementCombineOrderby");
         }
     }
@@ -559,14 +559,14 @@ public class SelectStatementTest extends ParsingTest {
         String inputText =
                 "[test], SELECT colSales, colRevenues FROM tableClients "
                         + "WHERE colCity = 'Madrid' "
-                        + "ORDER BY age DESC, rating ASC "
-                        + "GROUP BY gender;";
+                        + "GROUP BY gender "
+                        + "ORDER BY age DESC, rating ASC;";
         String expectedText =
                 "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
                         + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
+                        + "GROUP BY <unknown_name>.<unknown_name>.gender "
                         + "ORDER BY [<unknown_name>.<unknown_name>.age DESC, " +
-                        "<unknown_name>.<unknown_name>.rating] "
-                        + "GROUP BY <unknown_name>.<unknown_name>.gender;";
+                        "<unknown_name>.<unknown_name>.rating];";
         testRegularStatement(inputText, expectedText, "selectComplex");
     }
 
@@ -694,7 +694,7 @@ public class SelectStatementTest extends ParsingTest {
                 + "FROM part;";
         String expectedText = "SELECT "
                 + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.name, "
-                + "(<UNKNOWN_NAME>.<UNKNOWN_NAME>.2 / <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice) "
+                + "(2 / <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice) "
                 + "FROM demo.part;";
         testRegularStatementSession("demo", inputText, expectedText, "selectWithPreferenceOperatorsSimple2");
     }
@@ -711,20 +711,21 @@ public class SelectStatementTest extends ParsingTest {
                 + "FROM part "
                 + "WHERE "
                 + "date <= '1998-12-01' - interval('1998-12-01', 3) "
-                + "GROUP BY name, "
+                + "GROUP BY name "
                 + "ORDER BY name;";
         String expectedText = "SELECT "
                 + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.name, "
-                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.size*<UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice, "
-                + "(2*<UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice)"
-                + "sum(<UNKNOWN_NAME>.<UNKNOWN_NAME>.size*(1-<UNKNOWN_NAME>.<UNKNOWN_NAME>.size)*(1+<UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice)) as sum_charge, "
-                + "avg(<UNKNOWN_NAME>.<UNKNOWN_NAME>.size) as avg_size, "
-                + "count(*) as count_order "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.size * <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice, "
+                + "(2 * <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice), "
+                + "sum(<UNKNOWN_NAME>.<UNKNOWN_NAME>.size * (1 - <UNKNOWN_NAME>.<UNKNOWN_NAME>.size) * " +
+                        "(1 + <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice)) AS sum_charge, "
+                + "avg(<UNKNOWN_NAME>.<UNKNOWN_NAME>.size) AS avg_size, "
+                + "count(*) AS count_order "
                 + "FROM demo.part "
                 + "WHERE "
-                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.date <= '1998-12-01' - interval('1998-12-01', 3) "
-                + "GROUP BY <UNKNOWN_NAME>.<UNKNOWN_NAME>.name, "
-                + "ORDER BY <UNKNOWN_NAME>.<UNKNOWN_NAME>.name;";
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.date <= '1998-12-01' - interval('1998-12-01', 3) AS interval "
+                + "GROUP BY <UNKNOWN_NAME>.<UNKNOWN_NAME>.name "
+                + "ORDER BY [<UNKNOWN_NAME>.<UNKNOWN_NAME>.name];";
         testRegularStatementSession("demo", inputText, expectedText, "selectWithPreferenceOperators");
     }
 

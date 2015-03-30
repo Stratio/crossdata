@@ -46,6 +46,8 @@ public abstract class Selector implements Serializable {
      */
     protected TableName tableName;
 
+    protected boolean parenthesis = false;
+
     /**
      * Class constructor.
      *
@@ -140,6 +142,14 @@ public abstract class Selector implements Serializable {
      */
     public ColumnName getColumnName() {
         return new ColumnName(tableName, alias);
+    }
+
+    public boolean isParenthesis() {
+        return parenthesis;
+    }
+
+    public void setParenthesis(boolean parenthesis) {
+        this.parenthesis = parenthesis;
     }
 
     @Override

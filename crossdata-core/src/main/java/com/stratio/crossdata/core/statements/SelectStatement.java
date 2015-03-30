@@ -397,12 +397,12 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             }
         }
 
-        if (orderInc) {
-            sb.append(" ORDER BY ").append(orderByClauses);
-        }
-
         if (groupInc) {
             sb.append(" GROUP BY ").append(StringUtils.stringList(groupByClause.getSelectorIdentifier(), ", "));
+        }
+
+        if (orderInc) {
+            sb.append(" ORDER BY ").append(orderByClauses);
         }
 
         if (limitInc) {
