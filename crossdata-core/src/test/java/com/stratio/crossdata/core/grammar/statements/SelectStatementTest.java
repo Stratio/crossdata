@@ -50,6 +50,15 @@ public class SelectStatementTest extends ParsingTest {
     }
 
     @Test
+    public void basicSelectGroupHaving() {
+        String inputText = "SELECT * FROM catalog1.table1 GROUP BY catalog1.table1.column1 HAVING count(catalog1" +
+                ".table1.comlumn2)>5;";
+        String expectedText="SELECT * FROM catalog1.table1 GROUP BY catalog1.table1.column1 HAVING count(catalog1" +
+                ".table1.comlumn2) AS count > 5;";
+        testRegularStatement(inputText, expectedText, "basicSelectGroupHaving");
+    }
+
+    @Test
     public void singleColumn() {
         String inputText = "SELECT newtb.lucene FROM newks.newtb;";
         String expectedText = "SELECT <unknown_name>.newtb.lucene FROM newks.newtb;";
@@ -62,16 +71,14 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatement(inputText, "singleColumnWithCatalog");
     }
 
-    /*
+
     @Test
     public void caseWhenColumn() {
-        String inputText = "SELECT case when newtb.a=5 and newtb.a=3 then 'hello' when newtb.a=2 then 'bye' else " +
-                "'puff' end " +
-                "FROM " +
-                "newks.newtb;";
+        String inputText = "SELECT case when newks.newtb.a = 5 and newks.newtb.a = 3 then 'hello' when newks.newtb.a = 2 then 'bye' " +
+                "else 'puff' end FROM newks.newtb;";
         testRegularStatement(inputText, "singleColumnWithCatalog");
     }
-    */
+
 
     @Test
     public void functionSingleColumn() {

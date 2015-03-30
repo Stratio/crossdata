@@ -34,6 +34,7 @@ import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.structures.GroupByClause;
+import com.stratio.crossdata.core.structures.HavingClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 
 /**
@@ -98,6 +99,7 @@ public class NormalizedFields {
      * Map of column alias associating alias with ColumnNames.
      */
     private Map<String, ColumnName> columnNameAlias = new HashMap<>();
+    private List<AbstractRelation> havingClause;
 
     /**
      * Class constructor.
@@ -292,5 +294,13 @@ public class NormalizedFields {
 
     public void setPreferredTableNames(Set<TableName> preferredTableNames) {
         this.preferredTableNames = preferredTableNames;
+    }
+
+    public void setHavingClause(List<AbstractRelation> havingClause) {
+        this.havingClause = havingClause;
+    }
+
+    public List<AbstractRelation> getHavingClause() {
+        return havingClause;
     }
 }
