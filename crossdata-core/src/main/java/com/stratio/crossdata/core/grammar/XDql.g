@@ -1009,6 +1009,8 @@ getSelector[TableName tablename] returns [Selector sel]
     (operator=getOperator {relationSelector=true;} secondSelector=getSelector[workaroundTable])?
 ;
 
+getSimpleSelector[TableName tablename]
+
 getInterval[TableName tablename] returns [Selector sel]
     @init{
             Selector firstSelector = null;
