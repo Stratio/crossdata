@@ -91,6 +91,7 @@ import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.NullSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
@@ -2222,9 +2223,11 @@ public class Planner {
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.BOOLEAN));
             } else if (StringSelector.class.isInstance(s)) {
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.TEXT));
-            } else if (CaseWhenSelector.class.isInstance(s)){
+            } else if (CaseWhenSelector.class.isInstance(s)) {
                 generateCaseWhenSelect(aliasMap, typeMap, typeMapFromColumnName, s);
-                currentOperation=Operations.SELECT_CASE_WHEN;
+                currentOperation = Operations.SELECT_CASE_WHEN;
+            } else if (NullSelector.class.isInstance(s)) {
+                generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.TEXT));
             } else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
             }

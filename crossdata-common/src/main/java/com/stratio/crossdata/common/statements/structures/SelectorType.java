@@ -32,5 +32,6 @@ public enum SelectorType {
     RELATION,
     SELECT,
     GROUP,
-    CASE_WHEN
+    CASE_WHEN,
+    NULL
 }
