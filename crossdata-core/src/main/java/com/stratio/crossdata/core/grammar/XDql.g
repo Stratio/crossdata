@@ -314,6 +314,7 @@ T_CASE: C A S E;
 T_THEN: T H E N;
 T_ELSE: E L S E;
 T_END: E N D;
+T_HAVING: H A V I N G;
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -601,6 +602,7 @@ selectStatement returns [SelectStatement slctst]
         boolean orderInc = false;
         boolean groupInc = false;
         boolean limitInc = false;
+        boolean havingInc = false;
         Map fieldsAliasesMap = new LinkedHashMap<String, String>();
         Map tablesAliasesMap = new LinkedHashMap<String, String>();
         MutablePair<String, String> pair = new MutablePair<>();
@@ -634,6 +636,7 @@ selectStatement returns [SelectStatement slctst]
     joinRelations=getConditions[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
     (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getConditions[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
+    (T_HAVING {havingInc = true;} havingClause=getConditions[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
@@ -645,6 +648,8 @@ selectStatement returns [SelectStatement slctst]
              $slctst.setOrderByClauses(orderByClauses);
         if(groupInc)
              $slctst.setGroupByClause(new GroupByClause(groupByClause));
+        if(havingInc)
+             $slctst.setHavingClause(havingClause);
         if(limitInc)
              $slctst.setLimit(Integer.parseInt($constant.text));
         if(subqueryInc)
@@ -827,6 +832,14 @@ getOrdering[TableName tablename] returns [List<OrderByClause> orderByClauses]
 ;
 
 getGroupBy[TableName tablename] returns [ArrayList<Selector> groups]
+    @init{
+        groups = new ArrayList<>();
+    }:
+    ident1=getSelector[tablename] {groups.add(ident1);}
+    (T_COMMA identN=getSelector[tablename] {groups.add(identN);})*
+;
+
+getHaving[TableName tablename] returns [ArrayList<Selector> groups]
     @init{
         groups = new ArrayList<>();
     }:

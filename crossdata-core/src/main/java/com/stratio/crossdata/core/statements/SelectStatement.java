@@ -37,6 +37,7 @@ import com.stratio.crossdata.common.statements.structures.window.Window;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.GroupByClause;
+import com.stratio.crossdata.core.structures.HavingClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
@@ -90,10 +91,22 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      * Whether a GROUP BY clause has been specified.
      */
     private boolean groupInc = false;
+
+    /**
+     * Whether a HAVING clause has been specified.
+     */
+    private boolean havingInc = false;
+
     /**
      * The {@link com.stratio.crossdata.core.structures.GroupByClause} clause.
      */
     private GroupByClause groupByClause = null;
+
+    /**
+     * The {@link com.stratio.crossdata.core.structures.HavingClause} clause.
+     */
+    private List<AbstractRelation> havingClause = null;
+
     private List<OrderByClause> orderByClauses = new ArrayList<>();
     /**
      * Whether a LIMIT clause has been specified.
@@ -270,6 +283,26 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     }
 
     /**
+     * Return Having clause.
+     *
+     * @return list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation}.
+     */
+    public  List<AbstractRelation> getHavingClause() {
+        return havingClause;
+    }
+
+    /**
+     * Set the {@link com.stratio.crossdata.core.structures.HavingClause} clause.
+     *
+     * @param havingClause The having.
+     */
+    public void setHavingClause(List<AbstractRelation> havingClause) {
+        this.havingInc = true;
+        this.havingClause = havingClause;
+    }
+
+
+    /**
      * Check if GROUP BY clause is included.
      *
      * @return {@code true} if is included.
@@ -401,6 +434,15 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(" GROUP BY ").append(StringUtils.stringList(groupByClause.getSelectorIdentifier(), ", "));
         }
 
+        if ((havingInc)&& (havingClause!=null)) {
+            sb.append(" HAVING ");
+            if(withSQLSyntax) {
+                sb.append(StringUtils.stringList(havingClause, " AND ").replaceAll(Operator.MATCH.toString(),"LIKE"));
+            } else{
+                sb.append(StringUtils.stringList(havingClause, " AND "));
+            }
+        }
+
         if (orderInc) {
             sb.append(" ORDER BY ").append(orderByClauses);
         }
@@ -463,6 +505,17 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     public String getSubqueryAlias() {
         return subqueryAlias;
     }
+
+    /**
+     * Check if Having clause is included.
+     *
+     * @return {@code true} if is included.
+     */
+    public boolean isHavingInc() {
+        return havingInc;
+    }
+
+
 
     @Override
     public List<TableName> getFromTables() {
