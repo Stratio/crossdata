@@ -316,6 +316,8 @@ T_ELSE: E L S E;
 T_END: E N D;
 T_HAVING: H A V I N G;
 
+
+
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
 
@@ -997,7 +999,8 @@ getSelector[TableName tablename] returns [Selector sel]
         | T_FALSE {firstSelector = new BooleanSelector(tablename, false);}
         | T_TRUE {firstSelector = new BooleanSelector(tablename, true);}
         | T_ASTERISK {firstSelector = new AsteriskSelector(tablename);}
-        | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(tablename, $qLiteral.text);})
+        | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(tablename, $qLiteral.text);}
+        | T_NULL {firstSelector=new NullSelector(tablename,"null");})
 
     |
         T_CASE (T_WHEN conditions=getConditions[null] T_THEN

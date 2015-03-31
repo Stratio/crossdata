@@ -38,10 +38,18 @@ public class SelectStatementTest extends ParsingTest {
 
     @Test
     public void basicSelectAsteriskWithLimit() {
-        String inputText = "[test], SELECT * FROM table1 LIMIT 1;";
+        String inputText = "[test], SELECT * FROM table1;";
         String expectedText = "SELECT * FROM test.table1 LIMIT 1;";
         testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
     }
+
+    @Test
+    public void basicSelectWithNull() {
+        String inputText = "SELECT test.table1.id, NULL FROM test.table1;";
+        String expectedText = "SELECT test.table1.id, NULL FROM test.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectNull");
+    }
+
 
     @Test
     public void basicSelectAsteriskWithCatalog() {
