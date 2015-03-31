@@ -24,6 +24,7 @@ import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -159,7 +160,10 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
      */
     public Project getProject(String tableName, ColumnName... columns) {
         Operations operation = Operations.PROJECT;
-        Project project = new Project(operation, new TableName("demo", tableName), new ClusterName("TestCluster1"));
+        Project project = new Project(
+                Collections.singleton(operation),
+                new TableName("demo", tableName),
+                new ClusterName("TestCluster1"));
         for (ColumnName cn : columns) {
             project.addColumn(cn);
         }
@@ -168,7 +172,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
     public Filter getFilter(Operations operation, ColumnName left, Operator operator, Selector right) {
         Relation relation = new Relation(new ColumnSelector(left), operator, right);
-        Filter filter = new Filter(operation, relation);
+        Filter filter = new Filter(
+                Collections.singleton(operation),
+                relation);
         return filter;
     }
 
@@ -184,7 +190,11 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
             typeMapFromColumnName.put(cs, types[index]);
             typeMap.put(columns[index].getName(), types[index]);
         }
-        Select select = new Select(operation, columnMap, typeMap, typeMapFromColumnName);
+        Select select = new Select(
+                Collections.singleton(operation),
+                columnMap,
+                typeMap,
+                typeMapFromColumnName);
         return select;
     }
 
@@ -193,7 +203,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
     }
 
     public Join getJoin(String joinId, Relation... relations) {
-        Join j = new Join(Operations.SELECT_INNER_JOIN, joinId);
+        Join j = new Join(
+                Collections.singleton(Operations.SELECT_INNER_JOIN),
+                joinId);
         for (Relation r : relations) {
             j.addJoinRelation(r);
         }
@@ -633,7 +645,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Relation r = new Relation(new ColumnSelector(columns1[0]), Operator.EQ,
                 new ColumnSelector(columns2[0]));
 
-        Window streamingWindow = new Window(Operations.SELECT_WINDOW, WindowType.NUM_ROWS);
+        Window streamingWindow = new Window(
+                Collections.singleton(Operations.SELECT_WINDOW),
+                WindowType.NUM_ROWS);
         streamingWindow.setNumRows(10);
 
         Join join = getJoin("joinId", r);

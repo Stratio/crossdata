@@ -121,7 +121,10 @@ public class PlannerPriorityTest extends PlannerBaseTest {
      */
     public Project getProject(String tableName, ColumnName... columns) {
         Operations operation = Operations.PROJECT;
-        Project project = new Project(operation, new TableName("demo", tableName), new ClusterName("TestCluster1"));
+        Project project = new Project(
+                Collections.singleton(operation),
+                new TableName("demo", tableName),
+                new ClusterName("TestCluster1"));
         for (ColumnName cn : columns) {
             project.addColumn(cn);
         }
@@ -140,7 +143,11 @@ public class PlannerPriorityTest extends PlannerBaseTest {
             typeMapFromColumnName.put(cs, types[index]);
             typeMap.put(columns[index].getName(), types[index]);
         }
-        Select select = new Select(operation, columnMap, typeMap, typeMapFromColumnName);
+        Select select = new Select(
+                Collections.singleton(operation),
+                columnMap,
+                typeMap,
+                typeMapFromColumnName);
         return select;
     }
 

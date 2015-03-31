@@ -52,6 +52,7 @@ import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
+import java.util.Collections
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
 ImplicitSender with BeforeAndAfterAll{
@@ -267,7 +268,10 @@ ImplicitSender with BeforeAndAfterAll{
    */
   def getProject (tableName: String, columns: ColumnName *): Project = {
     val operation: Operations = Operations.PROJECT
-    val project: Project = new Project (operation, new TableName (catalogName, tableName), new ClusterName (myClusterName) )
+    val project: Project = new Project (
+      Collections.singleton(operation),
+      new TableName(catalogName, tableName),
+      new ClusterName(myClusterName) )
     for (cn <- columns) {
       project.addColumn (cn)
     }

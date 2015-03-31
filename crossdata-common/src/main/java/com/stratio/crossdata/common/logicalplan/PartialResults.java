@@ -18,8 +18,10 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
-import com.stratio.crossdata.common.metadata.Operations;
+import java.util.Set;
+
 import com.stratio.crossdata.common.data.ResultSet;
+import com.stratio.crossdata.common.metadata.Operations;
 
 /**
  * Logical step to represent the movement of partial results between different connectors.
@@ -32,10 +34,10 @@ public class PartialResults extends TransformationStep{
     /**
      * Class constructor.
      *
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      */
-    public PartialResults(Operations operation) {
-        super(operation);
+    public PartialResults(Set<Operations> operations) {
+        super(operations);
     }
 
     public void setResults(ResultSet results) {

@@ -21,6 +21,7 @@ package com.stratio.crossdata.core.planner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -289,14 +290,16 @@ public class Planner {
             for (int index = 0; index < paths.length; index++) {
                 toRemove.clear();
                 for (ConnectorMetadata connector : paths[index].getAvailableConnectors()) {
-                    LOG.info("op: " + mergeStep.getOperation() + " -> " + connector.supports(mergeStep.getOperation()));
-                    if (!connector.supports(mergeStep.getOperation())) {
+                    LOG.info("op: " + mergeStep.getOperations() + " -> " +
+                            connector.supports(mergeStep.getOperations()));
+                    if (!connector.supports(mergeStep.getOperations())) {
                         toRemove.add(connector);
                     }
                 }
                 if (paths[index].getAvailableConnectors().size() == toRemove.size()) {
                     //Add intermediate result node
-                    PartialResults partialResults = new PartialResults(Operations.PARTIAL_RESULTS);
+                    PartialResults partialResults = new PartialResults(
+                            Collections.singleton(Operations.PARTIAL_RESULTS));
                     partialResults.setNextStep(mergeStep);
 
                     mergeStep.addPreviousSteps(partialResults);
@@ -517,7 +520,7 @@ public class Planner {
         while (!exit) {
             // Evaluate the connectors
             for (ConnectorMetadata connector: availableConnectors) {
-                if (!connector.supports(current.getOperation())) {
+                if (!connector.supports(current.getOperations())) {
                     // Check selector functions
                     toRemove.add(connector);
                 } else {
@@ -525,10 +528,9 @@ public class Planner {
                  * This connector support the operation but we also have to check if support for a specific
                  * function is required support.
                  */
-
-                    if (current.getOperation().getOperationsStr().toLowerCase().contains("function")) {
+                    if (current.getOperations().iterator().next().getOperationsStr().toLowerCase().contains("function")) {
                         Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName());
-                        switch (current.getOperation()) {
+                        switch (current.getOperations().iterator().next()) {
                         case SELECT_FUNCTIONS:
                             Select select = (Select) current;
                             Set<Selector> cols = select.getColumnMap().keySet();
@@ -537,7 +539,7 @@ public class Planner {
                             }
                             break;
                         default:
-                            throw new PlanningException(current.getOperation() + " not supported yet.");
+                            throw new PlanningException(current.getOperations() + " not supported yet.");
                         }
                     }
 
@@ -790,10 +792,10 @@ public class Planner {
                     for (LogicalStep ls : projects) {
                         if (Select.class.isInstance(ls)) {
                             for (Selector selector : ((Select) ls).getColumnMap().keySet()) {
-                                selectorJoinList.add((ColumnSelector) selector);
+                                selectorJoinList.add(selector);
                                 joinTableMetadataMap.put(selector.getColumnName().getTableName().getQualifiedName(),
-                                        tableMetadataMap.get(selector.getColumnName().getTableName().getQualifiedName
-                                                ()));
+                                        tableMetadataMap.get(
+                                                selector.getColumnName().getTableName().getQualifiedName()));
                             }
                         }
                         if (Project.class.isInstance(ls)) {
@@ -836,10 +838,14 @@ public class Planner {
         if (ss.isGroupInc()) {
             GroupBy groupBy;
             if(ss.isHavingInc()){
-                groupBy = new GroupBy(Operations.SELECT_GROUP_BY, ss.getGroupByClause().getSelectorIdentifier(),
+                groupBy = new GroupBy(
+                        Collections.singleton(Operations.SELECT_GROUP_BY),
+                        ss.getGroupByClause().getSelectorIdentifier(),
                         ss.getHavingClause());
-            }else{
-                groupBy = new GroupBy(Operations.SELECT_GROUP_BY, ss.getGroupByClause().getSelectorIdentifier());
+            } else {
+                groupBy = new GroupBy(
+                        Collections.singleton(Operations.SELECT_GROUP_BY),
+                        ss.getGroupByClause().getSelectorIdentifier());
             }
 
             last.setNextStep(groupBy);
@@ -849,7 +855,9 @@ public class Planner {
 
         // ORDER BY clause
         if (ss.isOrderInc()) {
-            OrderBy orderBy = new OrderBy(Operations.SELECT_ORDER_BY, ss.getOrderByClauses());
+            OrderBy orderBy = new OrderBy(
+                    Collections.singleton(Operations.SELECT_ORDER_BY),
+                    ss.getOrderByClauses());
             last.setNextStep(orderBy);
             orderBy.setPrevious(last);
             last = orderBy;
@@ -857,7 +865,9 @@ public class Planner {
 
         //Add LIMIT clause
         if (ss.isLimitInc()) {
-            Limit l = new Limit(Operations.SELECT_LIMIT, ss.getLimit());
+            Limit l = new Limit(
+                    Collections.singleton(Operations.SELECT_LIMIT),
+                    ss.getLimit());
             last.setNextStep(l);
             l.setPrevious(last);
             last = l;
@@ -1475,9 +1485,13 @@ public class Planner {
 
             selectExecutionWorkflow.setResultType(ResultType.TRIGGER_EXECUTION);
             if (insertIntoStatement.isIfNotExists()) {
-                selectExecutionWorkflow.setTriggerStep(new PartialResults(Operations.INSERT_IF_NOT_EXISTS));
+                selectExecutionWorkflow.setTriggerStep(
+                        new PartialResults(
+                                Collections.singleton(Operations.INSERT_IF_NOT_EXISTS)));
             } else {
-                selectExecutionWorkflow.setTriggerStep(new PartialResults(Operations.INSERT));
+                selectExecutionWorkflow.setTriggerStep(
+                        new PartialResults(
+                                Collections.singleton(Operations.INSERT)));
             }
 
             if ((candidates != null) && (!candidates.isEmpty())) {
@@ -1594,9 +1608,11 @@ public class Planner {
             for (Relation relation : deleteStatement.getWhereClauses()) {
                 Operations operation = getFilterOperation(tableMetadata, "DELETE", relation.getLeftTerm(),
                         relation.getOperator());
-                Filter filter = new Filter(operation, relation);
+                Filter filter = new Filter(
+                        Collections.singleton(operation),
+                        relation);
                 filters.add(filter);
-                requiredOperations.add(filter.getOperation());
+                requiredOperations.addAll(filter.getOperations());
             }
         }
 
@@ -1632,9 +1648,11 @@ public class Planner {
             for (Relation relation : updateTableStatement.getWhereClauses()) {
                 Operations operation = getFilterOperation(tableMetadata, "UPDATE", relation.getLeftTerm(),
                         relation.getOperator());
-                Filter filter = new Filter(operation, relation);
+                Filter filter = new Filter(
+                        Collections.singleton(operation),
+                        relation);
                 filters.add(filter);
-                requiredOperations.add(filter.getOperation());
+                requiredOperations.addAll(filter.getOperations());
             }
         }
 
@@ -1782,7 +1800,9 @@ public class Planner {
                 Operations op = createOperation(tableMetadataMap, s, r);
                 if (op != null) {
                     convertSelectSelectors(r);
-                    Filter f = new Filter(op, r);
+                    Filter f = new Filter(
+                            Collections.singleton(op),
+                            r);
                     LogicalStep previous = lastSteps.get(s.getSelectorTablesAsString());
                     previous.setNextStep(f);
                     f.setPrevious(previous);
@@ -1802,7 +1822,10 @@ public class Planner {
                 for(AbstractRelation innerRelation: rd.getRightRelations()){
                     rightOperands.addAll(createFilter(tableMetadataMap, innerRelation));
                 }
-                Disjunction d = new Disjunction(op, leftOperands, rightOperands);
+                Disjunction d = new Disjunction(
+                        Collections.singleton(op),
+                        leftOperands,
+                        rightOperands);
                 LogicalStep previous = lastSteps.get(rd.getSelectorTablesAsString());
                 previous.setNextStep(d);
                 d.setPrevious(previous);
@@ -1835,7 +1858,10 @@ public class Planner {
         if(abstractRelation instanceof Relation){
             Relation relation = (Relation) abstractRelation;
             Operations op = createOperation(tableMetadataMap, relation.getLeftTerm(), relation);
-            operands.add(new Filter(op, relation));
+            operands.add(
+                    new Filter(
+                            Collections.singleton(op),
+                            relation));
         } else if(abstractRelation instanceof RelationDisjunction){
             RelationDisjunction rd = (RelationDisjunction) abstractRelation;
             List<IOperand> leftOperands = new ArrayList<>();
@@ -1846,7 +1872,11 @@ public class Planner {
             for(AbstractRelation innerRelation: rd.getRightRelations()){
                 rightOperands.addAll(createFilter(tableMetadataMap, innerRelation));
             }
-            operands.add(new Disjunction(Operations.FILTER_DISJUNCTION, leftOperands, rightOperands));
+            operands.add(
+                    new Disjunction(
+                        Collections.singleton(Operations.FILTER_DISJUNCTION),
+                        leftOperands,
+                        rightOperands));
         }
         return operands;
     }
@@ -1882,7 +1912,9 @@ public class Planner {
      * @return The resulting map of logical steps.
      */
     private Map<String, LogicalStep> addWindow(Map<String, LogicalStep> lastSteps, SelectStatement stmt) {
-        Window w = new Window(Operations.SELECT_WINDOW, stmt.getWindow());
+        Window w = new Window(
+                Collections.singleton(Operations.SELECT_WINDOW),
+                stmt.getWindow());
         LogicalStep previous = lastSteps.get(stmt.getTableName().getQualifiedName());
         previous.setNextStep(w);
         w.setPrevious(previous);
@@ -1903,11 +1935,21 @@ public class Planner {
 
         for (InnerJoin queryJoin : query.getJoinList()) {
 
-            Join innerJoin = new Join(Operations.SELECT_INNER_JOIN, "innerJoin");
-            Join leftJoin = new Join(Operations.SELECT_LEFT_OUTER_JOIN, "leftJoin");
-            Join rightJoin = new Join(Operations.SELECT_RIGHT_OUTER_JOIN, "rightJoin");
-            Join fullOuterJoin = new Join(Operations.SELECT_FULL_OUTER_JOIN, "fullOuterJoin");
-            Join crossJoin = new Join(Operations.SELECT_CROSS_JOIN, "crossJoin");
+            Join innerJoin = new Join(
+                    Collections.singleton(Operations.SELECT_INNER_JOIN),
+                    "innerJoin");
+            Join leftJoin = new Join(
+                    Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN),
+                    "leftJoin");
+            Join rightJoin = new Join(
+                    Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN),
+                    "rightJoin");
+            Join fullOuterJoin = new Join(
+                    Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN),
+                    "fullOuterJoin");
+            Join crossJoin = new Join(
+                    Collections.singleton(Operations.SELECT_CROSS_JOIN),
+                    "crossJoin");
 
             StringBuilder sb = new StringBuilder();
             Relation firstRelation = (Relation) queryJoin.getRelations().get(0);
@@ -2132,10 +2174,16 @@ public class Planner {
         for (TableName tn : query.getStatement().getFromTables()) {
             Project p;
             if (tn.isVirtual()) {
-                p = new Project(Operations.PROJECT, tn, new ClusterName(Constants.VIRTUAL_CATALOG_NAME));
+                p = new Project(
+                        Collections.singleton(Operations.PROJECT),
+                        tn,
+                        new ClusterName(Constants.VIRTUAL_CATALOG_NAME));
                 projects.put(tn.getQualifiedName(), p);
             } else {
-                p = new Project(Operations.PROJECT, tn, tableMetadataMap.get(tn.getQualifiedName()).getClusterRef());
+                p = new Project(
+                        Collections.singleton(Operations.PROJECT),
+                        tn,
+                        tableMetadataMap.get(tn.getQualifiedName()).getClusterRef());
 
             }
             projects.put(tn.getQualifiedName(), p);
@@ -2156,8 +2204,8 @@ public class Planner {
         LinkedHashMap<String, ColumnType> typeMap = new LinkedHashMap<>();
         LinkedHashMap<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
         boolean addAll = false;
-        Operations currentOperation = Operations.SELECT_OPERATOR;
-        boolean relationIncluded = false;
+        Set<Operations> requiredOperations = new HashSet<>();
+        requiredOperations.add(Operations.SELECT_OPERATOR);
         for (Selector s: selectStatement.getSelectExpression().getSelectorList()) {
             if (AsteriskSelector.class.isInstance(s)) {
                 addAll = true;
@@ -2195,7 +2243,7 @@ public class Planner {
                 typeMap.put(alias, colType);
 
             } else if (FunctionSelector.class.isInstance(s)) {
-                currentOperation = Operations.SELECT_FUNCTIONS;
+                requiredOperations.add(Operations.SELECT_FUNCTIONS);
                 FunctionSelector fs = FunctionSelector.class.cast(s);
                 ColumnType ct = null;
                 String alias;
@@ -2225,10 +2273,9 @@ public class Planner {
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.TEXT));
             } else if(RelationSelector.class.isInstance(s)){
                 generateLiteralSelect(aliasMap, typeMap, typeMapFromColumnName, s, new ColumnType(DataType.DOUBLE));
-                relationIncluded = true;
             } else if (CaseWhenSelector.class.isInstance(s)) {
                 generateCaseWhenSelect(aliasMap, typeMap, typeMapFromColumnName, s);
-                currentOperation = Operations.SELECT_CASE_WHEN;
+                requiredOperations.add(Operations.SELECT_CASE_WHEN);
             }  else {
                 throw new PlanningException(s.getClass().getCanonicalName() + " is not supported yet.");
             }
@@ -2270,11 +2317,7 @@ public class Planner {
             }
         }
 
-        if(relationIncluded){
-            currentOperation = Operations.SELECT_OPERATOR;
-        }
-
-        return new Select(currentOperation, aliasMap, typeMap, typeMapFromColumnName);
+        return new Select(requiredOperations, aliasMap, typeMap, typeMapFromColumnName);
     }
 
     private void generateCaseWhenSelect(LinkedHashMap<Selector, String> aliasMap,

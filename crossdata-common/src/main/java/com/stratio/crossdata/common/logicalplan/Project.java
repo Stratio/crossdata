@@ -21,6 +21,7 @@ package com.stratio.crossdata.common.logicalplan;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -51,12 +52,12 @@ public class Project extends TransformationStep implements Virtualizable {
     /**
      * Create a projection.
      *
-     * @param operation   The operation to be applied.
+     * @param operations   The operations to be applied.
      * @param tableName   The table name.
      * @param clusterName The cluster name.
      */
-    public Project(Operations operation, TableName tableName, ClusterName clusterName) {
-        super(operation);
+    public Project(Set<Operations> operations, TableName tableName, ClusterName clusterName) {
+        super(operations);
         this.tableName = tableName;
         this.clusterName = clusterName;
     }
@@ -64,13 +65,13 @@ public class Project extends TransformationStep implements Virtualizable {
     /**
      * Create a projection.
      *
-     * @param operation   The operation to be applied.
+     * @param operations   The operations to be applied.
      * @param tableName   TABLE name.
      * @param clusterName The cluster name.
      * @param columnList  List of columns.
      */
-    public Project(Operations operation, TableName tableName, ClusterName clusterName, List<ColumnName> columnList) {
-        super(operation);
+    public Project(Set<Operations> operations, TableName tableName, ClusterName clusterName, List<ColumnName> columnList) {
+        super(operations);
         this.tableName = tableName;
         this.clusterName = clusterName;
         this.columnList.addAll(columnList);

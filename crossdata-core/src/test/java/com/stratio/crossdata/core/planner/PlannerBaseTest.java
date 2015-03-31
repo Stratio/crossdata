@@ -38,7 +38,6 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
-import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
@@ -240,8 +239,9 @@ public class PlannerBaseTest {
         boolean found = false;
         while (step != null && !found) {
             if (Filter.class.isInstance(step)) {
-                LOG.info("-> " + step.getOperation());
-                found = operation.equals(step.getOperation());
+                LOG.info("-> " + step.getOperations());
+                found = step.getOperations().contains(operation);
+                //found = operation.equals(step.getOperation());
             }
             step = step.getNextStep();
         }
@@ -253,8 +253,9 @@ public class PlannerBaseTest {
         boolean found = false;
         while (step != null && !found) {
             if (GroupBy.class.isInstance(step)) {
-                LOG.info("-> " + step.getOperation());
-                found = operation.equals(step.getOperation());
+                LOG.info("-> " + step.getOperations());
+                found = step.getOperations().contains(operation);
+                //found = operation.equals(step.getOperation());
             }
             step = step.getNextStep();
         }
