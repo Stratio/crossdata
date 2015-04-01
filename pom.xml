@@ -209,6 +209,7 @@
                         <artifactId>unix-maven-plugin</artifactId>
                         <version>1.0-alpha-9</version>
                         <extensions>true</extensions>
+			<inherited>false</inherited>
                         <configuration>
                             <contact><![CDATA[Stratio <chernandez@stratio.com>]]></contact>
                             <contactEmail>chernandez@stratio.com</contactEmail>
@@ -269,6 +270,16 @@
                                 </copyFile>
                             </assembly>
                         </configuration>
+			<executions>
+			<execution>
+                        	<id>create-installers</id>
+				<phase>package</phase>
+				<goals>
+			            <goal>package-deb</goal>
+			            <goal>package-rpm</goal>
+			        </goals>
+			</execution>
+			</executions>
                     </plugin>
                 </plugins>
             </build>
