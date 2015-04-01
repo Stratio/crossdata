@@ -145,7 +145,18 @@ public class Shell {
         }
 
         Shell sh = new Shell(async);
-        if (sh.connect()) {
+        //Get the User and pass
+        Character mask=(args.length == 0) ? new Character((char)0) : new Character(args[0].charAt(0));
+        String user="";
+        String pass="";
+        try {
+            ConsoleReader reader=new ConsoleReader();
+            user=reader.readLine("user>");
+            pass=reader.readLine("Enter password> ",mask);
+        } catch (IOException e) {
+            LOG.error(e.getMessage());
+        }
+        if (sh.connect(user,pass)) {
             boolean enterLoop = true;
             if (initScript != null) {
                 enterLoop = sh.executeScript(initScript);
@@ -289,11 +300,10 @@ public class Shell {
      *
      * @return Whether the connection has been successfully established.
      */
-    public boolean connect() {
+    public boolean connect(String user, String pass) {
         boolean result = true;
         try {
-            Result connectionResult = crossdataDriver.connect(crossdataDriver.getUserName(),
-                    crossdataDriver.getPassword());
+            Result connectionResult = crossdataDriver.connect(user, pass);
             sessionId=((ConnectResult)connectionResult).getSessionId();
             LOG.info("Driver connections established");
             LOG.info(ConsoleUtils.stringResult(connectionResult));

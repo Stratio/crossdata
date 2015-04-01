@@ -73,7 +73,7 @@ public class ShellTest {
     public void testShellConnectWithoutServer() {
         try {
             Shell crossdataSh = new Shell(false);
-            boolean result = crossdataSh.connect();
+            boolean result = crossdataSh.connect("userTest","passwordTest");
         } catch (Exception e) {
             assertTrue(true, "Impossible to happen");
         }
