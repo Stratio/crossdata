@@ -49,6 +49,7 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.manifest.FunctionType;
+import com.stratio.crossdata.common.manifest.FunctionTypeHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -1215,15 +1216,15 @@ public enum MetadataManager {
      * @return A boolean with the check result.
      */
     public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName)
-                    throws PlanningException {
+            throws PlanningException {
         boolean result = false;
         FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
         if(ft != null){
             String inputSignatureFromSelector = createInputSignature(fSelector, connectorName);
             String storedSignature = ft.getSignature();
             String inputStoredSignature = storedSignature.substring(0,storedSignature.lastIndexOf(":Tuple["));
-            result = inputStoredSignature.equals(inputSignatureFromSelector) || FunctionType
-                            .checkInputSignatureCompatibility(inputStoredSignature, inputSignatureFromSelector);
+            result = inputStoredSignature.equals(inputSignatureFromSelector) ||
+                    FunctionTypeHelper.checkInputSignatureCompatibility(inputStoredSignature, inputSignatureFromSelector);
         }
         return result;
     }

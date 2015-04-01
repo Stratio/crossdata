@@ -962,8 +962,29 @@ getSelector[TableName tablename] returns [Selector sel]
     T_END_PARENTHESIS
     | firstSelector=getFunctionSelector[tablename]
     | firstSelector=getSimpleSelector[tablename]
-    | firstSelector=getCaseWhenSelector[tablename])
+    | firstSelector=getCaseWhenSelector[tablename]
+    | firstSelector=getCollectionSelector[tablename])
     (operator=getOperator {relationSelector=true;} secondSelector=getSelector[workaroundTable])?
+;
+
+getCollectionSelector[TableName tablename] returns [Selector selector]
+    @after{
+        selector = collectionSelector;
+    }:
+    collectionSelector=getListSelector[tablename]
+;
+
+getListSelector[TableName tablename] returns [Selector selector]
+    @init{
+        List<Selector> selectorsList = new ArrayList<>();
+    }
+    @after{
+        selector = new ListSelector(tablename, selectorsList);
+    }:
+    T_START_BRACKET
+        (basicSelector=getBasicSelector[tablename] { selectorsList.add(basicSelector); }
+            (T_COMMA basicSelector=getBasicSelector[tablename] { selectorsList.add(basicSelector); })*)?
+    T_END_BRACKET
 ;
 
 getCaseWhenSelector[TableName tablename] returns [Selector selector]
@@ -975,13 +996,13 @@ getCaseWhenSelector[TableName tablename] returns [Selector selector]
     }:
     T_CASE
         (T_WHEN conditions=getConditions[tablename] T_THEN
-            firstSelector=getPartialSelector[tablename]
+            firstSelector=getBasicSelector[tablename]
             {
                 Pair<List<AbstractRelation>,Selector> restriction = new ImmutablePair<>(conditions, firstSelector);
                 restrictions.add(restriction);
             })*
     T_ELSE
-        defaultSelector=getPartialSelector[tablename]
+        defaultSelector=getBasicSelector[tablename]
     T_END
 ;
 
@@ -1000,7 +1021,7 @@ getFunctionSelector[TableName tablename] returns [Selector selector]
     T_END_PARENTHESIS
 ;
 
-getPartialSelector[TableName tablename] returns [Selector selector]
+getBasicSelector[TableName tablename] returns [Selector selector]
     @init{
         Selector defaultSelector = null;
     }
@@ -1011,7 +1032,8 @@ getPartialSelector[TableName tablename] returns [Selector selector]
     | constant=T_CONSTANT {defaultSelector = new IntegerSelector(tablename, $constant.text);}
     | T_FALSE {defaultSelector = new BooleanSelector(tablename, false);}
     | T_TRUE {defaultSelector = new BooleanSelector(tablename, true);}
-    | qLiteral=QUOTED_LITERAL {defaultSelector = new StringSelector(tablename, $qLiteral.text);})
+    | qLiteral=QUOTED_LITERAL {defaultSelector = new StringSelector(tablename, $qLiteral.text);}
+    | T_NULL {defaultSelector = new NullSelector(tablename, "null");})
 ;
 
 getSimpleSelector[TableName tablename] returns [Selector selector]
@@ -1022,14 +1044,9 @@ getSimpleSelector[TableName tablename] returns [Selector selector]
     @after{
         selector = firstSelector;
     }:
-    (columnName=getColumnName[tablename] {firstSelector = new ColumnSelector(columnName);}
-    | floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
-    | constant=T_CONSTANT {firstSelector = new IntegerSelector(tablename, $constant.text);}
-    | T_FALSE {firstSelector = new BooleanSelector(tablename, false);}
-    | T_TRUE {firstSelector = new BooleanSelector(tablename, true);}
-    | T_ASTERISK {firstSelector = new AsteriskSelector(tablename);}
-    | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(tablename, $qLiteral.text);}
-    | T_NULL {firstSelector=new NullSelector(tablename, "null");})
+    ( basicSelector=getBasicSelector[tablename] {firstSelector = basicSelector; }
+    | columnName=getColumnName[tablename] {firstSelector = new ColumnSelector(columnName);}
+    | T_ASTERISK {firstSelector = new AsteriskSelector(tablename);})
 ;
 
 getInterval[TableName tablename] returns [Selector sel]
@@ -1037,10 +1054,10 @@ getInterval[TableName tablename] returns [Selector sel]
             Selector firstSelector = null;
             Selector lastSelector=null;
             workaroundTable = tablename;
-        }
+    }
     @after{
            sel = new GroupSelector(workaroundTable,firstSelector,lastSelector);
-        }:
+    }:
     (floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector( workaroundTable,$floatingNumber.text);}
         | constant=T_CONSTANT {firstSelector = new IntegerSelector(workaroundTable, $constant.text);}
         | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(workaroundTable, $qLiteral.text);})
@@ -1094,6 +1111,7 @@ getComparator returns [Operator op]:
     | T_LIKE {$op = Operator.LIKE;}
     | T_MATCH {$op = Operator.MATCH;}
     | T_BETWEEN {$op = Operator.BETWEEN;}
+    | T_IN {$op = Operator.IN;}
 ;
 
 getIds returns [ArrayList<String> listStrs]
