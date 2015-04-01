@@ -17,10 +17,10 @@
  */
 package com.stratio.crossdata.common.metadata;
 
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import com.stratio.crossdata.common.manifest.FunctionType;
+
+import com.stratio.crossdata.common.manifest.FunctionTypeHelper;
 
 public class FunctionTypeTest {
 
@@ -28,17 +28,17 @@ public class FunctionTypeTest {
     @Test
     public void testCheckValidSignatures(){
         //Stored, Query
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[Int]", "Tuple[Int]"));
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[]", "Tuple[]"));
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[]", "Tuple[Int*]"));
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[]", "Tuple[Any*]"));
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[Int,Any*]", "Tuple[Int]"));
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[Any*]", "Tuple[]"));
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[Int]", "Tuple[Int*]"));
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[Int]", "Tuple[Int, Text*]"));
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[Int*]", "Tuple[Int,Any,Int]"));
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[Any*]", "Tuple[Int,Any,Int]"));
-        Assert.assertTrue(FunctionType.checkInputSignatureCompatibility("Tuple[Int*]", "Tuple[Any]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int]", "Tuple[Int]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[]", "Tuple[]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[]", "Tuple[Int*]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[]", "Tuple[Any*]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int,Any*]", "Tuple[Int]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Any*]", "Tuple[]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int]", "Tuple[Int*]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int]", "Tuple[Int, Text*]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int*]", "Tuple[Int,Any,Int]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Any*]", "Tuple[Int,Any,Int]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int*]", "Tuple[Any]"));
 
     }
 
@@ -46,12 +46,12 @@ public class FunctionTypeTest {
     @Test
     public void testCheckWrongSignatures(){
         //Stored, Query
-        Assert.assertFalse(FunctionType.checkInputSignatureCompatibility("Tuple[]", "Tuple[Int]"));
-        Assert.assertFalse(FunctionType.checkInputSignatureCompatibility("Tuple[]", "Tuple[Any]"));
-        Assert.assertFalse(FunctionType.checkInputSignatureCompatibility("Tuple[Int,Any,Text]", "Tuple[Int,Any,Int]"));
-        Assert.assertFalse(FunctionType.checkInputSignatureCompatibility("Tuple[Int*]", "Tuple[Text]"));
-        Assert.assertFalse(FunctionType.checkInputSignatureCompatibility("Tuple[Text*]", "Tuple[Int*]"));
-        Assert.assertFalse(FunctionType.checkInputSignatureCompatibility("Tuple[Int,Any,Text]","Tuple[Int,Int,Int]"));
+        Assert.assertFalse(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[]", "Tuple[Int]"));
+        Assert.assertFalse(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[]", "Tuple[Any]"));
+        Assert.assertFalse(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int,Any,Text]", "Tuple[Int,Any,Int]"));
+        Assert.assertFalse(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int*]", "Tuple[Text]"));
+        Assert.assertFalse(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Text*]", "Tuple[Int*]"));
+        Assert.assertFalse(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int,Any,Text]","Tuple[Int,Int,Int]"));
     }
 
 }
