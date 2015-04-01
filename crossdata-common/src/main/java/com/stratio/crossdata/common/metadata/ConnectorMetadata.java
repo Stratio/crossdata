@@ -414,6 +414,10 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
         this.actorRefs = actorRefs;
     }
 
+    public boolean supports(Set<Operations> operations) {
+        return supportedOperations.containsAll(operations);
+    }
+
     /**
      * Determine if the connector supports a specific operation.
      *

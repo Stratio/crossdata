@@ -20,6 +20,8 @@
 package com.stratio.crossdata.common.manifest;
 
 import java.io.Serializable;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -223,8 +225,11 @@ public class FunctionType implements Serializable {
                 if(!storeType.equals("Any")) {
                     if (storeType.equals("")){
                         wrongQuerySignatureFound = !(typesInQuerySignature[queryIndex].equals(storeType) || typesInQuerySignature[queryIndex].endsWith("*"));
-                    }else {
-                        wrongQuerySignatureFound = !(typesInQuerySignature[queryIndex].equals(storeType) || typesInQuerySignature[queryIndex].endsWith(storeType+"*"));
+                    } else {
+                        wrongQuerySignatureFound = !(
+                                typesInQuerySignature[queryIndex].equals(storeType)
+                                || typesInQuerySignature[queryIndex].endsWith(storeType+"*")
+                                || checkNumericTypes(typesInQuerySignature[queryIndex], storeType));
                     }
                 }
             }else{
@@ -247,6 +252,19 @@ public class FunctionType implements Serializable {
         return !wrongQuerySignatureFound;
     }
 
+    private static boolean checkNumericTypes(String t1, String t2) {
+        Set<String> numericTypes = new HashSet<>();
+        numericTypes.add("int");
+        numericTypes.add("bigint");
+        numericTypes.add("long");
+        numericTypes.add("float");
+        numericTypes.add("double");
+
+        if(numericTypes.contains(t1.toLowerCase()) && numericTypes.contains(t2.toLowerCase())){
+            return true;
+        }
+        return false;
+    }
 
     private static String[] tokenizeInputSignature(String iSignature) {
         String typesInStoresSignature = iSignature.substring( iSignature.indexOf("Tuple[") + 6, iSignature.indexOf(']'));

@@ -430,10 +430,6 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             }
         }
 
-        if (orderInc) {
-            sb.append(" ORDER BY ").append(orderByClauses);
-        }
-
         if (groupInc) {
             sb.append(" GROUP BY ").append(StringUtils.stringList(groupByClause.getSelectorIdentifier(), ", "));
         }
@@ -445,6 +441,10 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             } else{
                 sb.append(StringUtils.stringList(havingClause, " AND "));
             }
+        }
+
+        if (orderInc) {
+            sb.append(" ORDER BY ").append(orderByClauses);
         }
 
         if (limitInc) {

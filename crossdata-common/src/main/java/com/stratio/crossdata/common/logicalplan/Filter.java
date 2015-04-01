@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
+import java.util.Set;
+
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.Relation;
 
@@ -35,11 +37,11 @@ public class Filter extends TransformationStep implements IOperand {
     /**
      * Create filter operation to be executed over a existing dataset.
      *
-     * @param operation The operation to be executed.
+     * @param operations The operations to be executed.
      * @param relation  The relationship.
      */
-    public Filter(Operations operation, Relation relation) {
-        super(operation);
+    public Filter(Set<Operations> operations, Relation relation) {
+        super(operations);
         this.relation = relation;
     }
 
@@ -55,7 +57,7 @@ public class Filter extends TransformationStep implements IOperand {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("FILTER - ");
-        sb.append(getOperation()).append(" - ").append(relation);
+        sb.append(getOperations()).append(" - ").append(relation);
         return sb.toString();
     }
 }

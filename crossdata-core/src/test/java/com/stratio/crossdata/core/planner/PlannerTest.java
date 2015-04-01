@@ -25,6 +25,7 @@ import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -55,6 +56,8 @@ import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Disjunction;
 import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.Project;
+import com.stratio.crossdata.common.logicalplan.Select;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
@@ -124,6 +127,8 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC1.add(Operations.INSERT_IF_NOT_EXISTS);
         operationsC1.add(Operations.INSERT_FROM_SELECT);
         operationsC1.add(Operations.SELECT_SUBQUERY);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_LET);
+        operationsC1.add(Operations.SELECT_ORDER_BY);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -138,10 +143,33 @@ public class PlannerTest extends PlannerBaseTest {
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
 
+        List<FunctionType> functions1 = new ArrayList<>();
+        // SUM function
+        FunctionType sumFunction = new FunctionType();
+        sumFunction.setFunctionName("sum");
+        sumFunction.setSignature("sum(Tuple[Double]):Tuple[Double]");
+        sumFunction.setFunctionType("aggregation");
+        sumFunction.setDescription("Total sum");
+        functions1.add(sumFunction);
+        // AVG function
+        FunctionType avgFunction = new FunctionType();
+        avgFunction.setFunctionName("avg");
+        avgFunction.setSignature("avg(Tuple[Double]):Tuple[Double]");
+        avgFunction.setFunctionType("aggregation");
+        avgFunction.setDescription("Average");
+        functions1.add(avgFunction);
+        // COUNT function
+        FunctionType countFunction = new FunctionType();
+        countFunction.setFunctionName("count");
+        countFunction.setSignature("count(Tuple[Any*]):Tuple[Int]");
+        countFunction.setFunctionType("aggregation");
+        countFunction.setDescription("Count");
+        functions1.add(countFunction);
+        
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
-                clusterWithDefaultPriority, operationsC1, "actorRef1");
+                clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
         connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName,
-                clusterWithDefaultPriority, operationsC2, "actorRef2");
+                clusterWithDefaultPriority, operationsC2, "actorRef2", new ArrayList<FunctionType>());
 
         clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName(), connector2.getName());
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
@@ -311,10 +339,12 @@ public class PlannerTest extends PlannerBaseTest {
         assertEquals(storageWorkflow.getTableName(), new TableName("demo", "table1"), "Table name is not correct");
 
         Collection<Filter> whereClauses = new ArrayList<>();
-        whereClauses.add(new Filter(Operations.DELETE_PK_EQ, new Relation(
-                new ColumnSelector(new ColumnName("demo", "table1", "id")),
-                Operator.EQ,
-                new IntegerSelector(new TableName("demo", "table1"), 3))));
+        whereClauses.add(
+                new Filter(Collections.singleton(Operations.DELETE_PK_EQ),
+                        new Relation(
+                                new ColumnSelector(new ColumnName("demo", "table1", "id")),
+                                Operator.EQ,
+                                new IntegerSelector(new TableName("demo", "table1"), 3))));
 
         assertEquals(storageWorkflow.getWhereClauses().size(), whereClauses.size(), "Where clauses size differs");
 
@@ -470,7 +500,10 @@ public class PlannerTest extends PlannerBaseTest {
         ColumnSelector firstSelector = new ColumnSelector(new ColumnName("demo", "table1", "id"));
         IntegerSelector secondSelector = new IntegerSelector(new TableName("demo", "table1"), 1);
         Relation relation = new Relation(firstSelector, Operator.EQ, secondSelector);
-        filters.add(new Filter(Operations.UPDATE_PK_EQ, relation));
+        filters.add(
+                new Filter(
+                        Collections.singleton(Operations.UPDATE_PK_EQ),
+                        relation));
         assertEquals(storageWorkflow.getWhereClauses().size(), 1, "Wrong where clauses size");
         assertEquals(storageWorkflow.getWhereClauses().size(), filters.size(), "Where clauses sizes differ");
         assertTrue(storageWorkflow.getWhereClauses().iterator().next().toString().equalsIgnoreCase(
@@ -543,7 +576,7 @@ public class PlannerTest extends PlannerBaseTest {
         String inputText = "SELECT * FROM demo.table1 WITH WINDOW 5 MINUTES " +
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
-                inputText, "testJoinWithStreaming", false, table1, table2);
+                inputText, "testJoinWithStreaming", false, table1, table3);
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
         assertNotNull(queryWorkflow.getTriggerStep(), "Planner failed.");
         assertNotNull(queryWorkflow.getNextExecutionWorkflow(), "Planner failed.");
@@ -600,7 +633,8 @@ public class PlannerTest extends PlannerBaseTest {
                 new DataStoreName("greatDatastore"),
                 clusterWithDefaultPriority,
                 greatOperations,
-                "greatActorRef");
+                "greatActorRef",
+                new ArrayList<FunctionType>());
 
         clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(
                 strClusterName, new DataStoreName("greatDatastore"),
@@ -728,4 +762,65 @@ public class PlannerTest extends PlannerBaseTest {
                 "Right operand of the disjunction should have 2 relations");
     }
 
+    @Test
+    public void testSelectWithOperatorsPreference() throws ManifestException {
+
+        init();
+
+        String[] columnNames1 = { "id", "name", "size", "retailprice", "date" };
+        ColumnType[] columnTypes1 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.FLOAT),
+                new ColumnType(DataType.NATIVE)};
+        String[] partitionKeys1 = { "id" };
+        String[] clusteringKeys1 = { };
+        TableMetadata table5 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "part",
+                columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
+
+        String inputText = "SELECT "
+                + "name, "
+                + "size*retailprice, "
+                + "(2*retailprice), "
+                + "sum(size*(1-size)*(1+retailprice)) as sum_charge, "
+                + "avg(size) as avg_size, "
+                + "count(*) as count_order "
+                + "FROM demo.part "
+                + "WHERE "
+                + "date <= '1998-12-01' - interval('1998-12-01', 3) "
+                + "GROUP BY name "
+                + "ORDER BY name;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testSelectWithDisjunctionAndParenthesis", false, false, table5);
+
+        assertNotNull(queryWorkflow, "Workflow is null for testSelectWithOperatorsPreference");
+        assertEquals(queryWorkflow.getWorkflow().getLastStep().getClass(), Select.class, "Last step must be a Select");
+        Select finalSelect = (Select) queryWorkflow.getWorkflow().getLastStep();
+        assertEquals(
+                finalSelect.getTypeMap().get("name"),
+                ColumnType.valueOf("TEXT"),
+                "Column name must be of type text");
+        assertEquals(
+                finalSelect.getTypeMap().get("Column2"),
+                ColumnType.valueOf("DOUBLE"),
+                "Column Column2 must be of type double");
+        assertEquals(
+                finalSelect.getTypeMap().get("Column3"),
+                ColumnType.valueOf("DOUBLE"),
+                "Column Column3 must be of type double");
+        assertEquals(
+                finalSelect.getTypeMap().get("sum_charge"),
+                ColumnType.valueOf("DOUBLE"),
+                "Column sum_charge must be of type double");
+        assertEquals(
+                finalSelect.getTypeMap().get("avg_size"),
+                ColumnType.valueOf("DOUBLE"),
+                "Column avg_size must be of type double");
+        assertEquals(
+                finalSelect.getTypeMap().get("count_order"),
+                ColumnType.valueOf("INT"),
+                "Column count_order must be of type int");
+    }
 }

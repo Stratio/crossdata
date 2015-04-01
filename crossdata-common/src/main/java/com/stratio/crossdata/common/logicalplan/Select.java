@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.Operations;
@@ -52,8 +53,8 @@ public class Select extends TransformationStep {
     /**
      * Class constructor.
      * 
-     * @param operation
-     *            The operation to be applied.
+     * @param requiredOperations
+     *            A set of operations to be applied.
      * @param columnMap
      *            Map of columns associating the name given in the Project logical steps with the name expected in the
      *            result.
@@ -61,9 +62,9 @@ public class Select extends TransformationStep {
      *            The mapping of column types.
      * @param typeMapFromColumnName  The types of selectors.
      */
-    public Select(Operations operation, Map<Selector, String> columnMap, Map<String, ColumnType> typeMap,
+    public Select(Set<Operations> requiredOperations, Map<Selector, String> columnMap, Map<String, ColumnType> typeMap,
             Map<Selector, ColumnType> typeMapFromColumnName) {
-        super(operation);
+        super(requiredOperations);
         this.columnMap = columnMap;
         this.typeMap = typeMap;
         this.typeMapFromColumnName = typeMapFromColumnName;

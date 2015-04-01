@@ -68,7 +68,15 @@ public class RelationSelector extends Selector {
 
     @Override
     public String toString() {
-        return relation.toString();
+        StringBuilder sb = new StringBuilder();
+        if(parenthesis){
+            sb.append("(");
+        }
+        sb.append(relation);
+        if(parenthesis){
+            sb.append(")");
+        }
+        return sb.toString();
     }
 
     @Override

@@ -92,7 +92,6 @@ public class ParsingTest {
         IParsedQuery st = null;
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
-            //st = parser.parse("", inputText);
             st = parser.parse(baseQuery);
         } catch (ParsingException e) {
             StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());

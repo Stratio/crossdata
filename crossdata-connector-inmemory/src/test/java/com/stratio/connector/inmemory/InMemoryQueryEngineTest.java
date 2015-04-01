@@ -22,6 +22,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -174,8 +175,11 @@ public class InMemoryQueryEngineTest {
     }
 
     public Project generateProjectAndSelect(String [] columnNames, ColumnType [] types){
-        Project project = new Project(Operations.PROJECT, tableMetadata.getName(), clusterName);
-        for(String columnName : columnNames) {
+        Project project = new Project(
+                Collections.singleton(Operations.PROJECT),
+                tableMetadata.getName(),
+                clusterName);
+        for(String columnName: columnNames) {
             project.addColumn(new ColumnName(tableMetadata.getName(), columnName));
         }
 
@@ -191,7 +195,11 @@ public class InMemoryQueryEngineTest {
             typeMapFromColumnName.put(cs, types[index]);
             index++;
         }
-        Select select = new Select(Operations.SELECT_OPERATOR, columnMap, typeMap, typeMapFromColumnName);
+        Select select = new Select(
+                Collections.singleton(Operations.SELECT_OPERATOR),
+                columnMap,
+                typeMap,
+                typeMapFromColumnName);
 
         //Link the elements
         project.setNextStep(select);
@@ -260,7 +268,9 @@ public class InMemoryQueryEngineTest {
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
         StringSelector right = new StringSelector(project.getTableName(), "text_42");
-        Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
+        Filter filter = new Filter(
+                Collections.singleton(Operations.FILTER_NON_INDEXED_EQ),
+                new Relation(left, Operator.EQ, right));
 
         Select s = Select.class.cast(project.getNextStep());
         filter.setNextStep(s);
@@ -290,7 +300,9 @@ public class InMemoryQueryEngineTest {
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
         BooleanSelector right = new BooleanSelector(project.getTableName(), true);
-        Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
+        Filter filter = new Filter(
+                Collections.singleton(Operations.FILTER_NON_INDEXED_EQ),
+                new Relation(left, Operator.EQ, right));
 
         Select s = Select.class.cast(project.getNextStep());
         filter.setNextStep(s);
@@ -320,7 +332,9 @@ public class InMemoryQueryEngineTest {
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
         IntegerSelector right = new IntegerSelector(project.getTableName(), 42);
-        Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
+        Filter filter = new Filter(
+                Collections.singleton(Operations.FILTER_NON_INDEXED_EQ),
+                new Relation(left, Operator.EQ, right));
 
         Select s = Select.class.cast(project.getNextStep());
         filter.setNextStep(s);
@@ -350,7 +364,9 @@ public class InMemoryQueryEngineTest {
 
         ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
         IntegerSelector right = new IntegerSelector(project.getTableName(), NUM_ROWS/2);
-        Filter filter = new Filter(Operations.FILTER_NON_INDEXED_GT, new Relation(left, Operator.GT, right));
+        Filter filter = new Filter(
+                Collections.singleton(Operations.FILTER_NON_INDEXED_GT),
+                new Relation(left, Operator.GT, right));
 
         Select s = Select.class.cast(project.getNextStep());
         filter.setNextStep(s);

@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
+import java.util.Set;
+
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.window.TimeUnit;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
@@ -66,22 +68,22 @@ public class Window extends TransformationStep {
     /**
      * Class constructor.
      *
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      * @param type The {@link com.stratio.crossdata.common.statements.structures.window.WindowType}.
      */
-    public Window(Operations operation, WindowType type) {
-        super(operation);
+    public Window(Set<Operations> operations, WindowType type) {
+        super(operations);
         this.type = type;
     }
 
     /**
      * Class constructor.
      *
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      * @param window A {@link com.stratio.crossdata.common.statements.structures.window.Window}.
      */
-    public Window(Operations operation, com.stratio.crossdata.common.statements.structures.window.Window window){
-        super(operation);
+    public Window(Set<Operations> operations, com.stratio.crossdata.common.statements.structures.window.Window window){
+        super(operations);
         this.type = window.getType();
         this.numRows = window.getNumRows();
         this.numTimeUnits = window.getNumTimeUnits();
