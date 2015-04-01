@@ -743,4 +743,21 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatementSession("demo", inputText, expectedText, "selectWithPreferenceOperators");
     }
 
+    @Test
+    public void selectWithListType(){
+        String inputText = "SELECT "
+                + "id, "
+                + "name, "
+                + "position "
+                + "FROM players "
+                + "WHERE position IN ['midfielder', 'striker'];";
+        String expectedText = "SELECT "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.id, "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.name, "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.position "
+                + "FROM team.players "
+                + "WHERE <UNKNOWN_NAME>.<UNKNOWN_NAME>.position IN ['midfielder', 'striker'];";
+        testRegularStatementSession("team", inputText, expectedText, "selectWithListType");
+    }
+
 }

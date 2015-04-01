@@ -219,7 +219,16 @@ public class CreateTableStatementTest extends ParsingTest {
                         "something2 int, something3 boolean);";
         String expectedText = "REGISTER TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
                         ".something=text, mycatalog.myTable.something2=int, mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
-        testRegularStatement(inputText, expectedText, "createTableBasic");
+        testRegularStatement(inputText, expectedText, "registerTableBasic");
+    }
+
+    @Test
+    public void createTableWithListType(){
+        String inputText = "CREATE TABLE cars ON CLUSTER carsCluster" +
+                "(id INT PRIMARY KEY, data LIST<TEXT>, comment TEXT);";
+        String expectedText = "CREATE TABLE shop.cars ON CLUSTER cluster.carsCluster" +
+                "(shop.cars.id=INT, shop.cars.data=LIST<TEXT>, shop.cars.comment=TEXT, PRIMARY KEY((shop.cars.id)));";
+        testRegularStatementSession("shop", inputText, expectedText, "createTableWithListType");
     }
 
 }
