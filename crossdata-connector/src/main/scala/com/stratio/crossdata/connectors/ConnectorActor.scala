@@ -76,8 +76,8 @@ object State extends Enumeration {
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]]):
-      Props = Props(new ConnectorActor(connectorName, connector, connectedServers, mapAgent))
+  def props(connectorName: String, connector: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]],runningJobs: Agent[ListMap[String, ActorRef]]):
+      Props = Props(new ConnectorActor(connectorName, connector, connectedServers, mapAgent, runningJobs))
 }
 
 object ClassExtractor{
@@ -85,7 +85,7 @@ object ClassExtractor{
 }
 
 
-class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]])
+class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]])
   extends Actor with ActorLogging with IResultHandler {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorActor])
@@ -97,7 +97,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
   var state = State.Stopped
-  val runningJobs: ListMap[String, ActorRef] = new ListMap[String, ActorRef]()
+
 
   /*
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
@@ -403,7 +403,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   override def processException(queryId: String, exception: ExecutionException): Unit = {
     logger.info("Processing exception for async query: " + queryId)
-    val source = runningJobs.get(queryId).get
+    val source = runningJobs.get.get(queryId).get
     if(source != None) {
       val res = Result.createErrorResult(exception)
       res.setQueryId(queryId)
@@ -411,26 +411,26 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }else{
       logger.error("Exception for query " + queryId + " cannot be sent", exception)
     }
-    runningJobs.remove(queryId)
+    runningJobs.send{runningJobs => runningJobs.remove(queryId); runningJobs}
   }
 
   override def processResult(result: QueryResult): Unit = {
     logger.info("Processing results for async query: " + result.getQueryId)
-    val source = runningJobs.get(result.getQueryId).get
+    val source = runningJobs.get.get(result.getQueryId).get
     if(source != None) {
       source ! result
     }else{
       logger.error("Results for query " + result.getQueryId + " cannot be sent")
     }
     if(result.isLastResultSet){
-      runningJobs.remove(result.getQueryId)
+      runningJobs.send{runningJobs => runningJobs.remove(result.getQueryId); runningJobs}
+
     }
   }
 
   private def methodExecute(ex:Execute, s:ActorRef): Unit ={
     try {
-      runningJobs.put(ex.queryId, s)
-      
+      runningJobs.send{runningJobs => runningJobs.put(ex.queryId, s); runningJobs}
       val result = connector.getQueryEngine().execute(ex.workflow)
       result.setQueryId(ex.queryId)
       s ! result
@@ -446,14 +446,16 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         result.setQueryId(ex.queryId)
         s ! result
     } finally {
-      runningJobs.remove(ex.queryId)
+      runningJobs.send{runningJobs => runningJobs.remove(ex.queryId); runningJobs}
+
     }
   }
 
   private def methodAsyncExecute(aex: AsyncExecute, sender: ActorRef) : Unit = {
     val asyncSender = sender
     try {
-      runningJobs.put(aex.queryId, asyncSender)
+      runningJobs.send{runningJobs => runningJobs.put(aex.queryId, asyncSender); runningJobs}
+
       connector.getQueryEngine().asyncExecute(aex.queryId, aex.workflow, this)
       asyncSender ! ACK(aex.queryId, QueryStatus.IN_PROGRESS)
     } catch {
@@ -469,13 +471,15 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   private def methodStopProcess(queryId: String, targetQueryId: String, sender: ActorRef) : Unit = {
     try {
-      runningJobs remove targetQueryId match {
-        case Some(_) => {
-          connector.getQueryEngine.stop(targetQueryId)
-          sender ! ACK(queryId, QueryStatus.EXECUTED)
-        }
-        case None => logger.debug("Received stop process for non-existing queryId "+targetQueryId)
+      if (!runningJobs.get.contains(targetQueryId)){
+        logger.debug("Received stop process for non-existing queryId "+targetQueryId)
+        sender ! Result.createExecutionErrorResult("Received stop process for non-existing queryId "+targetQueryId)
+      }else {
+        runningJobs.sendOff{runningJobs => runningJobs.remove(targetQueryId); runningJobs}(context.dispatcher)
+        connector.getQueryEngine.stop(targetQueryId)
+        sender ! ACK(queryId, QueryStatus.EXECUTED)
       }
+
     } catch {
       case e: Exception => {
         val result = Result.createExecutionErrorResult(e.getMessage())
@@ -483,7 +487,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         sender ! result
       }
       case err: Error =>
-        logger.error("Error in ConnectorActor (Receiving async LogicalWorkflow)")
+        logger.error("Error in ConnectorActor (Receiving stop process)")
     }
   }
 
@@ -491,8 +495,10 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     val pagedSender = sender
     try {
       logger.info("new running job: "+pex.queryId)
-      runningJobs.put(pex.queryId, pagedSender)
-      logger.info("concurrent running Jobs = "+runningJobs.size)
+      runningJobs.send{runningJobs => runningJobs.put(pex.queryId, pagedSender); runningJobs}
+      if(logger.isDebugEnabled){
+        logger.debug("concurrent running Jobs = "+runningJobs.get.size)
+      }
       //Thread.sleep(4*60*1000)
       connector.getQueryEngine().pagedExecute(pex.queryId, pex.workflow, this, pex.pageSize)
       pagedSender ! ACK(pex.queryId, QueryStatus.IN_PROGRESS)

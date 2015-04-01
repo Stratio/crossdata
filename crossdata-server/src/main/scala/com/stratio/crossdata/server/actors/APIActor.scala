@@ -101,13 +101,14 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
   private def forwardStopProcess(cmd: Command, proxyActor: ActorRef): Option[Result] = {
 
     def stopTriggerQueries(baseQueryId: String): Unit = {
-      val subQueryId = baseQueryId + Constants.TRIGGER_TOKEN
+      val topLevelQueryId = baseQueryId + Constants.TRIGGER_TOKEN
 
-        Try(ExecutionManager.MANAGER.getValue(subQueryId)) match {
+        Try(ExecutionManager.MANAGER.getValue(topLevelQueryId)) match {
         case Success(exInfo:ExecutionInfo) => context.actorSelection(exInfo.getWorkflow.getActorRef) match {
           case connectorActor: ActorSelection =>
-            stopTriggerQueries(subQueryId)
-            connectorActor ! Broadcast(StopProcess(cmd.queryId, cmd.params.get(0).toString))
+            log.info("Stopping top level queryId: "+topLevelQueryId)
+            stopTriggerQueries(topLevelQueryId)
+            connectorActor ! StopProcess(cmd.queryId, topLevelQueryId)
           case _ =>
         }
         case _ =>
@@ -120,7 +121,7 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
         case Success(exInfo:ExecutionInfo) => context.actorSelection(exInfo.getWorkflow.getActorRef) match {
           case connectorActor: ActorSelection =>
             ExecutionManager.MANAGER.createEntry(cmd.queryId, (cmd.params.get(0).toString, proxyActor) )
-            connectorActor ! Broadcast(StopProcess(cmd.queryId, cmd.params.get(0).toString))
+            connectorActor ! StopProcess(cmd.queryId, cmd.params.get(0).toString)
             None
           case _ => Some(Result.createUnsupportedOperationErrorResult("There is no connector related to query "+cmd.params.get(0).toString).withQueryId(cmd.queryId))
         }

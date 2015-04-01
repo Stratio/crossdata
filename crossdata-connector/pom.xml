@@ -187,6 +187,7 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-testkit_2.10</artifactId>
             <version>${akka.version}</version>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>config</artifactId>
@@ -202,6 +203,17 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-agent_2.10</artifactId>
             <version>${akka.version}</version>
+            <exclusions>
+            <exclusion>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-actor_2.10</artifactId>
+            </exclusion>
+            </exclusions>
+
         </dependency>
         <dependency>
             <groupId>com.typesafe</groupId>
