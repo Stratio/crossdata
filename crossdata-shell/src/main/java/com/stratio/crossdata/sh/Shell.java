@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.IDriverResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
@@ -102,6 +103,7 @@ public class Shell {
     private static final String DEFAULT_PROMPT = "xdsh:";
 
     private static final char DEFAULT_TEMP_PROMPT = '»';
+    private String sessionId;
 
     /**
      * Class constructor.
@@ -290,7 +292,9 @@ public class Shell {
     public boolean connect() {
         boolean result = true;
         try {
-            Result connectionResult = crossdataDriver.connect(crossdataDriver.getUserName());
+            Result connectionResult = crossdataDriver.connect(crossdataDriver.getUserName(),
+                    crossdataDriver.getPassword());
+            sessionId=((ConnectResult)connectionResult).getSessionId();
             LOG.info("Driver connections established");
             LOG.info(ConsoleUtils.stringResult(connectionResult));
         } catch (ConnectionException ce) {
@@ -354,7 +358,7 @@ public class Shell {
                         showHelp(sb.toString());
                     } else {
                         try {
-                            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler);
+                            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler,sessionId);
                             LOG.info(ConsoleUtils.stringResult(result));
                             updatePrompt(result);
                         } catch (Exception ex) {
@@ -423,10 +427,10 @@ public class Shell {
                         break;
                     } else {
                         if(useAsync){
-                            result = crossdataDriver.executeAsyncRawQuery(query, resultHandler);
+                            result = crossdataDriver.executeAsyncRawQuery(query, resultHandler, sessionId);
                             Thread.sleep(1000);
                         } else {
-                            result = crossdataDriver.executeRawQuery(query);
+                            result = crossdataDriver.executeRawQuery(query,sessionId);
                         }
                         LOG.info(ConsoleUtils.stringResult(result));
                         updatePrompt(result);

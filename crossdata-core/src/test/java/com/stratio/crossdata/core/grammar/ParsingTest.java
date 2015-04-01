@@ -61,7 +61,7 @@ public class ParsingTest {
     public IParsedQuery testRegularStatement(String inputText, String methodName, boolean checkParser) {
         IParsedQuery st = null;
         try {
-            BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
+            BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""),"sessionTest");
             st = parser.parse(baseQuery);
         } catch (ParsingException e) {
             StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
@@ -91,7 +91,7 @@ public class ParsingTest {
             String methodName) {
         IParsedQuery st = null;
         try {
-            BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
+            BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""),"sessionTest");
             //st = parser.parse("", inputText);
             st = parser.parse(baseQuery);
         } catch (ParsingException e) {
@@ -120,7 +120,7 @@ public class ParsingTest {
         IParsedQuery st = null;
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText,
-                    new CatalogName(sessionCatalog));
+                    new CatalogName(sessionCatalog),"sessionTest");
             st = parser.parse(baseQuery);
         } catch (ParsingException e) {
             StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
@@ -148,7 +148,7 @@ public class ParsingTest {
         IParsedQuery st = null;
         try {
             BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText,
-                    new CatalogName(sessionCatalog));
+                    new CatalogName(sessionCatalog),"sessionTest");
             st = parser.parse(baseQuery);
         } catch (ParsingException e) {
             StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER TEST FAILED: ").append(e.getMessage());
@@ -174,7 +174,7 @@ public class ParsingTest {
     public void testParserFails(String inputText, String methodName) {
         IParsedQuery st;
         try {
-            BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
+            BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""),"sessionTest");
             st = parser.parse(baseQuery);
         } catch (ParsingException e) {
             StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER EXCEPTION: ").append(e.getMessage());
@@ -206,7 +206,7 @@ public class ParsingTest {
     public void testParserFails(String sessionCatalog, String inputText, String methodName) {
         IParsedQuery st;
         try {
-            BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""));
+            BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName(""),"sessionTest");
             st = parser.parse(baseQuery);
         } catch (ParsingException e) {
             StringBuilder sb = new StringBuilder("[" + methodName + "] PARSER EXCEPTION: ").append(e.getMessage());

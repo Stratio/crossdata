@@ -46,7 +46,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
@@ -68,7 +68,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
                 "{'comment':'a comment'}",Constants.DEFAULT_PRIORITY, Constants.DEFAULT_PAGINATION);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
@@ -90,7 +90,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
                 new ClusterName("unknown"), "{'comment':'a comment'}",Constants.DEFAULT_PRIORITY, Constants.DEFAULT_PAGINATION);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
@@ -114,7 +114,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {
@@ -137,7 +137,7 @@ public class AttachConnectorStatementTest extends BasicValidatorTest {
                         new ClusterName("cluster"), "{}",0, Constants.DEFAULT_PAGINATION);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("attachConnectorID", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachConnectorStatement);
         try {

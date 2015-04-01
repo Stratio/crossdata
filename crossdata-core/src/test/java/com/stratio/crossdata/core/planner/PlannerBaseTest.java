@@ -196,7 +196,7 @@ public class PlannerBaseTest {
             TableMetadata... tableMetadataList) throws PlanningException {
         Parser parser = new Parser();
         IParsedQuery stmt = null;
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), statement, new CatalogName(""));
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), statement, new CatalogName(""),"sessionTest");
         stmt = parser.parse(baseQuery);
 
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);

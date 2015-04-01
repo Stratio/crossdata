@@ -119,13 +119,13 @@ public class ExplainPlanAPIManagerTest {
         List<Object> params = new ArrayList<>();
         params.add(statement);
         params.add("demo");
-        return new Command("QID", APICommand.EXPLAIN_PLAN(), params);
+        return new Command("QID", APICommand.EXPLAIN_PLAN(), params,"sessionTest");
     }
 
     @Test
     public void invalidExplainRequest() {
         List<Object> params = new ArrayList<>();
-        Command cmd = new Command("QID", APICommand.EXPLAIN_PLAN(), params);
+        Command cmd = new Command("QID", APICommand.EXPLAIN_PLAN(), params,"sessionTest");
         Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
         assertEquals(r.getClass(), ErrorResult.class, "Expecting error result");

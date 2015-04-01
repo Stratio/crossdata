@@ -62,4 +62,10 @@ public interface IParsedQuery {
      */
     CrossdataStatement getStatement();
 
+    /**
+     * Get the sessionId of the query.
+     * @return A String with the sessionId.
+     */
+    String getSessionId();
+
 }

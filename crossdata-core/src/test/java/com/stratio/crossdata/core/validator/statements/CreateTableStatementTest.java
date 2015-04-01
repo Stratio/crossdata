@@ -62,7 +62,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
                 clusterKey,isExternal);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
         try {
@@ -98,7 +98,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         createTableStatement.setProperties("{'comment': 'Users2 table'}");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
         try {
@@ -131,7 +131,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         createTableStatement.setProperties("comment");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("unknown"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("unknown"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
         try {
@@ -161,7 +161,7 @@ public class CreateTableStatementTest extends BasicValidatorTest {
                 new ClusterName("cluster"), columns, primaryKey, null, isExternal);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
         try {

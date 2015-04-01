@@ -104,7 +104,8 @@ ImplicitSender with BeforeAndAfterAll{
   val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,tableName))
   val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM " + catalogName + "." +
     tableName,
-    new CatalogName(catalogName)), selectStatement)
+    new CatalogName(catalogName),
+    "sessionTest"), selectStatement)
   //val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
   val selectValidatedQueryWrapper = new SelectValidatedQueryWrapper(selectStatement,selectParsedQuery)
 
@@ -113,14 +114,14 @@ ImplicitSender with BeforeAndAfterAll{
   //make the implementation of storageStatement.
   val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno," +
     "dos) into " + tableName + ";",
-    new CatalogName(catalogName)), storageStatement)
+    new CatalogName(catalogName),"sessionTest"), storageStatement)
   val storageValidatedQuery = new StorageValidatedQuery(storageParsedQuery)
   val storagePlannedQuery = new StoragePlannedQuery(storageValidatedQuery, new StorageWorkflow(queryId + queryIdIncrement,
     StringUtils.getAkkaActorRefUri(connectorActor, false), ExecutionType.INSERT, ResultType.RESULTS))
 
   val metadataStatement0: MetadataStatement = new CreateCatalogStatement(
     new CatalogName(catalogName),true,"")
-  val metadataParsedQuery0 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),
+  val metadataParsedQuery0 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName),"sessionTest"),
     metadataStatement0)
   val metadataValidatedQuery0: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery0)
   val metadataWorkflow0=new MetadataWorkflow(queryId + queryIdIncrement,  null, ExecutionType.CREATE_CATALOG, ResultType.RESULTS)
@@ -144,7 +145,8 @@ ImplicitSender with BeforeAndAfterAll{
     isExternal
   )
   val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table " + tableName1 + ";",
-    new CatalogName(catalogName)),
+    new CatalogName(catalogName),
+    "sessionTest"),
     metadataStatement1)
   val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
   val metadataWorkflow1=new MetadataWorkflow(queryId + queryIdIncrement,  StringUtils.getAkkaActorRefUri(connectorActor, false),

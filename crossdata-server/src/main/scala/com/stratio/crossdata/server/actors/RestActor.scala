@@ -43,7 +43,8 @@ class RestActor(server: ActorRef) extends Actor with RestService {
 
     logger.info("SENT QUERY " + q)
     implicit val timeout = Timeout(5 seconds)
-    val future = server.ask(new Query(UUID.randomUUID.toString, "", q, System.getProperty("user.name")))
+    val future = server.ask(new Query(UUID.randomUUID.toString, "", q, System.getProperty("user.name"),
+      "sessionTest"))
     val result = Await.result(future, timeout.duration).asInstanceOf[Result]
 
     result match {

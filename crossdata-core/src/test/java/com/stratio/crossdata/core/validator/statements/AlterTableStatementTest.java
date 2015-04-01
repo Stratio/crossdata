@@ -47,7 +47,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
                 new ColumnType(DataType.BIGINT), null, AlterOperation.ALTER_COLUMN);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
@@ -69,7 +69,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
                 new ColumnType(DataType.VARCHAR), null, AlterOperation.ADD_COLUMN);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
@@ -90,7 +90,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
@@ -112,7 +112,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
                 new ColumnType(DataType.BIGINT), null, AlterOperation.DROP_COLUMN);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
@@ -134,7 +134,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
                 new ColumnType(DataType.BIGINT), null, AlterOperation.DROP_COLUMN);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
@@ -156,7 +156,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
                 new ColumnType(DataType.BIGINT), null, AlterOperation.DROP_COLUMN);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {

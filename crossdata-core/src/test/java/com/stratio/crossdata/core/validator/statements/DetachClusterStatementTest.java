@@ -39,7 +39,7 @@ public class DetachClusterStatementTest extends BasicValidatorTest {
         DetachClusterStatement detachClusterStatement = new DetachClusterStatement("cluster");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, detachClusterStatement);
         try {
@@ -58,7 +58,7 @@ public class DetachClusterStatementTest extends BasicValidatorTest {
         DetachClusterStatement detachClusterStatement = new DetachClusterStatement("myCluster");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, detachClusterStatement);
         try {

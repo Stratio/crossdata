@@ -18,4 +18,4 @@
 
 package com.stratio.crossdata.common.ask
 
-case class Connect(user: String)
+case class Connect(user: String, pass: String)

@@ -194,6 +194,7 @@ public class Validator {
             }
         }
 
+
         if (parsedQuery instanceof MetadataParsedQuery) {
             validatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) parsedQuery);
         } else if (parsedQuery instanceof StorageParsedQuery) {
@@ -692,7 +693,7 @@ public class Validator {
                 BaseQuery baseQuery = new BaseQuery(
                         UUID.randomUUID().toString(),
                         ss.toString(),
-                        parsedQuery.getDefaultCatalog());
+                        parsedQuery.getDefaultCatalog(),parsedQuery.getSessionId());
 
                 SelectParsedQuery spq = new SelectParsedQuery(baseQuery, ss);
                 SelectValidatedQuery selectValidatedQuery = (SelectValidatedQuery) validate(spq);

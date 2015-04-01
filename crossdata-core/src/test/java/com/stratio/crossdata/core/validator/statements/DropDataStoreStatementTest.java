@@ -39,7 +39,7 @@ public class DropDataStoreStatementTest extends BasicValidatorTest {
         DropDataStoreStatement dropDataStoreStatement = new DropDataStoreStatement("Cassandra");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropDataStoreStatement);
         try {
@@ -58,7 +58,7 @@ public class DropDataStoreStatementTest extends BasicValidatorTest {
         DropDataStoreStatement dropDataStoreStatement = new DropDataStoreStatement("Cassandror");
 
         Validator validator = new Validator();
-        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropDataStoreStatement);
         try {

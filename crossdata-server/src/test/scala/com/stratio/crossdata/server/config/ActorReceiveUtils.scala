@@ -100,7 +100,7 @@ with ImplicitSender with DefaultTimeout {
    * @return The result.
    */
   def executeQuery(targetActor: ActorRef, query: String, catalog: String): Result = {
-    val stmt = Query("create-index", catalog, query, "test_actor")
+    val stmt = Query("create-index", catalog, query, "test_actor","sessionTest")
     targetActor ! stmt
     val result = receiveWithACK()
     assertFalse(result.hasError, "Statement execution failed for:\n" + stmt.toString
