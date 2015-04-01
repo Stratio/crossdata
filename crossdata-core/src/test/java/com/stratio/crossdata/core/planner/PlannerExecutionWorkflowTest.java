@@ -61,6 +61,7 @@ import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Window;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
@@ -140,9 +141,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         clusterWithTopPriority.put(new ClusterName(strClusterName), 1);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, clusterWithDefaultPriority, operationsC1,
-                        "actorRef1");
+                        "actorRef1", new ArrayList<FunctionType>());
         connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, clusterWithDefaultPriority, operationsC2,
-                        "actorRef2");
+                        "actorRef2", new ArrayList<FunctionType>());
 
 
         clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName());
@@ -703,7 +704,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         try {
             connectorMetadata = MetadataManagerTestHelper.HELPER.createTestConnector("cassandraConnector", dataStoreName,
-                            clusterWithDefaultPriority, operations, "ActorRefTest");
+                            clusterWithDefaultPriority, operations, "ActorRefTest", new ArrayList<FunctionType>());
         } catch (ManifestException e) {
             fail();
         }

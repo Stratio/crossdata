@@ -391,7 +391,7 @@ public class Planner {
      * @return A {@link com.stratio.crossdata.common.executionplan.QueryWorkflow}.
      */
     protected QueryWorkflow toExecutionWorkflow(String queryId, List<ExecutionPath> executionPaths, LogicalStep last,
-            List<ConnectorMetadata> connectors, ResultType type) {
+            List<ConnectorMetadata> connectors, ResultType type) throws PlanningException {
 
         //Define the list of initial steps.
         List<LogicalStep> initialSteps = new ArrayList<>(executionPaths.size());
@@ -436,7 +436,8 @@ public class Planner {
         return highestPriorityConnector;
     }
 
-    private void updateFunctionsFromSelect(LogicalWorkflow workflow, ConnectorName connectorName) {
+    private void updateFunctionsFromSelect(LogicalWorkflow workflow, ConnectorName connectorName)
+            throws PlanningException {
 
         if (!Select.class.isInstance(workflow.getLastStep())) {
             return;
@@ -453,6 +454,9 @@ public class Planner {
                 FunctionSelector fs = FunctionSelector.class.cast(s);
                 String functionName = fs.getFunctionName();
                 FunctionType ft = MetadataManager.MANAGER.getFunction(connectorName, functionName);
+                if(ft == null){
+                    throw new PlanningException("Function: '" + functionName + "' unrecognized");
+                }
                 String returningType = StringUtils.getReturningTypeFromSignature(ft.getSignature());
                 ColumnType ct = StringUtils.convertXdTypeToColumnType(returningType);
                 typeMapFromColumnName.put(fs, ct);
@@ -2356,6 +2360,9 @@ public class Planner {
 
         } else {
             alias = selector.getStringValue();
+            if(selector instanceof RelationSelector){
+                alias = "Column" + (typeMap.size() + 1);
+            }
             selector.setAlias(alias);
 
         }

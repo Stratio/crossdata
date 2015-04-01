@@ -37,6 +37,7 @@ import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataType;
@@ -97,13 +98,13 @@ public class PlannerPriorityTest extends PlannerBaseTest {
 
         connector1 = MetadataManagerTestHelper.HELPER
                         .createTestConnector("TestConnector1", dataStoreName, clusterWithDefaultPriority, operationsC1,
-                                        "actorRef1");
+                                        "actorRef1", new ArrayList<FunctionType>());
         connector2 = MetadataManagerTestHelper.HELPER
                         .createTestConnector("TestConnector2", dataStoreName, clusterWithDefaultPriority, operationsC2,
-                                        "actorRef2");
+                                        "actorRef2", new ArrayList<FunctionType>());
         connector3 = MetadataManagerTestHelper.HELPER
                         .createTestConnector("TestConnector3", dataStoreName, clusterWithTopPriority, operationsC1,
-                                        "actorRef3");
+                                        "actorRef3", new ArrayList<FunctionType>());
 
         clusterName = MetadataManagerTestHelper.HELPER
                         .createTestCluster(strClusterName, dataStoreName, connector1.getName(), connector3.getName());

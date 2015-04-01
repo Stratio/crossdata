@@ -29,7 +29,7 @@ import akka.testkit.ImplicitSender
 import com.stratio.crossdata.common.data.{CatalogName, ClusterName, ColumnName, ConnectorName, DataStoreName, FirstLevelName, IndexName, Status, TableName}
 import com.stratio.crossdata.common.executionplan.{ExecutionType, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, Project, Select}
-import com.stratio.crossdata.common.manifest.PropertyType
+import com.stratio.crossdata.common.manifest.{FunctionType, PropertyType}
 import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.metadata.structures.TableType
 import com.stratio.crossdata.common.statements.structures.Selector
@@ -221,10 +221,13 @@ ImplicitSender with BeforeAndAfterAll{
 
 
     //Create connector
-    val myConnector=metadataManager.createTestConnector(connectorName.name,new DataStoreName(myDatastore.getName()),
+    val myConnector=metadataManager.createTestConnector(
+      connectorName.name,
+      new DataStoreName(myDatastore.getName()),
       clusterwithPriorities,
       operations,
-      StringUtils.getAkkaActorRefUri(connectorActor, false))
+      StringUtils.getAkkaActorRefUri(connectorActor, false),
+      new util.ArrayList[FunctionType]())
 
     //create catalog
     metadataManager.createTestCatalog(catalogName)

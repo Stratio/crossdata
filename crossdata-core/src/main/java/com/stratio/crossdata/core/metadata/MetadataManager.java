@@ -1285,8 +1285,10 @@ public enum MetadataManager {
             case FLOATING_POINT:
                 sb.append(new ColumnType(DataType.DOUBLE).getCrossdataType());
                 break;
-            case ASTERISK:
             case RELATION:
+                sb.append(new ColumnType(DataType.DOUBLE).getCrossdataType());
+                break;
+            case ASTERISK:
             default:
                 throw new PlanningException("The input type : "+selector.getType()+" is not supported yet");
             }

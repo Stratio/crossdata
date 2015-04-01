@@ -56,6 +56,8 @@ import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Disjunction;
 import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.Project;
+import com.stratio.crossdata.common.logicalplan.Select;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
@@ -141,10 +143,33 @@ public class PlannerTest extends PlannerBaseTest {
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
 
+        List<FunctionType> functions1 = new ArrayList<>();
+        // SUM function
+        FunctionType sumFunction = new FunctionType();
+        sumFunction.setFunctionName("sum");
+        sumFunction.setSignature("sum(Tuple[Double]):Tuple[Double]");
+        sumFunction.setFunctionType("aggregation");
+        sumFunction.setDescription("Total sum");
+        functions1.add(sumFunction);
+        // AVG function
+        FunctionType avgFunction = new FunctionType();
+        avgFunction.setFunctionName("avg");
+        avgFunction.setSignature("avg(Tuple[Double]):Tuple[Double]");
+        avgFunction.setFunctionType("aggregation");
+        avgFunction.setDescription("Average");
+        functions1.add(avgFunction);
+        // COUNT function
+        FunctionType countFunction = new FunctionType();
+        countFunction.setFunctionName("count");
+        countFunction.setSignature("count(Tuple[Any*]):Tuple[Int]");
+        countFunction.setFunctionType("aggregation");
+        countFunction.setDescription("Count");
+        functions1.add(countFunction);
+        
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
-                clusterWithDefaultPriority, operationsC1, "actorRef1");
+                clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
         connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName,
-                clusterWithDefaultPriority, operationsC2, "actorRef2");
+                clusterWithDefaultPriority, operationsC2, "actorRef2", new ArrayList<FunctionType>());
 
         clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName(), connector2.getName());
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
@@ -608,7 +633,8 @@ public class PlannerTest extends PlannerBaseTest {
                 new DataStoreName("greatDatastore"),
                 clusterWithDefaultPriority,
                 greatOperations,
-                "greatActorRef");
+                "greatActorRef",
+                new ArrayList<FunctionType>());
 
         clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(
                 strClusterName, new DataStoreName("greatDatastore"),
@@ -770,6 +796,31 @@ public class PlannerTest extends PlannerBaseTest {
                 inputText, "testSelectWithDisjunctionAndParenthesis", false, false, table5);
 
         assertNotNull(queryWorkflow, "Workflow is null for testSelectWithOperatorsPreference");
-
+        assertEquals(queryWorkflow.getWorkflow().getLastStep().getClass(), Select.class, "Last step must be a Select");
+        Select finalSelect = (Select) queryWorkflow.getWorkflow().getLastStep();
+        assertEquals(
+                finalSelect.getTypeMap().get("name"),
+                ColumnType.valueOf("TEXT"),
+                "Column name must be of type text");
+        assertEquals(
+                finalSelect.getTypeMap().get("Column2"),
+                ColumnType.valueOf("DOUBLE"),
+                "Column Column2 must be of type double");
+        assertEquals(
+                finalSelect.getTypeMap().get("Column3"),
+                ColumnType.valueOf("DOUBLE"),
+                "Column Column3 must be of type double");
+        assertEquals(
+                finalSelect.getTypeMap().get("sum_charge"),
+                ColumnType.valueOf("DOUBLE"),
+                "Column sum_charge must be of type double");
+        assertEquals(
+                finalSelect.getTypeMap().get("avg_size"),
+                ColumnType.valueOf("DOUBLE"),
+                "Column avg_size must be of type double");
+        assertEquals(
+                finalSelect.getTypeMap().get("count_order"),
+                ColumnType.valueOf("INT"),
+                "Column count_order must be of type int");
     }
 }
