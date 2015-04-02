@@ -84,13 +84,7 @@
     </properties>
 
     <dependencies>
-
         <!-- CONNECTOR INTERFACE AND ALL THE CONNECTORS -->
-        <dependency>
-            <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-core</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-common</artifactId>
