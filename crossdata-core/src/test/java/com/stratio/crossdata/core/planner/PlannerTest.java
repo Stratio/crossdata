@@ -70,6 +70,7 @@ import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.ListSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -139,6 +140,7 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
         operationsC2.add(Operations.INSERT);
         operationsC2.add(Operations.FILTER_DISJUNCTION);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -823,4 +825,31 @@ public class PlannerTest extends PlannerBaseTest {
                 ColumnType.valueOf("INT"),
                 "Column count_order must be of type int");
     }
+
+    @Test
+    public void testSelectWithCollectionList() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT "
+                + "id, "
+                + "user "
+                + "FROM table1 "
+                + "WHERE user IN ['admin', 'dev'];";
+
+        QueryWorkflow queryWorkflow;
+        queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testSelectWithCollectionList", false, false, table3);
+        assertNotNull(queryWorkflow, "Planner failed");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 1, "Only one initial step was expected.");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getClass(),
+                Filter.class,
+                "Second step should be a Filter.");
+        Filter filter = (Filter) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep();
+        assertEquals(filter.getRelation().getRightTerm().getClass(),
+                ListSelector.class,
+                "Right term of the relation should be a list.");
+    }
+
 }

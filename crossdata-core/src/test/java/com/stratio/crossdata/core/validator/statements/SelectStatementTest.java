@@ -42,6 +42,7 @@ import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.ListSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.OrderDirection;
@@ -1660,6 +1661,58 @@ public class SelectStatementTest extends BasicValidatorTest {
             Assert.assertTrue( e instanceof AmbiguousNameException);
         }
 
+    }
+
+    @Test
+    public void testCollectionList(){
+        String inputText = "SELECT "
+                + "name, "
+                + "surname, "
+                + "rating "
+                + "FROM table3 "
+                + "WHERE surname IN ['Miller', 'Smith'];";
+        String expectedText = "SELECT "
+                + "demo.table3.name, "
+                + "demo.table3.surname, "
+                + "demo.table3.rating "
+                + "FROM demo.table3 "
+                + "WHERE demo.table3.surname IN ['Miller', 'Smith']";
+
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(null, "name")));
+        selectorList.add(new ColumnSelector(new ColumnName(null, "surname")));
+        selectorList.add(new ColumnSelector(new ColumnName(null, "rating")));
+
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        TableName tablename = new TableName("demo", "table3");
+
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+
+        List<AbstractRelation> whereClauses = new ArrayList<>();
+        Selector leftTerm = new ColumnSelector(new ColumnName(null, "surname"));
+
+        ArrayList<Selector> listElements = new ArrayList<>();
+        listElements.add(new StringSelector("Miller"));
+        listElements.add(new StringSelector("Smith"));
+
+        Selector rightTerm = new ListSelector(null, listElements);
+        whereClauses.add(new Relation(leftTerm, Operator.IN, rightTerm));
+        selectStatement.setWhere(whereClauses);
+
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"), "sessionTest");
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
     }
 
 
