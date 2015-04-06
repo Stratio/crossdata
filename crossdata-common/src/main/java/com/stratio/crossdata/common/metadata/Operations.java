@@ -481,6 +481,12 @@ public enum Operations {
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are not indexed by the underlying datastore with a IN operator for collections.
+     */
+    FILTER_NON_INDEXED_IN("FILTER_NON_INDEXED_IN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
      * that have an associated index in the underlying datastore with an equal operator.
      */
     FILTER_INDEXED_EQ("FILTER_INDEXED_EQ"),
