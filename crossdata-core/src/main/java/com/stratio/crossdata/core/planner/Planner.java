@@ -661,7 +661,7 @@ public class Planner {
 
         //Add join
         if (!query.getJoinList().isEmpty()) {
-            processed = addJoin((LinkedHashMap) processed, selectTable, query);
+            processed = addJoin((LinkedHashMap) processed, query);
         }
 
         //Initial steps.
@@ -1024,7 +1024,7 @@ public class Planner {
         return metadataWorkflow;
     }
 
-    private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId) {
+    private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId) throws PlanningException{
         MetadataWorkflow metadataWorkflow = null;
         // Create parameters for metadata workflow
         CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
@@ -1036,11 +1036,19 @@ public class Planner {
         if (!createTableStatement.isExternal()) {
             executionType = ExecutionType.CREATE_TABLE;
             clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
+            Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
+            if (connectorNames.isEmpty()){
+                throw new PlanningException("There is no connector attached to cluster "+clusterMetadata.getName().getName());
+            }
             try {
                 actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
             } catch (PlanningException pe) {
-                LOG.debug(
-                        "No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
+                LOG.debug( "No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
+                for (ConnectorName connectorName : connectorNames) {
+                    if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_TABLE)){
+                        throw new PlanningException(connectorName.getQualifiedName()+" supports CREATE_TABLE but no connector was found to execute CREATE_TABLE");
+                    }
+                }
             }
         }else{
             executionType = ExecutionType.REGISTER_TABLE;
@@ -1057,7 +1065,17 @@ public class Planner {
                     actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
                     executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
                 }else {
-                   LOG.debug("The catalog should have been created before registering table");
+                    clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
+                    Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
+                    if (connectorNames != null && !connectorNames.isEmpty()){
+                        LOG.debug("The catalog should have been created before registering table");
+                        for (ConnectorName connectorName : clusterMetadata.getConnectorAttachedRefs().keySet()) {
+                            if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_CATALOG)){
+                                throw new PlanningException("The catalog should have been created before registering table. The connector: "+connectorName.getQualifiedName()+" supports CREATE_CATALOG");
+                            }
+                        }
+                    }
+
                 }
 
                 // Create MetadataWorkFlow
@@ -1097,6 +1115,7 @@ public class Planner {
 
         return metadataWorkflow;
     }
+
 
     private MetadataWorkflow buildMetadataWorkflowDropCatalog(MetadataStatement metadataStatement, String queryId)
             throws PlanningException {
@@ -1932,238 +1951,96 @@ public class Planner {
      * Add the join logical steps.
      *
      * @param stepMap     The map of last steps after adding filters.
-     * @param targetTable The target table of the join.
      * @param query       The query.
      * @return The resulting map of logical steps.
      */
-    private Map<String, LogicalStep> addJoin(LinkedHashMap<String, LogicalStep> stepMap, String targetTable,
-            SelectValidatedQuery query) {
+    private Map<String, LogicalStep> addJoin(LinkedHashMap<String, LogicalStep> stepMap,SelectValidatedQuery query) {
 
+        //TODO refactor rename InnerJoin -> Join
         for (InnerJoin queryJoin : query.getJoinList()) {
 
-            Join innerJoin = new Join(
-                    Collections.singleton(Operations.SELECT_INNER_JOIN),
-                    "innerJoin");
-            Join leftJoin = new Join(
-                    Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN),
-                    "leftJoin");
-            Join rightJoin = new Join(
-                    Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN),
-                    "rightJoin");
-            Join fullOuterJoin = new Join(
-                    Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN),
-                    "fullOuterJoin");
-            Join crossJoin = new Join(
-                    Collections.singleton(Operations.SELECT_CROSS_JOIN),
-                    "crossJoin");
+            Join join = getJoin(queryJoin.getType(), query.getStatement().getWindow() != null);
+
 
             StringBuilder sb = new StringBuilder();
             Relation firstRelation = (Relation) queryJoin.getRelations().get(0);
-            sb.append(firstRelation.getLeftTerm().getTableName().getQualifiedName())
-                    .append("$").append(firstRelation.getRightTerm().getTableName()
-                    .getQualifiedName());
+            sb.append(firstRelation.getLeftTerm().getTableName().getQualifiedName()).append("$")
+                            .append(firstRelation.getRightTerm().getTableName().getQualifiedName());
 
             //Attach to input tables path
             LogicalStep t1 = stepMap.get(firstRelation.getLeftTerm().getSelectorTablesAsString());
             LogicalStep t2 = stepMap.get(firstRelation.getRightTerm().getSelectorTablesAsString());
-            List<AbstractRelation> relations;
-            switch (queryJoin.getType()) {
-            case INNER:
-                innerJoin.setType(JoinType.INNER);
-                relations = queryJoin.getRelations();
-                for (AbstractRelation ar: relations) {
-                    Relation r = (Relation) ar;
 
-                    if(Filter.class.isInstance(t1)){
-                        innerJoin.addSourceIdentifier(((Filter)t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
-                    }else if (Project.class.isInstance(t1)){
-                        innerJoin.addSourceIdentifier(((Project)t1).getTableName().getQualifiedName());
-                    }else{
-                        innerJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
-                    }
+            List<AbstractRelation> relations = queryJoin.getRelations();
+            for (AbstractRelation ar : relations) {
+                Relation r = (Relation) ar;
 
-                    if(Filter.class.isInstance(t2)){
-                        innerJoin.addSourceIdentifier(((Filter)t2).getRelation().getLeftTerm().getTableName()
-                                .getQualifiedName());
-                    }else if (Project.class.isInstance(t2)){
-                        innerJoin.addSourceIdentifier(((Project)t2).getTableName().getQualifiedName());
-                    }else{
-                        innerJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
-                    }                                      
-
-                }
-                innerJoin.addJoinRelations(queryJoin.getOrderedRelations());
-
-                if (t1.getNextStep() != null) {
-                    t1.getNextStep().setNextStep(innerJoin);
+                if (Filter.class.isInstance(t1)) {
+                    join.addSourceIdentifier(
+                                    ((Filter) t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
+                } else if (Project.class.isInstance(t1)) {
+                    join.addSourceIdentifier(((Project) t1).getTableName().getQualifiedName());
                 } else {
-                    t1.setNextStep(innerJoin);
+                    join.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
                 }
-                if (t2.getNextStep() != null) {
-                    t2.getNextStep().setNextStep(innerJoin);
+
+                if (Filter.class.isInstance(t2)) {
+                    join.addSourceIdentifier(
+                                    ((Filter) t2).getRelation().getLeftTerm().getTableName().getQualifiedName());
+                } else if (Project.class.isInstance(t2)) {
+                    join.addSourceIdentifier(((Project) t2).getTableName().getQualifiedName());
                 } else {
-                    t2.setNextStep(innerJoin);
+                    join.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
                 }
-                innerJoin.addPreviousSteps(t1, t2);
-                stepMap.put(sb.toString(), innerJoin);
 
-                break;
-            case CROSS:
-                crossJoin.setType(JoinType.CROSS);
-                relations = queryJoin.getRelations();
-                for (AbstractRelation ar: relations) {
-                    Relation r = (Relation) ar;
-                    if(Filter.class.isInstance(t1)){
-                        crossJoin.addSourceIdentifier(((Filter)t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
-                    }else if (Project.class.isInstance(t1)){
-                        crossJoin.addSourceIdentifier(((Project)t1).getTableName().getQualifiedName());
-                    }else{
-                        crossJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
-                    }
-
-                    if(Filter.class.isInstance(t2)){
-                        crossJoin.addSourceIdentifier(((Filter)t2).getRelation().getLeftTerm().getTableName()
-                                .getQualifiedName());
-                    }else if (Project.class.isInstance(t2)){
-                        crossJoin.addSourceIdentifier(((Project)t2).getTableName().getQualifiedName());
-                    }else{
-                        crossJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
-                    }
-                }
-                crossJoin.addJoinRelations(queryJoin.getOrderedRelations());
-
-                if (t1.getNextStep() != null) {
-                    t1.getNextStep().setNextStep(crossJoin);
-                } else {
-                    t1.setNextStep(crossJoin);
-                }
-                if (t2.getNextStep() != null) {
-                    t2.getNextStep().setNextStep(crossJoin);
-                } else {
-                    t2.setNextStep(crossJoin);
-                }
-                crossJoin.addPreviousSteps(t1, t2);
-                stepMap.put(sb.toString(), crossJoin);
-
-                break;
-            case LEFT_OUTER:
-                leftJoin.setType(JoinType.LEFT_OUTER);
-                relations = queryJoin.getRelations();
-                for (AbstractRelation ar: relations) {
-                    Relation r = (Relation) ar;
-                    if(Filter.class.isInstance(t1)){
-                        leftJoin.addSourceIdentifier(((Filter)t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
-                    }else if (Project.class.isInstance(t1)){
-                        leftJoin.addSourceIdentifier(((Project)t1).getTableName().getQualifiedName());
-                    }else{
-                        leftJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
-                    }
-
-                    if(Filter.class.isInstance(t2)){
-                        leftJoin.addSourceIdentifier(((Filter)t2).getRelation().getLeftTerm().getTableName()
-                                .getQualifiedName());
-                    }else if (Project.class.isInstance(t2)){
-                        leftJoin.addSourceIdentifier(((Project)t2).getTableName().getQualifiedName());
-                    }else{
-                        leftJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
-                    }
-                }
-                leftJoin.addJoinRelations(queryJoin.getOrderedRelations());
-
-                if (t1.getNextStep() != null) {
-                    t1.getNextStep().setNextStep(leftJoin);
-                } else {
-                    t1.setNextStep(leftJoin);
-                }
-                if (t2.getNextStep() != null) {
-                    t2.getNextStep().setNextStep(leftJoin);
-                } else {
-                    t2.setNextStep(leftJoin);
-                }
-                leftJoin.addPreviousSteps(t1, t2);
-                stepMap.put(sb.toString(), leftJoin);
-
-                break;
-            case FULL_OUTER:
-                fullOuterJoin.setType(JoinType.FULL_OUTER);
-                relations = queryJoin.getRelations();
-                for (AbstractRelation ar: relations) {
-                    Relation r = (Relation) ar;
-                    if(Filter.class.isInstance(t1)){
-                        fullOuterJoin.addSourceIdentifier(((Filter)t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
-                    }else if (Project.class.isInstance(t1)){
-                        fullOuterJoin.addSourceIdentifier(((Project)t1).getTableName().getQualifiedName());
-                    }else{
-                        fullOuterJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
-                    }
-
-                    if(Filter.class.isInstance(t2)){
-                        fullOuterJoin.addSourceIdentifier(((Filter)t2).getRelation().getLeftTerm().getTableName()
-                                .getQualifiedName());
-                    }else if (Project.class.isInstance(t2)){
-                        fullOuterJoin.addSourceIdentifier(((Project)t2).getTableName().getQualifiedName());
-                    }else{
-                        fullOuterJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
-                    }
-                }
-                fullOuterJoin.addJoinRelations(queryJoin.getOrderedRelations());
-
-                if (t1.getNextStep() != null) {
-                    t1.getNextStep().setNextStep(fullOuterJoin);
-                } else {
-                    t1.setNextStep(fullOuterJoin);
-                }
-                if (t2.getNextStep() != null) {
-                    t2.getNextStep().setNextStep(fullOuterJoin);
-                } else {
-                    t2.setNextStep(fullOuterJoin);
-                }
-                fullOuterJoin.addPreviousSteps(t1, t2);
-                stepMap.put(sb.toString(), fullOuterJoin);
-
-                break;
-            case RIGHT_OUTER:
-                rightJoin.setType(JoinType.RIGHT_OUTER);
-                relations = queryJoin.getRelations();
-                for (AbstractRelation ar: relations) {
-                    Relation r = (Relation) ar;
-                    if(Filter.class.isInstance(t1)){
-                        rightJoin.addSourceIdentifier(((Filter)t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
-                    }else if (Project.class.isInstance(t1)){
-                        rightJoin.addSourceIdentifier(((Project)t1).getTableName().getQualifiedName());
-                    }else{
-                        rightJoin.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
-                    }
-
-                    if(Filter.class.isInstance(t2)){
-                        rightJoin.addSourceIdentifier(((Filter)t2).getRelation().getLeftTerm().getTableName()
-                                .getQualifiedName());
-                    }else if (Project.class.isInstance(t2)){
-                        rightJoin.addSourceIdentifier(((Project)t2).getTableName().getQualifiedName());
-                    }else{
-                        rightJoin.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
-                    }
-                }
-                rightJoin.addJoinRelations(queryJoin.getOrderedRelations());
-
-                if (t1.getNextStep() != null) {
-                    t1.getNextStep().setNextStep(rightJoin);
-                } else {
-                    t1.setNextStep(rightJoin);
-                }
-                if (t2.getNextStep() != null) {
-                    t2.getNextStep().setNextStep(rightJoin);
-                } else {
-                    t2.setNextStep(rightJoin);
-                }
-                rightJoin.addPreviousSteps(t1, t2);
-                stepMap.put(sb.toString(), rightJoin);
-
-                break;
             }
+            join.addJoinRelations(queryJoin.getOrderedRelations());
+
+            if (t1.getNextStep() != null) {
+                t1.getNextStep().setNextStep(join);
+            } else {
+                t1.setNextStep(join);
+            }
+            if (t2.getNextStep() != null) {
+                t2.getNextStep().setNextStep(join);
+            } else {
+                t2.setNextStep(join);
+            }
+            join.addPreviousSteps(t1, t2);
+            stepMap.put(sb.toString(), join);
         }
         return stepMap;
     }
+
+
+    private Join getJoin(JoinType type, boolean isWindowInc){
+        Join join = null;
+        switch(type){
+            case INNER:
+                join = isWindowInc ? new Join(Collections.singleton(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS), "innerJoinPR") : new Join(Collections.singleton(Operations.SELECT_INNER_JOIN), "innerJoin");
+                join.setType(JoinType.INNER);
+                break;
+            case CROSS:
+                join = isWindowInc ? new Join(Collections.singleton(Operations.SELECT_CROSS_JOIN_PARTIALS_RESULTS), "crossJoinPR") : new Join(Collections.singleton(Operations.SELECT_CROSS_JOIN), "crossJoin");
+                join.setType(JoinType.CROSS);
+                break;
+            case LEFT_OUTER:
+                join = isWindowInc ? new Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS), "leftJoinPR") :new Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN), "leftJoin");
+                join.setType(JoinType.LEFT_OUTER);
+                break;
+            case FULL_OUTER:
+                join = isWindowInc ? new Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS), "fullOuterJoinPR") :new Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN), "fullOuterJoin");
+                join.setType(JoinType.FULL_OUTER);
+                break;
+            case RIGHT_OUTER:
+                join = isWindowInc ? new Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS), "rightJoinPR") :new Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN), "rightJoin");
+                join.setType(JoinType.RIGHT_OUTER);
+                break;
+        }
+        return join;
+
+    }
+
 
     /**
      * Get a Map associating fully qualified table names with their Project logical step.

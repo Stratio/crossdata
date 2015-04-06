@@ -124,6 +124,8 @@ case class Update(override val queryId: String, targetCluster: ClusterName, targ
 case class Truncate(override val queryId: String, targetCluster: ClusterName, targetTable: TableName) extends
     StorageOperation(queryId)
 
+
+
 // ============================================================================
 //                                IQueryEngine
 // ============================================================================
@@ -135,6 +137,8 @@ case class Execute(override val queryId: String, workflow: LogicalWorkflow) exte
 case class AsyncExecute(override val queryId: String, workflow: LogicalWorkflow) extends ExecuteOperation(queryId)
 
 case class PagedExecute(override val queryId: String, workflow: LogicalWorkflow, pageSize: Int) extends ExecuteOperation(queryId)
+
+case class StopProcess(override val queryId: String, targetQueryId: String) extends ExecuteOperation(queryId)
 
 // ============================================================================
 //                                IMetadataEngine

@@ -287,6 +287,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
      * Constant to define the prefix for explain plan operations.
      */
     val EXPLAIN_PLAN_TOKEN: String = "explain plan for"
+    val STOP_PROCESS_TOKEN = "stop process"
     var result: Result = null
     result = EmptyResult.createEmptyResult()
     if (command.toLowerCase.startsWith("describe")) {
@@ -309,9 +310,24 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
         CrossdataManifest.TYPE_CONNECTOR, command.substring(15).replace(";", "").trim,sessionId)
     } else if (command.toLowerCase.startsWith(EXPLAIN_PLAN_TOKEN)) {
       result = explainPlan(command,sessionId)
+    } else if (command.toLowerCase.startsWith(STOP_PROCESS_TOKEN)){
+      result = stopProcess(command.substring(STOP_PROCESS_TOKEN.length).replace(";", "").trim, sessionId);
     }
     return result
   }
+
+
+  def stopProcess(processQueryId: String, sessionId: String): Result = {
+    if(userId.isEmpty){
+      throw new ConnectionException("You must connect to cluster")
+    }
+    val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
+    params.add(processQueryId)
+    val queryId = UUID.randomUUID().toString
+    retryPolitics.askRetry(proxyActor, new Command(queryId, APICommand.STOP_PROCESS, params,sessionId), 5 second)
+
+  }
+
 
   def discoverMetadata(clusterName: String, sessionId: String): Result = {
     if (userId.isEmpty) {

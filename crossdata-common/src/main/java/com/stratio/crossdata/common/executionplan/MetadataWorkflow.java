@@ -166,7 +166,6 @@ public class MetadataWorkflow extends ExecutionWorkflow {
      */
     public MetadataOperation createMetadataOperationMessage() {
         MetadataOperation result = null;
-
         switch (this.executionType) {
         case CREATE_CATALOG:
             result = new CreateCatalog(queryId, this.clusterName, this.catalogMetadata);

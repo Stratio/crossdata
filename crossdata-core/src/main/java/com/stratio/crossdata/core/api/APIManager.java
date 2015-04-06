@@ -263,7 +263,7 @@ public class APIManager {
         } else if (APICommand.EXPLAIN_PLAN().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.EXPLAIN_PLAN().toString());
             result = explainPlan(cmd);
-        } else {
+        } else{
             result = Result.createUnsupportedOperationErrorResult("Command " + cmd.commandType() + " not supported");
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
@@ -583,6 +583,8 @@ public class APIManager {
         }
         return result;
     }
+
+
 
     private void persistManifest(CrossdataManifest manifest) throws ApiException {
         try {

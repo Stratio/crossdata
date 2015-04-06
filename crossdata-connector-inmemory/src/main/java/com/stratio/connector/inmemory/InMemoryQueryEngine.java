@@ -161,7 +161,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
         //End Metric
         long millis = executeTimerContext.stop();
-        LOG.info("Query took " + millis + " milliseconds");
+        LOG.info("Query took " + millis + " nanoseconds");
 
         return finalResult;
     }

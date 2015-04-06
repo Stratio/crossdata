@@ -18,6 +18,13 @@
 
 package com.stratio.connector.twitter;
 
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.log4j.Logger;
 import com.stratio.connector.twitter.listener.TweetsListener;
 import com.stratio.crossdata.common.connector.IQueryEngine;
 import com.stratio.crossdata.common.connector.IResultHandler;
@@ -35,7 +42,14 @@ import twitter4j.TwitterStream;
 
 public class TwitterQueryEngine implements IQueryEngine {
 
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(TwitterQueryEngine.class);
+
     private final TwitterConnector connector;
+
+    private static Map<String, Pair<TwitterStream,TweetsListener>> asyncQueriesMap =  Collections.synchronizedMap(new HashMap<String,Pair<TwitterStream,TweetsListener>>());
 
     public TwitterQueryEngine(TwitterConnector connector) {
         this.connector = connector;
@@ -87,7 +101,7 @@ public class TwitterQueryEngine implements IQueryEngine {
                 select.getOutputSelectorOrder(),
                 window.getDurationInMilliseconds());
         session.addListener(listener);
-
+        asyncQueriesMap.put(queryId, Pair.of(session, listener));
         if(project.getTableName().getName().equalsIgnoreCase("sample")){
             session.sample();
         } else {
@@ -125,6 +139,12 @@ public class TwitterQueryEngine implements IQueryEngine {
      */
     @Override
     public void stop(String queryId) throws ConnectorException {
-        throw new UnsupportedException("Operation not supported");
+        LOG.info("Stopping process "+queryId);
+        Pair<TwitterStream, TweetsListener> sessionListenerPair = asyncQueriesMap.get(queryId);
+        TwitterStream session = sessionListenerPair.getLeft();
+        TweetsListener listener = sessionListenerPair.getRight();
+        session.removeListener(listener);
+        asyncQueriesMap.remove(queryId);
+
     }
 }

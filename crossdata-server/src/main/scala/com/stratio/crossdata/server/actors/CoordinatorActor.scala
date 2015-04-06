@@ -32,6 +32,7 @@ import com.stratio.crossdata.common.metadata.Operations
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
+import com.stratio.crossdata.common.utils.Constants
 import com.stratio.crossdata.communication._
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, ExecutionManagerException}
@@ -46,7 +47,7 @@ object CoordinatorActor {
   /**
    * Token attached to query identifiers when the query is part of a trigger execution workflow.
    */
-  val TriggerToken = "_T"
+  val TriggerToken = Constants.TRIGGER_TOKEN
 
   def props(connectorMgr: ActorRef, coordinator: Coordinator): Props = Props(new CoordinatorActor
   (connectorMgr, coordinator))
@@ -235,6 +236,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                   || metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG){
                   coordinator.persistCreateTable(metadataWorkflow.getTableMetadata)
                   val tableMetadata = metadataWorkflow.getTableMetadata
+
                   updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
                   executionInfo.setQueryStatus(QueryStatus.PLANNED)
                   result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_TABLE)
@@ -431,17 +433,20 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val actorRef = StringUtils.getAkkaActorRefUri(queryWorkflow.getActorRef(), false)
             val actorSelection = context.actorSelection(actorRef)
 
+            val isWindowFound = QueryWorkflow.checkStreaming(queryWorkflow.getWorkflow.getLastStep)
             //Register the top level workflow
             val operation = queryWorkflow.getExecuteOperation(
               queryId + CoordinatorActor.TriggerToken)
-            executionInfo.setRemoveOnSuccess(Execute.getClass.isInstance(operation))
+
+            executionInfo.setRemoveOnSuccess(!isWindowFound)
             ExecutionManager.MANAGER.createEntry(queryId + CoordinatorActor.TriggerToken, executionInfo)
 
             //Register the result workflow
             val nextExecutionInfo = new ExecutionInfo
             nextExecutionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, true))
             nextExecutionInfo.setWorkflow(queryWorkflow.getNextExecutionWorkflow)
-            nextExecutionInfo.setRemoveOnSuccess(executionInfo.isRemoveOnSuccess)
+            nextExecutionInfo.setRemoveOnSuccess(!isWindowFound)
+            nextExecutionInfo.setTriggeredByStreaming(isWindowFound)
             ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo)
 
             actorSelection.asInstanceOf[ActorSelection] ! operation
@@ -521,6 +526,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         val clientActor = context.actorSelection(target)
 
         var sendResultToClient = true
+
 
         if(queryId.contains("#")){
           if(queryId.endsWith("#1")){
@@ -607,34 +613,37 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             sendResultToClient = false
             val triggerQueryId = queryId.substring(0, queryId.length - CoordinatorActor.TriggerToken.length)
             log.info("Retrieving Triggering queryId: " + triggerQueryId);
-            val executionInfo = ExecutionManager.MANAGER.getValue(triggerQueryId).asInstanceOf[ExecutionInfo]
+            val lastExecutionInfo = ExecutionManager.MANAGER.getValue(triggerQueryId).asInstanceOf[ExecutionInfo]
             val partialResults = result.asInstanceOf[QueryResult].getResultSet
-            val actorRef = StringUtils.getAkkaActorRefUri(executionInfo.getWorkflow.getActorRef(), false)
+            val actorRef = StringUtils.getAkkaActorRefUri(lastExecutionInfo.getWorkflow.getActorRef(), false)
             val actorSelection = context.actorSelection(actorRef)
 
-            var operation: Operation = new Operation(queryId)
+            var operation: Operation = null
 
-            if(ExecutionType.INSERT_BATCH.equals(executionInfo.getWorkflow.getExecutionType)){
-              executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].setRows(partialResults.getRows)
-              operation = executionInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
+            if(ExecutionType.INSERT_BATCH.equals(lastExecutionInfo.getWorkflow.getExecutionType)){
+              lastExecutionInfo.getWorkflow.asInstanceOf[StorageWorkflow].setRows(partialResults.getRows)
+              operation = lastExecutionInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
             } else {
-              if (executionInfo.getWorkflow.getTriggerStep!=null) {
-                executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+              if (executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep!=null) {
+                log.error("The trigger step shouldn't be null")
               }else{
-                val partialResultsStep: PartialResults = new PartialResults(
-                  Collections.singleton(Operations.PARTIAL_RESULTS))
-                executionInfo.getWorkflow.setTriggerStep(partialResultsStep)
-                executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+                executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
               }
-              operation = executionInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(queryId)
+              operation = lastExecutionInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(triggerQueryId)
 
             }
-            log.info("Sending operation: " + operation + " to: " + actorSelection.asInstanceOf[ActorSelection])
-            actorSelection.asInstanceOf[ActorSelection] ! operation
+            log.info("Sending operation: " + operation + " to: " + actorSelection)
+            actorSelection ! operation
           }
         }
 
         if(sendResultToClient) {
+          if (executionInfo.asInstanceOf[ExecutionInfo].isTriggeredByStreaming) {
+            result match {
+              case res: QueryResult => res.setLastResultSet(false)
+              case _ =>
+            }
+          }
           log.info("Send result to: " + target)
           clientActor ! result
         }

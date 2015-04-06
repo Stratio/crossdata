@@ -70,7 +70,7 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
       sender ! DisconnectResult.createDisconnectResult(user)
     }
     case cmd: Command =>{
-      logger.info("API Command call received" + cmd.commandType)
+      logger.info("API Command call received " + cmd.commandType)
       APIActorRef forward cmd
     }
     case ReceiveTimeout => {
