@@ -56,7 +56,7 @@ public class QueryWorkflow extends ExecutionWorkflow {
         return workflow;
     }
 
-    private boolean checkStreaming(LogicalStep lastStep){
+    public static boolean checkStreaming(LogicalStep lastStep){
         boolean result = false;
         if(lastStep != null){
             if(Window.class.isInstance(lastStep)){

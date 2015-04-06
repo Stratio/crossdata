@@ -89,6 +89,10 @@ public abstract class Result implements Serializable {
         return new ErrorResult(e);
     }
 
+    public static ErrorResult createValidationErrorResult(ValidationException e, String queryId) {
+        return new ErrorResult(e);
+    }
+
     /**
      * Create an execution error result passing a message.
      *
@@ -135,6 +139,17 @@ public abstract class Result implements Serializable {
      */
     public void setQueryId(String queryId) {
         this.queryId = queryId;
+    }
+
+    /**
+     * Get the result.
+     *
+     * @param queryId The query identifier
+     * @return The result with the queryId.
+     */
+    public Result withQueryId(String queryId){
+        this.queryId = queryId;
+        return this;
     }
 
     /**

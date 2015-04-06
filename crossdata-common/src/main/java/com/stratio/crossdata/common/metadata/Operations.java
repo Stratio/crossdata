@@ -635,6 +635,22 @@ public enum Operations {
      */
     SELECT_CROSS_JOIN("SELECT_CROSS_JOIN"),
     /**
+     * The engine supports left outer joins with partial results.
+     */
+    SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS("SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS"),
+    /**
+     * The engine supports right outer joins with partial results.
+     */
+    SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS("SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS"),
+    /**
+     * The engine supports full outer joins with partial results.
+     */
+    SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS("SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS"),
+    /**
+     * The engine supports cross joins with partial results.
+     */
+    SELECT_CROSS_JOIN_PARTIALS_RESULTS("SELECT_CROSS_JOIN_PARTIALS_RESULTS"),
+    /**
      * The engine supports operations which refer to the result of previous queries by using aliases.
      */
     SELECT_SUBQUERY("SELECT_SUBQUERY");

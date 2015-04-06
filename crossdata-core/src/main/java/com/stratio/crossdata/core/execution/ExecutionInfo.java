@@ -49,6 +49,11 @@ public class ExecutionInfo implements Serializable {
      */
     private boolean updateMetadataOnSuccess = false;
 
+    /**
+     * Whether the result has been obtained after executing a streaming query.
+     */
+    private boolean isTriggeredByStreaming = false;
+
     public ExecutionInfo() {
     }
 
@@ -98,5 +103,13 @@ public class ExecutionInfo implements Serializable {
 
     public void setUpdateOnSuccess(boolean updateMetadataOnSuccess) {
         this.updateMetadataOnSuccess = updateMetadataOnSuccess;
+    }
+
+    public boolean isTriggeredByStreaming() {
+        return isTriggeredByStreaming;
+    }
+
+    public void setTriggeredByStreaming(boolean isTriggeredByStreaming) {
+        this.isTriggeredByStreaming = isTriggeredByStreaming;
     }
 }

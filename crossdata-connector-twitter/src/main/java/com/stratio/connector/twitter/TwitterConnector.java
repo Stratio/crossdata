@@ -160,19 +160,20 @@ public class TwitterConnector extends AbstractExtendedConnector {
             TwitterStream twitterStream = tf.getInstance();
             clusters.put(targetCluster.getName(), new TwitterCluster(targetCluster.getName(), twitterStream));
         } else {
-            long millis = connectTimerContext.stop() / 1000;
+            long millis = connectTimerContext.stop() / 1000000;
             LOG.info("Connection took " + millis + " milliseconds");
             throw new ConnectionException("Invalid options, cannot login twitter");
         }
 
         //End Metric
-        long millis = connectTimerContext.stop() / 1000;
+        long millis = connectTimerContext.stop() / 1000000;
         LOG.info("Connection took " + millis + " milliseconds");
     }
 
     public TwitterStream getSession(String clusterName){
         return clusters.get(clusterName).getSession();
     }
+
 
     /**
      * Close the connection with the underlying cluster.

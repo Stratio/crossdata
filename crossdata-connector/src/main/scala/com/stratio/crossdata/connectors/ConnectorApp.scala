@@ -20,6 +20,7 @@ package com.stratio.crossdata.connectors
 
 import java.util
 
+import akka.serialization.Serialization
 import com.codahale.metrics._
 import akka.agent.Agent
 import akka.actor.{Props, ActorSelection, ActorRef, ActorSystem}
@@ -31,7 +32,7 @@ import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.common.connector._
 import org.apache.log4j.Logger
-import scala.collection.mutable.Set
+import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import com.stratio.crossdata.communication.{GetTableMetadata, GetCatalogMetadata, GetCatalogs, Shutdown}
@@ -53,7 +54,8 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   var metricName: String = "connector"
 
-  val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system.dispatcher)
+  val metadataMapAgent = Agent(new ObservableMap[Name, UpdatableMetadata])(system.dispatcher)
+  val runningJobsAgent =   Agent(new ListMap[String, ActorRef]())(system.dispatcher)
 
   logger.info("Connector Name: " + connectorName)
 
@@ -78,12 +80,11 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
     val connectorManagerActorRef = system.actorOf(
       RoundRobinPool(num_connector_actor, Some(resizer))
-        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServers, agent)),
+        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServers, metadataMapAgent, runningJobsAgent)),
       "ConnectorActor")
 
     actorClusterNode = Some(connectorManagerActorRef)
     connector.init(new IConfiguration {})
-
     val actorSelection: ActorSelection = system.actorSelection(
       StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString(), false))
 
