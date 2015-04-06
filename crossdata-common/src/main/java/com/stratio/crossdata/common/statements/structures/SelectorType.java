@@ -33,5 +33,6 @@ public enum SelectorType {
     SELECT,
     GROUP,
     CASE_WHEN,
-    NULL
+    NULL,
+    LIST
 }

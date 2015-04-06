@@ -20,12 +20,11 @@ package com.stratio.crossdata.common.logicalplan;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
-import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.utils.StringUtils;
 
 /**
  * GroupBy class implements the step of a group by in a workflow.
@@ -51,22 +50,22 @@ public class GroupBy extends TransformationStep {
     /**
      * Class constructor.
      *
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      * @param ids Identifiers.
      */
-    public GroupBy(Operations operation, List<Selector> ids) {
-        super(operation);
+    public GroupBy(Set<Operations> operations, List<Selector> ids) {
+        super(operations);
         this.ids = ids;
     }
 
     /**
      * Class constructor.
      *
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      * @param ids Identifiers.
      */
-    public GroupBy(Operations operation, List<Selector> ids, List<AbstractRelation> havingIds) {
-        super(operation);
+    public GroupBy(Set<Operations> operations, List<Selector> ids, List<AbstractRelation> havingIds) {
+        super(operations);
         this.ids = ids;
         this.havingIds=havingIds;
         this.havingInc=true;

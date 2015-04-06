@@ -20,6 +20,7 @@ package com.stratio.crossdata.common.logicalplan;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 import com.stratio.crossdata.common.metadata.Operations;
 
@@ -32,7 +33,7 @@ public abstract class LogicalStep implements Serializable {
     /**
      * Type of operation to be executed.
      */
-    private final Operations operation;
+    private final Set<Operations> operations;
 
     /**
      * Next step to be executed.
@@ -42,10 +43,10 @@ public abstract class LogicalStep implements Serializable {
     /**
      * Class constructor.
      *
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      */
-    protected LogicalStep(Operations operation) {
-        this.operation = operation;
+    protected LogicalStep(Set<Operations> operations) {
+        this.operations = operations;
     }
 
     /**
@@ -53,8 +54,8 @@ public abstract class LogicalStep implements Serializable {
      *
      * @return A {@link com.stratio.crossdata.common.metadata.Operations}.
      */
-    public Operations getOperation() {
-        return operation;
+    public Set<Operations> getOperations() {
+        return operations;
     }
 
     /**

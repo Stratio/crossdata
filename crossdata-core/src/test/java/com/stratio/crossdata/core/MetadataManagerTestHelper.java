@@ -174,7 +174,8 @@ public enum MetadataManagerTestHelper {
                 datastoreName,
                 clusterWithPriorities,
                 options,
-                "actorRed1");
+                "actorRef1",
+                new ArrayList<FunctionType>());
         createTestCatalog("testCatalog");
         IndexName indexName = new IndexName(new ColumnName("catalog1", "table1", "defaultTest"));
         Set<IndexMetadata> indexes = new HashSet<>();
@@ -313,15 +314,18 @@ public enum MetadataManagerTestHelper {
      * @param dataStoreName The dataStore associated with this connector.
      * @return A {@link com.stratio.crossdata.common.data.ConnectorName}.
      */
-    public ConnectorMetadata createTestConnector(String name, DataStoreName dataStoreName, Map<ClusterName, Integer> clusterWithPriorities,
+    public ConnectorMetadata createTestConnector(
+            String name,
+            DataStoreName dataStoreName,
+            Map<ClusterName, Integer> clusterWithPriorities,
             Set<Operations> options,
-            String actorRef) throws ManifestException {
+            String actorRef,
+            List<FunctionType> functionsList) throws ManifestException {
         final String version = "0.2.0";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorFunctionsType functions = new ConnectorFunctionsType();
-        List<FunctionType> functionsList = new ArrayList<>();
         FunctionType functionType = new FunctionType();
         functionType.setFunctionName("concat");
         functionType.setSignature("concat(Tuple[Text, Text]):Tuple[Text]");

@@ -20,6 +20,7 @@ package com.stratio.crossdata.common.logicalplan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import com.stratio.crossdata.common.data.JoinType;
 import com.stratio.crossdata.common.metadata.Operations;
@@ -55,11 +56,11 @@ public class Join extends UnionStep {
     /**
      * Class constructor.
      *
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      * @param id        The join identifier.
      */
-    public Join(Operations operation, String id) {
-        super(operation);
+    public Join(Set<Operations> operations, String id) {
+        super(operations);
         this.id = id;
     }
 

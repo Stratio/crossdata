@@ -39,8 +39,7 @@ import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.IPlannedQuery
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
-
-
+import java.util.Collections
 
 object CoordinatorActor {
 
@@ -622,7 +621,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               if (executionInfo.getWorkflow.getTriggerStep!=null) {
                 executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
               }else{
-                val partialResultsStep: PartialResults = new PartialResults(Operations.PARTIAL_RESULTS)
+                val partialResultsStep: PartialResults = new PartialResults(
+                  Collections.singleton(Operations.PARTIAL_RESULTS))
                 executionInfo.getWorkflow.setTriggerStep(partialResultsStep)
                 executionInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
               }
