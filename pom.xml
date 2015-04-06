@@ -112,6 +112,7 @@
         <config.version>1.2.1</config.version>
         <testng.version>6.8.8</testng.version>
         <commons-lang3.version>3.2.1</commons-lang3.version>
+	<outputFileName>stratio-crossdata</outputFileName>
     </properties>
 
     <build>
