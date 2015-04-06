@@ -43,6 +43,7 @@ object BasicDriver extends DriverConfig {
    */
   override lazy val logger = Logger.getLogger(getClass)
   val balancing: Boolean= config.getBoolean("config.balancing")
+  val auth: Boolean= config.getBoolean("config.authentication")
   val serverPathName:String = config.getString("config.serverPathName")
   val crossdataServerClusterName:String= config.getString("config.crossdataServerClusterName")
 
@@ -109,6 +110,12 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   def this(servers:Array[String]) {
     this(BasicDriver.getBasicDriverConfigFromFile(servers))
   }
+
+  /**
+   * Check if user authentication is enabled.
+   * @return A Boolean whatever the result is.
+   */
+  def isAuthEnable():Boolean= BasicDriver.auth
 
   /**
    * Check if the user and pass are allowed to access to Crossdata Server.
