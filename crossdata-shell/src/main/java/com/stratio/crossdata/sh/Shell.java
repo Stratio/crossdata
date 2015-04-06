@@ -149,17 +149,19 @@ public class Shell {
         Character mask=(args.length == 0) ? new Character((char)0) : new Character(args[0].charAt(0));
         String user="";
         String pass="";
-        try {
-            System.out.println("____ ____ ____ ____ ____ ____ ____ ____ ____");
-            System.out.println("||C |||R |||O |||S |||S |||D |||A |||T |||A ||");
-            System.out.println("||__|||__|||__|||__|||__|||__|||__|||__|||__||");
-            System.out.println("|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|");
+        System.out.println("____ ____ ____ ____ ____ ____ ____ ____ ____");
+        System.out.println("||C |||R |||O |||S |||S |||D |||A |||T |||A ||");
+        System.out.println("||__|||__|||__|||__|||__|||__|||__|||__|||__||");
+        System.out.println("|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|");
 
-            ConsoleReader reader=new ConsoleReader();
-            user=reader.readLine("user>");
-            pass=reader.readLine("Enter password> ",mask);
-        } catch (IOException e) {
-            LOG.error(e.getMessage());
+        if (sh.isAuthEnable()) {
+            try {
+                ConsoleReader reader = new ConsoleReader();
+                user = reader.readLine("user>");
+                pass = reader.readLine("Enter password> ", mask);
+            } catch (IOException e) {
+                LOG.error(e.getMessage());
+            }
         }
         if (sh.connect(user,pass)) {
             boolean enterLoop = true;
@@ -171,6 +173,10 @@ public class Shell {
             }
         }
         sh.closeConsole();
+    }
+
+    private boolean isAuthEnable() {
+        return crossdataDriver.isAuthEnable();
     }
 
     /**
