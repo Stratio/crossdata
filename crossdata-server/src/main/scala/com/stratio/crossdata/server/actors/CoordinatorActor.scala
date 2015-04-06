@@ -623,12 +623,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               operation = lastExecutionInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
             } else {
               if (executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep!=null) {
-                log.debug("************SHOULDNT BE HERE******************")
-                executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+                log.error("The trigger step shouldn't be null")
               }else{
-                //val partialResultsStep: PartialResults = new PartialResults(Operations.PARTIAL_RESULTS)
-                //executionInfo.getWorkflow.setTriggerStep(partialResultsStep)
-                log.debug("*******SHOULDN BE NULL" + executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep)
                 executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
               }
               operation = lastExecutionInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(triggerQueryId)
