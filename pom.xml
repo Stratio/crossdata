@@ -37,8 +37,9 @@
     </licenses>
 
     <scm>
-        <url>scm:git:git@github.com:Stratio/crossdata.git</url>
-        <connection>https://github.com/Stratio/crossdata/</connection>
+        <developerConnection>scm:git:git@github.com:Stratio/crossdata.git</developerConnection>
+        <connection>scm:git:git@github.com:Stratio/crossdata.git</connection>
+        <url>https://github.com/Stratio/crossdata/</url>
     </scm>
 
     <issueManagement>
