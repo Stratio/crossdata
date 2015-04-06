@@ -40,7 +40,7 @@ public class ExtendedSelectSelector extends SelectSelector {
                 new BaseQuery(
                         UUID.randomUUID().toString(),
                         selectStatement.toString().replaceAll(Name.UNKNOWN_NAME+".", ""),
-                        new CatalogName(sessionCatalog)),
+                        new CatalogName(sessionCatalog),UUID.randomUUID().toString()),
                 selectStatement);
     }
 

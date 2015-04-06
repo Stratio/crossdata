@@ -61,7 +61,7 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
       logger.info("Query received: " + query.statement.toString)
       parserActorRef forward query
     }
-    case Connect(user) => {
+    case Connect(user,pass) => {
       logger.info(s"Welcome $user! from  ${sender.path.address} ( host =${sender.path.address}) ")
       sender ! ConnectResult.createConnectResult(UUID.randomUUID().toString)
     }

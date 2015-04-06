@@ -72,7 +72,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
                 null, values, false, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
@@ -111,7 +111,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
                 null, values, false, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
@@ -152,7 +152,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
                         values, true, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
@@ -192,7 +192,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
                 null, values, true, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
@@ -236,7 +236,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
                 InsertIntoStatement.TYPE_SELECT_CLAUSE);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("insertIntoFromSelect", query, new CatalogName("sales"));
+        BaseQuery baseQuery = new BaseQuery("insertIntoFromSelect", query, new CatalogName("sales"),"sessionTest");
 
         IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {
@@ -280,7 +280,7 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
                 InsertIntoStatement.TYPE_SELECT_CLAUSE);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("insertIntoFromSelectWrongTypes", query, new CatalogName("sales"));
+        BaseQuery baseQuery = new BaseQuery("insertIntoFromSelectWrongTypes", query, new CatalogName("sales"),"sessionTest");
 
         IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         try {

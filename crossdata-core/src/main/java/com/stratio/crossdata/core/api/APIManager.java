@@ -779,7 +779,7 @@ public class APIManager {
             StringBuilder plan = new StringBuilder("Explain plan for: ");
             plan.append(statement).append(System.lineSeparator());
             String realStatement=statement.substring(17);
-            BaseQuery query = new BaseQuery(cmd.queryId(), realStatement, new CatalogName(catalog));
+            BaseQuery query = new BaseQuery(cmd.queryId(), realStatement, new CatalogName(catalog), cmd.sessionId());
             try {
                 IParsedQuery parsedQuery = parser.parse(query);
                 IValidatedQuery validatedQuery = validator.validate(parsedQuery);

@@ -281,7 +281,7 @@ public class NormalizerTest {
                 + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();
@@ -355,7 +355,7 @@ public class NormalizerTest {
                         + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();
@@ -427,7 +427,7 @@ public class NormalizerTest {
                                         + "INNER JOIN tableClients ON assistantId = clientId ";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();
@@ -466,7 +466,7 @@ public class NormalizerTest {
                         "SELECT myCatalog.tableCostumers.colFee FROM demo.tableClients";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();
@@ -504,7 +504,7 @@ public class NormalizerTest {
         String expectedText = "SELECT "+virtualTableQN+".colSales, "+virtualTableQN+".1 FROM ( SELECT demo.tableClients.colsales, 1 FROM demo.tableClients ) AS t";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("Constants.VIRTUAL_CATALOG_NAME"));
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("Constants.VIRTUAL_CATALOG_NAME"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();

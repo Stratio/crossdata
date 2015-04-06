@@ -76,7 +76,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -94,7 +94,7 @@ public class SelectStatementTest extends BasicValidatorTest {
     public void validateSelectWithSubquery() {
         String query = "SELECT age, email FROM (SELECT * FROM test.table1);";
 
-        BaseQuery baseQuery = new BaseQuery("validateSelectWithSubquery", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("validateSelectWithSubquery", query, new CatalogName("demo"),"sessionTest");
 
         Parser parser = new Parser();
         SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
@@ -118,7 +118,7 @@ public class SelectStatementTest extends BasicValidatorTest {
                 " AND email = 25*(SELECT member FROM table3)" +
                 "               +(SELECT name, address FROM table3 WHERE address=(SELECT * FROM sales.customers)+age);";
 
-        BaseQuery baseQuery = new BaseQuery("validateSubqueriesInWhereClauses", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("validateSubqueriesInWhereClauses", query, new CatalogName("demo"),"sessionTest");
 
         Parser parser = new Parser();
         SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
@@ -143,7 +143,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         String query = "SELECT * FROM (SELECT name, surname, rating FROM table3) " +
                 "WHERE rating > (SELECT age FROM sales.customers);";
 
-        BaseQuery baseQuery = new BaseQuery("validateTableSubqueryAndWhereSubquery", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("validateTableSubqueryAndWhereSubquery", query, new CatalogName("demo"),"sessionTest");
 
         Parser parser = new Parser();
         SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
@@ -168,7 +168,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         String query = "SELECT name, gender, age FROM " +
                 "(SELECT * FROM users WHERE email = 18 + (SELECT email FROM sales.customers) * 'my comment');";
 
-        BaseQuery baseQuery = new BaseQuery("validateComplexSubqueries", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("validateComplexSubqueries", query, new CatalogName("demo"),"sessionTest");
 
         Parser parser = new Parser();
         SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
@@ -194,7 +194,7 @@ public class SelectStatementTest extends BasicValidatorTest {
                 "(SELECT * FROM users " +
                     "WHERE age = 18 + (SELECT rating FROM table3) / 'my comment') AS myTable;";
 
-        BaseQuery baseQuery = new BaseQuery("validateComplexSubqueries2", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("validateComplexSubqueries2", query, new CatalogName("demo"),"sessionTest");
 
         Parser parser = new Parser();
         SelectParsedQuery parsedQuery = (SelectParsedQuery) parser.parse(baseQuery);
@@ -258,7 +258,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -289,7 +289,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -328,7 +328,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -374,7 +374,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -420,7 +420,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -466,7 +466,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -513,7 +513,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -575,7 +575,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
             Validator validator = new Validator();
 
-            BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+            BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
             IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -636,7 +636,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
             Validator validator = new Validator();
 
-            BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+            BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
             IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -679,7 +679,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -726,7 +726,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -769,7 +769,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -812,7 +812,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -855,7 +855,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -898,7 +898,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -941,7 +941,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -984,7 +984,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -1027,7 +1027,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -1079,7 +1079,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -1131,7 +1131,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -1308,7 +1308,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -1348,7 +1348,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -1388,7 +1388,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
@@ -1418,7 +1418,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
         Validator validator = new Validator();
-        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
         IValidatedQuery validatedQuery = null;
@@ -1448,7 +1448,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
         Validator validator = new Validator();
-        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
 
         IValidatedQuery validatedQuery = null;
@@ -1490,7 +1490,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         selectStatement.setWhere(where);
 
         Validator validator = new Validator();
-        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
         IValidatedQuery validatedQuery = null;
         try {
@@ -1551,7 +1551,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         selectStatement.setWhere(where);
 
         Validator validator = new Validator();
-        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
         IValidatedQuery validatedQuery = null;
         try {
@@ -1613,7 +1613,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         selectStatement.setWhere(where);
 
         Validator validator = new Validator();
-        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
         IValidatedQuery validatedQuery = null;
         try {
@@ -1651,7 +1651,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
 
         Validator validator = new Validator();
-        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
         IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
         try {
             validator.validate(parsedQuery);

@@ -29,6 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
 
@@ -1439,7 +1440,7 @@ public class Planner {
             BaseQuery selectBaseQuery = new BaseQuery(
                     query.getQueryId(),
                     selectStatement.toString(),
-                    query.getDefaultCatalog());
+                    query.getDefaultCatalog(), UUID.randomUUID().toString());
             SelectParsedQuery selectParsedQuery = new SelectParsedQuery(selectBaseQuery, selectStatement);
 
             Validator validator = new Validator();

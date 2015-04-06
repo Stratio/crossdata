@@ -40,7 +40,7 @@ class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike {
 
 
   def executeStatement(query: String, catalog: String, shouldExecute: Boolean): Result = {
-    val stmt = Query("basic-server", catalog, query, "test_actor")
+    val stmt = Query("basic-server", catalog, query, "test_actor","sessionTest")
 
     serverRef ! stmt
     val result = receiveActorMessages(shouldExecute, false, !shouldExecute)
@@ -65,7 +65,7 @@ class BasicServerActorTest extends ActorReceiveUtils with FunSuiteLike {
 
   test("ServerActor Test connect without error") {
     within(5000 millis) {
-      serverRef ! Connect("test-user")
+      serverRef ! Connect("test-user", "test-pass")
       val result = expectMsgClass(classOf[ConnectResult])
       assertFalse(result.hasError, "Error not expected")
       assertNotEquals(result.asInstanceOf[ConnectResult].getSessionId, -1, "Expecting session id")

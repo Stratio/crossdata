@@ -60,7 +60,7 @@ public class DriverParentTest {
 
             driver = new BasicDriver();
             try {
-                driver.connect("TEST_USER");
+                driver.connect("TEST_USER", "TEST_PASS");
             } catch (Exception e) {
                 logger.error(e);
                 finish();

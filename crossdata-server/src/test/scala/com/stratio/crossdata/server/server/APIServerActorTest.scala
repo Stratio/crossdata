@@ -109,7 +109,8 @@ with ImplicitSender with DefaultTimeout with FunSuiteLike {
   test("API List tables from unknown catalog") {
     val params: java.util.List[AnyRef] = new java.util.ArrayList[AnyRef]
     params.add("unknown")
-    val cmd: Command = new Command("QID", APICommand.LIST_TABLES, params)
+    val cmd: Command = new Command("QID", APICommand.LIST_TABLES, params,
+      "sessionTest")
     var result: MetadataResult = null
     within(5000 millis) {
       result = executeAPICommand(cmd, true)

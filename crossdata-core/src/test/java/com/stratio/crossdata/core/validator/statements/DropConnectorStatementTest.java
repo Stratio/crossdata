@@ -39,7 +39,7 @@ public class DropConnectorStatementTest extends BasicValidatorTest {
         DropConnectorStatement dropConnectorStatement = new DropConnectorStatement("CassandraConnector");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropConnectorStatement);
         try {
@@ -58,7 +58,7 @@ public class DropConnectorStatementTest extends BasicValidatorTest {
         DropConnectorStatement dropConnectorStatement = new DropConnectorStatement("CassandrorConnector");
 
         Validator validator = new Validator();
-        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropConnectorStatement);
         try {

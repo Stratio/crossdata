@@ -734,7 +734,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns,
                 null, values, true, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
 
-        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"),"sessionTest");
 
         StorageParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         StorageValidatedQuery storageValidatedQuery = new StorageValidatedQuery(parsedQuery);
@@ -755,7 +755,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("demo2"), true);
         String query = "Drop Catalog demo2;";
-        BaseQuery baseQuery = new BaseQuery("dropId", query, new CatalogName("demo2"));
+        BaseQuery baseQuery = new BaseQuery("dropId", query, new CatalogName("demo2"),"sessionTest");
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
         MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
@@ -774,7 +774,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         String options = "{comment:'the new comment'}";
         AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("demo2"), options);
         String query = "ALTER CATALOG demo2 WITH {comment:'the new comment'};";
-        BaseQuery baseQuery = new BaseQuery("alterId", query, new CatalogName("demo2"));
+        BaseQuery baseQuery = new BaseQuery("alterId", query, new CatalogName("demo2"),"sessionTest");
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
@@ -800,7 +800,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         AlterTableStatement alterTableStatement = new AlterTableStatement(columnMetadata.getName().getTableName(),
                 columnMetadata.getName(), new ColumnType(DataType.VARCHAR), null, AlterOperation.ALTER_COLUMN);
         String query = "ALTER TABLE demo.table3 ALTER table3.email TYPE varchar;";
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 

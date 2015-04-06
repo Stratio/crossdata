@@ -43,7 +43,7 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
                 "{'comment':'my coments'}");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
         try {
@@ -67,7 +67,7 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
         try {
@@ -90,7 +90,7 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
                 "");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
         try {
@@ -113,7 +113,7 @@ public class AlterClusterStatementTest extends BasicValidatorTest {
                 "{}");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("alterClusterId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterClusterStatement);
         try {

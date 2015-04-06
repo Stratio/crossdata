@@ -57,6 +57,10 @@ public class MetadataParsedQuery extends BaseQuery implements IParsedQuery {
         return (MetadataStatement) statement;
     }
 
+    @Override public String getSessionId() {
+        return super.getSessionId();
+    }
+
     @Override public String toString() {
         return statement.toString();
     }

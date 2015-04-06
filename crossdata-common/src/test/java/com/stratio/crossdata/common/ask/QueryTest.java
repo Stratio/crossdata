@@ -15,6 +15,7 @@ public class QueryTest {
 
     private Query query;
     private String queryId;
+    private String sessionId;
     private String catalog;
     private String statement;
     private String user;
@@ -22,10 +23,11 @@ public class QueryTest {
     @BeforeClass
     public void setUp() throws Exception {
         queryId = String.valueOf(UUID.randomUUID());
+        sessionId = String.valueOf(UUID.randomUUID());
         catalog = "catalogTest";
         statement = "SELECT * FROM tableTest;";
         user = "tester";
-        query = new Query(queryId, catalog, statement, user);
+        query = new Query(queryId, catalog, statement, user,sessionId);
     }
 
     @Test

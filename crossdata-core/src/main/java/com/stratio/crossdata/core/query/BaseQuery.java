@@ -37,21 +37,27 @@ public class BaseQuery implements Serializable {
      */
     private final String queryId;
 
+    private final String sessionId;
+
     private final CatalogName defaultCatalog;
 
     private QueryStatus queryStatus;
+
+
 
     /**
      * Constructor class.
      * @param queryId The query id.
      * @param query The string with the query.
      * @param defaultCatalog The catalog of the query.
+     * @param sessionId The session associated to the query.
      */
-    public BaseQuery(String queryId, String query, CatalogName defaultCatalog) {
+    public BaseQuery(String queryId, String query, CatalogName defaultCatalog, String sessionId) {
         this.queryId = queryId;
         this.query = query;
         this.defaultCatalog = defaultCatalog;
         this.queryStatus = QueryStatus.NONE;
+        this.sessionId=sessionId;
     }
 
     /**
@@ -59,7 +65,7 @@ public class BaseQuery implements Serializable {
      * @param baseQuery The base query.
      */
     BaseQuery(BaseQuery baseQuery) {
-        this(baseQuery.getQueryId(), baseQuery.getQuery(), baseQuery.getDefaultCatalog());
+        this(baseQuery.getQueryId(), baseQuery.getQuery(), baseQuery.getDefaultCatalog(), baseQuery.getSessionId());
     }
 
     public String getQuery() {
@@ -68,6 +74,10 @@ public class BaseQuery implements Serializable {
 
     public String getQueryId() {
         return queryId;
+    }
+
+    public String getSessionId() {
+        return sessionId;
     }
 
     public QueryStatus getStatus() {

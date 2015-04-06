@@ -39,7 +39,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
         AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("demo"), "");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
@@ -58,7 +58,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
         AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("unknown"), "");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("unknown"));
+        BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("unknown"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
@@ -78,7 +78,7 @@ public class AlterCatalogStatementTest extends BasicValidatorTest {
                 "{\"comment\":\"This is a comment\"}");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterCatalogid", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
