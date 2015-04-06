@@ -150,6 +150,11 @@ public class Shell {
         String user="";
         String pass="";
         try {
+            System.out.println("____ ____ ____ ____ ____ ____ ____ ____ ____");
+            System.out.println("||C |||R |||O |||S |||S |||D |||A |||T |||A ||");
+            System.out.println("||__|||__|||__|||__|||__|||__|||__|||__|||__||");
+            System.out.println("|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|");
+
             ConsoleReader reader=new ConsoleReader();
             user=reader.readLine("user>");
             pass=reader.readLine("Enter password> ",mask);
