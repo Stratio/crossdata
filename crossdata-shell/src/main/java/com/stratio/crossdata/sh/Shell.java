@@ -18,13 +18,7 @@
 
 package com.stratio.crossdata.sh;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -149,10 +143,8 @@ public class Shell {
         Character mask=(args.length == 0) ? new Character((char)0) : new Character(args[0].charAt(0));
         String user="";
         String pass="";
-        System.out.println("____ ____ ____ ____ ____ ____ ____ ____ ____");
-        System.out.println("||C |||R |||O |||S |||S |||D |||A |||T |||A ||");
-        System.out.println("||__|||__|||__|||__|||__|||__|||__|||__|||__||");
-        System.out.println("|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|");
+
+        printWelcome(System.out);
 
         if (sh.isAuthEnable()) {
             try {
@@ -478,6 +470,21 @@ public class Shell {
         }
         println("Script " + scriptPath + " executed (" + numberOps + " sentences)");
         return enterLoop;
+    }
+
+    private static void printWelcome(PrintStream out){
+        out.println("Welcome to \n");
+        out.println("       __ _             _   _             ");
+        out.println("      / _\\ |_ _ __ __ _| |_(_) ___       ");
+        out.println("      \\ \\| __| '__/ _` | __| |/ _ \\    ");
+        out.println("      _\\ \\ |_| | | (_| | |_| | (_) |  ");
+        out.println("      \\__/\\__|_|  \\__,_|\\__|_|\\___/  ");
+        out.println("         ___                      _       _               ");
+        out.println("        / __\\ __ ___  ___ ___  __| | __ _| |_ __ _       ");
+        out.println("       / / | '__/ _ \\/ __/ __|/ _` |/ _` | __/ _` |      ");
+        out.println("      / /__| | | (_) \\__ \\__ \\ (_| | (_| | || (_| |    ");
+        out.println("      \\____/_|  \\___/|___/___/\\__,_|\\__,_|\\__\\__,_| \n");
+
     }
 
 }
