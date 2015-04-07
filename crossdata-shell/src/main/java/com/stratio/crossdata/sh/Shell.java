@@ -18,13 +18,7 @@
 
 package com.stratio.crossdata.sh;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -149,10 +143,6 @@ public class Shell {
         Character mask=(args.length == 0) ? new Character((char)0) : new Character(args[0].charAt(0));
         String user="";
         String pass="";
-        System.out.println("____ ____ ____ ____ ____ ____ ____ ____ ____");
-        System.out.println("||C |||R |||O |||S |||S |||D |||A |||T |||A ||");
-        System.out.println("||__|||__|||__|||__|||__|||__|||__|||__|||__||");
-        System.out.println("|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|/__\\|");
 
         if (sh.isAuthEnable()) {
             try {
@@ -183,6 +173,9 @@ public class Shell {
      * Initialize the console settings.
      */
     private void initialize() {
+
+        LOG.info(getWelcomeScreen());
+
         crossdataDriver = new BasicDriver();
         // Take the username from the system.
         crossdataDriver.setUserName(System.getProperty("user.name"));
@@ -478,6 +471,29 @@ public class Shell {
         }
         println("Script " + scriptPath + " executed (" + numberOps + " sentences)");
         return enterLoop;
+    }
+
+    /**
+     * Generate a Cool Welcome Screen
+     *
+     * @return java.lang.String with the welcome Text.
+     */
+    private String getWelcomeScreen(){
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Welcome to \n");
+        sb.append("       __ _             _   _             \n");
+        sb.append("      / _\\ |_ _ __ __ _| |_(_) ___       \n");
+        sb.append("      \\ \\| __| '__/ _` | __| |/ _ \\    \n");
+        sb.append("      _\\ \\ |_| | | (_| | |_| | (_) |    \n");
+        sb.append("      \\__/\\__|_|  \\__,_|\\__|_|\\___/  \n");
+        sb.append("         ___                      _       _               \n");
+        sb.append("        / __\\ __ ___  ___ ___  __| | __ _| |_ __ _       \n");
+        sb.append("       / / | '__/ _ \\/ __/ __|/ _` |/ _` | __/ _` |      \n");
+        sb.append("      / /__| | | (_) \\__ \\__ \\ (_| | (_| | || (_| |    \n");
+        sb.append("      \\____/_|  \\___/|___/___/\\__,_|\\__,_|\\__\\__,_| \n");
+
+        return sb.toString();
     }
 
 }
