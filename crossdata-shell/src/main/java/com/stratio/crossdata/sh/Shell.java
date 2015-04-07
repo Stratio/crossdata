@@ -144,8 +144,6 @@ public class Shell {
         String user="";
         String pass="";
 
-        printWelcome(System.out);
-
         if (sh.isAuthEnable()) {
             try {
                 ConsoleReader reader = new ConsoleReader();
@@ -175,6 +173,9 @@ public class Shell {
      * Initialize the console settings.
      */
     private void initialize() {
+
+        LOG.info(getWelcomeScreen());
+
         crossdataDriver = new BasicDriver();
         // Take the username from the system.
         crossdataDriver.setUserName(System.getProperty("user.name"));
@@ -472,19 +473,27 @@ public class Shell {
         return enterLoop;
     }
 
-    private static void printWelcome(PrintStream out){
-        out.println("Welcome to \n");
-        out.println("       __ _             _   _             ");
-        out.println("      / _\\ |_ _ __ __ _| |_(_) ___       ");
-        out.println("      \\ \\| __| '__/ _` | __| |/ _ \\    ");
-        out.println("      _\\ \\ |_| | | (_| | |_| | (_) |  ");
-        out.println("      \\__/\\__|_|  \\__,_|\\__|_|\\___/  ");
-        out.println("         ___                      _       _               ");
-        out.println("        / __\\ __ ___  ___ ___  __| | __ _| |_ __ _       ");
-        out.println("       / / | '__/ _ \\/ __/ __|/ _` |/ _` | __/ _` |      ");
-        out.println("      / /__| | | (_) \\__ \\__ \\ (_| | (_| | || (_| |    ");
-        out.println("      \\____/_|  \\___/|___/___/\\__,_|\\__,_|\\__\\__,_| \n");
+    /**
+     * Generate a Cool Welcome Screen
+     *
+     * @return java.lang.String with the welcome Text.
+     */
+    private String getWelcomeScreen(){
 
+        StringBuilder sb = new StringBuilder();
+        sb.append("Welcome to \n");
+        sb.append("       __ _             _   _             \n");
+        sb.append("      / _\\ |_ _ __ __ _| |_(_) ___       \n");
+        sb.append("      \\ \\| __| '__/ _` | __| |/ _ \\    \n");
+        sb.append("      _\\ \\ |_| | | (_| | |_| | (_) |    \n");
+        sb.append("      \\__/\\__|_|  \\__,_|\\__|_|\\___/  \n");
+        sb.append("         ___                      _       _               \n");
+        sb.append("        / __\\ __ ___  ___ ___  __| | __ _| |_ __ _       \n");
+        sb.append("       / / | '__/ _ \\/ __/ __|/ _` |/ _` | __/ _` |      \n");
+        sb.append("      / /__| | | (_) \\__ \\__ \\ (_| | (_| | || (_| |    \n");
+        sb.append("      \\____/_|  \\___/|___/___/\\__,_|\\__,_|\\__\\__,_| \n");
+
+        return sb.toString();
     }
 
 }
