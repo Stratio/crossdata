@@ -616,13 +616,15 @@ selectStatement returns [SelectStatement slctst]
         slctst.setTablesAliases(tablesAliasesMap);
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap]
-     T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_CATALOG_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
+     T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS
+                subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_CATALOG_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
             | tablename=getAliasedTableID[tablesAliasesMap])
+
     (T_COMMA { implicitJoin = true; workaroundTablesAliasesMap = tablesAliasesMap;}
     identJoin=getAliasedTableID[workaroundTablesAliasesMap] { tablesAliasesMap = workaroundTablesAliasesMap; })?
     {$slctst = new SelectStatement(selClause, tablename);}
-    (T_COMMA { implicitJoin = true; workaroundTablesAliasesMap = tablesAliasesMap;}
-    identJoin=getAliasedTableID[workaroundTablesAliasesMap] { tablesAliasesMap = workaroundTablesAliasesMap; })?
+
+
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
     ((T_INNER {joinType=JoinType.INNER;}
         | T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}
