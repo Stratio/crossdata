@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.core.planner;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -27,11 +30,15 @@ import java.util.Set;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.executionplan.ExecutionType;
+import com.stratio.crossdata.common.executionplan.QueryWorkflow;
+import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
@@ -173,9 +180,8 @@ public class benchmarkTests extends PlannerBaseTest {
                 columnNames3, columnTypes3, partitionKeys3, clusteringKeys3, null);
     }
 
-    /*
     @Test
-    public void testQ1() throws ManifestException {
+    private void testQ1() throws ManifestException {
 
         init();
 
@@ -186,7 +192,7 @@ public class benchmarkTests extends PlannerBaseTest {
                 + "count(*) AS count_order "
                 + "FROM table1 "
                 + "WHERE "
-                + "rating <= date('1998-12-01') - interval(70, 3) "
+                + "rating <= date(\"1998-12-01\", \"yyyy-mm-dd\") - interval(70, \"day\", 3) "
                 + "GROUP BY rating "
                 + "ORDER BY user;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ1", false, false, table1);
@@ -219,6 +225,30 @@ public class benchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
-    */
+
+    @Test
+    public void testQ3() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT "
+                + "id, "
+                + "sum(value*(1-code)) AS revenue, "
+                + "comment, "
+                + "FROM table2, table1, table3 "
+                + "WHERE "
+                + "p_comment = ‘TEXTO’ "
+                + "AND ps_partkey = p_partkey "
+                + "AND p_date < date '[DATE]' "
+                + "GROUP BY "
+                + "ps_partkey, "
+                + "p_date, "
+                + "ORDER BY "
+                + "revenue desc;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ3", false, true, table1);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
 
 }
