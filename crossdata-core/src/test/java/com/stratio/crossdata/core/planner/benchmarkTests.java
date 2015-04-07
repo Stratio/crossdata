@@ -89,17 +89,6 @@ public class benchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_NON_INDEXED_LET);
         operationsC1.add(Operations.SELECT_ORDER_BY);
 
-        //Streaming connector.
-        Set<Operations> operationsC2 = new HashSet<>();
-        operationsC2.add(Operations.PROJECT);
-        operationsC2.add(Operations.SELECT_OPERATOR);
-        operationsC2.add(Operations.FILTER_PK_EQ);
-        operationsC2.add(Operations.SELECT_INNER_JOIN);
-        operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
-        operationsC2.add(Operations.INSERT);
-        operationsC2.add(Operations.FILTER_DISJUNCTION);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
-
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
 
@@ -107,14 +96,14 @@ public class benchmarkTests extends PlannerBaseTest {
         // SUM function
         FunctionType sumFunction = new FunctionType();
         sumFunction.setFunctionName("sum");
-        sumFunction.setSignature("sum(Tuple[Double]):Tuple[Double]");
+        sumFunction.setSignature("sum(Tuple[Any]):Tuple[Double]");
         sumFunction.setFunctionType("aggregation");
         sumFunction.setDescription("Total sum");
         functions1.add(sumFunction);
         // AVG function
         FunctionType avgFunction = new FunctionType();
         avgFunction.setFunctionName("avg");
-        avgFunction.setSignature("avg(Tuple[Double]):Tuple[Double]");
+        avgFunction.setSignature("avg(Tuple[Any]):Tuple[Double]");
         avgFunction.setFunctionType("aggregation");
         avgFunction.setDescription("Average");
         functions1.add(avgFunction);
@@ -125,13 +114,18 @@ public class benchmarkTests extends PlannerBaseTest {
         countFunction.setFunctionType("aggregation");
         countFunction.setDescription("Count");
         functions1.add(countFunction);
+        // DATE function
+        FunctionType dateFunction = new FunctionType();
+        dateFunction.setFunctionName("date");
+        dateFunction.setSignature("date(Tuple[Text, Text]):Tuple[Any]");
+        dateFunction.setFunctionType("simple");
+        dateFunction.setDescription("Date");
+        functions1.add(dateFunction);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
-        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName,
-                clusterWithDefaultPriority, operationsC2, "actorRef2", new ArrayList<FunctionType>());
 
-        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName(), connector2.getName());
+        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName());
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         createTestTables(catalogName);
     }
@@ -181,20 +175,21 @@ public class benchmarkTests extends PlannerBaseTest {
     }
 
     @Test
-    private void testQ1() throws ManifestException {
+    public void testQ1() throws ManifestException {
 
         init();
 
         String inputText = "[demo], SELECT "
                 + "id, "
+                + "comment, "
                 + "sum(id*(rating)*(1+rating)) AS sum_charge, "
                 + "avg(rating) AS avg_size, "
                 + "count(*) AS count_order "
                 + "FROM table1 "
                 + "WHERE "
                 + "rating <= date(\"1998-12-01\", \"yyyy-mm-dd\") - interval(70, \"day\", 3) "
-                + "GROUP BY rating "
-                + "ORDER BY user;";
+                + "GROUP BY id, comment "
+                + "ORDER BY id, comment;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ1", false, false, table1);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
@@ -221,31 +216,6 @@ public class benchmarkTests extends PlannerBaseTest {
                 + ") "
                 + "ORDER BY year DESC;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ2", false, true, table1);
-        assertNotNull(queryWorkflow, "Null workflow received.");
-        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
-    @Test
-    public void testQ3() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], SELECT "
-                + "id, "
-                + "sum(value*(1-code)) AS revenue, "
-                + "comment, "
-                + "FROM table2, table1, table3 "
-                + "WHERE "
-                + "p_comment = ‘TEXTO’ "
-                + "AND ps_partkey = p_partkey "
-                + "AND p_date < date '[DATE]' "
-                + "GROUP BY "
-                + "ps_partkey, "
-                + "p_date, "
-                + "ORDER BY "
-                + "revenue desc;";
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ3", false, true, table1);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
