@@ -82,7 +82,7 @@ public class GroupSelector extends Selector {
 
     @Override
     public String toString() {
-        return (firstValue.toString()) + "," + (lastValue.toString());
+        return (firstValue.toString()) + " AND " + (lastValue.toString());
     }
 
     @Override
