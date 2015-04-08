@@ -102,6 +102,7 @@
         <module>crossdata-connector-inmemory</module>
         <module>crossdata-client-examples</module>
         <module>crossdata-connector-twitter</module>
+        <module>doc</module>        
     </modules>
     <properties>
         <scala.version>2.10.4</scala.version>
@@ -141,16 +142,6 @@
                     <target>1.7</target>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-                <version>2.7</version>
-                <configuration>
-                    <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-                </configuration>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -178,17 +169,14 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>2.3.1</version>
-            </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>2.18.1</version>
+                <configuration>
+                        <skipTests>${skipITs}</skipTests>
+                        <!--<argLine>${jacoco-IT-argline}</argLine>-->
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -198,7 +186,14 @@
                     </execution>
                 </executions>
             </plugin>
-
+	 <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.12.4</version>
+                <configuration>
+                        <skipTests>${skipUTs}</skipTests>
+                </configuration>
+         </plugin>
         </plugins>
     </build>
 </project>
