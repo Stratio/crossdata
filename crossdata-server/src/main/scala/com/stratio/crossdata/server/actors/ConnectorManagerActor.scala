@@ -95,44 +95,47 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
       logger.info("Connector Name " + msg.name + " received from " + sender)
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender, false)
       logger.info("Registering connector at: " + actorRefUri)
-      val connectorName = new ConnectorName(msg.name)
-      ExecutionManager.MANAGER.createEntry(actorRefUri, connectorName, true)
 
-      MetadataManager.MANAGER.addConnectorRef(connectorName, actorRefUri)
+      if(actorRefUri != null){
+        val connectorName = new ConnectorName(msg.name)
+        ExecutionManager.MANAGER.createEntry(actorRefUri, connectorName, true)
 
-      val connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName)
-      val clusterProps = connectorMetadata.getClusterProperties
+        MetadataManager.MANAGER.addConnectorRef(connectorName, actorRefUri)
 
-      if((clusterProps != null) && (!clusterProps.isEmpty)){
+        val connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName)
+        val clusterProps = connectorMetadata.getClusterProperties
 
-        for(clusterProp <- clusterProps.entrySet()){
-          val clusterName = clusterProp.getKey
-          val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
-          val optsCluster = MetadataManager.MANAGER.getCluster(clusterName).getOptions;
+        if((clusterProps != null) && (!clusterProps.isEmpty)){
 
-          val optsConnector = clusterMetadata.getConnectorAttachedRefs.get(connectorName).getProperties
+          for(clusterProp <- clusterProps.entrySet()){
+            val clusterName = clusterProp.getKey
+            val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
+            val optsCluster = MetadataManager.MANAGER.getCluster(clusterName).getOptions;
 
-          val clusterConfig = new ConnectorClusterConfig(clusterName,
-            SelectorHelper.convertSelectorMapToStringMap(optsConnector),
-            SelectorHelper.convertSelectorMapToStringMap(optsCluster))
+            val optsConnector = clusterMetadata.getConnectorAttachedRefs.get(connectorName).getProperties
 
-          clusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
+            val clusterConfig = new ConnectorClusterConfig(clusterName,
+              SelectorHelper.convertSelectorMapToStringMap(optsConnector),
+              SelectorHelper.convertSelectorMapToStringMap(optsCluster))
 
+            clusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
 
-          val reconnectQueryUUID = UUID.randomUUID().toString
-          val executionInfo = new ExecutionInfo
-          executionInfo.setRemoveOnSuccess(true)
-          executionInfo.setUpdateOnSuccess(true)
-          val executionWorkflow = new ManagementWorkflow(reconnectQueryUUID, Collections.emptySet[String](), ExecutionType.ATTACH_CONNECTOR,ResultType.RESULTS)
-          executionWorkflow.setClusterName(clusterName)
-          executionInfo.setWorkflow(executionWorkflow)
-          ExecutionManager.MANAGER.createEntry(reconnectQueryUUID, executionInfo)
+            val reconnectQueryUUID = UUID.randomUUID().toString
+            val executionInfo = new ExecutionInfo
+            executionInfo.setRemoveOnSuccess(true)
+            executionInfo.setUpdateOnSuccess(true)
+            val executionWorkflow = new ManagementWorkflow(reconnectQueryUUID, Collections.emptySet[String](), ExecutionType.ATTACH_CONNECTOR,ResultType.RESULTS)
+            executionWorkflow.setClusterName(clusterName)
+            executionInfo.setWorkflow(executionWorkflow)
+            ExecutionManager.MANAGER.createEntry(reconnectQueryUUID, executionInfo)
 
-          sender ! new Connect(reconnectQueryUUID, null, clusterConfig)
+            sender ! new Connect(reconnectQueryUUID, null, clusterConfig)
+          }
         }
+        MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
+        MetadataManager.MANAGER.setNodeStatus(new NodeName(sender.path.address.toString), Status.ONLINE)
       }
-      MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
-      MetadataManager.MANAGER.setNodeStatus(new NodeName(sender.path.address.toString), Status.ONLINE)
+
     }
 
     case c: ConnectResult => {

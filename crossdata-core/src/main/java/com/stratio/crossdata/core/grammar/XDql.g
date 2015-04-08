@@ -610,22 +610,26 @@ selectStatement returns [SelectStatement slctst]
         boolean implicitJoin = false;
         boolean subqueryInc = false;
         JoinType joinType=JoinType.INNER;
+        List<TableName> implicitTables = new ArrayList<>();
+        List<AbstractRelation> commonFields = new ArrayList<>();
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
         slctst.setTablesAliases(tablesAliasesMap);
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap]
-     T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS
-                subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_CATALOG_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
-            | tablename=getAliasedTableID[tablesAliasesMap])
-
-    (T_COMMA { implicitJoin = true; workaroundTablesAliasesMap = tablesAliasesMap;}
-    identJoin=getAliasedTableID[workaroundTablesAliasesMap] { tablesAliasesMap = workaroundTablesAliasesMap; })?
+    T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS
+        subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_CATALOG_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
+        | tablename=getAliasedTableID[tablesAliasesMap])
     {$slctst = new SelectStatement(selClause, tablename);}
 
+    (T_COMMA { implicitJoin = true; workaroundTablesAliasesMap = tablesAliasesMap;}
+        implicitTable=getAliasedTableID[workaroundTablesAliasesMap]
+        { tablesAliasesMap = workaroundTablesAliasesMap;
+          implicitTables.add(implicitTable); })*
 
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
+
     ((T_INNER {joinType=JoinType.INNER;}
         | T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}
         | T_RIGHT {joinType=JoinType.RIGHT_OUTER;}
@@ -637,29 +641,42 @@ selectStatement returns [SelectStatement slctst]
     identJoin=getAliasedTableID[workaroundTablesAliasesMap]
     T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
     joinRelations=getConditions[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
+
     (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getConditions[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_HAVING {havingInc = true;} havingClause=getConditions[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
-        if(windowInc)
+        if(implicitJoin){
+            commonFields = adaptWhereToImplicit(whereClauses);
+        }
+        if(windowInc){
             $slctst.setWindow(window);
-        if(whereInc)
-             $slctst.setWhere(whereClauses);
-        if(orderInc)
+        }
+        if(whereInc){
+            $slctst.setWhere(whereClauses);
+        }
+        if(orderInc){
              $slctst.setOrderByClauses(orderByClauses);
-        if(groupInc)
+        }
+        if(groupInc){
              $slctst.setGroupByClause(new GroupByClause(groupByClause));
-        if(havingInc)
+        }
+        if(havingInc){
              $slctst.setHavingClause(havingClause);
-        if(limitInc)
+        }
+        if(limitInc){
              $slctst.setLimit(Integer.parseInt($constant.text));
-        if(subqueryInc)
+        }
+        if(subqueryInc){
              $slctst.setSubquery(subquery, subqueryAlias);
-        if(implicitJoin)
-             $slctst.addJoin(new InnerJoin(identJoin, whereClauses));
-
+        }
+        if(implicitJoin){
+            for(TableName iTable: implicitTables){
+             $slctst.addJoin(new InnerJoin(iTable, whereClauses));
+            }
+        }
     }
 ;
 
