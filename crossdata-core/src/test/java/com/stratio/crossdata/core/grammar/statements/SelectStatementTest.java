@@ -598,13 +598,16 @@ public class SelectStatementTest extends ParsingTest {
         testParserFails("demo", inputText, "selectWithWrongLeftTermTypeInWhere");
     }
 
-    @Test
+
+
+   /* @Test
     public void implicitJoin() {
         String inputText = "SELECT * FROM table1, table2 WHERE table1.id = table2.id;";
         String expectedText = "SELECT * FROM myCatalog.table1 INNER JOIN myCatalog.table2 " +
                 "ON myCatalog.table1.id = myCatalog.table2.id;";
         testRegularStatementSession("myCatalog", inputText, expectedText, "implicitJoin");
-    }
+    }*/
+
 
     @Test
     public void testJoinAndStreaming() {
