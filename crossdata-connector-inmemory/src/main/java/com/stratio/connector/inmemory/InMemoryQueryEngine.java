@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.stratio.crossdata.common.logicalplan.*;
 import org.apache.log4j.Logger;
 
 import com.codahale.metrics.Timer;
@@ -46,13 +47,6 @@ import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
-import com.stratio.crossdata.common.logicalplan.Filter;
-import com.stratio.crossdata.common.logicalplan.Limit;
-import com.stratio.crossdata.common.logicalplan.LogicalStep;
-import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
-import com.stratio.crossdata.common.logicalplan.OrderBy;
-import com.stratio.crossdata.common.logicalplan.Project;
-import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.result.QueryResult;
@@ -86,19 +80,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
     private final Timer executeTimer;
 
     /**
-     * Map with the equivalences between crossdata operators and the ones supported by our datastore.
-     */
-    private static final Map<Operator, InMemoryOperations> operationsTransformations = new HashMap<>();
-
-    static {
-        operationsTransformations.put(Operator.EQ, InMemoryOperations.EQ);
-        operationsTransformations.put(Operator.GT, InMemoryOperations.GT);
-        operationsTransformations.put(Operator.LT, InMemoryOperations.LT);
-        operationsTransformations.put(Operator.GET, InMemoryOperations.GET);
-        operationsTransformations.put(Operator.LET, InMemoryOperations.LET);
-    }
-
-    /**
      * Class constructor.
      * @param connector The linked {@link com.stratio.connector.inmemory.InMemoryConnector}.
      */
@@ -113,158 +94,34 @@ public class InMemoryQueryEngine implements IQueryEngine {
     public QueryResult execute(LogicalWorkflow workflow) throws ConnectorException {
         //Init Metric
         Timer.Context executeTimerContext = executeTimer.time();
+        QueryResult finalResult = null;
 
-        List<Object[]> results;
-        Project projectStep;
-        OrderBy orderByStep = null;
-        Select selectStep;
+        LogicalStep initialsStep= workflow.getInitialSteps().get(0);
+        Project project = (Project) initialsStep;
+        InMemoryDatastore datastore = connector.getDatastore(project.getClusterName());
 
-        //Get the project and select steps.
+        if(datastore == null){
+            throw new ExecutionException("No datastore connected to " + project.getClusterName());
+        }
+
+        InMemoryQuery query = new InMemoryQuery(project);
+
+        List<Object[]> results = null;
         try {
-            projectStep = Project.class.cast(workflow.getInitialSteps().get(0));
-
-            LogicalStep currentStep = projectStep;
-            while(currentStep != null){
-                if(currentStep instanceof OrderBy){
-                    orderByStep = OrderBy.class.cast(currentStep);
-                    break;
-                }
-                currentStep = currentStep.getNextStep();
-            }
-
-            selectStep = Select.class.cast(workflow.getLastStep());
-        } catch(ClassCastException e) {
-            throw new ExecutionException("Invalid workflow received", e);
+            results = datastore.search(query.catalogName, query.tableName, query.relations, query.outputColumns);
+        } catch (Exception e) {
+            throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
         }
 
-        List<InMemoryRelation> relations = getInMemoryRelations(projectStep.getNextStep());
-        int limit = getLimit(projectStep.getNextStep());
-        String catalogName = projectStep.getCatalogName();
-        String tableName = projectStep.getTableName().getName();
-        List<InMemorySelector> outputColumns = transformIntoSelectors(selectStep.getColumnMap().keySet());
-        InMemoryDatastore datastore = connector.getDatastore(projectStep.getClusterName());
-        if(datastore != null){
-            try {
-                results = datastore.search(catalogName, tableName, relations, outputColumns);
-            } catch (Exception e) {
-                throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
-            }
-        } else {
-            throw new ExecutionException("No datastore connected to " + projectStep.getClusterName());
-        }
+        results = query.orderResult(results);
+        finalResult = toCrossdataResults(query.selectStep, query.limit, results);
 
-        if(orderByStep != null){
-            results = orderResult(results, outputColumns, orderByStep);
-        }
-
-        QueryResult finalResult = toCrossdataResults(selectStep, limit, results);
 
         //End Metric
         long millis = executeTimerContext.stop();
         LOG.info("Query took " + millis + " nanoseconds");
 
         return finalResult;
-    }
-
-    private List<Object[]> orderResult(
-            List<Object[]> results,
-            List<InMemorySelector> outputColumns,
-            OrderBy orderByStep) throws ExecutionException {
-        List<Object[]> orderedResult = new ArrayList<>();
-        if((results != null) && (!results.isEmpty())){
-            for(Object[] row: results){
-                if(orderedResult.isEmpty()){
-                    orderedResult.add(row);
-                } else {
-                    int order = 0;
-                    for(Object[] orderedRow: orderedResult){
-                        if(compareRows(row, orderedRow, outputColumns, orderByStep)){
-                            break;
-                        }
-                        order++;
-                    }
-                    orderedResult.add(order, row);
-                }
-            }
-        }
-        return orderedResult;
-    }
-
-    private boolean compareRows(
-            Object[] candidateRow,
-            Object[] orderedRow,
-            List<InMemorySelector> outputColumns,
-            OrderBy orderByStep) {
-        boolean result = false;
-
-        List<String> columnNames = new ArrayList<>();
-        for(InMemorySelector selector : outputColumns){
-            columnNames.add(selector.getName());
-        }
-
-        for(OrderByClause clause: orderByStep.getIds()){
-            int index = columnNames.indexOf(clause.getSelector().getColumnName().getName());
-            int comparison = compareCells(candidateRow[index], orderedRow[index], clause.getDirection());
-            if(comparison != 0){
-                result = (comparison > 0);
-                break;
-            }
-        }
-        return result;
-    }
-
-    private int compareCells(Object toBeOrdered, Object alreadyOrdered, OrderDirection direction) {
-        int result = -1;
-        InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered);
-        if(InMemoryOperations.EQ.compare(toBeOrdered, alreadyOrdered)){
-            result = 0;
-        } else if(direction == OrderDirection.ASC){
-            if(InMemoryOperations.LT.compare(toBeOrdered, alreadyOrdered)){
-                result = 1;
-            }
-        } else if(direction == OrderDirection.DESC){
-            if(InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered)){
-                result = 1;
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Transform a set of crossdata selectors into in-memory ones.
-     * @param selectors The set of crossdata selectors.
-     * @return A list of in-memory selectors.
-     */
-    private List<InMemorySelector> transformIntoSelectors(Set<Selector> selectors) {
-        List<InMemorySelector> result = new ArrayList<>();
-        for(Selector s: selectors){
-            result.add(transformCrossdataSelector(s));
-        }
-        return result;
-    }
-
-    /**
-     * Transform a Crossdata selector into an InMemory one.
-     * @param selector The Crossdata selector.
-     * @return The equivalent InMemory selector.
-     */
-    private InMemorySelector transformCrossdataSelector(Selector selector){
-        InMemorySelector result;
-        if(FunctionSelector.class.isInstance(selector)){
-            FunctionSelector xdFunction = FunctionSelector.class.cast(selector);
-            String name = xdFunction.getFunctionName();
-            List<InMemorySelector> arguments = new ArrayList<>();
-            for(Selector arg : xdFunction.getFunctionColumns()){
-                arguments.add(transformCrossdataSelector(arg));
-            }
-            result = new InMemoryFunctionSelector(name, arguments);
-        }else if(ColumnSelector.class.isInstance(selector)){
-            ColumnSelector cs = ColumnSelector.class.cast(selector);
-            result = new InMemoryColumnSelector(cs.getName().getName());
-        }else{
-            result = new InMemoryLiteralSelector(selector.getStringValue());
-        }
-        return result;
     }
 
     /**
@@ -331,72 +188,11 @@ public class InMemoryQueryEngine implements IQueryEngine {
         return result;
     }
 
-    /**
-     * Get the list of relations (i.e., Filter operands) in the logical workflow.
-     * @param step The first step of the logical workflow.
-     * @return A list of {@link com.stratio.connector.inmemory.datastore.InMemoryRelation}.
-     */
-    private List<InMemoryRelation> getInMemoryRelations(LogicalStep step) throws ExecutionException {
-        List<InMemoryRelation> result = new ArrayList<>();
-        LogicalStep current = step;
-        while(current != null){
-            if(Filter.class.isInstance(current)){
-                InMemoryRelation r = toInMemoryRelation(Filter.class.cast(current));
-                result.add(r);
-            }
-            current = current.getNextStep();
-        }
-        return result;
-    }
 
-    /**
-     * Get the limit on the query if exists.
-     * @param step The first step of the logical workflow.
-     * @return The limit or -1 if not specified.
-     */
-    private int getLimit(LogicalStep step){
-        int result = -1;
-        LogicalStep current = step;
-        while(current != null){
-            if(Limit.class.isInstance(current)){
-                result = Limit.class.cast(current).getLimit();
-            }
-            current = current.getNextStep();
-        }
-        return result;
-    }
 
-    /**
-     * Transform a crossdata relationship into an in-memory relation.
-     * @param f The {@link com.stratio.crossdata.common.logicalplan.Filter} logical step.
-     * @return An equivalent {@link com.stratio.connector.inmemory.datastore.InMemoryRelation}.
-     * @throws ExecutionException If the relationship cannot be translated.
-     */
-    private InMemoryRelation toInMemoryRelation(Filter f) throws ExecutionException {
-        ColumnSelector left = ColumnSelector.class.cast(f.getRelation().getLeftTerm());
-        String columnName = left.getName().getName();
-        InMemoryOperations relation;
 
-        if(operationsTransformations.containsKey(f.getRelation().getOperator())){
-            relation = operationsTransformations.get(f.getRelation().getOperator());
-        }else{
-            throw new ExecutionException("Operator " + f.getRelation().getOperator() + " not supported");
-        }
-        Selector rightSelector = f.getRelation().getRightTerm();
-        Object rightPart = null;
 
-        if(SelectorType.STRING.equals(rightSelector.getType())){
-            rightPart = StringSelector.class.cast(rightSelector).getValue();
-        }else if(SelectorType.INTEGER.equals(rightSelector.getType())){
-            rightPart = IntegerSelector.class.cast(rightSelector).getValue();
-        }else if(SelectorType.BOOLEAN.equals(rightSelector.getType())){
-            rightPart = BooleanSelector.class.cast(rightSelector).getValue();
-        }else if(SelectorType.FLOATING_POINT.equals(rightSelector.getType())){
-            rightPart = FloatingPointSelector.class.cast(rightSelector).getValue();
-        }
 
-        return new InMemoryRelation(columnName, relation, rightPart);
-    }
 
 
     @Override
