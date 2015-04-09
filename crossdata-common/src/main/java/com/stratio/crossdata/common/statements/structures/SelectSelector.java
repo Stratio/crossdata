@@ -73,11 +73,29 @@ public class SelectSelector extends Selector {
 
     @Override
     public boolean equals(Object o) {
-        return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        SelectSelector that = (SelectSelector) o;
+
+        if (logicalWorkflow != null ? !logicalWorkflow.equals(that.logicalWorkflow) : that.logicalWorkflow != null) {
+            return false;
+        }
+        if (selectQuery != null ? !selectQuery.equals(that.selectQuery) : that.selectQuery != null) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return 0;
+        int result = selectQuery != null ? selectQuery.hashCode() : 0;
+        result = 31 * result + (logicalWorkflow != null ? logicalWorkflow.hashCode() : 0);
+        return result;
     }
 }

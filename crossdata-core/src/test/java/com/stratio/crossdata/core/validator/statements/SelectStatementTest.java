@@ -1676,7 +1676,7 @@ public class SelectStatementTest extends BasicValidatorTest {
                 + "demo.table3.surname, "
                 + "demo.table3.rating "
                 + "FROM demo.table3 "
-                + "WHERE demo.table3.surname IN ['Miller', 'Smith']";
+                + "WHERE demo.table3.surname IN ('Miller', 'Smith')";
 
         List<Selector> selectorList = new ArrayList<>();
         selectorList.add(new ColumnSelector(new ColumnName(null, "name")));

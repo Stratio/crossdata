@@ -444,7 +444,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         }
 
         if (orderInc) {
-            sb.append(" ORDER BY ").append(orderByClauses);
+            sb.append(" ORDER BY ").append(StringUtils.stringList(orderByClauses, ", "));
         }
 
         if (limitInc) {

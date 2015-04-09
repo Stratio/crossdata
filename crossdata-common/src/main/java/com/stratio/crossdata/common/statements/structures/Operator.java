@@ -171,6 +171,36 @@ public enum Operator {
         public String toString() {
             return "LIKE";
         }
+    },
+
+    /**
+     * Not Like comparator.
+     */
+    NOT_LIKE(Group.COMPARATOR) {
+        @Override
+        public String toString() {
+            return "NOT LIKE";
+        }
+    },
+
+    /**
+     * Not between comparator.
+     */
+    NOT_BETWEEN(Group.COMPARATOR) {
+        @Override
+        public String toString() {
+            return "NOT BETWEEN";
+        }
+    },
+
+    /**
+     * Not in comparator.
+     */
+    NOT_IN(Group.COMPARATOR) {
+        @Override
+        public String toString() {
+            return "NOT IN";
+        }
     };
 
     /**
