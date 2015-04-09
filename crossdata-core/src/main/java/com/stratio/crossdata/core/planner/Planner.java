@@ -1349,14 +1349,15 @@ public class Planner {
             metadataWorkflow = buildMetadataWorkflowDropTable(metadataStatement, queryId);
         } else if (metadataStatement instanceof AlterTableStatement) {
             metadataWorkflow = buildMetadataWorkflowAlterTable(metadataStatement, queryId);
+            metadataWorkflow.setTableMetadata(MetadataManager.MANAGER.getTable(metadataWorkflow.getTableName()));
         } else if (metadataStatement instanceof ImportMetadataStatement) {
             metadataWorkflow = buildMetadataWorkflowImportMetadata(metadataStatement, queryId);
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
 
-        //Getting the table metadata for update metadata operations.
-        metadataWorkflow.setTableMetadata(MetadataManager.MANAGER.getTable(metadataWorkflow.getTableName()));
+
+
 
 
         return metadataWorkflow;
