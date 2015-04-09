@@ -1795,21 +1795,19 @@ public class Planner {
     protected Operations getFilterOperation(final TableMetadata tableMetadata, final String statement,
             final Selector selector, final Operator operator) {
         StringBuilder sb = new StringBuilder(statement.toUpperCase());
-        if (operator==Operator.BETWEEN){
-            return Operations.SELECT_WHERE_BETWEEN;
+
+        sb.append("_");
+        ColumnSelector cs = ColumnSelector.class.cast(selector);
+        if (tableMetadata.isPK(cs.getName())) {
+            sb.append("PK_");
+        } else if (tableMetadata.isIndexed(cs.getName())) {
+            sb.append("INDEXED_");
         } else {
-            sb.append("_");
-            ColumnSelector cs = ColumnSelector.class.cast(selector);
-            if (tableMetadata.isPK(cs.getName())) {
-                sb.append("PK_");
-            } else if (tableMetadata.isIndexed(cs.getName())) {
-                sb.append("INDEXED_");
-            } else {
-                sb.append("NON_INDEXED_");
-            }
-            sb.append(operator.name());
-            return Operations.valueOf(sb.toString());
+            sb.append("NON_INDEXED_");
         }
+        sb.append(operator.name());
+        return Operations.valueOf(sb.toString());
+
     }
 
     /**

@@ -385,6 +385,7 @@ public class BenchmarkTests extends PlannerBaseTest {
     }
 
 
+/*
     @Test
     public void testQ02() throws ManifestException {
 
@@ -1187,6 +1188,6 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
-
+*/
 
 }

@@ -624,8 +624,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               lastExecutionInfo.getWorkflow.asInstanceOf[StorageWorkflow].setRows(partialResults.getRows)
               operation = lastExecutionInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
             } else {
-              if (executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep!=null) {
-                log.error("The trigger step shouldn't be null")
+              if (executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep==null) {
+                log.error("The trigger step shouldn't be null.")
               }else{
                 executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
               }
