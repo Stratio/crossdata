@@ -134,6 +134,8 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
         }
         MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
         MetadataManager.MANAGER.setNodeStatus(new NodeName(sender.path.address.toString), Status.ONLINE)
+      } else {
+        logger.error("Actor reference of the sender can't be null")
       }
 
     }

@@ -98,15 +98,25 @@ options {
     }
 
     public IndexName normalizeIndexName(String str){
-            String [] indexTokens = str.split("\\.");
-            if((indexTokens.length) == 2 && (!sessionCatalog.isEmpty())){
-                return new IndexName(sessionCatalog, indexTokens[0], indexTokens[1]);
-            } else if(indexTokens.length == 3) {
-                return new IndexName(indexTokens[0], indexTokens[1], indexTokens[2]);
-            } else {
-                throwParsingException("Catalog can't be empty");
-            }
-            return null;
+        String [] indexTokens = str.split("\\.");
+        if((indexTokens.length) == 2 && (!sessionCatalog.isEmpty())){
+            return new IndexName(sessionCatalog, indexTokens[0], indexTokens[1]);
+        } else if(indexTokens.length == 3) {
+            return new IndexName(indexTokens[0], indexTokens[1], indexTokens[2]);
+        } else {
+            throwParsingException("Catalog can't be empty");
+        }
+        return null;
+    }
+
+    public List<AbstractRelation> adaptWhereToImplicit(List<AbstractRelation> clauses){
+        List<AbstractRelation> fields = new ArrayList<>();
+        return fields;
+    }
+
+    public List<AbstractRelation> extractCommonFields(List<AbstractRelation> clauses){
+        List<AbstractRelation> fields = new ArrayList<>();
+        return fields;
     }
 
     private ErrorsHelper foundErrors = new ErrorsHelper();
@@ -674,7 +684,8 @@ selectStatement returns [SelectStatement slctst]
         }
         if(implicitJoin){
             for(TableName iTable: implicitTables){
-             $slctst.addJoin(new InnerJoin(iTable, whereClauses));
+                List<AbstractRelation> fields = extractCommonFields(commonFields);
+                $slctst.addJoin(new InnerJoin(iTable, fields));
             }
         }
     }
