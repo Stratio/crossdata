@@ -78,6 +78,18 @@ public class ColumnSelector extends Selector {
         return new HashSet(Arrays.asList(this.name.getTableName()));
     }
 
+    /**
+     * Get the associated table name.
+     *
+     * @return A {@link com.stratio.crossdata.common.data.TableName}.
+     */
+    @Override
+    public TableName getTableName() {
+        if((tableName == null) && (name != null)){
+            return name.getTableName();
+        }
+        return new TableName("<UNKNOWN_NAME>", "<UNKNOWN_NAME>");
+    }
 
     @Override
     public String toString() {
