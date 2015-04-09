@@ -278,7 +278,7 @@ public class NormalizerTest {
         String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
                 + "WHERE demo.tableClients.colPlace = 'Madrid' "
                 + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses "
-                + "ORDER BY [demo.tableClients.year]";
+                + "ORDER BY demo.tableClients.year";
 
         // BASE QUERY
         BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
@@ -352,7 +352,7 @@ public class NormalizerTest {
                         + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.tableClients.clientId "
                         + "WHERE myCatalog.tableCostumers.colCity = 'Madrid' "
                         + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee "
-                        + "ORDER BY [myCatalog.tableCostumers.age]";
+                        + "ORDER BY myCatalog.tableCostumers.age";
 
         // BASE QUERY
         BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");

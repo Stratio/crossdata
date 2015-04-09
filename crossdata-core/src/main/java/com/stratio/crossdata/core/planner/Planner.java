@@ -238,7 +238,8 @@ public class Planner {
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
         for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry: candidatesConnectors.entrySet()) {
             for (ConnectorMetadata cm: tableEntry.getValue()) {
-                sb.append("table: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName()).append(" ")
+                sb.append("\ttable: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName()).append
+                        (" ")
                         .append(cm.getActorRef()).append(System.lineSeparator());
             }
         }
@@ -537,6 +538,8 @@ public class Planner {
                 if (!connector.supports(current.getOperations())) {
                     // Check selector functions
                     toRemove.add(connector);
+                    LOG.debug("Connector " + connector + " doesn't support all these operations: "
+                            + current.getOperations());
                 } else {
                 /*
                  * This connector support the operation but we also have to check if support for a specific
@@ -551,6 +554,8 @@ public class Planner {
                                 Set<Selector> cols = select.getColumnMap().keySet();
                                 if (!checkFunctionsConsistency(connector, sFunctions, cols)) {
                                     toRemove.add(connector);
+                                    LOG.debug("Connector " + connector + " doesn't support all these operations: "
+                                            + current.getOperations());
                                 }
                                 break;
                             default:
@@ -1798,21 +1803,19 @@ public class Planner {
     protected Operations getFilterOperation(final TableMetadata tableMetadata, final String statement,
             final Selector selector, final Operator operator) {
         StringBuilder sb = new StringBuilder(statement.toUpperCase());
-        if (operator==Operator.BETWEEN){
-            return Operations.SELECT_WHERE_BETWEEN;
+
+        sb.append("_");
+        ColumnSelector cs = ColumnSelector.class.cast(selector);
+        if (tableMetadata.isPK(cs.getName())) {
+            sb.append("PK_");
+        } else if (tableMetadata.isIndexed(cs.getName())) {
+            sb.append("INDEXED_");
         } else {
-            sb.append("_");
-            ColumnSelector cs = ColumnSelector.class.cast(selector);
-            if (tableMetadata.isPK(cs.getName())) {
-                sb.append("PK_");
-            } else if (tableMetadata.isIndexed(cs.getName())) {
-                sb.append("INDEXED_");
-            } else {
-                sb.append("NON_INDEXED_");
-            }
-            sb.append(operator.name());
-            return Operations.valueOf(sb.toString());
+            sb.append("NON_INDEXED_");
         }
+        sb.append(operator.name());
+        return Operations.valueOf(sb.toString());
+
     }
 
     /**

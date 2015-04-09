@@ -37,7 +37,7 @@ public class ListSelector extends Selector {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("[");
+        StringBuilder sb = new StringBuilder("(");
         Iterator<Selector> iter = selectorsList.iterator();
         while(iter.hasNext()){
             Selector s = iter.next();
@@ -46,7 +46,7 @@ public class ListSelector extends Selector {
                 sb.append(", ");
             }
         }
-        sb.append("]");
+        sb.append(")");
         return sb.toString();
     }
 
