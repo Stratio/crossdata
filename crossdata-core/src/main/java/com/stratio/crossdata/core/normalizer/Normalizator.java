@@ -1021,7 +1021,7 @@ public class Normalizator {
     private void checkGroupSelector(Selector leftTerm, Operator operator,
             Selector rightTerm) throws ValidationException {
         if (leftTerm instanceof ColumnSelector) {
-            if (operator == Operator.BETWEEN) {
+            if (operator == Operator.BETWEEN || operator == Operator.NOT_BETWEEN) {
                 ColumnName name = ((ColumnSelector) leftTerm).getName();
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(name);
                 String leftType = "";

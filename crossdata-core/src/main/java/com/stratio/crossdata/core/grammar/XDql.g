@@ -1114,6 +1114,11 @@ getComparator returns [Operator op]:
     | T_MATCH {$op = Operator.MATCH;}
     | T_BETWEEN {$op = Operator.BETWEEN;}
     | T_IN {$op = Operator.IN;}
+    | T_NOT (
+            T_LIKE {$op = Operator.NOT_LIKE;}
+            | T_IN {$op = Operator.NOT_IN;}
+            | T_BETWEEN {$op = Operator.NOT_BETWEEN;}
+            )
 ;
 
 getIds returns [ArrayList<String> listStrs]

@@ -795,7 +795,7 @@ public class SelectStatementTest extends ParsingTest {
     public void selectWithNotLikeClauseOk() {
 
         String inputText = "SELECT users.name FROM demo.users WHERE users.email NOT LIKE '%meta%';";
-        String expectedText = "SELECT <UNKNOWN_NAME>.users.name FROM demo.users WHERE <UNKNOWN_NAME>.users.email NOT LIKE '%meta%'";
+        String expectedText = "SELECT <UNKNOWN_NAME>.users.name FROM demo.users WHERE <UNKNOWN_NAME>.users.email NOT LIKE '%meta%';";
         testRegularStatement(inputText, expectedText, "selectWithNotLikeClauseOk");
     }
 
