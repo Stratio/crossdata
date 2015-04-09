@@ -289,7 +289,7 @@ public class Planner {
             List<ExecutionPath> toMerge = new ArrayList<>(2);
             boolean[] intermediateResults = new boolean[2];
             boolean exit = false;
-            while (!exit) {
+            //while (!exit) {
                 //Check whether the list of connectors found in the Execution paths being merged can execute the join
                 intermediateResults[0] = false;
                 intermediateResults[1] = false;
@@ -333,7 +333,7 @@ public class Planner {
                         toMerge.add(paths[index]);
                     }
                 }
-                unionSteps.remove(mergeStep);
+                //unionSteps.remove(mergeStep);
 
                 ExecutionPath next = defineExecutionPath(mergeStep, mergeConnectors);
                 if (Select.class.isInstance(next.getLast())) {
@@ -353,14 +353,15 @@ public class Planner {
                     }
                     unionSteps.put(UnionStep.class.cast(next.getLast()), existingPaths);
                 }
-
+            /*
                 if (unionSteps.isEmpty()) {
                     exit = true;
                 } else {
                     mergeStep = nextUnion;
                     paths = unionSteps.get(mergeStep).toArray(new ExecutionPath[unionSteps.get(mergeStep).size()]);
                 }
-            }
+            */
+            //}
         }
         return buildExecutionTree(first, triggerResults, triggerWorkflow);
     }
@@ -1348,6 +1349,10 @@ public class Planner {
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
+
+        //Getting the table metadata for update metadata operations.
+        metadataWorkflow.setTableMetadata(MetadataManager.MANAGER.getTable(metadataWorkflow.getTableName()));
+
 
         return metadataWorkflow;
     }
