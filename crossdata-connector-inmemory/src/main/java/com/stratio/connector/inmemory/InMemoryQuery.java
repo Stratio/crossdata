@@ -19,10 +19,7 @@ package com.stratio.connector.inmemory;
 
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
 import com.stratio.connector.inmemory.datastore.InMemoryRelation;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryLiteralSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+import com.stratio.connector.inmemory.datastore.selector.*;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.logicalplan.*;
 import com.stratio.crossdata.common.statements.structures.*;
@@ -57,14 +54,46 @@ public class InMemoryQuery {
     Join joinStep;
     int limit = -1;
 
+
     public InMemoryQuery(Project project) throws ExecutionException {
         this.project = project;
-
         extractSteps(project);
         tableName = project.getTableName().getName();
         catalogName = project.getCatalogName();
         outputColumns = transformIntoSelectors(selectStep.getColumnMap().keySet());
 
+        processJoins();
+    }
+
+    public InMemoryQuery(Project project, List<Object[]> results) throws ExecutionException {
+        this(project);
+
+        out: for(Object[] row: results){
+            for (Object field: row){
+                if (field instanceof AbstractMap.SimpleEntry){
+                    String columnName = joinStep.getJoinRelations().get(0).getRightTerm().getColumnName().getName();
+                    new InMemoryRelation(columnName, OPERATIONS_TRANFORMATIONS.get(Operator.EQ), ((AbstractMap.SimpleEntry)field).getValue());
+                    break out;
+                }
+            }
+        }
+    }
+
+    private void processJoins() {
+
+
+        if (joinStep != null){
+            String name = joinStep.toString();
+            Selector myTerm, otherTerm;
+            if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().equals(project.getTableName())) {
+                myTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
+                otherTerm = joinStep.getJoinRelations().get(0).getRightTerm();
+            }else{
+                otherTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
+                myTerm = joinStep.getJoinRelations().get(0).getRightTerm();
+            }
+            outputColumns.add(new InMemoryJoinSelector(name,myTerm,otherTerm));
+        }
     }
 
     private void extractSteps(Project project) throws ExecutionException{
@@ -77,6 +106,7 @@ public class InMemoryQuery {
                     selectStep = (Select) currentStep;
                 }else if (currentStep instanceof Join){
                     joinStep = (Join) currentStep;
+                    break;
                 } else if(currentStep instanceof Filter){
                     relations.add(toInMemoryRelation(Filter.class.cast(currentStep)));
                 }else if(currentStep instanceof Limit){

@@ -20,13 +20,9 @@ package com.stratio.connector.inmemory;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
+import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
 import com.stratio.crossdata.common.logicalplan.*;
 import org.apache.log4j.Logger;
 
@@ -96,15 +92,14 @@ public class InMemoryQueryEngine implements IQueryEngine {
         Timer.Context executeTimerContext = executeTimer.time();
         QueryResult finalResult = null;
 
-        LogicalStep initialsStep= workflow.getInitialSteps().get(0);
-        Project project = (Project) initialsStep;
-        InMemoryDatastore datastore = connector.getDatastore(project.getClusterName());
+        Project projectOne =  (Project)workflow.getInitialSteps().get(0);
+        InMemoryDatastore datastore = connector.getDatastore(projectOne.getClusterName());
 
         if(datastore == null){
-            throw new ExecutionException("No datastore connected to " + project.getClusterName());
+            throw new ExecutionException("No datastore connected to " + projectOne.getClusterName());
         }
 
-        InMemoryQuery query = new InMemoryQuery(project);
+        InMemoryQuery query = new InMemoryQuery(projectOne);
 
         List<Object[]> results = null;
         try {
@@ -113,6 +108,24 @@ public class InMemoryQueryEngine implements IQueryEngine {
             throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
         }
 
+
+        if (query.joinStep != null && results.size()>0){
+            Project projectTwo =  (Project) workflow.getInitialSteps().get(1);
+            InMemoryQuery queryTwo = new InMemoryQuery(projectTwo, results);
+
+            List<Object[]> resultsTwo = null;
+            try {
+                resultsTwo = datastore.search(queryTwo.catalogName, queryTwo.tableName, queryTwo.relations, queryTwo.outputColumns);
+            } catch (Exception e) {
+                throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
+            }
+
+            results = joinResults(results, resultsTwo);
+        }
+
+
+
+
         results = query.orderResult(results);
         finalResult = toCrossdataResults(query.selectStep, query.limit, results);
 
@@ -120,6 +133,39 @@ public class InMemoryQueryEngine implements IQueryEngine {
         //End Metric
         long millis = executeTimerContext.stop();
         LOG.info("Query took " + millis + " nanoseconds");
+
+        return finalResult;
+    }
+
+    private List<Object[]> joinResults(List<Object[]> results, List<Object[]> resultsTwo) {
+
+        List<Object[]> finalResult = new ArrayList<Object[]>();
+        if (resultsTwo.size() > 0) {
+            for (Object[] row : results) {
+                List<Object> rowResult = new ArrayList<>();
+                for (Object field:row){
+                    if (field instanceof JoinValue){
+
+                        for(Object[] otherRow: resultsTwo){
+                            for (Object otherField:otherRow) {
+                                if (otherField instanceof JoinValue) {
+                                    if (((JoinValue) field).getValue().equals(((JoinValue) otherField).getValue())){
+                                        for (Object otherField2:otherRow) {
+                                            if (!(otherField2 instanceof JoinValue)){
+                                                rowResult.add(otherField2);
+                                            }
+                                        }
+                                    }
+                            }
+                            }
+                        }
+                    }else{
+                        rowResult.add(field);
+                    }
+                }
+                finalResult.add(rowResult.toArray(new Object[]{}));
+            }
+        }
 
         return finalResult;
     }
