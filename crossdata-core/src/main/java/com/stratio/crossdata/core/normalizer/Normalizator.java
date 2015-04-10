@@ -222,6 +222,7 @@ public class Normalizator {
         tableNames.addAll(fields.getTableNames());
 
         // Remove the "regular" table
+        TableName currentTable = tableNames.get(0);
         tableNames.remove(0);
 
         // Tables pending to be related to a implicit relation
@@ -232,8 +233,33 @@ public class Normalizator {
         List<Relation> implicitRelations = new ArrayList<>();
         implicitRelations.addAll(fields.getImplicitWhere());
 
-        // Assign relations to corresponding join
-        for(TableName tn: tableNames){
+        while(!tablesToBeRelated.isEmpty() || !implicitRelations.isEmpty()){
+            // Assign relations to corresponding join
+            Iterator<Relation> iter = implicitRelations.iterator();
+            Relation rel = null;
+            while(iter.hasNext()){
+                rel = iter.next();
+                boolean tableFound = false;
+                if(rel.getLeftTerm().getTableName().equals(currentTable)){
+                    currentTable = rel.getRightTerm().getTableName();
+                    tableFound = true;
+                } else if(rel.getRightTerm().getTableName().equals(currentTable)){
+                    currentTable = rel.getLeftTerm().getTableName();
+                    tableFound = true;
+                }
+                if(tableFound){
+                    for(InnerJoin innerJoin: innerJoinList){
+                        if(innerJoin.getTablename().equals(currentTable)){
+                            innerJoin.addRelation(rel);
+                            tablesToBeRelated.remove(currentTable);
+                            break;
+                        }
+                    }
+                }
+            }
+            implicitRelations.remove(rel);
+        }
+        /*for(TableName tn: tableNames){
 
             // Find implicit relations where the current table name is involved
             // and choose the one that it has also a table that was already
@@ -266,7 +292,7 @@ public class Normalizator {
             }
             implicitRelations.remove(rel);
             tablesToBeRelated.remove(tn);
-        }
+        }*/
 
         // Assign the rest (if any) of unassigned implicit relations
         if(!implicitRelations.isEmpty()){
