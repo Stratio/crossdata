@@ -142,8 +142,8 @@ public class Normalizator {
 
         normalizeTables();
         normalizeSelectExpression();
-        normalizeJoins();
         normalizeWhere();
+        normalizeJoins();
         normalizeOrderBy();
         normalizeGroupBy();
         normalizeHaving();
@@ -170,7 +170,6 @@ public class Normalizator {
                 }
             }
         }
-
     }
 
     /**
@@ -209,9 +208,107 @@ public class Normalizator {
     public void normalizeJoins() throws ValidationException {
         List<InnerJoin> innerJoinList = parsedQuery.getStatement().getJoinList();
         if (!innerJoinList.isEmpty()) {
-            for (InnerJoin innerJoin : innerJoinList) {
+            addImplicitJoins(innerJoinList);
+            for (InnerJoin innerJoin: innerJoinList) {
                 normalizeJoins(innerJoin);
                 fields.addJoin(innerJoin);
+            }
+        }
+    }
+
+    private void addImplicitJoins(List<InnerJoin> innerJoinList) {
+        // Clone normalized tables
+        List<TableName> tableNames = new ArrayList();
+        tableNames.addAll(fields.getTableNames());
+
+        // Remove the "regular" table
+        TableName currentTable = tableNames.get(0);
+        tableNames.remove(0);
+
+        // Tables pending to be related to a implicit relation
+        List<TableName> tablesToBeRelated = new ArrayList();
+        tablesToBeRelated.addAll(tableNames);
+
+        // Clone implicit relations from where clause
+        List<Relation> implicitRelations = new ArrayList<>();
+        implicitRelations.addAll(fields.getImplicitWhere());
+
+        while(!tablesToBeRelated.isEmpty() || !implicitRelations.isEmpty()){
+            // Assign relations to corresponding join
+            Iterator<Relation> iter = implicitRelations.iterator();
+            Relation rel = null;
+            while(iter.hasNext()){
+                rel = iter.next();
+                boolean tableFound = false;
+                if(rel.getLeftTerm().getTableName().equals(currentTable)){
+                    currentTable = rel.getRightTerm().getTableName();
+                    tableFound = true;
+                } else if(rel.getRightTerm().getTableName().equals(currentTable)){
+                    currentTable = rel.getLeftTerm().getTableName();
+                    tableFound = true;
+                }
+                if(tableFound){
+                    for(InnerJoin innerJoin: innerJoinList){
+                        if(innerJoin.getTablename().equals(currentTable)){
+                            innerJoin.addRelation(rel);
+                            tablesToBeRelated.remove(currentTable);
+                            break;
+                        }
+                    }
+                }
+            }
+            implicitRelations.remove(rel);
+        }
+        /*for(TableName tn: tableNames){
+
+            // Find implicit relations where the current table name is involved
+            // and choose the one that it has also a table that was already
+            // selected in a previous implicit relation
+            Iterator<Relation> iter = implicitRelations.iterator();
+            Relation rel = null;
+            while(iter.hasNext()){
+                rel = iter.next();
+                if(rel.getLeftTerm().getTableName().equals(tn)){
+                    if(!tablesToBeRelated.contains(rel.getRightTerm().getTableName())){
+                        for(InnerJoin innerJoin: innerJoinList){
+                            if(innerJoin.getTablename().equals(tn)){
+                                innerJoin.addRelation(rel);
+                                implicitRelations.remove(rel);
+                                break;
+                            }
+                        }
+                    }
+                } else if(rel.getRightTerm().getTableName().equals(tn)){
+                    if(!tablesToBeRelated.contains(rel.getLeftTerm().getTableName())){
+                        for(InnerJoin innerJoin: innerJoinList){
+                            if(innerJoin.getTablename().equals(tn)){
+                                innerJoin.addRelation(rel);
+                                implicitRelations.remove(rel);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            implicitRelations.remove(rel);
+            tablesToBeRelated.remove(tn);
+        }*/
+
+        // Assign the rest (if any) of unassigned implicit relations
+        if(!implicitRelations.isEmpty()){
+            for(Relation implicitRelation: implicitRelations){
+                for(InnerJoin innerJoin: innerJoinList){
+                    Relation alreadyAssignedRelation = (Relation) innerJoin.getRelations().get(0);
+                    TableName leftTable = alreadyAssignedRelation.getLeftTerm().getTableName();
+                    TableName rightTable = alreadyAssignedRelation.getRightTerm().getTableName();
+                    // Check if tables of the join are equals to the tables of the implicit relation
+                    if((leftTable.equals(implicitRelation.getLeftTerm().getTableName())
+                            && rightTable.equals(implicitRelation.getRightTerm().getTableName()))
+                        || (rightTable.equals(implicitRelation.getLeftTerm().getTableName())
+                            && leftTable.equals(implicitRelation.getRightTerm().getTableName()))){
+                        innerJoin.addRelation(implicitRelation);
+                    }
+                }
             }
         }
     }
@@ -453,7 +550,7 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void checkJoinRelations(List<AbstractRelation> relations) throws ValidationException {
-        for (AbstractRelation relation : relations) {
+        for (AbstractRelation relation: relations) {
             if (relation instanceof RelationDisjunction) {
                 throw new BadFormatException("Join relations cannot contain or operators");
             }
@@ -496,8 +593,21 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void checkWhereRelations(List<AbstractRelation> relations) throws ValidationException {
-        for (AbstractRelation relation : relations) {
-            checkRelation(relation);
+        Set<Integer> toBeRemoved = new HashSet();
+        int count = 0;
+        for (AbstractRelation relation: relations) {
+            boolean implicit = checkRelation(relation);
+            if(implicit){
+               toBeRemoved.add(count);
+            }
+            count++;
+        }
+        // Remove where clauses corresponding to common fields of implicit joins
+        int nRemoved = 0;
+        for(int pos: toBeRemoved){
+            Relation relation = (Relation) relations.remove(pos - nRemoved);
+            getFields().addImplicitWhere(relation);
+            nRemoved++;
         }
     }
 
@@ -507,7 +617,8 @@ public class Normalizator {
      * @param abstractRelation The relation of the query.
      * @throws ValidationException
      */
-    public void checkRelation(AbstractRelation abstractRelation) throws ValidationException {
+    public boolean checkRelation(AbstractRelation abstractRelation) throws ValidationException {
+        boolean implicit = false;
         if (abstractRelation instanceof Relation) {
             Relation relationConjunction = (Relation) abstractRelation;
             if (relationConjunction.getOperator().isInGroup(Operator.Group.ARITHMETIC)) {
@@ -515,6 +626,7 @@ public class Normalizator {
             }
             checkRelationFormatLeft(relationConjunction);
             checkRelationFormatRight(relationConjunction);
+            implicit = checkImplicitRelation(relationConjunction);
         } else if (abstractRelation instanceof RelationDisjunction) {
             RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
             for (AbstractRelation innerRelation : relationDisjunction.getLeftRelations()) {
@@ -524,6 +636,19 @@ public class Normalizator {
                 checkRelation(innerRelation);
             }
         }
+        return implicit;
+    }
+
+    private boolean checkImplicitRelation(Relation relation) {
+        boolean implicit = false;
+        if((relation.getLeftTerm() instanceof ColumnSelector) && (relation.getRightTerm() instanceof ColumnSelector)){
+            ColumnSelector leftColumn = (ColumnSelector) relation.getLeftTerm();
+            ColumnSelector rightColumn = (ColumnSelector) relation.getRightTerm();
+            if(!leftColumn.getTableName().equals(rightColumn.getTableName())){
+                implicit = true;
+            }
+        }
+        return implicit;
     }
 
     public void checkHavingRelation(AbstractRelation abstractRelation) throws ValidationException {
