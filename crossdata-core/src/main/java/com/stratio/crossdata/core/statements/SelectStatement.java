@@ -21,6 +21,7 @@ package com.stratio.crossdata.core.statements;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -519,7 +520,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
     @Override
     public List<TableName> getFromTables() {
-        Set<TableName> tableNames = new HashSet<>();
+        Set<TableName> tableNames = new LinkedHashSet<>();
         tableNames.add(tableName);
         if (!joinList.isEmpty()) {
             for (InnerJoin myJoin:joinList) {

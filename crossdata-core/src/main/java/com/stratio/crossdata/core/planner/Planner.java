@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -201,7 +202,7 @@ public class Planner {
         logCandidateConnectors(candidatesConnectors);
 
         List<ExecutionPath> executionPaths = new ArrayList<>();
-        Map<UnionStep, Set<ExecutionPath>> unionSteps = new HashMap<>();
+        Map<UnionStep, LinkedHashSet<ExecutionPath>> unionSteps = new LinkedHashMap<>();
         //Iterate through the initial steps and build valid execution paths
         for (LogicalStep initialStep : workflow.getInitialSteps()) {
             TableName targetTable = ((Project) initialStep).getTableName();
@@ -209,16 +210,16 @@ public class Planner {
             ExecutionPath ep = defineExecutionPath(initialStep, candidatesConnectors.get(targetTable));
             LOG.info("Last step: " + ep.getLast());
             if (UnionStep.class.isInstance(ep.getLast())) {
-                Set<ExecutionPath> paths = unionSteps.get(ep.getLast());
+                LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast());
                 if (paths == null) {
-                    paths = new HashSet<>();
+                    paths = new LinkedHashSet<>();
                     unionSteps.put((UnionStep) ep.getLast(), paths);
                 }
                 paths.add(ep);
             } else if (ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())) {
-                Set<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
+                LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
                 if (paths == null) {
-                    paths = new HashSet<>();
+                    paths = new LinkedHashSet<>();
                     unionSteps.put((UnionStep) (ep.getLast().getNextStep()), paths);
                 }
                 paths.add(ep);
@@ -256,7 +257,7 @@ public class Planner {
      * @throws PlanningException If the execution paths cannot be merged.
      */
     protected ExecutionWorkflow mergeExecutionPaths(String queryId, List<ExecutionPath> executionPaths,
-            Map<UnionStep, Set<ExecutionPath>> unionSteps) throws PlanningException {
+            Map<UnionStep, LinkedHashSet<ExecutionPath>> unionSteps) throws PlanningException {
 
         if (unionSteps.size() == 0) {
             return toExecutionWorkflow(queryId, executionPaths, executionPaths.get(0).getLast(),
@@ -264,13 +265,15 @@ public class Planner {
         }
         LOG.info("UnionSteps: " + unionSteps.toString());
         //Find first UnionStep
-        UnionStep mergeStep = null;
+        List<UnionStep> mergeSteps = new ArrayList<>();
+        Map<UnionStep, ExecutionPath[]> pathsMap=new HashMap<>();
         ExecutionPath[] paths = null;
         QueryWorkflow first = null;
-        Map<PartialResults, ExecutionWorkflow> triggerResults = new HashMap<>();
-        Map<UnionStep, ExecutionWorkflow> triggerWorkflow = new HashMap<>();
-        for (Map.Entry<UnionStep, Set<ExecutionPath>> entry : unionSteps.entrySet()) {
+        Map<PartialResults, ExecutionWorkflow> triggerResults = new LinkedHashMap<>();
+        Map<UnionStep, ExecutionWorkflow> triggerWorkflow = new LinkedHashMap<>();
+        for (Map.Entry<UnionStep, LinkedHashSet<ExecutionPath>> entry : unionSteps.entrySet()) {
             paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
+            pathsMap.put(entry.getKey(),paths);
             boolean areTransformations = true;
             for (ExecutionPath path : paths) {
                 if (!TransformationStep.class.isInstance(path.getLast())) {
@@ -278,82 +281,85 @@ public class Planner {
                 }
             }
             if (areTransformations) {
-                mergeStep = entry.getKey();
+                mergeSteps.add(entry.getKey());
             }
+        }
 
+        for(UnionStep mergeStep:mergeSteps ) {
             List<ConnectorMetadata> toRemove = new ArrayList<>();
             List<ConnectorMetadata> mergeConnectors = new ArrayList<>();
 
             List<ExecutionWorkflow> workflows = new ArrayList<>();
-            UnionStep nextUnion = null;
 
             List<ExecutionPath> toMerge = new ArrayList<>(2);
             boolean[] intermediateResults = new boolean[2];
             boolean exit = false;
             //while (!exit) {
-                //Check whether the list of connectors found in the Execution paths being merged can execute the join
-                intermediateResults[0] = false;
-                intermediateResults[1] = false;
-                mergeConnectors.clear();
-                toMerge.clear();
-                for (int index = 0; index < paths.length; index++) {
-                    toRemove.clear();
-                    for (ConnectorMetadata connector : paths[index].getAvailableConnectors()) {
-                        LOG.info("op: " + mergeStep.getOperations() + " -> " +
-                                connector.supports(mergeStep.getOperations()));
-                        if (!connector.supports(mergeStep.getOperations())) {
-                            toRemove.add(connector);
-                        }
-                    }
-                    if (paths[index].getAvailableConnectors().size() == toRemove.size()) {
-                        //Add intermediate result node
-                        PartialResults partialResults = new PartialResults(
-                                Collections.singleton(Operations.PARTIAL_RESULTS));
-                        partialResults.setNextStep(mergeStep);
+            //Check whether the list of connectors found in the Execution paths being merged can execute the join
+            intermediateResults[0] = false;
+            intermediateResults[1] = false;
+            mergeConnectors.clear();
+            toMerge.clear();
+            ExecutionPath[] mergePaths=pathsMap.get(mergeStep);
+            for (int index = 0; index < mergePaths.length; index++) {
+                toRemove.clear();
 
-                        mergeStep.addPreviousSteps(partialResults);
-                        mergeStep.removePreviousStep(paths[index].getLast());
-                        paths[index].getLast().setNextStep(null);
-                        //Create a trigger execution workflow with the partial results step.
-                        ExecutionWorkflow w = toExecutionWorkflow(queryId, Arrays.asList(paths[index]),
-                                paths[index].getLast(), paths[index].getAvailableConnectors(),
-                                ResultType.TRIGGER_EXECUTION);
-                        w.setTriggerStep(partialResults);
-
-                        triggerResults.put(partialResults, w);
-
-                        workflows.add(w);
-                        intermediateResults[index] = true;
-                        if (first == null) {
-                            first = QueryWorkflow.class.cast(w);
-                        }
-                    } else {
-                        paths[index].getAvailableConnectors().removeAll(toRemove);
-                        //Add to the list of mergeConnectors.
-                        mergeConnectors.addAll(paths[index].getAvailableConnectors());
-                        toMerge.add(paths[index]);
+                for (ConnectorMetadata connector : mergePaths[index].getAvailableConnectors()) {
+                    LOG.info("op: " + mergeStep.getOperations() + " -> " +
+                            connector.supports(mergeStep.getOperations()));
+                    if (!connector.supports(mergeStep.getOperations())) {
+                        toRemove.add(connector);
                     }
                 }
-                //unionSteps.remove(mergeStep);
+                if (mergePaths[index].getAvailableConnectors().size() == toRemove.size()) {
+                    //Add intermediate result node
+                    PartialResults partialResults = new PartialResults(
+                            Collections.singleton(Operations.PARTIAL_RESULTS));
+                    partialResults.setNextStep(mergeStep);
 
-                ExecutionPath next = defineExecutionPath(mergeStep, mergeConnectors);
-                if (Select.class.isInstance(next.getLast())) {
-                    exit = true;
-                    ExecutionWorkflow mergeWorkflow = extendExecutionWorkflow(queryId, toMerge, next,
-                            ResultType.RESULTS);
-                    triggerWorkflow.put(mergeStep, mergeWorkflow);
+                    mergeStep.addPreviousSteps(partialResults);
+                    mergeStep.removePreviousStep(mergePaths[index].getLast());
+                    mergePaths[index].getLast().setNextStep(null);
+                    //Create a trigger execution workflow with the partial results step.
+                    ExecutionWorkflow w = toExecutionWorkflow(queryId, Arrays.asList(mergePaths[index]),
+                            mergePaths[index].getLast(), mergePaths[index].getAvailableConnectors(),
+                            ResultType.TRIGGER_EXECUTION);
+                    w.setTriggerStep(partialResults);
+
+                    triggerResults.put(partialResults, w);
+
+                    workflows.add(w);
+                    intermediateResults[index] = true;
                     if (first == null) {
-                        first = QueryWorkflow.class.cast(mergeWorkflow);
+                        first = QueryWorkflow.class.cast(w);
                     }
                 } else {
-                    Set<ExecutionPath> existingPaths = unionSteps.get(next.getLast());
-                    if (executionPaths == null) {
-                        existingPaths = new HashSet<>();
-                    } else {
-                        executionPaths.add(next);
-                    }
-                    unionSteps.put(UnionStep.class.cast(next.getLast()), existingPaths);
+                    mergePaths[index].getAvailableConnectors().removeAll(toRemove);
+                    //Add to the list of mergeConnectors.
+                    mergeConnectors.addAll(mergePaths[index].getAvailableConnectors());
+                    toMerge.add(mergePaths[index]);
                 }
+            }
+            //unionSteps.remove(mergeStep);
+
+            ExecutionPath next = defineExecutionPath(mergeStep, mergeConnectors);
+            if (Select.class.isInstance(next.getLast())) {
+                exit = true;
+                ExecutionWorkflow mergeWorkflow = extendExecutionWorkflow(queryId, toMerge, next,
+                        ResultType.RESULTS);
+                triggerWorkflow.put(mergeStep, mergeWorkflow);
+                if (first == null) {
+                    first = QueryWorkflow.class.cast(mergeWorkflow);
+                }
+            } else {
+                LinkedHashSet<ExecutionPath> existingPaths = unionSteps.get(next.getLast());
+                if (executionPaths == null) {
+                    existingPaths = new LinkedHashSet<>();
+                } else {
+                    executionPaths.add(next);
+                }
+                unionSteps.put(UnionStep.class.cast(next.getLast()), existingPaths);
+            }
             /*
                 if (unionSteps.isEmpty()) {
                     exit = true;
