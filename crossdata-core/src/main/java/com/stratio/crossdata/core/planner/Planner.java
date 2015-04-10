@@ -238,7 +238,8 @@ public class Planner {
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
         for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry: candidatesConnectors.entrySet()) {
             for (ConnectorMetadata cm: tableEntry.getValue()) {
-                sb.append("table: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName()).append(" ")
+                sb.append("\ttable: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName()).append
+                        (" ")
                         .append(cm.getActorRef()).append(System.lineSeparator());
             }
         }
@@ -265,94 +266,103 @@ public class Planner {
         //Find first UnionStep
         UnionStep mergeStep = null;
         ExecutionPath[] paths = null;
-        for (Map.Entry<UnionStep, Set<ExecutionPath>> entry : unionSteps.entrySet()) {
-            paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
-            if (TransformationStep.class.isInstance(paths[0].getLast()) && TransformationStep.class
-                    .isInstance(paths[1].getLast())) {
-                mergeStep = entry.getKey();
-            }
-        }
-
-        List<ConnectorMetadata> toRemove = new ArrayList<>();
-        List<ConnectorMetadata> mergeConnectors = new ArrayList<>();
+        QueryWorkflow first = null;
         Map<PartialResults, ExecutionWorkflow> triggerResults = new HashMap<>();
         Map<UnionStep, ExecutionWorkflow> triggerWorkflow = new HashMap<>();
-        List<ExecutionWorkflow> workflows = new ArrayList<>();
-        UnionStep nextUnion = null;
-        QueryWorkflow first = null;
-        List<ExecutionPath> toMerge = new ArrayList<>(2);
-        boolean[] intermediateResults = new boolean[2];
-        boolean exit = false;
-        while (!exit) {
-            //Check whether the list of connectors found in the Execution paths being merged can execute the join
-            intermediateResults[0] = false;
-            intermediateResults[1] = false;
-            mergeConnectors.clear();
-            toMerge.clear();
-            for (int index = 0; index < paths.length; index++) {
-                toRemove.clear();
-                for (ConnectorMetadata connector : paths[index].getAvailableConnectors()) {
-                    LOG.info("op: " + mergeStep.getOperations() + " -> " +
-                            connector.supports(mergeStep.getOperations()));
-                    if (!connector.supports(mergeStep.getOperations())) {
-                        toRemove.add(connector);
+        for (Map.Entry<UnionStep, Set<ExecutionPath>> entry : unionSteps.entrySet()) {
+            paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
+            boolean areTransformations = true;
+            for (ExecutionPath path : paths) {
+                if (!TransformationStep.class.isInstance(path.getLast())) {
+                    areTransformations = false;
+                }
+            }
+            if (areTransformations) {
+                mergeStep = entry.getKey();
+            }
+
+            List<ConnectorMetadata> toRemove = new ArrayList<>();
+            List<ConnectorMetadata> mergeConnectors = new ArrayList<>();
+
+            List<ExecutionWorkflow> workflows = new ArrayList<>();
+            UnionStep nextUnion = null;
+
+            List<ExecutionPath> toMerge = new ArrayList<>(2);
+            boolean[] intermediateResults = new boolean[2];
+            boolean exit = false;
+            //while (!exit) {
+                //Check whether the list of connectors found in the Execution paths being merged can execute the join
+                intermediateResults[0] = false;
+                intermediateResults[1] = false;
+                mergeConnectors.clear();
+                toMerge.clear();
+                for (int index = 0; index < paths.length; index++) {
+                    toRemove.clear();
+                    for (ConnectorMetadata connector : paths[index].getAvailableConnectors()) {
+                        LOG.info("op: " + mergeStep.getOperations() + " -> " +
+                                connector.supports(mergeStep.getOperations()));
+                        if (!connector.supports(mergeStep.getOperations())) {
+                            toRemove.add(connector);
+                        }
+                    }
+                    if (paths[index].getAvailableConnectors().size() == toRemove.size()) {
+                        //Add intermediate result node
+                        PartialResults partialResults = new PartialResults(
+                                Collections.singleton(Operations.PARTIAL_RESULTS));
+                        partialResults.setNextStep(mergeStep);
+
+                        mergeStep.addPreviousSteps(partialResults);
+                        mergeStep.removePreviousStep(paths[index].getLast());
+                        paths[index].getLast().setNextStep(null);
+                        //Create a trigger execution workflow with the partial results step.
+                        ExecutionWorkflow w = toExecutionWorkflow(queryId, Arrays.asList(paths[index]),
+                                paths[index].getLast(), paths[index].getAvailableConnectors(),
+                                ResultType.TRIGGER_EXECUTION);
+                        w.setTriggerStep(partialResults);
+
+                        triggerResults.put(partialResults, w);
+
+                        workflows.add(w);
+                        intermediateResults[index] = true;
+                        if (first == null) {
+                            first = QueryWorkflow.class.cast(w);
+                        }
+                    } else {
+                        paths[index].getAvailableConnectors().removeAll(toRemove);
+                        //Add to the list of mergeConnectors.
+                        mergeConnectors.addAll(paths[index].getAvailableConnectors());
+                        toMerge.add(paths[index]);
                     }
                 }
-                if (paths[index].getAvailableConnectors().size() == toRemove.size()) {
-                    //Add intermediate result node
-                    PartialResults partialResults = new PartialResults(
-                            Collections.singleton(Operations.PARTIAL_RESULTS));
-                    partialResults.setNextStep(mergeStep);
+                //unionSteps.remove(mergeStep);
 
-                    mergeStep.addPreviousSteps(partialResults);
-                    mergeStep.removePreviousStep(paths[index].getLast());
-                    paths[index].getLast().setNextStep(null);
-                    //Create a trigger execution workflow with the partial results step.
-                    ExecutionWorkflow w = toExecutionWorkflow(queryId, Arrays.asList(paths[index]),
-                            paths[index].getLast(), paths[index].getAvailableConnectors(),
-                            ResultType.TRIGGER_EXECUTION);
-                    w.setTriggerStep(partialResults);
-
-                    triggerResults.put(partialResults, w);
-
-                    workflows.add(w);
-                    intermediateResults[index] = true;
+                ExecutionPath next = defineExecutionPath(mergeStep, mergeConnectors);
+                if (Select.class.isInstance(next.getLast())) {
+                    exit = true;
+                    ExecutionWorkflow mergeWorkflow = extendExecutionWorkflow(queryId, toMerge, next,
+                            ResultType.RESULTS);
+                    triggerWorkflow.put(mergeStep, mergeWorkflow);
                     if (first == null) {
-                        first = QueryWorkflow.class.cast(w);
+                        first = QueryWorkflow.class.cast(mergeWorkflow);
                     }
                 } else {
-                    paths[index].getAvailableConnectors().removeAll(toRemove);
-                    //Add to the list of mergeConnectors.
-                    mergeConnectors.addAll(paths[index].getAvailableConnectors());
-                    toMerge.add(paths[index]);
+                    Set<ExecutionPath> existingPaths = unionSteps.get(next.getLast());
+                    if (executionPaths == null) {
+                        existingPaths = new HashSet<>();
+                    } else {
+                        executionPaths.add(next);
+                    }
+                    unionSteps.put(UnionStep.class.cast(next.getLast()), existingPaths);
                 }
-            }
-            unionSteps.remove(mergeStep);
-
-            ExecutionPath next = defineExecutionPath(mergeStep, mergeConnectors);
-            if (Select.class.isInstance(next.getLast())) {
-                exit = true;
-                ExecutionWorkflow mergeWorkflow = extendExecutionWorkflow(queryId, toMerge, next, ResultType.RESULTS);
-                triggerWorkflow.put(mergeStep, mergeWorkflow);
-                if (first == null) {
-                    first = QueryWorkflow.class.cast(mergeWorkflow);
-                }
-            } else {
-                Set<ExecutionPath> existingPaths = unionSteps.get(next.getLast());
-                if (executionPaths == null) {
-                    existingPaths = new HashSet<>();
+            /*
+                if (unionSteps.isEmpty()) {
+                    exit = true;
                 } else {
-                    executionPaths.add(next);
+                    mergeStep = nextUnion;
+                    paths = unionSteps.get(mergeStep).toArray(new ExecutionPath[unionSteps.get(mergeStep).size()]);
                 }
-                unionSteps.put(UnionStep.class.cast(next.getLast()), existingPaths);
-            }
-
-            if (unionSteps.isEmpty()) {
-                exit = true;
-            } else {
-                mergeStep = nextUnion;
-                paths = unionSteps.get(mergeStep).toArray(new ExecutionPath[unionSteps.get(mergeStep).size()]);
-            }
+            */
+            //}
         }
         return buildExecutionTree(first, triggerResults, triggerWorkflow);
     }
@@ -529,6 +539,8 @@ public class Planner {
                 if (!connector.supports(current.getOperations())) {
                     // Check selector functions
                     toRemove.add(connector);
+                    LOG.debug("Connector " + connector + " doesn't support all these operations: "
+                            + current.getOperations());
                 } else {
                 /*
                  * This connector support the operation but we also have to check if support for a specific
@@ -543,6 +555,8 @@ public class Planner {
                                 Set<Selector> cols = select.getColumnMap().keySet();
                                 if (!checkFunctionsConsistency(connector, sFunctions, cols)) {
                                     toRemove.add(connector);
+                                    LOG.debug("Connector " + connector + " doesn't support all these operations: "
+                                            + current.getOperations());
                                 }
                                 break;
                             default:
@@ -1335,11 +1349,16 @@ public class Planner {
             metadataWorkflow = buildMetadataWorkflowDropTable(metadataStatement, queryId);
         } else if (metadataStatement instanceof AlterTableStatement) {
             metadataWorkflow = buildMetadataWorkflowAlterTable(metadataStatement, queryId);
+            metadataWorkflow.setTableMetadata(MetadataManager.MANAGER.getTable(metadataWorkflow.getTableName()));
         } else if (metadataStatement instanceof ImportMetadataStatement) {
             metadataWorkflow = buildMetadataWorkflowImportMetadata(metadataStatement, queryId);
         } else {
             throw new PlanningException("This statement can't be planned: " + metadataStatement.toString());
         }
+
+
+
+
 
         return metadataWorkflow;
     }
@@ -1790,21 +1809,19 @@ public class Planner {
     protected Operations getFilterOperation(final TableMetadata tableMetadata, final String statement,
             final Selector selector, final Operator operator) {
         StringBuilder sb = new StringBuilder(statement.toUpperCase());
-        if (operator==Operator.BETWEEN){
-            return Operations.SELECT_WHERE_BETWEEN;
+
+        sb.append("_");
+        ColumnSelector cs = ColumnSelector.class.cast(selector);
+        if (tableMetadata.isPK(cs.getName())) {
+            sb.append("PK_");
+        } else if (tableMetadata.isIndexed(cs.getName())) {
+            sb.append("INDEXED_");
         } else {
-            sb.append("_");
-            ColumnSelector cs = ColumnSelector.class.cast(selector);
-            if (tableMetadata.isPK(cs.getName())) {
-                sb.append("PK_");
-            } else if (tableMetadata.isIndexed(cs.getName())) {
-                sb.append("INDEXED_");
-            } else {
-                sb.append("NON_INDEXED_");
-            }
-            sb.append(operator.name());
-            return Operations.valueOf(sb.toString());
+            sb.append("NON_INDEXED_");
         }
+        sb.append(operator.name());
+        return Operations.valueOf(sb.toString());
+
     }
 
     /**

@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.normalizer;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -68,7 +69,6 @@ import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.GroupByClause;
-import com.stratio.crossdata.core.structures.HavingClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -547,8 +547,6 @@ public class Normalizator {
 
     private void checkRelationFormatLeft(Relation relation) throws ValidationException {
         switch (relation.getLeftTerm().getType()) {
-        case FUNCTION:
-            throw new BadFormatException("Functions in the left side of a relation are not supported yet");
         case COLUMN:
             checkColumnSelector((ColumnSelector) relation.getLeftTerm());
             break;
@@ -571,6 +569,7 @@ public class Normalizator {
             break;
         case RELATION:
             throw new BadFormatException("Relations can't be on the left side of other relations.");
+        case FUNCTION:
         }
     }
     private void checkHavingRelationFormatLeft(Relation relation) throws ValidationException {
@@ -890,7 +889,6 @@ public class Normalizator {
     public List<Selector> checkListSelector(
             List<Selector> selectors) throws ValidationException {
         List<Selector> result = new ArrayList<>();
-        //TableName firstTableName = fields.getTableNames().iterator().next();
         TableName firstTableName = fields.getPreferredTableNames().iterator().next();
         for (Selector selector : selectors) {
             switch (selector.getType()) {
@@ -930,6 +928,18 @@ public class Normalizator {
                 columnSelector.setTableName(currentTableName);
 
                 result.add(columnSelector);
+                break;
+            case RELATION:
+                RelationSelector rs = (RelationSelector) selector;
+                List<Selector> leftTerm = checkListSelector(
+                        Collections.singletonList(rs.getRelation().getLeftTerm()));
+                List<Selector> rightTerm = checkListSelector(
+                        Collections.singletonList(rs.getRelation().getRightTerm()));
+                rs.getRelation().setLeftTerm(leftTerm.get(0));
+                if((rightTerm != null) && (!rightTerm.isEmpty())){
+                    rs.getRelation().setRightTerm(rightTerm.get(0));
+                }
+                result.add(rs);
                 break;
             case ASTERISK:
                 result.addAll(checkAsteriskSelector());
@@ -1011,7 +1021,7 @@ public class Normalizator {
     private void checkGroupSelector(Selector leftTerm, Operator operator,
             Selector rightTerm) throws ValidationException {
         if (leftTerm instanceof ColumnSelector) {
-            if (operator == Operator.BETWEEN) {
+            if (operator == Operator.BETWEEN || operator == Operator.NOT_BETWEEN) {
                 ColumnName name = ((ColumnSelector) leftTerm).getName();
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(name);
                 String leftType = "";

@@ -25,6 +25,7 @@ import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
+import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.metadata.ColumnType;
@@ -237,7 +238,7 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
     public void selectMultipleJoinsMultipleColumns() {
         //TODO update on clause when fullyqualifed names are supported in the JOIN.
         String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t2.c, demo.t2.d, demo.t3.e, demo.t3.f FROM demo.t1" +
-                " INNER JOIN demo.t2 ON demo.t1.aa = demo.t2.aa INNER JOIN demo.t3 ON demo.t1.aa = demo.t3.aa;";
+                " INNER JOIN demo.t2 ON demo.t1.aa = demo.t2.aa INNER JOIN demo.t3 ON demo.t1.b = demo.t3.aa;";
 
         String[] columnsT1 = { "a", "b", "aa" };
         ColumnType[] columnTypes1 = {
@@ -276,9 +277,12 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
         LogicalWorkflow workflow = null;
         try {
             workflow = getWorkflow(inputText, "selectSingleColumn", t1, t2, t3);
+
         } catch (PlanningException e) {
             fail("LogicalWorkflow couldn't be calculated");
         }
+
+
         assertNumberInitialSteps(workflow, 3);
         assertColumnsInProject(workflow, "demo.t1", expectedColumnsT1);
         assertColumnsInProject(workflow, "demo.t2", expectedColumnsT2);
