@@ -109,16 +109,6 @@ options {
         return null;
     }
 
-    public List<AbstractRelation> adaptWhereToImplicit(List<AbstractRelation> clauses){
-        List<AbstractRelation> fields = new ArrayList<>();
-        return fields;
-    }
-
-    public List<AbstractRelation> extractCommonFields(List<AbstractRelation> clauses){
-        List<AbstractRelation> fields = new ArrayList<>();
-        return fields;
-    }
-
     private ErrorsHelper foundErrors = new ErrorsHelper();
 
     public ErrorsHelper getFoundErrors(){
@@ -621,7 +611,6 @@ selectStatement returns [SelectStatement slctst]
         boolean subqueryInc = false;
         JoinType joinType=JoinType.INNER;
         List<TableName> implicitTables = new ArrayList<>();
-        List<AbstractRelation> commonFields = new ArrayList<>();
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
@@ -652,15 +641,12 @@ selectStatement returns [SelectStatement slctst]
     T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
     joinRelations=getConditions[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
 
-    (T_WHERE { if(!implicitJoin) whereInc = true;} whereClauses=getConditions[null])?
+    (T_WHERE { whereInc = true;} whereClauses=getConditions[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_HAVING {havingInc = true;} havingClause=getConditions[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
-        if(implicitJoin){
-            commonFields = adaptWhereToImplicit(whereClauses);
-        }
         if(windowInc){
             $slctst.setWindow(window);
         }
@@ -684,8 +670,7 @@ selectStatement returns [SelectStatement slctst]
         }
         if(implicitJoin){
             for(TableName iTable: implicitTables){
-                List<AbstractRelation> fields = extractCommonFields(commonFields);
-                $slctst.addJoin(new InnerJoin(iTable, fields));
+                $slctst.addJoin(new InnerJoin(iTable, new ArrayList<AbstractRelation>()));
             }
         }
     }
