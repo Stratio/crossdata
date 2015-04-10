@@ -97,6 +97,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_SUBQUERY);
         operationsC1.add(Operations.FILTER_NON_INDEXED_LET);
         operationsC1.add(Operations.SELECT_ORDER_BY);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_LIKE);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -378,7 +379,8 @@ public class BenchmarkTests extends PlannerBaseTest {
                     + "AND ps_supplycost = 25 "
                 + "ORDER BY s_acctbal desc, n_name, s_name, p_partkey;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ02Previous", false, true, part, supplier,partsupp, region, nation);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testQ02Previous", false, false, part, supplier,partsupp, region, nation);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");

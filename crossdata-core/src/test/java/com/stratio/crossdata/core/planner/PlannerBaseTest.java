@@ -139,8 +139,11 @@ public class PlannerBaseTest {
                 assertEquals(e.getClass(), PlanningException.class, "Exception class does not match.");
             }
         }
-        LOG.info(plannedQuery.getExecutionWorkflow());
-        return plannedQuery.getExecutionWorkflow();
+        if(plannedQuery != null){
+            LOG.info(plannedQuery.getExecutionWorkflow());
+            return plannedQuery.getExecutionWorkflow();
+        }
+        return null;
     }
 
     public ExecutionWorkflow getPlannedStorageQuery(
