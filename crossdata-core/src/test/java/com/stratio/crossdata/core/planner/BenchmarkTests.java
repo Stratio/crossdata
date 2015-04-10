@@ -361,8 +361,6 @@ public class BenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-    /*
-    TODO: To be removed
     @Test
     public void testQ02Previous() throws ManifestException {
 
@@ -388,6 +386,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
+    /*
     @Test
     public void testQ02() throws ManifestException {
 

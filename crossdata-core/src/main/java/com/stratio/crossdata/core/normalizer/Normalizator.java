@@ -217,6 +217,11 @@ public class Normalizator {
     }
 
     private void addImplicitJoins(List<InnerJoin> innerJoinList) {
+
+        if(fields.getImplicitWhere() == null || fields.getImplicitWhere().isEmpty()){
+            return;
+        }
+
         // Clone normalized tables
         List<TableName> tableNames = new ArrayList();
         tableNames.addAll(fields.getTableNames());
