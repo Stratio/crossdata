@@ -21,11 +21,6 @@
         </license>
     </licenses>
 
-    <scm>
-        <url>scm:git:git@github.com:Stratio/crossdata.git</url>
-        <connection>https://github.com/Stratio/crossdata/</connection>
-    </scm>
-
     <developers>
         <developer>
             <id>miguel0afd</id>
@@ -130,11 +125,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${commons-lang3.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.3</version>
         </dependency>
         <dependency>
             <groupId>com.typesafe</groupId>

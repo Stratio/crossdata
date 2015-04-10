@@ -39,10 +39,6 @@
         </license>
     </licenses>
 
-    <scm>
-        <url>scm:git:git@github.com:Stratio/crossdata.git</url>
-        <connection>https://github.com/Stratio/crossdata/</connection>
-    </scm>
 
     <developers>
         <developer>
@@ -166,12 +162,6 @@
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-server</artifactId>
-            <version>${project.parent.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-testkit_2.10</artifactId>
             <version>${akka.version}</version>
@@ -206,13 +196,13 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-server</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-connector-inmemory</artifactId>
-            <version>0.3.0-SNAPSHOT</version>
+            <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -275,6 +265,7 @@
                 <version>1.0-RC2</version>
                 <configuration>
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+		    <skipTests>${skipUTs}</skipTests>
                     <junitxml>.</junitxml>
                     <filereports>WDF TestSuite.txt</filereports>
                 </configuration>
@@ -289,6 +280,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
+		<version>2.7</version>
                 <executions>
                     <execution>
                         <id>copy-resources</id>

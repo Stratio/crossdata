@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package com.stratio.crossdata.connectors
 
 import Mocks.DummyIConnector
 import akka.actor.{ActorRef, ActorSystem}
