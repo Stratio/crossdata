@@ -16,6 +16,10 @@ public class SimpleValue {
         this.value = value;
     }
 
+    public SimpleValue(Object value) {
+        this.value = value;
+    }
+
     public Object getValue() {
         return value;
     }

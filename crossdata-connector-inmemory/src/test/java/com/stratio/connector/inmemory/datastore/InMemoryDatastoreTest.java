@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -77,16 +78,16 @@ public class InMemoryDatastoreTest {
         InMemorySelector literalColumn = new InMemoryLiteralSelector("1");
         InMemorySelector count = new InMemoryFunctionSelector("count", Arrays.asList(literalColumn));
         List<InMemoryRelation> relations = new ArrayList<>();
-        List<Object[]> result = null;
+        List<SimpleValue[]> result = null;
         try {
             result = db.search(CATALOG_NAME, TEST_TABLE1, relations, Arrays.asList(count));
         } catch (Exception e) {
             fail("Cannot perform count(1)", e);
         }
         assertEquals(result.size(), 1, "Expecting a single row result");
-        Object [] row = result.get(0);
+        SimpleValue [] row = result.get(0);
         assertEquals(row.length, 1, "Expecting a single column result");
-        assertEquals(row[0], InMemoryTableTest.INSERT_TEST_SIZE, "Invalid count");
+        assertEquals(row[0].getValue(), InMemoryTableTest.INSERT_TEST_SIZE, "Invalid count");
     }
 
 }

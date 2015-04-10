@@ -20,6 +20,7 @@ package com.stratio.connector.inmemory.datastore.functions;
 
 import java.util.Map;
 
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
 import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 
@@ -28,16 +29,17 @@ import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
  */
 public class ToUpperFunction extends AbstractInMemoryFunction{
 
-    @Override public Object apply(Map<String, Integer> columnIndex, Object[] row) throws Exception {
+    @Override public Object apply(Map<String, Integer> columnIndex, SimpleValue[] row) throws Exception {
         StringBuilder sb = new StringBuilder();
         for(InMemorySelector selector : arguments){
             if(InMemoryFunctionSelector.class.isInstance(selector)){
                 AbstractInMemoryFunction f = InMemoryFunctionSelector.class.cast(selector).getFunction();
                 sb.append(f.apply(columnIndex, row).toString());
             }else{
-                sb.append(row[columnIndex.get(selector.getName())]);
+                sb.append(row[columnIndex.get(selector.getName())].getValue());
             }
         }
+
         return sb.toString().toUpperCase();
     }
 }

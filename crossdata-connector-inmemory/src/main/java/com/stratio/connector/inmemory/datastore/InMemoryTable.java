@@ -216,7 +216,7 @@ public class InMemoryTable {
                //Process function.
                 AbstractInMemoryFunction f = InMemoryFunctionSelector.class.cast(selector).getFunction();
                 if(f.isRowFunction()) {
-                    result[index] = new SimpleValue(selector, f.apply(columnIndex, row));
+                    result[index] = new SimpleValue(selector, f.apply(columnIndex, convertToSimpleValueRow(selector, row)));
                 }
             }else if(InMemoryColumnSelector.class.isInstance(selector)){
                 Integer pos = columnIndex.get(selector.getName());
@@ -242,5 +242,16 @@ public class InMemoryTable {
      */
     public int size(){
         return rows.size();
+    }
+
+
+    private SimpleValue[] convertToSimpleValueRow(InMemorySelector selector, Object[] row){
+        SimpleValue[] result = new SimpleValue[row.length];
+
+        int i = 0;
+        for (Object field:row){
+            result[i]=new SimpleValue(selector, field);
+        }
+        return result;
     }
 }

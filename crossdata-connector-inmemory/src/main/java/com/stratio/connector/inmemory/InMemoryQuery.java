@@ -19,7 +19,10 @@ package com.stratio.connector.inmemory;
 
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
 import com.stratio.connector.inmemory.datastore.InMemoryRelation;
+import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.connector.inmemory.datastore.selector.*;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.logicalplan.*;
 import com.stratio.crossdata.common.statements.structures.*;
@@ -44,7 +47,7 @@ public class InMemoryQuery {
         OPERATIONS_TRANFORMATIONS.put(Operator.LET, InMemoryOperations.LET);
     }
 
-    String tableName;
+    TableName tableName;
     String catalogName;
     List<InMemoryRelation> relations = new ArrayList<>();
     List<InMemorySelector> outputColumns;
@@ -58,40 +61,55 @@ public class InMemoryQuery {
     public InMemoryQuery(Project project) throws ExecutionException {
         this.project = project;
         extractSteps(project);
-        tableName = project.getTableName().getName();
+        tableName = project.getTableName();
         catalogName = project.getCatalogName();
         outputColumns = transformIntoSelectors(selectStep.getColumnMap().keySet());
 
         processJoins();
     }
 
-    public InMemoryQuery(Project project, List<Object[]> results) throws ExecutionException {
+    public InMemoryQuery(Project project, List<SimpleValue[]> results) throws ExecutionException {
         this(project);
+        addJoinFilter(results);
+    }
 
-        out: for(Object[] row: results){
-            for (Object field: row){
-                if (field instanceof AbstractMap.SimpleEntry){
-                    String columnName = joinStep.getJoinRelations().get(0).getRightTerm().getColumnName().getName();
-                    new InMemoryRelation(columnName, OPERATIONS_TRANFORMATIONS.get(Operator.EQ), ((AbstractMap.SimpleEntry)field).getValue());
-                    break out;
+    private void addJoinFilter(List<SimpleValue[]> results) {
+        out: for(SimpleValue[] row: results){
+            for (SimpleValue field: row){
+                if (field instanceof JoinValue){
+                    String columnName = getMyJoinTerm().getColumnName().getName();
+                    InMemoryRelation joinFilter =  new InMemoryRelation(columnName, OPERATIONS_TRANFORMATIONS.get(Operator.EQ), field.getValue());
+                    relations.add(joinFilter);
+                    return;
                 }
             }
         }
     }
 
+    private Selector getMyJoinTerm() {
+        Selector myTerm;
+        if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().getName().equals(project.getTableName().getAlias())) {
+            myTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
+        }else{
+            myTerm = joinStep.getJoinRelations().get(0).getRightTerm();
+        }
+        return myTerm;
+    }
+
     private void processJoins() {
 
-
+        //todo ERROR AQUI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
         if (joinStep != null){
             String name = joinStep.toString();
-            Selector myTerm, otherTerm;
+            Selector myTerm = getMyJoinTerm();
+            Selector otherTerm;
+
             if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().equals(project.getTableName())) {
-                myTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
                 otherTerm = joinStep.getJoinRelations().get(0).getRightTerm();
             }else{
                 otherTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
-                myTerm = joinStep.getJoinRelations().get(0).getRightTerm();
             }
+
             outputColumns.add(new InMemoryJoinSelector(name,myTerm,otherTerm));
         }
     }

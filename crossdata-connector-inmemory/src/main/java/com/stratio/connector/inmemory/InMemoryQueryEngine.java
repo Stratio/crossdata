@@ -23,17 +23,12 @@ import static com.codahale.metrics.MetricRegistry.name;
 import java.util.*;
 
 import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.crossdata.common.logicalplan.*;
 import org.apache.log4j.Logger;
 
 import com.codahale.metrics.Timer;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
-import com.stratio.connector.inmemory.datastore.InMemoryOperations;
-import com.stratio.connector.inmemory.datastore.InMemoryRelation;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryLiteralSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 import com.stratio.crossdata.common.connector.IQueryEngine;
 import com.stratio.crossdata.common.connector.IResultHandler;
 import com.stratio.crossdata.common.data.Cell;
@@ -46,17 +41,7 @@ import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.result.QueryResult;
-import com.stratio.crossdata.common.statements.structures.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
-import com.stratio.crossdata.common.statements.structures.FunctionSelector;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.OrderByClause;
-import com.stratio.crossdata.common.statements.structures.OrderDirection;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.SelectorType;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
 
 /**
  * Class that implements the  {@link com.stratio.crossdata.common.connector.IQueryEngine}.
@@ -90,7 +75,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
     public QueryResult execute(LogicalWorkflow workflow) throws ConnectorException {
         //Init Metric
         Timer.Context executeTimerContext = executeTimer.time();
-        QueryResult finalResult = null;
+
 
         Project projectOne =  (Project)workflow.getInitialSteps().get(0);
         InMemoryDatastore datastore = connector.getDatastore(projectOne.getClusterName());
@@ -101,34 +86,33 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
         InMemoryQuery query = new InMemoryQuery(projectOne);
 
-        List<Object[]> results = null;
+        List<SimpleValue[]> results = null;
         try {
-            results = datastore.search(query.catalogName, query.tableName, query.relations, query.outputColumns);
+            results = datastore.search(query.catalogName, query.tableName.getName(), query.relations, query.outputColumns);
         } catch (Exception e) {
             throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
         }
 
+        List<List<SimpleValue[]>> externalJoinsResult = new ArrayList<>();
 
         if (query.joinStep != null && results.size()>0){
             Project projectTwo =  (Project) workflow.getInitialSteps().get(1);
             InMemoryQuery queryTwo = new InMemoryQuery(projectTwo, results);
 
-            List<Object[]> resultsTwo = null;
+            List<SimpleValue[]> resultsTwo = null;
             try {
-                resultsTwo = datastore.search(queryTwo.catalogName, queryTwo.tableName, queryTwo.relations, queryTwo.outputColumns);
+                resultsTwo = datastore.search(queryTwo.catalogName, queryTwo.tableName.getName(), queryTwo.relations, queryTwo.outputColumns);
             } catch (Exception e) {
                 throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
             }
+            externalJoinsResult.add(resultsTwo);
 
-            results = joinResults(results, resultsTwo);
         }
 
+        List<Object[]> joinResult = joinResults(results, externalJoinsResult);
+        //joinResult = query.orderResult(joinResult);
 
-
-
-        results = query.orderResult(results);
-        finalResult = toCrossdataResults(query.selectStep, query.limit, results);
-
+        QueryResult finalResult = toCrossdataResults(query.selectStep, query.limit, joinResult);
 
         //End Metric
         long millis = executeTimerContext.stop();
@@ -137,38 +121,84 @@ public class InMemoryQueryEngine implements IQueryEngine {
         return finalResult;
     }
 
-    private List<Object[]> joinResults(List<Object[]> results, List<Object[]> resultsTwo) {
+    private List<Object[]> joinResults(List<SimpleValue[]> results, List<List<SimpleValue[]>> joinTables) {
 
         List<Object[]> finalResult = new ArrayList<Object[]>();
-        if (resultsTwo.size() > 0) {
-            for (Object[] row : results) {
-                List<Object> rowResult = new ArrayList<>();
-                for (Object field:row){
-                    if (field instanceof JoinValue){
-
-                        for(Object[] otherRow: resultsTwo){
-                            for (Object otherField:otherRow) {
-                                if (otherField instanceof JoinValue) {
-                                    if (((JoinValue) field).getValue().equals(((JoinValue) otherField).getValue())){
-                                        for (Object otherField2:otherRow) {
-                                            if (!(otherField2 instanceof JoinValue)){
-                                                rowResult.add(otherField2);
-                                            }
-                                        }
-                                    }
-                            }
-                            }
-                        }
-                    }else{
-                        rowResult.add(field);
-                    }
+        if (joinTables.size() > 0) {
+            for (SimpleValue[] row : results){
+                Object[] joinedRow = joinRow(row, joinTables);
+                if (joinedRow != null) {
+                    finalResult.add(joinedRow);
                 }
-                finalResult.add(rowResult.toArray(new Object[]{}));
+            }
+
+        }else{
+            for (SimpleValue[] row : results) {
+                finalResult.add(getRowValues(row).toArray());
             }
         }
 
         return finalResult;
     }
+
+    private List<Object> getRowValues(SimpleValue[] row) {
+        List<Object> finalRow = new ArrayList();
+        for(SimpleValue field:row){
+            if (!(field instanceof JoinValue)){
+                finalRow.add(field.getValue());
+            }
+        }
+        return finalRow;
+    }
+
+    private Object[] joinRow(SimpleValue[] mainRow,  List<List<SimpleValue[]>> otherTables){
+        List<Object> finalJoinRow = new ArrayList<>();
+
+        //Search JoinRows
+        for(SimpleValue field:mainRow){
+            if(field instanceof JoinValue){
+                List<Object> joinResult = calculeJoin((JoinValue) field, otherTables);
+                if (joinResult != null || joinResult.size()>0){
+                    finalJoinRow.addAll(joinResult);
+                }else{
+                    return null;
+                }
+            }else{
+                finalJoinRow.add(field.getValue());
+            }
+        }
+
+        return finalJoinRow.toArray();
+    }
+
+    private List<Object> calculeJoin(JoinValue join, List<List<SimpleValue[]>> otherTables){
+        List<Object> joinResult = new ArrayList<>();
+        boolean matched = false;
+
+        for(List<SimpleValue[]> table: otherTables){
+            rows: for(SimpleValue[] row: table){
+                for(SimpleValue field:row){
+                    if (field instanceof JoinValue){
+                        JoinValue tableJoin = (JoinValue) field;
+                        if (join.joinMatch(tableJoin)){
+                            matched = true;
+                            joinResult.add(getRowValues(row));
+                            continue rows;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (matched){
+            return joinResult;
+        }else{
+            return null;
+        }
+    }
+
+
+
 
     /**
      * Transform a set of results into a Crossdata query result.
