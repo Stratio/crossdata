@@ -85,7 +85,9 @@ public class ColumnSelector extends Selector {
      */
     @Override
     public TableName getTableName() {
-        if((tableName == null) && (name != null)){
+        if(tableName != null){
+            return tableName;
+        } else if((tableName == null) && (name != null)){
             return name.getTableName();
         }
         return new TableName("<UNKNOWN_NAME>", "<UNKNOWN_NAME>");
