@@ -19,8 +19,11 @@
 package com.stratio.crossdata.common.statements.structures;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import com.stratio.crossdata.common.data.ColumnName;
 
 /**
  * Class that contains the list of elements requested by the user in a SELECT statement. For
@@ -45,6 +48,16 @@ public class SelectExpression implements Serializable {
 
     public List<Selector> getSelectorList() {
         return selectorList;
+    }
+
+
+    public static SelectExpression create(List<ColumnName> columnList) {
+        List<Selector> selectors = new ArrayList<>();
+        for(ColumnName cn: columnList){
+            selectors.add(new ColumnSelector(cn));
+        }
+        SelectExpression ss = new SelectExpression(selectors);
+        return ss;
     }
 
     @Override

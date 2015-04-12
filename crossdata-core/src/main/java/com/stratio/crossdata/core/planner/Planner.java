@@ -699,6 +699,9 @@ public class Planner {
             }
         }
 
+        generateSelectsForUnionSteps(initialSteps, tableMetadataMap);
+
+        /*
         //Include previous Select step for join queries
         boolean firstPath = true;
         for (LogicalStep initialStep: initialSteps) {
@@ -853,6 +856,7 @@ public class Planner {
                 }
             }
         }
+        */
 
         //Find the last element
         LogicalStep last = initial;
@@ -922,6 +926,70 @@ public class Planner {
         workflow.setLastStep(finalSelect);
 
         return workflow;
+    }
+
+    /**
+     * Generate {@link com.stratio.crossdata.common.logicalplan.Select} steps after and before the union steps.
+     *
+     * @param initialSteps Project steps;
+     * @param tableMetadataMap Metadata of the tables in the initial steps.
+     * @throws PlanningException
+     */
+    private void generateSelectsForUnionSteps(
+            List<LogicalStep> initialSteps,
+            Map<String, TableMetadata> tableMetadataMap) throws PlanningException {
+        for(LogicalStep step: initialSteps){
+            Project project = (Project) step;
+            List<ColumnName> columnList = project.getColumnList();
+            LogicalStep previousStepToUnion = project;
+            while(step != null){
+                if(step instanceof UnionStep){
+                    // Generate previous select
+                    SelectStatement previousSS = new SelectStatement(SelectExpression.create(columnList));
+                    Select generatedPreviousSelect = generateSelect(previousSS, tableMetadataMap);
+
+                    // Add select before union step
+                    if(previousStepToUnion instanceof Select){
+                        // Add columns to the existing select
+                        Select existingSelect = (Select) previousStepToUnion;
+                        mergeSelectSteps(existingSelect, generatedPreviousSelect);
+                    } else {
+                        // Link generated select
+                        previousStepToUnion.setNextStep(generatedPreviousSelect);
+                        generatedPreviousSelect.setNextStep(step);
+                        generatedPreviousSelect.setPrevious(previousStepToUnion);
+                        step.getPreviousSteps().remove(previousStepToUnion);
+                        step.getPreviousSteps().add(generatedPreviousSelect);
+                    }
+
+                    // Generate later select
+                    SelectStatement laterSS = new SelectStatement(SelectExpression.create(columnList));
+                    Select generatedLaterSelect = generateSelect(laterSS, tableMetadataMap);
+
+                    // Add select after union step
+                    if(step.getNextStep() instanceof Select){
+                        // Add columns to the existing select
+                        Select existingSelect = (Select) previousStepToUnion;
+                        mergeSelectSteps(existingSelect, generatedLaterSelect);
+                    } else {
+                        // Link generated select
+                        if(step.getNextStep() != null){
+                            step.getNextStep().getPreviousSteps().remove(step);
+                            step.getNextStep().getPreviousSteps().add(generatedLaterSelect);
+                        }
+                        step.setNextStep(generatedLaterSelect);
+                    }
+                }
+                previousStepToUnion = step;
+                step = step.getNextStep();
+            }
+        }
+    }
+
+    private void mergeSelectSteps(Select existingSelect, Select generatedSelect) {
+        existingSelect.getColumnMap().putAll(generatedSelect.getColumnMap());
+        existingSelect.getTypeMap().putAll(generatedSelect.getTypeMap());
+        existingSelect.getTypeMapFromColumnName().putAll(generatedSelect.getTypeMapFromColumnName());
     }
 
     private List<LogicalStep> removeProjects(List<LogicalStep> previousSteps) {
