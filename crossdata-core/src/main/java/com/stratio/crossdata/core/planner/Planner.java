@@ -969,14 +969,16 @@ public class Planner {
                     // Add select after union step
                     if(step.getNextStep() instanceof Select){
                         // Add columns to the existing select
-                        Select existingSelect = (Select) previousStepToUnion;
+                        Select existingSelect = (Select) step.getNextStep();
                         mergeSelectSteps(existingSelect, generatedLaterSelect);
                     } else {
                         // Link generated select
                         if(step.getNextStep() != null){
+                            generatedLaterSelect.setNextStep(step.getNextStep());
                             step.getNextStep().getPreviousSteps().remove(step);
                             step.getNextStep().getPreviousSteps().add(generatedLaterSelect);
                         }
+                        generatedLaterSelect.setPrevious(step);
                         step.setNextStep(generatedLaterSelect);
                     }
                 }
@@ -2067,13 +2069,12 @@ public class Planner {
      * @param query       The query.
      * @return The resulting map of logical steps.
      */
-    private Map<String, LogicalStep> addJoin(LinkedHashMap<String, LogicalStep> stepMap,SelectValidatedQuery query) {
+    private Map<String, LogicalStep> addJoin(LinkedHashMap<String, LogicalStep> stepMap, SelectValidatedQuery query) {
 
         //TODO refactor rename InnerJoin -> Join
         for (InnerJoin queryJoin: query.getJoinList()) {
 
             Join join = getJoin(queryJoin.getType(), query.getStatement().getWindow() != null);
-
 
             StringBuilder sb = new StringBuilder();
             Relation firstRelation = (Relation) queryJoin.getRelations().get(0);
@@ -2082,7 +2083,13 @@ public class Planner {
 
             //Attach to input tables path
             LogicalStep t1 = stepMap.get(firstRelation.getLeftTerm().getSelectorTablesAsString());
+            while(t1.getNextStep() != null){
+                t1 = t1.getNextStep();
+            }
             LogicalStep t2 = stepMap.get(firstRelation.getRightTerm().getSelectorTablesAsString());
+            while(t2.getNextStep() != null){
+                t2 = t2.getNextStep();
+            }
 
             List<AbstractRelation> relations = queryJoin.getRelations();
             for (AbstractRelation ar: relations) {
@@ -2093,19 +2100,24 @@ public class Planner {
                                     ((Filter) t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
                 } else if (Project.class.isInstance(t1)) {
                     join.addSourceIdentifier(((Project) t1).getTableName().getQualifiedName());
+                } else if (Join.class.isInstance(t1)) {
+                    Join join1 = (Join) t1;
+                    join.addSourceIdentifier(join1.getSourceIdentifiers());
                 } else {
                     join.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
                 }
 
                 if (Filter.class.isInstance(t2)) {
                     join.addSourceIdentifier(
-                                    ((Filter) t2).getRelation().getLeftTerm().getTableName().getQualifiedName());
+                            ((Filter) t2).getRelation().getLeftTerm().getTableName().getQualifiedName());
                 } else if (Project.class.isInstance(t2)) {
                     join.addSourceIdentifier(((Project) t2).getTableName().getQualifiedName());
+                } else if (Join.class.isInstance(t2)) {
+                    Join join2 = (Join) t2;
+                    join.addSourceIdentifier(join2.getSourceIdentifiers());
                 } else {
                     join.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
                 }
-
             }
             join.addJoinRelations(queryJoin.getOrderedRelations());
 
