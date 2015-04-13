@@ -103,6 +103,32 @@ public class FunctionSelector extends Selector {
         return tableName;
     }
 
+    /**
+     * toString without alias for Insert statements.
+     * @return A String.
+     */
+    public String toStringWithoutAlias() {
+        StringBuilder sb = new StringBuilder(functionName);
+        sb.append("(");
+
+        boolean first=true;
+        for (Selector selector:functionColumns) {
+            if(!first){
+                sb.append(", ");
+            }
+            if(FunctionSelector.class.isInstance(selector)){
+                sb.append(((FunctionSelector)selector).toStringWithoutAlias());
+            }else {
+                sb.append(selector.toString());
+            }
+            first=false;
+
+        }
+        sb.append(")");
+
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(functionName);

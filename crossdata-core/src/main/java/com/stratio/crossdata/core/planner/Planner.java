@@ -1790,7 +1790,12 @@ public class Planner {
             ColumnName columnName = ids.get(i);
             Selector value = values.get(i);
             CoreUtils coreUtils = CoreUtils.create();
-            Object cellContent = coreUtils.convertSelectorToObject(value, columnName);
+            Object cellContent;
+            if(FunctionSelector.class.isInstance(value)){
+                cellContent = ((FunctionSelector)value).toStringWithoutAlias();
+            }else{
+                cellContent = coreUtils.convertSelectorToObject(value, columnName);
+            }
             Cell cell = new Cell(cellContent);
             row.addCell(columnName.getName(), cell);
         }
