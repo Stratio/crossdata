@@ -373,7 +373,11 @@ public class NormalizerTest {
                 Operator.EQ,
                 new ColumnSelector(new ColumnName(null, "clientId")));
         joinRelations.add(relation);
-        InnerJoin innerJoin = new InnerJoin(new TableName("myCatalog", "tableCostumers"), joinRelations);
+
+        List<TableName> tables = new ArrayList<>();
+        tables.add(new TableName("demo", "tableClients"));
+        tables.add(new TableName("myCatalog", "tableCostumers"));
+        InnerJoin innerJoin = new InnerJoin(tables, joinRelations);
         selectStatement.addJoin(innerJoin);
 
 
@@ -444,7 +448,10 @@ public class NormalizerTest {
                         Operator.EQ,
                         new ColumnSelector(new ColumnName(null, "clientId")));
         joinRelations.add(relation);
-        InnerJoin innerJoin = new InnerJoin(new TableName("demo", "tableClients"), joinRelations);
+
+        List<TableName> tables = new ArrayList<>();
+        tables.add(new TableName("demo", "tableClients"));
+        InnerJoin innerJoin = new InnerJoin(tables, joinRelations);        
         selectStatement.addJoin(innerJoin);
 
 

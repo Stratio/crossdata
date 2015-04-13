@@ -527,7 +527,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         tableNames.add(tableName);
         if (!joinList.isEmpty()) {
             for (InnerJoin myJoin:joinList) {
-                tableNames.add(myJoin.getTablename());
+                tableNames.addAll(myJoin.getTableNames());
             }
         }
         return new ArrayList<>(tableNames);

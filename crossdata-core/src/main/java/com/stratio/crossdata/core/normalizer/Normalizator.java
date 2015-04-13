@@ -217,7 +217,7 @@ public class Normalizator {
     }
 
     private void addImplicitJoins(List<InnerJoin> innerJoinList) {
-
+        /*
         if(fields.getImplicitWhere() == null || fields.getImplicitWhere().isEmpty()){
             return;
         }
@@ -282,6 +282,7 @@ public class Normalizator {
                 }
             }
         }
+        */
     }
 
     /**

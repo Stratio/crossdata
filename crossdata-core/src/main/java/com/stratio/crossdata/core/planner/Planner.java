@@ -699,165 +699,6 @@ public class Planner {
             }
         }
 
-        generateSelectsForUnionSteps(initialSteps, tableMetadataMap);
-
-        /*
-        //Include previous Select step for join queries
-        boolean firstPath = true;
-        for (LogicalStep initialStep: initialSteps) {
-            LogicalStep step = initialStep;
-            LogicalStep previousStepToUnion = initialStep;
-            while ((step != null) && (!UnionStep.class.isInstance(step))) {
-                previousStepToUnion = step;
-                step = step.getNextStep();
-            }
-            if (step == null) {
-                continue;
-            } else {
-                // Create Select step here
-                UnionStep unionStep = (UnionStep) step;
-                //Store all the project steps
-                Map<String, TableMetadata> partialTableMetadataMap = new LinkedHashMap<>();
-                for (String key: tableMetadataMap.keySet()) {
-                    if (Project.class.isInstance(initialStep)) {
-                        Project projectStep = (Project) initialStep;
-                        if (projectStep.getTableName().getQualifiedName().equals(key)) {
-                            partialTableMetadataMap.put(key, tableMetadataMap.get(key));
-                            break;
-                        }
-                    }
-                }
-
-                // Generate a list of fake Select for Join Table
-                List<SelectStatement> partialSelectList = new ArrayList<>();
-
-                if (!ss.getJoinList().isEmpty()) {
-                    for (InnerJoin innerJoin: ss.getJoinList()) {
-                        if (Project.class.cast(initialStep).getTableName().getQualifiedName().equalsIgnoreCase(
-                                innerJoin.getTablename().getQualifiedName())) {
-                            List<Selector> selectorList = new ArrayList<>();
-                            Selector firstSelector = ss.getSelectExpression().getSelectorList().get(0);
-                            if (firstSelector instanceof ColumnSelector) {
-                                Project currentProject = (Project) initialStep;
-                                List<ColumnName> columnsFromProject = currentProject.getColumnList();
-                                for (ColumnName col: columnsFromProject) {
-                                    selectorList.add(new ColumnSelector(col));
-                                }
-                            } else {
-                                TableMetadata tableMetadata =
-                                        MetadataManager.MANAGER.getTable(innerJoin.getTablename());
-                                for (ColumnMetadata cm: tableMetadata.getColumns().values()) {
-                                    ColumnSelector cs = new ColumnSelector(cm.getName());
-                                    selectorList.add(cs);
-                                }
-                            }
-                            SelectExpression selectExpression = new SelectExpression(selectorList);
-                            TableName tableNameJoin = innerJoin.getTablename();
-                            partialSelectList.add(new SelectStatement(selectExpression, tableNameJoin));
-                        } else {
-                            List<Selector> selectorList = new ArrayList<>();
-                            Project currentProject = (Project) initialStep;
-                            List<ColumnName> columnsFromProject = currentProject.getColumnList();
-                            for (ColumnName col: columnsFromProject) {
-                                selectorList.add(new ColumnSelector(col));
-                            }
-                            partialSelectList.add(new SelectStatement(new SelectExpression(selectorList),
-                                    ss.getTableName()));
-
-                        }
-
-                    }
-                } else {
-                    List<Selector> selectorList = new ArrayList<>();
-                    Project currentProject = (Project) initialStep;
-                    List<ColumnName> columnsFromProject = currentProject.getColumnList();
-                    for (ColumnName col: columnsFromProject) {
-                        selectorList.add(new ColumnSelector(col));
-                    }
-                    partialSelectList.add(new SelectStatement(new SelectExpression(selectorList), ss.getTableName()));
-                    partialTableMetadataMap = tableMetadataMap;
-                }
-
-                //link previous select to the join
-                for (SelectStatement partialSelect: removeDuplicateSelects(partialSelectList)) {
-                    Select selectStep = generateSelect(partialSelect, partialTableMetadataMap);
-
-                    previousStepToUnion.setNextStep(selectStep);
-
-                    selectStep.setPrevious(previousStepToUnion);
-                    selectStep.setNextStep(unionStep);
-
-                    List<LogicalStep> previousStepsToUnion = unionStep.getPreviousSteps();
-                    if (firstPath) {
-                        previousStepsToUnion.clear();
-                        firstPath = false;
-                    }
-                    previousStepsToUnion.add(selectStep);
-                    unionStep.setPreviousSteps(previousStepsToUnion);
-                    previousStepsToUnion=removeDuplicateLS(unionStep.getPreviousSteps());
-                    previousStepsToUnion=removeProjects(previousStepsToUnion);
-                    unionStep.setPreviousSteps(previousStepsToUnion);
-                }
-            }
-        }
-
-        //Inject select post union step
-        for (LogicalStep initialStep: initialSteps) {
-            LogicalStep step = initialStep;
-            while ((step != null) && (!UnionStep.class.isInstance(step))) {
-                step = step.getNextStep();
-            }
-            if (step == null) {
-                continue;
-            } else {
-                // Create Select step here
-                UnionStep unionStep = (UnionStep) step;
-                //Generate a select for next step of union step.
-                if ((unionStep.getNextStep() == null) || UnionStep.class.isInstance(unionStep.getNextStep())) {
-                    List<Selector> selectorJoinList = new ArrayList<>();
-                    Map<String, TableMetadata> joinTableMetadataMap = new HashMap<>();
-
-                    List<LogicalStep> projects = unionStep.getPreviousSteps();
-                    for (LogicalStep ls: projects) {
-                        if (Select.class.isInstance(ls)) {
-                            for (Selector selector: ((Select) ls).getColumnMap().keySet()) {
-                                selectorJoinList.add(selector);
-                                joinTableMetadataMap.put(selector.getColumnName().getTableName().getQualifiedName(),
-                                        tableMetadataMap.get(
-                                                selector.getColumnName().getTableName().getQualifiedName()));
-                            }
-                        }
-                        if (Project.class.isInstance(ls)) {
-                            List<ColumnName> columnsFromProject = ((Project) ls).getColumnList();
-                            for (ColumnName col: columnsFromProject) {
-                                selectorJoinList.add(new ColumnSelector(col));
-                                joinTableMetadataMap.put(col.getTableName().getQualifiedName(),
-                                        tableMetadataMap.get(col.getTableName().getQualifiedName
-                                                ()));
-                            }
-                        }
-                    }
-                    TableName tableName = tableMetadataMap.get(((Join) unionStep).getSourceIdentifiers().get(0))
-                            .getName();
-
-                    SelectStatement joinNextSelect = new SelectStatement(new SelectExpression(selectorJoinList),
-                            tableName);
-                    Select joinSelect = generateSelect(joinNextSelect, joinTableMetadataMap);
-                    if (UnionStep.class.isInstance(unionStep.getNextStep())) {
-                        LogicalStep nextUnion = unionStep.getNextStep();
-                        nextUnion.getPreviousSteps().add(joinSelect);
-                        joinSelect.setNextStep(nextUnion);
-                        joinSelect.setPrevious(unionStep);
-                        unionStep.setNextStep(joinSelect);
-                    } else {
-                        unionStep.setNextStep(joinSelect);
-                        joinSelect.setPrevious(unionStep);
-                    }
-                }
-            }
-        }
-        */
-
         //Find the last element
         LogicalStep last = initial;
         while (last.getNextStep() != null) {
@@ -2306,8 +2147,28 @@ public class Planner {
                 typeMapFromColumnName.put(cs, column.getValue().getColumnType());
                 typeMap.put(alias, column.getValue().getColumnType());
             }
-            //Change to admit n joins
+
             if (!selectStatement.getJoinList().isEmpty()) {
+                for (InnerJoin innerJoin: selectStatement.getJoinList()) {
+                    List<TableName> tables = innerJoin.getTableNames();
+                    tables.remove(selectStatement.getTableName());
+                    for(TableName table: tables){
+                        TableMetadata tableMetadata = tableMetadataMap.get(table.getQualifiedName());
+                        for (Map.Entry<ColumnName, ColumnMetadata> column: tableMetadata.getColumns().entrySet()) {
+                            ColumnSelector cs = new ColumnSelector(column.getKey());
+
+                            String alias = column.getKey().getName();
+                            if (aliasMap.containsValue(alias)) {
+                                alias = column.getKey().getTableName().getName() + "_" + column.getKey().getName();
+                            }
+
+                            aliasMap.put(cs, alias);
+                            typeMapFromColumnName.put(cs, column.getValue().getColumnType());
+                            typeMap.put(alias, column.getValue().getColumnType());
+                        }
+                    }
+                }
+                /*
                 for (InnerJoin innerJoin: selectStatement.getJoinList()) {
                     TableMetadata metadataJoin = tableMetadataMap
                             .get(innerJoin.getTablename().getQualifiedName());
@@ -2324,6 +2185,7 @@ public class Planner {
                         typeMap.put(alias, column.getValue().getColumnType());
                     }
                 }
+                */
             }
         }
 
