@@ -23,6 +23,7 @@ import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
@@ -101,8 +102,12 @@ public final class CoreUtils {
     private static Object convertSelectorToObject(Selector selector) throws PlanningException {
         String result;
         try {
-            StringSelector stringSelector = (StringSelector) selector;
-            result = stringSelector.getValue();
+            if (FunctionSelector.class.isInstance(selector)){
+                result = selector.getStringValue();
+            }else {
+                StringSelector stringSelector = (StringSelector) selector;
+                result = stringSelector.getValue();
+            }
         } catch (ClassCastException cce) {
             throw new PlanningException(selector + " cannot be converted to String", cce);
         }
