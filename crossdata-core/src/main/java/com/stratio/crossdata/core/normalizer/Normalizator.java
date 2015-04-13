@@ -484,7 +484,7 @@ public class Normalizator {
 
         while (normalizedSelectExpressionIterator.hasNext() && !aliasFound){
             referencedSelector = normalizedSelectExpressionIterator.next();
-            if( referencedSelector.getType() != SelectorType.COLUMN && referencedSelector.getAlias().equals(selectorAlias)){
+            if( referencedSelector.getType() != SelectorType.COLUMN && referencedSelector.getAlias() != null && referencedSelector.getAlias().equals(selectorAlias)){
                 aliasFound = true;
             }
         }
