@@ -1090,11 +1090,13 @@ getInterval[TableName tablename] returns [Selector sel]
     }:
     (floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector( workaroundTable,$floatingNumber.text);}
         | constant=T_CONSTANT {firstSelector = new IntegerSelector(workaroundTable, $constant.text);}
-        | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(workaroundTable, $qLiteral.text);})
+        | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(workaroundTable, $qLiteral.text);}
+        | fs=getFunctionSelector[tablename] { firstSelector = fs; } )
     T_AND
     (floatingNumber=T_FLOATING {lastSelector = new FloatingPointSelector(workaroundTable,$floatingNumber.text);}
         | constant=T_CONSTANT {lastSelector = new IntegerSelector(workaroundTable,$constant.text);}
-        | qLiteral=QUOTED_LITERAL {lastSelector = new StringSelector(workaroundTable,$qLiteral.text);})
+        | qLiteral=QUOTED_LITERAL {lastSelector = new StringSelector(workaroundTable,$qLiteral.text);}
+        | fs=getFunctionSelector[tablename] { lastSelector = fs; } )
 ;
 
 getAssignment[TableName tablename] returns [Relation assign]
