@@ -92,12 +92,41 @@ public class InnerJoin implements Serializable {
      */
     public List<Relation> getOrderedRelations() {
         List<Relation> orderedRelations = new ArrayList<>();
-        for(TableName t: tableNames){
-            for(AbstractRelation relation: relations){
-                orderedRelations.addAll(orderRelation(relation, t));
+        for(AbstractRelation r: relations){
+            for(TableName tn: tableNames){
+                List<Relation> ars = orderRelation(r, tn);
+                if((ars != null) && (!ars.isEmpty())){
+                    for(Relation ar: ars){
+                        int pos = determinePosition(orderedRelations, ar);
+                        orderedRelations.add(pos, ar);
+                    }
+                    break;
+                }
             }
         }
         return orderedRelations;
+    }
+
+    private int determinePosition(List<Relation> orderedRelations, Relation ar) {
+        int pos = 0;
+        for(Relation r: orderedRelations){
+            int index1 = tableNames.indexOf(r.getLeftTerm().getTableName());
+            int index2 = tableNames.indexOf(ar.getLeftTerm().getTableName());
+            if(index1 > index2){
+                break;
+            } else if(index1 == index2){
+                int index3 = tableNames.indexOf(r.getRightTerm().getTableName());
+                int index4 = tableNames.indexOf(ar.getRightTerm().getTableName());
+                if(index3 > index4){
+                    break;
+                } else {
+                    pos++;
+                }
+            } else {
+                pos++;
+            }
+        }
+        return pos;
     }
 
     private List<Relation> orderRelation(AbstractRelation abstractRelation, TableName tableName) {
@@ -108,16 +137,16 @@ public class InnerJoin implements Serializable {
                     relationConjunction.getLeftTerm(),
                     relationConjunction.getOperator(),
                     relationConjunction.getRightTerm());
-            String joinTable = tableName.getQualifiedName();
-            String rightTable = relationConjunction.getRightTerm().getColumnName().getTableName().getQualifiedName();
+            String table = tableName.getQualifiedName();
             String leftTable = relationConjunction.getLeftTerm().getColumnName().getTableName().getQualifiedName();
-            if(joinTable.equals(leftTable)){
+            String rightTable = relationConjunction.getRightTerm().getColumnName().getTableName().getQualifiedName();
+            if(table.equals(leftTable)){
+                orderedRelations.add(orderedRelation);
+            } else if (table.equals(rightTable)){
                 orderedRelation = new Relation(
                         relationConjunction.getRightTerm(),
                         relationConjunction.getOperator(),
                         relationConjunction.getLeftTerm());
-                orderedRelations.add(orderedRelation);
-            } else if (joinTable.equals(rightTable)){
                 orderedRelations.add(orderedRelation);
             }
         } else if(abstractRelation instanceof RelationDisjunction) {
