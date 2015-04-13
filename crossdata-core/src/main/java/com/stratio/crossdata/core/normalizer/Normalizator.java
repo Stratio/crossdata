@@ -50,6 +50,7 @@ import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
+import com.stratio.crossdata.common.statements.structures.AliasSelector;
 import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
@@ -71,6 +72,8 @@ import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.Validator;
+
+import static com.stratio.crossdata.common.statements.structures.SelectorType.FUNCTION;
 
 /**
  * Normalizator Class.
@@ -262,7 +265,12 @@ public class Normalizator {
             Selector selector = orderBy.getSelector();
             switch (selector.getType()) {
             case COLUMN:
-                checkColumnSelector((ColumnSelector) selector);
+                Selector referencedSelector = findReferencedSelector(((ColumnSelector) selector).getName().getName());
+                if (referencedSelector != null ) {
+                    orderBy.setSelector(new AliasSelector(referencedSelector));
+                }else {
+                    checkColumnSelector((ColumnSelector) selector);
+                }
                 break;
             case FUNCTION:
             case ASTERISK:
@@ -322,6 +330,65 @@ public class Normalizator {
         }
     }
 
+
+    /**
+     * Normalize an specific group by of a parsed query.
+     *
+     * @param groupByClause
+     * @throws ValidationException
+     */
+    public void normalizeGroupBy(GroupByClause groupByClause) throws ValidationException {
+        Set<ColumnName> columnNames = new HashSet<>();
+
+        checkGBFormatBySelectorIdentifier(groupByClause.getSelectorIdentifier(), columnNames);
+
+        // Check if all columns are correct
+        for (Selector selector : fields.getSelectors()) {
+            checkGroupByColumns(selector, columnNames);
+        }
+    }
+
+
+    private void checkGBFormatBySelectorIdentifier(List<Selector> selectorList, Set<ColumnName> columnNames)
+                    throws ValidationException {
+        int selectorIndex = 0;
+
+        for (Selector selector : selectorList) {
+            switch (selector.getType()) {
+            case FUNCTION:
+                throw new BadFormatException("Function include into groupBy is not valid");
+            case COLUMN:
+                Selector referencedSelector = findReferencedSelector(((ColumnSelector) selector).getName().getName());
+                if (referencedSelector != null ) {
+                    selectorList.set(selectorIndex, new AliasSelector(referencedSelector));
+                }else{
+                    checkColumnSelector((ColumnSelector) selector);
+                    if (!columnNames.add(((ColumnSelector) selector).getName())) {
+                        throw new BadFormatException("COLUMN into group by is repeated");
+                    }
+                }
+                break;
+            case ASTERISK:
+                throw new BadFormatException("Asterisk include into groupBy is not valid");
+            }
+            selectorIndex++;
+        }
+    }
+
+    private Selector findReferencedSelector(String selectorAlias) {
+        Selector referencedSelector = null;
+        boolean aliasFound = false;
+        Iterator<Selector> normalizedSelectExpressionIterator = parsedQuery.getStatement().getSelectExpression().getSelectorList().iterator();
+
+        while (normalizedSelectExpressionIterator.hasNext() && !aliasFound){
+            referencedSelector = normalizedSelectExpressionIterator.next();
+            if( referencedSelector.getType() != SelectorType.COLUMN && referencedSelector.getAlias().equals(selectorAlias)){
+                aliasFound = true;
+            }
+        }
+        return aliasFound ? referencedSelector : null;
+    }
+
     /**
      * Normalize the having of a parsed query.
      *
@@ -343,21 +410,6 @@ public class Normalizator {
         }
     }
 
-    private void checkFormatBySelectorIdentifier(Selector selector, Set<ColumnName> columnNames)
-            throws ValidationException {
-        switch (selector.getType()) {
-        case FUNCTION:
-            throw new BadFormatException("Function include into groupBy is not valid");
-        case COLUMN:
-            checkColumnSelector((ColumnSelector) selector);
-            if (!columnNames.add(((ColumnSelector) selector).getName())) {
-                throw new BadFormatException("COLUMN into group by is repeated");
-            }
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk include into groupBy is not valid");
-        }
-    }
 
     private void checkFormatBySelectorIdentifierHaving(Selector selector, Set<ColumnName> columnNames)
             throws ValidationException {
@@ -374,6 +426,7 @@ public class Normalizator {
             throw new BadFormatException("Asterisk include into Having is not valid");
         }
     }
+
 
     private void checkGroupByColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
         switch (selector.getType()) {
@@ -402,22 +455,6 @@ public class Normalizator {
         }
     }
 
-    /**
-     * Normalize an specific group by of a parsed query.
-     *
-     * @param groupByClause
-     * @throws ValidationException
-     */
-    public void normalizeGroupBy(GroupByClause groupByClause) throws ValidationException {
-        Set<ColumnName> columnNames = new HashSet<>();
-        for (Selector selector : groupByClause.getSelectorIdentifier()) {
-            checkFormatBySelectorIdentifier(selector, columnNames);
-        }
-        // Check if all columns are correct
-        for (Selector selector : fields.getSelectors()) {
-            checkGroupByColumns(selector, columnNames);
-        }
-    }
 
     /**
      * Normalize an specific Having of a parsed query.
@@ -640,7 +677,7 @@ public class Normalizator {
             break;
 
         case GROUP:
-            checkGroupSelector(relation.getLeftTerm(), relation.getOperator(), relation.getRightTerm());
+            checkGroupSelector(relation.getLeftTerm(), relation.getOperator(), (GroupSelector)relation.getRightTerm());
             break;
         }
 
@@ -1019,7 +1056,7 @@ public class Normalizator {
     }
 
     private void checkGroupSelector(Selector leftTerm, Operator operator,
-            Selector rightTerm) throws ValidationException {
+            GroupSelector rightTerm) throws ValidationException {
         if (leftTerm instanceof ColumnSelector) {
             if (operator == Operator.BETWEEN || operator == Operator.NOT_BETWEEN) {
                 ColumnName name = ((ColumnSelector) leftTerm).getName();
@@ -1047,9 +1084,9 @@ public class Normalizator {
                 default:
                     throw new NotMatchDataTypeException(leftTerm.getColumnName());
                 }
-
-                if ((((GroupSelector) rightTerm).getFirstValue().getType().toString() != leftType) || (((GroupSelector)
-                        rightTerm).getLastValue().getType().toString() != leftType)) {
+                String firstType = rightTerm.getFirstValue().getType().toString();
+                String lastType = rightTerm.getLastValue().getType().toString();
+                if (( !firstType.equals(leftType) && !firstType.equals(FUNCTION.toString())) || (!lastType.equals(leftType) && !lastType.equals(FUNCTION.toString())) ) {
                     throw new NotMatchDataTypeException(leftTerm.getColumnName());
                 }
             } else {
@@ -1175,7 +1212,7 @@ public class Normalizator {
             }
         } else if ((operator != Operator.EQ) && (operator != Operator.GT) && (operator != Operator.GET) && (operator
                 != Operator.LT) && (operator != Operator.LET) && (operator != Operator.DISTINCT) &&
-                (operator != Operator.LIKE)) {
+                (operator != Operator.LIKE) && (operator != Operator.NOT_LIKE)) {
             throw new BadFormatException("String relations only accept equal operator.");
         }
 
