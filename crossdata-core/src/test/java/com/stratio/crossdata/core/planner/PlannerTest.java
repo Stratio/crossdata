@@ -585,6 +585,23 @@ public class PlannerTest extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Planner failed");
     }
 
+/*
+    @Test
+    public void testMultipleJoin() throws ManifestException {
+
+        init();
+
+        String inputText = "SELECT * FROM demo.table1 " +
+                "INNER JOIN demo.table2 ON demo.table1.id = demo.table2.id " +
+                "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testMultipleJoin", false, table1, table2, table3);
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
+        assertNotNull(queryWorkflow.getTriggerStep(), "Planner failed.");
+        assertNotNull(queryWorkflow.getNextExecutionWorkflow(), "Planner failed.");
+        assertNotNull(queryWorkflow, "Planner failed");
+    }
+*/
     @Test
     public void testInsertIntoFromSelectDirect() throws ManifestException {
 

@@ -36,7 +36,7 @@ public class InnerJoin implements Serializable {
 
     private TableName tableName;
 
-    private List<AbstractRelation> relations;
+    private final List<AbstractRelation> relations = new ArrayList<>();
 
     private JoinType type;
 
@@ -51,7 +51,7 @@ public class InnerJoin implements Serializable {
      */
     public InnerJoin(TableName tableName, List<AbstractRelation> joinRelations) {
         this(tableName);
-        this.relations = joinRelations;
+        this.relations.addAll(joinRelations);
         this.type=JoinType.INNER;
     }
 
@@ -63,7 +63,7 @@ public class InnerJoin implements Serializable {
      */
     public InnerJoin(TableName tableName, List<AbstractRelation> joinRelations, JoinType type) {
         this(tableName);
-        this.relations = joinRelations;
+        this.relations.addAll(joinRelations);
         this.type=type;
     }
 
@@ -73,6 +73,14 @@ public class InnerJoin implements Serializable {
 
     public List<AbstractRelation> getRelations() {
         return relations;
+    }
+
+    public void addRelations(List<AbstractRelation> joinRelations){
+        relations.addAll(joinRelations);
+    }
+
+    public void addRelation(AbstractRelation joinRelations){
+        relations.add(joinRelations);
     }
 
     /**

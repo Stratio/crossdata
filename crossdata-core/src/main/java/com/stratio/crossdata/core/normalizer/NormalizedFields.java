@@ -31,10 +31,10 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.structures.GroupByClause;
-import com.stratio.crossdata.core.structures.HavingClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 
 /**
@@ -68,7 +68,9 @@ public class NormalizedFields {
     /**
      * List of Inner join information.
      */
-    private List<InnerJoin> joinList=new ArrayList<>();
+    private final List<InnerJoin> joinList = new ArrayList<>();
+
+    private final List<Relation> implicitWhere = new ArrayList<>();
 
     /**
      * List of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation} in the where clause.
@@ -184,6 +186,14 @@ public class NormalizedFields {
      */
     public void addJoin(InnerJoin join) {
         this.joinList.add(join);
+    }
+
+    public List<Relation> getImplicitWhere() {
+        return implicitWhere;
+    }
+
+    public void addImplicitWhere(Relation relation) {
+        implicitWhere.add(relation);
     }
 
     /**
