@@ -97,6 +97,8 @@ public class BenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_SUBQUERY);
         operationsC1.add(Operations.FILTER_NON_INDEXED_LET);
         operationsC1.add(Operations.SELECT_ORDER_BY);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_BETWEEN);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_NOT_LIKE);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -476,6 +478,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "o_orderpriority "
                         + "ORDER BY "
                         + "o_orderpriority;";
+
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4", false, false, orders, lineitem);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
@@ -527,7 +530,7 @@ public class BenchmarkTests extends PlannerBaseTest {
             + "FROM "
             + "lineitem "
             + "WHERE "
-            + "l_shipdate >= date(\"1994-01-01\", \"yyyy-mm-dd\")"
+            + "l_shipdate >= date(\"1994-01-01\", \"yyyy-mm-dd\") "
             + "AND l_shipdate < date(\"1994-01-01\", \"yyyy-mm-dd\") + interval(1, \"year\") "
             + "AND l_discount BETWEEN 0.06 - 0.01 AND 0.06 +0.01 "
             + "AND l_quantity < 24;";
@@ -580,6 +583,21 @@ public class BenchmarkTests extends PlannerBaseTest {
                     + "supp_nation, "
                     + "cust_nation, "
                     + "l_year;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ7", false, false, supplier, lineitem, orders, customer, nation);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+    @Test
+    public void testQEasy2() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], "
+                        + "SELECT * FROM lineitem WHERE "
+                        + "l_shipdate BETWEEN date(\"1995-01-01\", \"yyyy-mm-dd\") AND date(\"1996-12-31\", \"yyyy-mm-dd\") ;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ7", false, false, supplier, lineitem, orders, customer, nation);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -643,14 +661,14 @@ public class BenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[demo],SELECT "
+        String inputText = "[demo], SELECT "
                     + "nation, "
                     + "o_year, "
                     + "sum(amount) AS sum_profit "
                     + "FROM ( "
                     + "SELECT "
                     + "n_name AS nation, "
-                    + "extract(year FROM o_orderdate) AS o_year, "
+                    + "extract(o_orderdate, \"year\") AS o_year, "
                     + "l_extendedprice * (1 - l_discount) - ps_supplycost * l_quantity AS amount "
                     + "FROM "
                     + "part, "
@@ -784,7 +802,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                     + "lineitem  "
                     + "WHERE "
                     + "o_orderkey = l_orderkey  "
-                    + "AND l_shipmode IN ('MAIL', 'SHIP')  "
+                    + "AND l_shipmode IN ['MAIL', 'SHIP']  "
                     + "AND l_commitdate < l_receiptdate  "
                     + "AND l_shipdate < l_commitdate  "
                     + "AND l_receiptdate >= date(\"1994-01-01\", \"yyyy-mm-dd\") "
@@ -809,15 +827,15 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "c_count, count(*) AS custdist  "
                         + "FROM (  "
                         + "SELECT  "
-                        + "c_custkey,  "
-                        + "count(o_orderkey)  "
+                        + "c_custkey AS c_custkey,  "
+                        + "count(o_orderkey) AS c_count "
                         + "FROM  "
                         + "customer left outer join orders on  "
                         + "c_custkey = o_custkey  "
-                        + "AND o_comment NOT LIKE ‘%special%requests%’  "
+                        + "WHERE o_comment NOT LIKE \"%special%requests%\"  "
                         + "GROUP BY  "
                         + "c_custkey  "
-                        + ")as c_orders (c_custkey, c_count)  "
+                        + ")as c_orders "
                         + "GROUP BY  "
                         + "c_count  "
                         + "ORDER BY  "
@@ -825,6 +843,24 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "c_count desc;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ13", false, false, customer, orders);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+    @Test
+    public void testQ13Easy() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], "
+                        + "SELECT  "
+                        + "count(o_orderkey)  "
+                        + "FROM  "
+                        + "orders "
+                        + "WHERE o_comment NOT LIKE \"%special%requests%\";";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ13Easy", false, false, customer, orders);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -856,6 +892,55 @@ public class BenchmarkTests extends PlannerBaseTest {
     }
 
     @Test
+    public void testQ14Easy() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT  "
+                        + "100.00 * sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 end) "
+                        + "FROM  "
+                        + "lineitem;  ";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy", false, false, lineitem, part);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+    @Test
+    public void testQ14Easy2() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT  "
+                        + "sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 end) "
+                        + "FROM  "
+                        + "lineitem;  ";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy2", false, false, lineitem, part);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+    @Test
+    public void testQ14Easy3() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT  "
+                        + "sum (CASE WHEN p_type = 'PR' THEN l_extendedprice ELSE 0 end) "
+                        + "FROM  "
+                        + "lineitem;  ";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy23", false, false, lineitem, part);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+
+    @Test
     public void testQ16() throws ManifestException {
 
         init();
@@ -871,7 +956,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "WHERE "
                         + "p_partkey = ps_partkey  "
                         + "AND p_brand <> 'Brand#45'  "
-                        + "AND p_type NOT LIKE 'MEDIUM POLISHED%'  "
+                        + "AND p_type NOT LIKE \"MEDIUM POLISHED%\"  "
                         + "AND p_size IN (49, 14, 23, 45, 19, 3, 36, 9)  "
                         + "AND ps_suppkey NOT IN (  "
                         + "SELECT  "
@@ -879,7 +964,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "FROM  "
                         + "supplier  "
                         + "WHERE "
-                        + "s_comment LIKE '%Customer%Complaints%'  "
+                        + "s_comment LIKE \"%Customer%Complaints%\"  "
                         + ")  "
                         + "GROUP BY  "
                         + "p_brand,  "
@@ -983,32 +1068,32 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "WHERE "
                         + "(  "
                         + "p_partkey = l_partkey  "
-                        + "AND p_brand = ‘Brand#12’  "
-                        + "AND p_container IN ( ‘SM CASE’, ‘SM BOX’, ‘SM PACK’, ‘SM PKG’)  "
+                        + "AND p_brand = 'Brand#12'  "
+                        + "AND p_container IN [ 'SM CASE', 'SM BOX', 'SM PACK', 'SM PKG']  "
                         + "AND l_quantity >= 1 AND l_quantity <= 1 + 10"
                         + "AND p_size BETWEEN 1 AND 5  "
-                        + "AND l_shipmode IN (‘AIR’, ‘AIR REG’)  "
-                        + "AND l_shipinstruct = ‘DELIVER IN PERSON’  "
+                        + "AND l_shipmode IN ['AIR', 'AIR REG']  "
+                        + "AND l_shipinstruct = 'DELIVER IN PERSON'  "
                         + ")  "
                         + "OR  "
                         + "(  "
                         + "p_partkey = l_partkey  "
-                        + "AND p_brand = ‘Brand#23’  "
-                        + "AND p_container IN (‘MED BAG’, ‘MED BOX’, ‘MED PKG’, ‘MED PACK’)  "
+                        + "AND p_brand = 'Brand#23'  "
+                        + "AND p_container IN ['MED BAG', 'MED BOX', 'MED PKG', 'MED PACK']  "
                         + "AND l_quantity >= 10 AND l_quantity <= 10 + 10 "
                         + "AND p_size BETWEEN 1 AND 10  "
-                        + "AND l_shipmode IN (‘AIR’, ‘AIR REG’)  "
-                        + "AND l_shipinstruct = ‘DELIVER IN PERSON’  "
+                        + "AND l_shipmode IN ['AIR', 'AIR REG']  "
+                        + "AND l_shipinstruct = 'DELIVER IN PERSON'  "
                         + ")  "
                         + "OR  "
                         + "(  "
                         + "p_partkey = l_partkey  "
-                        + "AND p_brand = ‘Brand#34’  "
-                        + "AND p_container IN ( ‘LG CASE’, ‘LG BOX’, ‘LG PACK’, ‘LG PKG’)  "
+                        + "AND p_brand = 'Brand#34'  "
+                        + "AND p_container IN [ 'LG CASE', 'LG BOX', 'LG PACK', 'LG PKG']  "
                         + "AND l_quantity >= 20 AND l_quantity <= 20 + 10 "
                         + "AND p_size BETWEEN 1 AND 15  "
-                        + "AND l_shipmode IN (‘AIR’, ‘AIR REG’)  "
-                        + "AND l_shipinstruct = ‘DELIVER IN PERSON’  "
+                        + "AND l_shipmode IN ['AIR', 'AIR REG']  "
+                        + "AND l_shipinstruct = 'DELIVER IN PERSON'  "
                         + ");";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ19", false, false, lineitem, part, supplier, nation);
@@ -1133,7 +1218,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "customer  "
                         + "WHERE "
                         + "substring(c_phone, 1 , 2) IN  "
-                        + "('13','31’,'23','29','30','18','17')  "
+                        + "['13','31’,'23','29','30','18','17']  "
                         + "AND c_acctbal > (  "
                         + "SELECT  "
                         + "avg(c_acctbal)  "
@@ -1142,7 +1227,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "WHERE "
                         + "c_acctbal > 0.00  "
                         + "AND substring (c_phone, 1, 2) IN  "
-                        + "('13','31’,'23','29','30','18','17')  "
+                        + "['13','31','23','29','30','18','17']  "
                         + ")  "
                         + "AND NOT exists (  "
                         + "SELECT  "
