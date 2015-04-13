@@ -18,17 +18,10 @@
 
 package com.stratio.connector.inmemory;
 
-import static com.codahale.metrics.MetricRegistry.name;
-
-import java.util.*;
-
-import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
-import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.crossdata.common.logicalplan.*;
-import org.apache.log4j.Logger;
-
 import com.codahale.metrics.Timer;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
+import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.crossdata.common.connector.IQueryEngine;
 import com.stratio.crossdata.common.connector.IResultHandler;
 import com.stratio.crossdata.common.data.Cell;
@@ -38,10 +31,20 @@ import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
+import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
+import com.stratio.crossdata.common.logicalplan.Project;
+import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import org.apache.log4j.Logger;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * Class that implements the  {@link com.stratio.crossdata.common.connector.IQueryEngine}.
@@ -109,10 +112,10 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
         }
 
-        List<Object[]> joinResult = joinResults(results, externalJoinsResult);
+        List<SimpleValue[]> joinResult = joinResults(results, externalJoinsResult);
         //joinResult = query.orderResult(joinResult);
 
-        QueryResult finalResult = toCrossdataResults(query.selectStep, query.limit, joinResult);
+        QueryResult finalResult = toCrossdataResults((Select) workflow.getLastStep(), query.limit, joinResult);
 
         //End Metric
         long millis = executeTimerContext.stop();
@@ -121,12 +124,12 @@ public class InMemoryQueryEngine implements IQueryEngine {
         return finalResult;
     }
 
-    private List<Object[]> joinResults(List<SimpleValue[]> results, List<List<SimpleValue[]>> joinTables) {
+    private List<SimpleValue[]> joinResults(List<SimpleValue[]> results, List<List<SimpleValue[]>> joinTables) {
 
-        List<Object[]> finalResult = new ArrayList<Object[]>();
+        List<SimpleValue[]> finalResult = new ArrayList<SimpleValue[]>();
         if (joinTables.size() > 0) {
             for (SimpleValue[] row : results){
-                Object[] joinedRow = joinRow(row, joinTables);
+                SimpleValue[] joinedRow = joinRow(row, joinTables);
                 if (joinedRow != null) {
                     finalResult.add(joinedRow);
                 }
@@ -134,45 +137,45 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
         }else{
             for (SimpleValue[] row : results) {
-                finalResult.add(getRowValues(row).toArray());
+                finalResult.add(getRowValues(row).toArray(new SimpleValue[]{}));
             }
         }
 
         return finalResult;
     }
 
-    private List<Object> getRowValues(SimpleValue[] row) {
-        List<Object> finalRow = new ArrayList();
+    private List<SimpleValue> getRowValues(SimpleValue[] row) {
+        List<SimpleValue> finalRow = new ArrayList();
         for(SimpleValue field:row){
             if (!(field instanceof JoinValue)){
-                finalRow.add(field.getValue());
+                finalRow.add(field);
             }
         }
         return finalRow;
     }
 
-    private Object[] joinRow(SimpleValue[] mainRow,  List<List<SimpleValue[]>> otherTables){
-        List<Object> finalJoinRow = new ArrayList<>();
+    private SimpleValue[] joinRow(SimpleValue[] mainRow,  List<List<SimpleValue[]>> otherTables){
+        List<SimpleValue> finalJoinRow = new ArrayList<>();
 
         //Search JoinRows
         for(SimpleValue field:mainRow){
             if(field instanceof JoinValue){
-                List<Object> joinResult = calculeJoin((JoinValue) field, otherTables);
-                if (joinResult != null || joinResult.size()>0){
+                List<SimpleValue> joinResult = calculeJoin((JoinValue) field, otherTables);
+                if (joinResult != null && joinResult.size()>0){
                     finalJoinRow.addAll(joinResult);
                 }else{
                     return null;
                 }
             }else{
-                finalJoinRow.add(field.getValue());
+                finalJoinRow.add(field);
             }
         }
 
-        return finalJoinRow.toArray();
+        return finalJoinRow.toArray(new SimpleValue[]{});
     }
 
-    private List<Object> calculeJoin(JoinValue join, List<List<SimpleValue[]>> otherTables){
-        List<Object> joinResult = new ArrayList<>();
+    private List<SimpleValue> calculeJoin(JoinValue join, List<List<SimpleValue[]>> otherTables){
+        List<SimpleValue> joinResult = new ArrayList<>();
         boolean matched = false;
 
         for(List<SimpleValue[]> table: otherTables){
@@ -182,7 +185,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
                         JoinValue tableJoin = (JoinValue) field;
                         if (join.joinMatch(tableJoin)){
                             matched = true;
-                            joinResult.add(getRowValues(row));
+                            joinResult.addAll(getRowValues(row));
                             continue rows;
                         }
                     }
@@ -207,7 +210,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
      * @param results The set of results retrieved from the database.
      * @return A {@link com.stratio.crossdata.common.result.QueryResult}.
      */
-    private QueryResult toCrossdataResults(Select selectStep, int limit, List<Object[]> results) {
+    private QueryResult toCrossdataResults(Select selectStep, int limit, List<SimpleValue[]> results) {
         ResultSet crossdataResults = new ResultSet();
 
         final List<String> columnAlias = new ArrayList<>();
@@ -237,7 +240,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
         //Store the rows.
         List<Row> crossdataRows = new ArrayList<>();
-        Iterator<Object[]> rowIterator = results.iterator();
+        Iterator<SimpleValue[]> rowIterator = results.iterator();
         while(rowIterator.hasNext() && resultToAdd > 0){
             crossdataRows.add(toCrossdataRow(rowIterator.next(), columnAlias));
             resultToAdd--;
@@ -256,20 +259,20 @@ public class InMemoryQueryEngine implements IQueryEngine {
      * @param columnAlias The list of column alias.
      * @return A {@link com.stratio.crossdata.common.data.Row}
      */
-    private Row toCrossdataRow(Object[] row, List<String> columnAlias) {
+    private Row toCrossdataRow(SimpleValue[] row, List<String> columnAlias) {
         Row result = new Row();
-        for(int index = 0; index < columnAlias.size(); index++){
-            result.addCell(columnAlias.get(index), new Cell(row[index]));
+
+        for (String alias:columnAlias){
+            for(SimpleValue field: row){
+                if (alias.contains(field.getColumn().getName())){
+                    result.addCell(alias, new Cell(field.getValue()));
+                    break;
+                }
+            }
         }
+
         return result;
     }
-
-
-
-
-
-
-
 
     @Override
     public void asyncExecute(String queryId, LogicalWorkflow workflow, IResultHandler resultHandler)

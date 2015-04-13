@@ -45,6 +45,7 @@ public class InMemoryQuery {
         OPERATIONS_TRANFORMATIONS.put(Operator.LT, InMemoryOperations.LT);
         OPERATIONS_TRANFORMATIONS.put(Operator.GET, InMemoryOperations.GET);
         OPERATIONS_TRANFORMATIONS.put(Operator.LET, InMemoryOperations.LET);
+        OPERATIONS_TRANFORMATIONS.put(Operator.IN , InMemoryOperations.IN);
     }
 
     TableName tableName;
@@ -74,16 +75,23 @@ public class InMemoryQuery {
     }
 
     private void addJoinFilter(List<SimpleValue[]> results) {
-        out: for(SimpleValue[] row: results){
-            for (SimpleValue field: row){
-                if (field instanceof JoinValue){
-                    String columnName = getMyJoinTerm().getColumnName().getName();
-                    InMemoryRelation joinFilter =  new InMemoryRelation(columnName, OPERATIONS_TRANFORMATIONS.get(Operator.EQ), field.getValue());
-                    relations.add(joinFilter);
-                    return;
+        int columnIndex = 0;
+        for (SimpleValue field: results.get(0)){
+
+
+            if (field instanceof JoinValue){
+                String columnName = getMyJoinTerm().getColumnName().getName();
+                List<Object> joinValues = new ArrayList<>();
+                for (SimpleValue[] row:results){
+                    joinValues.add(row[columnIndex].getValue());
                 }
+                InMemoryRelation joinFilter =  new InMemoryRelation(columnName, OPERATIONS_TRANFORMATIONS.get(Operator.IN), joinValues);
+                relations.add(joinFilter);
             }
+
+            columnIndex++;
         }
+
     }
 
     private Selector getMyJoinTerm() {
@@ -98,13 +106,12 @@ public class InMemoryQuery {
 
     private void processJoins() {
 
-        //todo ERROR AQUI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
         if (joinStep != null){
             String name = joinStep.toString();
             Selector myTerm = getMyJoinTerm();
             Selector otherTerm;
 
-            if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().equals(project.getTableName())) {
+            if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().getName().equals(project.getTableName().getAlias())) {
                 otherTerm = joinStep.getJoinRelations().get(0).getRightTerm();
             }else{
                 otherTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
