@@ -622,7 +622,7 @@ selectStatement returns [SelectStatement slctst]
         | tablename=getAliasedTableID[tablesAliasesMap])
     {$slctst = new SelectStatement(selClause, tablename);}
 
-    (T_COMMA { implicitJoin = true; workaroundTablesAliasesMap = tablesAliasesMap;}
+    (T_COMMA { implicitJoin = true; workaroundTablesAliasesMap = tablesAliasesMap; implicitTables.add(tablename); }
         implicitTable=getAliasedTableID[workaroundTablesAliasesMap]
         { tablesAliasesMap = workaroundTablesAliasesMap;
           implicitTables.add(implicitTable); })*
@@ -639,7 +639,11 @@ selectStatement returns [SelectStatement slctst]
     T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
     identJoin=getAliasedTableID[workaroundTablesAliasesMap]
     T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
-    joinRelations=getConditions[null] {$slctst.addJoin(new InnerJoin(identJoin, joinRelations, joinType));})*
+    joinRelations=getConditions[null]
+    { List<TableName> joinTables = new ArrayList<>();
+    joinTables.add(tablename);
+    joinTables.add(identJoin);
+    $slctst.addJoin(new InnerJoin(joinTables, joinRelations, joinType));})*
 
     (T_WHERE { whereInc = true;} whereClauses=getConditions[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
@@ -669,9 +673,7 @@ selectStatement returns [SelectStatement slctst]
              $slctst.setSubquery(subquery, subqueryAlias);
         }
         if(implicitJoin){
-            for(TableName iTable: implicitTables){
-                $slctst.addJoin(new InnerJoin(iTable, new ArrayList<AbstractRelation>()));
-            }
+            $slctst.addJoin(new InnerJoin(implicitTables, new ArrayList<AbstractRelation>()));
         }
     }
 ;

@@ -156,6 +156,11 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         this.selectExpression = selectExpression;
     }
 
+    public SelectStatement(SelectExpression selectExpression) {
+        this(selectExpression.getSelectorList().get(0).getTableName());
+        this.selectExpression = selectExpression;
+    }
+
     /**
      * Get the catalog specified in the select statement.
      *
@@ -522,7 +527,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         tableNames.add(tableName);
         if (!joinList.isEmpty()) {
             for (InnerJoin myJoin:joinList) {
-                tableNames.add(myJoin.getTablename());
+                tableNames.addAll(myJoin.getTableNames());
             }
         }
         return new ArrayList<>(tableNames);

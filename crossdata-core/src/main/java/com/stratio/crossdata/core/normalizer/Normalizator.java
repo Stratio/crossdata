@@ -220,7 +220,7 @@ public class Normalizator {
     }
 
     private void addImplicitJoins(List<InnerJoin> innerJoinList) {
-
+        /*
         if(fields.getImplicitWhere() == null || fields.getImplicitWhere().isEmpty()){
             return;
         }
@@ -267,40 +267,6 @@ public class Normalizator {
             }
             implicitRelations.remove(rel);
         }
-        /*for(TableName tn: tableNames){
-
-            // Find implicit relations where the current table name is involved
-            // and choose the one that it has also a table that was already
-            // selected in a previous implicit relation
-            Iterator<Relation> iter = implicitRelations.iterator();
-            Relation rel = null;
-            while(iter.hasNext()){
-                rel = iter.next();
-                if(rel.getLeftTerm().getTableName().equals(tn)){
-                    if(!tablesToBeRelated.contains(rel.getRightTerm().getTableName())){
-                        for(InnerJoin innerJoin: innerJoinList){
-                            if(innerJoin.getTablename().equals(tn)){
-                                innerJoin.addRelation(rel);
-                                implicitRelations.remove(rel);
-                                break;
-                            }
-                        }
-                    }
-                } else if(rel.getRightTerm().getTableName().equals(tn)){
-                    if(!tablesToBeRelated.contains(rel.getLeftTerm().getTableName())){
-                        for(InnerJoin innerJoin: innerJoinList){
-                            if(innerJoin.getTablename().equals(tn)){
-                                innerJoin.addRelation(rel);
-                                implicitRelations.remove(rel);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            implicitRelations.remove(rel);
-            tablesToBeRelated.remove(tn);
-        }*/
 
         // Assign the rest (if any) of unassigned implicit relations
         if(!implicitRelations.isEmpty()){
@@ -319,6 +285,7 @@ public class Normalizator {
                 }
             }
         }
+        */
     }
 
     /**
