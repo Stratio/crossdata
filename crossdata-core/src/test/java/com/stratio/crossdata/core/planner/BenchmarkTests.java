@@ -99,7 +99,10 @@ public class BenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_NON_INDEXED_BETWEEN);
         operationsC1.add(Operations.FILTER_NON_INDEXED_NOT_LIKE);
         operationsC1.add(Operations.FILTER_NON_INDEXED_LIKE);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_LT);
         operationsC1.add(Operations.SELECT_INNER_JOIN);
+
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -344,13 +347,14 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "l_returnflag,"
                         + "l_linestatus;";
 
+
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ1", false, false, lineitem);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-    @Test
+/*    @Test
     public void testQ02VerySimple() throws ManifestException {
 
         init();
@@ -396,6 +400,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
+
 
     @Test
     public void testQ02() throws ManifestException {
@@ -485,6 +490,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
+    //Exists is not supported
     @Test
     public void testQ04() throws ManifestException {
 
@@ -517,6 +523,8 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
+
+
 
     @Test
     public void testQ05() throws ManifestException {
@@ -1278,6 +1286,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
+    }*/
+
 
 }
