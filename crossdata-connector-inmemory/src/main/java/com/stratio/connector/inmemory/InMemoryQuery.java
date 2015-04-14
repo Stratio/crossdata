@@ -30,7 +30,7 @@ import com.stratio.crossdata.common.statements.structures.*;
 import java.util.*;
 
 /**
- * Class that encapsulate the Project parse and
+ * Class that encapsulate the {@link com.stratio.crossdata.common.logicalplan.Project} parse.
  */
 public class InMemoryQuery {
 
@@ -48,17 +48,21 @@ public class InMemoryQuery {
         OPERATIONS_TRANFORMATIONS.put(Operator.IN , InMemoryOperations.IN);
     }
 
-    TableName tableName;
-    String catalogName;
-    List<InMemoryRelation> relations = new ArrayList<>();
-    List<InMemorySelector> outputColumns;
-    Project project;
-    OrderBy orderByStep = null;
-    Select selectStep;
-    Join joinStep;
-    int limit = -1;
+    private TableName tableName;
+    private String catalogName;
+    private List<InMemoryRelation> relations = new ArrayList<>();
+    private List<InMemorySelector> outputColumns;
+    private Project project;
+    private OrderBy orderByStep = null;
+    private Select selectStep;
+    private Join joinStep;
 
-
+    /**
+     * Build a InMemoryQuery using a {@link com.stratio.crossdata.common.logicalplan.Project}.
+     *
+     * @param project a Project Initial Step
+     * @throws ExecutionException
+     */
     public InMemoryQuery(Project project) throws ExecutionException {
         this.project = project;
         extractSteps(project);
@@ -69,11 +73,59 @@ public class InMemoryQuery {
         processJoins();
     }
 
+    /**
+     * Build a InMemoryQuery using a {@link com.stratio.crossdata.common.logicalplan.Project} and a
+     * result of the others parts of the query, to by added as filters in this part.
+     *
+     * @param project
+     * @param results
+     * @throws ExecutionException
+     */
     public InMemoryQuery(Project project, List<SimpleValue[]> results) throws ExecutionException {
         this(project);
         addJoinFilter(results);
     }
 
+    /**
+     * Return the JoinTerm of this project.
+     * @return
+     */
+    private Selector getMyJoinTerm() {
+
+        Selector myTerm;
+        if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().getName().equals(project.getTableName().getAlias())) {
+            myTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
+        }else{
+            myTerm = joinStep.getJoinRelations().get(0).getRightTerm();
+        }
+        return myTerm;
+    }
+
+    /**
+     * Adds the new Output Columns that holds the JoinColumns
+     */
+    private void processJoins() {
+
+        if (joinStep != null){
+            String name = joinStep.toString();
+            Selector myTerm = getMyJoinTerm();
+            Selector otherTerm;
+
+            if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().getName().equals(project.getTableName().getAlias())) {
+                otherTerm = joinStep.getJoinRelations().get(0).getRightTerm();
+            }else{
+                otherTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
+            }
+
+            outputColumns.add(new InMemoryJoinSelector(name,myTerm,otherTerm));
+        }
+    }
+
+    /**
+     * Adds a "IN" filter for each JoinColumn, using the values from the result List.
+     *
+     * @param results the results of the other terms that will be used as filter values.
+     */
     private void addJoinFilter(List<SimpleValue[]> results) {
         int columnIndex = 0;
         for (SimpleValue field: results.get(0)){
@@ -94,33 +146,13 @@ public class InMemoryQuery {
 
     }
 
-    private Selector getMyJoinTerm() {
-        Selector myTerm;
-        if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().getName().equals(project.getTableName().getAlias())) {
-            myTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
-        }else{
-            myTerm = joinStep.getJoinRelations().get(0).getRightTerm();
-        }
-        return myTerm;
-    }
-
-    private void processJoins() {
-
-        if (joinStep != null){
-            String name = joinStep.toString();
-            Selector myTerm = getMyJoinTerm();
-            Selector otherTerm;
-
-            if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().getName().equals(project.getTableName().getAlias())) {
-                otherTerm = joinStep.getJoinRelations().get(0).getRightTerm();
-            }else{
-                otherTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
-            }
-
-            outputColumns.add(new InMemoryJoinSelector(name,myTerm,otherTerm));
-        }
-    }
-
+    /**
+     * Parse and transform the {@link Project} until a {@link com.stratio.crossdata.common.logicalplan.Join} to a
+     * InMemory Query representation.
+     *
+     * @param project
+     * @throws ExecutionException
+     */
     private void extractSteps(Project project) throws ExecutionException{
         try {
             LogicalStep currentStep = project;
@@ -134,8 +166,6 @@ public class InMemoryQuery {
                     break;
                 } else if(currentStep instanceof Filter){
                     relations.add(toInMemoryRelation(Filter.class.cast(currentStep)));
-                }else if(currentStep instanceof Limit){
-                    limit = Limit.class.cast(currentStep).getLimit();
                 }
                 currentStep = currentStep.getNextStep();
             }
@@ -213,6 +243,12 @@ public class InMemoryQuery {
         return result;
     }
 
+    /**
+     * Orthers the results using the orderStep
+     * @param results
+     * @return
+     * @throws ExecutionException
+     */
     public List<Object[]> orderResult(List<Object[]> results) throws ExecutionException {
         if (orderByStep != null) {
             List<Object[]> orderedResult = new ArrayList<>();
@@ -279,4 +315,70 @@ public class InMemoryQuery {
         }
         return result;
     }
+
+
+    public TableName getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(TableName tableName) {
+        this.tableName = tableName;
+    }
+
+    public String getCatalogName() {
+        return catalogName;
+    }
+
+    public void setCatalogName(String catalogName) {
+        this.catalogName = catalogName;
+    }
+
+    public List<InMemoryRelation> getRelations() {
+        return relations;
+    }
+
+    public void setRelations(List<InMemoryRelation> relations) {
+        this.relations = relations;
+    }
+
+    public List<InMemorySelector> getOutputColumns() {
+        return outputColumns;
+    }
+
+    public void setOutputColumns(List<InMemorySelector> outputColumns) {
+        this.outputColumns = outputColumns;
+    }
+
+    public Project getProject() {
+        return project;
+    }
+
+    public void setProject(Project project) {
+        this.project = project;
+    }
+
+    public OrderBy getOrderByStep() {
+        return orderByStep;
+    }
+
+    public void setOrderByStep(OrderBy orderByStep) {
+        this.orderByStep = orderByStep;
+    }
+
+    public Select getSelectStep() {
+        return selectStep;
+    }
+
+    public void setSelectStep(Select selectStep) {
+        this.selectStep = selectStep;
+    }
+
+    public Join getJoinStep() {
+        return joinStep;
+    }
+
+    public void setJoinStep(Join joinStep) {
+        this.joinStep = joinStep;
+    }
+
 }

@@ -31,9 +31,7 @@ import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
-import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
-import com.stratio.crossdata.common.logicalplan.Project;
-import com.stratio.crossdata.common.logicalplan.Select;
+import com.stratio.crossdata.common.logicalplan.*;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.result.QueryResult;
@@ -79,7 +77,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
         //Init Metric
         Timer.Context executeTimerContext = executeTimer.time();
 
-
         Project projectOne =  (Project)workflow.getInitialSteps().get(0);
         InMemoryDatastore datastore = connector.getDatastore(projectOne.getClusterName());
 
@@ -87,35 +84,34 @@ public class InMemoryQueryEngine implements IQueryEngine {
             throw new ExecutionException("No datastore connected to " + projectOne.getClusterName());
         }
 
-        InMemoryQuery query = new InMemoryQuery(projectOne);
+        List<List<SimpleValue[]>> tableResults = new ArrayList<>();
 
-        List<SimpleValue[]> results = null;
-        try {
-            results = datastore.search(query.catalogName, query.tableName.getName(), query.relations, query.outputColumns);
-        } catch (Exception e) {
-            throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
-        }
+        for (LogicalStep project:workflow.getInitialSteps()){
+            InMemoryQuery query = null;
+            if (tableResults.size()<1){
+                query =new InMemoryQuery((Project)project);
+            }else{
+                query = new InMemoryQuery((Project)project, tableResults.get(0));
+            }
 
-        List<List<SimpleValue[]>> externalJoinsResult = new ArrayList<>();
-
-        if (query.joinStep != null && results.size()>0){
-            Project projectTwo =  (Project) workflow.getInitialSteps().get(1);
-            InMemoryQuery queryTwo = new InMemoryQuery(projectTwo, results);
-
-            List<SimpleValue[]> resultsTwo = null;
+            List<SimpleValue[]> results = null;
             try {
-                resultsTwo = datastore.search(queryTwo.catalogName, queryTwo.tableName.getName(), queryTwo.relations, queryTwo.outputColumns);
+                results = datastore.search(query.getCatalogName(), query.getTableName().getName(), query.getRelations(), query.getOutputColumns());
             } catch (Exception e) {
                 throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
             }
-            externalJoinsResult.add(resultsTwo);
 
+            if (results == null || results.size()== 0){
+                break;
+            }
+
+            tableResults.add(results);
         }
 
-        List<SimpleValue[]> joinResult = joinResults(results, externalJoinsResult);
-        //joinResult = query.orderResult(joinResult);
+        List<SimpleValue[]> joinResult = joinResults(tableResults);
+        ///joinResult = query.orderResult(joinResult);
 
-        QueryResult finalResult = toCrossdataResults((Select) workflow.getLastStep(), query.limit, joinResult);
+        QueryResult finalResult = toCrossdataResults((Select) workflow.getLastStep(), getFinalLimit(workflow), joinResult);
 
         //End Metric
         long millis = executeTimerContext.stop();
@@ -124,19 +120,28 @@ public class InMemoryQueryEngine implements IQueryEngine {
         return finalResult;
     }
 
-    private List<SimpleValue[]> joinResults(List<SimpleValue[]> results, List<List<SimpleValue[]>> joinTables) {
+    private Integer getFinalLimit(LogicalWorkflow workflow){
+
+        if (workflow.getLastStep().getFirstPrevious() instanceof Limit){
+            return  Limit.class.cast(workflow.getLastStep().getFirstPrevious()).getLimit();
+        }
+
+        return -1;
+    }
+
+    private List<SimpleValue[]> joinResults(List<List<SimpleValue[]>> joinTables) {
 
         List<SimpleValue[]> finalResult = new ArrayList<SimpleValue[]>();
-        if (joinTables.size() > 0) {
-            for (SimpleValue[] row : results){
-                SimpleValue[] joinedRow = joinRow(row, joinTables);
+        if (joinTables.size() > 1) {
+            for (SimpleValue[] row : joinTables.get(0)){
+                SimpleValue[] joinedRow = joinRow(row, joinTables.subList(1, joinTables.size()));
                 if (joinedRow != null) {
                     finalResult.add(joinedRow);
                 }
             }
 
-        }else{
-            for (SimpleValue[] row : results) {
+        }else if (joinTables.size()>0){
+            for (SimpleValue[] row : joinTables.get(0)) {
                 finalResult.add(getRowValues(row).toArray(new SimpleValue[]{}));
             }
         }
