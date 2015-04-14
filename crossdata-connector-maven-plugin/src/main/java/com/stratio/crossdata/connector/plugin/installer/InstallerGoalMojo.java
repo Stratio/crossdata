@@ -114,6 +114,13 @@ public class InstallerGoalMojo extends AbstractMojo {
             name = "jmxPort",
             defaultValue = "7180"
     )
+    private String javaOpts;
+    
+    @Parameter(
+            name = "javaOpts",
+            defaultValue = ""
+    )
+    
     private String jmxPort;
 
     @Parameter(
@@ -136,6 +143,7 @@ public class InstallerGoalMojo extends AbstractMojo {
 
         InstallerGoalConfig config = new InstallerGoalConfig(this.outputDirectory, this.configDirectory,
                 this.includeDirectory, this.connectorName, this.description, this.userService, this.mainClass,
+                this.javaOpts,
                 this.jmxPort, mainJarRepo, dependenciesJarRepo, unixScriptTemplate, useCallingUserAsService,
                 pidFileName);
         try {
