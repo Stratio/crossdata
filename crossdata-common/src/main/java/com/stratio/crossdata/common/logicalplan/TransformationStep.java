@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -47,6 +48,9 @@ public class TransformationStep extends LogicalStep {
 
     @Override
     public List<LogicalStep> getPreviousSteps() {
+        if(previous == null){
+            return new ArrayList<>();
+        }
         return Arrays.asList(previous);
     }
 

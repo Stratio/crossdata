@@ -96,6 +96,10 @@ public class Join extends UnionStep {
         sourceIdentifiers.add(id);
     }
 
+    public void addSourceIdentifier(List<String> ids) {
+        sourceIdentifiers.addAll(ids);
+    }
+
     /**
      * Get the Identifiers.
      * @return List of logical step identifiers involved in the join.

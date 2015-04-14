@@ -21,6 +21,7 @@ package com.stratio.crossdata.core.structures;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import com.stratio.crossdata.common.data.JoinType;
@@ -34,41 +35,43 @@ import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
  */
 public class InnerJoin implements Serializable {
 
-    private TableName tableName;
+    private final List<TableName> tableNames = new ArrayList<>();
 
     private final List<AbstractRelation> relations = new ArrayList<>();
 
     private JoinType type;
 
-    private InnerJoin(TableName tableName) {
-        this.tableName = tableName;
+    private InnerJoin(List<TableName> tableNames) {
+        LinkedHashSet setOfTables = new LinkedHashSet<>();
+        setOfTables.addAll(tableNames);
+        this.tableNames.addAll(setOfTables);
     }
 
     /**
      * Constructor class.
-     * @param tableName The table name of the join.
+     * @param tableNames The table names of the join.
      * @param joinRelations The list of relations of the join.
      */
-    public InnerJoin(TableName tableName, List<AbstractRelation> joinRelations) {
-        this(tableName);
+    public InnerJoin(List<TableName> tableNames, List<AbstractRelation> joinRelations) {
+        this(tableNames);
         this.relations.addAll(joinRelations);
         this.type=JoinType.INNER;
     }
 
     /**
      * Constructor class.
-     * @param tableName The table name of the join.
+     * @param tableNames The table names of the join.
      * @param joinRelations The list of relations of the join.
      * @param type The type of the join.
      */
-    public InnerJoin(TableName tableName, List<AbstractRelation> joinRelations, JoinType type) {
-        this(tableName);
+    public InnerJoin(List<TableName> tableNames, List<AbstractRelation> joinRelations, JoinType type) {
+        this(tableNames);
         this.relations.addAll(joinRelations);
         this.type=type;
     }
 
-    public TableName getTablename() {
-        return tableName;
+    public List<TableName> getTableNames() {
+        return tableNames;
     }
 
     public List<AbstractRelation> getRelations() {
@@ -89,13 +92,44 @@ public class InnerJoin implements Serializable {
      */
     public List<Relation> getOrderedRelations() {
         List<Relation> orderedRelations = new ArrayList<>();
-        for(AbstractRelation relation: relations){
-            orderedRelations.addAll(orderRelation(relation));
+        for(AbstractRelation r: relations){
+            for(TableName tn: tableNames){
+                List<Relation> ars = orderRelation(r, tn);
+                if((ars != null) && (!ars.isEmpty())){
+                    for(Relation ar: ars){
+                        int pos = determinePosition(orderedRelations, ar);
+                        orderedRelations.add(pos, ar);
+                    }
+                    break;
+                }
+            }
         }
         return orderedRelations;
     }
 
-    private List<Relation> orderRelation(AbstractRelation abstractRelation) {
+    private int determinePosition(List<Relation> orderedRelations, Relation ar) {
+        int pos = 0;
+        for(Relation r: orderedRelations){
+            int index1 = tableNames.indexOf(r.getLeftTerm().getTableName());
+            int index2 = tableNames.indexOf(ar.getLeftTerm().getTableName());
+            if(index1 > index2){
+                break;
+            } else if(index1 == index2){
+                int index3 = tableNames.indexOf(r.getRightTerm().getTableName());
+                int index4 = tableNames.indexOf(ar.getRightTerm().getTableName());
+                if(index3 > index4){
+                    break;
+                } else {
+                    pos++;
+                }
+            } else {
+                pos++;
+            }
+        }
+        return pos;
+    }
+
+    private List<Relation> orderRelation(AbstractRelation abstractRelation, TableName tableName) {
         List<Relation> orderedRelations = new ArrayList<>();
         if(abstractRelation instanceof Relation){
             Relation relationConjunction = (Relation) abstractRelation;
@@ -103,22 +137,25 @@ public class InnerJoin implements Serializable {
                     relationConjunction.getLeftTerm(),
                     relationConjunction.getOperator(),
                     relationConjunction.getRightTerm());
-            String joinTable = tableName.getQualifiedName();
+            String table = tableName.getQualifiedName();
+            String leftTable = relationConjunction.getLeftTerm().getColumnName().getTableName().getQualifiedName();
             String rightTable = relationConjunction.getRightTerm().getColumnName().getTableName().getQualifiedName();
-            if(!joinTable.equals(rightTable)){
+            if(table.equals(leftTable)){
+                orderedRelations.add(orderedRelation);
+            } else if (table.equals(rightTable)){
                 orderedRelation = new Relation(
                         relationConjunction.getRightTerm(),
                         relationConjunction.getOperator(),
                         relationConjunction.getLeftTerm());
+                orderedRelations.add(orderedRelation);
             }
-            orderedRelations.add(orderedRelation);
         } else if(abstractRelation instanceof RelationDisjunction) {
             RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
             for(AbstractRelation innerRelation: relationDisjunction.getLeftRelations()){
-                orderedRelations.addAll(orderRelation(innerRelation));
+                orderedRelations.addAll(orderRelation(innerRelation, tableName));
             }
             for(AbstractRelation innerRelation: relationDisjunction.getRightRelations()){
-                orderedRelations.addAll(orderRelation(innerRelation));
+                orderedRelations.addAll(orderRelation(innerRelation, tableName));
             }
         }
         return orderedRelations;
@@ -143,7 +180,17 @@ public class InnerJoin implements Serializable {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(tableName);
+        List<TableName> tables = new ArrayList<>();
+        tables.addAll(tableNames);
+        tables.remove(0);
+        Iterator<TableName> iter = tables.iterator();
+        while(iter.hasNext()){
+            TableName tableName = iter.next();
+            sb.append(tableName);
+            if(iter.hasNext()){
+                sb.append(", ");
+            }
+        }
         sb.append(" ON ");
         Iterator<AbstractRelation> it = relations.iterator();
         while (it.hasNext()) {

@@ -101,7 +101,7 @@ public class Select extends TransformationStep {
      */
     public List<Selector> getOutputSelectorOrder(){
         List<Selector> result = new ArrayList<>();
-        for(Selector selector : columnMap.keySet()){
+        for(Selector selector: columnMap.keySet()){
             result.add(selector);
         }
         return result;

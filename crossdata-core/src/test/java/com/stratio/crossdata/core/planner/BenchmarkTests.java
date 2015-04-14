@@ -51,7 +51,6 @@ import com.stratio.crossdata.core.MetadataManagerTestHelper;
 public class BenchmarkTests extends PlannerBaseTest {
 
     private ConnectorMetadata connector1 = null;
-    private ConnectorMetadata connector2 = null;
 
     private ClusterName clusterName = null;
 
@@ -102,17 +101,8 @@ public class BenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_NON_INDEXED_LIKE);
         operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
         operationsC1.add(Operations.FILTER_NON_INDEXED_LT);
+        operationsC1.add(Operations.SELECT_INNER_JOIN);
 
-        //Streaming connector.
-        Set<Operations> operationsC2 = new HashSet<>();
-        operationsC2.add(Operations.PROJECT);
-        operationsC2.add(Operations.SELECT_OPERATOR);
-        operationsC2.add(Operations.FILTER_PK_EQ);
-        operationsC2.add(Operations.SELECT_INNER_JOIN);
-        operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
-        operationsC2.add(Operations.INSERT);
-        operationsC2.add(Operations.FILTER_DISJUNCTION);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -142,10 +132,8 @@ public class BenchmarkTests extends PlannerBaseTest {
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
-        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName,
-                clusterWithDefaultPriority, operationsC2, "actorRef2", new ArrayList<FunctionType>());
 
-        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName(), connector2.getName());
+        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName());
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         createTestTables(catalogName);
     }
@@ -359,7 +347,30 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "l_returnflag,"
                         + "l_linestatus;";
 
+
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ1", false, false, lineitem);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+/*    @Test
+    public void testQ02VerySimple() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], "
+                + "SELECT s_acctbal, s_name, p_partkey, p_mfgr, s_address, s_phone, s_comment "
+                + "FROM part, supplier, partsupp "
+                + "WHERE  p_partkey = ps_partkey "
+                + "AND s_suppkey = ps_suppkey "
+                + "AND p_size = 15 "
+                + "AND p_type LIKE '%BRASS' "
+                + "AND ps_supplycost = 25 "
+                + "ORDER BY s_acctbal desc, s_name, p_partkey;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testQ02VerySimple", false, false, part, supplier,partsupp);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -1275,7 +1286,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
+    }*/
 
 
 }
