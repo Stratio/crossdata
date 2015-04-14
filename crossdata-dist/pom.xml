@@ -216,8 +216,8 @@
                     <plugin>
                         <groupId>com.stratio.mojo.unix</groupId>
                         <artifactId>unix-maven-plugin</artifactId>
-                        <version>1.0-alpha-9</version>
-                        <!--<version>1.0-SNAPSHOT</version>-->
+			<version>1.1.1</version>
+                        <!--<version>1.0-alpha-9</version>-->
                         <extensions>true</extensions>
 			<inherited>false</inherited>
                         <configuration>
@@ -295,8 +295,5 @@
             </build>
         </profile>
     </profiles>
-
-
-
 
 </project>

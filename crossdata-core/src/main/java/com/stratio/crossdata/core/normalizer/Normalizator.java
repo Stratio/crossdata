@@ -19,6 +19,7 @@
 package com.stratio.crossdata.core.normalizer;
 
 import static com.stratio.crossdata.common.statements.structures.SelectorType.FUNCTION;
+import static com.stratio.crossdata.common.statements.structures.SelectorType.RELATION;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -462,7 +463,8 @@ public class Normalizator {
 
         while (normalizedSelectExpressionIterator.hasNext() && !aliasFound){
             referencedSelector = normalizedSelectExpressionIterator.next();
-            if( referencedSelector.getType() != SelectorType.COLUMN && referencedSelector.getAlias() != null && referencedSelector.getAlias().equals(selectorAlias)){
+            if( referencedSelector.getType() != SelectorType.COLUMN && referencedSelector.getAlias() != null && referencedSelector.getAlias().equals(
+                            selectorAlias)){
                 aliasFound = true;
             }
         }
@@ -1194,7 +1196,7 @@ public class Normalizator {
                 }
                 String firstType = rightTerm.getFirstValue().getType().toString();
                 String lastType = rightTerm.getLastValue().getType().toString();
-                if (( !firstType.equals(leftType) && !firstType.equals(FUNCTION.toString())) || (!lastType.equals(leftType) && !lastType.equals(FUNCTION.toString())) ) {
+                if (( !firstType.equals(leftType) && !firstType.equals(FUNCTION.toString()) && !firstType.equals(RELATION.toString()) ) || (!lastType.equals(leftType) && !lastType.equals(FUNCTION.toString()) && !lastType.equals(RELATION.toString()) ) ) {
                     throw new NotMatchDataTypeException(leftTerm.getColumnName());
                 }
             } else {
