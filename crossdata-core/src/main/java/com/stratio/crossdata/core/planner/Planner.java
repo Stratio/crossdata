@@ -1923,61 +1923,110 @@ public class Planner {
             Join join = getJoin(queryJoin.getType(), query.getStatement().getWindow() != null);
 
             StringBuilder sb = new StringBuilder();
-            Relation firstRelation = (Relation) queryJoin.getRelations().get(0);
-            sb.append(firstRelation.getLeftTerm().getTableName().getQualifiedName()).append("$")
-                            .append(firstRelation.getRightTerm().getTableName().getQualifiedName());
 
-            //Attach to input tables path
-            LogicalStep t1 = stepMap.get(firstRelation.getLeftTerm().getSelectorTablesAsString());
-            while(t1.getNextStep() != null){
-                t1 = t1.getNextStep();
-            }
-            LogicalStep t2 = stepMap.get(firstRelation.getRightTerm().getSelectorTablesAsString());
-            while(t2.getNextStep() != null){
-                t2 = t2.getNextStep();
-            }
+            for(AbstractRelation ab: queryJoin.getRelations()){
+                Relation rel = (Relation) ab;
 
-            List<AbstractRelation> relations = queryJoin.getRelations();
-            for (AbstractRelation ar: relations) {
-                Relation r = (Relation) ar;
+                if(sb.length() > 0){
+                    sb.append(" & ");
+                }
+
+                sb.append(rel.getLeftTerm().getTableName().getQualifiedName()).append("$")
+                        .append(rel.getRightTerm().getTableName().getQualifiedName());
+
+                //Attach to input tables path
+                LogicalStep t1 = stepMap.get(rel.getLeftTerm().getSelectorTablesAsString());
+                while(t1.getNextStep() != null){
+                    t1 = t1.getNextStep();
+                }
+                LogicalStep t2 = stepMap.get(rel.getRightTerm().getSelectorTablesAsString());
+                while(t2.getNextStep() != null){
+                    t2 = t2.getNextStep();
+                }
 
                 if (Filter.class.isInstance(t1)) {
-                    join.addSourceIdentifier(
-                                    ((Filter) t1).getRelation().getLeftTerm().getTableName().getQualifiedName());
+                    String qualifiedTableName = ((Filter) t1).getRelation().getLeftTerm()
+                            .getTableName().getQualifiedName();
+                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
+                        join.addSourceIdentifier(qualifiedTableName);
+                    }
                 } else if (Project.class.isInstance(t1)) {
-                    join.addSourceIdentifier(((Project) t1).getTableName().getQualifiedName());
+                    String qualifiedTableName = ((Project) t1).getTableName().getQualifiedName();
+                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
+                        join.addSourceIdentifier(qualifiedTableName);
+                    }
                 } else if (Join.class.isInstance(t1)) {
-                    Join join1 = (Join) t1;
-                    join.addSourceIdentifier(join1.getSourceIdentifiers());
+                    List<String> si = ((Join) t1).getSourceIdentifiers();
+                    for(String t: si){
+                        if(!join.getSourceIdentifiers().contains(t)){
+                            join.addSourceIdentifier(t);
+                        }
+                    }
                 } else {
-                    join.addSourceIdentifier(r.getLeftTerm().getTableName().getQualifiedName());
+                    String qualifiedTableName = rel.getLeftTerm().getTableName().getQualifiedName();
+                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
+                        join.addSourceIdentifier(qualifiedTableName);
+                    }
                 }
 
                 if (Filter.class.isInstance(t2)) {
-                    join.addSourceIdentifier(
-                            ((Filter) t2).getRelation().getLeftTerm().getTableName().getQualifiedName());
+                    String qualifiedTableName = ((Filter) t2).getRelation().getLeftTerm().getTableName().getQualifiedName();
+                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
+                        join.addSourceIdentifier(qualifiedTableName);
+                    }
                 } else if (Project.class.isInstance(t2)) {
-                    join.addSourceIdentifier(((Project) t2).getTableName().getQualifiedName());
+                    String qualifiedTableName = ((Project) t2).getTableName().getQualifiedName();
+                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
+                        join.addSourceIdentifier(qualifiedTableName);
+                    }
                 } else if (Join.class.isInstance(t2)) {
-                    Join join2 = (Join) t2;
-                    join.addSourceIdentifier(join2.getSourceIdentifiers());
+                    List<String> si = ((Join) t2).getSourceIdentifiers();
+                    for(String t: si){
+                        if(!join.getSourceIdentifiers().contains(t)){
+                            join.addSourceIdentifier(t);
+                        }
+                    }
                 } else {
-                    join.addSourceIdentifier(r.getRightTerm().getTableName().getQualifiedName());
+                    String qualifiedTableName = rel.getRightTerm().getTableName().getQualifiedName();
+                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
+                        join.addSourceIdentifier(qualifiedTableName);
+                    }
+                }
+
+                List<Relation> or = queryJoin.getOrderedRelations();
+                for(Relation r: or){
+                    if(!join.getJoinRelations().contains(r)){
+                        join.addJoinRelation(r);
+                    }
+                }
+
+                if (t1.getNextStep() != null) {
+                    if(!t1.equals(join)){
+                        t1.getNextStep().setNextStep(join);
+                    }
+                } else {
+                    if(!t1.equals(join)){
+                        t1.setNextStep(join);
+                    }
+                }
+                if (t2.getNextStep() != null) {
+                    if(!t2.equals(join)){
+                        t2.getNextStep().setNextStep(join);
+                    }
+                } else {
+                    if(!t2.equals(join)){
+                        t2.setNextStep(join);
+                    }
+                }
+
+                List<LogicalStep> previousSteps = join.getPreviousSteps();
+                if((!previousSteps.contains(t1)) && (!t1.equals(join))){
+                    join.addPreviousSteps(t1);
+                }
+                if((!previousSteps.contains(t2)) && (!t2.equals(join))){
+                    join.addPreviousSteps(t2);
                 }
             }
-            join.addJoinRelations(queryJoin.getOrderedRelations());
-
-            if (t1.getNextStep() != null) {
-                t1.getNextStep().setNextStep(join);
-            } else {
-                t1.setNextStep(join);
-            }
-            if (t2.getNextStep() != null) {
-                t2.getNextStep().setNextStep(join);
-            } else {
-                t2.setNextStep(join);
-            }
-            join.addPreviousSteps(t1, t2);
             stepMap.put(sb.toString(), join);
         }
         return stepMap;
