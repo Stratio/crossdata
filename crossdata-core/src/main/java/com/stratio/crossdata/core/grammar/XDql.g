@@ -908,8 +908,13 @@ getRelation[TableName tablename] returns [Relation mrel]
     @after{
         $mrel = new Relation(s, operator, rs);
     }:
-    s=getSelector[workaroundTable] operator=getComparator rs=getInterval[workaroundTable]
-     | s=getSelector[workaroundTable] operator=getComparator rs=getSelector[workaroundTable]
+    s=getSelector[workaroundTable] ( ( operator=getBetweenOperator rs=getInterval[workaroundTable])
+                                       | operator=getComparator rs=getSelector[workaroundTable] )
+;
+
+getBetweenOperator returns [Operator op]:
+ T_BETWEEN {$op = Operator.BETWEEN;}
+ | T_NOT T_BETWEEN {$op = Operator.NOT_BETWEEN;}
 ;
 
 getFields[MutablePair pair]:
@@ -972,7 +977,7 @@ getSelector[TableName tablename] returns [Selector sel]
         }
     }:
     (T_START_PARENTHESIS
-        (selectStmnt=selectStatement { firstSelector = new ExtendedSelectSelector(selectStmnt, sessionCatalog); }
+        (selectStmnt=selectStatement { firstSelector  = new ExtendedSelectSelector(selectStmnt, sessionCatalog); }
         | firstSelector=getSelector[tablename]) { firstSelector.setParenthesis(true); }
     T_END_PARENTHESIS
     | firstSelector=getFunctionSelector[tablename]
@@ -1073,16 +1078,45 @@ getInterval[TableName tablename] returns [Selector sel]
     @after{
            sel = new GroupSelector(workaroundTable,firstSelector,lastSelector);
     }:
-    (floatingNumber=T_FLOATING {firstSelector = new FloatingPointSelector( workaroundTable,$floatingNumber.text);}
-        | constant=T_CONSTANT {firstSelector = new IntegerSelector(workaroundTable, $constant.text);}
-        | qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(workaroundTable, $qLiteral.text);}
-        | fs=getFunctionSelector[tablename] { firstSelector = fs; } )
+    ( qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(workaroundTable, $qLiteral.text);}
+        | as= getArithmeticRelationSelector[workaroundTable] { firstSelector = as; } )
     T_AND
-    (floatingNumber=T_FLOATING {lastSelector = new FloatingPointSelector(workaroundTable,$floatingNumber.text);}
-        | constant=T_CONSTANT {lastSelector = new IntegerSelector(workaroundTable,$constant.text);}
-        | qLiteral=QUOTED_LITERAL {lastSelector = new StringSelector(workaroundTable,$qLiteral.text);}
-        | fs=getFunctionSelector[tablename] { lastSelector = fs; } )
+    ( qLiteral=QUOTED_LITERAL {lastSelector = new StringSelector(workaroundTable, $qLiteral.text);}
+            | as= getArithmeticRelationSelector[workaroundTable] { lastSelector = as; } )
 ;
+
+getArithmeticRelationSelector[TableName tablename] returns [Selector mrel]
+    @init{
+            workaroundTable = tablename;
+            boolean relationFound = false;
+    }
+    @after{
+        if (relationFound) {
+            $mrel = new RelationSelector(tablename, new Relation(s, operator, ss));
+        }else{
+            $mrel=s;
+        }
+    }:
+    s=getArithmeticSelector[workaroundTable] ( operator=getOperator ss=getArithmeticRelationSelector[workaroundTable] {relationFound = true;} )?
+;
+
+getArithmeticSelector[TableName tablename] returns [Selector selector]
+    @init{
+        Selector defaultSelector = null;
+    }
+    @after{
+        selector = defaultSelector;
+    }:
+    (floatingNumber=T_FLOATING {defaultSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
+    | constant=T_CONSTANT {defaultSelector = new IntegerSelector(tablename, $constant.text);}
+    | fs=getFunctionSelector[tablename] {defaultSelector = fs;} 
+    )
+;
+
+
+
+
+
 
 getAssignment[TableName tablename] returns [Relation assign]
     @init{
@@ -1127,12 +1161,10 @@ getComparator returns [Operator op]:
     | T_NOT_EQUAL {$op = Operator.DISTINCT;}
     | T_LIKE {$op = Operator.LIKE;}
     | T_MATCH {$op = Operator.MATCH;}
-    | T_BETWEEN {$op = Operator.BETWEEN;}
     | T_IN {$op = Operator.IN;}
     | T_NOT (
             T_LIKE {$op = Operator.NOT_LIKE;}
             | T_IN {$op = Operator.NOT_IN;}
-            | T_BETWEEN {$op = Operator.NOT_BETWEEN;}
             )
 ;
 

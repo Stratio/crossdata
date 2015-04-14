@@ -100,7 +100,8 @@ public class BenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_NON_INDEXED_BETWEEN);
         operationsC1.add(Operations.FILTER_NON_INDEXED_NOT_LIKE);
         operationsC1.add(Operations.FILTER_NON_INDEXED_LIKE);
-
+        operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_LT);
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -389,7 +390,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-    /*
+
     @Test
     public void testQ02() throws ManifestException {
 
@@ -478,6 +479,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
+    //Exists is not supported
     @Test
     public void testQ04() throws ManifestException {
 
@@ -510,6 +512,8 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
+
+
 
     @Test
     public void testQ05() throws ManifestException {
@@ -1272,6 +1276,6 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
-*/
+
 
 }
