@@ -20,6 +20,7 @@ package com.stratio.crossdata.core.planner;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -49,6 +51,11 @@ import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class BenchmarkTests extends PlannerBaseTest {
+
+    /**
+     * Class logger.
+     */
+    private static final Logger LOG = Logger.getLogger(BenchmarkTests.class);
 
     private ConnectorMetadata connector1 = null;
 
@@ -102,6 +109,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
         operationsC1.add(Operations.FILTER_NON_INDEXED_LT);
         operationsC1.add(Operations.SELECT_INNER_JOIN);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_GT);
 
 
         String strClusterName = "TestCluster1";
@@ -352,9 +360,10 @@ public class BenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
-/*    @Test
+    @Test
     public void testQ02VerySimple() throws ManifestException {
 
         init();
@@ -374,6 +383,16 @@ public class BenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 3, "3 initial steps were expected");
+        assertEquals(
+                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep().getPreviousSteps().size(),
+                3,
+                "3 previous steps were expected");
+        assertEquals(
+                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep().getNextStep().getNextStep().getNextStep(),
+                null,
+                "Wrong workflow");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -399,29 +418,58 @@ public class BenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
-
     @Test
-    public void testQ02() throws ManifestException {
+    public void testQ02Reduced() throws ManifestException {
 
         init();
 
         String inputText = "[demo], SELECT "
-                        + "s_acctbal,"
-                        + "s_name,"
-                        + "n_name,"
-                        + "p_partkey,"
-                        + "p_mfgr,"
-                        + "s_address,"
-                        + "s_phone,"
+                + "s_acctbal,"
+                + "s_name,"
+                + "p_partkey,"
+                + "p_mfgr,"
+                + "s_address,"
+                + "s_phone,"
+                + "s_comment "
+                + "FROM part, supplier, partsupp "
+                + "WHERE "
+                + "p_partkey = ps_partkey "
+                + "AND s_suppkey = ps_suppkey "
+                + "AND p_size = 15 "
+                + "AND p_type LIKE '%BRASS' "
+                + "AND ps_supplycost = "
+                    + "(SELECT "
+                    + "min(ps_supplycost) "
+                    + "FROM partsupp, supplier "
+                    + "WHERE p_partkey = ps_partkey AND s_suppkey = ps_suppkey) "
+                + "ORDER BY "
+                + "s_acctbal desc, "
+                + "s_name, "
+                + "p_partkey;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ02Reduced", false, true,
+                part, supplier,partsupp, region, nation);
+        assertNull(queryWorkflow, "Workflow should be null.");
+    }
+
+    @Test
+    public void testQ02Rewritten() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT "
+                        + "s_acctbal, "
+                        + "s_name, "
+                        + "n_name, "
+                        + "p_partkey, "
+                        + "p_mfgr, "
+                        + "s_address, "
+                        + "s_phone, "
                         + "s_comment "
-                        + "FROM "
-                        + "part,"
-                        + "supplier,"
-                        + "partsupp,"
-                        + "nation,"
-                        + "region "
+                        + "FROM part, supplier, partsupp, nation, region "
                         + "WHERE "
                         + "p_partkey = ps_partkey "
                         + "AND s_suppkey = ps_suppkey "
@@ -430,18 +478,16 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "AND s_nationkey = n_nationkey "
                         + "AND n_regionkey = r_regionkey "
                         + "AND r_name = 'EUROPE' "
-                        + "AND ps_supplycost = ( "
-                        + "SELECT "
-                        + "min(ps_supplycost)"
-                        + "FROM "
-                        + "partsupp, supplier,"
-                        + "nation, region "
-                        + "WHERE "
-                        + "p_partkey = ps_partkey "
-                        + "AND s_suppkey = ps_suppkey "
-                        + "AND s_nationkey = n_nationkey "
-                        + "AND n_regionkey = r_regionkey "
-                        + "AND r_name = 'MOZAMBIQUE' "
+                        + "AND ps_supplycost = ("
+                            + "SELECT "
+                            + "min(ps_supplycost) "
+                            + "FROM part, partsupp, supplier, nation, region "
+                            + "WHERE "
+                            + "p_partkey = ps_partkey "
+                            + "AND s_suppkey = ps_suppkey "
+                            + "AND s_nationkey = n_nationkey "
+                            + "AND n_regionkey = r_regionkey "
+                            + "AND r_name = 'MOZAMBIQUE' "
                         + ") "
                         + "ORDER BY "
                         + "s_acctbal desc, "
@@ -449,10 +495,57 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "s_name, "
                         + "p_partkey;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ2", false, true, part, supplier,partsupp, region, nation);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ02Rewritten", false, false,
+                part, supplier,partsupp, region, nation);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+    @Test
+    public void testQ02() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT "
+                + "s_acctbal, "
+                + "s_name, "
+                + "n_name, "
+                + "p_partkey, "
+                + "p_mfgr, "
+                + "s_address, "
+                + "s_phone, "
+                + "s_comment "
+                + "FROM part, supplier, partsupp, nation, region "
+                + "WHERE "
+                + "p_partkey = ps_partkey "
+                + "AND s_suppkey = ps_suppkey "
+                + "AND p_size = 15 "
+                + "AND p_type LIKE '%BRASS' "
+                + "AND s_nationkey = n_nationkey "
+                + "AND n_regionkey = r_regionkey "
+                + "AND r_name = 'EUROPE' "
+                + "AND ps_supplycost = ("
+                + "SELECT "
+                + "min(ps_supplycost) "
+                + "FROM partsupp, supplier, nation, region "
+                + "WHERE "
+                + "p_partkey = ps_partkey "
+                + "AND s_suppkey = ps_suppkey "
+                + "AND s_nationkey = n_nationkey "
+                + "AND n_regionkey = r_regionkey "
+                + "AND r_name = 'MOZAMBIQUE' "
+                + ") "
+                + "ORDER BY "
+                + "s_acctbal desc, "
+                + "n_name, "
+                + "s_name, "
+                + "p_partkey;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ2", false, true,
+                part, supplier,partsupp, region, nation);
+        assertNull(queryWorkflow, "Workflow should be null.");
     }
 
     @Test
@@ -484,10 +577,12 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "o_orderdate;";
         
         
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ3", false, true, customer, orders,lineitem);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ3", false, false, customer,
+                orders,lineitem);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     //Exists is not supported
@@ -504,15 +599,9 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "WHERE "
                         + "o_orderdate >=  date(\"1995-03-15\", \"yyyy-mm-dd\") "
                         + "AND o_orderdate < date(\"1995-03-15\", \"yyyy-mm-dd\") + interval(3, \"month\") "
-                        + "AND exists ( "
-                        + "SELECT "
-                        + "* "
-                        + "FROM "
-                        + "lineitem "
-                        + "WHERE "
-                        + "l_orderkey = o_orderkey "
-                        + "AND l_commitdate < l_receiptdate "
-                        + ") "
+                        + "AND exists ("
+                            + "SELECT * FROM lineitem "
+                            + "WHERE l_orderkey = o_orderkey AND l_commitdate < l_receiptdate) "
                         + "GROUP BY "
                         + "o_orderpriority "
                         + "ORDER BY "
@@ -522,6 +611,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -559,6 +649,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -580,6 +671,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -629,6 +721,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -693,6 +786,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -736,6 +830,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -779,6 +874,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -815,6 +911,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -855,6 +952,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -885,6 +983,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -903,6 +1002,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -928,6 +1028,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -944,6 +1045,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -960,6 +1062,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -976,6 +1079,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -1019,6 +1123,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -1048,6 +1153,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -1092,6 +1198,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -1139,6 +1246,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -1187,6 +1295,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -1238,6 +1347,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -1286,7 +1396,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }*/
-
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
 
 }

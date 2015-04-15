@@ -267,7 +267,7 @@ public class Planner {
         //Find first UnionStep
         List<UnionStep> mergeSteps = new ArrayList<>();
         Map<UnionStep, ExecutionPath[]> pathsMap=new HashMap<>();
-        ExecutionPath[] paths = null;
+        ExecutionPath[] paths;
         QueryWorkflow first = null;
         Map<PartialResults, ExecutionWorkflow> triggerResults = new LinkedHashMap<>();
         Map<UnionStep, ExecutionWorkflow> triggerWorkflow = new LinkedHashMap<>();
@@ -860,25 +860,6 @@ public class Planner {
     }
 
     private List<SelectStatement> removeDuplicateSelects(List<SelectStatement> partialSelectList) {
-
-        /*
-        for (SelectStatement ss1: partialSelectList){
-            Iterator<SelectStatement> iter = partialSelectList.iterator();
-            SelectStatement ss2 = null;
-            while (iter.hasNext()){
-                ss2 = iter.next();
-                if (ss1!=ss2){
-                    if (ss1.toString().equals(ss2.toString())){
-                        break;
-                    }
-                }
-            }
-            partialSelectList.remove(ss2);
-        }
-
-        return partialSelectList;
-        */
-
         List<SelectStatement> result = new ArrayList<>();
 
         for(SelectStatement ss1: partialSelectList){
@@ -897,7 +878,6 @@ public class Planner {
     }
 
     private LogicalWorkflow rearrangeWorkflow(LogicalWorkflow workflow, LogicalWorkflow subqueryWorkflow) {
-
         if (workflow.getInitialSteps().size() == 1) {
             ((Project) workflow.getInitialSteps().get(0)).setPrevious(subqueryWorkflow.getLastStep());
             subqueryWorkflow.getLastStep().setNextStep(workflow.getInitialSteps().get(0));
@@ -978,12 +958,12 @@ public class Planner {
     }
 
     private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId) throws PlanningException{
-        MetadataWorkflow metadataWorkflow = null;
+        MetadataWorkflow metadataWorkflow;
         // Create parameters for metadata workflow
         CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
         String actorRefUri = null;
         ResultType type = ResultType.RESULTS;
-        ExecutionType executionType = null;
+        ExecutionType executionType;
         ClusterMetadata clusterMetadata = null;
 
         if (!createTableStatement.isExternal()) {
@@ -1735,8 +1715,13 @@ public class Planner {
      * @param projectSteps The map associating table names to Project steps.
      * @param query        The query to be planned.
      */
-    private void addProjectedColumns(Map<String, LogicalStep> projectSteps, SelectValidatedQuery query) {
+    private void addProjectedColumns(Map<String, LogicalStep> projectSteps, SelectValidatedQuery query)
+            throws PlanningException {
         for (ColumnName cn: query.getColumns()) {
+            if(!projectSteps.containsKey(cn.getTableName().getQualifiedName())){
+                throw new PlanningException("Table " + cn.getTableName().getQualifiedName() +
+                        " is unknown in query: " + query.toString());
+            }
             Project.class.cast(projectSteps.get(cn.getTableName().getQualifiedName())).addColumn(cn);
         }
     }
@@ -2073,25 +2058,29 @@ public class Planner {
             Map<String, TableMetadata> tableMetadataMap) {
 
         LinkedHashMap<String, LogicalStep> projects = new LinkedHashMap<>();
-        //for (TableName tn: query.getTables()) {
-        for (TableName tn: query.getStatement().getFromTables()) {
-            Project p;
-            if (tn.isVirtual()) {
-                p = new Project(
-                        Collections.singleton(Operations.PROJECT),
-                        tn,
-                        new ClusterName(Constants.VIRTUAL_CATALOG_NAME));
-                projects.put(tn.getQualifiedName(), p);
-            } else {
-                p = new Project(
-                        Collections.singleton(Operations.PROJECT),
-                        tn,
-                        tableMetadataMap.get(tn.getQualifiedName()).getClusterRef());
-
-            }
+        List<TableName> queryTables = query.getStatement().getFromTables();
+        for (TableName tn: queryTables) {
+            Project p = generateProject(tn, tableMetadataMap);
             projects.put(tn.getQualifiedName(), p);
         }
         return projects;
+    }
+
+    private Project generateProject(TableName tn, Map<String, TableMetadata> tableMetadataMap){
+        Project p;
+        if (tn.isVirtual()) {
+            p = new Project(
+                    Collections.singleton(Operations.PROJECT),
+                    tn,
+                    new ClusterName(Constants.VIRTUAL_CATALOG_NAME));
+        } else {
+            p = new Project(
+                    Collections.singleton(Operations.PROJECT),
+                    tn,
+                    tableMetadataMap.get(tn.getQualifiedName()).getClusterRef());
+
+        }
+        return p;
     }
 
     /**
@@ -2222,24 +2211,6 @@ public class Planner {
                         }
                     }
                 }
-                /*
-                for (InnerJoin innerJoin: selectStatement.getJoinList()) {
-                    TableMetadata metadataJoin = tableMetadataMap
-                            .get(innerJoin.getTablename().getQualifiedName());
-                    for (Map.Entry<ColumnName, ColumnMetadata> column: metadataJoin.getColumns().entrySet()) {
-                        ColumnSelector cs = new ColumnSelector(column.getKey());
-
-                        String alias = column.getKey().getName();
-                        if (aliasMap.containsValue(alias)) {
-                            alias = column.getKey().getTableName().getName() + "_" + column.getKey().getName();
-                        }
-
-                        aliasMap.put(cs, alias);
-                        typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-                        typeMap.put(alias, column.getValue().getColumnType());
-                    }
-                }
-                */
             }
         }
 
