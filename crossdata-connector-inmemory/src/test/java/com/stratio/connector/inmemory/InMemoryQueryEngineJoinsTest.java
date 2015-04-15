@@ -44,7 +44,7 @@ import static org.testng.Assert.fail;
  */
 public class InMemoryQueryEngineJoinsTest extends InMemoryQueryEngineTestParent {
 
-    @Test
+    //@Test
     public void simpleJoin() {
 
         TableMetadata usersTable = buildUsersTable();
