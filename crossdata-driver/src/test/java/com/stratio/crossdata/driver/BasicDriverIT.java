@@ -67,6 +67,12 @@ public class BasicDriverIT {
         Thread.sleep(4000);
     }
 
+    @AfterClass
+    public void clean(){
+        driver.resetServerdata("testSession");
+
+    }
+
     @Test(timeOut = 8000)
     public void testConnect() throws Exception {
         driver = new BasicDriver();
