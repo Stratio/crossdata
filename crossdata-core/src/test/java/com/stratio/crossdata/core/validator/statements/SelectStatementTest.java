@@ -722,7 +722,9 @@ public class SelectStatementTest extends BasicValidatorTest {
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
 
-        InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(new TableName("demo", "users"));
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -765,7 +767,10 @@ public class SelectStatementTest extends BasicValidatorTest {
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
 
-        InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(new TableName("unknown", "users"));
+        joinTables.add(new TableName("demo", "users"));
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -808,7 +813,10 @@ public class SelectStatementTest extends BasicValidatorTest {
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
 
-        InnerJoin join = new InnerJoin(new TableName("unknown", "users"), joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(new TableName("demo", "users"));
+        joinTables.add(new TableName("unknown", "users"));
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -851,7 +859,10 @@ public class SelectStatementTest extends BasicValidatorTest {
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
 
-        InnerJoin join = new InnerJoin(new TableName("demo", "unknown"), joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(new TableName("demo", "users"));
+        joinTables.add(new TableName("demo", "unknown"));
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -894,7 +905,9 @@ public class SelectStatementTest extends BasicValidatorTest {
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
 
-        InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(new TableName("demo", "users"));
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -937,7 +950,9 @@ public class SelectStatementTest extends BasicValidatorTest {
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
 
-        InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(new TableName("demo", "users"));
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -980,7 +995,9 @@ public class SelectStatementTest extends BasicValidatorTest {
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
 
-        InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(new TableName("demo", "users"));
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -1023,7 +1040,9 @@ public class SelectStatementTest extends BasicValidatorTest {
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
 
-        InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(new TableName("demo", "users"));
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -1067,7 +1086,10 @@ public class SelectStatementTest extends BasicValidatorTest {
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
 
-        InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(new TableName("demo", "users"));
+        joinTables.add(new TableName("demo", "users_info"));
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         List<AbstractRelation> where = new ArrayList<>();
@@ -1119,7 +1141,10 @@ public class SelectStatementTest extends BasicValidatorTest {
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
 
-        InnerJoin join = new InnerJoin(new TableName("demo", "users"), joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(new TableName("demo", "users"));
+        joinTables.add(new TableName("demo", "users_info"));
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         List<AbstractRelation> where = new ArrayList<>();
@@ -1539,7 +1564,10 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Relation relation = new Relation(left, Operator.EQ, right);
         joinRelations.add(relation);
-        InnerJoin join = new InnerJoin(joinTable, joinRelations);
+        List<TableName> joinTables = new ArrayList<>();
+        joinTables.add(tablename);
+        joinTables.add(joinTable);
+        InnerJoin join = new InnerJoin(joinTables, joinRelations);
 
         List<AbstractRelation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
@@ -1676,7 +1704,7 @@ public class SelectStatementTest extends BasicValidatorTest {
                 + "demo.table3.surname, "
                 + "demo.table3.rating "
                 + "FROM demo.table3 "
-                + "WHERE demo.table3.surname IN ['Miller', 'Smith']";
+                + "WHERE demo.table3.surname IN ('Miller', 'Smith')";
 
         List<Selector> selectorList = new ArrayList<>();
         selectorList.add(new ColumnSelector(new ColumnName(null, "name")));

@@ -278,7 +278,7 @@ public class NormalizerTest {
         String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
                 + "WHERE demo.tableClients.colPlace = 'Madrid' "
                 + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses "
-                + "ORDER BY [demo.tableClients.year]";
+                + "ORDER BY demo.tableClients.year";
 
         // BASE QUERY
         BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
@@ -352,7 +352,7 @@ public class NormalizerTest {
                         + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.tableClients.clientId "
                         + "WHERE myCatalog.tableCostumers.colCity = 'Madrid' "
                         + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee "
-                        + "ORDER BY [myCatalog.tableCostumers.age]";
+                        + "ORDER BY myCatalog.tableCostumers.age";
 
         // BASE QUERY
         BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
@@ -373,7 +373,11 @@ public class NormalizerTest {
                 Operator.EQ,
                 new ColumnSelector(new ColumnName(null, "clientId")));
         joinRelations.add(relation);
-        InnerJoin innerJoin = new InnerJoin(new TableName("myCatalog", "tableCostumers"), joinRelations);
+
+        List<TableName> tables = new ArrayList<>();
+        tables.add(new TableName("demo", "tableClients"));
+        tables.add(new TableName("myCatalog", "tableCostumers"));
+        InnerJoin innerJoin = new InnerJoin(tables, joinRelations);
         selectStatement.addJoin(innerJoin);
 
 
@@ -444,7 +448,10 @@ public class NormalizerTest {
                         Operator.EQ,
                         new ColumnSelector(new ColumnName(null, "clientId")));
         joinRelations.add(relation);
-        InnerJoin innerJoin = new InnerJoin(new TableName("demo", "tableClients"), joinRelations);
+
+        List<TableName> tables = new ArrayList<>();
+        tables.add(new TableName("demo", "tableClients"));
+        InnerJoin innerJoin = new InnerJoin(tables, joinRelations);        
         selectStatement.addJoin(innerJoin);
 
 

@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -404,7 +405,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         try {
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
                     "qid", Arrays.asList(path),
-                    new HashMap<UnionStep, Set<ExecutionPath>>());
+                    new LinkedHashMap<UnionStep, LinkedHashSet<ExecutionPath>>());
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
         }
@@ -445,8 +446,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionPath path1 = new ExecutionPath(project1, filter, availableConnectors);
         ExecutionPath path2 = new ExecutionPath(project2, project2, availableConnectors);
 
-        HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
-        Set<ExecutionPath> paths = new HashSet<>();
+        HashMap<UnionStep, LinkedHashSet<ExecutionPath>> unions = new HashMap<>();
+        LinkedHashSet<ExecutionPath> paths = new LinkedHashSet<>();
         paths.add(path1);
         paths.add(path2);
         unions.put(join, paths);
@@ -557,8 +558,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionPath path1 = new ExecutionPath(project1, project1, availableConnectors);
         ExecutionPath path2 = new ExecutionPath(project2, project2, availableConnectors);
 
-        HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
-        Set<ExecutionPath> paths = new HashSet<>();
+        LinkedHashMap<UnionStep, LinkedHashSet<ExecutionPath>> unions = new LinkedHashMap<>();
+        LinkedHashSet<ExecutionPath> paths = new LinkedHashSet<>();
         paths.add(path1);
         paths.add(path2);
         unions.put(join, paths);
@@ -607,8 +608,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionPath path1 = new ExecutionPath(project1, filter, availableConnectors1);
         ExecutionPath path2 = new ExecutionPath(project2, project2, availableConnectors2);
 
-        HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
-        Set<ExecutionPath> paths = new HashSet<>();
+        LinkedHashMap<UnionStep, LinkedHashSet<ExecutionPath>> unions = new LinkedHashMap<>();
+        LinkedHashSet<ExecutionPath> paths = new LinkedHashSet<>();
         paths.add(path1);
         paths.add(path2);
         unions.put(join, paths);
@@ -669,8 +670,8 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionPath path1 = new ExecutionPath(project1, filter, availableConnectors1);
         ExecutionPath path2 = new ExecutionPath(project2, streamingWindow, availableConnectors2);
 
-        HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
-        Set<ExecutionPath> paths = new HashSet<>();
+        LinkedHashMap<UnionStep, LinkedHashSet<ExecutionPath>> unions = new LinkedHashMap<>();
+        LinkedHashSet<ExecutionPath> paths = new LinkedHashSet<>();
         paths.add(path1);
         paths.add(path2);
         unions.put(join, paths);

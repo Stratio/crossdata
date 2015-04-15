@@ -30,7 +30,7 @@ public class NotMatchDataTypeException extends ValidationException {
 
     /**
      * Constructor class.
-     * @param name The name od the column that cause the exception.
+     * @param name The name of the column that cause the exception.
      */
     public NotMatchDataTypeException(ColumnName name) {
         super(name + " doesn't match data type");

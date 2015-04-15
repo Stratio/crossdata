@@ -66,7 +66,7 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
         tableNames.add(stmt.getTableName());
         for(InnerJoin join :stmt.getJoinList()) {
             if (join != null) {
-                tableNames.add(join.getTablename());
+                tableNames.addAll(join.getTableNames());
             }
         }
         return tableNames;
