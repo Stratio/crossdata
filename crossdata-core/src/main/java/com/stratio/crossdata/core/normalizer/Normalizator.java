@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.core.normalizer;
 
+import static com.stratio.crossdata.common.statements.structures.SelectorType.FUNCTION;
+import static com.stratio.crossdata.common.statements.structures.SelectorType.RELATION;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -72,9 +75,6 @@ import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.Validator;
-
-import static com.stratio.crossdata.common.statements.structures.SelectorType.FUNCTION;
-import static com.stratio.crossdata.common.statements.structures.SelectorType.RELATION;
 
 /**
  * Normalizator Class.
@@ -221,11 +221,22 @@ public class Normalizator {
     }
 
     private void addImplicitJoins(List<InnerJoin> innerJoinList) {
-        /*
+
         if(fields.getImplicitWhere() == null || fields.getImplicitWhere().isEmpty()){
             return;
         }
 
+        for(InnerJoin join: innerJoinList){
+            List<TableName> tablesFromJoin = join.getTableNames();
+            for(Relation r: fields.getImplicitWhere()){
+                if(tablesFromJoin.contains(r.getLeftTerm().getTableName())
+                        || tablesFromJoin.contains(r.getRightTerm().getTableName())){
+                    join.addRelation(r);
+                }
+            }
+        }
+
+        /*
         // Clone normalized tables
         List<TableName> tableNames = new ArrayList();
         tableNames.addAll(fields.getTableNames());
