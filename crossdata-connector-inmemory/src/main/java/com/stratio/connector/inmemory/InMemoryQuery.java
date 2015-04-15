@@ -22,6 +22,7 @@ import com.stratio.connector.inmemory.datastore.InMemoryRelation;
 import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.connector.inmemory.datastore.selector.*;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.logicalplan.*;
@@ -54,7 +55,6 @@ public class InMemoryQuery {
     private List<InMemorySelector> outputColumns;
     private Project project;
     private OrderBy orderByStep = null;
-    private Select selectStep;
     private Join joinStep;
 
     /**
@@ -68,7 +68,7 @@ public class InMemoryQuery {
         extractSteps(project);
         tableName = project.getTableName();
         catalogName = project.getCatalogName();
-        outputColumns = transformIntoSelectors(selectStep.getColumnMap().keySet());
+        outputColumns = transformIntoSelectors(project.getColumnList());
 
         processJoins();
     }
@@ -159,8 +159,6 @@ public class InMemoryQuery {
             while(currentStep != null){
                 if(currentStep instanceof OrderBy){
                     orderByStep = (OrderBy) (currentStep);
-                }else if(currentStep instanceof Select){
-                    selectStep = (Select) currentStep;
                 }else if (currentStep instanceof Join){
                     joinStep = (Join) currentStep;
                     break;
@@ -208,113 +206,18 @@ public class InMemoryQuery {
 
     /**
      * Transform a set of crossdata selectors into in-memory ones.
-     * @param selectors The set of crossdata selectors.
+     * @param columns The set of crossdata selectors.
      * @return A list of in-memory selectors.
      */
-    private List<InMemorySelector> transformIntoSelectors(Set<Selector> selectors) {
+    private List<InMemorySelector> transformIntoSelectors(List<ColumnName> columns) {
         List<InMemorySelector> result = new ArrayList<>();
-        for(Selector s: selectors){
-            result.add(transformCrossdataSelector(s));
+        for(ColumnName columnName: columns){
+            result.add(new InMemoryColumnSelector(columnName.getName()));
         }
         return result;
     }
 
-    /**
-     * Transform a Crossdata selector into an InMemory one.
-     * @param selector The Crossdata selector.
-     * @return The equivalent InMemory selector.
-     */
-    private InMemorySelector transformCrossdataSelector(Selector selector){
-        InMemorySelector result;
-        if(FunctionSelector.class.isInstance(selector)){
-            FunctionSelector xdFunction = FunctionSelector.class.cast(selector);
-            String name = xdFunction.getFunctionName();
-            List<InMemorySelector> arguments = new ArrayList<>();
-            for(Selector arg : xdFunction.getFunctionColumns()){
-                arguments.add(transformCrossdataSelector(arg));
-            }
-            result = new InMemoryFunctionSelector(name, arguments);
-        }else if(ColumnSelector.class.isInstance(selector)){
-            ColumnSelector cs = ColumnSelector.class.cast(selector);
-            result = new InMemoryColumnSelector(cs.getName().getName());
-        }else{
-            result = new InMemoryLiteralSelector(selector.getStringValue());
-        }
-        return result;
-    }
 
-    /**
-     * Orthers the results using the orderStep
-     * @param results
-     * @return
-     * @throws ExecutionException
-     */
-    public List<Object[]> orderResult(List<Object[]> results) throws ExecutionException {
-        if (orderByStep != null) {
-            List<Object[]> orderedResult = new ArrayList<>();
-            if ((results != null) && (!results.isEmpty())) {
-                for (Object[] row : results) {
-                    if (orderedResult.isEmpty()) {
-                        orderedResult.add(row);
-                    } else {
-                        int order = 0;
-                        for (Object[] orderedRow : orderedResult) {
-                            if (compareRows(row, orderedRow, outputColumns, orderByStep)) {
-                                break;
-                            }
-                            order++;
-                        }
-                        orderedResult.add(order, row);
-                    }
-                }
-            }
-
-            return orderedResult;
-        }
-
-        return results;
-
-    }
-
-    private boolean compareRows(
-            Object[] candidateRow,
-            Object[] orderedRow,
-            List<InMemorySelector> outputColumns,
-            OrderBy orderByStep) {
-        boolean result = false;
-
-        List<String> columnNames = new ArrayList<>();
-        for(InMemorySelector selector : outputColumns){
-            columnNames.add(selector.getName());
-        }
-
-        for(OrderByClause clause: orderByStep.getIds()){
-            int index = columnNames.indexOf(clause.getSelector().getColumnName().getName());
-            int comparison = compareCells(candidateRow[index], orderedRow[index], clause.getDirection());
-            if(comparison != 0){
-                result = (comparison > 0);
-                break;
-            }
-        }
-        return result;
-    }
-
-    private int compareCells(Object toBeOrdered, Object alreadyOrdered, OrderDirection direction) {
-        int result = -1;
-        InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered);
-        if(InMemoryOperations.EQ.compare(toBeOrdered, alreadyOrdered)){
-            result = 0;
-        } else if(direction == OrderDirection.ASC){
-            if(InMemoryOperations.LT.compare(toBeOrdered, alreadyOrdered)){
-                result = 1;
-            }
-        } else if(direction == OrderDirection.DESC){
-            if(InMemoryOperations.GT.compare(toBeOrdered, alreadyOrdered)){
-                result = 1;
-            }
-        }
-        return result;
-    }
 
 
     public TableName getTableName() {
@@ -363,14 +266,6 @@ public class InMemoryQuery {
 
     public void setOrderByStep(OrderBy orderByStep) {
         this.orderByStep = orderByStep;
-    }
-
-    public Select getSelectStep() {
-        return selectStep;
-    }
-
-    public void setSelectStep(Select selectStep) {
-        this.selectStep = selectStep;
     }
 
     public Join getJoinStep() {

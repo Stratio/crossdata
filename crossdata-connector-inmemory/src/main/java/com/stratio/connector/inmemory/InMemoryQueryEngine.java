@@ -20,8 +20,13 @@ package com.stratio.connector.inmemory;
 
 import com.codahale.metrics.Timer;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
+import com.stratio.connector.inmemory.datastore.InMemoryOperations;
 import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryLiteralSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 import com.stratio.crossdata.common.connector.IQueryEngine;
 import com.stratio.crossdata.common.connector.IResultHandler;
 import com.stratio.crossdata.common.data.Cell;
@@ -35,12 +40,13 @@ import com.stratio.crossdata.common.logicalplan.*;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.result.QueryResult;
-import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.*;
 import org.apache.log4j.Logger;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -109,7 +115,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
         }
 
         List<SimpleValue[]> joinResult = joinResults(tableResults);
-        ///joinResult = query.orderResult(joinResult);
+        joinResult = orderResult(joinResult, workflow);
 
         QueryResult finalResult = toCrossdataResults((Select) workflow.getLastStep(), getFinalLimit(workflow), joinResult);
 
@@ -118,6 +124,136 @@ public class InMemoryQueryEngine implements IQueryEngine {
         LOG.info("Query took " + millis + " nanoseconds");
 
         return finalResult;
+    }
+
+    /**
+     * Orthers the results using the orderStep
+     * @param results
+     * @return
+     * @throws ExecutionException
+     */
+    public List<SimpleValue[]> orderResult(List<SimpleValue[]> results, LogicalWorkflow workflow) throws ExecutionException {
+
+        OrderBy orderByStep = null;
+        LogicalStep current = workflow.getLastStep();
+        do {
+            if (current instanceof OrderBy){
+                orderByStep = (OrderBy) current;
+                break;
+            }
+        }while((current = current.getFirstPrevious ()) != null);
+
+
+        if (orderByStep != null) {
+            List<SimpleValue[]> orderedResult = new ArrayList<>();
+            if ((results != null) && (!results.isEmpty())) {
+
+                List<String> columnNames = new ArrayList<>();
+                for (SimpleValue value: results.get(0)){
+                    columnNames.add(value.getColumn().getName());
+                }
+
+                for (SimpleValue[] row : results) {
+                    if (orderedResult.isEmpty()) {
+                        orderedResult.add(row);
+                    } else {
+                        int order = 0;
+                        for (SimpleValue[] orderedRow : orderedResult) {
+                            if (compareRows(row, orderedRow, orderByStep, columnNames)) {
+                                break;
+                            }
+                            order++;
+                        }
+                        orderedResult.add(order, row);
+                    }
+                }
+            }
+
+            return orderedResult;
+        }
+
+        return results;
+
+    }
+
+    private boolean compareRows(
+            SimpleValue[] candidateRow,
+            SimpleValue[] orderedRow,
+            OrderBy orderByStep,
+            List<String> columnNames) {
+        boolean result = false;
+
+
+
+        for(OrderByClause clause: orderByStep.getIds()){
+            int index = columnNames.indexOf(clause.getSelector().getColumnName().getName());
+            int comparison = compareCells(candidateRow[index], orderedRow[index], clause.getDirection());
+            if(comparison != 0){
+                result = (comparison > 0);
+                break;
+            }
+        }
+        return result;
+    }
+
+
+
+
+
+    /**
+     * Transform a set of crossdata selectors into in-memory ones.
+     * @param selectors The set of crossdata selectors.
+     * @return A list of in-memory selectors.
+     */
+    private List<InMemorySelector> transformIntoSelectors(Set<Selector> selectors) {
+        List<InMemorySelector> result = new ArrayList<>();
+        for(Selector s: selectors){
+            result.add(transformCrossdataSelector(s));
+        }
+        return result;
+    }
+
+    /**
+     * Transform a Crossdata selector into an InMemory one.
+     * @param selector The Crossdata selector.
+     * @return The equivalent InMemory selector.
+     */
+    private InMemorySelector transformCrossdataSelector(Selector selector){
+        InMemorySelector result;
+        if(FunctionSelector.class.isInstance(selector)){
+            FunctionSelector xdFunction = FunctionSelector.class.cast(selector);
+            String name = xdFunction.getFunctionName();
+            List<InMemorySelector> arguments = new ArrayList<>();
+            for(Selector arg : xdFunction.getFunctionColumns()){
+                arguments.add(transformCrossdataSelector(arg));
+            }
+            result = new InMemoryFunctionSelector(name, arguments);
+        }else if(ColumnSelector.class.isInstance(selector)){
+            ColumnSelector cs = ColumnSelector.class.cast(selector);
+            result = new InMemoryColumnSelector(cs.getName().getName());
+        }else{
+            result = new InMemoryLiteralSelector(selector.getStringValue());
+        }
+        return result;
+    }
+
+
+
+    private int compareCells(SimpleValue toBeOrdered, SimpleValue alreadyOrdered, OrderDirection direction) {
+        int result = -1;
+        InMemoryOperations.GT.compare(toBeOrdered.getValue(), alreadyOrdered.getValue());
+        if(InMemoryOperations.EQ.compare(toBeOrdered.getValue(), alreadyOrdered.getValue())){
+            result = 0;
+        } else if(direction == OrderDirection.ASC){
+            if(InMemoryOperations.LT.compare(toBeOrdered.getValue(), alreadyOrdered.getValue())){
+                result = 1;
+            }
+        } else if(direction == OrderDirection.DESC){
+            if(InMemoryOperations.GT.compare(toBeOrdered.getValue(), alreadyOrdered.getValue())){
+                result = 1;
+            }
+        }
+        return result;
     }
 
     private Integer getFinalLimit(LogicalWorkflow workflow){
