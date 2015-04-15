@@ -133,7 +133,9 @@ public class PlannerBaseTest {
             }
         } catch (PlanningException e) {
             if (!shouldFail) {
-                fail("Expecting planning to succeed: " + e.getMessage());
+                e.printStackTrace();
+                fail("Expecting planning to succeed: " + e.getMessage()
+                        + System.lineSeparator());
             } else {
                 assertNotNull(e, "Exception should not be null");
                 assertEquals(e.getClass(), PlanningException.class, "Exception class does not match.");

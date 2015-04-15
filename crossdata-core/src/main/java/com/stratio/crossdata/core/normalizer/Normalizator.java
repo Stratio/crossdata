@@ -717,6 +717,11 @@ public class Normalizator {
         case RELATION:
             throw new BadFormatException("Relations can't be on the left side of other relations.");
         case FUNCTION:
+            for(Selector col:((FunctionSelector)relation.getLeftTerm()).getFunctionColumns()){
+                if (ColumnSelector.class.isInstance(col)){
+                    checkColumnSelector((ColumnSelector)col);
+                }
+            }
         }
     }
     private void checkHavingRelationFormatLeft(Relation relation) throws ValidationException {

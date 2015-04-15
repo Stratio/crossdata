@@ -326,11 +326,11 @@ public enum MetadataManagerTestHelper {
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
         ConnectorFunctionsType functions = new ConnectorFunctionsType();
-        FunctionType functionType = new FunctionType();
+        /*FunctionType functionType = new FunctionType();
         functionType.setFunctionName("concat");
         functionType.setSignature("concat(Tuple[Text, Text]):Tuple[Text]");
         functionType.setFunctionType("simple");
-        functionsList.add(functionType);
+        functionsList.add(functionType);*/
         functions.setFunction(functionsList);
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
                 clusterProperties, clusterWithPriorities, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);

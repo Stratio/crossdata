@@ -565,6 +565,19 @@ public class Planner {
                                             + current.getOperations());
                                 }
                                 break;
+                            case FILTER_FUNCTION_IN:
+                            case FILTER_FUNCTION_BETWEEEN:
+                            case FILTER_FUNCTION_DISTINCT:
+                            case FILTER_FUNCTION_EQ:
+                            case FILTER_FUNCTION_GET:
+                            case FILTER_FUNCTION_GT:
+                            case FILTER_FUNCTION_LET:
+                            case FILTER_FUNCTION_LIKE:
+                            case FILTER_FUNCTION_LT:
+                            case FILTER_FUNCTION_NOT_BETWEEEN:
+                            case FILTER_FUNCTION_NOT_IN:
+                            case FILTER_FUNCTION_NOT_LIKE:
+                                break;
                             default:
                                 throw new PlanningException(currentOperation + " not supported yet.");
                             }
@@ -1811,6 +1824,10 @@ public class Planner {
         Operations op = null;
         //TODO Support left-side functions that contain columns of several tables.
         TableMetadata tm = tableMetadataMap.get(s.getSelectorTablesAsString());
+        if(s instanceof FunctionSelector){
+            op = Operations.valueOf("FILTER_FUNCTION_" + r.getOperator().name());
+            return op;
+        }
         if (tm != null) {
             op = getFilterOperation(tm, "FILTER", s, r.getOperator());
         } else if (s.getTableName().isVirtual()) {

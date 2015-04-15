@@ -108,6 +108,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_NON_INDEXED_LIKE);
         operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
         operationsC1.add(Operations.FILTER_NON_INDEXED_LT);
+        operationsC1.add(Operations.FILTER_FUNCTION_IN);
         operationsC1.add(Operations.SELECT_INNER_JOIN);
         operationsC1.add(Operations.FILTER_NON_INDEXED_GT);
 
@@ -137,6 +138,21 @@ public class BenchmarkTests extends PlannerBaseTest {
         countFunction.setFunctionType("aggregation");
         countFunction.setDescription("Count");
         functions1.add(countFunction);
+        //SUBSTRING function
+        FunctionType substringFunction = new FunctionType();
+        countFunction.setFunctionName("substring");
+        countFunction.setSignature("substring(Tuple[Any*]):Tuple[Int]");
+        countFunction.setFunctionType("simple");
+        countFunction.setDescription("Substring");
+        functions1.add(substringFunction);
+        //Concat function
+        FunctionType functionType = new FunctionType();
+        functionType.setFunctionName("concat");
+        functionType.setSignature("concat(Tuple[Text, Text]):Tuple[Text]");
+        functionType.setFunctionType("simple");
+        functions1.add(functionType);
+
+
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
@@ -1367,7 +1383,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "customer  "
                         + "WHERE "
                         + "substring(c_phone, 1 , 2) IN  "
-                        + "['13','31’,'23','29','30','18','17']  "
+                        + "['13','31','23','29','30','18','17']  "
                         + "AND c_acctbal > (  "
                         + "SELECT  "
                         + "avg(c_acctbal)  "
@@ -1391,6 +1407,45 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "cntrycode  "
                         + "ORDER BY  "
                         + "cntrycode;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ22", false, false, customer, orders);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+    @Test
+    public void testQ22Rewrite() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT "
+                + "cntrycode, "
+                + "count(*) AS numcust, "
+                + "sum(c_acctbal) AS totacctbal "
+                + "FROM (  "
+                    + "SELECT  "
+                    + "substring(c_phone,1 , 2) AS cntrycode,  "
+                    + "c_acctbal  "
+                    + "FROM  "
+                    + "customer  "
+                    + "WHERE "
+                    + "substring(c_phone, 1 , 2) IN ['13','31','23','29','30','18','17']  "
+                    + "AND c_acctbal > (  "
+                        + "SELECT  "
+                        + "avg(c_acctbal)  "
+                        + "FROM  "
+                        + "customer INNER JOIN orders ON o_custkey = c_custkey "
+                        + "WHERE "
+                        + "c_acctbal > 0.00  "
+                        + "AND substring (c_phone, 1, 2) IN ['13','31','23','29','30','18','17'] "
+                    + ") "
+                + ") AS custsale  "
+                + "GROUP BY "
+                + "cntrycode "
+                + "ORDER BY "
+                + "cntrycode;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ22", false, false, customer, orders);
         //assertNotNull(queryWorkflow, "Null workflow received.");
