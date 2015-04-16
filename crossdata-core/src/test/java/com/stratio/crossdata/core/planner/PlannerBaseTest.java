@@ -120,8 +120,10 @@ public class PlannerBaseTest {
         try {
             svq = (SelectValidatedQuery) validator.validate(spq);
         } catch (ValidationException e) {
+            e.printStackTrace();
             Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
+            e.printStackTrace();
             Assert.fail(e.getMessage());
         }
 

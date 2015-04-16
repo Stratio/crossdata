@@ -440,7 +440,8 @@ public class Normalizator {
         for (Selector selector : selectorList) {
             switch (selector.getType()) {
             case FUNCTION:
-                throw new BadFormatException("Function include into groupBy is not valid");
+                checkFunctionSelector((FunctionSelector)selector);
+                break;
             case COLUMN:
                 Selector referencedSelector = findReferencedSelector(((ColumnSelector) selector).getName().getName());
                 if (referencedSelector != null ) {
