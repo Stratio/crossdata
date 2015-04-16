@@ -349,11 +349,15 @@ public class Normalizator {
                 Selector referencedSelector = findReferencedSelector(((ColumnSelector) selector).getName().getName());
                 if (referencedSelector != null ) {
                     orderBy.setSelector(new AliasSelector(referencedSelector));
-                }else {
+                } else {
                     checkColumnSelector((ColumnSelector) selector);
                 }
                 break;
             case FUNCTION:
+                FunctionSelector fs = (FunctionSelector) selector;
+                List<Selector> fCols = fs.getFunctionColumns();
+                checkListSelector(fCols);
+                break;
             case ASTERISK:
             case BOOLEAN:
             case STRING:
@@ -361,7 +365,6 @@ public class Normalizator {
             case FLOATING_POINT:
                 throw new BadFormatException("Order by only accepts columns");
             }
-
         }
     }
 
@@ -463,8 +466,8 @@ public class Normalizator {
 
         while (normalizedSelectExpressionIterator.hasNext() && !aliasFound){
             referencedSelector = normalizedSelectExpressionIterator.next();
-            if( referencedSelector.getType() != SelectorType.COLUMN && referencedSelector.getAlias() != null && referencedSelector.getAlias().equals(
-                            selectorAlias)){
+            if( referencedSelector.getType() != SelectorType.COLUMN && referencedSelector.getAlias() != null
+                    && referencedSelector.getAlias().equals(selectorAlias)){
                 aliasFound = true;
             }
         }
@@ -585,7 +588,12 @@ public class Normalizator {
         if (abstractRelation instanceof Relation) {
             Relation relation = (Relation) abstractRelation;
             switch (relation.getOperator()) {
-            case EQ:
+                case EQ:
+                case GT:
+                case LT:
+                case GET:
+                case LET:
+                case DISTINCT:
                 if (relation.getLeftTerm().getType() == SelectorType.COLUMN
                         && relation.getRightTerm().getType() == SelectorType.COLUMN) {
                     checkColumnSelector((ColumnSelector) relation.getRightTerm());
@@ -594,7 +602,7 @@ public class Normalizator {
                     throw new BadFormatException("You must compare between columns");
                 }
                 break;
-            default:
+                default:
                 throw new BadFormatException("Only equal operation are valid");
             }
         } else if (abstractRelation instanceof RelationDisjunction) {
