@@ -142,15 +142,12 @@ public class Normalizator {
 
         if (parsedQuery.getStatement().isSubqueryInc()) {
 
-            Set<TableName> previousTableNamesFromFields = new HashSet<>(fields.getTableNames());
             Set<TableName> previousPreferredTablesFromFields = new HashSet<>(fields.getPreferredTableNames());
 
             subqueryNormalizator = new Normalizator(parsedQuery.getChildParsedQuery());
             subqueryNormalizator.execute(fields.getTableNames());
             checkSubquerySelectors(subqueryNormalizator.getFields().getSelectors());
 
-            fields.getTableNames().clear();
-            fields.getTableNames().addAll(previousTableNamesFromFields);
             fields.getPreferredTableNames().clear();
             fields.getPreferredTableNames().addAll(previousPreferredTablesFromFields);
 
@@ -927,9 +924,9 @@ public class Normalizator {
     private TableName matchColumn(ColumnName columnName, Set<TableName> tableNames) throws AmbiguousNameException {
         boolean tableFind = false;
         TableName selectTableName = null;
-        for (TableName tableName : tableNames) {
+        for (TableName tableName: tableNames) {
             columnName.setTableName(tableName);
-            if (MetadataManager.MANAGER.exists(columnName) || columnName.getTableName().isVirtual()) {
+            if (MetadataManager.MANAGER.exists(columnName)) {
                 if (tableFind) {
                     throw new AmbiguousNameException(columnName);
                 }
@@ -937,6 +934,14 @@ public class Normalizator {
                 tableFind = true;
             } else {
                 columnName.setTableName(null);
+            }
+        }
+        if(selectTableName == null){
+            for(TableName tableName: tableNames){
+                if (tableName.isVirtual()) {
+                    selectTableName = tableName;
+                    break;
+                }
             }
         }
         return selectTableName;

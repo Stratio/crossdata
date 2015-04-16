@@ -512,9 +512,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-
-
-
     @Test
     public void testQ03() throws ManifestException {
 
@@ -532,9 +529,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
 
     }
-
-
-
 
     @Test
     public void testQ04SomeRewrite() throws ManifestException {
@@ -564,8 +558,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
-
-
 
     @Test
     public void testQ05() throws ManifestException {
