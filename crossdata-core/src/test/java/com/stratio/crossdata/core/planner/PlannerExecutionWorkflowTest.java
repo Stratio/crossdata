@@ -84,6 +84,8 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
+import com.stratio.crossdata.core.query.SelectParsedQuery;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.AlterCatalogStatement;
@@ -271,7 +273,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         //TEST
         ExecutionWorkflow executionWorkflow = null;
         try {
-            executionWorkflow = planner.buildExecutionWorkflow("qid", workflow);
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
+            executionWorkflow = planner.buildExecutionWorkflow(svq, workflow);
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
@@ -304,7 +308,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionWorkflow executionWorkflow = null;
         try {
-            executionWorkflow = planner.buildExecutionWorkflow("qid", workflow);
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
+            executionWorkflow = planner.buildExecutionWorkflow(svq, workflow);
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
@@ -339,7 +345,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionPath path = null;
         try {
-            path = plannerWrapper.defineExecutionPath(project, availableConnectors);
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
+            path = plannerWrapper.defineExecutionPath(project, availableConnectors, svq);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
         }
@@ -372,12 +380,13 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         availableConnectors.add(connector2);
 
         try {
-            ExecutionPath path = plannerWrapper.defineExecutionPath(project, availableConnectors);
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
+            ExecutionPath path = plannerWrapper.defineExecutionPath(project, availableConnectors, svq);
             fail("Planning exception expected");
         } catch (PlanningException e) {
             assertNotNull(e, "Expecting Planning exception");
         }
-
     }
 
     @Test
@@ -403,8 +412,10 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionWorkflow executionWorkflow = null;
         try {
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    "qid", Arrays.asList(path),
+                    svq, Arrays.asList(path),
                     new LinkedHashMap<UnionStep, LinkedHashSet<ExecutionPath>>());
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
@@ -454,8 +465,10 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionWorkflow executionWorkflow = null;
         try {
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    "qid", new ArrayList<>(paths),
+                    svq, new ArrayList<>(paths),
                     unions);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
@@ -565,7 +578,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         unions.put(join, paths);
 
         try {
-            plannerWrapper.mergeExecutionPaths("qid", new ArrayList<>(paths), unions);
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
+            plannerWrapper.mergeExecutionPaths(svq, new ArrayList<>(paths), unions);
             fail("Expecting planning exception");
         } catch (PlanningException e) {
             assertNotNull(e, "Expecting Planning exception");
@@ -616,8 +631,10 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionWorkflow executionWorkflow = null;
         try {
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    "qid", new ArrayList<>(paths),
+                    svq, new ArrayList<>(paths),
                     unions);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
@@ -678,8 +695,10 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionWorkflow executionWorkflow = null;
         try {
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    "qid", new ArrayList<>(paths),
+                    svq, new ArrayList<>(paths),
                     unions);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);

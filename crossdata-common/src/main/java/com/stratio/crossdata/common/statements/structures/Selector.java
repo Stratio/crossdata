@@ -118,7 +118,11 @@ public abstract class Selector implements Serializable {
         StringBuilder sb = new StringBuilder();
         Iterator<TableName> it = getSelectorTables().iterator();
         while (it.hasNext()) {
-            sb.append(it.next().getQualifiedName());
+            TableName t=it.next();
+            if (t==null){
+                continue;
+            }
+            sb.append(t.getQualifiedName());
             if (it.hasNext()) {
                 sb.append("-");
             }

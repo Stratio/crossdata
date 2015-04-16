@@ -73,6 +73,8 @@ public class InstallerGoalLauncher {
         }
         outputString=outputString.replaceAll("<mainClassName>", className);
 
+        if(config.getJavaOpts()!=null)
+            outputString=outputString.replaceAll("<javaOpts>", config.getJavaOpts());
         outputString=outputString.replaceAll("<jmxPort>", config.getJmxPort());
         String pidFileName = "";
         if(config.getPidFileName() != null){

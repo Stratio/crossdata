@@ -36,8 +36,6 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
      */
     private SelectParsedQuery childSelectParsedQuery;
 
-
-
     /**
      * Constructor class based in a Base Query and a Statement.
      * @param baseQuery The query previous to be parsed.

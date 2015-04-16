@@ -100,6 +100,13 @@ public class FunctionSelector extends Selector {
      * @return A {@link com.stratio.crossdata.common.data.TableName} .
      */
     public TableName getTableName() {
+        if(tableName==null){
+            for (Selector s: this.functionColumns) {
+                if (ColumnSelector.class.isInstance(s)){
+                    return s.getColumnName().getTableName();
+                }
+            }
+        }
         return tableName;
     }
 
