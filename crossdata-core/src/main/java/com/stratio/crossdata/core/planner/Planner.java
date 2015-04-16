@@ -201,38 +201,53 @@ public class Planner {
 
         logCandidateConnectors(candidatesConnectors);
 
-        List<ExecutionPath> executionPaths = new ArrayList<>();
+        Set<ExecutionPath> executionPaths = new LinkedHashSet<>();
         Map<UnionStep, LinkedHashSet<ExecutionPath>> unionSteps = new LinkedHashMap<>();
         //Iterate through the initial steps and build valid execution paths
         for (LogicalStep initialStep: workflow.getInitialSteps()) {
             TableName targetTable = ((Project) initialStep).getTableName();
             LOG.info("Table: " + targetTable);
-            ExecutionPath ep = defineExecutionPath(initialStep, candidatesConnectors.get(targetTable), query);
-            LOG.info("Last step: " + ep.getLast());
-            if (UnionStep.class.isInstance(ep.getLast())) {
-                LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast());
-                if (paths == null) {
-                    paths = new LinkedHashSet<>();
-                    unionSteps.put((UnionStep) ep.getLast(), paths);
+            // Detect step before first join step from the current initial step
+            ExecutionPath ep = new ExecutionPath(initialStep, initialStep, candidatesConnectors.get(targetTable));
+            while(hasMoreJoins(ep.getLast())){
+                ep = defineExecutionPath(ep.getLast(), candidatesConnectors.get(targetTable), query);
+                LOG.info("Last step: " + ep.getLast());
+                if (UnionStep.class.isInstance(ep.getLast())) {
+                    LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast());
+                    if (paths == null) {
+                        paths = new LinkedHashSet<>();
+                        unionSteps.put((UnionStep) ep.getLast(), paths);
+                    }
+                    paths.add(ep);
+                } else if (ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())) {
+                    LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
+                    if (paths == null) {
+                        paths = new LinkedHashSet<>();
+                        unionSteps.put((UnionStep) (ep.getLast().getNextStep()), paths);
+                    }
+                    paths.add(ep);
                 }
-                paths.add(ep);
-            } else if (ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())) {
-                LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
-                if (paths == null) {
-                    paths = new LinkedHashSet<>();
-                    unionSteps.put((UnionStep) (ep.getLast().getNextStep()), paths);
-                }
-                paths.add(ep);
+                executionPaths.add(ep);
+                ep = defineExecutionPath(ep.getLast().getNextStep(), candidatesConnectors.get(targetTable), query);
             }
-            executionPaths.add(ep);
         }
-
         for (ExecutionPath ep: executionPaths) {
             LOG.info("ExecutionPaths: " + ep);
         }
-
         //Merge execution paths
-        return mergeExecutionPaths(query, executionPaths, unionSteps);
+        return mergeExecutionPaths(query, new ArrayList<>(executionPaths), unionSteps);
+    }
+
+    private boolean hasMoreJoins(LogicalStep step) {
+        boolean result = false;
+        while(step.getNextStep() != null){
+            step = step.getNextStep();
+            if(step instanceof Join){
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private void logCandidateConnectors(Map<TableName, List<ConnectorMetadata>> candidatesConnectors) {
@@ -551,10 +566,10 @@ public class Planner {
                     LOG.debug("Connector " + connector + " doesn't support all these operations: "
                             + current.getOperations());
                 } else {
-                /*
-                 * This connector support the operation but we also have to check if support for a specific
-                 * function is required support.
-                 */
+                    /*
+                     * This connector support the operation but we also have to check if support for a specific
+                     * function is required support.
+                     */
                     for(Operations currentOperation: current.getOperations()){
                         if (currentOperation.getOperationsStr().toLowerCase().contains("function")) {
                             Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName());

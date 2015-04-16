@@ -20,7 +20,6 @@ package com.stratio.crossdata.core.planner;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -584,6 +583,19 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
     }
 
     @Test
+    public void testQ04Previous() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc], SELECT c.c_state, o.o_entry_d " +
+                "FROM tpcc.order_line ol INNER JOIN tpcc.order o " +
+                "ON o.o_id = ol.ol_o_id AND o.o_d_id = ol.ol_d_id AND o.o_w_id = ol.ol_w_id " +
+                "INNER JOIN tpcc.customer c ON o.o_c_id = c.c_id AND o.o_d_id = c.c_d_id AND o.o_w_id = c.c_w_id;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ04Previous", false, false,
+                order, customer);
+    }
+
+        @Test
     public void testQ04RewriteWithoutImplicits() throws ManifestException {
 
         init();
@@ -596,9 +608,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "ON o.o_id = ol.ol_o_id AND o.o_d_id = ol.ol_d_id AND o.o_w_id = ol.ol_w_id " +
                 "INNER JOIN tpcc.customer c ON o.o_c_id = c.c_id AND o.o_d_id = c.c_d_id AND o.o_w_id = c.c_w_id " +
                 "WHERE c_since >= (SELECT add_days(max(c_since), -7) FROM tpcc.customer c) " +
-                "AND days_between (o.o_entry_d, ol.ol_delivery_d)>30 " +
+                "AND days_between(o.o_entry_d, ol.ol_delivery_d)>30 " +
                 "GROUP BY c.c_state, days_between(o.o_entry_d, ol.ol_delivery_d) " +
-                "ORDER BY count( *)desc " +
+                "ORDER BY count(*) desc " +
                 "LIMIT 10;";
 
         String inputText2 = "[tpcc],     SELECT " +
@@ -624,10 +636,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "ORDER BY count( *)desc " +
                 "LIMIT 10;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText3, "testQ4RWI", false, false, order,
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4RWI", false, false, order,
                 customer);
-        assertTrue(true);
-
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }

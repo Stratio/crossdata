@@ -79,4 +79,38 @@ public class ExecutionPath implements Serializable {
         }
         return sb.toString();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ExecutionPath that = (ExecutionPath) o;
+
+        if (availableConnectors != null ?
+                !availableConnectors.equals(that.availableConnectors) :
+                that.availableConnectors != null) {
+            return false;
+        }
+        if (initial != null ? !initial.equals(that.initial) : that.initial != null) {
+            return false;
+        }
+        if (last != null ? !last.equals(that.last) : that.last != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = initial != null ? initial.hashCode() : 0;
+        result = 31 * result + (last != null ? last.hashCode() : 0);
+        result = 31 * result + (availableConnectors != null ? availableConnectors.hashCode() : 0);
+        return result;
+    }
 }
