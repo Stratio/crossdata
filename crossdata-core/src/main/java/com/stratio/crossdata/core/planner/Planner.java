@@ -1889,7 +1889,8 @@ public class Planner {
         Selector result = selector;
         if(selector instanceof ExtendedSelectSelector){
             ExtendedSelectSelector extendedSelectSelector = (ExtendedSelectSelector) selector;
-            SelectSelector selectSelector = new SelectSelector(selector.getTableName(), extendedSelectSelector.getSelectQuery());
+            SelectSelector selectSelector = new SelectSelector(selector.getTableName(),
+                    extendedSelectSelector.toString());
             LogicalWorkflow innerWorkflow = buildWorkflow(extendedSelectSelector.getSelectValidatedQuery());
             selectSelector.setQueryWorkflow(innerWorkflow);
             result = selectSelector;
