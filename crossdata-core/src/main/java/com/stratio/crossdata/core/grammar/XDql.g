@@ -688,9 +688,8 @@ getSubqueryAlias returns [String sAlias]
         else
             $sAlias = UUID.randomUUID().toString();
    }:
-((T_AS)? alias=T_IDENT {aliasInc = true;})?
+   ((T_AS)? alias=T_IDENT {aliasInc = true;})?
 ;
-
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
     @init{

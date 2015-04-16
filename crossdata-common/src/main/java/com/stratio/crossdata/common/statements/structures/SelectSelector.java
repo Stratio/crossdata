@@ -63,7 +63,8 @@ public class SelectSelector extends Selector {
         return SelectorType.SELECT;
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
         StringBuilder sb = new StringBuilder(selectQuery);
         if(logicalWorkflow != null){
             sb.append(System.lineSeparator()).append(logicalWorkflow.toString());

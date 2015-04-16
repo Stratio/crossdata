@@ -30,6 +30,7 @@ javaCommandLineKeyword="<mainClassName>"
 connectorClass="<mainClass>"
 JMXPort="<jmxPort>"
 PIDFileName="<pidFileName>"
+javaOpts="<javaOpts>"
 
 # If JAVA_HOME has not been set, try to determine it.ner
 JVM_SEARCH_DIRS="/usr/java/default /usr/java/latest /opt/java"
@@ -73,7 +74,7 @@ done
 
 CLASSPATH="${CLASSPATH}:${LIB_CLASSPATH}"
 
-JMX_OPTIONS="-Dcom.sun.management.jmxremote.port=${JMXPort} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+JMX_OPTIONS="-Dcom.sun.management.jmxremote.port=${JMXPort} -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false ${javaOpts}"
 
 javaArgs="$javaArgs -classpath $CLASSPATH -Djava.net.preferIPv4Stack=true ${JMX_OPTIONS} ${connectorClass}"
 javaCommandLine="${JAVA_HOME}/bin/java $javaArgs"
