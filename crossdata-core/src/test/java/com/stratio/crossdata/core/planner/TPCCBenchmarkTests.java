@@ -467,7 +467,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
     }
 
 
-
     @Test
     public void testQ02Original() throws ManifestException {
 
@@ -917,20 +916,13 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         String inputText = "[tpcc], "
                 + "  SELECT  ol_o_id, ol_w_id, ol_d_id, "
                 + "    sum(ol_amount) AS revenue, o_entry_d  "
-                + "    FROM tpcc.customer, tpcc.new_order, tpcc.order, tpcc.order_line  "
-                + "    WHERE   c_state LIKE 'A%'  "
-                + "    AND c_id = o_c_id  "
-                + "    AND c_w_id = o_w_id  "
-                + "    AND c_d_id = o_d_id  "
-                + "    AND no_w_id = o_w_id  "
-                + "    AND no_d_id = o_d_id  "
-                + "    AND no_o_id = o_id  "
-                + "    AND ol_w_id = o_w_id  "
-                + "    AND ol_d_id = o_d_id  "
-                + "    AND ol_o_id = o_id  "
+                + "    FROM tpcc.customer INNER JOIN  tpcc.new_order ON c_id = o_c_id AND c_w_id = o_w_id AND c_d_id = o_d_id"
+                + "    INNER JOIN tpcc.order ON no_w_id = o_w_id AND no_d_id = o_d_id AND no_o_id = o_id "
+                + "    INNER JOIN tpcc.order_line ON ol_w_id = o_w_id AND ol_d_id = o_d_id AND ol_o_id = o_id"
+                + "    WHERE c_state LIKE 'A%'  "
                 + "    AND o_entry_d >  to_date('2013-07-24','YYYY-MM-DD')  "
                 + "    GROUP BY ol_o_id, ol_w_id, ol_d_id, o_entry_d  "
-                + "    ORDER BY revenue DESC, o_entry_d limit 100";
+                + "    ORDER BY revenue DESC, o_entry_d limit 100;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ12", false, false, customer,
                 new_order, order, order_line);
