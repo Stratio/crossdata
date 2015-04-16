@@ -144,6 +144,13 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         maxFunction.setFunctionType("aggregation");
         maxFunction.setDescription("maximum");
         functions1.add(maxFunction);
+        // extract_day function
+        FunctionType extractDayFunction = new FunctionType();
+        extractDayFunction.setFunctionName("day");
+        extractDayFunction.setSignature("day(Tuple[String]):Tuple[Int]");
+        extractDayFunction.setFunctionType("simple");
+        extractDayFunction.setDescription("extract day from date");
+        functions1.add(extractDayFunction);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
@@ -344,6 +351,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         columnNames13, columnTypes13, partitionKeys13, clusteringKeys13, null);
     }
 
+    //Subquery is not supported within an innerJoin clause by the grammar
     @Test
     public void testQ00Hive() throws ManifestException {
 
@@ -368,7 +376,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
     }
 
     @Test
-    public void testQ00CrossdataEasy() throws ManifestException {
+    public void testQ00Crossdata() throws ManifestException {
 
         init();
 
@@ -650,8 +658,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc],  "
-                        + "  SELECT extract_day(h_date), avg(h_amount) "
-                        + "FROM tpcc.history WHERE h_c_w_id=245 GROUP BY extract_day(h_date) ORDER BY extract_day(h_date);";
+                        + "  SELECT day(h_date), avg(h_amount) "
+                        + "FROM tpcc.history WHERE h_c_w_id=245 GROUP BY day(h_date) ORDER BY day(h_date);";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ9", false, false, history);
         //assertNotNull(queryWorkflow, "Null workflow received.");
