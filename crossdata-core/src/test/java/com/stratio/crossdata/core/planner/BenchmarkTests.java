@@ -1516,8 +1516,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "customer INNER JOIN orders ON o_custkey = c_custkey "
                         + "WHERE "
                         + "c_acctbal > 0.00  "
-                        + "AND substring (c_phone, 1, 2) IN ['13','31','23','29','30','18','17'] "
-                    + ") "
+                        + "AND substring (c_phone, 1, 2) IN ['13','31','23','29','30','18','17']) "
                 + ") AS custsale  "
                 + "GROUP BY "
                 + "cntrycode "
@@ -1530,5 +1529,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
         LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
+
+  
 
 }

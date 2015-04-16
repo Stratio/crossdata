@@ -110,6 +110,20 @@ public class FunctionSelector extends Selector {
         return tableName;
     }
 
+    @Override
+    public String getSelectorTablesAsString() {
+        StringBuilder sb = new StringBuilder();
+        Iterator<TableName> it = getSelectorTables().iterator();
+        while (it.hasNext()) {
+            TableName t = it.next();
+            if (t == null) {
+                continue;
+            }
+            return (t.getQualifiedName());
+        }
+        return "";
+    }
+
     /**
      * toString without alias for Insert statements.
      * @return A String.

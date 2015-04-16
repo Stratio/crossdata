@@ -103,6 +103,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_LIMIT);
         operationsC1.add(Operations.FILTER_NON_INDEXED_GT);
         operationsC1.add(Operations.FILTER_FUNCTION_IN);
+        operationsC1.add(Operations.FILTER_FUNCTION_GT);
         operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
 
         String strClusterName = "TestCluster1";
@@ -147,10 +148,18 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         // extract_day function
         FunctionType extractDayFunction = new FunctionType();
         extractDayFunction.setFunctionName("day");
-        extractDayFunction.setSignature("day(Tuple[String]):Tuple[Int]");
+        extractDayFunction.setSignature("day(Tuple[Native]):Tuple[Int]");
         extractDayFunction.setFunctionType("simple");
         extractDayFunction.setDescription("extract day from date");
         functions1.add(extractDayFunction);
+
+        // DAYS_BETWEEN function
+        FunctionType days_between = new FunctionType();
+        days_between.setFunctionName("days_between");
+        days_between.setSignature("days_between(Tuple[Any*]):Tuple[Any]");
+        days_between.setFunctionType("simple");
+        days_between.setDescription("days_between");
+        functions1.add(days_between);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
@@ -519,6 +528,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
     }
 
 
@@ -547,6 +557,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         + "    ORDER BY count(*) desc LIMIT 10;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4", false, false, order, customer);
+        //assertEquals(queryWorkflow.getWorkflow().getSqlDirectQuery(), "SELECT tpcc..", "Wrong SQL DIRECT");
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -797,26 +808,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
+
     /*
-
-    @Test
-    public void testQ13Easy() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], "
-                        + "SELECT  "
-                        + "count(o_orderkey)  "
-                        + "FROM  "
-                        + "orders "
-                        + "WHERE o_comment NOT LIKE \"%special%requests%\";";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ13Easy", false, false, customer, orders);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
     @Test
     public void testQ14() throws ManifestException {
 
@@ -843,7 +836,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
     }
 
     @Test
-    public void testQ14Easy() throws ManifestException {
+    public void testQ15() throws ManifestException {
 
         init();
 
@@ -853,38 +846,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         + "lineitem;  ";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy", false, false, lineitem, part);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
-    @Test
-    public void testQ14Easy2() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], SELECT  "
-                        + "sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 END) "
-                        + "FROM  "
-                        + "lineitem;  ";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy2", false, false, lineitem, part);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
-    @Test
-    public void testQ14Easy3() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], SELECT  "
-                        + "sum (CASE WHEN p_type = 'PR' THEN l_extendedprice ELSE 0 END) "
-                        + "FROM  "
-                        + "lineitem;  ";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy23", false, false, lineitem, part);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
