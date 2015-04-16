@@ -21,6 +21,7 @@ package com.stratio.connector.inmemory;
 import com.codahale.metrics.Timer;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
+import com.stratio.connector.inmemory.datastore.InMemoryQuery;
 import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
@@ -94,15 +95,16 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
         for (LogicalStep project:workflow.getInitialSteps()){
             InMemoryQuery query = null;
+
             if (tableResults.size()<1){
-                query =new InMemoryQuery((Project)project);
+                query = InMemoryQueryBuilder.instance().build((Project) project);
             }else{
-                query = new InMemoryQuery((Project)project, tableResults.get(0));
+                query = InMemoryQueryBuilder.instance().build((Project)project, tableResults.get(0));
             }
 
             List<SimpleValue[]> results = null;
             try {
-                results = datastore.search(query.getCatalogName(), query.getTableName().getName(), query.getRelations(), query.getOutputColumns());
+                results = datastore.search(query.getCatalogName(), query);
             } catch (Exception e) {
                 throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
             }
@@ -114,7 +116,8 @@ public class InMemoryQueryEngine implements IQueryEngine {
             tableResults.add(results);
         }
 
-        List<SimpleValue[]> joinResult = joinResults(tableResults);
+        List<SimpleValue[]> joinResult = datastore.joinResults(tableResults);
+
         joinResult = orderResult(joinResult, workflow);
 
         QueryResult finalResult = toCrossdataResults((Select) workflow.getLastStep(), getFinalLimit(workflow), joinResult);
@@ -265,81 +268,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
         return -1;
     }
 
-    private List<SimpleValue[]> joinResults(List<List<SimpleValue[]>> joinTables) {
 
-        List<SimpleValue[]> finalResult = new ArrayList<SimpleValue[]>();
-        if (joinTables.size() > 1) {
-            for (SimpleValue[] row : joinTables.get(0)){
-                SimpleValue[] joinedRow = joinRow(row, joinTables.subList(1, joinTables.size()));
-                if (joinedRow != null) {
-                    finalResult.add(joinedRow);
-                }
-            }
-
-        }else if (joinTables.size()>0){
-            for (SimpleValue[] row : joinTables.get(0)) {
-                finalResult.add(getRowValues(row).toArray(new SimpleValue[]{}));
-            }
-        }
-
-        return finalResult;
-    }
-
-    private List<SimpleValue> getRowValues(SimpleValue[] row) {
-        List<SimpleValue> finalRow = new ArrayList();
-        for(SimpleValue field:row){
-            if (!(field instanceof JoinValue)){
-                finalRow.add(field);
-            }
-        }
-        return finalRow;
-    }
-
-    private SimpleValue[] joinRow(SimpleValue[] mainRow,  List<List<SimpleValue[]>> otherTables){
-        List<SimpleValue> finalJoinRow = new ArrayList<>();
-
-        //Search JoinRows
-        for(SimpleValue field:mainRow){
-            if(field instanceof JoinValue){
-                List<SimpleValue> joinResult = calculeJoin((JoinValue) field, otherTables);
-                if (joinResult != null && joinResult.size()>0){
-                    finalJoinRow.addAll(joinResult);
-                }else{
-                    return null;
-                }
-            }else{
-                finalJoinRow.add(field);
-            }
-        }
-
-        return finalJoinRow.toArray(new SimpleValue[]{});
-    }
-
-    private List<SimpleValue> calculeJoin(JoinValue join, List<List<SimpleValue[]>> otherTables){
-        List<SimpleValue> joinResult = new ArrayList<>();
-        boolean matched = false;
-
-        for(List<SimpleValue[]> table: otherTables){
-            rows: for(SimpleValue[] row: table){
-                for(SimpleValue field:row){
-                    if (field instanceof JoinValue){
-                        JoinValue tableJoin = (JoinValue) field;
-                        if (join.joinMatch(tableJoin)){
-                            matched = true;
-                            joinResult.addAll(getRowValues(row));
-                            continue rows;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (matched){
-            return joinResult;
-        }else{
-            return null;
-        }
-    }
 
 
 
@@ -471,4 +400,8 @@ public class InMemoryQueryEngine implements IQueryEngine {
     public void stop(String queryId) throws ConnectorException {
         throw new UnsupportedException("Stopping running queries is not supported");
     }
+
+
+
+
 }

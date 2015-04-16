@@ -79,8 +79,10 @@ public class InMemoryDatastoreTest {
         InMemorySelector count = new InMemoryFunctionSelector("count", Arrays.asList(literalColumn));
         List<InMemoryRelation> relations = new ArrayList<>();
         List<SimpleValue[]> result = null;
+        InMemoryQuery query = new InMemoryQuery(TEST_TABLE1,relations,Arrays.asList(count) );
+        
         try {
-            result = db.search(CATALOG_NAME, TEST_TABLE1, relations, Arrays.asList(count));
+            result = db.search(CATALOG_NAME, query);
         } catch (Exception e) {
             fail("Cannot perform count(1)", e);
         }

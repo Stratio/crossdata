@@ -18,6 +18,7 @@
 package com.stratio.connector.inmemory;
 
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
+import com.stratio.connector.inmemory.datastore.InMemoryQuery;
 import com.stratio.connector.inmemory.datastore.InMemoryRelation;
 import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
@@ -33,12 +34,17 @@ import java.util.*;
 /**
  * Class that encapsulate the {@link com.stratio.crossdata.common.logicalplan.Project} parse.
  */
-public class InMemoryQuery {
+public class InMemoryQueryBuilder {
 
     /**
      * Map with the equivalences between crossdata operators and the ones supported by our datastore.
      */
     private static final Map<Operator, InMemoryOperations> OPERATIONS_TRANFORMATIONS = new HashMap<>();
+
+    /**
+     * Singleton instance.
+     */
+    private final static InMemoryQueryBuilder instance = new InMemoryQueryBuilder();
 
     static {
         OPERATIONS_TRANFORMATIONS.put(Operator.EQ, InMemoryOperations.EQ);
@@ -49,51 +55,59 @@ public class InMemoryQuery {
         OPERATIONS_TRANFORMATIONS.put(Operator.IN , InMemoryOperations.IN);
     }
 
-    private TableName tableName;
-    private String catalogName;
-    private List<InMemoryRelation> relations = new ArrayList<>();
-    private List<InMemorySelector> outputColumns;
-    private Project project;
-    private OrderBy orderByStep = null;
-    private Join joinStep;
+    public static InMemoryQueryBuilder instance() {
+        return instance;
+    }
 
-    /**
-     * Build a InMemoryQuery using a {@link com.stratio.crossdata.common.logicalplan.Project}.
-     *
-     * @param project a Project Initial Step
-     * @throws ExecutionException
-     */
-    public InMemoryQuery(Project project) throws ExecutionException {
-        this.project = project;
-        extractSteps(project);
-        tableName = project.getTableName();
-        catalogName = project.getCatalogName();
-        outputColumns = transformIntoSelectors(project.getColumnList());
+    public InMemoryQuery build(Project project) throws ExecutionException {
+        InMemoryQuery result = new InMemoryQuery();
 
-        processJoins();
+        result.setTableName(project.getTableName().getName());
+        result.setCatalogName(project.getCatalogName());
+        result.getRelations().addAll(extractFilters(project));
+        result.getOutputColumns().addAll(transformIntoSelectors(project.getColumnList()));
+
+        OrderBy orderByStep = extractStep(project, OrderBy.class);;
+
+        processJoins(result.getOutputColumns(), project);
+
+
+        return result;
     }
 
     /**
+     *
      * Build a InMemoryQuery using a {@link com.stratio.crossdata.common.logicalplan.Project} and a
      * result of the others parts of the query, to by added as filters in this part.
      *
      * @param project
      * @param results
-     * @throws ExecutionException
-     */
-    public InMemoryQuery(Project project, List<SimpleValue[]> results) throws ExecutionException {
-        this(project);
-        addJoinFilter(results);
-    }
-
-    /**
-     * Return the JoinTerm of this project.
      * @return
      */
-    private Selector getMyJoinTerm() {
+    public InMemoryQuery build(Project project,List<SimpleValue[]> results) throws ExecutionException {
+        InMemoryQuery query = build(project);
+        query.getRelations().addAll(getJoinFilters(project, results));
+
+        return query;
+    }
+
+
+    /**
+     * Return the JoinTerm of the project.
+     *
+     * @param joinStep
+     * @param project
+     * @return
+     */
+    private Selector getMyJoinTerm(Join joinStep, Project project) {
 
         Selector myTerm;
-        if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().getName().equals(project.getTableName().getAlias())) {
+
+        TableName leftTable = joinStep.getJoinRelations().get(0).getLeftTerm().getTableName();
+        TableName thisTableName = project.getTableName();
+
+        if(leftTable.getQualifiedName().equals(thisTableName.getQualifiedName())
+                || leftTable.getName().equals(thisTableName.getAlias())) {
             myTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
         }else{
             myTerm = joinStep.getJoinRelations().get(0).getRightTerm();
@@ -104,14 +118,19 @@ public class InMemoryQuery {
     /**
      * Adds the new Output Columns that holds the JoinColumns
      */
-    private void processJoins() {
+    private void processJoins(List<InMemorySelector> outputColumns, Project project) throws ExecutionException {
 
+        Join joinStep = extractStep(project, Join.class);
         if (joinStep != null){
             String name = joinStep.toString();
-            Selector myTerm = getMyJoinTerm();
+            Selector myTerm = getMyJoinTerm(joinStep, project);
             Selector otherTerm;
 
-            if(joinStep.getJoinRelations().get(0).getLeftTerm().getTableName().getName().equals(project.getTableName().getAlias())) {
+            TableName leftTable = joinStep.getJoinRelations().get(0).getLeftTerm().getTableName();
+            TableName thisTableName = project.getTableName();
+
+            if (leftTable.getQualifiedName().equals(thisTableName.getQualifiedName()) ||
+                    leftTable.getName().equals(thisTableName.getAlias())) {
                 otherTerm = joinStep.getJoinRelations().get(0).getRightTerm();
             }else{
                 otherTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
@@ -126,13 +145,16 @@ public class InMemoryQuery {
      *
      * @param results the results of the other terms that will be used as filter values.
      */
-    private void addJoinFilter(List<SimpleValue[]> results) {
+    private List<InMemoryRelation>  getJoinFilters(Project project, List<SimpleValue[]> results) throws ExecutionException {
+
+
         int columnIndex = 0;
+        Join joinStep = extractStep(project, Join.class);
+        List<InMemoryRelation> relations  = new ArrayList<>();
+
         for (SimpleValue field: results.get(0)){
-
-
             if (field instanceof JoinValue){
-                String columnName = getMyJoinTerm().getColumnName().getName();
+                String columnName = getMyJoinTerm(joinStep, project).getColumnName().getName();
                 List<Object> joinValues = new ArrayList<>();
                 for (SimpleValue[] row:results){
                     joinValues.add(row[columnIndex].getValue());
@@ -144,6 +166,7 @@ public class InMemoryQuery {
             columnIndex++;
         }
 
+        return relations;
     }
 
     /**
@@ -153,16 +176,30 @@ public class InMemoryQuery {
      * @param project
      * @throws ExecutionException
      */
-    private void extractSteps(Project project) throws ExecutionException{
+    private <T extends LogicalStep> T extractStep(Project project, Class<T> stepWanted) throws ExecutionException{
         try {
             LogicalStep currentStep = project;
             while(currentStep != null){
-                if(currentStep instanceof OrderBy){
-                    orderByStep = (OrderBy) (currentStep);
-                }else if (currentStep instanceof Join){
-                    joinStep = (Join) currentStep;
-                    break;
-                } else if(currentStep instanceof Filter){
+                if(stepWanted.isInstance(currentStep)){
+                    return stepWanted.cast(currentStep);
+                }
+                currentStep = currentStep.getNextStep();
+            }
+        } catch(ClassCastException e) {
+            throw new ExecutionException("Invalid workflow received", e);
+        }
+
+        return null;
+    }
+
+    private  List<InMemoryRelation> extractFilters(Project project) throws ExecutionException{
+
+        List<InMemoryRelation> relations = new ArrayList<>();
+
+        try {
+            LogicalStep currentStep = project;
+            while(currentStep != null){
+                if(Filter.class.isInstance(currentStep)){
                     relations.add(toInMemoryRelation(Filter.class.cast(currentStep)));
                 }
                 currentStep = currentStep.getNextStep();
@@ -170,7 +207,10 @@ public class InMemoryQuery {
         } catch(ClassCastException e) {
             throw new ExecutionException("Invalid workflow received", e);
         }
+
+        return relations;
     }
+
 
     /**
      * Transform a crossdata relationship into an in-memory relation.
@@ -215,65 +255,6 @@ public class InMemoryQuery {
             result.add(new InMemoryColumnSelector(columnName.getName()));
         }
         return result;
-    }
-
-
-
-
-    public TableName getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(TableName tableName) {
-        this.tableName = tableName;
-    }
-
-    public String getCatalogName() {
-        return catalogName;
-    }
-
-    public void setCatalogName(String catalogName) {
-        this.catalogName = catalogName;
-    }
-
-    public List<InMemoryRelation> getRelations() {
-        return relations;
-    }
-
-    public void setRelations(List<InMemoryRelation> relations) {
-        this.relations = relations;
-    }
-
-    public List<InMemorySelector> getOutputColumns() {
-        return outputColumns;
-    }
-
-    public void setOutputColumns(List<InMemorySelector> outputColumns) {
-        this.outputColumns = outputColumns;
-    }
-
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    public OrderBy getOrderByStep() {
-        return orderByStep;
-    }
-
-    public void setOrderByStep(OrderBy orderByStep) {
-        this.orderByStep = orderByStep;
-    }
-
-    public Join getJoinStep() {
-        return joinStep;
-    }
-
-    public void setJoinStep(Join joinStep) {
-        this.joinStep = joinStep;
     }
 
 }

@@ -190,6 +190,40 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
     }
 
     @Test
+    public void simpleSelectFilterTextEQNoResult() {
+        TableMetadata usersTable = buildUsersTable();
+
+        String [] usersColumnNames = {"id", "name"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT), new ColumnType(DataType.TEXT)};
+
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName());
+
+        ColumnSelector left = new ColumnSelector(projectUsers.getColumnList().get(1));
+        StringSelector right = new StringSelector(projectUsers.getTableName(), "User-50");
+        Filter filter = new Filter(
+                singleton(Operations.FILTER_NON_INDEXED_EQ),
+                new Relation(left, Operator.EQ, right));
+
+        Select s = Select.class.cast(projectUsers.getNextStep());
+        filter.setNextStep(s);
+        projectUsers.setNextStep(filter);
+        filter.setPrevious(projectUsers);
+        s.setPrevious(filter);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
+
+        ResultSet results = null;
+        try {
+            QueryResult result = connector.getQueryEngine().execute(workflow);
+            results = result.getResultSet();
+        } catch (ConnectorException e) {
+            fail("Cannot retrieve data", e);
+        }
+
+        assertEquals(results.size(), 0, "Invalid number of results returned");
+        checkResultMetadata(results, usersColumnNames, usersTypes);
+    }
+
+    @Test
     public void simpleSelectFilterIntEQ() {
 
         TableMetadata usersTable = buildUsersTable();

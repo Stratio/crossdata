@@ -46,13 +46,13 @@ import static org.testng.Assert.fail;
 public abstract class InMemoryQueryEngineTestParent {
 
     protected static final int NUM_ROWS = 10;
-    protected ClusterName clusterName = null;
+    protected ClusterName clusterName = new ClusterName("testCluster");
     protected IConnectorApp connectorApp = new MockConnectorApp();
     protected IConnector connector = new InMemoryConnector(connectorApp);
     protected CatalogMetadata catalogMetadata;
 
     @BeforeTest
-    public void prepateTest() throws Exception {
+    public void prepareTest() throws Exception {
         startConnector();
         catalogMetadata = new CatalogMetadata(new CatalogName("test_catalog"), null, null);
         connector.getMetadataEngine().createCatalog(clusterName, catalogMetadata);
