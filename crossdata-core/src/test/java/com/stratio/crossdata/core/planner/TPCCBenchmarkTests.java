@@ -16,7 +16,7 @@
  * under the License.
  */
 
-/*
+
 package com.stratio.crossdata.core.planner;
 
 import static org.testng.Assert.assertEquals;
@@ -97,8 +97,10 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_NON_INDEXED_LIKE);
         operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
         operationsC1.add(Operations.FILTER_NON_INDEXED_LT);
+        operationsC1.add(Operations.FILTER_PK_EQ);
         operationsC1.add(Operations.SELECT_INNER_JOIN);
-
+        operationsC1.add(Operations.SELECT_LIMIT);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_GT);
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -125,12 +127,26 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         countFunction.setFunctionType("aggregation");
         countFunction.setDescription("Count");
         functions1.add(countFunction);
+        // SUBSTRING function
+        FunctionType substringFunction = new FunctionType();
+        substringFunction.setFunctionName("substring");
+        substringFunction.setSignature("substring(Tuple[String,Int,Int]):Tuple[String]");
+        substringFunction.setFunctionType("simple");
+        substringFunction.setDescription("substring");
+        functions1.add(substringFunction);
+        // MAX function
+        FunctionType maxFunction = new FunctionType();
+        maxFunction.setFunctionName("max");
+        maxFunction.setSignature("max(Tuple[Any]):Tuple[Any]");
+        maxFunction.setFunctionType("aggregation");
+        maxFunction.setDescription("maximum");
+        functions1.add(maxFunction);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
 
         clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName());
-        CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
+        CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("tpcc").getName();
         createTestTables(catalogName);
     }
 
@@ -216,22 +232,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         customer = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
                         columnNames6, columnTypes6, partitionKeys6, clusteringKeys6, null);
 
-        //customer
-        String[] columnNames7 = { "c_custkey", "c_name", "c_address", "c_nationkey", "c_phone", "c_acctbal", "c_mktsegment", "c_comment" };
-        ColumnType[] columnTypes7 = {
-                        new ColumnType(DataType.INT),
-                        new ColumnType(DataType.TEXT),
-                        new ColumnType(DataType.TEXT),
-                        new ColumnType(DataType.INT),
-                        new ColumnType(DataType.TEXT),
-                        new ColumnType(DataType.INT),
-                        new ColumnType(DataType.TEXT),
-                        new ColumnType(DataType.TEXT)
-        };
-        String[] partitionKeys7 = { "c_custkey" };
-        String[] clusteringKeys7 = { };
-        customer = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
-                        columnNames7, columnTypes7, partitionKeys7, clusteringKeys7, null);
+
 
 
         //history
@@ -251,257 +252,304 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         history = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
                         columnNames8, columnTypes8, partitionKeys8, clusteringKeys8, null);
 
-        //lineitem
-        String[] columnNames9 = { "l_orderkey", "l_partkey", "l_suppkey", "l_linenumber", "l_quantity", "l_extendedprice", "l_discount", "l_tax", "l_returnflag", "l_linestatus", "l_shipdate", "l_commitdate", "l_receiptdate", "l_shipinstruct", "l_shipmode", "l_comment" };
+        //new_order
+        String[] columnNames9 = { "no_o_id", "no_d_id", "no_w_id"};
         ColumnType[] columnTypes9 = {
                         new ColumnType(DataType.INT),
                         new ColumnType(DataType.INT),
-                        new ColumnType(DataType.INT),
-                        new ColumnType(DataType.INT),
-                        new ColumnType(DataType.INT),
-                        new ColumnType(DataType.INT),
-                        new ColumnType(DataType.INT),
-                        new ColumnType(DataType.INT),
-                        new ColumnType(DataType.TEXT),
-                        new ColumnType(DataType.TEXT),
-                        new ColumnType(DataType.NATIVE),
-                        new ColumnType(DataType.NATIVE),
-                        new ColumnType(DataType.NATIVE),
-                        new ColumnType(DataType.TEXT),
-                        new ColumnType(DataType.TEXT),
-                        new ColumnType(DataType.TEXT)
+                        new ColumnType(DataType.INT)
         };
-        String[] partitionKeys9 = { "l_orderkey" };
-        String[] clusteringKeys9 = { "l_linenumber"};
-        lineitem = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
+        String[] partitionKeys9 = { "no_o_id" };
+        String[] clusteringKeys9 = { };
+        new_order = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
                         columnNames9, columnTypes9, partitionKeys9, clusteringKeys9, null);
 
-        //nation
-        String[] columnNames10 = { "n_nationkey", "n_name", "n_regionkey", "n_comment" };
+        //order
+        String[] columnNames10 = { "o_id", "o_d_id", "o_w_id", "o_c_id", "o_entry_d", "o_carrier_id", "o_ol_cnt", "o_all_local" };
         ColumnType[] columnTypes10 = {
                         new ColumnType(DataType.INT),
-                        new ColumnType(DataType.TEXT),
                         new ColumnType(DataType.INT),
-                        new ColumnType(DataType.TEXT)
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.NATIVE),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT)
         };
-        String[] partitionKeys10 = { "n_nationkey" };
+        String[] partitionKeys10 = { "o_w_id" };
         String[] clusteringKeys10 = { };
-        nation = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
+        order = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
                         columnNames10, columnTypes10, partitionKeys10, clusteringKeys10, null);
 
-        //region
-        String[] columnNames11 = { "r_regionkey", "r_name", "r_comment" };
+        //order_line
+        String[] columnNames11 = { "ol_o_id", "ol_d_id", "ol_w_id", "ol_number", "ol_i_id", "ol_supply_w_id", "ol_delivery_d", "ol_quantity", "ol_amount", "ol_dist_info" };
         ColumnType[] columnTypes11 = {
                         new ColumnType(DataType.INT),
-                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.NATIVE),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
                         new ColumnType(DataType.TEXT)
         };
-        String[] partitionKeys11 = { "r_regionkey" };
+        String[] partitionKeys11 = { "ol_w_id" };
         String[] clusteringKeys11 = { };
-        region = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
+        order_line = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
                         columnNames11, columnTypes11, partitionKeys11, clusteringKeys11, null);
+
+        //item
+        String[] columnNames12 = { "i_id", "i_im_id", "i_name", "i_price", "i_data" };
+        ColumnType[] columnTypes12 = {
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.TEXT)
+        };
+        String[] partitionKeys12 = { "i_id" };
+        String[] clusteringKeys12 = { };
+        item = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
+                        columnNames12, columnTypes12, partitionKeys12, clusteringKeys12, null);
+
+        //stock
+        String[] columnNames13 = { "s_i_id", "s_w_id", "s_quantity", "s_dist_01", "s_dist_02", "s_dist_03", "s_dist_04", "s_dist_05", "s_dist_06", "s_dist_07", "s_dist_08", "s_dist_09", "s_dist_10", "s_ytd", "s_order_cnt", "s_remote_cnt", "s_data" };
+        ColumnType[] columnTypes13 = {
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.TEXT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.INT),
+                        new ColumnType(DataType.TEXT)
+        };
+        String[] partitionKeys13 = { "s_w_id" };
+        String[] clusteringKeys13 = { };
+        stock = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
+                        columnNames13, columnTypes13, partitionKeys13, clusteringKeys13, null);
     }
 
     @Test
-    public void testQ01() throws ManifestException {
+    public void testQ00Hive() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT "
-                        + "l_returnflag, "
-                        + "l_linestatus, "
-                        + "sum(l_quantity) AS sum_qty, "
-                        + "sum(l_extendedprice) AS sum_base_price, "
-                        + "sum(l_extendedprice*(1-l_discount)) AS sum_disc_price, "
-                        + "sum(l_extendedprice*(1-l_discount)*(1+l_tax)) AS sum_charge, "
-                        + "avg(l_quantity) AS avg_qty, "
-                        + "avg(l_extendedprice) AS avg_price, "
-                        + "avg(l_discount) AS avg_disc, "
-                        + "count(*) AS count_order "
-                        + "FROM "
-                        + "lineitem "
-                        + "WHERE "
-                        + "l_shipdate <= date(\"1998-12-01\", \"yyyy-mm-dd\") - interval(70, \"day\") "
-                        + "GROUP BY "
-                        + "l_returnflag,"
-                        + "l_linestatus "
-                        + "ORDER BY "
-                        + "l_returnflag,"
-                        + "l_linestatus;";
+        String inputText = "[tpcc],    select substring(c_state,1,1) as country," + "    count(*) as numcust,"
+                        + "    sum(c_balance) as totacctbal from" + "    tpcc.customer" + "    inner join"
+                        + "    (select avg(sub.c_balance) as balance from  tpcc.customer sub where  sub.c_balance > 0.00 and substring(sub.c_phone,1,1) in ['1','2','3','4','5','6','7']) y"
+                        + "    where  substring(c_phone,1,1) in ['1','2','3','4','5','6','7']"
+                        + "    and c_balance > y.balance"
+                        + "    group by substring(c_state,1,1)"
+                        + "    order by country;";
 
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ1", false, false, lineitem);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ00", false, false, customer);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-*/
-/*    @Test
-    public void testQ02VerySimple() throws ManifestException {
+    //ADD FUNCTION TO METADATA MANAGER
+    @Test
+    public void testQ00CrossdataVeryEasy() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], "
-                + "SELECT s_acctbal, s_name, p_partkey, p_mfgr, s_address, s_phone, s_comment "
-                + "FROM part, supplier, partsupp "
-                + "WHERE  p_partkey = ps_partkey "
-                + "AND s_suppkey = ps_suppkey "
-                + "AND p_size = 15 "
-                + "AND p_type LIKE '%BRASS' "
-                + "AND ps_supplycost = 25 "
-                + "ORDER BY s_acctbal desc, s_name, p_partkey;";
+        String inputText = "[tpcc],    select substring(c_state,1,1) as country,"
+                        + "    count(*) as numcust,"
+                        + "    sum(c_balance) as totacctbal from"
+                        + "    (select avg(sub.c_balance) as balance from  tpcc.customer sub where  sub.c_balance > 0.00 ) y"
+                        + "    inner join tpcc.customer on c_balance = y.balance "
+                        + "    group by c_state"
+                        + "    order by country;";
+
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ0", false, false, customer);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+
+    @Test
+    public void testQ00CrossdataEasy() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc],    select substring(c_state,1,1) as country,"
+                        + "    count(*) as numcust,"
+                        + "    sum(c_balance) as totacctbal from"
+                        + "    (select avg(sub.c_balance) as balance from  tpcc.customer sub where  sub.c_balance > 0.00 and substring(sub.c_phone,1,1) in ['1','2','3','4','5','6','7']) y"
+                        + "    inner join tpcc.customer on c_balance = y.balance "
+                        + "    where  c_phone in ['1','2','3','4','5','6','7']"
+                        + "    group by c_state"
+                        + "    order by country;";
+
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ0", false, false, customer);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+   @Test
+    public void testQ01Original() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc], "
+                + "select ol_o_id, ol_d_id,ol_w_id,sum(ol_quantity),avg(ol_quantity),sum(ol_amount) as suma,avg(ol_amount),count(*) "
+                        + "    from tpcc.order_line where ol_d_id=4 and ol_w_id=175 "
+                        + "    group by ol_o_id, ol_d_id,ol_w_id order by  sum(ol_amount) desc limit 10;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
-                inputText, "testQ02VerySimple", false, false, part, supplier,partsupp);
+                inputText, "testQ01Hive", false, false, order_line);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
+
     @Test
-    public void testQ02Previous() throws ManifestException {
+    public void testQ01Crossdata() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], "
-                + "SELECT s_acctbal, s_name, n_name, p_partkey, p_mfgr, s_address, s_phone, s_comment "
-                + "FROM part, supplier, partsupp, nation, region "
-                + "WHERE  p_partkey = ps_partkey "
-                    + "AND s_suppkey = ps_suppkey "
-                    + "AND p_size = 15 "
-                    + "AND p_type LIKE '%BRASS' "
-                    + "AND s_nationkey = n_nationkey "
-                    + "AND n_regionkey = r_regionkey "
-                    + "AND r_name = 'EUROPE' "
-                    + "AND ps_supplycost = 25 "
-                + "ORDER BY s_acctbal desc, n_name, s_name, p_partkey;";
+        String inputText = "[tpcc], "
+                        + "select ol_o_id, ol_d_id,ol_w_id,sum(ol_quantity),avg(ol_quantity),sum(ol_amount) as suma,avg(ol_amount),count(*) "
+                        + "    from tpcc.order_line where ol_d_id=4 and ol_w_id=175 "
+                        + "    group by ol_o_id, ol_d_id,ol_w_id order by ol_amount desc limit 10;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
-                inputText, "testQ02Previous", false, false, part, supplier,partsupp, region, nation);
+                        inputText, "testQ01Crossdata", false, false, order_line);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-
     @Test
-    public void testQ02() throws ManifestException {
+    public void testQ02Original() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT "
-                        + "s_acctbal,"
-                        + "s_name,"
-                        + "n_name,"
-                        + "p_partkey,"
-                        + "p_mfgr,"
-                        + "s_address,"
-                        + "s_phone,"
-                        + "s_comment "
-                        + "FROM "
-                        + "part,"
-                        + "supplier,"
-                        + "partsupp,"
-                        + "nation,"
-                        + "region "
-                        + "WHERE "
-                        + "p_partkey = ps_partkey "
-                        + "AND s_suppkey = ps_suppkey "
-                        + "AND p_size = 15 "
-                        + "AND p_type LIKE '%BRASS' "
-                        + "AND s_nationkey = n_nationkey "
-                        + "AND n_regionkey = r_regionkey "
-                        + "AND r_name = 'EUROPE' "
-                        + "AND ps_supplycost = ( "
-                        + "SELECT "
-                        + "min(ps_supplycost)"
-                        + "FROM "
-                        + "partsupp, supplier,"
-                        + "nation, region "
-                        + "WHERE "
-                        + "p_partkey = ps_partkey "
-                        + "AND s_suppkey = ps_suppkey "
-                        + "AND s_nationkey = n_nationkey "
-                        + "AND n_regionkey = r_regionkey "
-                        + "AND r_name = 'MOZAMBIQUE' "
-                        + ") "
-                        + "ORDER BY "
-                        + "s_acctbal desc, "
-                        + "n_name, "
-                        + "s_name, "
-                        + "p_partkey;";
+        String inputText = "[tpcc], "
+                        + "select OL.OL_w_id,OL.OL_D_id,OL.OL_O_id,AVG_Amoun,avg(OL.ol_amount) "
+                        + "from "
+                        + "(select d_id,d_w_id, avg(ol_amount) as AVG_Amoun "
+                        + "    from tpcc.district D, tpcc.order_line OL_A where D.d_id=OL_A.ol_d_id and D.d_w_id=OL_A.ol_w_id and"
+                        + "    d_id=3 and d_w_id=241 group by d_id,d_w_id"
+                        + ") A, tpcc.order_line OL "
+                        + "   where A.d_id=OL.ol_d_id and A.d_w_id=OL.ol_w_id and OL.ol_d_id=${random(district)} and OL.ol_w_id=${random(0,tpcc.number.warehouses)} "
+                        + "   group by OL.OL_w_id,OL.OL_D_id,OL.OL_O_id,AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun order by avg(OL.ol_amount) desc;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ2", false, true, part, supplier,partsupp, region, nation);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                        inputText, "testQ02", false, false, order_line);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
+
+    @Test
+    public void testQ02HiveWithoutTypo() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc], "
+                        + "select OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,AVG_Amoun,avg(OL.ol_amount) as average from "
+                        + "(select d_id,d_w_id, avg(ol_amount) as AVG_Amoun"
+                            + " from tpcc.district D, tpcc.order_line OL_A where D.d_id=OL_A.ol_d_id and D.d_w_id=OL_A.ol_w_id and "
+                            + "d_id=3 and d_w_id=241 group by d_id,d_w_id"
+                        + ") A, "
+                        + "tpcc.order_line OL "
+                        + "where A.d_id=OL.ol_d_id and A.d_w_id=OL.ol_w_id and OL.ol_d_id=3 and OL.ol_w_id=241 group by OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun order by average desc;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                        inputText, "testQ02", false, false, order_line);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+    @Test
+    public void testQ02Crossdata() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc], "
+                        + "select OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,avg(OL.ol_amount) as average from "
+                        + "(select d_id,d_w_id"
+                        + " from tpcc.district D inner join tpcc.order_line OL_A on D.d_id=OL_A.ol_d_id and D.d_w_id=OL_A.ol_w_id "
+                        + "where d_id=3 and d_w_id=241 group by d_id,d_w_id"
+                        + ") A inner join  "
+                        + "tpcc.order_line as OL ON A.d_id=OL.ol_d_id and A.d_w_id=OL.ol_w_id "
+                        + "where OL.ol_w_id=241 and OL.ol_d_id=3 "
+                        + "group by OL.ol_w_id,OL.ol_d_id,OL.ol_o_id order by average desc;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                        inputText, "testQ02", false, false, order_line);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+
+
 
     @Test
     public void testQ03() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT "
-                        + "l_orderkey, "
-                        + "sum(l_extendedprice*(1-l_discount)) AS revenue, "
-                        + "o_orderdate, "
-                        + "o_shippriority "
-                        + "FROM "
-                        + "customer, "
-                        + "orders, "
-                        + "lineitem "
-                        + "WHERE "
-                        + "c_mktsegment = 'BUILDING' "
-                        + "AND c_custkey = o_custkey "
-                        + "AND l_orderkey = o_orderkey "
-                        + "AND o_orderdate < date(\"1995-03-15\", \"yyyy-mm-dd\") "
-                        + "AND l_shipdate > date(\"1995-03-15\", \"yyyy-mm-dd\") "
-                        + "GROUP BY "
-                        + "l_orderkey, "
-                        + "o_orderdate, "
-                        + "o_shippriority "
-                        + "ORDER BY "
-                        + "revenue desc, "
-                        + "o_orderdate;";
+        String inputText = "[tpcc], select c_d_id,c_credit,count(o_id) from tpcc.customer"
+                        + " inner join tpcc.order on c_d_id=o_d_id and c_w_id=o_w_id and o_c_id=c_id"
+                        + "    where c_w_id=168  group by c_credit,c_d_id "
+                        + "    order by c_d_id, c_credit;";
         
         
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ3", false, true, customer, orders,lineitem);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ3", false, false, customer, order);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-    //Exists is not supported
+
+
+
     @Test
-    public void testQ04() throws ManifestException {
+    public void testQ04SomeRewrite() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT "
-                        + "o_orderpriority, "
-                        + "count(*) AS order_count "
-                        + "FROM "
-                        + "orders "
-                        + "WHERE "
-                        + "o_orderdate >=  date(\"1995-03-15\", \"yyyy-mm-dd\") "
-                        + "AND o_orderdate < date(\"1995-03-15\", \"yyyy-mm-dd\") + interval(3, \"month\") "
-                        + "AND exists ( "
-                        + "SELECT "
-                        + "* "
-                        + "FROM "
-                        + "lineitem "
-                        + "WHERE "
-                        + "l_orderkey = o_orderkey "
-                        + "AND l_commitdate < l_receiptdate "
-                        + ") "
-                        + "GROUP BY "
-                        + "o_orderpriority "
-                        + "ORDER BY "
-                        + "o_orderpriority;";
+        String inputText = "[tpcc],  select "
+                        + "    c.c_state,days_between(o.o_entry_d,ol.ol_delivery_d), sum(ol.ol_amount),avg(ol.ol_amount) "
+                        + "    from tpcc.order_line ol,"
+                        + "    tpcc.order o,"
+                        + "    tpcc.customer c "
+                        + "    where o.o_id=ol.ol_o_id  "
+                        + "    and o.o_d_id=ol.ol_d_id  "
+                        + "    and o.o_w_id=ol.ol_w_id and o.o_c_id=c.c_id "
+                        + "    and o.o_d_id=c.c_d_id "
+                        + "    and o.o_w_id=c.c_w_id "
+                        + "    and c.c_w_id=100 "
+                        + "    and c_since>= "
+                        + "     (select add_days(max(c_since),-7) from tpcc.customer c )"
+                        + "    and days_between(o.o_entry_d,ol.ol_delivery_d)>30 "
+                        + "    group by c.c_state,days_between(o.o_entry_d,ol.ol_delivery_d)"
+                        + "    order by count(*) desc LIMIT 10;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4", false, false, orders, lineitem);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4", false, false, order, customer);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -514,52 +562,43 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[demo], SELECT "
-                    + "n_name, "
-                    + "sum(l_extendedprice * (1 - l_discount)) AS revenue "
-                    + "FROM "
-                    + "customer, "
-                    + "orders, "
-                    + "lineitem, "
-                    + "supplier, "
-                    + "nation, "
-                    + "region "
-                    + "WHERE "
-                    + "c_custkey = o_custkey "
-                    + "AND l_orderkey = o_orderkey "
-                    + "AND l_suppkey = s_suppkey "
-                    + "AND c_nationkey = s_nationkey "
-                    + "AND s_nationkey = n_nationkey "
-                    + "AND n_regionkey = r_regionkey "
-                    + "AND r_name = 'ASIA' "
-                    + "AND o_orderdate >= date(\"1994-01-01\", \"yyyy-mm-dd\") "
-                    + "AND o_orderdate < date(\"1994-01-01\", \"yyyy-mm-dd\") + interval(1, \"year\") "
-                    + "GROUP BY "
-                    + "n_name "
-                    + "ORDER BY "
-                    + "revenue desc;";
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ5", false, false, customer, orders, lineitem, supplier, nation, region);
+        String inputText = "[tpcc],select s_i_id,i_price, s_quantity, i_name,count(*) as numero_pedidos, sum(i_price*s_quantity) as venta_total "
+                        + "from tpcc.stock, tpcc.item where i_id=s_i_id and i_name like 'af%' "
+                        + "group by  s_i_id,i_price, s_quantity, i_name order by venta_total desc LIMIT 100;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ5", false, false, customer, stock, item);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
     @Test
+    public void testQ05Crossdata() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc],select s_i_id,i_price, s_quantity, i_name,count(*) as numero_pedidos, sum(i_price*s_quantity) as venta_total "
+                        + "from tpcc.stock inner join tpcc.item on i_id=s_i_id where i_name like 'af%' "
+                        + "group by  s_i_id,i_price, s_quantity, i_name order by venta_total desc LIMIT 100;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ5", false, false, customer, stock, item);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+
+    @Test
     public void testQ06() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT "
-            + "sum(l_extendedprice*l_discount) AS revenue "
-            + "FROM "
-            + "lineitem "
-            + "WHERE "
-            + "l_shipdate >= date(\"1994-01-01\", \"yyyy-mm-dd\") "
-            + "AND l_shipdate < date(\"1994-01-01\", \"yyyy-mm-dd\") + interval(1, \"year\") "
-            + "AND l_discount BETWEEN 0.06 - 0.01 AND 0.06 +0.01 "
-            + "AND l_quantity < 24;";
+        String inputText = "[tpcc], "
+                        + "   SELECT s_w_id,count(*) FROM tpcc.stock"
+                        + " where s_quantity>85 and "
+                        + " s_quantity <= 115 group by s_w_id;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ6", false, false, lineitem);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ6", false, false, stock);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -570,109 +609,24 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[demo], SELECT "
-                    + "supp_nation, "
-                    + "cust_nation, "
-                    + "l_year, sum(volume) AS revenue "
-                    + "FROM ( "
-                    + "SELECT "
-                    + "n1.n_name AS supp_nation, "
-                    + "n2.n_name AS cust_nation, "
-                    + "extract(l_shipdate, \"year\" ) AS l_year, "
-                    + "l_extendedprice * (1 - l_discount) AS volume "
-                    + "FROM "
-                    + "supplier, "
-                    + "lineitem, "
-                    + "orders, "
-                    + "customer, "
-                    + "nation n1, "
-                    + "nation n2 "
-                    + "WHERE "
-                    + "s_suppkey = l_suppkey "
-                    + "AND o_orderkey = l_orderkey "
-                    + "AND c_custkey = o_custkey "
-                    + "AND s_nationkey = n1.n_nationkey "
-                    + "AND c_nationkey = n2.n_nationkey "
-                    + "AND ( "
-                    + "(n1.n_name = 'FRANCE' AND n2.n_name = 'GERMANY') "
-                    + "OR (n1.n_name = 'GERMANY' AND n2.n_name = 'FRANCE') "
-                    + ") "
-                    + "AND l_shipdate BETWEEN date(\"1995-01-01\", \"yyyy-mm-dd\") AND date(\"1996-12-31\", \"yyyy-mm-dd\") "
-                    + ") AS shipping "
-                    + "GROUP BY "
-                    + "supp_nation, "
-                    + "cust_nation, "
-                    + "l_year "
-                    + "ORDER BY "
-                    + "supp_nation, "
-                    + "cust_nation, "
-                    + "l_year;";
+        String inputText = "[tpcc],"
+                        + "  select max(ol_amount) from tpcc.order_line;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ7", false, false, supplier, lineitem, orders, customer, nation);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ7", false, false, order_line);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-    @Test
-    public void testQEasy2() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], "
-                        + "SELECT * FROM lineitem WHERE "
-                        + "l_shipdate BETWEEN date(\"1995-01-01\", \"yyyy-mm-dd\") AND date(\"1996-12-31\", \"yyyy-mm-dd\") ;";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ7", false, false, supplier, lineitem, orders, customer, nation);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
 
     @Test
     public void testQ08() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT "
-                    + "o_year, "
-                    + "sum(CASE "
-                    + "WHEN nation = 'BRAZIL' "
-                    + "THEN volume "
-                    + "ELSE 0 "
-                    + "end) / sum(volume) AS mkt_share "
-                    + "FROM ( "
-                    + "SELECT "
-                    + "extract(o_orderdate,\"year\") AS o_year, "
-                    + "l_extendedprice * (1-l_discount) AS volume, "
-                    + "n2.n_name AS nation "
-                    + "FROM "
-                    + "part, "
-                    + "supplier, "
-                    + "lineitem, "
-                    + "orders, "
-                    + "customer, "
-                    + "nation n1, "
-                    + "nation n2, "
-                    + "region "
-                    + "WHERE "
-                    + "p_partkey = l_partkey "
-                    + "AND s_suppkey = l_suppkey "
-                    + "AND l_orderkey = o_orderkey "
-                    + "AND o_custkey = c_custkey "
-                    + "AND c_nationkey = n1.n_nationkey "
-                    + "AND n1.n_regionkey = r_regionkey "
-                    + "AND r_name = 'AMERICA' "
-                    + "AND s_nationkey = n2.n_nationkey "
-                    + "AND o_orderdate BETWEEN date(\"1995-01-01\", \"yyyy-mm-dd\") AND date(\"1996-12-31\", \"yyyy-mm-dd\") "
-                    + "AND p_type = 'ECONOMY ANODIZED STEEL' "
-                    + ") AS all_nations "
-                    + "GROUP BY "
-                    + "o_year "
-                    + "ORDER BY "
-                    + "o_year;";
+        String inputText = "[tpcc],      select max(ol_amount),max(ol_quantity) from tpcc.order_line;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ8", false, false, part, supplier, lineitem, orders, customer, nation, region);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ8", false, false, order_line);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -683,82 +637,64 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[demo], SELECT "
-                    + "nation, "
-                    + "o_year, "
-                    + "sum(amount) AS sum_profit "
-                    + "FROM ( "
-                    + "SELECT "
-                    + "n_name AS nation, "
-                    + "extract(o_orderdate, \"year\") AS o_year, "
-                    + "l_extendedprice * (1 - l_discount) - ps_supplycost * l_quantity AS amount "
-                    + "FROM "
-                    + "part, "
-                    + "supplier, "
-                    + "lineitem, "
-                    + "partsupp, "
-                    + "orders, "
-                    + "nation "
-                    + "WHERE "
-                    + "s_suppkey = l_suppkey "
-                    + "AND ps_suppkey = l_suppkey "
-                    + "AND ps_partkey = l_partkey "
-                    + "AND p_partkey = l_partkey "
-                    + "AND o_orderkey = l_orderkey "
-                    + "AND s_nationkey = n_nationkey "
-                    + "AND p_name LIKE '%green%' "
-                    + ") AS profit "
-                    + "GROUP BY "
-                    + "nation, "
-                    + "o_year "
-                    + "ORDER BY "
-                    + "nation, "
-                    + "o_year desc;";
+        String inputText = "[tpcc],  "
+                        + " select extract_day(h_date), avg(h_amount) "
+                        + "from tpcc.history where h_c_w_id=245 group by extract_day(h_date) order by extract_day(h_date);";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ9", false, false, part, orders , lineitem, partsupp, supplier, nation);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ9", false, false, history);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
     @Test
+    public void testQ09Crossdata() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc],  "
+                        + " select extract_day(h_date) as alias_h_day, avg(h_amount) "
+                        + "from tpcc.history where h_c_w_id=245 group by alias_h_day order by alias_h_day;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ9", false, false, history);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+
+
+    @Test
     public void testQ10() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT "
-                    + "c_custkey, "
-                    + "c_name, "
-                    + "sum(l_extendedprice * (1 - l_discount)) AS revenue, "
-                    + "c_acctbal, "
-                    + "n_name, "
-                    + "c_address, "
-                    + "c_phone, "
-                    + "c_comment "
-                    + "FROM "
-                    + "customer, "
-                    + "orders, "
-                    + "lineitem, "
-                    + "nation "
-                    + "WHERE "
-                    + "c_custkey = o_custkey "
-                    + "AND l_orderkey = o_orderkey "
-                    + "AND o_orderdate >= date(\"1994-01-01\", \"yyyy-mm-dd\") "
-                    + "AND o_orderdate < date(\"1994-01-01\", \"yyyy-mm-dd\") + interval(3, \"month\") "
-                    + "AND l_returnflag = 'R' "
-                    + "AND c_nationkey = n_nationkey "
-                    + "GROUP BY "
-                    + "c_custkey, "
-                    + "c_name, "
-                    + "c_acctbal, "
-                    + "c_phone, "
-                    + "n_name, "
-                    + "c_address, "
-                    + "c_comment "
-                    + "ORDER BY "
-                    + "revenue desc;";
+        String inputText = "[tpcc], select sum(ol_amount) as revenue  "
+                        + "    from tpcc.order_line, tpcc.item  "
+                        + "    where (  "
+                        + "                    ol_i_id = i_id  "
+                        + "                    and i_data like '%a'  "
+                        + "                    and ol_quantity >= ${random(1,5)}  "
+                        + "    and ol_quantity <= ${random(1,5)+5}  "
+                        + "    and i_price between 1 and 400000  "
+                        + "    and ol_w_id in (1,2,3)  "
+                        + "                    ) or (  "
+                        + "                    ol_i_id = i_id  "
+                        + "                    and i_data like '%b'  "
+                        + "                    and ol_quantity >= ${random(1,5)}  "
+                        + "    and ol_quantity <= ${random(1,5)+5}  "
+                        + "    and i_price between 1 and 400000  "
+                        + "    and ol_w_id in (1,2,4)  "
+                        + "                    ) or (  "
+                        + "                    ol_i_id = i_id  "
+                        + "                    and i_data like '%c'  "
+                        + "                    and ol_quantity >= ${random(1,5)}  "
+                        + "    and ol_quantity <= ${random(1,5)+5}  "
+                        + "    and i_price between 1 and 400000  "
+                        + "    and ol_w_id in (1,5,3)  "
+                        + ");";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer, orders, lineitem, nation);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer, order_line, item);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -771,104 +707,77 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[demo], SELECT "
-                        + "ps_partkey, "
-                        + "sum(ps_supplycost*ps_availqty) AS value "
-                        + "FROM partsupp, supplier, nation "
-                        + "WHERE "
-                        + "ps_suppkey = s_suppkey "
-                        + "AND s_nationkey = n_nationkey "
-                        + "AND n_name = 'MOZAMBIQUE' "
-                        + "GROUP BY "
-                        + "ps_partkey "
-                        + "HAVING "
-                        + "sum(ps_supplycost*ps_availqty) > "
-                        + "("
-                        + "SELECT "
-                        + " sum(ps_supplycost*ps_availqty) * 0.0001 "
-                        + "FROM partsupp, supplier, nation "
-                        + "WHERE "
-                        + "ps_suppkey = s_suppkey "
-                        + "AND s_nationkey = n_nationkey "
-                        + "AND n_name = 'MOZAMBIQUE'"
-                        + ")"
-                        + "ORDER BY "
-                        + "value desc;";
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ11", false, false, partsupp, supplier, nation);
+        String inputText = "[tpcc], "
+                        + "select ol_number,  "
+                        + "    sum(ol_quantity) as sum_qty,  "
+                        + "    sum(ol_amount) as sum_amount,  "
+                        + "    avg(ol_quantity) as avg_qty,  "
+                        + "    avg(ol_amount) as avg_amount,  "
+                        + "    count(*) as count_order  "
+                        + "    from tpcc.order_line  "
+                        + "    where ol_delivery_d > to_date('2013-10-05','YYYY-MM-DD')  "
+                        + "    group by ol_number  order by sum(ol_quantity) desc LIMIT 100;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ11", false, false, order_line);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
+
 
     @Test
     public void testQ12() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT  "
-                    + "l_shipmode,  "
-                    + "sum(CASE  "
-                    + "WHEN o_orderpriority ='1-URGENT'  "
-                    + "OR o_orderpriority ='2-HIGH'  "
-                    + "THEN 1  "
-                    + "ELSE 0  "
-                    + "end) AS high_line_count,  "
-                    + "sum(CASE  "
-                    + "WHEN o_orderpriority <> '1-URGENT'  "
-                    + "AND o_orderpriority <> '2-HIGH'  "
-                    + "THEN 1  "
-                    + "ELSE 0  "
-                    + "end) AS low_line_count  "
-                    + "FROM  "
-                    + "orders,  "
-                    + "lineitem  "
-                    + "WHERE "
-                    + "o_orderkey = l_orderkey  "
-                    + "AND l_shipmode IN ['MAIL', 'SHIP']  "
-                    + "AND l_commitdate < l_receiptdate  "
-                    + "AND l_shipdate < l_commitdate  "
-                    + "AND l_receiptdate >= date(\"1994-01-01\", \"yyyy-mm-dd\") "
-                    + "AND l_receiptdate < date(\"1994-01-01\", \"yyyy-mm-dd\") + interval(1, \"year\") "
-                    + "GROUP BY  "
-                    + "l_shipmode  "
-                    + "ORDER BY  "
-                    + "l_shipmode;";
+        String inputText = "[tpcc], "
+                        + " select  ol_o_id, ol_w_id, ol_d_id, "
+                        + "    sum(ol_amount) as revenue, o_entry_d  "
+                        + "    from tpcc.customer, tpcc.new_order, tpcc.order, tpcc.order_line  "
+                        + "    where   c_state like 'A%'  "
+                        + "    and c_id = o_c_id  "
+                        + "    and c_w_id = o_w_id  "
+                        + "    and c_d_id = o_d_id  "
+                        + "    and no_w_id = o_w_id  "
+                        + "    and no_d_id = o_d_id  "
+                        + "    and no_o_id = o_id  "
+                        + "    and ol_w_id = o_w_id  "
+                        + "    and ol_d_id = o_d_id  "
+                        + "    and ol_o_id = o_id  "
+                        + "    and o_entry_d >  to_date('2013-07-24','YYYY-MM-DD')  "
+                        + "    group by ol_o_id, ol_w_id, ol_d_id, o_entry_d  "
+                        + "    order by revenue desc, o_entry_d limit 100";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ12", false, false, orders, lineitem);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ12", false, false, customer, new_order, order, order_line);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
+    
     @Test
-    public void testQ13() throws ManifestException {
+    public void testQ13WithoutRewrite() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT  "
-                        + "c_count, count(*) AS custdist  "
-                        + "FROM (  "
-                        + "SELECT  "
-                        + "c_custkey AS c_custkey,  "
-                        + "count(o_orderkey) AS c_count "
-                        + "FROM  "
-                        + "customer left outer join orders on  "
-                        + "c_custkey = o_custkey  "
-                        + "WHERE o_comment NOT LIKE \"%special%requests%\"  "
-                        + "GROUP BY  "
-                        + "c_custkey  "
-                        + ")as c_orders "
-                        + "GROUP BY  "
-                        + "c_count  "
-                        + "ORDER BY  "
-                        + "custdist desc,  "
-                        + "c_count desc;";
+        String inputText = "[tpcc], select top 10 o_ol_cnt,   "
+                        + "    sum(case when o_carrier_id = 1 or o_carrier_id = 2 then 1 else 0 end) as high_line_count,   "
+                        + "    sum(case when o_carrier_id <> 1 and o_carrier_id <> 2 then 1 else 0 end) as low_line_count   "
+                        + "    from  tpcc.order, tpcc.order_line   "
+                        + "    where  ol_w_id = o_w_id   "
+                        + "    and ol_d_id = o_d_id   "
+                        + "    and ol_o_id = o_id   "
+                        + "    and o_entry_d <= ol_delivery_d   "
+                        + "    and ol_delivery_d <  to_date('2013-07-09','YYYY-MM-DD')   "
+                        + "    group by o_ol_cnt   "
+                        + "    order by sum(case when o_carrier_id = 1 or o_carrier_id = 2 then 1 else 0 end) desc, sum(case when o_carrier_id <> 1 and o_carrier_id <> 2 then 1 else 0 end);";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ13", false, false, customer, orders);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ13", false, false, customer, order, order_line);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
+    /*
 
     @Test
     public void testQ13Easy() throws ManifestException {
@@ -1033,245 +942,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-    @Test
-    public void testQ18() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], SELECT  "
-                        + "c_name,  "
-                        + "c_custkey,  "
-                        + "o_orderkey,  "
-                        + "o_orderdate,  "
-                        + "o_totalprice,  "
-                        + "sum(l_quantity)  "
-                        + "FROM  "
-                        + "customer,  "
-                        + "orders,  "
-                        + "lineitem  "
-                        + "WHERE "
-                        + "o_orderkey IN (  "
-                        + "SELECT  "
-                        + "l_orderkey  "
-                        + "FROM  "
-                        + "lineitem  "
-                        + "GROUP BY  "
-                        + "l_orderkey HAVING  "
-                        + "sum(l_quantity) > 300  "
-                        + ")  "
-                        + "AND c_custkey = o_custkey  "
-                        + "AND o_orderkey = l_orderkey  "
-                        + "GROUP BY  "
-                        + "c_name,  "
-                        + "c_custkey,  "
-                        + "o_orderkey,  "
-                        + "o_orderdate,  "
-                        + "o_totalprice  "
-                        + "ORDER BY  "
-                        + "o_totalprice desc,  "
-                        + "o_orderdate;";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ18", false, false, customer, orders, lineitem);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
-    @Test
-    public void testQ19() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], SELECT  "
-                        + "sum(l_extendedprice * (1 - l_discount) ) AS revenue  "
-                        + "FROM  "
-                        + "lineitem,  "
-                        + "part  "
-                        + "WHERE "
-                        + "(  "
-                        + "p_partkey = l_partkey  "
-                        + "AND p_brand = 'Brand#12'  "
-                        + "AND p_container IN [ 'SM CASE', 'SM BOX', 'SM PACK', 'SM PKG']  "
-                        + "AND l_quantity >= 1 AND l_quantity <= 1 + 10"
-                        + "AND p_size BETWEEN 1 AND 5  "
-                        + "AND l_shipmode IN ['AIR', 'AIR REG']  "
-                        + "AND l_shipinstruct = 'DELIVER IN PERSON'  "
-                        + ")  "
-                        + "OR  "
-                        + "(  "
-                        + "p_partkey = l_partkey  "
-                        + "AND p_brand = 'Brand#23'  "
-                        + "AND p_container IN ['MED BAG', 'MED BOX', 'MED PKG', 'MED PACK']  "
-                        + "AND l_quantity >= 10 AND l_quantity <= 10 + 10 "
-                        + "AND p_size BETWEEN 1 AND 10  "
-                        + "AND l_shipmode IN ['AIR', 'AIR REG']  "
-                        + "AND l_shipinstruct = 'DELIVER IN PERSON'  "
-                        + ")  "
-                        + "OR  "
-                        + "(  "
-                        + "p_partkey = l_partkey  "
-                        + "AND p_brand = 'Brand#34'  "
-                        + "AND p_container IN [ 'LG CASE', 'LG BOX', 'LG PACK', 'LG PKG']  "
-                        + "AND l_quantity >= 20 AND l_quantity <= 20 + 10 "
-                        + "AND p_size BETWEEN 1 AND 15  "
-                        + "AND l_shipmode IN ['AIR', 'AIR REG']  "
-                        + "AND l_shipinstruct = 'DELIVER IN PERSON'  "
-                        + ");";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ19", false, false, lineitem, part, supplier, nation);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
-    @Test
-    public void testQ20() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], SELECT  "
-                                + "s_name,  "
-                                + "s_address  "
-                                + "FROM  "
-                                + "supplier, nation  "
-                                + "WHERE "
-                                + "s_suppkey IN (  "
-                                + "SELECT  "
-                                + "ps_suppkey  "
-                                + "FROM  "
-                                + "partsupp  "
-                                + "WHERE "
-                                + "ps_partkey IN (  "
-                                + "SELECT  "
-                                + "p_partkey  "
-                                + "FROM  "
-                                + "part  "
-                                + "WHERE "
-                                + "p_name LIKE 'forest%'  "
-                                + ")  "
-                                + "AND ps_availqty > (  "
-                                + "SELECT  "
-                                + "0.5 * sum(l_quantity)  "
-                                + "FROM  "
-                                + "lineitem  "
-                                + "WHERE "
-                                + "l_partkey = ps_partkey  "
-                                + "AND l_suppkey = ps_suppkey  "
-                                + "AND l_shipdate >= date(\"1994-01-01\", \"yyyy-mm-dd\")  "
-                                + "AND l_shipdate < date(\"1994-01-01\", \"yyyy-mm-dd\") + interval(1, \"year\")"
-                                + ")  "
-                                + ")  "
-                                + "AND s_nationkey = n_nationkey  "
-                                + "AND n_name = 'CANADA' "
-                                + "ORDER BY  "
-                                + "s_name;";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ20", false, false, lineitem, supplier, part, partsupp);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
-    @Test
-    public void testQ21() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], SELECT  "
-                        + "s_name,  "
-                        + "count(*) AS numwait  "
-                        + "FROM  "
-                        + "supplier,  "
-                        + "lineitem l1,  "
-                        + "orders,  "
-                        + "nation  "
-                        + "WHERE "
-                        + "s_suppkey = l1.l_suppkey  "
-                        + "AND o_orderkey = l1.l_orderkey  "
-                        + "AND o_orderstatus = 'F'  "
-                        + "AND l1.l_receiptdate > l1.l_commitdate  "
-                        + "AND exists (  "
-                        + "SELECT  "
-                        + "* "
-                        + "FROM  "
-                        + "lineitem l2  "
-                        + "WHERE "
-                        + "l2.l_orderkey = l1.l_orderkey  "
-                        + "AND l2.l_suppkey <> l1.l_suppkey  "
-                        + ")  "
-                        + "AND NOT exists (  "
-                        + "SELECT  "
-                        + "*  "
-                        + "FROM  "
-                        + "lineitem l3  "
-                        + "WHERE "
-                        + "l3.l_orderkey = l1.l_orderkey  "
-                        + "AND l3.l_suppkey <> l1.l_suppkey  "
-                        + "AND l3.l_receiptdate > l3.l_commitdate  "
-                        + ")  "
-                        + "AND s_nationkey = n_nationkey  "
-                        + "AND n_name = 'SAUDI ARABIA'  "
-                        + "GROUP BY  "
-                        + "s_name  "
-                        + "ORDER BY  "
-                        + "numwait desc,  "
-                        + "s_name;";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ21", false, false, orders, lineitem,  partsupp, supplier, nation);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
-    @Test
-    public void testQ22() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], SELECT  "
-                        + "cntrycode,  "
-                        + "count(*) AS numcust,  "
-                        + "sum(c_acctbal) AS totacctbal  "
-                        + "FROM (  "
-                        + "SELECT  "
-                        + "substring(c_phone,1 , 2) AS cntrycode,  "
-                        + "c_acctbal  "
-                        + "FROM  "
-                        + "customer  "
-                        + "WHERE "
-                        + "substring(c_phone, 1 , 2) IN  "
-                        + "['13','31’,'23','29','30','18','17']  "
-                        + "AND c_acctbal > (  "
-                        + "SELECT  "
-                        + "avg(c_acctbal)  "
-                        + "FROM  "
-                        + "customer  "
-                        + "WHERE "
-                        + "c_acctbal > 0.00  "
-                        + "AND substring (c_phone, 1, 2) IN  "
-                        + "['13','31','23','29','30','18','17']  "
-                        + ")  "
-                        + "AND NOT exists (  "
-                        + "SELECT  "
-                        + "*  "
-                        + "FROM  "
-                        + "orders  "
-                        + "WHERE "
-                        + "o_custkey = c_custkey  "
-                        + ") "
-                        + ") AS custsale  "
-                        + "GROUP BY  "
-                        + "cntrycode  "
-                        + "ORDER BY  "
-                        + "cntrycode;";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ22", false, false, customer, orders);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }*//*
+   */
 
 
 
 }
-*/
+
