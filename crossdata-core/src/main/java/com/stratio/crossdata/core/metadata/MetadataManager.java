@@ -1293,7 +1293,7 @@ public enum MetadataManager {
                 List<Selector> subSelectors = subQuery.getStatement().getSelectExpression().getSelectorList();
                 for(Selector ss: subSelectors){
                     if(ss.getColumnName().getName().equals(cs.getColumnName().getName())
-                            || ss.getAlias().equals(cs.getColumnName().getName())){
+                            || ( ss.getAlias()!=null && ss.getAlias().equals(cs.getColumnName().getName()))){
                         result = inferDataType(ss, connectorName, subQuery.getSubqueryValidatedQuery());
                         break;
                     }
