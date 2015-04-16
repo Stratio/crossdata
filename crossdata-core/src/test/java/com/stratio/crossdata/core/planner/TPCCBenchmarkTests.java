@@ -102,6 +102,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_LIMIT);
         operationsC1.add(Operations.FILTER_NON_INDEXED_GT);
         operationsC1.add(Operations.FILTER_FUNCTION_IN);
+        operationsC1.add(Operations.FILTER_FUNCTION_GT);
         operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
 
         String strClusterName = "TestCluster1";
@@ -143,6 +144,13 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         maxFunction.setFunctionType("aggregation");
         maxFunction.setDescription("maximum");
         functions1.add(maxFunction);
+        // DAYS_BETWEEN function
+        FunctionType days_between = new FunctionType();
+        days_between.setFunctionName("days_between");
+        days_between.setSignature("days_between(Tuple[Any*]):Tuple[Any]");
+        days_between.setFunctionType("simple");
+        days_between.setDescription("days_between");
+        functions1.add(days_between);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
@@ -526,6 +534,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
     }
 
 
@@ -554,6 +563,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         + "    ORDER BY count(*) desc LIMIT 10;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4", false, false, order, customer);
+        //assertEquals(queryWorkflow.getWorkflow().getSqlDirectQuery(), "SELECT tpcc..", "Wrong SQL DIRECT");
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
