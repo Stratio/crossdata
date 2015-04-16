@@ -133,18 +133,29 @@ public class Normalizator {
      *
      * @throws ValidationException
      */
-    public void execute(List<TableName> parentsTableNames) throws ValidationException {
+    public void execute(Set<TableName> parentsTableNames) throws ValidationException {
 
-        if (parsedQuery.getStatement().isSubqueryInc()) {
-            subqueryNormalizator = new Normalizator(parsedQuery.getChildParsedQuery());
-            subqueryNormalizator.execute(parentsTableNames);
-            checkSubquerySelectors(subqueryNormalizator.getFields().getSelectors());
-        }
+        normalizeTables();
 
         fields.getTableNames().addAll(parentsTableNames);
         fields.setPreferredTableNames(new HashSet<>(parsedQuery.getStatement().getFromTables()));
 
-        normalizeTables();
+        if (parsedQuery.getStatement().isSubqueryInc()) {
+
+            Set<TableName> previousTableNamesFromFields = new HashSet<>(fields.getTableNames());
+            Set<TableName> previousPreferredTablesFromFields = new HashSet<>(fields.getPreferredTableNames());
+
+            subqueryNormalizator = new Normalizator(parsedQuery.getChildParsedQuery());
+            subqueryNormalizator.execute(fields.getTableNames());
+            checkSubquerySelectors(subqueryNormalizator.getFields().getSelectors());
+
+            fields.getTableNames().clear();
+            fields.getTableNames().addAll(previousTableNamesFromFields);
+            fields.getPreferredTableNames().clear();
+            fields.getPreferredTableNames().addAll(previousPreferredTablesFromFields);
+
+        }
+
         normalizeSelectExpression();
         normalizeWhere();
         normalizeJoins();
@@ -221,7 +232,6 @@ public class Normalizator {
     }
 
     private void addImplicitJoins(List<InnerJoin> innerJoinList) {
-
         if(fields.getImplicitWhere() == null || fields.getImplicitWhere().isEmpty()){
             return;
         }
@@ -235,69 +245,6 @@ public class Normalizator {
                 }
             }
         }
-
-        /*
-        // Clone normalized tables
-        List<TableName> tableNames = new ArrayList();
-        tableNames.addAll(fields.getTableNames());
-
-        // Remove the "regular" table
-        TableName currentTable = tableNames.get(0);
-        tableNames.remove(0);
-
-        // Tables pending to be related to a implicit relation
-        List<TableName> tablesToBeRelated = new ArrayList();
-        tablesToBeRelated.addAll(tableNames);
-
-        // Clone implicit relations from where clause
-        List<Relation> implicitRelations = new ArrayList<>();
-        implicitRelations.addAll(fields.getImplicitWhere());
-
-        while(!tablesToBeRelated.isEmpty() || !implicitRelations.isEmpty()){
-            // Assign relations to corresponding join
-            Iterator<Relation> iter = implicitRelations.iterator();
-            Relation rel = null;
-            while(iter.hasNext()){
-                rel = iter.next();
-                boolean tableFound = false;
-                if(rel.getLeftTerm().getTableName().equals(currentTable)){
-                    currentTable = rel.getRightTerm().getTableName();
-                    tableFound = true;
-                } else if(rel.getRightTerm().getTableName().equals(currentTable)){
-                    currentTable = rel.getLeftTerm().getTableName();
-                    tableFound = true;
-                }
-                if(tableFound){
-                    for(InnerJoin innerJoin: innerJoinList){
-                        if(innerJoin.getTablename().equals(currentTable)){
-                            innerJoin.addRelation(rel);
-                            tablesToBeRelated.remove(currentTable);
-                            break;
-                        }
-                    }
-                }
-            }
-            implicitRelations.remove(rel);
-        }
-
-        // Assign the rest (if any) of unassigned implicit relations
-        if(!implicitRelations.isEmpty()){
-            for(Relation implicitRelation: implicitRelations){
-                for(InnerJoin innerJoin: innerJoinList){
-                    Relation alreadyAssignedRelation = (Relation) innerJoin.getRelations().get(0);
-                    TableName leftTable = alreadyAssignedRelation.getLeftTerm().getTableName();
-                    TableName rightTable = alreadyAssignedRelation.getRightTerm().getTableName();
-                    // Check if tables of the join are equals to the tables of the implicit relation
-                    if((leftTable.equals(implicitRelation.getLeftTerm().getTableName())
-                            && rightTable.equals(implicitRelation.getRightTerm().getTableName()))
-                        || (rightTable.equals(implicitRelation.getLeftTerm().getTableName())
-                            && leftTable.equals(implicitRelation.getRightTerm().getTableName()))){
-                        innerJoin.addRelation(implicitRelation);
-                    }
-                }
-            }
-        }
-        */
     }
 
     /**
@@ -446,7 +393,7 @@ public class Normalizator {
                 Selector referencedSelector = findReferencedSelector(((ColumnSelector) selector).getName().getName());
                 if (referencedSelector != null ) {
                     selectorList.set(selectorIndex, new AliasSelector(referencedSelector));
-                }else{
+                } else {
                     checkColumnSelector((ColumnSelector) selector);
                     if (!columnNames.add(((ColumnSelector) selector).getName())) {
                         throw new BadFormatException("COLUMN into group by is repeated");
@@ -550,7 +497,8 @@ public class Normalizator {
      */
     public void normalizeHaving(List<AbstractRelation> havingClause) throws ValidationException {
         for (AbstractRelation relation : havingClause) {
-            checkHavingRelation(relation);
+            //checkHavingRelation(relation);
+            checkRelation(relation);
         }
     }
 
@@ -589,7 +537,12 @@ public class Normalizator {
         if (abstractRelation instanceof Relation) {
             Relation relation = (Relation) abstractRelation;
             switch (relation.getOperator()) {
-            case EQ:
+                case EQ:
+                case GT:
+                case LT:
+                case GET:
+                case LET:
+                case DISTINCT:
                 if (relation.getLeftTerm().getType() == SelectorType.COLUMN
                         && relation.getRightTerm().getType() == SelectorType.COLUMN) {
                     checkColumnSelector((ColumnSelector) relation.getRightTerm());
@@ -598,7 +551,7 @@ public class Normalizator {
                     throw new BadFormatException("You must compare between columns");
                 }
                 break;
-            default:
+                default:
                 throw new BadFormatException("Only equal operation are valid");
             }
         } else if (abstractRelation instanceof RelationDisjunction) {
@@ -715,7 +668,7 @@ public class Normalizator {
             ExtendedSelectSelector extendedSelectSelector = (ExtendedSelectSelector) relation.getLeftTerm();
             SelectValidatedQuery selectValidatedQuery = normalizeInnerSelect(
                     extendedSelectSelector.getSelectParsedQuery(),
-                    new ArrayList<>(fields.getTableNames()));
+                    fields.getTableNames());
             extendedSelectSelector.setSelectValidatedQuery(selectValidatedQuery);
             break;
         case RELATION:
@@ -749,7 +702,7 @@ public class Normalizator {
             ExtendedSelectSelector extendedSelectSelector = (ExtendedSelectSelector) relation.getLeftTerm();
             SelectValidatedQuery selectValidatedQuery = normalizeInnerSelect(
                     extendedSelectSelector.getSelectParsedQuery(),
-                    new ArrayList<>(fields.getTableNames()));
+                    new HashSet<>(fields.getTableNames()));
             extendedSelectSelector.setSelectValidatedQuery(selectValidatedQuery);
             break;
         case RELATION:
@@ -759,7 +712,7 @@ public class Normalizator {
 
     private SelectValidatedQuery normalizeInnerSelect(
             SelectParsedQuery selectParsedQuery,
-            List<TableName> parentsTableNames) throws ValidationException {
+            Set<TableName> parentsTableNames) throws ValidationException {
         Validator validator = new Validator();
         try {
             return (SelectValidatedQuery) validator.validate(selectParsedQuery, parentsTableNames);
@@ -791,7 +744,7 @@ public class Normalizator {
             ExtendedSelectSelector extendedSelectSelector = (ExtendedSelectSelector) relation.getRightTerm();
             SelectValidatedQuery selectValidatedQuery = normalizeInnerSelect(
                     extendedSelectSelector.getSelectParsedQuery(),
-                    new ArrayList<>(fields.getTableNames()));
+                    fields.getTableNames());
             extendedSelectSelector.setSelectValidatedQuery(selectValidatedQuery);
             break;
 
@@ -976,7 +929,7 @@ public class Normalizator {
         TableName selectTableName = null;
         for (TableName tableName : tableNames) {
             columnName.setTableName(tableName);
-            if (MetadataManager.MANAGER.exists(columnName)) {
+            if (MetadataManager.MANAGER.exists(columnName) || columnName.getTableName().isVirtual()) {
                 if (tableFind) {
                     throw new AmbiguousNameException(columnName);
                 }
