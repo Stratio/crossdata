@@ -105,6 +105,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_FUNCTION_IN);
         operationsC1.add(Operations.FILTER_FUNCTION_GT);
         operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
+        operationsC1.add(Operations.FILTER_DISJUNCTION);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
+        operationsC1.add(Operations.FILTER_PK_IN);
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -160,6 +163,14 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         days_between.setFunctionType("simple");
         days_between.setDescription("days_between");
         functions1.add(days_between);
+
+        // to_date function
+        FunctionType toDateFunction = new FunctionType();
+        toDateFunction.setFunctionName("to_date");
+        toDateFunction.setSignature("to_date(Tuple[Any*]):Tuple[Any]");
+        toDateFunction.setFunctionType("simple");
+        toDateFunction.setDescription("to_date");
+        functions1.add(toDateFunction);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
@@ -705,24 +716,24 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         + "    WHERE (  "
                         + "                    ol_i_id = i_id  "
                         + "                    AND i_data LIKE '%a'  "
-                        + "                    AND ol_quantity >= ${random(1,5)}  "
-                        + "    AND ol_quantity <= ${random(1,5)+5}  "
+                        + "                    AND ol_quantity >= 4  "
+                        + "    AND ol_quantity <= 9  "
                         + "    AND i_price between 1 AND 400000  "
-                        + "    AND ol_w_id in (1,2,3)  "
+                        + "    AND ol_w_id in [1,2,3]  "
                         + "                    ) or (  "
                         + "                    ol_i_id = i_id  "
                         + "                    AND i_data LIKE '%b'  "
-                        + "                    AND ol_quantity >= ${random(1,5)}  "
-                        + "    AND ol_quantity <= ${random(1,5)+5}  "
+                        + "                    AND ol_quantity >= 4  "
+                        + "    AND ol_quantity <= 9  "
                         + "    AND i_price between 1 AND 400000  "
-                        + "    AND ol_w_id in (1,2,4)  "
+                        + "    AND ol_w_id in [1,2,4]  "
                         + "                    ) or (  "
                         + "                    ol_i_id = i_id  "
                         + "                    AND i_data LIKE '%c'  "
-                        + "                    AND ol_quantity >= ${random(1,5)}  "
-                        + "    AND ol_quantity <= ${random(1,5)+5}  "
+                        + "                    AND ol_quantity >= 4  "
+                        + "    AND ol_quantity <= 9  "
                         + "    AND i_price between 1 AND 400000  "
-                        + "    AND ol_w_id in (1,5,3)  "
+                        + "    AND ol_w_id in [1,5,3]  "
                         + ");";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer, order_line, item);
@@ -731,7 +742,92 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
+    @Test
+    public void testQ10WithoutOr() throws ManifestException {
 
+        init();
+
+        String inputText = "[tpcc],  SELECT sum(ol_amount) AS revenue  "
+                + "    FROM tpcc.order_line, tpcc.item  "
+                + "    WHERE (  "
+                + "                    ol_i_id = i_id  "
+                + "                    AND i_data LIKE '%a'  "
+                + "                    AND ol_quantity >= 4  "
+                + "    AND ol_quantity <= 9  "
+                + "    AND i_price between 1 AND 400000  "
+                + "    AND ol_w_id in [1,2,3]  "
+                + "                    ) or (  "
+                + "                    ol_i_id = i_id  "
+                + "                    AND i_data LIKE '%b'  "
+                + "                    AND ol_quantity >= 4  "
+                + "    AND ol_quantity <= 9  "
+                + "    AND i_price between 1 AND 400000  "
+                + "    AND ol_w_id in [1,2,4]  "
+                + "                    );";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer, order_line, item);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+    @Test
+    public void testQ10AndInsteadOfOr() throws ManifestException {
+
+        init();
+
+        String inputText =  "[tpcc],  SELECT sum(ol_amount) AS revenue  "
+                + "    FROM tpcc.order_line, tpcc.item  "
+                + "    WHERE (  "
+                + "                    ol_i_id = i_id  "
+                + "                    AND i_data LIKE '%a'  "
+                + "                    AND ol_quantity >= 4  "
+                + "    AND ol_quantity <= 9  "
+                + "    AND i_price between 1 AND 400000  "
+                + "    AND ol_w_id in [1,2,3]  "
+                + "                    ) and (  "
+                + "                    ol_i_id = i_id  "
+                + "                    AND i_data LIKE '%b'  "
+                + "                    AND ol_quantity >= 4  "
+                + "    AND ol_quantity <= 9  "
+                + "    AND i_price between 1 AND 400000  "
+                + "    AND ol_w_id in [1,2,4]  "
+                + "                    ) and (  "
+                + "                    ol_i_id = i_id  "
+                + "                    AND i_data LIKE '%c'  "
+                + "                    AND ol_quantity >= 4  "
+                + "    AND ol_quantity <= 9  "
+                + "    AND i_price between 1 AND 400000  "
+                + "    AND ol_w_id in [1,5,3]  "
+                + ");";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer, order_line, item);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+
+    @Test
+    public void testQ10Easy() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc],  SELECT sum(ol_amount) AS revenue  "
+                + "    FROM tpcc.order_line  "
+                + "    WHERE (  "
+                + "                    ol_quantity >= 4  "
+                + "                    ) or (  "
+                + "                    ol_quantity >= 4  "
+                + "                    ) or (  "
+                + "                    ol_quantity >= 4  "
+                + ");";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer, order_line, item);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
 
     @Test
     public void testQ11() throws ManifestException {
