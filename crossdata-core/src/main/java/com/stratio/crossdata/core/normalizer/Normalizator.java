@@ -387,7 +387,8 @@ public class Normalizator {
         for (Selector selector : selectorList) {
             switch (selector.getType()) {
             case FUNCTION:
-                throw new BadFormatException("Function include into groupBy is not valid");
+                checkFunctionSelector((FunctionSelector)selector);
+                break;
             case COLUMN:
                 Selector referencedSelector = findReferencedSelector(((ColumnSelector) selector).getName().getName());
                 if (referencedSelector != null ) {
@@ -536,7 +537,12 @@ public class Normalizator {
         if (abstractRelation instanceof Relation) {
             Relation relation = (Relation) abstractRelation;
             switch (relation.getOperator()) {
-            case EQ:
+                case EQ:
+                case GT:
+                case LT:
+                case GET:
+                case LET:
+                case DISTINCT:
                 if (relation.getLeftTerm().getType() == SelectorType.COLUMN
                         && relation.getRightTerm().getType() == SelectorType.COLUMN) {
                     checkColumnSelector((ColumnSelector) relation.getRightTerm());
@@ -545,7 +551,7 @@ public class Normalizator {
                     throw new BadFormatException("You must compare between columns");
                 }
                 break;
-            default:
+                default:
                 throw new BadFormatException("Only equal operation are valid");
             }
         } else if (abstractRelation instanceof RelationDisjunction) {

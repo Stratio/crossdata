@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -102,6 +103,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_LIMIT);
         operationsC1.add(Operations.FILTER_NON_INDEXED_GT);
         operationsC1.add(Operations.FILTER_FUNCTION_IN);
+        operationsC1.add(Operations.FILTER_FUNCTION_GT);
         operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
 
         String strClusterName = "TestCluster1";
@@ -131,8 +133,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         functions1.add(countFunction);
         // SUBSTRING function
         FunctionType substringFunction = new FunctionType();
-        substringFunction.setFunctionName("substring");
-        substringFunction.setSignature("substring(Tuple[String,Int,Int]):Tuple[String]");
+        substringFunction.setFunctionName("substr");
+        substringFunction.setSignature("substr(Tuple[Text,Int,Int]):Tuple[Text]");
         substringFunction.setFunctionType("simple");
         substringFunction.setDescription("substring");
         functions1.add(substringFunction);
@@ -143,6 +145,21 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         maxFunction.setFunctionType("aggregation");
         maxFunction.setDescription("maximum");
         functions1.add(maxFunction);
+        // extract_day function
+        FunctionType extractDayFunction = new FunctionType();
+        extractDayFunction.setFunctionName("day");
+        extractDayFunction.setSignature("day(Tuple[Native]):Tuple[Int]");
+        extractDayFunction.setFunctionType("simple");
+        extractDayFunction.setDescription("extract day from date");
+        functions1.add(extractDayFunction);
+
+        // DAYS_BETWEEN function
+        FunctionType days_between = new FunctionType();
+        days_between.setFunctionName("days_between");
+        days_between.setSignature("days_between(Tuple[Any*]):Tuple[Any]");
+        days_between.setFunctionType("simple");
+        days_between.setDescription("days_between");
+        functions1.add(days_between);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
@@ -343,17 +360,19 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         columnNames13, columnTypes13, partitionKeys13, clusteringKeys13, null);
     }
 
+    //Subquery is not supported within an innerJoin clause by the grammar
     @Test
     public void testQ00Hive() throws ManifestException {
 
         init();
 
-        String inputText = "[tpcc], SELECT substring(c_state,1,1) AS country, count(*) AS numcust, sum(c_balance) AS totacctbal "
+        String inputText = "[tpcc], SELECT substr(c_state,1,1) AS country, count(*) AS numcust, sum(c_balance) AS totacctbal "
                         + "FROM tpcc.customer "
                         + " INNER JOIN"
                         + " ( SELECT avg(sub.c_balance) AS balance "
-                                + "FROM tpcc.customer sub WHERE  sub.c_balance > 0.00 AND substring(sub.c_phone,1,1) IN ['1','2','3','4','5','6','7']) y"
-                        + "    WHERE  substring(c_phone,1,1) IN ['1','2','3','4','5','6','7']"
+                                + "FROM tpcc.customer sub WHERE  sub.c_balance > 0.00 AND substr(sub.c_phone,1,1) IN ['1','2','3','4','5','6','7']"
+                        + " ) y"
+                        + "    WHERE  substr(c_phone,1,1) IN ['1','2','3','4','5','6','7']"
                         + "    AND c_balance > y.balance"
                         + "    GROUP BY substring(c_state,1,1)"
                         + "    ORDER BY country;";
@@ -365,18 +384,18 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-    //ADD FUNCTION TO METADATA MANAGER
     @Test
-    public void testQ00CrossdataVeryEasy() throws ManifestException {
+    public void testQ00Crossdata() throws ManifestException {
 
         init();
 
-        String inputText = "[tpcc], SELECT substring(c_state,1,1) AS country,"
+        String inputText = "[tpcc], SELECT substr(c_state,1,1) AS country,"
                         + "    count(*) AS numcust,"
                         + "    sum(c_balance) AS totacctbal FROM"
-                        + "    ( SELECT avg(sub.c_balance) AS balance FROM  tpcc.customer sub WHERE  sub.c_balance > 0.00 ) y"
-                        + "    INNER JOIN tpcc.customer on c_balance = y.balance "
-                        + "    GROUP BY c_state"
+                        + "    ( SELECT avg(sub.c_balance) AS balance FROM  tpcc.customer sub WHERE  sub.c_balance > 0.00 AND substr(sub.c_phone,1,1) IN ['1','2','3','4','5','6','7']) y"
+                        + "    INNER JOIN tpcc.customer ON c_balance > y.balance "
+                        + "    WHERE substr(c_phone,1,1) IN ['1','2','3','4','5','6','7']"
+                        + "    GROUP BY substring(c_state,1,1)"
                         + "    ORDER BY country;";
 
 
@@ -386,20 +405,20 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-
     @Test
-    public void testQ00CrossdataEasy() throws ManifestException {
+    public void testQ00CrossdataImplicit() throws ManifestException {
 
         init();
 
-        String inputText = "[tpcc], SELECT substring(c_state,1,1) AS country,"
-                        + "    count(*) AS numcust,"
-                        + "    sum(c_balance) AS totacctbal FROM"
-                        + "    ( SELECT avg(sub.c_balance) AS balance FROM  tpcc.customer sub WHERE  sub.c_balance > 0.00 AND substring(sub.c_phone,1,1) IN ['1','2','3','4','5','6','7']) y"
-                        + "    INNER JOIN tpcc.customer on c_balance = y.balance "
-                        + "    WHERE  c_phone IN ['1','2','3','4','5','6','7']"
-                        + "    GROUP BY c_state"
-                        + "    ORDER BY country;";
+        String inputText = "[tpcc], SELECT substr(c_state,1,1) AS country,"
+                + "    count(*) AS numcust,"
+                + "    sum(c_balance) AS totacctbal FROM"
+                + "    ( SELECT avg(sub.c_balance) AS balance FROM  tpcc.customer sub WHERE  sub.c_balance > 0.00 AND substr(sub.c_phone,1,1) IN ['1','2','3','4','5','6','7']) y"
+                + "    , tpcc.customer "
+                +"     WHERE c_balance > y.balance "
+                + "    AND substr(c_phone,1,1) IN ['1','2','3','4','5','6','7']"
+                + "    GROUP BY substring(c_state,1,1)"
+                + "    ORDER BY country;";
 
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ0", false, false, customer);
@@ -425,23 +444,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-
-    @Test
-    public void testQ01Crossdata() throws ManifestException {
-
-        init();
-
-        String inputText = "[tpcc], "
-                        + " SELECT ol_o_id, ol_d_id,ol_w_id,sum(ol_quantity),avg(ol_quantity),sum(ol_amount) AS suma,avg(ol_amount),count(*) "
-                        + "    FROM tpcc.order_line WHERE ol_d_id=4 AND ol_w_id=175 "
-                        + "    GROUP BY ol_o_id, ol_d_id,ol_w_id ORDER BY ol_amount desc limit 10;";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
-                        inputText, "testQ01Crossdata", false, false, order_line);
-        assertNotNull(queryWorkflow, "Null workflow received.");
-        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
 
     @Test
     public void testQ02Original() throws ManifestException {
@@ -528,6 +530,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
     }
 
 
@@ -556,6 +559,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         + "    ORDER BY count(*) desc LIMIT 10;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4", false, false, order, customer);
+        //assertEquals(queryWorkflow.getWorkflow().getSqlDirectQuery(), "SELECT tpcc..", "Wrong SQL DIRECT");
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -593,6 +597,29 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
+    @Test
+    public void testQ05Compatibility() throws ManifestException {
+
+        init();
+
+
+        String implicit = "[tpcc], SELECT s_i_id,i_price, s_quantity, i_name,count(*) AS numero_pedidos, sum(i_price*s_quantity) AS venta_total "
+                + "FROM tpcc.stock, tpcc.item WHERE i_id=s_i_id AND i_name LIKE 'af%' "
+                + "GROUP BY  s_i_id,i_price, s_quantity, i_name ORDER BY venta_total desc LIMIT 100;";
+
+        String explicit = "[tpcc], SELECT s_i_id,i_price, s_quantity, i_name,count(*) AS numero_pedidos, sum(i_price*s_quantity) AS venta_total "
+                + "FROM tpcc.stock INNER JOIN tpcc.item on i_id=s_i_id WHERE i_name LIKE 'af%' "
+                + "GROUP BY  s_i_id,i_price, s_quantity, i_name ORDER BY venta_total desc LIMIT 100;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(implicit, "testQ5", false, false, customer, stock, item);
+        QueryWorkflow queryWorkflowExplicit = (QueryWorkflow) getPlannedQuery(explicit, "testQ5", false, false, customer, stock, item);
+
+        Assert.assertEquals(queryWorkflow.getWorkflow().getSqlDirectQuery(), queryWorkflowExplicit.getWorkflow().getSqlDirectQuery());
+
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
 
     @Test
     public void testQ06() throws ManifestException {
@@ -644,8 +671,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc],  "
-                        + "  SELECT extract_day(h_date), avg(h_amount) "
-                        + "FROM tpcc.history WHERE h_c_w_id=245 GROUP BY extract_day(h_date) ORDER BY extract_day(h_date);";
+                        + "  SELECT day(h_date), avg(h_amount) "
+                        + "FROM tpcc.history WHERE h_c_w_id=245 GROUP BY day(h_date) ORDER BY day(h_date);";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ9", false, false, history);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -783,26 +810,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
+
     /*
-
-    @Test
-    public void testQ13Easy() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], "
-                        + "SELECT  "
-                        + "count(o_orderkey)  "
-                        + "FROM  "
-                        + "orders "
-                        + "WHERE o_comment NOT LIKE \"%special%requests%\";";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ13Easy", false, false, customer, orders);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
     @Test
     public void testQ14() throws ManifestException {
 
@@ -829,7 +838,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
     }
 
     @Test
-    public void testQ14Easy() throws ManifestException {
+    public void testQ15() throws ManifestException {
 
         init();
 
@@ -839,38 +848,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         + "lineitem;  ";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy", false, false, lineitem, part);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
-    @Test
-    public void testQ14Easy2() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], SELECT  "
-                        + "sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 END) "
-                        + "FROM  "
-                        + "lineitem;  ";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy2", false, false, lineitem, part);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
-    @Test
-    public void testQ14Easy3() throws ManifestException {
-
-        init();
-
-        String inputText = "[demo], SELECT  "
-                        + "sum (CASE WHEN p_type = 'PR' THEN l_extendedprice ELSE 0 END) "
-                        + "FROM  "
-                        + "lineitem;  ";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy23", false, false, lineitem, part);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
