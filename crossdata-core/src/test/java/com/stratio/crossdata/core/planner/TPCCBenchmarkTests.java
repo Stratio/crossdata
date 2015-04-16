@@ -471,13 +471,15 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc], "
-                        + " SELECT OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,AVG_Amoun,avg(OL.ol_amount) AS average FROM "
-                        + "( SELECT d_id,d_w_id, avg(ol_amount) AS AVG_Amoun"
-                            + " FROM tpcc.district D, tpcc.order_line OL_A WHERE D.d_id=OL_A.ol_d_id AND D.d_w_id=OL_A.ol_w_id AND "
-                            + "d_id=3 AND d_w_id=241 GROUP BY d_id,d_w_id"
-                        + ") A, "
-                        + "tpcc.order_line OL "
-                        + "WHERE A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id AND OL.ol_d_id=3 AND OL.ol_w_id=241 GROUP BY OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun ORDER BY average desc;";
+                + "SELECT OL.ol_w_id, OL.ol_d_id, OL.ol_o_id, AVG_Amoun, avg(OL.ol_amount) AS average FROM "
+                + "(SELECT d_id, d_w_id, avg(ol_amount) AS AVG_Amoun "
+                    + "FROM tpcc.district D, tpcc.order_line OL_A "
+                    + "WHERE D.d_id=OL_A.ol_d_id AND D.d_w_id=OL_A.ol_w_id AND d_id=3 AND d_w_id=241 GROUP BY d_id,d_w_id"
+                + ") A, "
+                + "tpcc.order_line OL "
+                + "WHERE A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id AND OL.ol_d_id=3 AND OL.ol_w_id=241 "
+                + "GROUP BY OL.ol_w_id, OL.ol_d_id, OL.ol_o_id, AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun "
+                + "ORDER BY average desc;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                         inputText, "testQ02", false, false, order_line);

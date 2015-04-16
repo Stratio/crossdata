@@ -91,7 +91,7 @@ public class Validator {
     private Normalizator normalizator = null;
 
     public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
-        return validate(parsedQuery, new ArrayList<TableName>());
+        return validate(parsedQuery, new HashSet<TableName>());
     }
 
     /**
@@ -102,7 +102,7 @@ public class Validator {
      * @throws ValidationException
      * @throws IgnoreQueryException
      */
-    public IValidatedQuery validate(IParsedQuery parsedQuery, List<TableName> parentsTableNames)
+    public IValidatedQuery validate(IParsedQuery parsedQuery, Set<TableName> parentsTableNames)
             throws ValidationException, IgnoreQueryException {
         IValidatedQuery validatedQuery = null;
         LOG.info("Validating CrossdataStatements...");
@@ -352,7 +352,8 @@ public class Validator {
         }
     }
 
-    private void  validateSelect(IParsedQuery parsedQuery, List<TableName> parentsTableNames) throws ValidationException {
+    private void  validateSelect(IParsedQuery parsedQuery, Set<TableName> parentsTableNames)
+            throws ValidationException {
         SelectParsedQuery selectParsedQuery = (SelectParsedQuery) parsedQuery;
         normalizator = new Normalizator(selectParsedQuery);
         normalizator.execute(parentsTableNames);
