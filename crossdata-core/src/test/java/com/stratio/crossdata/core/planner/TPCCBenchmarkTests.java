@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -52,6 +53,7 @@ import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class TPCCBenchmarkTests extends PlannerBaseTest {
 
+    private static final Logger LOG = Logger.getLogger(TPCCBenchmarkTests.class);
     private ConnectorMetadata connector1 = null;
 
     private ClusterName clusterName = null;
@@ -932,24 +934,27 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
     }
 
     @Test
-    public void testQ13WithoutRewrite() throws ManifestException {
+    public void testQ13Rewrite() throws ManifestException {
 
         init();
 
-        String inputText = "[tpcc],  SELECT top 10 o_ol_cnt,   "
+        String inputText = "[tpcc],  SELECT o_ol_cnt,   "
                 + "    sum(CASE WHEN o_carrier_id = 1 or o_carrier_id = 2 THEN 1 ELSE 0 END) AS high_line_count,   "
                 + "    sum(CASE WHEN o_carrier_id <> 1 AND o_carrier_id <> 2 THEN 1 ELSE 0 END) AS low_line_count   "
-                + "    FROM  tpcc.order, tpcc.order_line   "
-                + "    WHERE  ol_w_id = o_w_id   "
+                + "    FROM  tpcc.order INNER JOIN tpcc.order_line ON   "
+                + "    ol_w_id = o_w_id   "
                 + "    AND ol_d_id = o_d_id   "
                 + "    AND ol_o_id = o_id   "
-                + "    AND o_entry_d <= ol_delivery_d   "
-                + "    AND ol_delivery_d <  to_date('2013-07-09','YYYY-MM-DD')   "
+                + "    AND o_entry_d <= ol_delivery_d "
+                + "    WHERE ol_delivery_d <  to_date('2013-07-09','YYYY-MM-DD')   "
                 + "    GROUP BY o_ol_cnt   "
-                + "    ORDER BY sum(CASE WHEN o_carrier_id = 1 or o_carrier_id = 2 THEN 1 ELSE 0 END) DESC, sum(CASE WHEN o_carrier_id <> 1 AND o_carrier_id <> 2 THEN 1 ELSE 0 END);";
+                + "    ORDER BY sum(CASE WHEN o_carrier_id = 1 or o_carrier_id = 2 THEN 1 ELSE 0 END) DESC, sum(CASE WHEN o_carrier_id <> 1 AND o_carrier_id <> 2 THEN 1 ELSE 0 END)"
+                + "    LIMIT 10;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ13", false, false, customer,
                 order, order_line);
+
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
