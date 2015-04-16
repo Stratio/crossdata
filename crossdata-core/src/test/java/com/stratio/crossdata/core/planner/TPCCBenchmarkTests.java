@@ -423,23 +423,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
 
     @Test
-    public void testQ01Crossdata() throws ManifestException {
-
-        init();
-
-        String inputText = "[tpcc], "
-                        + "select ol_o_id, ol_d_id,ol_w_id,sum(ol_quantity),avg(ol_quantity),sum(ol_amount) as suma,avg(ol_amount),count(*) "
-                        + "    from tpcc.order_line where ol_d_id=4 and ol_w_id=175 "
-                        + "    group by ol_o_id, ol_d_id,ol_w_id order by ol_amount desc limit 10;";
-
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
-                        inputText, "testQ01Crossdata", false, false, order_line);
-        assertNotNull(queryWorkflow, "Null workflow received.");
-        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
-
-    @Test
     public void testQ02Original() throws ManifestException {
 
         init();
