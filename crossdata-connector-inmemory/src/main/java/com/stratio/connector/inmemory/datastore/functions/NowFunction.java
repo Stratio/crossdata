@@ -18,6 +18,8 @@
 
 package com.stratio.connector.inmemory.datastore.functions;
 
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
+
 import java.util.Date;
 import java.util.Map;
 
@@ -26,7 +28,7 @@ import java.util.Map;
  */
 public class NowFunction extends AbstractInMemoryFunction{
 
-    @Override public Object apply(Map<String, Integer> columnIndex, Object[] row) throws Exception {
+    @Override public Object apply(Map<String, Integer> columnIndex, SimpleValue[] row) throws Exception {
         return new Date();
     }
 }

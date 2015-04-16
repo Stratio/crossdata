@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 
 /**
@@ -127,7 +128,7 @@ public class InMemoryCatalog {
      * @return A list of rows.
      * @throws Exception If the search cannot be executed.
      */
-    public List<Object[]> search(String tableName, List<InMemoryRelation> relations,
+    public List<SimpleValue[]> search(String tableName, List<InMemoryRelation> relations,
             List<InMemorySelector> columnOrder) throws Exception {
         tableShouldExists(tableName);
         return tables.get(tableName).fullScanSearch(relations, columnOrder);

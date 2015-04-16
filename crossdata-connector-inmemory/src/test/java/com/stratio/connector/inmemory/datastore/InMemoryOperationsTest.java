@@ -25,6 +25,10 @@ import static org.testng.Assert.assertTrue;
 
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+
 /**
  * Class to test the InMemoryOperations.
  */
@@ -67,6 +71,21 @@ public class InMemoryOperationsTest {
         assertFalse(InMemoryOperations.GT.compare(s1, s1), "GT fail on aaaa = zzzz");
         assertTrue(InMemoryOperations.GT.compare(s2, s1), "GT fail on zzzz = aaaa");
         assertFalse(InMemoryOperations.GT.compare(s1, s2), "GT fail on aaaa = zzzz");
+    }
+
+
+    @Test
+    public void in(){
+
+
+        assertFalse(InMemoryOperations.IN.compare(n1, Arrays.asList(n2)), "IN fail on 1 IN (10)");
+        assertTrue(InMemoryOperations.IN.compare(n1, Arrays.asList(n1)), "IN fail on 1 IN (1)");
+        assertTrue(InMemoryOperations.IN.compare(n1, Arrays.asList(n1, n2)), "IN fail on 1 IN (1,10)");
+        assertFalse(InMemoryOperations.IN.compare(n1, Arrays.asList(5, 6, 7)), "IN fail on 1 IN (5,6,7)");
+
+
+
+
     }
 
 }

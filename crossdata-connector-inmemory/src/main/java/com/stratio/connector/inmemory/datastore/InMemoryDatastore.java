@@ -18,10 +18,13 @@
 
 package com.stratio.connector.inmemory.datastore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import org.apache.log4j.Logger;
 
 import com.stratio.connector.inmemory.datastore.functions.AbstractInMemoryFunction;
@@ -148,35 +151,108 @@ public class InMemoryDatastore {
     /**
      * Search the elements of a table.
      * @param catalogName The name of the catalog.
-     * @param tableName The name of the table.
-     * @param relations The list of {@link InMemoryRelation} to be satisfied.
-     * @param outputColumns The output columns in order.
+     * @param inMemoryQuery The query to be executed.
      * @return A list of rows.
      * @throws Exception If search cannot be performed.
      */
-    public List<Object[]> search(String catalogName, String tableName,
-            List<InMemoryRelation> relations,
-            List<InMemorySelector> outputColumns) throws Exception {
+    public List<SimpleValue[]> search(String catalogName, InMemoryQuery inMemoryQuery) throws Exception {
         catalogShouldExist(catalogName);
-        List<Object[]> result;
+        List<SimpleValue[]> result;
 
-        result = catalogs.get(catalogName).search(tableName, relations, outputColumns);
+        result = catalogs.get(catalogName).search(inMemoryQuery.getTableName(),inMemoryQuery.getRelations(), inMemoryQuery.getOutputColumns());
 
         //Execute the required aggregation functions.
 
-        for(int index = 0; index < outputColumns.size(); index++){
-            if(InMemoryFunctionSelector.class.isInstance(outputColumns.get(index))){
+        for(int index = 0; index < inMemoryQuery.getOutputColumns().size(); index++){
+            if(InMemoryFunctionSelector.class.isInstance(inMemoryQuery.getOutputColumns().get(index))){
                 AbstractInMemoryFunction f = InMemoryFunctionSelector.class
-                        .cast(outputColumns.get(index))
+                        .cast(inMemoryQuery.getOutputColumns().get(index))
                         .getFunction();
                 if(!f.isRowFunction()){
-                    InMemoryTable table = catalogs.get(catalogName).getTable(tableName);
+                    InMemoryTable table = catalogs.get(catalogName).getTable(inMemoryQuery.getTableName());
                     result = f.apply(table.getColumnIndex(), result);
                 }
             }
         }
 
         return result;
+    }
+
+
+    public List<SimpleValue[]> joinResults(List<List<SimpleValue[]>> joinTables) {
+
+        List<SimpleValue[]> finalResult = new ArrayList<SimpleValue[]>();
+        if (joinTables.size() > 1) {
+            for (SimpleValue[] row : joinTables.get(0)){
+                SimpleValue[] joinedRow = joinRow(row, joinTables.subList(1, joinTables.size()));
+                if (joinedRow != null) {
+                    finalResult.add(joinedRow);
+                }
+            }
+
+        }else if (joinTables.size()>0){
+            for (SimpleValue[] row : joinTables.get(0)) {
+                finalResult.add(getRowValues(row).toArray(new SimpleValue[]{}));
+            }
+        }
+
+        return finalResult;
+    }
+
+    private List<SimpleValue> getRowValues(SimpleValue[] row) {
+        List<SimpleValue> finalRow = new ArrayList();
+        for(SimpleValue field:row){
+            if (!(field instanceof JoinValue)){
+                finalRow.add(field);
+            }
+        }
+        return finalRow;
+    }
+
+    private SimpleValue[] joinRow(SimpleValue[] mainRow,  List<List<SimpleValue[]>> otherTables){
+        List<SimpleValue> finalJoinRow = new ArrayList<>();
+
+        //Search JoinRows
+        for(SimpleValue field:mainRow){
+            if(field instanceof JoinValue){
+                List<SimpleValue> joinResult = calculeJoin((JoinValue) field, otherTables);
+                if (joinResult != null && joinResult.size()>0){
+                    finalJoinRow.addAll(joinResult);
+                }else{
+                    return null;
+                }
+            }else{
+                finalJoinRow.add(field);
+            }
+        }
+
+        return finalJoinRow.toArray(new SimpleValue[]{});
+    }
+
+    private List<SimpleValue> calculeJoin(JoinValue join, List<List<SimpleValue[]>> otherTables){
+        List<SimpleValue> joinResult = new ArrayList<>();
+        boolean matched = false;
+
+        for(List<SimpleValue[]> table: otherTables){
+            rows: for(SimpleValue[] row: table){
+                for(SimpleValue field:row){
+                    if (field instanceof JoinValue){
+                        JoinValue tableJoin = (JoinValue) field;
+                        if (join.joinMatch(tableJoin)){
+                            matched = true;
+                            joinResult.addAll(getRowValues(row));
+                            continue rows;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (matched){
+            return joinResult;
+        }else{
+            return null;
+        }
     }
 
     /**

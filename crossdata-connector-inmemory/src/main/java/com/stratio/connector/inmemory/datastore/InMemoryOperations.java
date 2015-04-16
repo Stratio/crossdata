@@ -20,6 +20,7 @@ package com.stratio.connector.inmemory.datastore;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * Enumeration of the different operations that can be applied
@@ -103,6 +104,27 @@ public enum InMemoryOperations {
             } else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1.getClass())){
                 return compareTo(String.class.cast(o1), String.class.cast(o2)) <= 0;
             }
+            return false;
+        }
+    },
+
+
+    /**
+     * IN operator
+     */
+    IN{
+        @Override
+        public boolean compare(Object o1, Object o2) {
+
+            List<Object> listOfObjects = (List<Object>) o2;
+            for (Object inEntry : listOfObjects) {
+                if (Number.class.isInstance(o1) && Number.class.isInstance(inEntry) && compareNumbers(Number.class.cast(o1), Number.class.cast(inEntry)) == 0) {
+                    return true;
+                }else if (o1.equals(inEntry)){
+                    return true;
+                }
+            }
+
             return false;
         }
     };
