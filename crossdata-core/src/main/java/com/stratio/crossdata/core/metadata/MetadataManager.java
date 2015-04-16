@@ -48,6 +48,7 @@ import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
+import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.FunctionTypeHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
@@ -59,15 +60,18 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.NodeMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.metadata.DataType;
+import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.crossdata.common.statements.structures.SelectSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
 
 /**
  * Singleton to manage the metadata store.
@@ -1215,12 +1219,12 @@ public enum MetadataManager {
      * @param connectorName The name of the connector.
      * @return A boolean with the check result.
      */
-    public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName)
+    public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName, SelectValidatedQuery subQuery)
             throws PlanningException {
         boolean result = false;
         FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
         if(ft != null){
-            String inputSignatureFromSelector = createInputSignature(fSelector, connectorName);
+            String inputSignatureFromSelector = createInputSignature(fSelector, connectorName, subQuery);
             String storedSignature = ft.getSignature();
             String inputStoredSignature = storedSignature.substring(0,storedSignature.lastIndexOf(":Tuple["));
             result = inputStoredSignature.equals(inputSignatureFromSelector) ||
@@ -1252,7 +1256,7 @@ public enum MetadataManager {
      * @param functionSelector The function selector.
      * @return A String with the input signature.
      */
-    private String createInputSignature(FunctionSelector functionSelector, ConnectorName connectorName)
+    private String createInputSignature(FunctionSelector functionSelector, ConnectorName connectorName, SelectValidatedQuery subQuery)
                     throws PlanningException {
 
         StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
@@ -1260,51 +1264,83 @@ public enum MetadataManager {
         Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
         while(iter.hasNext()){
             Selector selector = iter.next();
-            switch(selector.getType()){
-            case FUNCTION:
-                FunctionSelector fs = (FunctionSelector) selector;
-                String fSignature = getFunction(connectorName, fs.getFunctionName()).getSignature();
-                String functionType = fSignature.substring(fSignature.lastIndexOf(":Tuple[") + 7,
-                                fSignature.length() - 1);
-                sb.append(functionType);
-                break;
-            case COLUMN:
-                ColumnSelector cs = (ColumnSelector) selector;
-                if(cs.getName().getTableName().isVirtual()){
-                    ColumnType colType=new ColumnType(DataType.TEXT);
-                    sb.append(colType);
-                }else {
-                    ColumnName columnName = cs.getName();
-                    ColumnMetadata column = getColumn(columnName);
-                    ColumnType columnType = column.getColumnType();
-                    sb.append(columnType.getCrossdataType());
-                }
-                break;
-            case BOOLEAN:
-                sb.append(new ColumnType(DataType.BOOLEAN).getCrossdataType());
-                break;
-            case STRING:
-                sb.append(new ColumnType(DataType.TEXT).getCrossdataType());
-                break;
-            case INTEGER:
-                sb.append(new ColumnType(DataType.INT).getCrossdataType());
-                break;
-            case FLOATING_POINT:
-                sb.append(new ColumnType(DataType.DOUBLE).getCrossdataType());
-                break;
-            case RELATION:
-                sb.append(new ColumnType(DataType.DOUBLE).getCrossdataType());
-                break;
-            case ASTERISK:
-            default:
-                throw new PlanningException("The input type : "+selector.getType()+" is not supported yet");
-            }
+            sb.append(inferDataType(selector, connectorName, subQuery));
             if(iter.hasNext()){
                 sb.append(",");
             }
         }
         sb.append("])");
         return  sb.toString();
+    }
+
+    private String inferDataType(Selector selector, ConnectorName connectorName, SelectValidatedQuery subQuery) throws
+            PlanningException {
+        String result = null;
+        switch(selector.getType()){
+        case FUNCTION:
+            FunctionSelector fs = (FunctionSelector) selector;
+            String fSignature = getFunction(connectorName, fs.getFunctionName()).getSignature();
+            String functionType = fSignature.substring(
+                    fSignature.lastIndexOf(":Tuple[") + 7, fSignature.length() - 1);
+            result = functionType;
+            break;
+        case COLUMN:
+            ColumnSelector cs = (ColumnSelector) selector;
+            if(cs.getName().getTableName().isVirtual()){
+                if(subQuery == null){
+                    throw new PlanningException("Can't infer data type for " + selector);
+                }
+                List<Selector> subSelectors = subQuery.getStatement().getSelectExpression().getSelectorList();
+                for(Selector ss: subSelectors){
+                    if(ss.getColumnName().getName().equals(cs.getColumnName().getName())
+                            || ss.getAlias().equals(cs.getColumnName().getName())){
+                        result = inferDataType(ss, connectorName, subQuery.getSubqueryValidatedQuery());
+                        break;
+                    }
+                }
+            } else {
+                ColumnName columnName = cs.getName();
+                ColumnMetadata column = getColumn(columnName);
+                ColumnType columnType = column.getColumnType();
+                result = columnType.getCrossdataType();
+            }
+            break;
+        case BOOLEAN:
+            result = new ColumnType(DataType.BOOLEAN).getCrossdataType();
+            break;
+        case STRING:
+            result = new ColumnType(DataType.TEXT).getCrossdataType();
+            break;
+        case INTEGER:
+            result = new ColumnType(DataType.INT).getCrossdataType();
+            break;
+        case FLOATING_POINT:
+            result = new ColumnType(DataType.DOUBLE).getCrossdataType();
+            break;
+        //TODO check the real returning type
+        case RELATION:
+            result = new ColumnType(DataType.DOUBLE).getCrossdataType();
+            break;
+        case LIST:
+            result = new ColumnType(DataType.LIST).getCrossdataType();
+            break;
+        case CASE_WHEN:
+            CaseWhenSelector cws = (CaseWhenSelector) selector;
+            result = inferDataType(cws.getDefaultValue(), connectorName, null);
+            break;
+        case SELECT:
+            SelectSelector ss = (SelectSelector) selector;
+            Select select = (Select) ss.getQueryWorkflow().getLastStep();
+            Selector s = select.getColumnMap().keySet().iterator().next();
+            result = inferDataType(s, connectorName, subQuery);
+            break;
+        case ALIAS:
+            result = new ColumnType(DataType.TEXT).getCrossdataType();
+            break;
+        default:
+            throw new PlanningException("The input type : "+selector.getType()+" is not supported yet");
+        }
+        return result;
     }
 
     /**
