@@ -171,7 +171,7 @@ public class Relation extends AbstractRelation {
         }
         sb.append(leftTerm.toString());
         sb.append(" ").append(operator).append(" ");
-        sb.append(rightTerm);
+        sb.append(rightTerm.toString());
         if(isParenthesis()){
             sb.append(")");
         }
