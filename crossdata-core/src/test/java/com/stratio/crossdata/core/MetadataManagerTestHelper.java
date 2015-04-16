@@ -252,9 +252,18 @@ public enum MetadataManagerTestHelper {
      */
     public DataStoreName createTestDatastore() {
         // Create & add DataStore
+        createTestDatastore("dataStoreTest", "production");
         final String DATASTORE_NAME = "dataStoreTest";
         DataStoreName dataStoreName = new DataStoreName(DATASTORE_NAME);
         insertDataStore(DATASTORE_NAME, "production");
+        return dataStoreName;
+    }
+
+    public DataStoreName createTestDatastore(String datastore, String cluster) {
+        // Create & add DataStore
+        final String DATASTORE_NAME = datastore;
+        DataStoreName dataStoreName = new DataStoreName(DATASTORE_NAME);
+        insertDataStore(DATASTORE_NAME, cluster);
         return dataStoreName;
     }
 
@@ -331,7 +340,11 @@ public enum MetadataManagerTestHelper {
         functionType.setSignature("concat(Tuple[Text, Text]):Tuple[Text]");
         functionType.setFunctionType("simple");
         functionsList.add(functionType);*/
-        functions.setFunction(functionsList);
+        if(functions.getFunction() == null){
+            functions.setFunction(functionsList);
+        } else {
+            functions.getFunction().addAll(functionsList);
+        }
         ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
                 clusterProperties, clusterWithPriorities, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
         connectorMetadata.setClusterRefs(new HashSet<>(clusterWithPriorities.keySet()));

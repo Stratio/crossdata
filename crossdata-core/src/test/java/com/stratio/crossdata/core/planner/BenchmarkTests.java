@@ -21,7 +21,6 @@ package com.stratio.crossdata.core.planner;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
-import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,10 +38,8 @@ import org.testng.annotations.Test;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
-import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.QueryWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
@@ -56,9 +53,6 @@ import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
-import com.stratio.crossdata.core.query.IParsedQuery;
-import com.stratio.crossdata.core.query.SelectParsedQuery;
-import com.stratio.crossdata.core.validator.Validator;
 
 public class BenchmarkTests extends PlannerBaseTest {
 
@@ -90,85 +84,83 @@ public class BenchmarkTests extends PlannerBaseTest {
     @BeforeClass(dependsOnMethods = {"setUp"})
     public void init() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
-        dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
+        clusterName = new ClusterName("benchmarkCluster");
+        dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore("benchmarkDatastore", clusterName.getName());
 
         //Connector with join.
-        Set<Operations> operationsC1 = new HashSet<>();
-        operationsC1.add(Operations.PROJECT);
-        operationsC1.add(Operations.SELECT_OPERATOR);
-        operationsC1.add(Operations.SELECT_FUNCTIONS);
-        operationsC1.add(Operations.SELECT_WINDOW);
-        operationsC1.add(Operations.SELECT_GROUP_BY);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_EQ);
-        operationsC1.add(Operations.DELETE_PK_EQ);
-        operationsC1.add(Operations.CREATE_INDEX);
-        operationsC1.add(Operations.DROP_INDEX);
-        operationsC1.add(Operations.UPDATE_PK_EQ);
-        operationsC1.add(Operations.TRUNCATE_TABLE);
-        operationsC1.add(Operations.DROP_TABLE);
-        operationsC1.add(Operations.PAGINATION);
-        operationsC1.add(Operations.INSERT);
-        operationsC1.add(Operations.INSERT_IF_NOT_EXISTS);
-        operationsC1.add(Operations.INSERT_FROM_SELECT);
-        operationsC1.add(Operations.SELECT_SUBQUERY);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_LET);
-        operationsC1.add(Operations.SELECT_ORDER_BY);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_BETWEEN);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_NOT_LIKE);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_LIKE);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_LT);
-        operationsC1.add(Operations.FILTER_FUNCTION_IN);
-        operationsC1.add(Operations.SELECT_INNER_JOIN);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_GT);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
+        Set<Operations> benchmarkOperations = new HashSet<>();
+        benchmarkOperations.add(Operations.PROJECT);
+        benchmarkOperations.add(Operations.SELECT_OPERATOR);
+        benchmarkOperations.add(Operations.SELECT_FUNCTIONS);
+        benchmarkOperations.add(Operations.SELECT_WINDOW);
+        benchmarkOperations.add(Operations.SELECT_GROUP_BY);
+        benchmarkOperations.add(Operations.FILTER_NON_INDEXED_EQ);
+        benchmarkOperations.add(Operations.DELETE_PK_EQ);
+        benchmarkOperations.add(Operations.CREATE_INDEX);
+        benchmarkOperations.add(Operations.DROP_INDEX);
+        benchmarkOperations.add(Operations.UPDATE_PK_EQ);
+        benchmarkOperations.add(Operations.TRUNCATE_TABLE);
+        benchmarkOperations.add(Operations.DROP_TABLE);
+        benchmarkOperations.add(Operations.PAGINATION);
+        benchmarkOperations.add(Operations.INSERT);
+        benchmarkOperations.add(Operations.INSERT_IF_NOT_EXISTS);
+        benchmarkOperations.add(Operations.INSERT_FROM_SELECT);
+        benchmarkOperations.add(Operations.SELECT_SUBQUERY);
+        benchmarkOperations.add(Operations.FILTER_NON_INDEXED_LET);
+        benchmarkOperations.add(Operations.SELECT_ORDER_BY);
+        benchmarkOperations.add(Operations.FILTER_NON_INDEXED_BETWEEN);
+        benchmarkOperations.add(Operations.FILTER_NON_INDEXED_NOT_LIKE);
+        benchmarkOperations.add(Operations.FILTER_NON_INDEXED_LIKE);
+        benchmarkOperations.add(Operations.FILTER_NON_INDEXED_GET);
+        benchmarkOperations.add(Operations.FILTER_NON_INDEXED_LT);
+        benchmarkOperations.add(Operations.FILTER_FUNCTION_IN);
+        benchmarkOperations.add(Operations.SELECT_INNER_JOIN);
+        benchmarkOperations.add(Operations.FILTER_NON_INDEXED_GT);
+        benchmarkOperations.add(Operations.FILTER_NON_INDEXED_IN);
 
 
-        String strClusterName = "TestCluster1";
-        clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
+        clusterWithDefaultPriority.put(new ClusterName(clusterName.getName()), Constants.DEFAULT_PRIORITY);
 
-        List<FunctionType> functions1 = new ArrayList<>();
+        List<FunctionType> benchmarkFunctions = new ArrayList<>();
         // SUM function
         FunctionType sumFunction = new FunctionType();
         sumFunction.setFunctionName("sum");
         sumFunction.setSignature("sum(Tuple[Double]):Tuple[Double]");
         sumFunction.setFunctionType("aggregation");
         sumFunction.setDescription("Total sum");
-        functions1.add(sumFunction);
+        benchmarkFunctions.add(sumFunction);
         // AVG function
         FunctionType avgFunction = new FunctionType();
         avgFunction.setFunctionName("avg");
         avgFunction.setSignature("avg(Tuple[Double]):Tuple[Double]");
         avgFunction.setFunctionType("aggregation");
         avgFunction.setDescription("Average");
-        functions1.add(avgFunction);
+        benchmarkFunctions.add(avgFunction);
         // COUNT function
         FunctionType countFunction = new FunctionType();
         countFunction.setFunctionName("count");
         countFunction.setSignature("count(Tuple[Any*]):Tuple[Int]");
         countFunction.setFunctionType("aggregation");
         countFunction.setDescription("Count");
-        functions1.add(countFunction);
+        benchmarkFunctions.add(countFunction);
         //SUBSTRING function
         FunctionType substringFunction = new FunctionType();
-        countFunction.setFunctionName("substring");
-        countFunction.setSignature("substring(Tuple[Any*]):Tuple[Int]");
-        countFunction.setFunctionType("simple");
-        countFunction.setDescription("Substring");
-        functions1.add(substringFunction);
+        substringFunction.setFunctionName("substring");
+        substringFunction.setSignature("substring(Tuple[Any*]):Tuple[Int]");
+        substringFunction.setFunctionType("simple");
+        substringFunction.setDescription("Substring");
+        benchmarkFunctions.add(substringFunction);
         //Concat function
         FunctionType functionType = new FunctionType();
         functionType.setFunctionName("concat");
         functionType.setSignature("concat(Tuple[Text, Text]):Tuple[Text]");
         functionType.setFunctionType("simple");
-        functions1.add(functionType);
+        benchmarkFunctions.add(functionType);
 
+        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("benchmarkConnector", dataStoreName,
+                clusterWithDefaultPriority, benchmarkOperations, "benchmarkActorRef", benchmarkFunctions);
 
-
-        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
-                clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
-
-        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName());
+        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(clusterName.getName(), dataStoreName, connector1.getName());
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         createTestTables(catalogName);
     }
@@ -733,7 +725,6 @@ public class BenchmarkTests extends PlannerBaseTest {
         LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
-    // Hierarchical Data is not supported
     @Test
     public void testQ07() throws ManifestException {
 
@@ -770,15 +761,14 @@ public class BenchmarkTests extends PlannerBaseTest {
                     + "GROUP BY supp_nation, cust_nation, l_year "
                     + "ORDER BY supp_nation, cust_nation, l_year;";
 
-        /*
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ07", false, true,
                 supplier, lineitem, orders, customer, nation);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
         assertNotNull(queryWorkflow.getWorkflow().getSqlDirectQuery(), "Invalid SQL Direct");
-        */
 
+        /*
         IParsedQuery stmt = helperPT.testRegularStatement(inputText, "testQ07", false);
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
 
@@ -794,6 +784,7 @@ public class BenchmarkTests extends PlannerBaseTest {
             assertNotNull(e, "Exception cannot be null");
         }
         assertTrue(failed, "Test should have failed");
+        */
     }
 
     @Test
@@ -856,6 +847,14 @@ public class BenchmarkTests extends PlannerBaseTest {
                     + "ORDER BY "
                     + "o_year;";
 
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ08", false, true,
+                supplier, lineitem, orders, customer, nation);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        assertNotNull(queryWorkflow.getWorkflow().getSqlDirectQuery(), "Invalid SQL Direct");
+
+        /*
         BaseQuery baseQuery = new BaseQuery(
                 UUID.randomUUID().toString(),
                 inputText,
@@ -863,6 +862,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                 "sessionTest");
         Parser parser = new Parser();
         parser.parse(baseQuery);
+        */
     }
 
     @Test
