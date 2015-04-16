@@ -71,7 +71,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         MetadataManagerTestHelper.HELPER.initHelper();
         dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
-        //Connector with join.
+        //Connector with JOIN.
         Set<Operations> operationsC1 = new HashSet<>();
         operationsC1.add(Operations.PROJECT);
         operationsC1.add(Operations.SELECT_OPERATOR);
@@ -101,6 +101,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_INNER_JOIN);
         operationsC1.add(Operations.SELECT_LIMIT);
         operationsC1.add(Operations.FILTER_NON_INDEXED_GT);
+        operationsC1.add(Operations.FILTER_FUNCTION_IN);
+        operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -346,13 +348,15 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc],    select substring(c_state,1,1) as country," + "    count(*) as numcust,"
-                        + "    sum(c_balance) as totacctbal from" + "    tpcc.customer" + "    inner join"
-                        + "    (select avg(sub.c_balance) as balance from  tpcc.customer sub where  sub.c_balance > 0.00 and substring(sub.c_phone,1,1) in ['1','2','3','4','5','6','7']) y"
-                        + "    where  substring(c_phone,1,1) in ['1','2','3','4','5','6','7']"
-                        + "    and c_balance > y.balance"
-                        + "    group by substring(c_state,1,1)"
-                        + "    order by country;";
+        String inputText = "[tpcc], SELECT substring(c_state,1,1) AS country, count(*) AS numcust, sum(c_balance) AS totacctbal "
+                        + "FROM tpcc.customer "
+                        + " INNER JOIN"
+                        + " ( SELECT avg(sub.c_balance) AS balance "
+                                + "FROM tpcc.customer sub WHERE  sub.c_balance > 0.00 AND substring(sub.c_phone,1,1) IN ['1','2','3','4','5','6','7']) y"
+                        + "    WHERE  substring(c_phone,1,1) IN ['1','2','3','4','5','6','7']"
+                        + "    AND c_balance > y.balance"
+                        + "    GROUP BY substring(c_state,1,1)"
+                        + "    ORDER BY country;";
 
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ00", false, false, customer);
@@ -367,13 +371,13 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc],    select substring(c_state,1,1) as country,"
-                        + "    count(*) as numcust,"
-                        + "    sum(c_balance) as totacctbal from"
-                        + "    (select avg(sub.c_balance) as balance from  tpcc.customer sub where  sub.c_balance > 0.00 ) y"
-                        + "    inner join tpcc.customer on c_balance = y.balance "
-                        + "    group by c_state"
-                        + "    order by country;";
+        String inputText = "[tpcc], SELECT substring(c_state,1,1) AS country,"
+                        + "    count(*) AS numcust,"
+                        + "    sum(c_balance) AS totacctbal FROM"
+                        + "    ( SELECT avg(sub.c_balance) AS balance FROM  tpcc.customer sub WHERE  sub.c_balance > 0.00 ) y"
+                        + "    INNER JOIN tpcc.customer on c_balance = y.balance "
+                        + "    GROUP BY c_state"
+                        + "    ORDER BY country;";
 
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ0", false, false, customer);
@@ -388,14 +392,14 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc],    select substring(c_state,1,1) as country,"
-                        + "    count(*) as numcust,"
-                        + "    sum(c_balance) as totacctbal from"
-                        + "    (select avg(sub.c_balance) as balance from  tpcc.customer sub where  sub.c_balance > 0.00 and substring(sub.c_phone,1,1) in ['1','2','3','4','5','6','7']) y"
-                        + "    inner join tpcc.customer on c_balance = y.balance "
-                        + "    where  c_phone in ['1','2','3','4','5','6','7']"
-                        + "    group by c_state"
-                        + "    order by country;";
+        String inputText = "[tpcc], SELECT substring(c_state,1,1) AS country,"
+                        + "    count(*) AS numcust,"
+                        + "    sum(c_balance) AS totacctbal FROM"
+                        + "    ( SELECT avg(sub.c_balance) AS balance FROM  tpcc.customer sub WHERE  sub.c_balance > 0.00 AND substring(sub.c_phone,1,1) IN ['1','2','3','4','5','6','7']) y"
+                        + "    INNER JOIN tpcc.customer on c_balance = y.balance "
+                        + "    WHERE  c_phone IN ['1','2','3','4','5','6','7']"
+                        + "    GROUP BY c_state"
+                        + "    ORDER BY country;";
 
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ0", false, false, customer);
@@ -409,10 +413,10 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc], "
-                + "select ol_o_id, ol_d_id,ol_w_id,sum(ol_quantity),avg(ol_quantity),sum(ol_amount) as suma,avg(ol_amount),count(*) "
-                        + "    from tpcc.order_line where ol_d_id=4 and ol_w_id=175 "
-                        + "    group by ol_o_id, ol_d_id,ol_w_id order by  sum(ol_amount) desc limit 10;";
+        String inputText = "[tpcc], SELECT "
+                + "ol_o_id, ol_d_id, ol_w_id, sum(ol_quantity), avg(ol_quantity), sum(ol_amount) AS suma, avg(ol_amount),count(*) "
+                + "FROM tpcc.order_line WHERE ol_d_id=4 AND ol_w_id=175 "
+                + "GROUP BY ol_o_id, ol_d_id,ol_w_id ORDER BY sum(ol_amount) desc limit 10;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testQ01Hive", false, false, order_line);
@@ -428,9 +432,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc], "
-                        + "select ol_o_id, ol_d_id,ol_w_id,sum(ol_quantity),avg(ol_quantity),sum(ol_amount) as suma,avg(ol_amount),count(*) "
-                        + "    from tpcc.order_line where ol_d_id=4 and ol_w_id=175 "
-                        + "    group by ol_o_id, ol_d_id,ol_w_id order by ol_amount desc limit 10;";
+                        + " SELECT ol_o_id, ol_d_id,ol_w_id,sum(ol_quantity),avg(ol_quantity),sum(ol_amount) AS suma,avg(ol_amount),count(*) "
+                        + "    FROM tpcc.order_line WHERE ol_d_id=4 AND ol_w_id=175 "
+                        + "    GROUP BY ol_o_id, ol_d_id,ol_w_id ORDER BY ol_amount desc limit 10;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                         inputText, "testQ01Crossdata", false, false, order_line);
@@ -445,14 +449,14 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc], "
-                        + "select OL.OL_w_id,OL.OL_D_id,OL.OL_O_id,AVG_Amoun,avg(OL.ol_amount) "
-                        + "from "
-                        + "(select d_id,d_w_id, avg(ol_amount) as AVG_Amoun "
-                        + "    from tpcc.district D, tpcc.order_line OL_A where D.d_id=OL_A.ol_d_id and D.d_w_id=OL_A.ol_w_id and"
-                        + "    d_id=3 and d_w_id=241 group by d_id,d_w_id"
+                        + " SELECT OL.OL_w_id,OL.OL_D_id,OL.OL_O_id,AVG_Amoun,avg(OL.ol_amount) "
+                        + "FROM "
+                        + "( SELECT d_id,d_w_id, avg(ol_amount) AS AVG_Amoun "
+                        + "    FROM tpcc.district D, tpcc.order_line OL_A WHERE D.d_id=OL_A.ol_d_id AND D.d_w_id=OL_A.ol_w_id and"
+                        + "    d_id=3 AND d_w_id=241 GROUP BY d_id,d_w_id"
                         + ") A, tpcc.order_line OL "
-                        + "   where A.d_id=OL.ol_d_id and A.d_w_id=OL.ol_w_id and OL.ol_d_id=${random(district)} and OL.ol_w_id=${random(0,tpcc.number.warehouses)} "
-                        + "   group by OL.OL_w_id,OL.OL_D_id,OL.OL_O_id,AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun order by avg(OL.ol_amount) desc;";
+                        + "   WHERE A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id AND OL.ol_d_id=${random(district)} AND OL.ol_w_id=${random(0,tpcc.number.warehouses)} "
+                        + "   GROUP BY OL.OL_w_id,OL.OL_D_id,OL.OL_O_id,AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun ORDER BY avg(OL.ol_amount) desc;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                         inputText, "testQ02", false, false, order_line);
@@ -467,13 +471,13 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc], "
-                        + "select OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,AVG_Amoun,avg(OL.ol_amount) as average from "
-                        + "(select d_id,d_w_id, avg(ol_amount) as AVG_Amoun"
-                            + " from tpcc.district D, tpcc.order_line OL_A where D.d_id=OL_A.ol_d_id and D.d_w_id=OL_A.ol_w_id and "
-                            + "d_id=3 and d_w_id=241 group by d_id,d_w_id"
+                        + " SELECT OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,AVG_Amoun,avg(OL.ol_amount) AS average FROM "
+                        + "( SELECT d_id,d_w_id, avg(ol_amount) AS AVG_Amoun"
+                            + " FROM tpcc.district D, tpcc.order_line OL_A WHERE D.d_id=OL_A.ol_d_id AND D.d_w_id=OL_A.ol_w_id AND "
+                            + "d_id=3 AND d_w_id=241 GROUP BY d_id,d_w_id"
                         + ") A, "
                         + "tpcc.order_line OL "
-                        + "where A.d_id=OL.ol_d_id and A.d_w_id=OL.ol_w_id and OL.ol_d_id=3 and OL.ol_w_id=241 group by OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun order by average desc;";
+                        + "WHERE A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id AND OL.ol_d_id=3 AND OL.ol_w_id=241 GROUP BY OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun ORDER BY average desc;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                         inputText, "testQ02", false, false, order_line);
@@ -488,14 +492,14 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc], "
-                        + "select OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,avg(OL.ol_amount) as average from "
-                        + "(select d_id,d_w_id"
-                        + " from tpcc.district D inner join tpcc.order_line OL_A on D.d_id=OL_A.ol_d_id and D.d_w_id=OL_A.ol_w_id "
-                        + "where d_id=3 and d_w_id=241 group by d_id,d_w_id"
-                        + ") A inner join  "
-                        + "tpcc.order_line as OL ON A.d_id=OL.ol_d_id and A.d_w_id=OL.ol_w_id "
-                        + "where OL.ol_w_id=241 and OL.ol_d_id=3 "
-                        + "group by OL.ol_w_id,OL.ol_d_id,OL.ol_o_id order by average desc;";
+                        + " SELECT OL.ol_w_id,OL.ol_d_id,OL.ol_o_id,avg(OL.ol_amount) AS average FROM "
+                        + "( SELECT d_id,d_w_id"
+                        + " FROM tpcc.district D INNER JOIN tpcc.order_line OL_A on D.d_id=OL_A.ol_d_id AND D.d_w_id=OL_A.ol_w_id "
+                        + "WHERE d_id=3 AND d_w_id=241 GROUP BY d_id,d_w_id"
+                        + ") A INNER JOIN  "
+                        + "tpcc.order_line AS OL ON A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id "
+                        + "WHERE OL.ol_w_id=241 AND OL.ol_d_id=3 "
+                        + "GROUP BY OL.ol_w_id,OL.ol_d_id,OL.ol_o_id ORDER BY average desc;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                         inputText, "testQ02", false, false, order_line);
@@ -512,10 +516,10 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc], select c_d_id,c_credit,count(o_id) from tpcc.customer"
-                        + " inner join tpcc.order on c_d_id=o_d_id and c_w_id=o_w_id and o_c_id=c_id"
-                        + "    where c_w_id=168  group by c_credit,c_d_id "
-                        + "    order by c_d_id, c_credit;";
+        String inputText = "[tpcc],  SELECT c_d_id,c_credit,count(o_id) FROM tpcc.customer"
+                        + " INNER JOIN tpcc.order on c_d_id=o_d_id AND c_w_id=o_w_id AND o_c_id=c_id"
+                        + "    WHERE c_w_id=168  GROUP BY c_credit,c_d_id "
+                        + "    ORDER BY c_d_id, c_credit;";
         
         
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ3", false, false, customer, order);
@@ -532,22 +536,22 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc],  select "
+        String inputText = "[tpcc],   SELECT "
                         + "    c.c_state,days_between(o.o_entry_d,ol.ol_delivery_d), sum(ol.ol_amount),avg(ol.ol_amount) "
-                        + "    from tpcc.order_line ol,"
+                        + "    FROM tpcc.order_line ol,"
                         + "    tpcc.order o,"
                         + "    tpcc.customer c "
-                        + "    where o.o_id=ol.ol_o_id  "
-                        + "    and o.o_d_id=ol.ol_d_id  "
-                        + "    and o.o_w_id=ol.ol_w_id and o.o_c_id=c.c_id "
-                        + "    and o.o_d_id=c.c_d_id "
-                        + "    and o.o_w_id=c.c_w_id "
-                        + "    and c.c_w_id=100 "
-                        + "    and c_since>= "
-                        + "     (select add_days(max(c_since),-7) from tpcc.customer c )"
-                        + "    and days_between(o.o_entry_d,ol.ol_delivery_d)>30 "
-                        + "    group by c.c_state,days_between(o.o_entry_d,ol.ol_delivery_d)"
-                        + "    order by count(*) desc LIMIT 10;";
+                        + "    WHERE o.o_id=ol.ol_o_id  "
+                        + "    AND o.o_d_id=ol.ol_d_id  "
+                        + "    AND o.o_w_id=ol.ol_w_id AND o.o_c_id=c.c_id "
+                        + "    AND o.o_d_id=c.c_d_id "
+                        + "    AND o.o_w_id=c.c_w_id "
+                        + "    AND c.c_w_id=100 "
+                        + "    AND c_since>= "
+                        + "     ( SELECT add_days(max(c_since),-7) FROM tpcc.customer c )"
+                        + "    AND days_between(o.o_entry_d,ol.ol_delivery_d)>30 "
+                        + "    GROUP BY c.c_state,days_between(o.o_entry_d,ol.ol_delivery_d)"
+                        + "    ORDER BY count(*) desc LIMIT 10;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4", false, false, order, customer);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -562,9 +566,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc],select s_i_id,i_price, s_quantity, i_name,count(*) as numero_pedidos, sum(i_price*s_quantity) as venta_total "
-                        + "from tpcc.stock, tpcc.item where i_id=s_i_id and i_name like 'af%' "
-                        + "group by  s_i_id,i_price, s_quantity, i_name order by venta_total desc LIMIT 100;";
+        String inputText = "[tpcc], SELECT s_i_id,i_price, s_quantity, i_name,count(*) AS numero_pedidos, sum(i_price*s_quantity) AS venta_total "
+                        + "FROM tpcc.stock, tpcc.item WHERE i_id=s_i_id AND i_name LIKE 'af%' "
+                        + "GROUP BY  s_i_id,i_price, s_quantity, i_name ORDER BY venta_total desc LIMIT 100;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ5", false, false, customer, stock, item);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -577,9 +581,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc],select s_i_id,i_price, s_quantity, i_name,count(*) as numero_pedidos, sum(i_price*s_quantity) as venta_total "
-                        + "from tpcc.stock inner join tpcc.item on i_id=s_i_id where i_name like 'af%' "
-                        + "group by  s_i_id,i_price, s_quantity, i_name order by venta_total desc LIMIT 100;";
+        String inputText = "[tpcc], SELECT s_i_id,i_price, s_quantity, i_name,count(*) AS numero_pedidos, sum(i_price*s_quantity) AS venta_total "
+                        + "FROM tpcc.stock INNER JOIN tpcc.item on i_id=s_i_id WHERE i_name LIKE 'af%' "
+                        + "GROUP BY  s_i_id,i_price, s_quantity, i_name ORDER BY venta_total desc LIMIT 100;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ5", false, false, customer, stock, item);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -595,8 +599,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         String inputText = "[tpcc], "
                         + "   SELECT s_w_id,count(*) FROM tpcc.stock"
-                        + " where s_quantity>85 and "
-                        + " s_quantity <= 115 group by s_w_id;";
+                        + " WHERE s_quantity>85 AND "
+                        + " s_quantity <= 115 GROUP BY s_w_id;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ6", false, false, stock);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -610,7 +614,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc],"
-                        + "  select max(ol_amount) from tpcc.order_line;";
+                        + "   SELECT max(ol_amount) FROM tpcc.order_line;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ7", false, false, order_line);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -624,7 +628,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc],      select max(ol_amount),max(ol_quantity) from tpcc.order_line;";
+        String inputText = "[tpcc],       SELECT max(ol_amount),max(ol_quantity) FROM tpcc.order_line;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ8", false, false, order_line);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -638,8 +642,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc],  "
-                        + " select extract_day(h_date), avg(h_amount) "
-                        + "from tpcc.history where h_c_w_id=245 group by extract_day(h_date) order by extract_day(h_date);";
+                        + "  SELECT extract_day(h_date), avg(h_amount) "
+                        + "FROM tpcc.history WHERE h_c_w_id=245 GROUP BY extract_day(h_date) ORDER BY extract_day(h_date);";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ9", false, false, history);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -653,8 +657,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc],  "
-                        + " select extract_day(h_date) as alias_h_day, avg(h_amount) "
-                        + "from tpcc.history where h_c_w_id=245 group by alias_h_day order by alias_h_day;";
+                        + "  SELECT extract_day(h_date) AS alias_h_day, avg(h_amount) "
+                        + "FROM tpcc.history WHERE h_c_w_id=245 GROUP BY alias_h_day ORDER BY alias_h_day;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ9", false, false, history);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -669,29 +673,29 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc], select sum(ol_amount) as revenue  "
-                        + "    from tpcc.order_line, tpcc.item  "
-                        + "    where (  "
+        String inputText = "[tpcc],  SELECT sum(ol_amount) AS revenue  "
+                        + "    FROM tpcc.order_line, tpcc.item  "
+                        + "    WHERE (  "
                         + "                    ol_i_id = i_id  "
-                        + "                    and i_data like '%a'  "
-                        + "                    and ol_quantity >= ${random(1,5)}  "
-                        + "    and ol_quantity <= ${random(1,5)+5}  "
-                        + "    and i_price between 1 and 400000  "
-                        + "    and ol_w_id in (1,2,3)  "
+                        + "                    AND i_data LIKE '%a'  "
+                        + "                    AND ol_quantity >= ${random(1,5)}  "
+                        + "    AND ol_quantity <= ${random(1,5)+5}  "
+                        + "    AND i_price between 1 AND 400000  "
+                        + "    AND ol_w_id in (1,2,3)  "
                         + "                    ) or (  "
                         + "                    ol_i_id = i_id  "
-                        + "                    and i_data like '%b'  "
-                        + "                    and ol_quantity >= ${random(1,5)}  "
-                        + "    and ol_quantity <= ${random(1,5)+5}  "
-                        + "    and i_price between 1 and 400000  "
-                        + "    and ol_w_id in (1,2,4)  "
+                        + "                    AND i_data LIKE '%b'  "
+                        + "                    AND ol_quantity >= ${random(1,5)}  "
+                        + "    AND ol_quantity <= ${random(1,5)+5}  "
+                        + "    AND i_price between 1 AND 400000  "
+                        + "    AND ol_w_id in (1,2,4)  "
                         + "                    ) or (  "
                         + "                    ol_i_id = i_id  "
-                        + "                    and i_data like '%c'  "
-                        + "                    and ol_quantity >= ${random(1,5)}  "
-                        + "    and ol_quantity <= ${random(1,5)+5}  "
-                        + "    and i_price between 1 and 400000  "
-                        + "    and ol_w_id in (1,5,3)  "
+                        + "                    AND i_data LIKE '%c'  "
+                        + "                    AND ol_quantity >= ${random(1,5)}  "
+                        + "    AND ol_quantity <= ${random(1,5)+5}  "
+                        + "    AND i_price between 1 AND 400000  "
+                        + "    AND ol_w_id in (1,5,3)  "
                         + ");";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer, order_line, item);
@@ -708,15 +712,15 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc], "
-                        + "select ol_number,  "
-                        + "    sum(ol_quantity) as sum_qty,  "
-                        + "    sum(ol_amount) as sum_amount,  "
-                        + "    avg(ol_quantity) as avg_qty,  "
-                        + "    avg(ol_amount) as avg_amount,  "
-                        + "    count(*) as count_order  "
-                        + "    from tpcc.order_line  "
-                        + "    where ol_delivery_d > to_date('2013-10-05','YYYY-MM-DD')  "
-                        + "    group by ol_number  order by sum(ol_quantity) desc LIMIT 100;";
+                        + " SELECT ol_number,  "
+                        + "    sum(ol_quantity) AS sum_qty,  "
+                        + "    sum(ol_amount) AS sum_amount,  "
+                        + "    avg(ol_quantity) AS avg_qty,  "
+                        + "    avg(ol_amount) AS avg_amount,  "
+                        + "    count(*) AS count_order  "
+                        + "    FROM tpcc.order_line  "
+                        + "    WHERE ol_delivery_d > to_date('2013-10-05','YYYY-MM-DD')  "
+                        + "    GROUP BY ol_number  ORDER BY sum(ol_quantity) desc LIMIT 100;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ11", false, false, order_line);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -731,22 +735,22 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc], "
-                        + " select  ol_o_id, ol_w_id, ol_d_id, "
-                        + "    sum(ol_amount) as revenue, o_entry_d  "
-                        + "    from tpcc.customer, tpcc.new_order, tpcc.order, tpcc.order_line  "
-                        + "    where   c_state like 'A%'  "
-                        + "    and c_id = o_c_id  "
-                        + "    and c_w_id = o_w_id  "
-                        + "    and c_d_id = o_d_id  "
-                        + "    and no_w_id = o_w_id  "
-                        + "    and no_d_id = o_d_id  "
-                        + "    and no_o_id = o_id  "
-                        + "    and ol_w_id = o_w_id  "
-                        + "    and ol_d_id = o_d_id  "
-                        + "    and ol_o_id = o_id  "
-                        + "    and o_entry_d >  to_date('2013-07-24','YYYY-MM-DD')  "
-                        + "    group by ol_o_id, ol_w_id, ol_d_id, o_entry_d  "
-                        + "    order by revenue desc, o_entry_d limit 100";
+                        + "  SELECT  ol_o_id, ol_w_id, ol_d_id, "
+                        + "    sum(ol_amount) AS revenue, o_entry_d  "
+                        + "    FROM tpcc.customer, tpcc.new_order, tpcc.order, tpcc.order_line  "
+                        + "    WHERE   c_state LIKE 'A%'  "
+                        + "    AND c_id = o_c_id  "
+                        + "    AND c_w_id = o_w_id  "
+                        + "    AND c_d_id = o_d_id  "
+                        + "    AND no_w_id = o_w_id  "
+                        + "    AND no_d_id = o_d_id  "
+                        + "    AND no_o_id = o_id  "
+                        + "    AND ol_w_id = o_w_id  "
+                        + "    AND ol_d_id = o_d_id  "
+                        + "    AND ol_o_id = o_id  "
+                        + "    AND o_entry_d >  to_date('2013-07-24','YYYY-MM-DD')  "
+                        + "    GROUP BY ol_o_id, ol_w_id, ol_d_id, o_entry_d  "
+                        + "    ORDER BY revenue DESC, o_entry_d limit 100";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ12", false, false, customer, new_order, order, order_line);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -760,17 +764,17 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc], select top 10 o_ol_cnt,   "
-                        + "    sum(case when o_carrier_id = 1 or o_carrier_id = 2 then 1 else 0 end) as high_line_count,   "
-                        + "    sum(case when o_carrier_id <> 1 and o_carrier_id <> 2 then 1 else 0 end) as low_line_count   "
-                        + "    from  tpcc.order, tpcc.order_line   "
-                        + "    where  ol_w_id = o_w_id   "
-                        + "    and ol_d_id = o_d_id   "
-                        + "    and ol_o_id = o_id   "
-                        + "    and o_entry_d <= ol_delivery_d   "
-                        + "    and ol_delivery_d <  to_date('2013-07-09','YYYY-MM-DD')   "
-                        + "    group by o_ol_cnt   "
-                        + "    order by sum(case when o_carrier_id = 1 or o_carrier_id = 2 then 1 else 0 end) desc, sum(case when o_carrier_id <> 1 and o_carrier_id <> 2 then 1 else 0 end);";
+        String inputText = "[tpcc],  SELECT top 10 o_ol_cnt,   "
+                        + "    sum(CASE WHEN o_carrier_id = 1 or o_carrier_id = 2 THEN 1 ELSE 0 END) AS high_line_count,   "
+                        + "    sum(CASE WHEN o_carrier_id <> 1 AND o_carrier_id <> 2 THEN 1 ELSE 0 END) AS low_line_count   "
+                        + "    FROM  tpcc.order, tpcc.order_line   "
+                        + "    WHERE  ol_w_id = o_w_id   "
+                        + "    AND ol_d_id = o_d_id   "
+                        + "    AND ol_o_id = o_id   "
+                        + "    AND o_entry_d <= ol_delivery_d   "
+                        + "    AND ol_delivery_d <  to_date('2013-07-09','YYYY-MM-DD')   "
+                        + "    GROUP BY o_ol_cnt   "
+                        + "    ORDER BY sum(CASE WHEN o_carrier_id = 1 or o_carrier_id = 2 THEN 1 ELSE 0 END) DESC, sum(CASE WHEN o_carrier_id <> 1 AND o_carrier_id <> 2 THEN 1 ELSE 0 END);";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ13", false, false, customer, order, order_line);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -807,7 +811,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                     + "WHEN p_type LIKE 'PROMO%'  "
                     + "THEN l_extendedprice*(1-l_discount)  "
                     + "ELSE 0  "
-                    + "end) / sum(l_extendedprice * (1 - l_discount)) AS promo_revenue  "
+                    + "END) / sum(l_extendedprice * (1 - l_discount)) AS promo_revenue  "
                     + "FROM  "
                     + "lineitem,  "
                     + "part  "
@@ -828,7 +832,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[demo], SELECT  "
-                        + "100.00 * sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 end) "
+                        + "100.00 * sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 END) "
                         + "FROM  "
                         + "lineitem;  ";
 
@@ -844,7 +848,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[demo], SELECT  "
-                        + "sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 end) "
+                        + "sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 END) "
                         + "FROM  "
                         + "lineitem;  ";
 
@@ -860,7 +864,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[demo], SELECT  "
-                        + "sum (CASE WHEN p_type = 'PR' THEN l_extendedprice ELSE 0 end) "
+                        + "sum (CASE WHEN p_type = 'PR' THEN l_extendedprice ELSE 0 END) "
                         + "FROM  "
                         + "lineitem;  ";
 
@@ -902,7 +906,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         + "p_type,  "
                         + "p_size  "
                         + "ORDER BY  "
-                        + "supplier_cnt desc,  "
+                        + "supplier_cnt DESC,  "
                         + "p_brand,  "
                         + "p_type,  "
                         + "p_size;";
