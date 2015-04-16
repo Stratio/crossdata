@@ -146,7 +146,7 @@ public class Planner {
         query.optimizeQuery();
         LogicalWorkflow workflow = buildWorkflow(query);
         //Plan the workflow execution into different connectors.
-        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query.getQueryId(), workflow);
+        ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query, workflow);
         //Return the planned query.
         SelectPlannedQuery plannedQuery = new SelectPlannedQuery(query, executionWorkflow);
         //Add the sql direct query to the logical workflow.
@@ -184,12 +184,12 @@ public class Planner {
     /**
      * Build a execution workflow for a query analyzing the existing logical workflow.
      *
-     * @param queryId  The query identifier.
+     * @param query  The {@link com.stratio.crossdata.core.query.SelectValidatedQuery}.
      * @param workflow The {@link com.stratio.crossdata.common.logicalplan.LogicalWorkflow} associated with the query.
      * @return A {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow}.
      * @throws PlanningException If the workflow cannot be defined.
      */
-    protected ExecutionWorkflow buildExecutionWorkflow(String queryId, LogicalWorkflow workflow)
+    protected ExecutionWorkflow buildExecutionWorkflow(SelectValidatedQuery query, LogicalWorkflow workflow)
             throws PlanningException {
 
         //Get the list of tables accessed in this query
@@ -207,7 +207,7 @@ public class Planner {
         for (LogicalStep initialStep: workflow.getInitialSteps()) {
             TableName targetTable = ((Project) initialStep).getTableName();
             LOG.info("Table: " + targetTable);
-            ExecutionPath ep = defineExecutionPath(initialStep, candidatesConnectors.get(targetTable));
+            ExecutionPath ep = defineExecutionPath(initialStep, candidatesConnectors.get(targetTable), query);
             LOG.info("Last step: " + ep.getLast());
             if (UnionStep.class.isInstance(ep.getLast())) {
                 LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast());
@@ -232,7 +232,7 @@ public class Planner {
         }
 
         //Merge execution paths
-        return mergeExecutionPaths(queryId, executionPaths, unionSteps);
+        return mergeExecutionPaths(query, executionPaths, unionSteps);
     }
 
     private void logCandidateConnectors(Map<TableName, List<ConnectorMetadata>> candidatesConnectors) {
@@ -250,14 +250,16 @@ public class Planner {
     /**
      * Merge a set of execution paths solving union dependencies along.
      *
-     * @param queryId        The query identifier.
+     * @param svq            The {@link com.stratio.crossdata.core.query.SelectValidatedQuery}.
      * @param executionPaths The list of execution paths.
      * @param unionSteps     A map of union steps waiting to be merged.
      * @return A {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow}.
      * @throws PlanningException If the execution paths cannot be merged.
      */
-    protected ExecutionWorkflow mergeExecutionPaths(String queryId, List<ExecutionPath> executionPaths,
+    protected ExecutionWorkflow mergeExecutionPaths(SelectValidatedQuery svq, List<ExecutionPath> executionPaths,
             Map<UnionStep, LinkedHashSet<ExecutionPath>> unionSteps) throws PlanningException {
+
+        String queryId = svq.getQueryId();
 
         if (unionSteps.size() == 0) {
             return toExecutionWorkflow(queryId, executionPaths, executionPaths.get(0).getLast(),
@@ -342,7 +344,7 @@ public class Planner {
             }
             //unionSteps.remove(mergeStep);
 
-            ExecutionPath next = defineExecutionPath(mergeStep, mergeConnectors);
+            ExecutionPath next = defineExecutionPath(mergeStep, mergeConnectors, svq);
             if (Select.class.isInstance(next.getLast())) {
                 exit = true;
                 ExecutionWorkflow mergeWorkflow = extendExecutionWorkflow(queryId, toMerge, next,
@@ -529,7 +531,8 @@ public class Planner {
      * @return An {@link com.stratio.crossdata.common.executionplan.ExecutionPath}.
      * @throws PlanningException If the execution path cannot be determined.
      */
-    protected ExecutionPath defineExecutionPath(LogicalStep initial, List<ConnectorMetadata> availableConnectors)
+    protected ExecutionPath defineExecutionPath(LogicalStep initial, List<ConnectorMetadata> availableConnectors,
+            SelectValidatedQuery svq)
             throws PlanningException {
 
         LogicalStep last = null;
@@ -559,7 +562,7 @@ public class Planner {
                             case SELECT_FUNCTIONS:
                                 Select select = (Select) current;
                                 Set<Selector> cols = select.getColumnMap().keySet();
-                                if (!checkFunctionsConsistency(connector, sFunctions, cols)) {
+                                if (!checkFunctionsConsistency(connector, sFunctions, cols, svq)) {
                                     toRemove.add(connector);
                                     LOG.debug("Connector " + connector + " doesn't support all these operations: "
                                             + current.getOperations());
@@ -619,7 +622,7 @@ public class Planner {
      * @throws PlanningException
      */
     private boolean checkFunctionsConsistency(ConnectorMetadata connectorMetadata, Set<String> supportedFunctions,
-            Set<Selector> selectors) throws PlanningException {
+            Set<Selector> selectors, SelectValidatedQuery svq) throws PlanningException {
 
         boolean areFunctionsConsistent = true;
         Iterator<Selector> selectorIterator = selectors.iterator();
@@ -632,13 +635,15 @@ public class Planner {
                     areFunctionsConsistent = false;
                     break;
                 } else {
-                    if (!MetadataManager.MANAGER.checkInputSignature(fSelector, connectorMetadata.getName())) {
+                    if (!MetadataManager.MANAGER.checkInputSignature(fSelector, connectorMetadata.getName(), svq.getSubqueryValidatedQuery())) {
                         areFunctionsConsistent = false;
                         break;
                     }
                 }
-                areFunctionsConsistent = checkFunctionsConsistency(connectorMetadata, supportedFunctions,
-                        new HashSet<>(fSelector.getFunctionColumns()));
+                areFunctionsConsistent = checkFunctionsConsistency(
+                        connectorMetadata, supportedFunctions,
+                        new HashSet<>(fSelector.getFunctionColumns()),
+                        svq);
             }
         }
         return areFunctionsConsistent;
@@ -1439,7 +1444,7 @@ public class Planner {
             LogicalWorkflow selectLogicalWorkflow = buildWorkflow(selectValidatedQuery);
             selectLogicalWorkflow = addAliasFromInsertToSelect(insertIntoStatement, selectLogicalWorkflow);
             ExecutionWorkflow selectExecutionWorkflow = buildExecutionWorkflow(
-                    selectValidatedQuery.getQueryId(),
+                    selectValidatedQuery,
                     selectLogicalWorkflow);
 
             // FIND CANDIDATES

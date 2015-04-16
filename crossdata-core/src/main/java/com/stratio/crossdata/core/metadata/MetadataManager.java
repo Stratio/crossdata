@@ -71,6 +71,7 @@ import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.SelectSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
 
 /**
  * Singleton to manage the metadata store.
@@ -1218,12 +1219,12 @@ public enum MetadataManager {
      * @param connectorName The name of the connector.
      * @return A boolean with the check result.
      */
-    public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName)
+    public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName, SelectValidatedQuery subQuery)
             throws PlanningException {
         boolean result = false;
         FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
         if(ft != null){
-            String inputSignatureFromSelector = createInputSignature(fSelector, connectorName);
+            String inputSignatureFromSelector = createInputSignature(fSelector, connectorName, subQuery);
             String storedSignature = ft.getSignature();
             String inputStoredSignature = storedSignature.substring(0,storedSignature.lastIndexOf(":Tuple["));
             result = inputStoredSignature.equals(inputSignatureFromSelector) ||
@@ -1255,7 +1256,7 @@ public enum MetadataManager {
      * @param functionSelector The function selector.
      * @return A String with the input signature.
      */
-    private String createInputSignature(FunctionSelector functionSelector, ConnectorName connectorName)
+    private String createInputSignature(FunctionSelector functionSelector, ConnectorName connectorName, SelectValidatedQuery subQuery)
                     throws PlanningException {
 
         StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
@@ -1263,7 +1264,7 @@ public enum MetadataManager {
         Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
         while(iter.hasNext()){
             Selector selector = iter.next();
-            sb.append(inferDataType(selector, connectorName));
+            sb.append(inferDataType(selector, connectorName, subQuery));
             if(iter.hasNext()){
                 sb.append(",");
             }
@@ -1272,8 +1273,9 @@ public enum MetadataManager {
         return  sb.toString();
     }
 
-    private String inferDataType(Selector selector, ConnectorName connectorName) throws PlanningException {
-        String result;
+    private String inferDataType(Selector selector, ConnectorName connectorName, SelectValidatedQuery subQuery) throws
+            PlanningException {
+        String result = null;
         switch(selector.getType()){
         case FUNCTION:
             FunctionSelector fs = (FunctionSelector) selector;
@@ -1285,8 +1287,17 @@ public enum MetadataManager {
         case COLUMN:
             ColumnSelector cs = (ColumnSelector) selector;
             if(cs.getName().getTableName().isVirtual()){
-                ColumnType colType = new ColumnType(DataType.TEXT);
-                result = colType.getCrossdataType();
+                if(subQuery == null){
+                    throw new PlanningException("Can't infer data type for " + selector);
+                }
+                List<Selector> subSelectors = subQuery.getStatement().getSelectExpression().getSelectorList();
+                for(Selector ss: subSelectors){
+                    if(ss.getColumnName().getName().equals(cs.getColumnName().getName())
+                            || ss.getAlias().equals(cs.getColumnName().getName())){
+                        result = inferDataType(ss, connectorName, subQuery.getSubqueryValidatedQuery());
+                        break;
+                    }
+                }
             } else {
                 ColumnName columnName = cs.getName();
                 ColumnMetadata column = getColumn(columnName);
@@ -1315,13 +1326,13 @@ public enum MetadataManager {
             break;
         case CASE_WHEN:
             CaseWhenSelector cws = (CaseWhenSelector) selector;
-            result = inferDataType(cws.getDefaultValue(), connectorName);
+            result = inferDataType(cws.getDefaultValue(), connectorName, null);
             break;
         case SELECT:
             SelectSelector ss = (SelectSelector) selector;
             Select select = (Select) ss.getQueryWorkflow().getLastStep();
             Selector s = select.getColumnMap().keySet().iterator().next();
-            result = inferDataType(s, connectorName);
+            result = inferDataType(s, connectorName, subQuery);
             break;
         case ALIAS:
             result = new ColumnType(DataType.TEXT).getCrossdataType();
