@@ -144,7 +144,8 @@ public class InstallerGoalMojo extends AbstractMojo {
         InstallerGoalConfig config = new InstallerGoalConfig(this.outputDirectory, this.configDirectory,
                 this.includeDirectory, this.connectorName, this.description, this.userService, this.mainClass,
                 this.javaOpts,
-                this.jmxPort, mainJarRepo, dependenciesJarRepo, unixScriptTemplate, useCallingUserAsService,
+                this.jmxPort, 
+                mainJarRepo, dependenciesJarRepo, unixScriptTemplate, useCallingUserAsService,
                 pidFileName);
         try {
             InstallerGoalLauncher.launchInstallerGoal(config,getLog());
