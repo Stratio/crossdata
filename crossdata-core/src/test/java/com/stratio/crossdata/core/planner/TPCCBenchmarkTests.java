@@ -111,6 +111,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_DISJUNCTION);
         operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
         operationsC1.add(Operations.FILTER_PK_IN);
+        operationsC1.add(Operations.SELECT_LEFT_OUTER_JOIN);
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -944,7 +945,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
     }
 
     @Test
-    public void testQ13Rewrite() throws ManifestException {
+    public void testQ13() throws ManifestException {
 
         init();
 
@@ -970,32 +971,81 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-    /*
+
     @Test
     public void testQ14() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT  "
-                    + "100.00 * sum(CASE  "
-                    + "WHEN p_type LIKE 'PROMO%'  "
-                    + "THEN l_extendedprice*(1-l_discount)  "
-                    + "ELSE 0  "
-                    + "END) / sum(l_extendedprice * (1 - l_discount)) AS promo_revenue  "
-                    + "FROM  "
-                    + "lineitem,  "
-                    + "part  "
-                    + "WHERE "
-                    + "l_partkey = p_partkey  "
-                    + "AND l_shipdate >= date(\"1994-01-01\", \"yyyy-mm-dd\") "
-                    + "AND l_shipdate < date(\"1994-01-01\", \"yyyy-mm-dd\") + interval(1, \"month\") ;";
+        String inputText = "[tpcc], select c_count, count(*) as custdist " +
+                "    from " +
+                "(" +
+                "           select c_id, count(o_id) AS c_count " +
+                "           from tpcc.customer left outer join tpcc.order on ( " +
+                "                    c_w_id = o_w_id " +
+                "                    and c_d_id = o_d_id " +
+                "                    and c_id = o_c_id " +
+                "                    and o_carrier_id > 6 )" +
+                "    group by c_id" +
+                ") as c_orders " +
+                "    group by c_count " +
+                "    order by custdist desc, c_count desc LIMIT 100;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, lineitem, part);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
+
+    @Test
+    public void testQ14WithoutParenthesisWhereAdded() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc], select c_count, count(*) as custdist " +
+                "    from " +
+                "(" +
+                "           select c_id, count(o_id) AS c_count " +
+                "           from tpcc.customer left outer join tpcc.order on  " +
+                "                    c_w_id = o_w_id " +
+                "                    and c_d_id = o_d_id " +
+                "                    and c_id = o_c_id " +
+                "                    where o_carrier_id > 6 " +
+                "    group by c_id" +
+                ") as c_orders " +
+                "    group by c_count " +
+                "    order by custdist desc, c_count desc LIMIT 100;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+    @Test
+    public void testQ14Easy() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc], select c_count, count(*) as custdist " +
+                "    from " +
+                "(" +
+                "           select c_id, count(o_id) AS c_count " +
+                "           from tpcc.customer " +
+                "    group by c_id" +
+                ") as c_orders " +
+                "    group by c_count " +
+                "    order by custdist desc, c_count desc LIMIT 100;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+
+    /*
     @Test
     public void testQ15() throws ManifestException {
 
