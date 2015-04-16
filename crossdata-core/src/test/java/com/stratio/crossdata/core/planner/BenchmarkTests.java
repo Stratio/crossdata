@@ -125,7 +125,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         // SUM function
         FunctionType sumFunction = new FunctionType();
         sumFunction.setFunctionName("sum");
-        sumFunction.setSignature("sum(Tuple[Double]):Tuple[Double]");
+        sumFunction.setSignature("sum(Tuple[Any*]):Tuple[Double]");
         sumFunction.setFunctionType("aggregation");
         sumFunction.setDescription("Total sum");
         benchmarkFunctions.add(sumFunction);

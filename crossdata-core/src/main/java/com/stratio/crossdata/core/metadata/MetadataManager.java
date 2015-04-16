@@ -1254,6 +1254,7 @@ public enum MetadataManager {
      */
     private String createInputSignature(FunctionSelector functionSelector, ConnectorName connectorName)
                     throws PlanningException {
+
         StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
         sb.append("(Tuple[");
         Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
@@ -1269,10 +1270,15 @@ public enum MetadataManager {
                 break;
             case COLUMN:
                 ColumnSelector cs = (ColumnSelector) selector;
-                ColumnName columnName = cs.getName();
-                ColumnMetadata column = getColumn(columnName);
-                ColumnType columnType = column.getColumnType();
-                sb.append(columnType.getCrossdataType());
+                if(cs.getName().getTableName().isVirtual()){
+                    ColumnType colType=new ColumnType(DataType.TEXT);
+                    sb.append(colType);
+                }else {
+                    ColumnName columnName = cs.getName();
+                    ColumnMetadata column = getColumn(columnName);
+                    ColumnType columnType = column.getColumnType();
+                    sb.append(columnType.getCrossdataType());
+                }
                 break;
             case BOOLEAN:
                 sb.append(new ColumnType(DataType.BOOLEAN).getCrossdataType());
