@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -53,6 +54,8 @@ import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
+
+import javax.transaction.*;
 
 public class BenchmarkTests extends PlannerBaseTest {
 
@@ -118,6 +121,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         benchmarkOperations.add(Operations.FILTER_NON_INDEXED_GT);
         benchmarkOperations.add(Operations.FILTER_NON_INDEXED_IN);
         benchmarkOperations.add(Operations.FILTER_DISJUNCTION);
+        benchmarkOperations.add(Operations.SELECT_LEFT_OUTER_JOIN);
 
         clusterWithDefaultPriority.put(new ClusterName(clusterName.getName()), Constants.DEFAULT_PRIORITY);
 
@@ -163,6 +167,20 @@ public class BenchmarkTests extends PlannerBaseTest {
         clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(clusterName.getName(), dataStoreName, connector1.getName());
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("demo").getName();
         createTestTables(catalogName);
+
+        //Remove all other possible connectors except TestConnector1
+        List<ConnectorMetadata> connectorsMetadata= MetadataManager.MANAGER.getConnectors();
+
+        for (ConnectorMetadata cm:connectorsMetadata){
+            if (!cm.getName().getName().equals("benchmarkConnector")){
+                try {
+                    MetadataManager.MANAGER.deleteConnector(cm.getName());
+                } catch (NotSupportedException | SystemException | HeuristicRollbackException |
+                        HeuristicMixedException | RollbackException e) {
+                    LOG.error("Error when try to delete de connectors of the test:" + e.getMessage());
+                }
+            }
+        }
     }
 
     @AfterClass
