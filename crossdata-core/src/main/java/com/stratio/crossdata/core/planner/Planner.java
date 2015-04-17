@@ -196,7 +196,7 @@ public class Planner {
         if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
             throw new PlanningException("There are no connectors online");
         } else if(connectedConnectors.size() > 0){
-            //return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0).getActorRef());
+            return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0).getActorRef());
         }
 
         //Get the list of tables accessed in this query
