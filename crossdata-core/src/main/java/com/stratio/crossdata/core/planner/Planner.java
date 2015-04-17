@@ -195,8 +195,8 @@ public class Planner {
         List<ConnectorMetadata> connectedConnectors = MetadataManager.MANAGER.getConnectors(Status.ONLINE);
 
         if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
-            throw new PlanningException("There no connectors online");
-        } else if(connectedConnectors.size() > 1){
+            throw new PlanningException("There are no connectors online");
+        } else if(connectedConnectors.size() == 1){
             return buildSimpleExecutionWorkflow(query, workflow);
         }
 
@@ -220,6 +220,15 @@ public class Planner {
             while(hasMoreUnionSteps(ep.getLast())){
                 ep = defineExecutionPath(ep.getLast(), candidatesConnectors.get(targetTable), query);
                 LOG.info("Last step: " + ep.getLast());
+                if (ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())) {
+                    LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
+                    if (paths == null) {
+                        paths = new LinkedHashSet<>();
+                        unionSteps.put((UnionStep) (ep.getLast().getNextStep()), paths);
+                    }
+                    paths.add(ep);
+                }
+                /*
                 if (UnionStep.class.isInstance(ep.getLast())) {
                     LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast());
                     if (paths == null) {
@@ -234,7 +243,7 @@ public class Planner {
                         unionSteps.put((UnionStep) (ep.getLast().getNextStep()), paths);
                     }
                     paths.add(ep);
-                }
+                }*/
                 executionPaths.add(ep);
                 ep = defineExecutionPath(ep.getLast().getNextStep(), candidatesConnectors.get(targetTable), query);
             }
