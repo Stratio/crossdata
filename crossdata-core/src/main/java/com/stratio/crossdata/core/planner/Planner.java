@@ -192,6 +192,14 @@ public class Planner {
     protected ExecutionWorkflow buildExecutionWorkflow(SelectValidatedQuery query, LogicalWorkflow workflow)
             throws PlanningException {
 
+        List<ConnectorMetadata> connectedConnectors = MetadataManager.MANAGER.getConnectors(Status.ONLINE);
+
+        if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
+            throw new PlanningException("There no connectors online");
+        } else if(connectedConnectors.size() > 1){
+            return buildSimpleExecutionWorkflow(query, workflow);
+        }
+
         //Get the list of tables accessed in this query
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
 
@@ -207,9 +215,9 @@ public class Planner {
         for (LogicalStep initialStep: workflow.getInitialSteps()) {
             TableName targetTable = ((Project) initialStep).getTableName();
             LOG.info("Table: " + targetTable);
-            // Detect step before first join step from the current initial step
+            // Detect step before the next union step from the current step
             ExecutionPath ep = new ExecutionPath(initialStep, initialStep, candidatesConnectors.get(targetTable));
-            while(hasMoreJoins(ep.getLast())){
+            while(hasMoreUnionSteps(ep.getLast())){
                 ep = defineExecutionPath(ep.getLast(), candidatesConnectors.get(targetTable), query);
                 LOG.info("Last step: " + ep.getLast());
                 if (UnionStep.class.isInstance(ep.getLast())) {
@@ -238,7 +246,26 @@ public class Planner {
         return mergeExecutionPaths(query, new ArrayList<>(executionPaths), unionSteps);
     }
 
-    private boolean hasMoreJoins(LogicalStep step) {
+    protected ExecutionWorkflow buildSimpleExecutionWorkflow(SelectValidatedQuery query, LogicalWorkflow workflow)
+            throws PlanningException {
+
+        //Get the list of tables accessed in this query
+        List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
+
+        //Obtain the map of connector that is able to access those tables.
+        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
+                .getAttachedConnectors(Status.ONLINE, tables);
+
+        String queryId = query.getQueryId();
+        String actorRef = candidatesConnectors.values().iterator().next().get(0).getActorRef();
+        ExecutionType executionType = ExecutionType.SELECT;
+        ResultType type = ResultType.RESULTS;
+
+        return new QueryWorkflow(queryId, actorRef, executionType, type, workflow);
+    }
+
+
+    private boolean hasMoreUnionSteps(LogicalStep step) {
         boolean result = false;
         while(step.getNextStep() != null){
             step = step.getNextStep();
