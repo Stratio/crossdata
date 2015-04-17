@@ -70,7 +70,6 @@ import com.stratio.crossdata.common.logicalplan.OrderBy;
 import com.stratio.crossdata.common.logicalplan.PartialResults;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
-import com.stratio.crossdata.common.logicalplan.TransformationStep;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Virtualizable;
 import com.stratio.crossdata.common.logicalplan.Window;
@@ -192,6 +191,14 @@ public class Planner {
     protected ExecutionWorkflow buildExecutionWorkflow(SelectValidatedQuery query, LogicalWorkflow workflow)
             throws PlanningException {
 
+        List<ConnectorMetadata> connectedConnectors = MetadataManager.MANAGER.getConnectors(Status.ONLINE);
+
+        if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
+            throw new PlanningException("There are no connectors online");
+        } else if(connectedConnectors.size() > 0){
+            return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0).getActorRef());
+        }
+
         //Get the list of tables accessed in this query
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
 
@@ -201,38 +208,74 @@ public class Planner {
 
         logCandidateConnectors(candidatesConnectors);
 
-        List<ExecutionPath> executionPaths = new ArrayList<>();
+        Set<ExecutionPath> executionPaths = new LinkedHashSet<>();
         Map<UnionStep, LinkedHashSet<ExecutionPath>> unionSteps = new LinkedHashMap<>();
         //Iterate through the initial steps and build valid execution paths
         for (LogicalStep initialStep: workflow.getInitialSteps()) {
             TableName targetTable = ((Project) initialStep).getTableName();
             LOG.info("Table: " + targetTable);
-            ExecutionPath ep = defineExecutionPath(initialStep, candidatesConnectors.get(targetTable), query);
-            LOG.info("Last step: " + ep.getLast());
-            if (UnionStep.class.isInstance(ep.getLast())) {
-                LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast());
-                if (paths == null) {
-                    paths = new LinkedHashSet<>();
-                    unionSteps.put((UnionStep) ep.getLast(), paths);
+            // Detect step before the next union step from the current step
+            ExecutionPath ep = new ExecutionPath(initialStep, initialStep, candidatesConnectors.get(targetTable));
+            while(hasMoreUnionSteps(ep.getLast())){
+                ep = defineExecutionPath(ep.getLast(), candidatesConnectors.get(targetTable), query);
+                LOG.info("Last step: " + ep.getLast());
+                if (ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())) {
+                    LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
+                    if (paths == null) {
+                        paths = new LinkedHashSet<>();
+                        unionSteps.put((UnionStep) (ep.getLast().getNextStep()), paths);
+                    }
+                    paths.add(ep);
                 }
-                paths.add(ep);
-            } else if (ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())) {
-                LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
-                if (paths == null) {
-                    paths = new LinkedHashSet<>();
-                    unionSteps.put((UnionStep) (ep.getLast().getNextStep()), paths);
-                }
-                paths.add(ep);
+                /*
+                if (UnionStep.class.isInstance(ep.getLast())) {
+                    LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast());
+                    if (paths == null) {
+                        paths = new LinkedHashSet<>();
+                        unionSteps.put((UnionStep) ep.getLast(), paths);
+                    }
+                    paths.add(ep);
+                } else if (ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())) {
+                    LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
+                    if (paths == null) {
+                        paths = new LinkedHashSet<>();
+                        unionSteps.put((UnionStep) (ep.getLast().getNextStep()), paths);
+                    }
+                    paths.add(ep);
+                }*/
+                executionPaths.add(ep);
+                ep = defineExecutionPath(ep.getLast().getNextStep(), candidatesConnectors.get(targetTable), query);
             }
-            executionPaths.add(ep);
         }
-
         for (ExecutionPath ep: executionPaths) {
             LOG.info("ExecutionPaths: " + ep);
         }
-
         //Merge execution paths
-        return mergeExecutionPaths(query, executionPaths, unionSteps);
+        return mergeExecutionPaths(query, new ArrayList<>(executionPaths), unionSteps);
+    }
+
+    protected ExecutionWorkflow buildSimpleExecutionWorkflow(SelectValidatedQuery query, LogicalWorkflow workflow,
+            String actorRef)
+            throws PlanningException {
+
+        String queryId = query.getQueryId();
+        ExecutionType executionType = ExecutionType.SELECT;
+        ResultType type = ResultType.RESULTS;
+
+        return new QueryWorkflow(queryId, actorRef, executionType, type, workflow);
+    }
+
+
+    private boolean hasMoreUnionSteps(LogicalStep step) {
+        boolean result = false;
+        while(step.getNextStep() != null){
+            step = step.getNextStep();
+            if(step instanceof Join){
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private void logCandidateConnectors(Map<TableName, List<ConnectorMetadata>> candidatesConnectors) {
@@ -267,27 +310,27 @@ public class Planner {
         }
         LOG.info("UnionSteps: " + unionSteps.toString());
         //Find first UnionStep
-        List<UnionStep> mergeSteps = new ArrayList<>();
+        Set<UnionStep> mergeSteps = new LinkedHashSet<>();
         Map<UnionStep, ExecutionPath[]> pathsMap=new HashMap<>();
         ExecutionPath[] paths;
         QueryWorkflow first = null;
         Map<PartialResults, ExecutionWorkflow> triggerResults = new LinkedHashMap<>();
         Map<UnionStep, ExecutionWorkflow> triggerWorkflow = new LinkedHashMap<>();
-        for (Map.Entry<UnionStep, LinkedHashSet<ExecutionPath>> entry : unionSteps.entrySet()) {
+        for (Map.Entry<UnionStep, LinkedHashSet<ExecutionPath>> entry: unionSteps.entrySet()) {
             paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
             pathsMap.put(entry.getKey(),paths);
-            boolean areTransformations = true;
-            for (ExecutionPath path : paths) {
-                if (!TransformationStep.class.isInstance(path.getLast())) {
-                    areTransformations = false;
-                }
-            }
-            if (areTransformations) {
+            //boolean areTransformations = true;
+            //for (ExecutionPath path: paths) {
+                //if (!TransformationStep.class.isInstance(path.getLast())) {
+                    //areTransformations = false;
+                //}
+            //}
+            //if (areTransformations) {
                 mergeSteps.add(entry.getKey());
-            }
+            //}
         }
 
-        for(UnionStep mergeStep:mergeSteps ) {
+        for(UnionStep mergeStep: mergeSteps) {
             List<ConnectorMetadata> toRemove = new ArrayList<>();
             List<ConnectorMetadata> mergeConnectors = new ArrayList<>();
 
@@ -306,7 +349,7 @@ public class Planner {
             for (int index = 0; index < mergePaths.length; index++) {
                 toRemove.clear();
 
-                for (ConnectorMetadata connector : mergePaths[index].getAvailableConnectors()) {
+                for (ConnectorMetadata connector: mergePaths[index].getAvailableConnectors()) {
                     LOG.info("op: " + mergeStep.getOperations() + " -> " +
                             connector.supports(mergeStep.getOperations()));
                     if (!connector.supports(mergeStep.getOperations())) {
@@ -551,10 +594,10 @@ public class Planner {
                     LOG.debug("Connector " + connector + " doesn't support all these operations: "
                             + current.getOperations());
                 } else {
-                /*
-                 * This connector support the operation but we also have to check if support for a specific
-                 * function is required support.
-                 */
+                    /*
+                     * This connector support the operation but we also have to check if support for a specific
+                     * function is required support.
+                     */
                     for(Operations currentOperation: current.getOperations()){
                         if (currentOperation.getOperationsStr().toLowerCase().contains("function")) {
                             Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName());
