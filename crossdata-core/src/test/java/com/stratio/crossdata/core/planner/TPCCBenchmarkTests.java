@@ -28,6 +28,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+
 import org.apache.log4j.Logger;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -37,6 +43,7 @@ import org.testng.annotations.Test;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.QueryWorkflow;
@@ -49,6 +56,7 @@ import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class TPCCBenchmarkTests extends PlannerBaseTest {
 
@@ -186,6 +194,21 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 .createTestCluster(strClusterName, dataStoreName, connector1.getName());
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("tpcc").getName();
         createTestTables(catalogName);
+
+        //Remove all other possible connectors except TestConnector1
+        List<ConnectorMetadata> connectorsMetadata=MetadataManager.MANAGER.getConnectors();
+
+        for (ConnectorMetadata cm:connectorsMetadata){
+            if (!cm.getName().getName().equals("TestConnector1")){
+                try {
+                    MetadataManager.MANAGER.deleteConnector(cm.getName());
+                } catch (NotSupportedException | SystemException | HeuristicRollbackException |
+                        HeuristicMixedException | RollbackException e) {
+                    LOG.error("Error when try to delete de connectors of the test:" + e.getMessage());
+                }
+            }
+        }
+
     }
 
     @AfterClass
