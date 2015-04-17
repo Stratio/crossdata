@@ -876,37 +876,35 @@ getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
 getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     @init{
         workaroundTable = tablename;
-        //firstTerm = new ArrayList<>();
-        //anotherTerm = new ArrayList<>();
+        firstTerm = new ArrayList<>();
+        anotherTerm = new ArrayList<>();
         RelationDisjunction rd = new RelationDisjunction();
         boolean withParenthesis = false;
         boolean simpleRelation = true;
         RelationTerm rt = null;
+        result = new ArrayList<>();
     }
     @after{
         if(simpleRelation){
-            //result = firstTerm;
+            result = firstTerm;
         } else {
             result.add(rd);
         }
     }:
+    (T_START_PARENTHESIS firstTerm=getConditions[workaroundTable] T_END_PARENTHESIS
+        { withParenthesis = true; }
+    | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } )
+    { rd.getTerms().add(new RelationTerm(firstTerm, withParenthesis)); }
+    (T_OR { simpleRelation = false; }
+        (T_START_PARENTHESIS anotherTerm=getConditions[workaroundTable] T_END_PARENTHESIS
+            { rt = new RelationTerm(anotherTerm, true); }
+        | anotherRel=getRelation[workaroundTable] { rt = new RelationTerm(anotherRel); } )
+    { rd.getTerms().add(rt); } )*
 
-    //(T_START_PARENTHESIS firstTerm=getConditions[workaroundTable] T_END_PARENTHESIS
-    //    { withParenthesis = true; }
-    //| rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } )
-    //{ rd.getTerms().add(new RelationTerm(firstTerm, withParenthesis)); }
-    //(T_OR { simpleRelation = false; }
-    //    (T_START_PARENTHESIS anotherTerm=getConditions[workaroundTable] T_END_PARENTHESIS
-    //        { rt = new RelationTerm(anotherTerm, true); }
-    //    | anotherRel=getRelation[workaroundTable] { rt = new RelationTerm(anotherRel); } )
-    //{ rd.getTerms().add(rt); } )*
-
-
-    (T_START_PARENTHESIS leftOperand=getConditions[workaroundTable] T_END_PARENTHESIS
-    | rel1=getRelation[workaroundTable])
-
-    (T_OR (T_START_PARENTHESIS rightOperand=getConditions[workaroundTable] T_END_PARENTHESIS
-          | rel2=getRelation[workaroundTable]))?
+    // (T_START_PARENTHESIS leftOperand=getConditions[workaroundTable] T_END_PARENTHESIS
+    // | rel1=getRelation[workaroundTable])
+    // (T_OR (T_START_PARENTHESIS rightOperand=getConditions[workaroundTable] T_END_PARENTHESIS
+    //       | rel2=getRelation[workaroundTable]))?
 
 ;
 

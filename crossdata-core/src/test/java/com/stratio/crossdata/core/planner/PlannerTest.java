@@ -753,16 +753,9 @@ public class PlannerTest extends PlannerBaseTest {
                 columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         String inputText = "SELECT * FROM demo.table4 WHERE"
-                + " id = code"
-                + " AND ((id = 25 AND code = 25) OR (code = 14 AND id = 14))"
-                + " AND id = 25;";
-
-        /*
-        String inputText = "SELECT * FROM demo.table4 WHERE"
-                + " id = code"
-                + " AND (id = 25 OR code = 25)"
-                + " AND id = 25;";
-        */
+                + " id=code"
+                + " AND ((id=25 AND code=25) OR (code=14 AND id=14) OR (id=25 AND code=14))"
+                + " AND id=25;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testSelectWithDisjunctionAndParenthesis", false, false, table4);
@@ -779,13 +772,8 @@ public class PlannerTest extends PlannerBaseTest {
         assertEquals(
                 ((Disjunction) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep())
                         .getTerms().size(),
-                2,
-                "Disjunction should have 2 terms");
-        assertEquals(
-                ((Disjunction) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep())
-                        .getTerms().get(0).size(),
-                2,
-                "First term of the disjunction should have 2 relations");
+                3,
+                "Disjunction should have 3 terms");
         assertEquals(
                 ((Disjunction) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep())
                         .getTerms().get(1).size(),
