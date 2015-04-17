@@ -489,6 +489,10 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT REVIEWED --> OK
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
     }
 
     @Test
@@ -511,6 +515,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -528,6 +535,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -551,6 +561,10 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
     }
 
     @Test
@@ -574,6 +588,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -596,6 +613,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -613,6 +633,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
 
     }
 
@@ -643,6 +666,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -656,6 +682,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "INNER JOIN tpcc.customer c ON o.o_c_id = c.c_id AND o.o_d_id = c.c_d_id AND o.o_w_id = c.c_w_id;";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ04Previous", false, false,
                 order, customer);
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
     }
 
         @Test
@@ -704,6 +733,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -721,6 +753,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -738,6 +773,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -762,6 +800,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -778,6 +819,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -792,6 +836,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -805,6 +852,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -820,6 +870,10 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
     }
 
     @Test
@@ -835,6 +889,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -871,6 +928,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -889,6 +949,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -910,6 +973,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -939,6 +1005,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -981,6 +1050,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -1003,6 +1075,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -1026,6 +1101,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -1049,6 +1127,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -1076,6 +1157,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -1102,6 +1186,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -1128,6 +1215,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -1149,6 +1239,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -1168,6 +1261,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
@@ -1193,6 +1289,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
     @Test
@@ -1216,6 +1315,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 
