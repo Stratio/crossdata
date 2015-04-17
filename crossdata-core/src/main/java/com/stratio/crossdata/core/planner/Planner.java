@@ -1872,7 +1872,7 @@ public class Planner {
                         Collections.singleton(op),
                         leftOperands,
                         rightOperands);
-                LogicalStep previous = lastSteps.get(rd.getSelectorTablesAsString());
+                LogicalStep previous = lastSteps.get(rd.getFirstSelectorTablesAsString());
                 previous.setNextStep(d);
                 d.setPrevious(previous);
                 lastSteps.put(rd.getSelectorTablesAsString(), d);
