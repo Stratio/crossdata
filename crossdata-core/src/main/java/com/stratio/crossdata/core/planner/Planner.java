@@ -196,7 +196,7 @@ public class Planner {
         if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
             throw new PlanningException("There are no connectors online");
         } else if(connectedConnectors.size() > 0){
-            return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0).getActorRef());
+            //return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0).getActorRef());
         }
 
         //Get the list of tables accessed in this query
@@ -318,7 +318,7 @@ public class Planner {
         Map<UnionStep, ExecutionWorkflow> triggerWorkflow = new LinkedHashMap<>();
         for (Map.Entry<UnionStep, LinkedHashSet<ExecutionPath>> entry: unionSteps.entrySet()) {
             paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
-            pathsMap.put(entry.getKey(),paths);
+            pathsMap.put(entry.getKey(), paths);
             //boolean areTransformations = true;
             //for (ExecutionPath path: paths) {
                 //if (!TransformationStep.class.isInstance(path.getLast())) {
@@ -550,9 +550,18 @@ public class Planner {
         List<ClusterName> involvedClusters = new ArrayList<>(executionPaths.size());
 
         for (ExecutionPath path: executionPaths) {
+            /*
             Project project = (Project) path.getInitial();
             involvedClusters.add(project.getClusterName());
             initialSteps.add(project);
+            path.getLast().setNextStep(mergePath.getInitial());
+            */
+            LogicalStep initialStep = path.getInitial();
+            if(initialStep instanceof Project){
+                Project project = (Project) initialStep;
+                involvedClusters.add(project.getClusterName());
+                initialSteps.add(project);
+            }
             path.getLast().setNextStep(mergePath.getInitial());
         }
 
