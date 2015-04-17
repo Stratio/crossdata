@@ -196,7 +196,7 @@ public class Planner {
         if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
             throw new PlanningException("There are no connectors online");
         } else if(connectedConnectors.size() > 0){
-            //return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0).getActorRef());
+            return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0));
         }
 
         //Get the list of tables accessed in this query
@@ -255,14 +255,28 @@ public class Planner {
     }
 
     protected ExecutionWorkflow buildSimpleExecutionWorkflow(SelectValidatedQuery query, LogicalWorkflow workflow,
-            String actorRef)
+            ConnectorMetadata connectorMetadata)
             throws PlanningException {
+
+        for (LogicalStep step : workflow.getInitialSteps()) {
+            //Iterate path
+            LogicalStep currentStep = step;
+            do {
+                for (Operations operation : currentStep.getOperations()) {
+                    if (!connectorMetadata.getSupportedOperations().contains(operation)){
+                        throw new PlanningException("The connector "+connectorMetadata.getName()+" does not support "+operation);
+                    }
+                }
+                currentStep = currentStep.getNextStep();
+            }while(currentStep!= null);
+
+        }
 
         String queryId = query.getQueryId();
         ExecutionType executionType = ExecutionType.SELECT;
         ResultType type = ResultType.RESULTS;
 
-        return new QueryWorkflow(queryId, actorRef, executionType, type, workflow);
+        return new QueryWorkflow(queryId, connectorMetadata.getActorRef(), executionType, type, workflow);
     }
 
 
@@ -1867,7 +1881,7 @@ public class Planner {
                         Collections.singleton(op),
                         leftOperands,
                         rightOperands);
-                LogicalStep previous = lastSteps.get(rd.getSelectorTablesAsString());
+                LogicalStep previous = lastSteps.get(rd.getFirstSelectorTablesAsString());
                 previous.setNextStep(d);
                 d.setPrevious(previous);
                 lastSteps.put(rd.getSelectorTablesAsString(), d);

@@ -852,6 +852,44 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
 
     @Test
+    public void testQ10BasicOr() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc],  SELECT sum(ol_amount) AS revenue  "
+                + "    FROM tpcc.order_line INNER JOIN  tpcc.item ON ol_i_id = i_id  "
+                + "    WHERE i_data LIKE '%a' or (i_data LIKE '%b' or i_data LIKE '%c');";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer,
+                order_line, item);
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+
+
+    @Test
+    public void testQ10Rewrite() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc],  SELECT sum(ol_amount) AS revenue  "
+                + "    FROM tpcc.order_line INNER JOIN  tpcc.item ON ol_i_id = i_id  "
+                + "    WHERE ( i_data LIKE '%a' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,2,3])" +
+                  "       or ( i_data LIKE '%b' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,2,4])" +
+                  "       or ( i_data LIKE '%c' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,5,3]);";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer,
+                order_line, item);
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+    @Test
     public void testQ10WithoutOr() throws ManifestException {
 
         init();
@@ -879,6 +917,12 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
+
+
+
+
+
+
 
     @Test
     public void testQ10AndInsteadOfOr() throws ManifestException {
@@ -1085,22 +1129,25 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
     }
 
 
-    /*
+
     @Test
     public void testQ15() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT  "
-                        + "100.00 * sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 END) "
-                        + "FROM  "
-                        + "lineitem;  ";
+        String inputText = "[tpcc], select 100.00 * sum(case when i_data like 'a%' then ol_amount else 0 end) / (1+sum(ol_amount)) as promo_revenue  " +
+                "    from tpcc.order_line, tpcc.item  " +
+                "    where ol_i_id = i_id   " +
+                "    and ol_delivery_d >= to_date('2013-02-19','YYYY-MM-DD')  " +
+                "    and ol_delivery_d < to_date('2013-04-19','YYYY-MM-DD'); ";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy", false, false, lineitem, part);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy", false, false, order_line, item);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }*/
+    }
+
+
 
 
     @Test
