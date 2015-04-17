@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Arrays;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
@@ -1078,15 +1079,31 @@ public class Normalizator {
                 }
                 if (caseWhenSelector.getDefaultValue().getType() != lastType) {
                     if(COLUMN.equals(lastType) && !COLUMN.equals(caseWhenSelector.getDefaultValue().getType())){
-                        checkColumnSelector((ColumnSelector)lastSelector);
-                        ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(((ColumnSelector) lastSelector).getName());
-                        //TODO delete the EQ operator workaround
-                        checkCompatibility(columnMetadata,Operator.EQ,caseWhenSelector.getDefaultValue().getType());
+
+                        // Check columns
+                        List<Selector> normalizeSelector = checkListSelector(Arrays.asList(lastSelector));
+                        lastSelector = normalizeSelector.get(0);
+                        //checkColumnSelector((ColumnSelector)lastSelector);
+
+                        //TODO getRealDatatype from subquery
+                        if(!lastSelector.getTableName().isVirtual()) {
+                            ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(((ColumnSelector) lastSelector).getName());
+                            //TODO delete the EQ operator workaround
+                            checkCompatibility(columnMetadata, Operator.EQ, caseWhenSelector.getDefaultValue().getType());
+                        }
                     }else if ( COLUMN.equals(caseWhenSelector.getDefaultValue().getType()) && !COLUMN.equals(lastType)){
-                        checkColumnSelector((ColumnSelector)caseWhenSelector.getDefaultValue());
-                        ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(((ColumnSelector)caseWhenSelector.getDefaultValue()).getName());
-                        //TODO delete the EQ operator workaround
-                        checkCompatibility(columnMetadata,Operator.EQ,lastType);
+
+                        // Check columns
+                        List<Selector> normalizeSelector = checkListSelector(Arrays.asList(caseWhenSelector.getDefaultValue()));
+                        caseWhenSelector.setDefaultValue(normalizeSelector.get(0));
+                        //checkColumnSelector((ColumnSelector)caseWhenSelector.getDefaultValue());
+
+                        //TODO getRealDatatype from subquery
+                        if(!lastSelector.getTableName().isVirtual()) {
+                            ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(((ColumnSelector) caseWhenSelector.getDefaultValue()).getName());
+                            //TODO delete the EQ operator workaround
+                            checkCompatibility(columnMetadata, Operator.EQ, lastType);
+                        }
                     }else {
                         throw new BadFormatException("ELSE clause in a CASE-WHEN select query must be of the same type of" +
                                 " when clauses");

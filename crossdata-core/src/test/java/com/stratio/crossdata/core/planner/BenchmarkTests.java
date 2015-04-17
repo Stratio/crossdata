@@ -117,7 +117,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         benchmarkOperations.add(Operations.SELECT_INNER_JOIN);
         benchmarkOperations.add(Operations.FILTER_NON_INDEXED_GT);
         benchmarkOperations.add(Operations.FILTER_NON_INDEXED_IN);
-
+        benchmarkOperations.add(Operations.FILTER_DISJUNCTION);
 
         clusterWithDefaultPriority.put(new ClusterName(clusterName.getName()), Constants.DEFAULT_PRIORITY);
 
@@ -737,7 +737,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                     + "FROM ( "
                         + "SELECT "
                         + "n1.n_name AS supp_nation, "
-                        + "n2.n_name AS cust_nation, "
+                        + "n1.n_name AS cust_nation, "
                         + "extract(l_shipdate, \"year\" ) AS l_year, "
                         + "l_extendedprice * (1 - l_discount) AS volume "
                         + "FROM "
@@ -752,16 +752,16 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "AND o_orderkey = l_orderkey "
                         + "AND c_custkey = o_custkey "
                         + "AND s_nationkey = n1.n_nationkey "
-                        + "AND c_nationkey = n2.n_nationkey "
+                        + "AND c_nationkey = n1.n_nationkey "
                         + "AND ( "
-                        + "(n1.n_name = 'FRANCE' AND n2.n_name = 'GERMANY') "
-                        + "OR (n1.n_name = 'GERMANY' AND n2.n_name = 'FRANCE')) "
+                        + "(n1.n_name = 'FRANCE' AND n1.n_name = 'GERMANY') "
+                        + "OR (n1.n_name = 'GERMANY' AND n1.n_name = 'FRANCE')) "
                         + "AND l_shipdate BETWEEN date(\"1995-01-01\", \"yyyy-mm-dd\") AND date(\"1996-12-31\", \"yyyy-mm-dd\")) "
                     + "AS shipping "
                     + "GROUP BY supp_nation, cust_nation, l_year "
                     + "ORDER BY supp_nation, cust_nation, l_year;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ07", false, true,
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ07", false, false,
                 supplier, lineitem, orders, customer, nation);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
@@ -804,7 +804,7 @@ public class BenchmarkTests extends PlannerBaseTest {
     }
 
     // Hierarchical Data is not supported
-    @Test(expectedExceptions = ParsingException.class)
+    @Test
     public void testQ08() throws ManifestException {
 
         init();
@@ -820,7 +820,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                     + "SELECT "
                     + "extract(o_orderdate,\"year\") AS o_year, "
                     + "l_extendedprice * (1-l_discount) AS volume, "
-                    + "n2.n_name AS nation "
+                    + "n1.n_name AS nation "
                     + "FROM "
                     + "part, "
                     + "supplier, "
@@ -828,7 +828,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                     + "orders, "
                     + "customer, "
                     + "nation n1, "
-                    + "nation n2, "
+                    + "nation n1, "
                     + "region "
                     + "WHERE "
                     + "p_partkey = l_partkey "
@@ -838,7 +838,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                     + "AND c_nationkey = n1.n_nationkey "
                     + "AND n1.n_regionkey = r_regionkey "
                     + "AND r_name = 'AMERICA' "
-                    + "AND s_nationkey = n2.n_nationkey "
+                    + "AND s_nationkey = n1.n_nationkey "
                     + "AND o_orderdate BETWEEN date(\"1995-01-01\", \"yyyy-mm-dd\") AND date(\"1996-12-31\", \"yyyy-mm-dd\") "
                     + "AND p_type = 'ECONOMY ANODIZED STEEL' "
                     + ") AS all_nations "
@@ -847,7 +847,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                     + "ORDER BY "
                     + "o_year;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ08", false, true,
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ08", false, false,
                 supplier, lineitem, orders, customer, nation);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");

@@ -195,7 +195,7 @@ public class Planner {
 
         if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
             throw new PlanningException("There are no connectors online");
-        } else if(connectedConnectors.size() > 0){
+        } else if(connectedConnectors.size() == 1){
             return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0));
         }
 
