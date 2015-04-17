@@ -876,23 +876,25 @@ getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
 getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     @init{
         workaroundTable = tablename;
-        leftOperand = new ArrayList<>();
-        rightOperand = new ArrayList<>();
-        boolean leftParenthesis = false;
-        boolean rightParenthesis = false;
+        firstTerm = new ArrayList<>();
+        moreTerms = new ArrayList<new ArrayList<>()>;
+        boolean withParenthesis = false;
     }:
-    (T_START_PARENTHESIS leftOperand=getConditions[workaroundTable] T_END_PARENTHESIS
-        { leftParenthesis=true; if(leftOperand.size()==1) leftOperand.get(0).setParenthesis(true); }
-    | rel1=getRelation[workaroundTable] {leftOperand.add(rel1);})
-        {result = leftOperand;}
+    (T_START_PARENTHESIS firstTerm=getConditions[workaroundTable] T_END_PARENTHESIS
+        { withParenthesis=true;
+        if(firstTerm.size()==1) firstTerm.get(0).setParenthesis(true);
+        withParenthesis=false; }
+    | rel1=getRelation[workaroundTable] {firstTerm.add(rel1);})
+    {result = firstTerm;}
+
         (T_OR (T_START_PARENTHESIS rightOperand=getConditions[workaroundTable] T_END_PARENTHESIS
-                    {rightParenthesis=true;}
+                    {withParenthesis=true;}
                | rel2=getRelation[workaroundTable] {rightOperand.add(rel2);} )
         {result = new ArrayList<>();
         RelationDisjunction rd = new RelationDisjunction(leftOperand, rightOperand);
         rd.setLeftParenthesis(leftParenthesis);
         rd.setRightParenthesis(rightParenthesis);
-        result.add(rd);} )?
+        result.add(rd);} )*
 ;
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]

@@ -21,6 +21,7 @@ package com.stratio.crossdata.common.statements.structures;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -28,36 +29,16 @@ public class RelationDisjunction extends AbstractRelation {
 
     private static final long serialVersionUID = 2085700590246602145L;
 
-    private final List<AbstractRelation> leftRelations = new ArrayList<>();
-    private boolean leftParenthesis = false;
+    private final List<RelationTerm> innerRelations = new ArrayList<>();
 
-    private final List<AbstractRelation> rightRelations = new ArrayList<>();
-    private boolean rightParenthesis = false;
-
-    public RelationDisjunction(List<AbstractRelation> leftRelations, List<AbstractRelation> rightRelations) {
-        this.leftRelations.addAll(leftRelations);
-        this.rightRelations.addAll(rightRelations);
+    public RelationDisjunction(RelationTerm... terms) {
+        for(int i = 0; i<terms.length; i++){
+            this.innerRelations.add(terms[i]);
+        }
     }
 
-    public RelationDisjunction(AbstractRelation leftRelation, AbstractRelation rightRelation) {
-        this.leftRelations.add(leftRelation);
-        this.rightRelations.add(rightRelation);
-    }
-
-    public void setLeftParenthesis(boolean leftParenthesis) {
-        this.leftParenthesis = leftParenthesis;
-    }
-
-    public void setRightParenthesis(boolean rightParenthesis) {
-        this.rightParenthesis = rightParenthesis;
-    }
-
-    public List<AbstractRelation> getLeftRelations() {
-        return leftRelations;
-    }
-
-    public List<AbstractRelation> getRightRelations() {
-        return rightRelations;
+    public List<RelationTerm> getInnerRelations() {
+        return innerRelations;
     }
 
     @Override
@@ -66,35 +47,16 @@ public class RelationDisjunction extends AbstractRelation {
         if(isParenthesis()){
             sb.append("(");
         }
-        Iterator<AbstractRelation> leftIter = leftRelations.iterator();
-        if(leftParenthesis){
-            sb.append("(");
-        }
-        while(leftIter.hasNext()){
-            AbstractRelation leftRelation = leftIter.next();
-            sb.append(leftRelation);
-            if(leftIter.hasNext()){
-                sb.append(" AND ");
+
+        Iterator<RelationTerm> iter = innerRelations.iterator();
+        while(iter.hasNext()){
+            RelationTerm rt = iter.next();
+            sb.append(rt);
+            if(iter.hasNext()){
+                sb.append(" OR ");
             }
         }
-        if(leftParenthesis){
-            sb.append(")");
-        }
-        sb.append(" OR ");
-        Iterator<AbstractRelation> rightIter = rightRelations.iterator();
-        if(rightParenthesis){
-            sb.append("(");
-        }
-        while(rightIter.hasNext()){
-            AbstractRelation rightRelation = rightIter.next();
-            sb.append(rightRelation);
-            if(rightIter.hasNext()){
-                sb.append(" AND ");
-            }
-        }
-        if(rightParenthesis){
-            sb.append(")");
-        }
+
         if(isParenthesis()){
             sb.append(")");
         }
@@ -102,11 +64,11 @@ public class RelationDisjunction extends AbstractRelation {
     }
 
     public String getSelectorTablesAsString() {
-        Set<String> allTables = new HashSet<>();
-        // Left relations
-        allTables.add(getSelectorTablesAsString(leftRelations));
-        // Right relations
-        allTables.add(getSelectorTablesAsString(rightRelations));
+        Set<String> allTables = new LinkedHashSet<>();
+        // Inner relations
+        for(RelationTerm rt: innerRelations){
+            allTables.add(getSelectorTablesAsString(rt));
+        }
         // Create final String without duplicates
         StringBuilder sb = new StringBuilder();
         Iterator<String> iter = allTables.iterator();
@@ -122,10 +84,10 @@ public class RelationDisjunction extends AbstractRelation {
 
     public String getFirstSelectorTablesAsString() {
         Set<String> allTables = new HashSet<>();
-        // Left relations
-        allTables.add(getSelectorTablesAsString(leftRelations));
-        // Right relations
-        allTables.add(getSelectorTablesAsString(rightRelations));
+        // Inner relations
+        for(RelationTerm rt: innerRelations){
+            allTables.add(getSelectorTablesAsString(rt));
+        }
         // Create final String without duplicates
         StringBuilder sb = new StringBuilder();
         Iterator<String> iter = allTables.iterator();
@@ -141,30 +103,9 @@ public class RelationDisjunction extends AbstractRelation {
         return sb.toString();
     }
 
-    public String getSelectorTablesAsString(List<AbstractRelation> relations) {
+    public String getSelectorTablesAsString(RelationTerm relationTerm) {
         Set<String> allTables = new HashSet<>();
-        // Left relations
-        for(AbstractRelation abstractRelation: leftRelations){
-            if(abstractRelation instanceof Relation){
-                Relation r = (Relation) abstractRelation;
-                allTables.add(r.getLeftTerm().getSelectorTablesAsString());
-            } else if(abstractRelation instanceof RelationDisjunction){
-                RelationDisjunction r = (RelationDisjunction) abstractRelation;
-                allTables.add(getSelectorTablesAsString(r.getLeftRelations()));
-                allTables.add(getSelectorTablesAsString(r.getRightRelations()));
-            }
-        }
-        // Right relations
-        for(AbstractRelation abstractRelation: rightRelations){
-            if(abstractRelation instanceof Relation){
-                Relation r = (Relation) abstractRelation;
-                allTables.add(r.getLeftTerm().getSelectorTablesAsString());
-            } else if(abstractRelation instanceof RelationDisjunction){
-                RelationDisjunction r = (RelationDisjunction) abstractRelation;
-                allTables.add(getSelectorTablesAsString(r.getLeftRelations()));
-                allTables.add(getSelectorTablesAsString(r.getRightRelations()));
-            }
-        }
+        allTables.add(relationTerm.getSelectorTablesAsString());
         // Create final String without duplicates
         StringBuilder sb = new StringBuilder();
         Iterator<String> iter = allTables.iterator();
