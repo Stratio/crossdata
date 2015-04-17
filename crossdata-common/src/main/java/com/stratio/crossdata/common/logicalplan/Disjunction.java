@@ -25,50 +25,41 @@ import java.util.Set;
 
 import com.stratio.crossdata.common.metadata.Operations;
 
-public class Disjunction extends TransformationStep implements IOperand {
+public class Disjunction extends TransformationStep implements ITerm {
 
-    private final List<IOperand> leftOperand = new ArrayList<>();
-
-    private final List<IOperand> rightOperand = new ArrayList<>();
+    private final List<List<ITerm>> terms = new ArrayList<>();
 
     /**
      * Class constructor.
      *
      * @param operations The operations to be applied.
      */
-    public Disjunction(Set<Operations> operations, List<IOperand> leftOperand, List<IOperand> rightOperand) {
+    public Disjunction(Set<Operations> operations, List<ITerm> terms) {
         super(operations);
-        this.leftOperand.addAll(leftOperand);
-        this.rightOperand.addAll(rightOperand);
+        this.terms.add(terms);
     }
 
-    public List<IOperand> getLeftOperand() {
-        return leftOperand;
-    }
-
-    public List<IOperand> getRightOperand() {
-        return rightOperand;
+    public List<List<ITerm>> getTerms() {
+        return terms;
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("DISJUNCTION - ");
         sb.append(getOperations()).append(" - ");
-        Iterator<IOperand> iter = leftOperand.iterator();
+        Iterator<List<ITerm>> iter = terms.iterator();
         while(iter.hasNext()){
-            IOperand operand = iter.next();
-            sb.append(operand);
-            if(iter.hasNext()){
-                sb.append(" AND ");
+            List<ITerm> term = iter.next();
+            Iterator<ITerm> innerIter = term.iterator();
+            while(innerIter.hasNext()){
+                ITerm innerTerm = innerIter.next();
+                sb.append(innerTerm);
+                if(innerIter.hasNext()){
+                    sb.append(" AND ");
+                }
             }
-        }
-        sb.append(" OR ");
-        iter = rightOperand.iterator();
-        while(iter.hasNext()){
-            IOperand operand = iter.next();
-            sb.append(operand);
             if(iter.hasNext()){
-                sb.append(" AND ");
+                sb.append(" OR ");
             }
         }
         return sb.toString();

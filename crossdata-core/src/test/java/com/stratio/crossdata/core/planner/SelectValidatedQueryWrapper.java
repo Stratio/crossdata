@@ -30,6 +30,7 @@ import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
+import com.stratio.crossdata.common.statements.structures.RelationTerm;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
@@ -93,8 +94,9 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
                 columnNames.addAll(getRelationColumns((Relation) r));
             } else {
                 RelationDisjunction rd = (RelationDisjunction) r;
-                columnNames.addAll(getColumns(rd.getLeftRelations()));
-                columnNames.addAll(getColumns(rd.getRightRelations()));
+                for(RelationTerm rt: rd.getTerms()){
+                    columnNames.addAll(getColumns(rt.getRelations()));
+                }
             }
         }
         return columnNames;

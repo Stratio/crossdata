@@ -20,6 +20,7 @@ package com.stratio.crossdata.common.statements.structures;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -30,9 +31,21 @@ public class RelationTerm implements Serializable {
     private final List<AbstractRelation> relations = new ArrayList<>();
     private boolean withParenthesis = false;
 
+    public RelationTerm(List<AbstractRelation> relations) {
+        this.relations.addAll(relations);
+    }
+
     public RelationTerm(List<AbstractRelation> relations, boolean withParenthesis) {
         this.relations.addAll(relations);
         this.withParenthesis = withParenthesis;
+    }
+
+    public RelationTerm(AbstractRelation relation) {
+        this(relation, false);
+    }
+
+    public RelationTerm(AbstractRelation relation, boolean withParenthesis) {
+        this(Collections.singletonList(relation), withParenthesis);
     }
 
     public List<AbstractRelation> getRelations() {

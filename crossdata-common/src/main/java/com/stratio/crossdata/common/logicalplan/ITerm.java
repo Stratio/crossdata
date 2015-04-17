@@ -18,5 +18,5 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
-public interface IOperand {
+public interface ITerm {
 }

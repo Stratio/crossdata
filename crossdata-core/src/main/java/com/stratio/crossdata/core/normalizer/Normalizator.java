@@ -64,6 +64,7 @@ import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
 import com.stratio.crossdata.common.statements.structures.RelationSelector;
+import com.stratio.crossdata.common.statements.structures.RelationTerm;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.SelectorType;
@@ -553,12 +554,11 @@ public class Normalizator {
                 throw new BadFormatException("Only equal operation are valid");
             }
         } else if (abstractRelation instanceof RelationDisjunction) {
-            RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
-            for (AbstractRelation innerRelation : relationDisjunction.getLeftRelations()) {
-                checkJoinRelation(innerRelation);
-            }
-            for (AbstractRelation innerRelation : relationDisjunction.getRightRelations()) {
-                checkJoinRelation(innerRelation);
+            RelationDisjunction rd = (RelationDisjunction) abstractRelation;
+            for(RelationTerm rt: rd.getTerms()){
+                for(AbstractRelation ar: rt.getRelations()){
+                    checkRelation(ar);
+                }
             }
         }
     }
@@ -605,12 +605,11 @@ public class Normalizator {
             checkRelationFormatRight(relationConjunction);
             implicit = checkImplicitRelation(relationConjunction);
         } else if (abstractRelation instanceof RelationDisjunction) {
-            RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
-            for (AbstractRelation innerRelation : relationDisjunction.getLeftRelations()) {
-                checkRelation(innerRelation);
-            }
-            for (AbstractRelation innerRelation : relationDisjunction.getRightRelations()) {
-                checkRelation(innerRelation);
+            RelationDisjunction rd = (RelationDisjunction) abstractRelation;
+            for(RelationTerm rt: rd.getTerms()){
+                for(AbstractRelation ar: rt.getRelations()){
+                    checkRelation(ar);
+                }
             }
         }
         return implicit;
@@ -637,12 +636,11 @@ public class Normalizator {
             checkHavingRelationFormatLeft(relationConjunction);
             checkRelationFormatRight(relationConjunction);
         } else if (abstractRelation instanceof RelationDisjunction) {
-            RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
-            for (AbstractRelation innerRelation : relationDisjunction.getLeftRelations()) {
-                checkHavingRelation(innerRelation);
-            }
-            for (AbstractRelation innerRelation : relationDisjunction.getRightRelations()) {
-                checkHavingRelation(innerRelation);
+            RelationDisjunction rd = (RelationDisjunction) abstractRelation;
+            for(RelationTerm rt: rd.getTerms()){
+                for(AbstractRelation ar: rt.getRelations()){
+                    checkRelation(ar);
+                }
             }
         }
     }

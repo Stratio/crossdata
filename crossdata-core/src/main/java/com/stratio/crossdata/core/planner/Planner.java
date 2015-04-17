@@ -61,7 +61,7 @@ import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Disjunction;
 import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.GroupBy;
-import com.stratio.crossdata.common.logicalplan.IOperand;
+import com.stratio.crossdata.common.logicalplan.ITerm;
 import com.stratio.crossdata.common.logicalplan.Join;
 import com.stratio.crossdata.common.logicalplan.Limit;
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
@@ -98,6 +98,7 @@ import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
 import com.stratio.crossdata.common.statements.structures.RelationSelector;
+import com.stratio.crossdata.common.statements.structures.RelationTerm;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.SelectSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -1869,18 +1870,14 @@ public class Planner {
             } else if(ar instanceof RelationDisjunction) {
                 RelationDisjunction rd = (RelationDisjunction) ar;
                 Operations op = Operations.FILTER_DISJUNCTION;
-                List<IOperand> leftOperands = new ArrayList<>();
-                List<IOperand> rightOperands = new ArrayList<>();
-                for(AbstractRelation innerRelation: rd.getLeftRelations()){
-                    leftOperands.addAll(createFilter(tableMetadataMap, innerRelation));
+                List<ITerm> filters = new ArrayList<>();
+                List<RelationTerm> terms = rd.getTerms();
+                for(RelationTerm rt: terms){
+                    for(AbstractRelation ab: rt.getRelations()){
+                        filters.addAll(createFilter(tableMetadataMap, ab));
+                    }
                 }
-                for(AbstractRelation innerRelation: rd.getRightRelations()){
-                    rightOperands.addAll(createFilter(tableMetadataMap, innerRelation));
-                }
-                Disjunction d = new Disjunction(
-                        Collections.singleton(op),
-                        leftOperands,
-                        rightOperands);
+                Disjunction d = new Disjunction(Collections.singleton(op), filters);
                 LogicalStep previous = lastSteps.get(rd.getFirstSelectorTablesAsString());
                 previous.setNextStep(d);
                 d.setPrevious(previous);
@@ -1910,34 +1907,30 @@ public class Planner {
         return op;
     }
 
-    private List<IOperand> createFilter(
+    private List<ITerm> createFilter(
             Map<String, TableMetadata> tableMetadataMap,
             AbstractRelation abstractRelation) throws PlanningException {
-        List<IOperand> operands = new ArrayList<>();
+        List<ITerm> filters = new ArrayList<>();
         if(abstractRelation instanceof Relation){
             Relation relation = (Relation) abstractRelation;
             Operations op = createOperation(tableMetadataMap, relation.getLeftTerm(), relation);
-            operands.add(
-                    new Filter(
-                            Collections.singleton(op),
-                            relation));
+            filters.add(new Filter(
+                    Collections.singleton(op),
+                    relation));
         } else if(abstractRelation instanceof RelationDisjunction){
             RelationDisjunction rd = (RelationDisjunction) abstractRelation;
-            List<IOperand> leftOperands = new ArrayList<>();
-            List<IOperand> rightOperands = new ArrayList<>();
-            for(AbstractRelation innerRelation: rd.getLeftRelations()){
-                leftOperands.addAll(createFilter(tableMetadataMap, innerRelation));
+            List<ITerm> abFilters = new ArrayList<>();
+            List<RelationTerm> terms = rd.getTerms();
+            for(RelationTerm rt: terms){
+                for(AbstractRelation ab: rt.getRelations()){
+                    abFilters.addAll(createFilter(tableMetadataMap, ab));
+                }
             }
-            for(AbstractRelation innerRelation: rd.getRightRelations()){
-                rightOperands.addAll(createFilter(tableMetadataMap, innerRelation));
-            }
-            operands.add(
-                    new Disjunction(
-                        Collections.singleton(Operations.FILTER_DISJUNCTION),
-                        leftOperands,
-                        rightOperands));
+            filters.add(new Disjunction(
+                    Collections.singleton(Operations.FILTER_DISJUNCTION),
+                    abFilters));
         }
-        return operands;
+        return filters;
     }
 
     private void convertSelectSelectors(Relation relation) throws PlanningException {

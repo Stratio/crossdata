@@ -757,6 +757,13 @@ public class PlannerTest extends PlannerBaseTest {
                 + " AND ((id = 25 AND code = 25) OR (code = 14 AND id = 14))"
                 + " AND id = 25;";
 
+        /*
+        String inputText = "SELECT * FROM demo.table4 WHERE"
+                + " id = code"
+                + " AND (id = 25 OR code = 25)"
+                + " AND id = 25;";
+        */
+
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testSelectWithDisjunctionAndParenthesis", false, false, table4);
 
@@ -771,14 +778,19 @@ public class PlannerTest extends PlannerBaseTest {
                 "Third step should be a Disjunction");
         assertEquals(
                 ((Disjunction) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep())
-                        .getLeftOperand().size(),
+                        .getTerms().size(),
                 2,
-                "Left operand of the disjunction should have 2 relations");
+                "Disjunction should have 2 terms");
         assertEquals(
                 ((Disjunction) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep())
-                        .getRightOperand().size(),
+                        .getTerms().get(0).size(),
                 2,
-                "Right operand of the disjunction should have 2 relations");
+                "First term of the disjunction should have 2 relations");
+        assertEquals(
+                ((Disjunction) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep())
+                        .getTerms().get(1).size(),
+                2,
+                "Second term of the disjunction should have 2 relations");
     }
 
     @Test

@@ -29,16 +29,19 @@ public class RelationDisjunction extends AbstractRelation {
 
     private static final long serialVersionUID = 2085700590246602145L;
 
-    private final List<RelationTerm> innerRelations = new ArrayList<>();
+    private final List<RelationTerm> terms = new ArrayList<>();
+
+    public RelationDisjunction() {
+    }
 
     public RelationDisjunction(RelationTerm... terms) {
         for(int i = 0; i<terms.length; i++){
-            this.innerRelations.add(terms[i]);
+            this.terms.add(terms[i]);
         }
     }
 
-    public List<RelationTerm> getInnerRelations() {
-        return innerRelations;
+    public List<RelationTerm> getTerms() {
+        return terms;
     }
 
     @Override
@@ -48,7 +51,7 @@ public class RelationDisjunction extends AbstractRelation {
             sb.append("(");
         }
 
-        Iterator<RelationTerm> iter = innerRelations.iterator();
+        Iterator<RelationTerm> iter = terms.iterator();
         while(iter.hasNext()){
             RelationTerm rt = iter.next();
             sb.append(rt);
@@ -66,7 +69,7 @@ public class RelationDisjunction extends AbstractRelation {
     public String getSelectorTablesAsString() {
         Set<String> allTables = new LinkedHashSet<>();
         // Inner relations
-        for(RelationTerm rt: innerRelations){
+        for(RelationTerm rt: terms){
             allTables.add(getSelectorTablesAsString(rt));
         }
         // Create final String without duplicates
@@ -85,7 +88,7 @@ public class RelationDisjunction extends AbstractRelation {
     public String getFirstSelectorTablesAsString() {
         Set<String> allTables = new HashSet<>();
         // Inner relations
-        for(RelationTerm rt: innerRelations){
+        for(RelationTerm rt: terms){
             allTables.add(getSelectorTablesAsString(rt));
         }
         // Create final String without duplicates

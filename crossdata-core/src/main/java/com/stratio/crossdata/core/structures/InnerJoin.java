@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
+import com.stratio.crossdata.common.statements.structures.RelationTerm;
 
 /**
  * InnerJoin metadata class.
@@ -151,11 +152,10 @@ public class InnerJoin implements Serializable {
             }
         } else if(abstractRelation instanceof RelationDisjunction) {
             RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
-            for(AbstractRelation innerRelation: relationDisjunction.getLeftRelations()){
-                orderedRelations.addAll(orderRelation(innerRelation, tableName));
-            }
-            for(AbstractRelation innerRelation: relationDisjunction.getRightRelations()){
-                orderedRelations.addAll(orderRelation(innerRelation, tableName));
+            for(RelationTerm rt: relationDisjunction.getTerms()){
+                for(AbstractRelation ab: rt.getRelations()){
+                    orderedRelations.addAll(orderRelation(ab, tableName));
+                }
             }
         }
         return orderedRelations;
