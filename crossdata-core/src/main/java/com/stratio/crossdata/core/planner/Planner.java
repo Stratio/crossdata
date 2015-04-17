@@ -196,8 +196,8 @@ public class Planner {
 
         if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
             throw new PlanningException("There are no connectors online");
-        } else if(connectedConnectors.size() == 1){
-            return buildSimpleExecutionWorkflow(query, workflow);
+        } else if(connectedConnectors.size() > 0){
+            return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0).getActorRef());
         }
 
         //Get the list of tables accessed in this query
@@ -255,18 +255,11 @@ public class Planner {
         return mergeExecutionPaths(query, new ArrayList<>(executionPaths), unionSteps);
     }
 
-    protected ExecutionWorkflow buildSimpleExecutionWorkflow(SelectValidatedQuery query, LogicalWorkflow workflow)
+    protected ExecutionWorkflow buildSimpleExecutionWorkflow(SelectValidatedQuery query, LogicalWorkflow workflow,
+            String actorRef)
             throws PlanningException {
 
-        //Get the list of tables accessed in this query
-        List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
-
-        //Obtain the map of connector that is able to access those tables.
-        Map<TableName, List<ConnectorMetadata>> candidatesConnectors = MetadataManager.MANAGER
-                .getAttachedConnectors(Status.ONLINE, tables);
-
         String queryId = query.getQueryId();
-        String actorRef = candidatesConnectors.values().iterator().next().get(0).getActorRef();
         ExecutionType executionType = ExecutionType.SELECT;
         ResultType type = ResultType.RESULTS;
 
