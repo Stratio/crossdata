@@ -883,7 +883,8 @@ getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     }:
     (T_START_PARENTHESIS leftOperand=getConditions[workaroundTable] T_END_PARENTHESIS
         { leftParenthesis=true; if(leftOperand.size()==1) leftOperand.get(0).setParenthesis(true); }
-    | rel1=getRelation[workaroundTable] {leftOperand.add(rel1);}) {result = leftOperand;}
+    | rel1=getRelation[workaroundTable] {leftOperand.add(rel1);})
+        {result = leftOperand;}
         (T_OR (T_START_PARENTHESIS rightOperand=getConditions[workaroundTable] T_END_PARENTHESIS
                     {rightParenthesis=true;}
                | rel2=getRelation[workaroundTable] {rightOperand.add(rel2);} )

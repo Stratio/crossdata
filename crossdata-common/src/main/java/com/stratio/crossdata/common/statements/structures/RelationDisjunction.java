@@ -120,6 +120,27 @@ public class RelationDisjunction extends AbstractRelation {
         return sb.toString();
     }
 
+    public String getFirstSelectorTablesAsString() {
+        Set<String> allTables = new HashSet<>();
+        // Left relations
+        allTables.add(getSelectorTablesAsString(leftRelations));
+        // Right relations
+        allTables.add(getSelectorTablesAsString(rightRelations));
+        // Create final String without duplicates
+        StringBuilder sb = new StringBuilder();
+        Iterator<String> iter = allTables.iterator();
+        if(iter.hasNext()){
+            String name = iter.next();
+            if (name.contains("-")){
+                sb.append(name.substring(0, name.indexOf("-")));
+            }else {
+                sb.append(name);
+            }
+        }
+
+        return sb.toString();
+    }
+
     public String getSelectorTablesAsString(List<AbstractRelation> relations) {
         Set<String> allTables = new HashSet<>();
         // Left relations

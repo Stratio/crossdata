@@ -852,6 +852,44 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
 
     @Test
+    public void testQ10BasicOr() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc],  SELECT sum(ol_amount) AS revenue  "
+                + "    FROM tpcc.order_line INNER JOIN  tpcc.item ON ol_i_id = i_id  "
+                + "    WHERE i_data LIKE '%a' or (i_data LIKE '%b' or i_data LIKE '%c');";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer,
+                order_line, item);
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+
+
+    @Test
+    public void testQ10Rewrite() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc],  SELECT sum(ol_amount) AS revenue  "
+                + "    FROM tpcc.order_line INNER JOIN  tpcc.item ON ol_i_id = i_id  "
+                + "    WHERE ( i_data LIKE '%a' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,2,3])" +
+                  "       or ( i_data LIKE '%b' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,2,4])" +
+                  "       or ( i_data LIKE '%c' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,5,3]);";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer,
+                order_line, item);
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+    }
+
+    @Test
     public void testQ10WithoutOr() throws ManifestException {
 
         init();
@@ -879,6 +917,12 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
+
+
+
+
+
+
 
     @Test
     public void testQ10AndInsteadOfOr() throws ManifestException {
