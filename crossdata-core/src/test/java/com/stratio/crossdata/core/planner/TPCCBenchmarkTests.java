@@ -1101,11 +1101,11 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }*/
+    }
 
 
 
-    /*
+
     @Test
     public void testQ16() throws ManifestException {
 
