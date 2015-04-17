@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.core.normalizer;
 
+import static com.stratio.crossdata.common.statements.structures.SelectorType.COLUMN;
 import static com.stratio.crossdata.common.statements.structures.SelectorType.FUNCTION;
 import static com.stratio.crossdata.common.statements.structures.SelectorType.RELATION;
 
@@ -1061,21 +1062,35 @@ public class Normalizator {
             case CASE_WHEN:
                 CaseWhenSelector caseWhenSelector = (CaseWhenSelector) selector;
                 List<Pair<List<AbstractRelation>, Selector>> restrictions = caseWhenSelector.getRestrictions();
-                SelectorType lastType = restrictions.get(0).getRight().getType();
+                Selector lastSelector = restrictions.get(0).getRight();
+                SelectorType lastType = lastSelector.getType();
                 for (Pair<List<AbstractRelation>, Selector> pair : restrictions) {
                     List<AbstractRelation> relations = pair.getLeft();
                     for (AbstractRelation relation : relations) {
                         checkRelation(relation);
                     }
-                    if (lastType != pair.getRight().getType()) {
+                    //TODO Check column compatibility
+                    if (lastSelector.getType() != pair.getRight().getType()) {
                         throw new BadFormatException("All 'THEN' clauses in a CASE-WHEN select query must be of the " +
                                 "same type");
                     }
-                    lastType = pair.getRight().getType();
+                    lastSelector = pair.getRight();
                 }
                 if (caseWhenSelector.getDefaultValue().getType() != lastType) {
-                    throw new BadFormatException("ELSE clause in a CASE-WHEN select query must be of the same type of" +
-                            " when clauses");
+                    if(COLUMN.equals(lastType) && !COLUMN.equals(caseWhenSelector.getDefaultValue().getType())){
+                        checkColumnSelector((ColumnSelector)lastSelector);
+                        ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(((ColumnSelector) lastSelector).getName());
+                        //TODO delete the EQ operator workaround
+                        checkCompatibility(columnMetadata,Operator.EQ,caseWhenSelector.getDefaultValue().getType());
+                    }else if ( COLUMN.equals(caseWhenSelector.getDefaultValue().getType()) && !COLUMN.equals(lastType)){
+                        checkColumnSelector((ColumnSelector)caseWhenSelector.getDefaultValue());
+                        ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(((ColumnSelector)caseWhenSelector.getDefaultValue()).getName());
+                        //TODO delete the EQ operator workaround
+                        checkCompatibility(columnMetadata,Operator.EQ,lastType);
+                    }else {
+                        throw new BadFormatException("ELSE clause in a CASE-WHEN select query must be of the same type of" +
+                                " when clauses");
+                    }
                 }
                 result.add(caseWhenSelector);
                 break;
@@ -1229,7 +1244,7 @@ public class Normalizator {
         case SET:
         case LIST:
         case MAP:
-            throw new BadFormatException("Native and Collections not supported yet.");
+            throw new BadFormatException("Collections not supported yet.");
 
         case NATIVE:
             //we don't check native types
@@ -1239,8 +1254,8 @@ public class Normalizator {
 
     private void checkBooleanCompatibility(ColumnMetadata column, Operator operator, SelectorType valueType)
             throws ValidationException {
-        if (operator != Operator.EQ) {
-            throw new BadFormatException("Boolean relations only accept equal operator.");
+        if ((operator != Operator.EQ) && (operator != Operator.DISTINCT)) {
+            throw new BadFormatException("Boolean relations only accept equal and distinct operator.");
         }
         if (valueType != SelectorType.BOOLEAN) {
             throw new NotMatchDataTypeException(column.getName());
@@ -1290,7 +1305,7 @@ public class Normalizator {
         } else if ((operator != Operator.EQ) && (operator != Operator.GT) && (operator != Operator.GET) && (operator
                 != Operator.LT) && (operator != Operator.LET) && (operator != Operator.DISTINCT) &&
                 (operator != Operator.LIKE) && (operator != Operator.NOT_LIKE)) {
-            throw new BadFormatException("String relations only accept equal operator.");
+            throw new BadFormatException("String relations does not accept "+operator.toString()+" operator.");
         }
 
     }

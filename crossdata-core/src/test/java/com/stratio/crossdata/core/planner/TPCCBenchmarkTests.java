@@ -1035,24 +1035,27 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
     }
 
 
-    /*
+
     @Test
     public void testQ15() throws ManifestException {
 
         init();
 
-        String inputText = "[demo], SELECT  "
-                        + "100.00 * sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 END) "
-                        + "FROM  "
-                        + "lineitem;  ";
+        String inputText = "[tpcc], select 100.00 * sum(case when i_data like 'a%' then ol_amount else 0 end) / (1+sum(ol_amount)) as promo_revenue  " +
+                "    from tpcc.order_line, tpcc.item  " +
+                "    where ol_i_id = i_id   " +
+                "    and ol_delivery_d >= to_date('2013-02-19','YYYY-MM-DD')  " +
+                "    and ol_delivery_d < to_date('2013-04-19','YYYY-MM-DD'); ";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy", false, false, lineitem, part);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy", false, false, order_line, item);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
 
+
+    /*
     @Test
     public void testQ16() throws ManifestException {
 

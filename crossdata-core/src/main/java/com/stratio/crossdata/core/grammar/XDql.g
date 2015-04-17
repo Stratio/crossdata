@@ -1017,13 +1017,13 @@ getCaseWhenSelector[TableName tablename] returns [Selector selector]
     }:
     T_CASE
         (T_WHEN conditions=getConditions[tablename] T_THEN
-            firstSelector=getBasicSelector[tablename]
+            firstSelector=getCaseWhenExpressionSelector[tablename]
             {
                 Pair<List<AbstractRelation>,Selector> restriction = new ImmutablePair<>(conditions, firstSelector);
                 restrictions.add(restriction);
             })*
     T_ELSE
-        defaultSelector=getBasicSelector[tablename]
+        defaultSelector=getCaseWhenExpressionSelector[tablename]
     T_END
 ;
 
@@ -1042,6 +1042,7 @@ getFunctionSelector[TableName tablename] returns [Selector selector]
     T_END_PARENTHESIS
 ;
 
+
 getBasicSelector[TableName tablename] returns [Selector selector]
     @init{
         Selector defaultSelector = null;
@@ -1055,6 +1056,23 @@ getBasicSelector[TableName tablename] returns [Selector selector]
     | T_TRUE {defaultSelector = new BooleanSelector(tablename, true);}
     | qLiteral=QUOTED_LITERAL {defaultSelector = new StringSelector(tablename, $qLiteral.text);}
     | T_NULL {defaultSelector = new NullSelector(tablename, "null");})
+;
+
+//Selector used in CaseWhen
+getCaseWhenExpressionSelector[TableName tablename] returns [Selector selector]
+    @init{
+        Selector defaultSelector = null;
+    }
+    @after{
+        selector = defaultSelector;
+    }:
+    (floatingNumber=T_FLOATING {defaultSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
+    | constant=T_CONSTANT {defaultSelector = new IntegerSelector(tablename, $constant.text);}
+    | T_FALSE {defaultSelector = new BooleanSelector(tablename, false);}
+    | T_TRUE {defaultSelector = new BooleanSelector(tablename, true);}
+    | qLiteral=QUOTED_LITERAL {defaultSelector = new StringSelector(tablename, $qLiteral.text);}
+    | T_NULL {defaultSelector = new NullSelector(tablename, "null");}
+    | columnName=getColumnName[tablename] {defaultSelector = new ColumnSelector(columnName);})
 ;
 
 getSimpleSelector[TableName tablename] returns [Selector selector]

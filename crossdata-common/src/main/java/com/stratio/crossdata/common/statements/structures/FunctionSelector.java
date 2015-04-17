@@ -36,18 +36,18 @@ public class FunctionSelector extends Selector {
     private final String functionName;
 
     /**
-     * List of columns.
+     * List of selectors.
      */
-    private final List<Selector> functionColumns;
+    private final List<Selector> functionSelectors;
 
     /**
      * Class constructor.
      *
      * @param functionName Name of the includes.
-     * @param functionColumns A list of selectors with the columns affected.
+     * @param functionSelectors A list of selectors with the columns affected.
      */
-    public FunctionSelector(String functionName, List<Selector> functionColumns) {
-        this(null, functionName, functionColumns);
+    public FunctionSelector(String functionName, List<Selector> functionSelectors) {
+        this(null, functionName, functionSelectors);
     }
 
     /**
@@ -55,13 +55,13 @@ public class FunctionSelector extends Selector {
      *
      * @param tableName The table name.
      * @param functionName Name of the includes.
-     * @param functionColumns A list of selectors with the columns affected.
+     * @param functionSelectors A list of selectors with the columns affected.
      */
-    public FunctionSelector(TableName tableName, String functionName, List<Selector> functionColumns) {
+    public FunctionSelector(TableName tableName, String functionName, List<Selector> functionSelectors) {
         super(tableName);
         this.functionName = functionName;
         this.alias = functionName;
-        this.functionColumns = functionColumns;
+        this.functionSelectors = functionSelectors;
     }
 
     /**
@@ -78,7 +78,7 @@ public class FunctionSelector extends Selector {
      * @return A list of {@link com.stratio.crossdata.common.statements.structures.Selector}.
      */
     public List<Selector> getFunctionColumns() {
-        return functionColumns;
+        return functionSelectors;
     }
 
     @Override
@@ -89,7 +89,7 @@ public class FunctionSelector extends Selector {
     @Override
     public LinkedHashSet<TableName> getSelectorTables() {
         LinkedHashSet<TableName> result = new LinkedHashSet<>();
-        for (Selector s: this.functionColumns) {
+        for (Selector s: this.functionSelectors) {
             result.addAll(s.getSelectorTables());
         }
         return result;
@@ -101,7 +101,7 @@ public class FunctionSelector extends Selector {
      */
     public TableName getTableName() {
         if(tableName==null){
-            for (Selector s: this.functionColumns) {
+            for (Selector s: this.functionSelectors) {
                 if (ColumnSelector.class.isInstance(s)){
                     return s.getColumnName().getTableName();
                 }
@@ -133,7 +133,7 @@ public class FunctionSelector extends Selector {
         sb.append("(");
 
         boolean first=true;
-        for (Selector selector:functionColumns) {
+        for (Selector selector:functionSelectors) {
             if(!first){
                 sb.append(", ");
             }
@@ -154,7 +154,7 @@ public class FunctionSelector extends Selector {
     public String toString() {
         StringBuilder sb = new StringBuilder(functionName);
         sb.append("(");
-        Iterator<Selector> selectors = functionColumns.iterator();
+        Iterator<Selector> selectors = functionSelectors.iterator();
         while (selectors.hasNext()) {
             sb.append(selectors.next().toString());
             if (selectors.hasNext()) {
@@ -179,7 +179,7 @@ public class FunctionSelector extends Selector {
 
         FunctionSelector that = (FunctionSelector) o;
 
-        if (functionColumns != null ? !functionColumns.equals(that.functionColumns) : that.functionColumns != null) {
+        if (functionSelectors != null ? !functionSelectors.equals(that.functionSelectors) : that.functionSelectors != null) {
             return false;
         }
         if (functionName != null ? !functionName.equals(that.functionName) : that.functionName != null) {
@@ -195,7 +195,7 @@ public class FunctionSelector extends Selector {
     @Override
     public int hashCode() {
         int result = functionName != null ? functionName.hashCode() : 0;
-        result = 31 * result + (functionColumns != null ? functionColumns.hashCode() : 0);
+        result = 31 * result + (functionSelectors != null ? functionSelectors.hashCode() : 0);
         result = 31 * result + (tableName != null ? tableName.hashCode() : 0);
         return result;
     }
