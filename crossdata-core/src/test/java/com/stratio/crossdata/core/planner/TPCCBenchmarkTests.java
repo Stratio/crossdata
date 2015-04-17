@@ -66,6 +66,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
     private TableMetadata order_line = null;
     private TableMetadata item = null;
     private TableMetadata stock = null;
+    private TableMetadata partsupp = null;
+    private TableMetadata part = null;
+    private TableMetadata supplier = null;
 
     DataStoreName dataStoreName = null;
     Map<ClusterName, Integer> clusterWithDefaultPriority = new LinkedHashMap<>();
@@ -383,6 +386,42 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         String[] clusteringKeys13 = { };
         stock = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
                 columnNames13, columnTypes13, partitionKeys13, clusteringKeys13, null);
+/*
+        //partsupp
+        String[] columnNames14 = { "ps_partkey" };
+        ColumnType[] columnTypes14 = {
+                new ColumnType(DataType.TEXT)
+        };
+        String[] partitionKeys14 = { "ps_partkey" };
+        String[] clusteringKeys14 = { };
+        partsupp = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
+                columnNames14, columnTypes14, partitionKeys14, clusteringKeys14, null);
+
+        //part
+        String[] columnNames15 = { "p_partkey", "p_type", "p_brand", "p_size" };
+        ColumnType[] columnTypes15 = {
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.INT)
+        };
+        String[] partitionKeys15 = { "p_partkey" };
+        String[] clusteringKeys15 = { };
+        part = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
+                columnNames15, columnTypes15, partitionKeys15, clusteringKeys15, null);
+
+        //supplier
+        String[] columnNames16 = { "s_comment", "supplier_cnt" };
+        ColumnType[] columnTypes16 = {
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.INT),
+
+        };
+        String[] partitionKeys16 = { "supplier_cnt" };
+        String[] clusteringKeys16 = { };
+        part = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[i++],
+                columnNames16, columnTypes16, partitionKeys16, clusteringKeys16, null);
+*/
     }
 
     //Subquery is not supported within an innerJoin clause by the grammar
@@ -639,6 +678,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4RWI", false, false, order,
                 customer);
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
@@ -1060,7 +1100,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
-    }
+    }*/
 
 
     @Test
@@ -1068,38 +1108,18 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[demo], SELECT  "
-                        + "p_brand,  "
-                        + "p_type,  "
-                        + "p_size,  "
-                        + "count(DISTINCT ps_suppkey) AS supplier_cnt  "
-                        + "FROM  "
-                        + "partsupp,  "
-                        + "part  "
-                        + "WHERE "
-                        + "p_partkey = ps_partkey  "
-                        + "AND p_brand <> 'Brand#45'  "
-                        + "AND p_type NOT LIKE \"MEDIUM POLISHED%\"  "
-                        + "AND p_size IN (49, 14, 23, 45, 19, 3, 36, 9)  "
-                        + "AND ps_suppkey NOT IN (  "
-                        + "SELECT  "
-                        + "s_suppkey  "
-                        + "FROM  "
-                        + "supplier  "
-                        + "WHERE "
-                        + "s_comment LIKE \"%Customer%Complaints%\"  "
-                        + ")  "
-                        + "GROUP BY  "
-                        + "p_brand,  "
-                        + "p_type,  "
-                        + "p_size  "
-                        + "ORDER BY  "
-                        + "supplier_cnt DESC,  "
-                        + "p_brand,  "
-                        + "p_type,  "
-                        + "p_size;";
+        String inputText = "[tpcc], Select	sum(ol_amount) / 2.0 as avg_yearly	" +
+                    "from (select i_id, " +
+                    "avg(ol_quantity) as a " +
+                    "from item, order_line " +
+                    "where i_data like '%b' " +
+                    "and ol_i_id = i_id " +
+                    "group by i_id) t " +
+                    "INNER JOIN order_line ON ol_i_id = t.i_id AND ol_quantity < t.a;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ16", false, false, partsupp, part, supplier);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ16", false, false, order,
+                order_line, item);
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -1110,31 +1130,25 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[demo], SELECT  "
-                        + "sum(l_extendedprice) / 7.0 AS avg_yearly  "
-                        + "FROM  "
-                        + "lineitem,  "
-                        + "part  "
-                        + "WHERE "
-                        + "p_partkey = l_partkey  "
-                        + "AND p_brand = 'Brand#23'  "
-                        + "AND p_container = 'MED BOX'  "
-                        + "AND l_quantity < (  "
-                        + "SELECT  "
-                        + "0.2 * avg(l_quantity)  "
-                        + "FROM  "
-                        + "lineitem  "
-                        + "WHERE "
-                        + "l_partkey = p_partkey  "
-                        + ");";
+        String inputText = "[tpcc], select substr(i_name,1,3) ," +
+                "i_price, " +
+                "s_quantity, " +
+                "count(*) as numero_pedidos, " +
+                "sum(i_price*s_quantity) as venta_total " +
+                "from stock inner join item on i_id=s_i_id " +
+                "where i_id= 5 " +
+                "group by substr(i_name,1,3), s_i_id, i_price, s_quantity " +
+                "order by sum(i_price*s_quantity) desc " +
+                "limit 100;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ17", false, false, lineitem , part);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ17", false, false, stock , item);
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
     }
 
-   */
+
 
 }
 
