@@ -70,7 +70,6 @@ import com.stratio.crossdata.common.logicalplan.OrderBy;
 import com.stratio.crossdata.common.logicalplan.PartialResults;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
-import com.stratio.crossdata.common.logicalplan.TransformationStep;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Virtualizable;
 import com.stratio.crossdata.common.logicalplan.Window;
@@ -197,7 +196,7 @@ public class Planner {
         if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
             throw new PlanningException("There are no connectors online");
         } else if(connectedConnectors.size() > 0){
-            return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0).getActorRef());
+            //return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0).getActorRef());
         }
 
         //Get the list of tables accessed in this query
@@ -311,27 +310,27 @@ public class Planner {
         }
         LOG.info("UnionSteps: " + unionSteps.toString());
         //Find first UnionStep
-        List<UnionStep> mergeSteps = new ArrayList<>();
+        Set<UnionStep> mergeSteps = new LinkedHashSet<>();
         Map<UnionStep, ExecutionPath[]> pathsMap=new HashMap<>();
         ExecutionPath[] paths;
         QueryWorkflow first = null;
         Map<PartialResults, ExecutionWorkflow> triggerResults = new LinkedHashMap<>();
         Map<UnionStep, ExecutionWorkflow> triggerWorkflow = new LinkedHashMap<>();
-        for (Map.Entry<UnionStep, LinkedHashSet<ExecutionPath>> entry : unionSteps.entrySet()) {
+        for (Map.Entry<UnionStep, LinkedHashSet<ExecutionPath>> entry: unionSteps.entrySet()) {
             paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
             pathsMap.put(entry.getKey(),paths);
-            boolean areTransformations = true;
-            for (ExecutionPath path : paths) {
-                if (!TransformationStep.class.isInstance(path.getLast())) {
-                    areTransformations = false;
-                }
-            }
-            if (areTransformations) {
+            //boolean areTransformations = true;
+            //for (ExecutionPath path: paths) {
+                //if (!TransformationStep.class.isInstance(path.getLast())) {
+                    //areTransformations = false;
+                //}
+            //}
+            //if (areTransformations) {
                 mergeSteps.add(entry.getKey());
-            }
+            //}
         }
 
-        for(UnionStep mergeStep:mergeSteps ) {
+        for(UnionStep mergeStep: mergeSteps) {
             List<ConnectorMetadata> toRemove = new ArrayList<>();
             List<ConnectorMetadata> mergeConnectors = new ArrayList<>();
 
@@ -350,7 +349,7 @@ public class Planner {
             for (int index = 0; index < mergePaths.length; index++) {
                 toRemove.clear();
 
-                for (ConnectorMetadata connector : mergePaths[index].getAvailableConnectors()) {
+                for (ConnectorMetadata connector: mergePaths[index].getAvailableConnectors()) {
                     LOG.info("op: " + mergeStep.getOperations() + " -> " +
                             connector.supports(mergeStep.getOperations()));
                     if (!connector.supports(mergeStep.getOperations())) {
