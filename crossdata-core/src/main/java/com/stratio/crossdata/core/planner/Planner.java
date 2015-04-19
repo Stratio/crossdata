@@ -216,7 +216,10 @@ public class Planner {
             TableName targetTable = ((Project) initialStep).getTableName();
             LOG.info("Table: " + targetTable);
             // Detect step before the next union step from the current step
-            ExecutionPath ep = new ExecutionPath(initialStep, initialStep, candidatesConnectors.get(targetTable));
+            ExecutionPath ep = new ExecutionPath(
+                    initialStep,
+                    initialStep.getLastStep(),
+                    candidatesConnectors.get(targetTable));
             while(hasMoreUnionSteps(ep.getLast())){
                 ep = defineExecutionPath(ep.getLast(), candidatesConnectors.get(targetTable), query);
                 LOG.info("Last step: " + ep.getLast());
@@ -247,6 +250,16 @@ public class Planner {
                 executionPaths.add(ep);
                 ep = defineExecutionPath(ep.getLast().getNextStep(), candidatesConnectors.get(targetTable), query);
             }
+        }
+        // Define ExecutionPath for Workflow without any union step
+        if(executionPaths.isEmpty()){
+            LogicalStep initialStep = workflow.getInitialSteps().get(0);
+            ExecutionPath ep = defineExecutionPath(
+                    workflow.getInitialSteps().get(0),
+                    candidatesConnectors.get(((Project) initialStep).getTableName()),
+                    query
+            );
+            executionPaths.add(ep);
         }
         for (ExecutionPath ep: executionPaths) {
             LOG.info("ExecutionPaths: " + ep);
