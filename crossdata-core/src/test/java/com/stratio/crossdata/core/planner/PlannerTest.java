@@ -130,6 +130,8 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_SUBQUERY);
         operationsC1.add(Operations.FILTER_NON_INDEXED_LET);
         operationsC1.add(Operations.SELECT_ORDER_BY);
+        operationsC1.add(Operations.FILTER_PK_EQ);
+
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();

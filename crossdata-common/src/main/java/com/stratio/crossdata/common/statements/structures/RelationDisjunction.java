@@ -82,28 +82,24 @@ public class RelationDisjunction extends AbstractRelation {
                 sb.append("-");
             }
         }
-        return sb.toString();
+        return sb.toString().replace("(", "").replace(")", "");
     }
 
     public String getFirstSelectorTablesAsString() {
-        Set<String> allTables = new HashSet<>();
-        // Inner relations
         for(RelationTerm rt: terms){
-            allTables.add(getSelectorTablesAsString(rt));
-        }
-        // Create final String without duplicates
-        StringBuilder sb = new StringBuilder();
-        Iterator<String> iter = allTables.iterator();
-        if(iter.hasNext()){
-            String name = iter.next();
-            if (name.contains("-")){
-                sb.append(name.substring(0, name.indexOf("-")));
-            }else {
-                sb.append(name);
+            Iterator<AbstractRelation> iter = rt.getRelations().iterator();
+            while(iter.hasNext()){
+                AbstractRelation ab = iter.next();
+                if(ab instanceof RelationDisjunction){
+                    RelationDisjunction rd = (RelationDisjunction) ab;
+                    iter = rd.getTerms().get(0).getRelations().iterator();
+                } else {
+                    Relation r = (Relation) ab;
+                    return r.getLeftTerm().getTableName().toString();
+                }
             }
         }
-
-        return sb.toString();
+        return getSelectorTablesAsString();
     }
 
     public String getSelectorTablesAsString(RelationTerm relationTerm) {
@@ -119,7 +115,7 @@ public class RelationDisjunction extends AbstractRelation {
                 sb.append("-");
             }
         }
-        return sb.toString();
+        return sb.toString().replace("(", "").replace(")", "");
     }
 
 }

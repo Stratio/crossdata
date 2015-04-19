@@ -78,4 +78,24 @@ public class RelationTerm implements Serializable {
         }
         return sb.toString();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        if(withParenthesis){
+            sb.append("(");
+        }
+        Iterator<AbstractRelation> iter = relations.iterator();
+        while(iter.hasNext()){
+            AbstractRelation ab = iter.next();
+            sb.append(ab);
+            if(iter.hasNext()){
+                sb.append(" AND ");
+            }
+        }
+        if(withParenthesis){
+            sb.append(")");
+        }
+        return sb.toString();
+    }
 }

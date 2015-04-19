@@ -892,7 +892,8 @@ getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
         }
     }:
     (T_START_PARENTHESIS firstTerm=getConditions[workaroundTable] T_END_PARENTHESIS
-        { withParenthesis = true; }
+        { withParenthesis = true;
+        if((!firstTerm.isEmpty()) && (firstTerm.size()==1)) firstTerm.get(0).setParenthesis(true); }
     | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } )
     { rd.getTerms().add(new RelationTerm(firstTerm, withParenthesis)); }
     (T_OR { simpleRelation = false; }
@@ -900,12 +901,6 @@ getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
             { rt = new RelationTerm(anotherTerm, true); }
         | anotherRel=getRelation[workaroundTable] { rt = new RelationTerm(anotherRel); } )
     { rd.getTerms().add(rt); } )*
-
-    // (T_START_PARENTHESIS leftOperand=getConditions[workaroundTable] T_END_PARENTHESIS
-    // | rel1=getRelation[workaroundTable])
-    // (T_OR (T_START_PARENTHESIS rightOperand=getConditions[workaroundTable] T_END_PARENTHESIS
-    //       | rel2=getRelation[workaroundTable]))?
-
 ;
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
