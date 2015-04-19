@@ -111,6 +111,8 @@ public enum Operator {
         public String toString() {
             return "MATCH";
         }
+        @Override
+        public String toSQLString() { return "LIKE"; }
     },
 
     /**
@@ -240,6 +242,10 @@ public enum Operator {
      */
     public boolean isInGroup(Group group) {
         return this.group == group;
+    }
+
+    public String toSQLString() {
+        return toString();
     }
 
 }

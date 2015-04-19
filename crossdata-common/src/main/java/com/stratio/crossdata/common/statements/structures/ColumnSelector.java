@@ -103,6 +103,15 @@ public class ColumnSelector extends Selector {
     }
 
     @Override
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder(name.toString());
+        if (withAlias && this.alias != null) {
+            sb.append(" AS ").append(alias);
+        }
+        return sb.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

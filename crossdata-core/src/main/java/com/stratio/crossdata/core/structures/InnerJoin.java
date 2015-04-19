@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
+import com.stratio.crossdata.common.utils.StringUtils;
 
 /**
  * InnerJoin metadata class.
@@ -201,5 +202,30 @@ public class InnerJoin implements Serializable {
         }
         return sb.toString();
     }
+
+    public String toSQLString() {
+        StringBuilder sb = new StringBuilder(type.toSQLString());
+        sb.append(" JOIN ");
+
+        List<TableName> tables = new ArrayList<>();
+        tables.addAll(tableNames);
+        tables.remove(0);
+
+        Iterator<TableName> iter = tables.iterator();
+        while(iter.hasNext()){
+            TableName tableName = iter.next();
+            sb.append(tableName);
+            if(iter.hasNext()){
+                sb.append(", ");
+            }
+        }
+        sb.append(" ON ");
+
+        sb.append(StringUtils.sqlStringList(relations, " AND ", false));
+
+        return sb.toString();
+    }
+
+
 
 }

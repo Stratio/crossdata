@@ -64,6 +64,11 @@ public class AliasSelector extends Selector {
 
     @Override
     public String toString() {
+        return getStringValue() + " refers to " + referencedSelector.toString();
+    }
+
+    @Override
+    public String toSQLString(boolean withAlias) {
         return getStringValue();
     }
 

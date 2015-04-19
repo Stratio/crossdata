@@ -144,9 +144,31 @@ public class CaseWhenSelector extends Selector {
         return sb.toString();
     }
 
+    @Override
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb=new StringBuilder("CASE");
+        for (Pair<List<AbstractRelation>,Selector> pair:restrictions) {
+            sb.append(" WHEN ");
+            List<AbstractRelation> relations = pair.getLeft();
+            boolean first=true;
+            for (AbstractRelation relation : relations) {
+                if (!first) {
+                    sb.append(" AND ");
+                }
+                sb.append(relation.toSQLString(withAlias));
+                first=false;
+            }
+            sb.append(" THEN ").append(pair.getRight().toSQLString(withAlias));
+        }
+        sb.append(" ELSE ").append(defaultValue.toSQLString(withAlias)).append(" END");
+        return sb.toString();
+    }
+
     @Override public String getStringValue() {
         StringBuilder sb=new StringBuilder("CASE-WHEN_");
         sb.append(hashCode());
         return sb.toString();
     }
+
+
 }

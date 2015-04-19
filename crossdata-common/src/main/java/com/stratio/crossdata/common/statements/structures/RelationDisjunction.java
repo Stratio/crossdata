@@ -101,6 +101,47 @@ public class RelationDisjunction extends AbstractRelation {
         return sb.toString();
     }
 
+
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder();
+        if(isParenthesis()){
+            sb.append("(");
+        }
+        Iterator<AbstractRelation> leftIter = leftRelations.iterator();
+        if(leftParenthesis){
+            sb.append("(");
+        }
+        while(leftIter.hasNext()){
+            AbstractRelation leftRelation = leftIter.next();
+            sb.append(leftRelation.toSQLString(withAlias));
+            if(leftIter.hasNext()){
+                sb.append(" AND ");
+            }
+        }
+        if(leftParenthesis){
+            sb.append(")");
+        }
+        sb.append(" OR ");
+        Iterator<AbstractRelation> rightIter = rightRelations.iterator();
+        if(rightParenthesis){
+            sb.append("(");
+        }
+        while(rightIter.hasNext()){
+            AbstractRelation rightRelation = rightIter.next();
+            sb.append(rightRelation.toSQLString(withAlias));
+            if(rightIter.hasNext()){
+                sb.append(" AND ");
+            }
+        }
+        if(rightParenthesis){
+            sb.append(")");
+        }
+        if(isParenthesis()){
+            sb.append(")");
+        }
+        return sb.toString();
+    }
+
     public String getSelectorTablesAsString() {
         Set<String> allTables = new HashSet<>();
         // Left relations
