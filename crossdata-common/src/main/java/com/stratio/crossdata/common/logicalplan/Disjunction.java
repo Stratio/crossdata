@@ -29,14 +29,9 @@ public class Disjunction extends TransformationStep implements ITerm {
 
     private final List<List<ITerm>> terms = new ArrayList<>();
 
-    /**
-     * Class constructor.
-     *
-     * @param operations The operations to be applied.
-     */
-    public Disjunction(Set<Operations> operations, List<ITerm> terms) {
+    public Disjunction(Set<Operations> operations, List<List<ITerm>> terms) {
         super(operations);
-        this.terms.add(terms);
+        this.terms.addAll(terms);
     }
 
     public List<List<ITerm>> getTerms() {

@@ -1870,18 +1870,20 @@ public class Planner {
             } else if(ar instanceof RelationDisjunction) {
                 RelationDisjunction rd = (RelationDisjunction) ar;
                 Operations op = Operations.FILTER_DISJUNCTION;
-                List<ITerm> filters = new ArrayList<>();
+                List<List<ITerm>> filters = new ArrayList<>();
                 List<RelationTerm> terms = rd.getTerms();
                 for(RelationTerm rt: terms){
+                    List<ITerm> termList = new ArrayList<>();
                     for(AbstractRelation ab: rt.getRelations()){
-                        filters.addAll(createFilter(tableMetadataMap, ab));
+                        termList.addAll(createFilter(tableMetadataMap, ab));
                     }
+                    filters.add(termList);
                 }
                 Disjunction d = new Disjunction(Collections.singleton(op), filters);
                 LogicalStep previous = lastSteps.get(rd.getFirstSelectorTablesAsString());
                 previous.setNextStep(d);
                 d.setPrevious(previous);
-                lastSteps.put(rd.getSelectorTablesAsString(), d);
+                lastSteps.put(rd.getFirstSelectorTablesAsString(), d);
             }
         }
         return lastSteps;
@@ -1919,12 +1921,14 @@ public class Planner {
                     relation));
         } else if(abstractRelation instanceof RelationDisjunction){
             RelationDisjunction rd = (RelationDisjunction) abstractRelation;
-            List<ITerm> abFilters = new ArrayList<>();
+            List<List<ITerm>> abFilters = new ArrayList<>();
             List<RelationTerm> terms = rd.getTerms();
             for(RelationTerm rt: terms){
+                List<ITerm> termsList = new ArrayList<>();
                 for(AbstractRelation ab: rt.getRelations()){
-                    abFilters.addAll(createFilter(tableMetadataMap, ab));
+                    termsList.addAll(createFilter(tableMetadataMap, ab));
                 }
+                abFilters.add(termsList);
             }
             filters.add(new Disjunction(
                     Collections.singleton(Operations.FILTER_DISJUNCTION),

@@ -76,7 +76,7 @@ public class RelationTerm implements Serializable {
         if(withParenthesis){
             sb.append(")");
         }
-        return sb.toString();
+        return sb.toString().replace("(", "").replace(")", "");
     }
 
     @Override
