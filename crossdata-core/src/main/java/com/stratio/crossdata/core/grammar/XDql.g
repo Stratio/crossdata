@@ -869,30 +869,38 @@ getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
         clauses = new ArrayList<>();
         workaroundTable = tablename;
     }:
-    rel1=getAbstractRelation[workaroundTable] { clauses.addAll(rel1); }
+    firstRel=getAbstractRelation[workaroundTable] { clauses.addAll(firstRel); }
             (T_AND relN=getAbstractRelation[workaroundTable] { clauses.addAll(relN); })*
 ;
 
 getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     @init{
         workaroundTable = tablename;
-        leftOperand = new ArrayList<>();
-        rightOperand = new ArrayList<>();
-        boolean leftParenthesis = false;
-        boolean rightParenthesis = false;
+        firstTerm = new ArrayList<>();
+        anotherTerm = new ArrayList<>();
+        RelationDisjunction rd = new RelationDisjunction();
+        boolean withParenthesis = false;
+        boolean simpleRelation = true;
+        RelationTerm rt = null;
+        result = new ArrayList<>();
+    }
+    @after{
+        if(simpleRelation){
+            result = firstTerm;
+        } else {
+            result.add(rd);
+        }
     }:
-    (T_START_PARENTHESIS leftOperand=getConditions[workaroundTable] T_END_PARENTHESIS
-        { leftParenthesis=true; if(leftOperand.size()==1) leftOperand.get(0).setParenthesis(true); }
-    | rel1=getRelation[workaroundTable] {leftOperand.add(rel1);})
-        {result = leftOperand;}
-        (T_OR (T_START_PARENTHESIS rightOperand=getConditions[workaroundTable] T_END_PARENTHESIS
-                    {rightParenthesis=true;}
-               | rel2=getRelation[workaroundTable] {rightOperand.add(rel2);} )
-        {result = new ArrayList<>();
-        RelationDisjunction rd = new RelationDisjunction(leftOperand, rightOperand);
-        rd.setLeftParenthesis(leftParenthesis);
-        rd.setRightParenthesis(rightParenthesis);
-        result.add(rd);} )?
+    (T_START_PARENTHESIS firstTerm=getConditions[workaroundTable] T_END_PARENTHESIS
+        { withParenthesis = true;
+        if((!firstTerm.isEmpty()) && (firstTerm.size()==1)) firstTerm.get(0).setParenthesis(true); }
+    | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } )
+    { rd.getTerms().add(new RelationTerm(firstTerm, withParenthesis)); }
+    (T_OR { simpleRelation = false; }
+        (T_START_PARENTHESIS anotherTerm=getConditions[workaroundTable] T_END_PARENTHESIS
+            { rt = new RelationTerm(anotherTerm, true); }
+        | anotherRel=getRelation[workaroundTable] { rt = new RelationTerm(anotherRel); } )
+    { rd.getTerms().add(rt); } )*
 ;
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
@@ -1132,11 +1140,6 @@ getArithmeticSelector[TableName tablename] returns [Selector selector]
     | fs=getFunctionSelector[tablename] {defaultSelector = fs;} 
     )
 ;
-
-
-
-
-
 
 getAssignment[TableName tablename] returns [Relation assign]
     @init{

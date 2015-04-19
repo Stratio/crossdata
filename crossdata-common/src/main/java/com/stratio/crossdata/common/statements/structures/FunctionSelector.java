@@ -40,6 +40,8 @@ public class FunctionSelector extends Selector {
      */
     private final List<Selector> functionSelectors;
 
+    private boolean hadAsteriskSelector;
+
     /**
      * Class constructor.
      *
@@ -62,6 +64,11 @@ public class FunctionSelector extends Selector {
         this.functionName = functionName;
         this.alias = functionName;
         this.functionSelectors = functionSelectors;
+        if((functionSelectors != null)
+                && (functionSelectors.size()==1)
+                && (functionSelectors.get(0) instanceof AsteriskSelector)){
+            hadAsteriskSelector = true;
+        }
     }
 
     /**
@@ -79,6 +86,14 @@ public class FunctionSelector extends Selector {
      */
     public List<Selector> getFunctionColumns() {
         return functionSelectors;
+    }
+
+    public boolean hadAsteriskSelector() {
+        return hadAsteriskSelector;
+    }
+
+    public void setHadAsteriskSelector(boolean hadAsteriskSelector) {
+        this.hadAsteriskSelector = hadAsteriskSelector;
     }
 
     @Override

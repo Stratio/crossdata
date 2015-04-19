@@ -24,7 +24,7 @@ public abstract class AbstractRelation implements Serializable {
 
     private static final long serialVersionUID = 4458788192163528306L;
 
-    private boolean parenthesis = false;
+    protected boolean parenthesis = false;
 
     public boolean isParenthesis() {
         return parenthesis;

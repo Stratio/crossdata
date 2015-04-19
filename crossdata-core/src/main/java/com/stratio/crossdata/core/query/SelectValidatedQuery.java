@@ -30,6 +30,7 @@ import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
+import com.stratio.crossdata.common.statements.structures.RelationTerm;
 import com.stratio.crossdata.core.structures.InnerJoin;
 
 /**
@@ -197,9 +198,10 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
                     }
                 }
             } else if(abstractRelation instanceof RelationDisjunction){
-                RelationDisjunction relationDisjunction = (RelationDisjunction) abstractRelation;
-                optimizeRelations(relationDisjunction.getLeftRelations());
-                optimizeRelations(relationDisjunction.getRightRelations());
+                RelationDisjunction rd = (RelationDisjunction) abstractRelation;
+                for(RelationTerm rt: rd.getTerms()){
+                    optimizeRelations(rt.getRelations());
+                }
             }
         }
         return trueRelationFound;
