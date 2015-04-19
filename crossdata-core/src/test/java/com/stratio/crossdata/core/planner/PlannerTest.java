@@ -251,6 +251,11 @@ public class PlannerTest extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 2, "Expecting 2 initial steps");
+        assertEquals(
+                queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep(),
+                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep(),
+                "Expecting 2 initial steps to converge to the same union step");
         assertEquals(queryWorkflow.getActorRef(), connector2.getActorRef(), "Wrong target actor");
     }
 

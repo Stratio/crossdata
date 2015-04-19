@@ -218,9 +218,9 @@ public class Planner {
             // Detect step before the next union step from the current step
             ExecutionPath ep = new ExecutionPath(
                     initialStep,
-                    initialStep.getLastStep(),
+                    initialStep,
                     candidatesConnectors.get(targetTable));
-            while(hasMoreUnionSteps(ep.getLast())){
+            while(hasMoreUnionSteps(ep.getInitial())){
                 ep = defineExecutionPath(ep.getLast(), candidatesConnectors.get(targetTable), query);
                 LOG.info("Last step: " + ep.getLast());
                 if (ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())) {
