@@ -154,6 +154,7 @@ public class Planner {
                 .getExecutionWorkflow())
                 .getWorkflow()
                 .setSqlDirectQuery(query.getStatement().toSQL92String());
+        LOG.info("SQL Direct: " + ((QueryWorkflow) plannedQuery.getExecutionWorkflow()).getWorkflow().getSqlDirectQuery());
         return plannedQuery;
     }
 

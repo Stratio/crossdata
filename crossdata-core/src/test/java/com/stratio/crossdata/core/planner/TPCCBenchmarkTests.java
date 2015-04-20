@@ -1214,7 +1214,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         "    group by c_count " +
                         "    order by custdist desc, c_count desc LIMIT 100;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Rewritten", false, false, customer, order);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -1253,9 +1253,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         // SQL DIRECT NOT REVIEWED
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
-
-
-
 
 
     @Test
