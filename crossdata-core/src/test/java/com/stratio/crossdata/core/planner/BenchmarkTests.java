@@ -124,6 +124,8 @@ public class BenchmarkTests extends PlannerBaseTest {
         benchmarkOperations.add(Operations.SELECT_LEFT_OUTER_JOIN);
         benchmarkOperations.add(Operations.FILTER_PK_NOT_IN);
         benchmarkOperations.add(Operations.FILTER_NON_INDEXED_DISTINCT);
+        benchmarkOperations.add(Operations.FILTER_PK_IN);
+        benchmarkOperations.add(Operations.FILTER_PK_EQ);
 
         clusterWithDefaultPriority.put(new ClusterName(clusterName.getName()), Constants.DEFAULT_PRIORITY);
 
@@ -1290,7 +1292,7 @@ public class BenchmarkTests extends PlannerBaseTest {
                 + "WHERE "
                 + " p_brand = 'Brand#45'  "
                 + "AND p_type NOT LIKE \"MEDIUM POLISHED%\"  "
-                + "AND p_size IN (49, 14, 23, 45, 19, 3, 36, 9)  "
+                + "AND p_size IN [49, 14, 23, 45, 19, 3, 36 ]  "
                 + "GROUP BY  "
                 + "p_brand,  "
                 + "p_type,  "
@@ -1343,7 +1345,7 @@ public class BenchmarkTests extends PlannerBaseTest {
     }
 
     @Test
-    public void testQ18() throws ManifestException {
+    public void testQ18Implicit() throws ManifestException {
 
         init();
 
@@ -1379,6 +1381,50 @@ public class BenchmarkTests extends PlannerBaseTest {
                         + "ORDER BY  "
                         + "o_totalprice desc,  "
                         + "o_orderdate;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ18", false, false, customer, orders, lineitem);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        //assertNotNull(queryWorkflow.getWorkflow().getSqlDirectQuery(), "Invalid SQL Direct");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+
+    @Test
+    public void testQ18() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT  "
+                + "c_name,  "
+                + "c_custkey,  "
+                + "o_orderkey,  "
+                + "o_orderdate,  "
+                + "o_totalprice,  "
+                + "sum(l_quantity)  "
+                + "FROM  "
+                + "customer INNER JOIN orders ON c_custkey = o_custkey "
+                + "INNER JOIN lineitem ON o_orderkey = l_orderkey "
+                + "WHERE "
+                + "o_orderkey IN (  "
+                + "SELECT  "
+                + "l_orderkey  "
+                + "FROM  "
+                + "lineitem  "
+                + "GROUP BY  "
+                + "l_orderkey HAVING  "
+                + "sum(l_quantity) > 300  "
+                + ")  "
+                + "GROUP BY  "
+                + "c_name,  "
+                + "c_custkey,  "
+                + "o_orderkey,  "
+                + "o_orderdate,  "
+                + "o_totalprice  "
+                + "ORDER BY  "
+                + "o_totalprice desc,  "
+                + "o_orderdate;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ18", false, false, customer, orders, lineitem);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -1437,6 +1483,54 @@ public class BenchmarkTests extends PlannerBaseTest {
         LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
+
+    @Test
+    public void testQ19Rewrite() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT  "
+                + "sum(l_extendedprice * (1 - l_discount) ) AS revenue  "
+                + "FROM  "
+                + "lineitem INNER JOIN part ON p_partkey = l_partkey "
+                + "WHERE "
+                + "(  "
+                + " p_brand = 'Brand#12'  "
+                + "AND p_container IN [ 'SM CASE', 'SM BOX', 'SM PACK', 'SM PKG']  "
+                + "AND l_quantity >= 1 AND l_quantity <= 1 + 10 "
+                + "AND p_size BETWEEN 1 AND 5  "
+                + "AND l_shipmode IN ['AIR', 'AIR REG']  "
+                + "AND l_shipinstruct = 'DELIVER IN PERSON'  "
+                + ")  "
+                + "OR  "
+                + "(  "
+                + " p_brand = 'Brand#23'  "
+                + "AND p_container IN ['MED BAG', 'MED BOX', 'MED PKG', 'MED PACK']  "
+                + "AND l_quantity >= 10 AND l_quantity <= 10 + 10 "
+                + "AND p_size BETWEEN 1 AND 10  "
+                + "AND l_shipmode IN ['AIR', 'AIR REG']  "
+                + "AND l_shipinstruct = 'DELIVER IN PERSON'  "
+                + ")  "
+                + "OR  "
+                + "(  "
+                + "p_brand = 'Brand#34'  "
+                + "AND p_container IN [ 'LG CASE', 'LG BOX', 'LG PACK', 'LG PKG']  "
+                + "AND l_quantity >= 20 AND l_quantity <= 20 + 10 "
+                + "AND p_size BETWEEN 1 AND 15  "
+                + "AND l_shipmode IN ['AIR', 'AIR REG']  "
+                + "AND l_shipinstruct = 'DELIVER IN PERSON'  "
+                + ");";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ19", false, false, lineitem, part, supplier, nation);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        //assertNotNull(queryWorkflow.getWorkflow().getSqlDirectQuery(), "Invalid SQL Direct");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+
+
     @Test
     public void testQ20() throws ManifestException {
 
@@ -1478,6 +1572,46 @@ public class BenchmarkTests extends PlannerBaseTest {
                                 + "AND n_name = 'CANADA' "
                                 + "ORDER BY  "
                                 + "s_name;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ20", false, false, lineitem, supplier, part, partsupp);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        //assertNotNull(queryWorkflow.getWorkflow().getSqlDirectQuery(), "Invalid SQL Direct");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+
+    @Test
+    public void testQ20RewriteEasy() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT  "
+                + "s_name,  "
+                + "s_address  "
+                + "FROM  "
+                + "supplier inner join nation on  s_nationkey = n_nationkey "
+                + "WHERE "
+                + "s_suppkey IN (  "
+                + "SELECT  "
+                + "ps_suppkey  "
+                + "FROM  "
+                + "partsupp  "
+                + "WHERE "
+                + "ps_partkey IN (  "
+                + "SELECT  "
+                + "p_partkey  "
+                + "FROM  "
+                + "part  "
+                + "WHERE "
+                + "p_name LIKE 'forest%'  "
+                + ")  "
+                + ")  "
+                + "AND s_nationkey = n_nationkey  "
+                + "AND n_name = 'CANADA' "
+                + "ORDER BY  "
+                + "s_name;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ20", false, false, lineitem, supplier, part, partsupp);
         //assertNotNull(queryWorkflow, "Null workflow received.");
