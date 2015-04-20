@@ -1193,8 +1193,14 @@ public class Normalizator {
                 }
                 String firstType = rightTerm.getFirstValue().getType().toString();
                 String lastType = rightTerm.getLastValue().getType().toString();
-                if (( !firstType.equals(leftType) && !firstType.equals(FUNCTION.toString()) && !firstType.equals(RELATION.toString()) ) || (!lastType.equals(leftType) && !lastType.equals(FUNCTION.toString()) && !lastType.equals(RELATION.toString()) ) ) {
-                    throw new NotMatchDataTypeException(leftTerm.getColumnName());
+
+                //TODO drop Operator.EQ workaround. Use checkCompatibility above
+                if(!lastType.equals(FUNCTION.toString()) && !lastType.equals(RELATION.toString())){
+                    checkCompatibility(columnMetadata, Operator.EQ, rightTerm.getLastValue().getType());
+                }
+
+                if (!firstType.equals(FUNCTION.toString()) && !firstType.equals(RELATION.toString())) {
+                    checkCompatibility(columnMetadata, Operator.EQ, rightTerm.getFirstValue().getType());
                 }
             } else {
                 throw new BadFormatException("Left Term must be a column in a Group Filter.");
