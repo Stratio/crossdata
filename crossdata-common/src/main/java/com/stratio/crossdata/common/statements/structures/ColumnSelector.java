@@ -104,7 +104,7 @@ public class ColumnSelector extends Selector {
 
     @Override
     public String toSQLString(boolean withAlias) {
-        StringBuilder sb = new StringBuilder(name.toString());
+        StringBuilder sb = new StringBuilder(name.toSQLString());
         if (withAlias && this.alias != null) {
             sb.append(" AS ").append(alias);
         }
