@@ -1285,13 +1285,14 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ16", false, false, order,
                 order_line, item);
-        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
 
-        // SQL DIRECT NOT REVIEWED
+        // SQL DIRECT REVIEWED
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
+        Assert.assertEquals(queryWorkflow.getWorkflow().getSqlDirectQuery(), "SELECT sum(tpcc.order_line.ol_amount) / 2.0 AS avg_yearly FROM ( SELECT tpcc.item.i_id, avg(tpcc.order_line.ol_quantity) AS a FROM tpcc.item INNER JOIN tpcc.order_line ON tpcc.order_line.ol_i_id = tpcc.item.i_id WHERE tpcc.item.i_data LIKE '%b' GROUP BY tpcc.item.i_id ) AS t INNER JOIN tpcc.order_line ON tpcc.order_line.ol_i_id = t.i_id AND tpcc.order_line.ol_quantity < t.a");
     }
 
     @Test
@@ -1311,13 +1312,13 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "limit 100;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ17", false, false, stock , item);
-        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
 
-        // SQL DIRECT NOT REVIEWED
+        // SQL DIRECT REVIEWED
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+        Assert.assertEquals( queryWorkflow.getWorkflow().getSqlDirectQuery(), "SELECT substr(tpcc.item.i_name, 1, 3) AS substr, tpcc.item.i_price, tpcc.stock.s_quantity, count(*) AS numero_pedidos, sum(tpcc.item.i_price * tpcc.stock.s_quantity) AS venta_total FROM tpcc.stock INNER JOIN tpcc.item ON tpcc.item.i_id = tpcc.stock.s_i_id WHERE tpcc.item.i_id = 5 GROUP BY substr(tpcc.item.i_name, 1, 3), tpcc.stock.s_i_id, tpcc.item.i_price, tpcc.stock.s_quantity ORDER BY sum(tpcc.item.i_price * tpcc.stock.s_quantity) DESC LIMIT 100");
     }
 
 
