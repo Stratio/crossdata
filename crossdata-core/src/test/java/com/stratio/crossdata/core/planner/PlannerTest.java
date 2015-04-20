@@ -587,12 +587,11 @@ public class PlannerTest extends PlannerBaseTest {
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testJoinWithStreaming", false, table1, table3);
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
+        assertNotNull(queryWorkflow, "Planner failed");
         assertNotNull(queryWorkflow.getTriggerStep(), "Planner failed.");
         assertNotNull(queryWorkflow.getNextExecutionWorkflow(), "Planner failed.");
-        assertNotNull(queryWorkflow, "Planner failed");
     }
 
-/*
     @Test
     public void testMultipleJoin() throws ManifestException {
 
@@ -604,11 +603,21 @@ public class PlannerTest extends PlannerBaseTest {
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testMultipleJoin", false, table1, table2, table3);
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
-        assertNotNull(queryWorkflow.getTriggerStep(), "Planner failed.");
-        assertNotNull(queryWorkflow.getNextExecutionWorkflow(), "Planner failed.");
         assertNotNull(queryWorkflow, "Planner failed");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 3, "Expecting 3 initial steps");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep(),
+                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep(),
+                "Expecting 2 first initial steps to converge to the same union step");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep(),
+                queryWorkflow.getWorkflow().getInitialSteps().get(2).getNextStep(),
+                "Expecting first and third initial steps to converge to the same union step");
+        assertEquals(
+                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep().getNextStep().getNextStep().getClass(),
+                Select.class,
+                "Last step should be a Select");
+
     }
-*/
+
     @Test
     public void testInsertIntoFromSelectDirect() throws ManifestException {
 

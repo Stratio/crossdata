@@ -43,7 +43,6 @@ import org.testng.annotations.Test;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.QueryWorkflow;
@@ -930,14 +929,14 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         + "    AND ol_quantity <= 9  "
                         + "    AND i_price between 1 AND 400000  "
                         + "    AND ol_w_id in [1,2,3]  "
-                        + "                    ) or (  "
+                        + "                    ) OR (  "
                         + "                    ol_i_id = i_id  "
                         + "                    AND i_data LIKE '%b'  "
                         + "                    AND ol_quantity >= 4  "
                         + "    AND ol_quantity <= 9  "
                         + "    AND i_price between 1 AND 400000  "
                         + "    AND ol_w_id in [1,2,4]  "
-                        + "                    ) or (  "
+                        + "                    ) OR (  "
                         + "                    ol_i_id = i_id  "
                         + "                    AND i_data LIKE '%c'  "
                         + "                    AND ol_quantity >= 4  "
@@ -963,7 +962,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         String inputText = "[tpcc],  SELECT sum(ol_amount) AS revenue  "
                 + "    FROM tpcc.order_line INNER JOIN  tpcc.item ON ol_i_id = i_id  "
-                + "    WHERE i_data LIKE '%a' or (i_data LIKE '%b' or i_data LIKE '%c');";
+                + "    WHERE i_data LIKE '%a' OR (i_data LIKE '%b' OR i_data LIKE '%c');";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer,
                 order_line, item);
@@ -986,8 +985,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         String inputText = "[tpcc],  SELECT sum(ol_amount) AS revenue  "
                 + "    FROM tpcc.order_line INNER JOIN  tpcc.item ON ol_i_id = i_id  "
                 + "    WHERE ( i_data LIKE '%a' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,2,3])" +
-                  "       or ( i_data LIKE '%b' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,2,4])" +
-                  "       or ( i_data LIKE '%c' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,5,3]);";
+                  "       OR ( i_data LIKE '%b' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,2,4])" +
+                  "       OR ( i_data LIKE '%c' AND ol_quantity >= 4  AND ol_quantity <= 9  AND i_price between 1 AND 400000 AND ol_w_id in [1,5,3]);";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ10", false, false, customer,
                 order_line, item);
@@ -1014,7 +1013,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 + "    AND ol_quantity <= 9  "
                 + "    AND i_price between 1 AND 400000  "
                 + "    AND ol_w_id in [1,2,3]  "
-                + "                    ) or (  "
+                + "                    ) OR (  "
                 + "                    ol_i_id = i_id  "
                 + "                    AND i_data LIKE '%b'  "
                 + "                    AND ol_quantity >= 4  "
@@ -1087,9 +1086,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 + "    FROM tpcc.order_line  "
                 + "    WHERE (  "
                 + "                    ol_quantity >= 4  "
-                + "                    ) or (  "
+                + "                    ) OR (  "
                 + "                    ol_quantity >= 4  "
-                + "                    ) or (  "
+                + "                    ) OR (  "
                 + "                    ol_quantity >= 4  "
                 + ");";
 
@@ -1160,7 +1159,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[tpcc],  SELECT o_ol_cnt,   "
-                + "    sum(CASE WHEN o_carrier_id = 1 or o_carrier_id = 2 THEN 1 ELSE 0 END) AS high_line_count,   "
+                + "    sum(CASE WHEN o_carrier_id = 1 OR o_carrier_id = 2 THEN 1 ELSE 0 END) AS high_line_count,   "
                 + "    sum(CASE WHEN o_carrier_id <> 1 AND o_carrier_id <> 2 THEN 1 ELSE 0 END) AS low_line_count   "
                 + "    FROM  tpcc.order INNER JOIN tpcc.order_line ON   "
                 + "    ol_w_id = o_w_id   "
@@ -1169,7 +1168,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 + "    AND o_entry_d <= ol_delivery_d "
                 + "    WHERE ol_delivery_d <  to_date('2013-07-09','YYYY-MM-DD')   "
                 + "    GROUP BY o_ol_cnt   "
-                + "    ORDER BY sum(CASE WHEN o_carrier_id = 1 or o_carrier_id = 2 THEN 1 ELSE 0 END) DESC, sum(CASE WHEN o_carrier_id <> 1 AND o_carrier_id <> 2 THEN 1 ELSE 0 END)"
+                + "    ORDER BY sum(CASE WHEN o_carrier_id = 1 OR o_carrier_id = 2 THEN 1 ELSE 0 END) DESC, sum(CASE WHEN o_carrier_id <> 1 AND o_carrier_id <> 2 THEN 1 ELSE 0 END)"
                 + "    LIMIT 10;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ13", false, false, customer,
@@ -1235,7 +1234,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         "    group by c_count " +
                         "    order by custdist desc, c_count desc LIMIT 100;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Rewritten", false, false, customer, order);
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -1274,9 +1273,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         // SQL DIRECT NOT REVIEWED
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
-
-
-
 
 
     @Test
