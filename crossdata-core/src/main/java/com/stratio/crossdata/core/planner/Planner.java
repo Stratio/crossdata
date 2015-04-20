@@ -252,21 +252,36 @@ public class Planner {
                 ep = defineExecutionPath(ep.getLast().getNextStep(), candidatesConnectors.get(targetTable), query);
             }
         }
-        // Define ExecutionPath for Workflow without any union step
-        if(executionPaths.isEmpty()){
-            LogicalStep initialStep = workflow.getInitialSteps().get(0);
-            ExecutionPath ep = defineExecutionPath(
-                    workflow.getInitialSteps().get(0),
-                    candidatesConnectors.get(((Project) initialStep).getTableName()),
-                    query
-            );
-            executionPaths.add(ep);
-        }
+        // Add ExecutionPath from last union step, if present; otherwise, add the whole path
+        LogicalStep initialStep = workflow.getInitialSteps().get(0);
+        LogicalStep lastUnion = getLastUnion(initialStep);
+        ExecutionPath lastExecPath = defineExecutionPath(
+                lastUnion,
+                candidatesConnectors.get(((Project) initialStep).getTableName()),
+                query
+        );
+        executionPaths.add(lastExecPath);
+
         for (ExecutionPath ep: executionPaths) {
             LOG.info("ExecutionPaths: " + ep);
         }
         //Merge execution paths
         return mergeExecutionPaths(query, new ArrayList<>(executionPaths), unionSteps);
+    }
+
+    private LogicalStep getLastUnion(LogicalStep logicalStep) {
+        LogicalStep lastUnion = logicalStep;
+        while(hasMoreUnionSteps(lastUnion)){
+            lastUnion = getNextUnionStep(lastUnion.getNextStep());
+        }
+        return lastUnion;
+    }
+
+    private LogicalStep getNextUnionStep(LogicalStep lastUnion) {
+        while(!(lastUnion instanceof UnionStep)){
+            lastUnion = lastUnion.getNextStep();
+        }
+        return lastUnion;
     }
 
     protected ExecutionWorkflow buildSimpleExecutionWorkflow(SelectValidatedQuery query, LogicalWorkflow workflow,
@@ -346,7 +361,7 @@ public class Planner {
         LOG.info("UnionSteps: " + unionSteps.toString());
         //Find first UnionStep
         Set<UnionStep> mergeSteps = new LinkedHashSet<>();
-        Map<UnionStep, ExecutionPath[]> pathsMap=new HashMap<>();
+        Map<UnionStep, ExecutionPath[]> pathsMap = new LinkedHashMap<>();
         ExecutionPath[] paths;
         QueryWorkflow first = null;
         Map<PartialResults, ExecutionWorkflow> triggerResults = new LinkedHashMap<>();
@@ -366,12 +381,12 @@ public class Planner {
         }
 
         for(UnionStep mergeStep: mergeSteps) {
-            List<ConnectorMetadata> toRemove = new ArrayList<>();
-            List<ConnectorMetadata> mergeConnectors = new ArrayList<>();
+            Set<ConnectorMetadata> toRemove = new LinkedHashSet<>();
+            Set<ConnectorMetadata> mergeConnectors = new LinkedHashSet<>();
 
-            List<ExecutionWorkflow> workflows = new ArrayList<>();
+            Set<ExecutionWorkflow> workflows = new LinkedHashSet<>();
 
-            List<ExecutionPath> toMerge = new ArrayList<>(2);
+            Set<ExecutionPath> toMerge = new LinkedHashSet<>(2);
             boolean[] intermediateResults = new boolean[2];
             boolean exit = false;
             //while (!exit) {
@@ -380,7 +395,7 @@ public class Planner {
             intermediateResults[1] = false;
             mergeConnectors.clear();
             toMerge.clear();
-            ExecutionPath[] mergePaths=pathsMap.get(mergeStep);
+            ExecutionPath[] mergePaths = pathsMap.get(mergeStep);
             for (int index = 0; index < mergePaths.length; index++) {
                 toRemove.clear();
 
@@ -422,10 +437,16 @@ public class Planner {
             }
             //unionSteps.remove(mergeStep);
 
-            ExecutionPath next = defineExecutionPath(mergeStep, mergeConnectors, svq);
+            ExecutionPath next = defineExecutionPath(
+                    mergeStep,
+                    new ArrayList<>(mergeConnectors),
+                    svq);
             if (Select.class.isInstance(next.getLast())) {
                 exit = true;
-                ExecutionWorkflow mergeWorkflow = extendExecutionWorkflow(queryId, toMerge, next,
+                ExecutionWorkflow mergeWorkflow = extendExecutionWorkflow(
+                        queryId,
+                        new ArrayList<>(toMerge),
+                        next,
                         ResultType.RESULTS);
                 triggerWorkflow.put(mergeStep, mergeWorkflow);
                 if (first == null) {

@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -369,19 +370,19 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeGroupBy(GroupByClause groupByClause) throws ValidationException {
-        Set<ColumnName> columnNames = new HashSet<>();
-
-        checkGBFormatBySelectorIdentifier(groupByClause.getSelectorIdentifier(), columnNames);
+        Set<ColumnName> columnNamesFromGroupBy = checkGBFormatBySelectorIdentifier(
+                groupByClause.getSelectorIdentifier());
 
         // Check if all columns are correct
         for (Selector selector : fields.getSelectors()) {
-            checkGroupByColumns(selector, columnNames);
+            checkGroupByColumns(selector, columnNamesFromGroupBy);
         }
     }
 
 
-    private void checkGBFormatBySelectorIdentifier(List<Selector> selectorList, Set<ColumnName> columnNames)
+    private Set<ColumnName> checkGBFormatBySelectorIdentifier(List<Selector> selectorList)
                     throws ValidationException {
+        Set<ColumnName> columnNames = new LinkedHashSet<>();
         int selectorIndex = 0;
 
         for (Selector selector : selectorList) {
@@ -405,6 +406,7 @@ public class Normalizator {
             }
             selectorIndex++;
         }
+        return columnNames;
     }
 
     private Selector findReferencedSelector(String selectorAlias) {

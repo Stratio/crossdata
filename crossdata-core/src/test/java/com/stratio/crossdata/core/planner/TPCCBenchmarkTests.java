@@ -463,7 +463,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         + "    GROUP BY substring(c_state,1,1)"
                         + "    ORDER BY country;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ00", false, false, customer);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ00Hive", false, false, customer);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -486,7 +486,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                         + "    ORDER BY country;";
 
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ0", false, false, customer);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ00Crossdata", false, false, customer);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
