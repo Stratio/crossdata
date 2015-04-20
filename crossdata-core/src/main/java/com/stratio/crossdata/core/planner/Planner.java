@@ -607,14 +607,16 @@ public class Planner {
      * connectors in order to obtain the list that supports all operations in an execution paths.
      *
      * @param initial             The initial step.
-     * @param availableConnectors The list of available connectors.
+     * @param candidateConnectors The list of available connectors.
      * @return An {@link com.stratio.crossdata.common.executionplan.ExecutionPath}.
      * @throws PlanningException If the execution path cannot be determined.
      */
-    protected ExecutionPath defineExecutionPath(LogicalStep initial, List<ConnectorMetadata> availableConnectors,
+    protected ExecutionPath defineExecutionPath(LogicalStep initial, List<ConnectorMetadata> candidateConnectors,
             SelectValidatedQuery svq)
             throws PlanningException {
 
+        List<ConnectorMetadata> availableConnectors = new ArrayList<>();
+        availableConnectors.addAll(candidateConnectors);
         LogicalStep last = null;
         LogicalStep current = initial;
         List<ConnectorMetadata> toRemove = new ArrayList<>();
