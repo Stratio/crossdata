@@ -122,6 +122,8 @@ public class BenchmarkTests extends PlannerBaseTest {
         benchmarkOperations.add(Operations.FILTER_NON_INDEXED_IN);
         benchmarkOperations.add(Operations.FILTER_DISJUNCTION);
         benchmarkOperations.add(Operations.SELECT_LEFT_OUTER_JOIN);
+        benchmarkOperations.add(Operations.FILTER_PK_NOT_IN);
+        benchmarkOperations.add(Operations.FILTER_NON_INDEXED_DISTINCT);
 
         clusterWithDefaultPriority.put(new ClusterName(clusterName.getName()), Constants.DEFAULT_PRIORITY);
 
@@ -1230,6 +1232,84 @@ public class BenchmarkTests extends PlannerBaseTest {
         //assertNotNull(queryWorkflow.getWorkflow().getSqlDirectQuery(), "Invalid SQL Direct");
         LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
+
+
+    @Test
+    public void testQ16Rewrite() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT  "
+                + "p_brand,  "
+                + "p_type,  "
+                + "p_size,  "
+                + "count(DISTINCT(ps_suppkey)) AS supplier_cnt  "
+                + "FROM partsupp inner join part ON p_partkey = ps_partkey "
+                + "WHERE "
+                + " p_brand <> 'Brand#45'  "
+                + "AND p_type NOT LIKE \"MEDIUM POLISHED%\"  "
+                + "AND p_size IN [49, 14, 23, 45, 19, 3, 36, 9]  "
+                + "AND ps_suppkey NOT IN (  "
+                + "SELECT  "
+                + "s_suppkey  "
+                + "FROM  "
+                + "supplier  "
+                + "WHERE "
+                + "s_comment LIKE \"%Customer%Complaints%\"  "
+                + ")  "
+                + "GROUP BY  "
+                + "p_brand,  "
+                + "p_type,  "
+                + "p_size  "
+                + "ORDER BY  "
+                + "supplier_cnt desc,  "
+                + "p_brand,  "
+                + "p_type,  "
+                + "p_size;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ16", false, false, partsupp, part, supplier);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        //assertNotNull(queryWorkflow.getWorkflow().getSqlDirectQuery(), "Invalid SQL Direct");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+
+    @Test
+    public void testQ16Easy() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], SELECT  "
+                + "p_brand,  "
+                + "p_type,  "
+                + "p_size,  "
+                + "count(distinct(ps_suppkey)) AS supplier_cnt  "
+                + "FROM partsupp inner join part ON p_partkey = ps_partkey "
+                + "WHERE "
+                + " p_brand = 'Brand#45'  "
+                + "AND p_type NOT LIKE \"MEDIUM POLISHED%\"  "
+                + "AND p_size IN (49, 14, 23, 45, 19, 3, 36, 9)  "
+                + "GROUP BY  "
+                + "p_brand,  "
+                + "p_type,  "
+                + "p_size  "
+                + "ORDER BY  "
+                + "supplier_cnt desc,  "
+                + "p_brand,  "
+                + "p_type,  "
+                + "p_size;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ16", false, false, partsupp, part, supplier);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        //assertNotNull(queryWorkflow.getWorkflow().getSqlDirectQuery(), "Invalid SQL Direct");
+        LOG.info("SQL Direct: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+
 
     @Test
     public void testQ17() throws ManifestException {
