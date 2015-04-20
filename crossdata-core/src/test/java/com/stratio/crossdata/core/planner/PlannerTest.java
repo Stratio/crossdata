@@ -592,7 +592,6 @@ public class PlannerTest extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Planner failed");
     }
 
-/*
     @Test
     public void testMultipleJoin() throws ManifestException {
 
@@ -608,7 +607,7 @@ public class PlannerTest extends PlannerBaseTest {
         assertNotNull(queryWorkflow.getNextExecutionWorkflow(), "Planner failed.");
         assertNotNull(queryWorkflow, "Planner failed");
     }
-*/
+
     @Test
     public void testInsertIntoFromSelectDirect() throws ManifestException {
 
