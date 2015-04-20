@@ -468,6 +468,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
     }
 
     @Test
@@ -553,7 +555,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 + "    FROM tpcc.district D, tpcc.order_line OL_A WHERE D.d_id=OL_A.ol_d_id AND D.d_w_id=OL_A.ol_w_id and"
                 + "    d_id=3 AND d_w_id=241 GROUP BY d_id,d_w_id"
                 + ") A, tpcc.order_line OL "
-                + "   WHERE A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id AND OL.ol_d_id=${random(district)} AND OL.ol_w_id=${random(0,tpcc.number.warehouses)} "
+                + "   WHERE A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id AND OL.ol_d_id=5 "
                 + "   GROUP BY OL.OL_w_id,OL.OL_D_id,OL.OL_O_id,AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun ORDER BY avg(OL.ol_amount) desc;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
@@ -1329,7 +1331,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         // SQL DIRECT REVIEWED
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
-        Assert.assertEquals( queryWorkflow.getWorkflow().getSqlDirectQuery(), "SELECT substr(tpcc.item.i_name, 1, 3) AS substr, tpcc.item.i_price, tpcc.stock.s_quantity, count(*) AS numero_pedidos, sum(tpcc.item.i_price * tpcc.stock.s_quantity) AS venta_total FROM tpcc.stock INNER JOIN tpcc.item ON tpcc.item.i_id = tpcc.stock.s_i_id WHERE tpcc.item.i_id = 5 GROUP BY substr(tpcc.item.i_name, 1, 3), tpcc.stock.s_i_id, tpcc.item.i_price, tpcc.stock.s_quantity ORDER BY sum(tpcc.item.i_price * tpcc.stock.s_quantity) DESC LIMIT 100");
+
     }
 
 
