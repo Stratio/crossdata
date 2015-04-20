@@ -272,12 +272,14 @@ public class Planner {
             ConnectorMetadata connectorMetadata)
             throws PlanningException {
 
+        Set<Operations> supportedOperations = connectorMetadata.getSupportedOperations();
+
         for (LogicalStep step : workflow.getInitialSteps()) {
             //Iterate path
             LogicalStep currentStep = step;
             do {
                 for (Operations operation : currentStep.getOperations()) {
-                    if (!connectorMetadata.getSupportedOperations().contains(operation)){
+                    if (!supportedOperations.contains(operation)){
                         throw new PlanningException("The connector "+connectorMetadata.getName()+" does not support "+operation);
                     }
                 }
@@ -289,6 +291,10 @@ public class Planner {
         String queryId = query.getQueryId();
         ExecutionType executionType = ExecutionType.SELECT;
         ResultType type = ResultType.RESULTS;
+
+        if ((supportedOperations.contains(Operations.PAGINATION)) && (connectorMetadata.getPageSize() > 0)) {
+            workflow.setPagination(connectorMetadata.getPageSize());
+        }
 
         return new QueryWorkflow(queryId, connectorMetadata.getActorRef(), executionType, type, workflow);
     }
@@ -472,7 +478,7 @@ public class Planner {
     }
 
     /**
-     * Define an query workflow.
+     * Define a query workflow.
      *
      * @param queryId        The query identifier.
      * @param executionPaths The list of execution paths that will be transformed into initial steps of a

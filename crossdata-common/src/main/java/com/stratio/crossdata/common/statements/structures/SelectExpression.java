@@ -101,7 +101,11 @@ public class SelectExpression implements Serializable {
         StringBuilder sb = new StringBuilder();
         Iterator<Selector> selectors = selectorList.iterator();
         while (selectors.hasNext()) {
-            sb.append(selectors.next().toSQLString(true));
+            Selector selector = selectors.next();
+            sb.append(selector.toSQLString(false));
+            if(selector.getAlias() != null){
+                sb.append(" AS "+selector.getAlias());
+            }
             if (selectors.hasNext()) {
                 sb.append(", ");
             }

@@ -467,6 +467,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
     }
 
     @Test
@@ -552,7 +554,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 + "    FROM tpcc.district D, tpcc.order_line OL_A WHERE D.d_id=OL_A.ol_d_id AND D.d_w_id=OL_A.ol_w_id and"
                 + "    d_id=3 AND d_w_id=241 GROUP BY d_id,d_w_id"
                 + ") A, tpcc.order_line OL "
-                + "   WHERE A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id AND OL.ol_d_id=${random(district)} AND OL.ol_w_id=${random(0,tpcc.number.warehouses)} "
+                + "   WHERE A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id AND OL.ol_d_id=5 "
                 + "   GROUP BY OL.OL_w_id,OL.OL_D_id,OL.OL_O_id,AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun ORDER BY avg(OL.ol_amount) desc;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
@@ -1175,11 +1177,42 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "                    c_w_id = o_w_id " +
                 "                    and c_d_id = o_d_id " +
                 "                    and c_id = o_c_id " +
-                "                    and o_carrier_id > 6 )" +
+                "                     )" +
+                "           where o_carrier_id > 6"+
                 "    group by c_id" +
                 ") as c_orders " +
                 "    group by c_count " +
                 "    order by custdist desc, c_count desc LIMIT 100;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+    @Test
+    public void testQ14Rewritten() throws ManifestException {
+
+        init();
+
+        String inputText =
+
+                "[tpcc], select c_count, count(*) as custdist " +
+                        "    from " +
+                        "(" +
+                        "           select c_id, count(o_id) AS c_count " +
+                        "           from tpcc.customer left outer join tpcc.order on ( " +
+                        "                    c_w_id = o_w_id " +
+                        "                    and c_d_id = o_d_id " +
+                        "                    and c_id = o_c_id " +
+                        "                    and o_carrier_id > 6 )" +
+                        "    group by c_id" +
+                        ") as c_orders " +
+                        "    group by c_count " +
+                        "    order by custdist desc, c_count desc LIMIT 100;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -1210,29 +1243,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "    group by c_count " +
                 "    order by custdist desc, c_count desc LIMIT 100;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
 
-        // SQL DIRECT NOT REVIEWED
-        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
-    }
-
-    @Test
-    public void testQ14Easy() throws ManifestException {
-
-        init();
-
-        String inputText = "[tpcc], select c_count, count(*) as custdist " +
-                "    from " +
-                "(" +
-                "           select c_id, count(o_id) AS c_count " +
-                "           from tpcc.customer " +
-                "    group by c_id" +
-                ") as c_orders " +
-                "    group by c_count " +
-                "    order by custdist desc, c_count desc LIMIT 100;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -1242,6 +1253,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         // SQL DIRECT NOT REVIEWED
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
+
+
 
 
 
@@ -1284,13 +1297,14 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ16", false, false, order,
                 order_line, item);
-        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
 
-        // SQL DIRECT NOT REVIEWED
+        // SQL DIRECT REVIEWED
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
+        Assert.assertEquals(queryWorkflow.getWorkflow().getSqlDirectQuery(), "SELECT sum(tpcc.order_line.ol_amount) / 2.0 AS avg_yearly FROM ( SELECT tpcc.item.i_id, avg(tpcc.order_line.ol_quantity) AS a FROM tpcc.item INNER JOIN tpcc.order_line ON tpcc.order_line.ol_i_id = tpcc.item.i_id WHERE tpcc.item.i_data LIKE '%b' GROUP BY tpcc.item.i_id ) AS t INNER JOIN tpcc.order_line ON tpcc.order_line.ol_i_id = t.i_id AND tpcc.order_line.ol_quantity < t.a");
     }
 
     @Test
@@ -1310,13 +1324,13 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "limit 100;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ17", false, false, stock , item);
-        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
         //assertNotNull(queryWorkflow, "Null workflow received.");
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
 
-        // SQL DIRECT NOT REVIEWED
+        // SQL DIRECT REVIEWED
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
     }
 
 

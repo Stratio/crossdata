@@ -66,6 +66,7 @@ public class TestResultHandler implements IDriverResultHandler {
             if(queryResult.isLastResultSet()){
                 resultAvailable = true;
                 if((count == queryResult.getResultPage()) && (count == expectedPages)){
+
                     success = true;
                 }
             }

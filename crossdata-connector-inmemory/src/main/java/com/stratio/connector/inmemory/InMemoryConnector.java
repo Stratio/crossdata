@@ -59,7 +59,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(InMemoryConnector.class);
-    private static final int DEFAULT_TIMEOUT_IN_MS = 2000;
+    private static final int DEFAULT_TIMEOUT_IN_MS = 5000;
 
     /**
      * Map associating the {@link com.stratio.crossdata.common.data.ClusterName}s with
