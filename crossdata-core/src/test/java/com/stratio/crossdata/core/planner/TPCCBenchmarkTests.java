@@ -374,7 +374,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 new ColumnType(DataType.INT),
                 new ColumnType(DataType.INT),
                 new ColumnType(DataType.TEXT),
-                new ColumnType(DataType.INT),
+                new ColumnType(DataType.FLOAT),
                 new ColumnType(DataType.TEXT)
         };
         String[] partitionKeys12 = { "i_id" };
