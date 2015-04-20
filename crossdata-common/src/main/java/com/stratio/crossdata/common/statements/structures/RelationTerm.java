@@ -18,13 +18,15 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.utils.StringUtils;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-public class RelationTerm implements Serializable {
+public class RelationTerm implements Serializable, ISqlExpression {
 
     private static final long serialVersionUID = -3346305822266813889L;
 
@@ -93,6 +95,19 @@ public class RelationTerm implements Serializable {
                 sb.append(" AND ");
             }
         }
+        if(withParenthesis){
+            sb.append(")");
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder();
+        if(withParenthesis){
+            sb.append("(");
+        }
+        sb.append(StringUtils.sqlStringList(relations, " AND ", withAlias));
         if(withParenthesis){
             sb.append(")");
         }

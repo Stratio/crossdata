@@ -67,6 +67,11 @@ public class StringSelector extends Selector {
 
     @Override
     public String toString() {
+        return toSQLString(false);
+    }
+
+    @Override
+    public String toSQLString(boolean withAlias) {
         StringBuilder sb=new StringBuilder();
         sb.append("'").append(value).append("'");
         return sb.toString();

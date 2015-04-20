@@ -35,7 +35,7 @@ public class ExtendedSelectSelector extends SelectSelector {
     private SelectValidatedQuery selectValidatedQuery;
 
     public ExtendedSelectSelector(SelectStatement selectStatement, String sessionCatalog) {
-        super(selectStatement.getTableName(), selectStatement.toString());
+        super(selectStatement.getTableName(), selectStatement.toSQL92String());
         this.selectParsedQuery = new SelectParsedQuery(
                 new BaseQuery(
                         UUID.randomUUID().toString(),
@@ -64,5 +64,10 @@ public class ExtendedSelectSelector extends SelectSelector {
     @Override
      public String toString() {
         return "("+ selectValidatedQuery.getStatement().toSQLString()+")";
+    }
+
+
+    public String toSQLString() {
+        return "("+ selectValidatedQuery.getStatement().toSQL92String()+")";
     }
 }

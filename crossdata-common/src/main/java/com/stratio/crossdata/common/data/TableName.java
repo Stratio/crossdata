@@ -104,15 +104,6 @@ public class TableName extends Name {
         return NameType.TABLE;
     }
 
-    @Override public String toString() {
-        if(alias == null){
-            return this.getQualifiedName();
-        }
-        StringBuilder sb = new StringBuilder(this.getQualifiedName());
-        sb.append(" AS ").append(alias);
-        return sb.toString();
-    }
-
     @Override
     public int hashCode() {
         String code;
@@ -125,5 +116,14 @@ public class TableName extends Name {
     @Override
     public boolean equals(Object o) {
         return (this == o) || ((o instanceof TableName) && (this.hashCode() == o.hashCode()));
+    }
+
+    @Override public String toString() {
+        if(alias == null){
+            return this.getQualifiedName();
+        }
+        StringBuilder sb = new StringBuilder(this.getQualifiedName());
+        sb.append(" AS ").append(alias);
+        return sb.toString();
     }
 }

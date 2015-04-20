@@ -178,4 +178,19 @@ public class Relation extends AbstractRelation {
         return sb.toString();
     }
 
+
+    @Override
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder();
+        if(isParenthesis()){
+            sb.append("(");
+        }
+        sb.append(leftTerm.toSQLString(withAlias));
+        sb.append(" ").append(operator.toSQLString()).append(" ");
+        sb.append(rightTerm.toSQLString(withAlias));
+        if(isParenthesis()){
+            sb.append(")");
+        }
+        return sb.toString();
+    }
 }
