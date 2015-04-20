@@ -86,6 +86,11 @@ public class GroupSelector extends Selector {
     }
 
     @Override
+    public String toSQLString(boolean withAlias) {
+        return firstValue.toSQLString(withAlias) + " AND " + lastValue.toSQLString(withAlias);
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

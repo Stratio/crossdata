@@ -23,6 +23,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.utils.StringUtils;
 
 /**
  * Selector composed by a includes and the list of columns required by the includes.
@@ -178,6 +179,18 @@ public class FunctionSelector extends Selector {
         }
         sb.append(")");
         if (this.alias != null) {
+            sb.append(" AS ").append(alias);
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder(functionName);
+        sb.append("(");
+        sb.append(StringUtils.sqlStringList(functionSelectors,", ", withAlias));
+        sb.append(")");
+        if (withAlias && this.alias != null) {
             sb.append(" AS ").append(alias);
         }
         return sb.toString();

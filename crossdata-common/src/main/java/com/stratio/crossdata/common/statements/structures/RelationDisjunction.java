@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.utils.StringUtils;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,6 +62,20 @@ public class RelationDisjunction extends AbstractRelation {
             }
         }
 
+        if(isParenthesis()){
+            sb.append(")");
+        }
+        return sb.toString();
+    }
+
+
+    public String toSQLString(boolean withAlias) {
+
+        StringBuilder sb = new StringBuilder();
+        if(isParenthesis()){
+            sb.append("(");
+        }
+        sb.append(StringUtils.sqlStringList(terms, " OR ", withAlias));
         if(isParenthesis()){
             sb.append(")");
         }

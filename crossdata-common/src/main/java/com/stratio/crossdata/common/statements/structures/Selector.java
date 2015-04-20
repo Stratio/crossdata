@@ -29,7 +29,7 @@ import com.stratio.crossdata.common.data.TableName;
 /**
  * This class represents one of the elements requested in a SELECT statement.
  */
-public abstract class Selector implements Serializable {
+public abstract class Selector implements Serializable, ISqlExpression {
 
     /**
      * Serial version UID in order to be serializable.
@@ -161,5 +161,6 @@ public abstract class Selector implements Serializable {
 
     @Override
     public abstract int hashCode();
+
 
 }

@@ -89,6 +89,11 @@ public class FloatingPointSelector extends Selector {
     }
 
     @Override
+    public String toSQLString(boolean withAlias) {
+        return toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

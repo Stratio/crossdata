@@ -394,6 +394,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      *
      * @return String
      */
+    @Deprecated
     public String toSQLString() {
       return toString(true);
     }
@@ -459,6 +460,53 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
         return (withSQLSyntax) ? strSelectStatement.replaceAll(Constants.VIRTUAL_CATALOG_NAME+"\\.", "") : strSelectStatement;
     }
+
+
+    public String toSQL92String(){
+        StringBuilder sb = new StringBuilder("SELECT ");
+        if (selectExpression != null) {
+            sb.append(selectExpression.toSQLString());
+        }
+        sb.append(" FROM ");
+
+        if(subqueryInc){
+            sb.append("( ").append(subquery.toSQL92String()).append(" ) AS " ).append(subqueryAlias);
+        }else{
+            if (catalogInc) {
+                sb.append(catalog).append(".");
+            }
+            sb.append(tableName);
+        }
+
+        if (joinInc) {
+            for (InnerJoin myJoin: joinList) {
+                sb.append(" ").append(myJoin.toSQLString());
+            }
+        }
+
+        if ((where != null) && (!where.isEmpty())) {
+            sb.append(" WHERE ").append(StringUtils.sqlStringList(where," AND ", false));
+        }
+
+        if (groupInc) {
+            sb.append(" GROUP BY ").append(StringUtils.sqlStringList(groupByClause.getSelectorIdentifier(), ", ", false));
+        }
+
+        if ((havingInc)&& (havingClause!=null)) {
+            sb.append(" HAVING ").append(StringUtils.sqlStringList(havingClause, " AND ", false));
+        }
+
+        if (orderInc) {
+            sb.append(" ORDER BY ").append(StringUtils.sqlStringList(orderByClauses, ", ", false));
+        }
+
+        if (limitInc) {
+            sb.append(" LIMIT ").append(limit);
+        }
+
+        return sb.toString().replaceAll("  ", " ").replaceAll(Constants.VIRTUAL_CATALOG_NAME+"\\.", "");
+    }
+
 
     @Override
     public ValidationRequirements getValidationRequirements() {

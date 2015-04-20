@@ -153,7 +153,7 @@ public class Planner {
         ((QueryWorkflow)plannedQuery
                 .getExecutionWorkflow())
                 .getWorkflow()
-                .setSqlDirectQuery(query.getStatement().toSQLString());
+                .setSqlDirectQuery(query.getStatement().toSQL92String());
         return plannedQuery;
     }
 
@@ -1966,7 +1966,7 @@ public class Planner {
         if(selector instanceof ExtendedSelectSelector){
             ExtendedSelectSelector extendedSelectSelector = (ExtendedSelectSelector) selector;
             SelectSelector selectSelector = new SelectSelector(selector.getTableName(),
-                    extendedSelectSelector.toString());
+                    extendedSelectSelector.toSQLString());
             LogicalWorkflow innerWorkflow = buildWorkflow(extendedSelectSelector.getSelectValidatedQuery());
             selectSelector.setQueryWorkflow(innerWorkflow);
             result = selectSelector;

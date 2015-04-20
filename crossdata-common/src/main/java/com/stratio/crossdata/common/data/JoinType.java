@@ -25,5 +25,9 @@ public enum JoinType {
     CROSS,
     LEFT_OUTER,
     FULL_OUTER,
-    RIGHT_OUTER
+    RIGHT_OUTER;
+
+    public String toSQLString(){
+        return toString().replace("_"," ");
+    }
 }

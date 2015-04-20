@@ -19,7 +19,8 @@
 package com.stratio.crossdata.common.statements.structures;
 
 /**
- * Aggregation function that affect a GroupBy statemet..
+ * Aggregation function that affect a GroupBy statement.
+ * TODO crossdata support to these functions?
  */
 public enum GroupByFunction {
     SUM,

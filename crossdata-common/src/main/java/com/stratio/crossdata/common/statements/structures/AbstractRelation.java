@@ -20,7 +20,7 @@ package com.stratio.crossdata.common.statements.structures;
 
 import java.io.Serializable;
 
-public abstract class AbstractRelation implements Serializable {
+public abstract class AbstractRelation implements Serializable, ISqlExpression {
 
     private static final long serialVersionUID = 4458788192163528306L;
 
@@ -33,4 +33,5 @@ public abstract class AbstractRelation implements Serializable {
     public void setParenthesis(boolean parenthesis) {
         this.parenthesis = parenthesis;
     }
+
 }
