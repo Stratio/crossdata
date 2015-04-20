@@ -188,7 +188,11 @@ public class FunctionSelector extends Selector {
     public String toSQLString(boolean withAlias) {
         StringBuilder sb = new StringBuilder(functionName);
         sb.append("(");
-        sb.append(StringUtils.sqlStringList(functionSelectors,", ", withAlias));
+        if(hadAsteriskSelector){
+            sb.append("*");
+        }else {
+            sb.append(StringUtils.sqlStringList(functionSelectors,", ", withAlias));
+        }
         sb.append(")");
         if (withAlias && this.alias != null) {
             sb.append(" AS ").append(alias);
