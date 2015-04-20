@@ -188,5 +188,12 @@ public class ColumnName extends Name {
         return alias;
     }
 
+    public String toSQLString() {
+        return toString();
+       /*if(tableName.getAlias() != null){
+           return tableName.getAlias() + n
+       }*/
+    }
+
 
 }

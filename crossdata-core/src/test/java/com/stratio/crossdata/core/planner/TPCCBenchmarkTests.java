@@ -373,7 +373,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 new ColumnType(DataType.INT),
                 new ColumnType(DataType.INT),
                 new ColumnType(DataType.TEXT),
-                new ColumnType(DataType.INT),
+                new ColumnType(DataType.FLOAT),
                 new ColumnType(DataType.TEXT)
         };
         String[] partitionKeys12 = { "i_id" };
@@ -470,6 +470,26 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
 
     }
+
+    @Test
+    public void testQCrossdata() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc], SELECT substring(y.c_state, 1, 1) AS country FROM tpcc.customer INNER JOIN tpcc.customer y ON c_balance = c_balance ;";
+
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ0", false, false, customer);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT REVIEWED --> OK
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
+    }
+
+
 
     @Test
     public void testQ00Crossdata() throws ManifestException {
