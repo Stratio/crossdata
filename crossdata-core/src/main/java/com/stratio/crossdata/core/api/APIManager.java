@@ -18,13 +18,7 @@
 
 package com.stratio.crossdata.core.api;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -32,6 +26,10 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 
+import com.stratio.crossdata.common.result.*;
+import com.stratio.crossdata.core.query.*;
+import com.stratio.crossdata.core.statements.DetachConnectorStatement;
+import com.stratio.crossdata.core.statements.MetadataStatement;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.ask.APICommand;
@@ -70,25 +68,12 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.result.CommandResult;
-import com.stratio.crossdata.common.result.ErrorResult;
-import com.stratio.crossdata.common.result.MetadataResult;
-import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerException;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
-import com.stratio.crossdata.core.query.BaseQuery;
-import com.stratio.crossdata.core.query.IParsedQuery;
-import com.stratio.crossdata.core.query.IValidatedQuery;
-import com.stratio.crossdata.core.query.MetadataPlannedQuery;
-import com.stratio.crossdata.core.query.MetadataValidatedQuery;
-import com.stratio.crossdata.core.query.SelectPlannedQuery;
-import com.stratio.crossdata.core.query.SelectValidatedQuery;
-import com.stratio.crossdata.core.query.StoragePlannedQuery;
-import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.validator.Validator;
 
 /**
@@ -546,8 +531,12 @@ public class APIManager {
     }
 
     private Result resetServerdata() {
-        Result result = CommandResult.createCommandResult("Crossdata server reset.");
+
+        Result result = null;
+
         try {
+            result = prepareDetachServers();
+
             List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
             MetadataManager.MANAGER.clear();
             for (ConnectorMetadata cm : connectors) {
@@ -557,6 +546,7 @@ public class APIManager {
                     for(String actorRef: actorRefs){
                         MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
                     }
+
                     MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE);
                 }
             }
@@ -565,7 +555,31 @@ public class APIManager {
             result = CommandResult.createErrorResult(ex);
             LOG.error(ex.getMessage());
         }
+
         return result;
+    }
+
+    private Result prepareDetachServers(){
+        Collection<MetadataValidatedQuery> commands = new ArrayList<>();
+        for (ClusterMetadata cluster: MetadataManager.MANAGER.getClusters()){
+            for (ConnectorName connector : cluster.getConnectorAttachedRefs().keySet()){
+                ClusterName clusterName = cluster.getName();
+                String strQuery = String.format("DETACH CONNECTOR connector.%s FROM cluster.%s", connector.getName(), clusterName.getName());
+                LOG.debug("SEND  " + strQuery);
+                BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), strQuery , null, "sessionId");
+                MetadataParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, new DetachConnectorStatement(connector, clusterName));
+                MetadataValidatedQuery query = new MetadataValidatedQuery(parsedQuery);
+                commands.add(query);
+            }
+        }
+
+        if (!commands.isEmpty()){
+            ResetServerDataResult result = new ResetServerDataResult(CommandResult.createCommandResult("Crossdata server reset."));
+            result.getQueries().addAll(commands);
+            return result;
+        }else{
+            return CommandResult.createCommandResult("Crossdata server reset.");
+        }
     }
 
     private Result cleanMetadata() {

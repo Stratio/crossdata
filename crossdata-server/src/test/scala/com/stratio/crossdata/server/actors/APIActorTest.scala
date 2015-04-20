@@ -34,7 +34,7 @@ class APIActorTest extends ActorReceiveUtils with FunSuiteLike with ServerConfig
   override lazy val logger = Logger.getLogger(classOf[APIActorTest])
 
 
-  val actorRef= TestActorRef(APIActor.props(new APIManagerMock()))
+  val actorRef= TestActorRef(APIActor.props(new APIManagerMock(), null))
 
 
   test("Send COMMAND must WORK"){

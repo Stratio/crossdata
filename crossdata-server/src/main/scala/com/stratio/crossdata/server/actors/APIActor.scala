@@ -28,6 +28,7 @@ import com.stratio.crossdata.communication.{ACK,StopProcess, Request}
 import com.stratio.crossdata.core.api.APIManager
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.crossdata.core.metadata.MetadataManager
+import com.stratio.crossdata.core.query.MetadataValidatedQuery
 import org.apache.log4j.Logger
 import akka.actor._
 
@@ -35,10 +36,11 @@ import scala.annotation.tailrec
 import scala.util.{Success, Try}
 
 object APIActor {
-  def props(apiManager: APIManager): Props = Props(new APIActor(apiManager))
+  def props(apiManager: APIManager, validatorActor: ValidatorActor): Props =
+    Props(new APIActor(apiManager, validatorActor))
 }
 
-class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
+class APIActor(apiManager: APIManager, validatorActor: ValidatorActor) extends Actor with TimeTracker {
   override lazy val timerName = this.getClass.getName
   val log = Logger.getLogger(classOf[APIActor])
 
@@ -55,7 +57,22 @@ class APIActor(apiManager: APIManager) extends Actor with TimeTracker {
         if(cmd.commandType == APICommand.CLEAN_METADATA) {
           forwardCleanMetadata
         }
-        sender ! apiManager.processRequest(cmd)
+
+        val result = apiManager.processRequest(cmd)
+        result match {
+          case resetServerData : ResetServerDataResult => {
+            log.debug(resetServerData)
+            //USAR EL VALIDATOR PARA ENVIAR LOS COMANDOS
+            for (query <- resetServerData.getQueries().toArray){
+              log.debug(query)
+              //validatorActor receive query
+            }
+
+            sender ! resetServerData.getResult;
+          } case result =>{
+            sender ! result;
+          }
+        }
       }
       finishTimer(timer)
     }

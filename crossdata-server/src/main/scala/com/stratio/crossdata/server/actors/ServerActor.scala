@@ -43,16 +43,19 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
   val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(hostname), "loadWatcherActor")
   val connectorManagerActorRef = context.actorOf( RoundRobinPool(num_connector_manag_actor, Some(resizer))
      .props(Props(classOf[ConnectorManagerActor], cluster)), "ConnectorManagerActor")
+
   val coordinatorActorRef = context.actorOf( RoundRobinPool(num_coordinator_actor, Some(resizer))
      .props(Props(classOf[CoordinatorActor], connectorManagerActorRef, engine.getCoordinator)), "CoordinatorActor")
+
   val plannerActorRef = context.actorOf( RoundRobinPool(num_planner_actor, Some(resizer))
      .props(Props(classOf[PlannerActor], coordinatorActorRef, engine.getPlanner)), "PlannerActor")
   val validatorActorRef = context.actorOf( RoundRobinPool(num_validator_actor, Some(resizer))
      .props(Props(classOf[ValidatorActor], plannerActorRef, engine.getValidator)), "ValidatorActor")
   val parserActorRef = context.actorOf( RoundRobinPool(num_parser_actor, Some(resizer))
      .props(Props(classOf[ParserActor], validatorActorRef, engine.getParser)), "ParserActor")
+
   val APIActorRef = context.actorOf( RoundRobinPool(num_api_actor, Some(resizer))
-     .props(Props(classOf[APIActor], engine.getAPIManager)), "APIActor")
+     .props(Props(classOf[APIActor], engine.getAPIManager, validatorActorRef)), "APIActor") //METER LA REFERENCIA DLE VALIDATOR ACTOR
 
   def receive : Receive= {
     case "watchload"=>
