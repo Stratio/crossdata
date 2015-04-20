@@ -1176,11 +1176,42 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "                    c_w_id = o_w_id " +
                 "                    and c_d_id = o_d_id " +
                 "                    and c_id = o_c_id " +
-                "                    and o_carrier_id > 6 )" +
+                "                     )" +
+                "           where o_carrier_id > 6"+
                 "    group by c_id" +
                 ") as c_orders " +
                 "    group by c_count " +
                 "    order by custdist desc, c_count desc LIMIT 100;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
+        //assertNotNull(queryWorkflow, "Null workflow received.");
+        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+    @Test
+    public void testQ14Rewritten() throws ManifestException {
+
+        init();
+
+        String inputText =
+
+                "[tpcc], select c_count, count(*) as custdist " +
+                        "    from " +
+                        "(" +
+                        "           select c_id, count(o_id) AS c_count " +
+                        "           from tpcc.customer left outer join tpcc.order on ( " +
+                        "                    c_w_id = o_w_id " +
+                        "                    and c_d_id = o_d_id " +
+                        "                    and c_id = o_c_id " +
+                        "                    and o_carrier_id > 6 )" +
+                        "    group by c_id" +
+                        ") as c_orders " +
+                        "    group by c_count " +
+                        "    order by custdist desc, c_count desc LIMIT 100;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -1211,29 +1242,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "    group by c_count " +
                 "    order by custdist desc, c_count desc LIMIT 100;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
-        //assertNotNull(queryWorkflow, "Null workflow received.");
-        //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
-        //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
 
-        // SQL DIRECT NOT REVIEWED
-        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
-    }
-
-    @Test
-    public void testQ14Easy() throws ManifestException {
-
-        init();
-
-        String inputText = "[tpcc], select c_count, count(*) as custdist " +
-                "    from " +
-                "(" +
-                "           select c_id, count(o_id) AS c_count " +
-                "           from tpcc.customer " +
-                "    group by c_id" +
-                ") as c_orders " +
-                "    group by c_count " +
-                "    order by custdist desc, c_count desc LIMIT 100;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14", false, false, customer, order);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -1243,6 +1252,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         // SQL DIRECT NOT REVIEWED
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
+
+
 
 
 
