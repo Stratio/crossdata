@@ -249,6 +249,9 @@ public class Planner {
                     paths.add(ep);
                 }*/
                 executionPaths.add(ep);
+                if(ep.getLast().getNextStep() == null){
+                    break;
+                }
                 ep = defineExecutionPath(ep.getLast().getNextStep(), candidatesConnectors.get(targetTable), query);
             }
         }
@@ -258,8 +261,7 @@ public class Planner {
         ExecutionPath lastExecPath = defineExecutionPath(
                 lastUnion,
                 candidatesConnectors.get(((Project) initialStep).getTableName()),
-                query
-        );
+                query);
         executionPaths.add(lastExecPath);
 
         for (ExecutionPath ep: executionPaths) {
@@ -386,7 +388,7 @@ public class Planner {
 
             Set<ExecutionWorkflow> workflows = new LinkedHashSet<>();
 
-            Set<ExecutionPath> toMerge = new LinkedHashSet<>(2);
+            Set<ExecutionPath> toMerge = new LinkedHashSet<>();
             boolean[] intermediateResults = new boolean[2];
             boolean exit = false;
             //while (!exit) {
