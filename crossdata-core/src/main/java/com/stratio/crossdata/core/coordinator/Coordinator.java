@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.crossdata.communication.*;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.AlterOptions;
@@ -48,12 +49,6 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.communication.AlterCluster;
-import com.stratio.crossdata.communication.AttachCluster;
-import com.stratio.crossdata.communication.AttachConnector;
-import com.stratio.crossdata.communication.DetachCluster;
-import com.stratio.crossdata.communication.DetachConnector;
-import com.stratio.crossdata.communication.ManagementOperation;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 
 /**
@@ -138,6 +133,8 @@ public class Coordinator implements Serializable {
         } else if (AttachConnector.class.isInstance(workflow)) {
             AttachConnector ac = AttachConnector.class.cast(workflow);
             result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options(), ac.priority(), ac.pageSize());
+        } else if (ForceDetachConnector.class.isInstance(workflow)) {
+            result = CommandResult.createCommandResult("CONNECTOR detached successfully");
         } else if (DetachConnector.class.isInstance(workflow)) {
             DetachConnector dc = DetachConnector.class.cast(workflow);
             result = persistDetachConnector(dc.targetCluster(), dc.connectorName());

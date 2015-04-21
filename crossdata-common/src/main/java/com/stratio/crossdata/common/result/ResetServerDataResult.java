@@ -24,13 +24,15 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by lcisneros on 17/04/15.
+ * Class that encapsulate the Reset ServerData execution result. If there are a Cluster attached to a Connection, then
+ * the resetCommands collection will contains the ForceDetachsCommand commands to be send to each Connected Cluster.
  */
 public class ResetServerDataResult extends Result {
 
+
     private CommandResult result;
 
-    private List<Object> queries = new ArrayList<>();
+    private List<Object> resetCommands = new ArrayList<>();
 
     public ResetServerDataResult(CommandResult result) {
         this.result = result;
@@ -40,15 +42,15 @@ public class ResetServerDataResult extends Result {
         return result;
     }
 
-    public List<Object> getQueries() {
-        return queries;
+    public List<Object> getResetCommands() {
+        return resetCommands;
     }
 
     @Override
     public String toString() {
         return "ResetServerDataResult{" +
                 "result=" + result +
-                ", queries=" + queries +
+                ", resetCommands=" + resetCommands +
                 '}';
     }
 }

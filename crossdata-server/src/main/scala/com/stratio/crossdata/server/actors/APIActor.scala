@@ -36,11 +36,11 @@ import scala.annotation.tailrec
 import scala.util.{Success, Try}
 
 object APIActor {
-  def props(apiManager: APIManager, validatorActor: ValidatorActor): Props =
+  def props(apiManager: APIManager, validatorActor: ActorRef): Props =
     Props(new APIActor(apiManager, validatorActor))
 }
 
-class APIActor(apiManager: APIManager, validatorActor: ValidatorActor) extends Actor with TimeTracker {
+class APIActor(apiManager: APIManager, coordinatorActor: ActorRef) extends Actor with TimeTracker {
   override lazy val timerName = this.getClass.getName
   val log = Logger.getLogger(classOf[APIActor])
 
@@ -62,10 +62,10 @@ class APIActor(apiManager: APIManager, validatorActor: ValidatorActor) extends A
         result match {
           case resetServerData : ResetServerDataResult => {
             log.debug(resetServerData)
-            //USAR EL VALIDATOR PARA ENVIAR LOS COMANDOS
-            for (query <- resetServerData.getQueries().toArray){
-              log.debug(query)
-              //validatorActor receive query
+
+            for (forceDetachCommand <- resetServerData.getResetCommands().toArray){
+              log.debug(forceDetachCommand)
+              coordinatorActor forward forceDetachCommand
             }
 
             sender ! resetServerData.getResult;

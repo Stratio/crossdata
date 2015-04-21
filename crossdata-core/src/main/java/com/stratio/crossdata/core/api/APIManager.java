@@ -26,10 +26,12 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 
+import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
+import com.stratio.crossdata.common.executionplan.ExecutionType;
+import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
+import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.result.*;
 import com.stratio.crossdata.core.query.*;
-import com.stratio.crossdata.core.statements.DetachConnectorStatement;
-import com.stratio.crossdata.core.statements.MetadataStatement;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.ask.APICommand;
@@ -75,6 +77,8 @@ import com.stratio.crossdata.core.metadata.MetadataManagerException;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
 import com.stratio.crossdata.core.validator.Validator;
+
+import static com.stratio.crossdata.common.statements.structures.SelectorHelper.*;
 
 /**
  * Class that manages the Crossdata API requests.
@@ -533,9 +537,8 @@ public class APIManager {
     private Result resetServerdata() {
 
         Result result = null;
-
         try {
-            result = prepareDetachServers();
+            result = createResetServerDataCommand();
 
             List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
             MetadataManager.MANAGER.clear();
@@ -559,27 +562,46 @@ public class APIManager {
         return result;
     }
 
-    private Result prepareDetachServers(){
-        Collection<MetadataValidatedQuery> commands = new ArrayList<>();
+    /**
+     * If there are Connectors atteched to Clusters, return a ResetServerDataResult with a Set of
+     * ForceDetachQuery used to send a detach order to each connector.
+     *
+     * If there aren't connectors, return a simple CommandResult.
+     *
+     * @return
+     */
+    private Result createResetServerDataCommand(){
+        Collection<IParsedQuery> commands = new ArrayList<>();
         for (ClusterMetadata cluster: MetadataManager.MANAGER.getClusters()){
             for (ConnectorName connector : cluster.getConnectorAttachedRefs().keySet()){
-                ClusterName clusterName = cluster.getName();
-                String strQuery = String.format("DETACH CONNECTOR connector.%s FROM cluster.%s", connector.getName(), clusterName.getName());
-                LOG.debug("SEND  " + strQuery);
-                BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), strQuery , null, "sessionId");
-                MetadataParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, new DetachConnectorStatement(connector, clusterName));
-                MetadataValidatedQuery query = new MetadataValidatedQuery(parsedQuery);
-                commands.add(query);
+                commands.add(createForceDetachQuery(cluster, connector));
             }
         }
 
         if (!commands.isEmpty()){
             ResetServerDataResult result = new ResetServerDataResult(CommandResult.createCommandResult("Crossdata server reset."));
-            result.getQueries().addAll(commands);
+            result.getResetCommands().addAll(commands);
             return result;
         }else{
             return CommandResult.createCommandResult("Crossdata server reset.");
         }
+    }
+
+    private ForceDetachQuery createForceDetachQuery(ClusterMetadata cluster, ConnectorName connector) {
+        ClusterName clusterName = cluster.getName();
+        Set<String> actorRefs = Collections.singleton(MetadataManager.MANAGER.getConnectorRef(connector));
+
+        Map<String, String> clusterProperties = convertSelectorMapToStringMap(MetadataManager.MANAGER.getConnector(connector).getClusterProperties().get(clusterName));
+        Map<String, String> clusterOptions = convertSelectorMapToStringMap(MetadataManager.MANAGER.getCluster(clusterName).getOptions());
+        ConnectorClusterConfig connectorClusterConfig = new ConnectorClusterConfig(clusterName, clusterProperties, clusterOptions);
+        connectorClusterConfig.setDataStoreName(cluster.getDataStoreRef());
+
+        ManagementWorkflow executionWorkflow = new ManagementWorkflow(UUID.randomUUID().toString(), actorRefs, ExecutionType.FORCE_DETACH_CONNECTOR, ResultType.RESULTS);
+        executionWorkflow.setClusterName(clusterName);
+        executionWorkflow.setConnectorName(connector);
+        executionWorkflow.setConnectorClusterConfig(connectorClusterConfig);
+
+        return new ForceDetachQuery(executionWorkflow);
     }
 
     private Result cleanMetadata() {

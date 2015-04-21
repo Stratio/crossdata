@@ -21,26 +21,23 @@ package com.stratio.crossdata.server.actors
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
-import com.stratio.crossdata.common.metadata.CatalogMetadata
-import com.stratio.crossdata.common.data.{ClusterName, Status, ConnectorName}
+import com.stratio.crossdata.common.data.{ClusterName, ConnectorName, Status}
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.exceptions.validation.CoordinationException
 import com.stratio.crossdata.common.executionplan._
 import com.stratio.crossdata.common.logicalplan.PartialResults
-import com.stratio.crossdata.common.metadata.{ UpdatableMetadata, ConnectorMetadata,TableMetadata}
-import com.stratio.crossdata.common.metadata.Operations
+import com.stratio.crossdata.common.metadata.{CatalogMetadata, ConnectorMetadata, TableMetadata, UpdatableMetadata}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
-import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.common.utils.Constants
+import com.stratio.crossdata.common.utils.{Constants, StringUtils}
 import com.stratio.crossdata.communication._
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager, ExecutionManagerException}
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.IPlannedQuery
-import scala.collection.JavaConverters._
+
 import scala.collection.JavaConversions._
-import java.util.Collections
+import scala.collection.JavaConverters._
 
 object CoordinatorActor {
 
@@ -373,10 +370,12 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             sendResultToClient = false
 
           } else if (managementWorkflow.getExecutionType == ExecutionType.DETACH_CONNECTOR) {
+
             val managementOperation = managementWorkflow.createManagementOperationMessage()
             val detachConnectorOperation = managementOperation.asInstanceOf[DetachConnector]
 
             val clusterName = detachConnectorOperation.targetCluster
+
             val connectorClusterConfig = new ConnectorClusterConfig(
               clusterName,
               SelectorHelper.convertSelectorMapToStringMap(
@@ -385,6 +384,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               SelectorHelper.convertSelectorMapToStringMap(
                 MetadataManager.MANAGER.getCluster(clusterName).getOptions)
             )
+
             val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
             connectorClusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
 
@@ -394,13 +394,20 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               connectorSelection ! new DisconnectFromCluster(queryId, connectorClusterConfig.getName.getName)
             }
 
-            val executionInfo = new ExecutionInfo()
-            executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
-            executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
-            executionInfo.setWorkflow(managementWorkflow)
-            executionInfo.setUpdateOnSuccess(true)
-            ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+            createExecutionInfoForDetach(managementWorkflow, queryId)
+
+
+          } else if (managementWorkflow.getExecutionType == ExecutionType.FORCE_DETACH_CONNECTOR) {
+
+            val actorRefs = managementWorkflow.getActorRefs
+            for(actorRef <- actorRefs){
+              val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(actorRef, false))
+              connectorSelection ! new DisconnectFromCluster(queryId, managementWorkflow.getConnectorClusterConfig.getName.getName)
+            }
+
+            createExecutionInfoForDetach(managementWorkflow, queryId)
           }
+
 
           if(sendResultToClient){
             sender ! coordinator.executeManagementOperation(managementWorkflow.createManagementOperationMessage())
@@ -668,6 +675,15 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       sender ! new ExecutionException("Non recognized workflow")
     }
 
+  }
+
+  def createExecutionInfoForDetach(managementWorkflow: ManagementWorkflow, queryId: String): Unit = {
+    val executionInfo = new ExecutionInfo()
+    executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+    executionInfo.setSender(StringUtils.getAkkaActorRefUri(sender, false))
+    executionInfo.setWorkflow(managementWorkflow)
+    executionInfo.setUpdateOnSuccess(true)
+    ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
   }
 
   /**

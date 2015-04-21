@@ -206,4 +206,7 @@ case class AttachConnector(override val queryId: String, targetCluster: ClusterN
 case class DetachConnector(override val queryId: String, targetCluster: ClusterName,
                            connectorName: ConnectorName) extends ManagementOperation(queryId)
 
+case class ForceDetachConnector(override val queryId: String, val targetCluster: ClusterName,
+                                val connectorName: ConnectorName) extends ManagementOperation(queryId)
+
 
