@@ -197,9 +197,9 @@ public class Planner {
 
         if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
             throw new PlanningException("There are no connectors online");
-        } else if(connectedConnectors.size() == 1){
+        } /*else if(connectedConnectors.size() == 1){
             return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0));
-        }
+        }*/
 
         //Get the list of tables accessed in this query
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
@@ -260,7 +260,7 @@ public class Planner {
         LogicalStep lastUnion = getLastUnion(initialStep);
         ExecutionPath lastExecPath = defineExecutionPath(
                 lastUnion,
-                candidatesConnectors.get(((Project) initialStep).getTableName()),
+                candidatesConnectors.get(((Project) initialStep).getTableName()), //TODO: candidates must be all connectors online
                 query);
         executionPaths.add(lastExecPath);
 
@@ -371,15 +371,7 @@ public class Planner {
         for (Map.Entry<UnionStep, LinkedHashSet<ExecutionPath>> entry: unionSteps.entrySet()) {
             paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
             pathsMap.put(entry.getKey(), paths);
-            //boolean areTransformations = true;
-            //for (ExecutionPath path: paths) {
-                //if (!TransformationStep.class.isInstance(path.getLast())) {
-                    //areTransformations = false;
-                //}
-            //}
-            //if (areTransformations) {
-                mergeSteps.add(entry.getKey());
-            //}
+            mergeSteps.add(entry.getKey());
         }
 
         for(UnionStep mergeStep: mergeSteps) {
@@ -390,8 +382,6 @@ public class Planner {
 
             Set<ExecutionPath> toMerge = new LinkedHashSet<>();
             boolean[] intermediateResults = new boolean[2];
-            boolean exit = false;
-            //while (!exit) {
             //Check whether the list of connectors found in the Execution paths being merged can execute the join
             intermediateResults[0] = false;
             intermediateResults[1] = false;
@@ -437,14 +427,13 @@ public class Planner {
                     toMerge.add(mergePaths[index]);
                 }
             }
-            //unionSteps.remove(mergeStep);
 
             ExecutionPath next = defineExecutionPath(
                     mergeStep,
                     new ArrayList<>(mergeConnectors),
                     svq);
+
             if (Select.class.isInstance(next.getLast())) {
-                exit = true;
                 ExecutionWorkflow mergeWorkflow = extendExecutionWorkflow(
                         queryId,
                         new ArrayList<>(toMerge),
@@ -455,23 +444,17 @@ public class Planner {
                     first = QueryWorkflow.class.cast(mergeWorkflow);
                 }
             } else {
+                linkPathsToUnionStep(new ArrayList<>(toMerge), next);
                 LinkedHashSet<ExecutionPath> existingPaths = unionSteps.get(next.getLast());
                 if (executionPaths == null) {
                     existingPaths = new LinkedHashSet<>();
                 } else {
                     executionPaths.add(next);
                 }
-                unionSteps.put(UnionStep.class.cast(next.getLast()), existingPaths);
-            }
-            /*
-                if (unionSteps.isEmpty()) {
-                    exit = true;
-                } else {
-                    mergeStep = nextUnion;
-                    paths = unionSteps.get(mergeStep).toArray(new ExecutionPath[unionSteps.get(mergeStep).size()]);
+                if(next.getLast() instanceof UnionStep){
+                    unionSteps.put(UnionStep.class.cast(next.getLast()), existingPaths);
                 }
-            */
-            //}
+            }
         }
         return buildExecutionTree(first, triggerResults, triggerWorkflow);
     }
@@ -590,6 +573,13 @@ public class Planner {
         }
     }
 
+    private void linkPathsToUnionStep(List<ExecutionPath> executionPaths,
+            ExecutionPath mergePath){
+        for (ExecutionPath path: executionPaths) {
+            path.getLast().setNextStep(mergePath.getInitial()); //TODO; Previous?
+        }
+    }
+
     /**
      * Define a query workflow composed by several execution paths merging in a
      * {@link com.stratio.crossdata.common.executionplan.ExecutionPath} that starts with a UnionStep.
@@ -608,19 +598,20 @@ public class Planner {
         List<ClusterName> involvedClusters = new ArrayList<>(executionPaths.size());
 
         for (ExecutionPath path: executionPaths) {
-            /*
-            Project project = (Project) path.getInitial();
-            involvedClusters.add(project.getClusterName());
-            initialSteps.add(project);
-            path.getLast().setNextStep(mergePath.getInitial());
-            */
             LogicalStep initialStep = path.getInitial();
             if(initialStep instanceof Project){
                 Project project = (Project) initialStep;
                 involvedClusters.add(project.getClusterName());
                 initialSteps.add(project);
+            } else {
+                UnionStep us = (UnionStep) initialStep;
+                Set<Project> firstSteps = findFirstSteps(us);
+                initialSteps.addAll(firstSteps);
+                for(Project p: firstSteps){
+                    involvedClusters.add(p.getClusterName());
+                }
             }
-            path.getLast().setNextStep(mergePath.getInitial());
+            path.getLast().setNextStep(mergePath.getInitial()); //TODO; Previous?
         }
 
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
@@ -630,6 +621,34 @@ public class Planner {
         String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
 
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
+    }
+
+    private Set<Project> findFirstSteps(UnionStep unionStep) {
+        Set<Project> projects = new LinkedHashSet<>();
+        for(LogicalStep ls: unionStep.getPreviousSteps()){
+            if(UnionStep.class.isInstance(ls)){
+                UnionStep us = (UnionStep) ls;
+                projects.addAll(findFirstSteps(us));
+            } else if(Project.class.isInstance(ls)) {
+                Project p = (Project) ls;
+                if(!p.isVirtual()){
+                    projects.add(p);
+                }
+            } else {
+                LogicalStep current = ls;
+                while((!UnionStep.class.isInstance(current)) && (!Project.class.isInstance(current))){
+                    current = current.getFirstPrevious();
+                }
+                if(current instanceof UnionStep){
+                    UnionStep currentUnionStep = (UnionStep) current;
+                    projects.addAll(findFirstSteps(currentUnionStep));
+                } else if(current instanceof Project) {
+                    Project currentProject = (Project) current;
+                    projects.add(currentProject);
+                }
+            }
+        }
+        return projects;
     }
 
     /**
@@ -2203,7 +2222,7 @@ public class Planner {
             p = new Project(
                     Collections.singleton(Operations.PROJECT),
                     tn,
-                    new ClusterName(Constants.VIRTUAL_CATALOG_NAME));
+                    new ClusterName(Constants.VIRTUAL_NAME));
         } else {
             p = new Project(
                     Collections.singleton(Operations.PROJECT),

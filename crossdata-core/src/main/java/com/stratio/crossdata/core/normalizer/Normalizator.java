@@ -814,7 +814,7 @@ public class Normalizator {
                 throw new NotValidTableException(columnName.getTableName());
             }
         } else {
-            tableName = new TableName(Constants.VIRTUAL_CATALOG_NAME, parsedQuery.getStatement().getSubqueryAlias());
+            tableName = new TableName(Constants.VIRTUAL_NAME, parsedQuery.getStatement().getSubqueryAlias());
         }
 
         for (Selector subquerySelector : subqueryNormalizator.getFields().getSelectors()) {
@@ -859,7 +859,7 @@ public class Normalizator {
                 }
 
                 if (columnFromVirtualTableFound) {
-                    tableName = new TableName(Constants.VIRTUAL_CATALOG_NAME,parsedQuery.getStatement().getSubqueryAlias());
+                    tableName = new TableName(Constants.VIRTUAL_NAME,parsedQuery.getStatement().getSubqueryAlias());
                     columnName.setTableName(tableName);
                     selector.setTableName(tableName);
                     columnFromVirtualTableFound = true;

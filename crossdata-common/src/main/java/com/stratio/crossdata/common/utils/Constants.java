@@ -35,7 +35,7 @@ public final class Constants {
     /**
      * Virtual catalog name. It is used in nested queries as the catalog name of the virtual table.
      */
-    public static final String VIRTUAL_CATALOG_NAME = "#virtual";
+    public static final String VIRTUAL_NAME = "#virtual";
 
     public static final String TRIGGER_TOKEN = "_T";
 

@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.data;
 
+import com.stratio.crossdata.common.utils.Constants;
+
 /**
  * Cluster name class.
  */
@@ -58,6 +60,10 @@ public class ClusterName extends FirstLevelName {
         return QualifiedNames.getClusterQualifiedName(getName());
     }
 
+    public boolean isVirtual() {
+        return (name != null) ? Constants.VIRTUAL_NAME.equals(name) : false;
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -93,4 +99,5 @@ public class ClusterName extends FirstLevelName {
         result = 31 * result + (name != null ? name.hashCode() : 0);
         return result;
     }
+
 }
