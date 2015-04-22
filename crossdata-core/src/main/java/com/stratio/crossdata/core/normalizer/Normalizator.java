@@ -1065,6 +1065,10 @@ public class Normalizator {
                 List<Pair<List<AbstractRelation>, Selector>> restrictions = caseWhenSelector.getRestrictions();
                 Selector lastSelector = restrictions.get(0).getRight();
                 SelectorType lastType = lastSelector.getType();
+                if(lastType == SelectorType.RELATION){
+                    RelationSelector rSel = (RelationSelector) lastSelector;
+                    lastType = rSel.getReturningType();
+                }
                 for (Pair<List<AbstractRelation>, Selector> pair : restrictions) {
                     List<AbstractRelation> relations = pair.getLeft();
                     for (AbstractRelation relation : relations) {
@@ -1072,13 +1076,14 @@ public class Normalizator {
                     }
                     //TODO Check column compatibility
                     if (lastSelector.getType() != pair.getRight().getType()) {
-                        throw new BadFormatException("All 'THEN' clauses in a CASE-WHEN select query must be of the " +
-                                "same type");
+                        throw new BadFormatException(
+                                "All 'THEN' clauses in a CASE-WHEN select query must be of the same type");
                     }
                     lastSelector = pair.getRight();
                 }
-                if (caseWhenSelector.getDefaultValue().getType() != lastType) {
-                    if(COLUMN.equals(lastType) && !COLUMN.equals(caseWhenSelector.getDefaultValue().getType())){
+                SelectorType defaultType = caseWhenSelector.getDefaultValue().getType();
+                if (defaultType != lastType) {
+                    if(COLUMN.equals(lastType) && !COLUMN.equals(defaultType)){
 
                         // Check columns
                         List<Selector> normalizeSelector = checkListSelector(Arrays.asList(lastSelector));
@@ -1089,9 +1094,9 @@ public class Normalizator {
                         if(!lastSelector.getTableName().isVirtual()) {
                             ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(((ColumnSelector) lastSelector).getName());
                             //TODO delete the EQ operator workaround
-                            checkCompatibility(columnMetadata, Operator.EQ, caseWhenSelector.getDefaultValue().getType());
+                            checkCompatibility(columnMetadata, Operator.EQ, defaultType);
                         }
-                    }else if ( COLUMN.equals(caseWhenSelector.getDefaultValue().getType()) && !COLUMN.equals(lastType)){
+                    } else if (COLUMN.equals(defaultType) && !COLUMN.equals(lastType)){
 
                         // Check columns
                         List<Selector> normalizeSelector = checkListSelector(Arrays.asList(caseWhenSelector.getDefaultValue()));
@@ -1104,9 +1109,15 @@ public class Normalizator {
                             //TODO delete the EQ operator workaround
                             checkCompatibility(columnMetadata, Operator.EQ, lastType);
                         }
-                    }else {
-                        throw new BadFormatException("ELSE clause in a CASE-WHEN select query must be of the same type of" +
-                                " when clauses");
+                    } else if (lastType.isNumeric() && defaultType.isNumeric()){
+                        if(lastSelector.getType() == SelectorType.RELATION){
+                            checkListSelector(Arrays.asList(lastSelector));
+                        }
+                        if(defaultType == SelectorType.RELATION){
+                            checkListSelector(Arrays.asList(caseWhenSelector.getDefaultValue()));
+                        }
+                    } else {
+                        throw new BadFormatException("ELSE clause in a CASE-WHEN select query must be of the same type of when clauses");
                     }
                 }
                 result.add(caseWhenSelector);

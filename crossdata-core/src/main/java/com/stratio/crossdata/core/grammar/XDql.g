@@ -1026,13 +1026,13 @@ getCaseWhenSelector[TableName tablename] returns [Selector selector]
     }:
     T_CASE
         (T_WHEN conditions=getConditions[tablename] T_THEN
-            firstSelector=getCaseWhenExpressionSelector[tablename]
+            firstSelector=getSelector[tablename]
             {
-                Pair<List<AbstractRelation>,Selector> restriction = new ImmutablePair<>(conditions, firstSelector);
+                Pair<List<AbstractRelation>, Selector> restriction = new ImmutablePair<>(conditions, firstSelector);
                 restrictions.add(restriction);
             })*
     T_ELSE
-        defaultSelector=getCaseWhenExpressionSelector[tablename]
+        defaultSelector=getSelector[tablename]
     T_END
 ;
 
@@ -1065,23 +1065,6 @@ getBasicSelector[TableName tablename] returns [Selector selector]
     | T_TRUE {defaultSelector = new BooleanSelector(tablename, true);}
     | qLiteral=QUOTED_LITERAL {defaultSelector = new StringSelector(tablename, $qLiteral.text);}
     | T_NULL {defaultSelector = new NullSelector(tablename, "null");})
-;
-
-//Selector used in CaseWhen
-getCaseWhenExpressionSelector[TableName tablename] returns [Selector selector]
-    @init{
-        Selector defaultSelector = null;
-    }
-    @after{
-        selector = defaultSelector;
-    }:
-    (floatingNumber=T_FLOATING {defaultSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
-    | constant=T_CONSTANT {defaultSelector = new IntegerSelector(tablename, $constant.text);}
-    | T_FALSE {defaultSelector = new BooleanSelector(tablename, false);}
-    | T_TRUE {defaultSelector = new BooleanSelector(tablename, true);}
-    | qLiteral=QUOTED_LITERAL {defaultSelector = new StringSelector(tablename, $qLiteral.text);}
-    | T_NULL {defaultSelector = new NullSelector(tablename, "null");}
-    | columnName=getColumnName[tablename] {defaultSelector = new ColumnSelector(columnName);})
 ;
 
 getSimpleSelector[TableName tablename] returns [Selector selector]

@@ -1148,7 +1148,7 @@ public class BenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[demo], SELECT  "
-                        + "100.00 * sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 end) "
+                        + "100.00*sum(CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount) ELSE 0 end) "
                         + "FROM  "
                         + "lineitem;  ";
 
@@ -1165,10 +1165,9 @@ public class BenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[demo], SELECT  "
-                        + "sum (CASE WHEN p_type LIKE 'PROMO%' THEN l_extendedprice*(1-l_discount ELSE 0 end) "
-                        + "FROM  "
-                        + "lineitem;  ";
+        String inputText = "[demo], SELECT "
+                        + "sum(CASE WHEN p_type LIKE 'PROMO%' THEN p_retailprice*(1-p_size) ELSE 0 end) "
+                        + "FROM part;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy2", false, false, lineitem, part);
         //assertNotNull(queryWorkflow, "Null workflow received.");
@@ -1184,9 +1183,9 @@ public class BenchmarkTests extends PlannerBaseTest {
         init();
 
         String inputText = "[demo], SELECT  "
-                        + "sum (CASE WHEN p_type = 'PR' THEN l_extendedprice ELSE 0 end) "
+                        + "sum (CASE WHEN p_type = 'PR' THEN p_retailprice ELSE 0 end) "
                         + "FROM  "
-                        + "lineitem;  ";
+                        + "part;  ";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ14Easy23", false, false, lineitem, part);
         //assertNotNull(queryWorkflow, "Null workflow received.");
