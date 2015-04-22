@@ -193,4 +193,14 @@ public class Relation extends AbstractRelation {
         }
         return sb.toString();
     }
+
+    @Override
+    public boolean isBasicRelation(){
+        return getSelectorTables().size() <= 1;
+    }
+
+    @Override
+    public Set<TableName> getAbstractRelationTables() {
+        return getSelectorTables();
+    }
 }

@@ -797,7 +797,7 @@ public class Planner {
         String selectTable = query.getStatement().getTableName().getQualifiedName();
 
         //Add filters
-        if (query.getRelations() != null) {
+        if (query.getBasicRelations() != null) {
             processed = addFilter(processed, tableMetadataMap, query);
         }
 
@@ -810,6 +810,11 @@ public class Planner {
         //Add join
         if (!query.getJoinList().isEmpty()) {
             processed = addJoin((LinkedHashMap) processed, query);
+        }
+
+        //Add ComposeFilters
+        if(query.getComposeRelations() != null){
+            processed = addComposeFilters(processed, tableMetadataMap,  query);
         }
 
         //Initial steps.
@@ -895,6 +900,111 @@ public class Planner {
         workflow.setLastStep(finalSelect);
 
         return workflow;
+    }
+
+
+	//TODO refactor with addFilters
+    private Map<String,LogicalStep> addComposeFilters(Map<String, LogicalStep> lastSteps, Map<String, TableMetadata> tableMetadataMap, SelectValidatedQuery query) throws PlanningException {
+
+        for(AbstractRelation ar: query.getComposeRelations()) {
+            if (ar instanceof Relation) {
+                Relation r = (Relation) ar;
+
+                Selector s = r.getLeftTerm();
+                Operations op = createOperation(tableMetadataMap, s, r);
+                if (op != null) {
+                    convertSelectSelectors(r);
+                    Filter f = new Filter(
+                            Collections.singleton(op),
+                            r);
+
+
+                    //Get sourceIdentifiers from ...
+                    Set<TableName> abstractRelationTables = r.getAbstractRelationTables();
+                    List<String> sourceIdentifiersFromAbstractRelationTable = new ArrayList<>(abstractRelationTables.size());
+                    for (TableName abstractRelationTable : abstractRelationTables) {
+                        sourceIdentifiersFromAbstractRelationTable.add(abstractRelationTable.getQualifiedName());
+                    }
+                    for (LogicalStep step : lastSteps.values()) {
+                        if (UnionStep.class.isInstance(step)){
+                            if( ((Join) step).getSourceIdentifiers().containsAll(sourceIdentifiersFromAbstractRelationTable) ){
+                                LogicalStep stepNextStep = step.getNextStep();
+                                if (stepNextStep != null){
+                                    f.setNextStep(stepNextStep);
+                                    if (TransformationStep.class.isInstance(stepNextStep)){
+                                        TransformationStep.class.cast(stepNextStep).setPrevious(f);
+                                    }else if (UnionStep.class.isInstance(stepNextStep)){
+                                        UnionStep.class.cast(stepNextStep).removePreviousStep(step);
+                                        UnionStep.class.cast(stepNextStep).addPreviousSteps(step);
+                                    }
+                                }
+                                step.setNextStep(f);
+                                f.setPrevious(step);
+                                break; //TODO remove
+                            }
+                        }
+                    }
+
+                    //LogicalStep previous = lastSteps.get(s.getSelectorTablesAsString());
+
+                    //lastSteps.put(s.getSelectorTablesAsString(), f);
+                } else {
+                    LOG.error("Cannot determine Filter for relation " + r.toString() +
+                            " on table " + s.getSelectorTablesAsString());
+                }
+            } else if (ar instanceof RelationDisjunction) {
+                RelationDisjunction rd = (RelationDisjunction) ar;
+                Operations op = Operations.FILTER_DISJUNCTION;
+                List<List<ITerm>> filters = new ArrayList<>();
+                List<RelationTerm> terms = rd.getTerms();
+                for (RelationTerm rt : terms) {
+                    List<ITerm> termList = new ArrayList<>();
+                    for (AbstractRelation ab : rt.getRelations()) {
+                        termList.addAll(createFilter(tableMetadataMap, ab));
+                    }
+                    filters.add(termList);
+                }
+                Disjunction d = new Disjunction(Collections.singleton(op), filters);
+
+
+
+
+                //Get sourceIdentifiers from ...
+                Set<TableName> abstractRelationTables = ar.getAbstractRelationTables();
+                List<String> sourceIdentifiersFromAbstractRelationTable = new ArrayList<>(abstractRelationTables.size());
+                for (TableName abstractRelationTable : abstractRelationTables) {
+                    sourceIdentifiersFromAbstractRelationTable.add(abstractRelationTable.getQualifiedName());
+                }
+                for (LogicalStep step : lastSteps.values()) {
+                    if (UnionStep.class.isInstance(step)){
+                        if( ((Join) step).getSourceIdentifiers().containsAll(sourceIdentifiersFromAbstractRelationTable) ){
+                            LogicalStep stepNextStep = step.getNextStep();
+                            if (stepNextStep != null){
+                                d.setNextStep(stepNextStep);
+                                if (TransformationStep.class.isInstance(stepNextStep)){
+                                    TransformationStep.class.cast(stepNextStep).setPrevious(d);
+                                }else if (UnionStep.class.isInstance(stepNextStep)){
+                                    UnionStep.class.cast(stepNextStep).removePreviousStep(step);
+                                    UnionStep.class.cast(stepNextStep).addPreviousSteps(step);
+                                }
+                            }
+                            step.setNextStep(d);
+                            d.setPrevious(step);
+                        }
+                    }
+                }
+
+                /*
+                LogicalStep previous = lastSteps.get(rd.getFirstSelectorTablesAsString());
+                previous.setNextStep(d);
+                d.setPrevious(previous);
+                lastSteps.put(rd.getFirstSelectorTablesAsString(), d);
+                */
+                //TODO add last steps??
+            }
+        }
+        return lastSteps;
+
     }
 
     /**
@@ -1892,7 +2002,7 @@ public class Planner {
      */
     private Map<String, LogicalStep> addFilter(Map<String, LogicalStep> lastSteps,
                     Map<String, TableMetadata> tableMetadataMap, SelectValidatedQuery query) throws PlanningException {
-        for(AbstractRelation ar: query.getRelations()){
+        for(AbstractRelation ar: query.getBasicRelations()){
             if(ar instanceof Relation){
                 Relation r = (Relation) ar;
                 Selector s = r.getLeftTerm();
