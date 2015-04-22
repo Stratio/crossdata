@@ -673,13 +673,10 @@ public class Normalizator {
         case RELATION:
             throw new BadFormatException("Relations can't be on the left side of other relations.");
         case FUNCTION:
-            for(Selector col:((FunctionSelector)relation.getLeftTerm()).getFunctionColumns()){
-                if (ColumnSelector.class.isInstance(col)){
-                    checkColumnSelector((ColumnSelector)col);
-                }
-            }
+            checkFunctionSelector((FunctionSelector)relation.getLeftTerm());
         }
     }
+
     private void checkHavingRelationFormatLeft(Relation relation) throws ValidationException {
         switch (relation.getLeftTerm().getType()) {
         case FUNCTION:
@@ -776,7 +773,7 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void checkColumnSelector(ColumnSelector selector) throws ValidationException {
-        ColumnName columnName = applyAlias(selector.getName());
+        ColumnName columnName = applyAlias(selector);
         boolean columnFromVirtualTableFound = false;
 
         if (parsedQuery.getStatement().isSubqueryInc()) {
@@ -884,6 +881,23 @@ public class Normalizator {
         return result;
     }
 
+    //TODO refactor -> merge with applyAlias(columnName)
+    private ColumnName applyAlias(ColumnSelector columnSelector) {
+        ColumnName result = columnSelector.getName();
+        if (columnSelector.getName().getTableName() != null && fields.existTableAlias(columnSelector.getName().getTableName().getName())) {
+            TableName table = fields.getTableName(columnSelector.getName().getTableName().getName());
+            columnSelector.getName().setTableName(table);
+            columnSelector.setTableName(table);
+        }
+
+
+        if (fields.existColumnAlias(columnSelector.getName().getName())) {
+            result = fields.getColumnName(columnSelector.getName().getName());
+        }
+        return result;
+    }
+    
+    
     /**
      * Search a table using a column name.
      *
@@ -1026,10 +1040,12 @@ public class Normalizator {
                 boolean tableFound = false;
                 while (tableNameIterator.hasNext() && !tableFound) {
                     currentTableName = tableNameIterator.next();
+                    //TODO Tablename should be always distinct from null
                     if (columnSelector.getTableName() != null) {
-                        if (!columnSelector.getName().getTableName().getName().equals(currentTableName.getName())
-                                && !tableNameIterator.hasNext()) {
-                            throw new NotValidTableException(columnSelector.getName().getTableName());
+                        if (!columnSelector.getName().getTableName().getName().equals(currentTableName.getName()) ) {
+                            if( !tableNameIterator.hasNext()) {
+                                throw new NotValidTableException(columnSelector.getName().getTableName());
+                            }
                         } else {
 
                             tableFound = !(columnSelector.getName().getTableName().getCatalogName() != null

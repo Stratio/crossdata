@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.google.common.collect.Table;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.utils.StringUtils;
 
 import java.io.Serializable;
@@ -25,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 
 public class RelationTerm implements Serializable, ISqlExpression {
 
@@ -79,6 +83,14 @@ public class RelationTerm implements Serializable, ISqlExpression {
             sb.append(")");
         }
         return sb.toString().replace("(", "").replace(")", "");
+    }
+
+    public Set<TableName> getSelectorTables() {
+       Set<TableName> tableNameSet = new HashSet<>();
+        for (AbstractRelation relation : relations) {
+            tableNameSet.addAll(relation.getAbstractRelationTables());
+        }
+        return tableNameSet;
     }
 
     @Override

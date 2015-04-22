@@ -172,10 +172,10 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         // DAYS_BETWEEN function
         FunctionType days_between = new FunctionType();
-        days_between.setFunctionName("days_between");
-        days_between.setSignature("days_between(Tuple[Any*]):Tuple[Any]");
+        days_between.setFunctionName("datediff");
+        days_between.setSignature("datediff(Tuple[Any*]):Tuple[Any]");
         days_between.setFunctionType("simple");
-        days_between.setDescription("days_between");
+        days_between.setDescription("datediff");
         functions1.add(days_between);
 
         // to_date function
@@ -185,6 +185,14 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         toDateFunction.setFunctionType("simple");
         toDateFunction.setDescription("to_date");
         functions1.add(toDateFunction);
+
+        // to_date function
+        FunctionType toAddFunction = new FunctionType();
+        toAddFunction.setFunctionName("add_days");
+        toAddFunction.setSignature("add_days(Tuple[Any*]):Tuple[Any]");
+        toAddFunction.setFunctionType("simple");
+        toAddFunction.setDescription("add_days");
+        functions1.add(toAddFunction);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
@@ -486,7 +494,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc], SELECT substring(y.c_state, 1, 1) AS country FROM tpcc.customer INNER JOIN tpcc.customer y ON c_balance = c_balance ;";
+        String inputText = "[tpcc], SELECT substring(y.c_state, 1, 1) AS country FROM tpcc.customer INNER JOIN tpcc" +
+                ".customer y ON y.c_balance = c_balance ;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ0", false, false, customer);
         assertNotNull(queryWorkflow, "Null workflow received.");
@@ -713,23 +722,32 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
     }
 
+
+
+    @Test
+    public void testQ04Failure() throws ManifestException {
+        init();
+
+        String inputText = "[tpcc], select  c.c_state, datediff(to_date(o.o_entry_d),to_date(ol.ol_delivery_d)), sum(ol.ol_amount),avg(ol.ol_amount), count(*) AS cantidad from " +
+                "(select date_sub(to_date(max(c_since)),7) AS fecha from tpcc.customer ) y" +
+                " INNER JOIN tpcc.customer c ON c.c_since >= y.fecha INNER JOIN tpcc.order o ON o.o_id=ol.ol_o_id  and o.o_d_id=ol.ol_d_id  and o.o_w_id=ol.ol_w_id" +
+                " INNER JOIN tpcc.order_line ol ON o.o_c_id=c.c_id and o.o_d_id=c.c_d_id and o.o_w_id=c.c_w_id " +
+                "where c.c_w_id=100 and  datediff(to_date(o.o_entry_d),to_date(ol.ol_delivery_d))>30 group by c.c_state,datediff(to_date(o.o_entry_d),to_date(ol.ol_delivery_d)) order by cantidad desc limit 10;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ04Previous", false, false,
+                order, customer);
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
+    }
+
+
+
     @Test
     public void testQ04RewriteWithoutImplicits() throws ManifestException {
 
         init();
 
-        String inputText = "[tpcc],     SELECT c.c_state," +
-                "days_between(o.o_entry_d,ol.ol_delivery_d), " +
-                "sum(ol.ol_amount)," +
-                "avg(ol.ol_amount) " +
-                "FROM tpcc.order_line ol INNER JOIN tpcc.order o " +
-                "ON o.o_id = ol.ol_o_id AND o.o_d_id = ol.ol_d_id AND o.o_w_id = ol.ol_w_id " +
-                "INNER JOIN tpcc.customer c ON o.o_c_id = c.c_id AND o.o_d_id = c.c_d_id AND o.o_w_id = c.c_w_id " +
-                "WHERE c_since >= (SELECT add_days(max(c_since), -7) FROM tpcc.customer c) " +
-                "AND days_between(o.o_entry_d, ol.ol_delivery_d)>30 " +
-                "GROUP BY c.c_state, days_between(o.o_entry_d, ol.ol_delivery_d) " +
-                "ORDER BY count(*) desc " +
-                "LIMIT 10;";
+        String inputText = "[tpcc],   SELECT add_days(max(c.c_since), -7) FROM tpcc.customer c;";
 
         String inputText2 = "[tpcc],     SELECT " +
                 "days_between(o.o_entry_d,ol.ol_delivery_d), " +

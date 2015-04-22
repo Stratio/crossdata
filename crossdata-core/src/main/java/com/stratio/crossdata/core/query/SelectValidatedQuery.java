@@ -103,6 +103,34 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     }
 
     /**
+     * Get the list of relations of the validated select query which involve a single table.
+     * @return A list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation} .
+     */
+    public List<AbstractRelation> getBasicRelations() {
+        List<AbstractRelation> relationList = new ArrayList<>();
+        for (AbstractRelation relation : relations) {
+            if( relation.isBasicRelation()){
+                relationList.add(relation);
+            }
+        }
+        return relationList;
+    }
+
+    /**
+     * Get the list of relations of the validated select query which involves joined tables.
+     * @return A list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation} .
+     */
+    public List<AbstractRelation> getComposeRelations() {
+        List<AbstractRelation> relationList = new ArrayList<>();
+        for (AbstractRelation relation : relations) {
+            if( !relation.isBasicRelation()){
+                relationList.add(relation);
+            }
+        }
+        return relationList;
+    }
+
+    /**
      * Set the Relations metadata to the select validated query.
      * @param relations The list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation} .
      */
