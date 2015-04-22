@@ -18,56 +18,30 @@
 
 package com.stratio.connector.inmemory;
 
-import static java.util.Collections.*;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
-
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
-import com.stratio.crossdata.common.connector.IConfiguration;
-import com.stratio.crossdata.common.connector.IConnector;
-import com.stratio.crossdata.common.connector.IConnectorApp;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.Cell;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.IndexName;
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
-import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
-import com.stratio.crossdata.common.exceptions.InitializationException;
-import com.stratio.crossdata.common.logicalplan.Filter;
-import com.stratio.crossdata.common.logicalplan.LogicalStep;
-import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
-import com.stratio.crossdata.common.logicalplan.Project;
-import com.stratio.crossdata.common.logicalplan.Select;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
-import com.stratio.crossdata.common.metadata.ColumnMetadata;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
+import com.stratio.crossdata.common.exceptions.UnsupportedException;
+import com.stratio.crossdata.common.logicalplan.*;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.DataType;
-import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.QueryResult;
-import com.stratio.crossdata.common.security.ICredentials;
-import com.stratio.crossdata.common.statements.structures.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.statements.structures.*;
+import com.sun.scenario.effect.impl.sw.sse.SSEBlend_SRC_OUTPeer;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+import static org.testng.Assert.*;
 
 /**
  * Query engine test.
@@ -289,6 +263,186 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         assertEquals(results.size(), (NUM_ROWS/2)-1, "Invalid number of results returned");
         checkResultMetadata(results, usersColumnNames, usersTypes);
+    }
+
+
+    @Test
+    public void simpleSelectBoolOrder() {
+        TableMetadata usersTable = buildUsersTable();
+
+        String [] usersColumnNames = {"boss"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT)};
+
+        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "boss", OrderDirection.DESC);
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
+
+        ResultSet results = null;
+        try {
+            QueryResult result = connector.getQueryEngine().execute(workflow);
+            results = result.getResultSet();
+        } catch (ConnectorException e) {
+            fail("Cannot retrieve data", e);
+        }
+
+        assertEquals(results.size(), NUM_ROWS, "Invalid number of results returned");
+        int i = 0;
+        for (Row row: results.getRows()){
+            if (i<5){
+                assertTrue((Boolean) row.getCell("boss").getValue(),"Invalid Result OrderBy");
+            }else{
+                assertFalse((Boolean) row.getCell("boss").getValue(), "Invalid Result OrderBy");
+            }
+            i++;
+        }
+    }
+
+    @Test
+    public void sortNumberASC() throws UnsupportedException, ExecutionException {
+        TableMetadata usersTable = buildUsersTable();
+        String [] usersColumnNames = {"id"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT)};
+
+        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "id", OrderDirection.ASC);
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
+
+        InMemorySelector column = new InMemoryColumnSelector("id");
+        List<SimpleValue[]> results = new ArrayList<>();
+        results.add(new SimpleValue[]{new SimpleValue(column, 2)});
+        results.add(new SimpleValue[]{new SimpleValue(column, 1)});
+        results.add(new SimpleValue[]{new SimpleValue(column, 3)});
+        results.add(new SimpleValue[]{new SimpleValue(column, 4)});
+
+        //Experimentation
+        List<SimpleValue[]> result = ((InMemoryQueryEngine)connector.getQueryEngine()).orderResult(results, workflow);
+
+        //Espectations
+        int i = 1;
+        for (SimpleValue[] value: result){
+            assertEquals(value[0].getValue(), i++, "Invalid Order");
+        }
+    }
+
+    @Test
+    public void sortNumberDES() throws UnsupportedException, ExecutionException {
+        TableMetadata usersTable = buildUsersTable();
+        String [] usersColumnNames = {"id"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT)};
+
+        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "id", OrderDirection.DESC);
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
+
+        InMemorySelector column = new InMemoryColumnSelector("id");
+        List<SimpleValue[]> results = new ArrayList<>();
+        results.add(new SimpleValue[]{new SimpleValue(column, 2)});
+        results.add(new SimpleValue[]{new SimpleValue(column, 1)});
+        results.add(new SimpleValue[]{new SimpleValue(column, 3)});
+        results.add(new SimpleValue[]{new SimpleValue(column, 4)});
+
+        //Experimentation
+        List<SimpleValue[]> result = ((InMemoryQueryEngine)connector.getQueryEngine()).orderResult(results, workflow);
+
+        //Espectations
+        int i =result.size();
+        for (SimpleValue[] value: result){
+            assertEquals(value[0].getValue(), i--, "Invalid Order");
+        }
+    }
+
+
+    @Test
+    public void sortBoolDES() throws UnsupportedException, ExecutionException {
+        sortBool(OrderDirection.DESC);
+    }
+
+    @Test
+    public void sortBoolASC() throws UnsupportedException, ExecutionException {
+        sortBool(OrderDirection.ASC);
+    }
+
+    public void sortBool(OrderDirection direction) throws UnsupportedException, ExecutionException {
+        TableMetadata usersTable = buildUsersTable();
+        String [] usersColumnNames = {"id","boss"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT), new ColumnType(DataType.BOOLEAN)};
+
+        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "boss", direction);
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
+
+        InMemorySelector columnBoss = new InMemoryColumnSelector("boss");
+        InMemorySelector columnId = new InMemoryColumnSelector("id");
+        List<SimpleValue[]> results = new ArrayList<>();
+        results.add(new SimpleValue[]{new SimpleValue(columnId, 1),new SimpleValue(columnBoss, false)});
+        results.add(new SimpleValue[]{new SimpleValue(columnId, 2),new SimpleValue(columnBoss, true)});
+        results.add(new SimpleValue[]{new SimpleValue(columnId, 3),new SimpleValue(columnBoss, false)});
+        results.add(new SimpleValue[]{new SimpleValue(columnId, 4),new SimpleValue(columnBoss, true)});
+
+
+        //Experimentation
+        List<SimpleValue[]> result = ((InMemoryQueryEngine)connector.getQueryEngine()).orderResult(results, workflow);
+
+        //Espectations
+        int i = 0;
+        for (SimpleValue[] value: result){
+            if (direction.equals(OrderDirection.ASC)){
+                assertTrue((Boolean) value[1].getValue().equals(i >= result.size()/2) , "Bad Order");
+            }else{
+                assertTrue((Boolean) value[1].getValue().equals(i < result.size()/2) , "Bad Order");
+            }
+            i++;
+        }
+    }
+
+
+    @Test
+    public void testCompareCellsASC() throws UnsupportedException {
+        testCompareCell(OrderDirection.ASC, true, false, -1);
+    }
+
+
+    @Test
+    public void testCompareCellsASCCase2() throws UnsupportedException {
+        testCompareCell(OrderDirection.ASC, false, true, 1);
+    }
+
+    @Test
+    public void testCompareCellsDESC() throws UnsupportedException {
+        testCompareCell(OrderDirection.DESC, true, false, 1);
+    }
+
+    @Test
+    public void testCompareCellsDESCCase2() throws UnsupportedException {
+        testCompareCell(OrderDirection.DESC, false, true, -1);
+    }
+
+    @Test
+    public void testCompareCellsDESCNumber() throws UnsupportedException {
+        testCompareCell(OrderDirection.DESC, 1, 2, -1);
+    }
+
+    @Test
+    public void testCompareCellsASCNumber() throws UnsupportedException {
+        testCompareCell(OrderDirection.ASC, 1, 2, 1);
+    }
+
+    @Test
+    public void testCompareCellsASCNumberEQ() throws UnsupportedException {
+        testCompareCell(OrderDirection.DESC, 1, 1, 0);
+    }
+
+    public void testCompareCell(OrderDirection direction, Object value1, Object value2, int expected) throws UnsupportedException {
+
+        buildUsersTable();
+
+        SimpleValue toBeOrdered = new SimpleValue(null, value1);
+        SimpleValue alreadyOrdered =  new SimpleValue(null, value2);
+
+        int result = ((InMemoryQueryEngine)connector.getQueryEngine()).compareCells(toBeOrdered, alreadyOrdered, direction);
+
+        assertEquals(result, expected);
+
     }
 
 }

@@ -27,11 +27,14 @@ import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
+import com.stratio.crossdata.common.logicalplan.OrderBy;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.*;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.OrderDirection;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import org.testng.annotations.BeforeTest;
 
@@ -185,7 +188,18 @@ public abstract class InMemoryQueryEngineTestParent {
         }
     }
 
-    protected Project generateProjectAndSelect(String [] columnNames, ColumnType [] types, TableName table){
+
+    protected OrderBy generateOrderByClausule  (TableName tableName, String columnName, OrderDirection orderDirection){
+        Set<Operations> operations = new HashSet();
+        operations.add(Operations.SELECT_ORDER_BY);
+        List<OrderByClause> field = new ArrayList<>();
+        ColumnSelector selector  = new ColumnSelector(new ColumnName(tableName, columnName));
+        OrderByClause clause = new OrderByClause(orderDirection, selector);
+        field.add(clause);
+        return new OrderBy(operations, field);
+    }
+
+    protected Project generateProjectAndSelect(String [] columnNames, ColumnType [] types, TableName table, OrderBy orderBy) {
 
         Project project = new Project(
                 Collections.singleton(Operations.PROJECT),
@@ -216,8 +230,21 @@ public abstract class InMemoryQueryEngineTestParent {
                 typeMapFromColumnName);
 
         //Link the elements
-        project.setNextStep(select);
+        if (orderBy != null){
+            project.setNextStep(orderBy);
+            orderBy.setPrevious(project);
+            orderBy.setNextStep(select);
+            select.setPrevious(orderBy);
+        }else{
+            project.setNextStep(select);
+        }
+
+
         return project;
+    }
+
+    protected Project generateProjectAndSelect(String [] columnNames, ColumnType [] types, TableName table){
+        return generateProjectAndSelect(columnNames, types, table, null);
     }
 
     protected void checkResultMetadata(ResultSet results, String [] columnNames, ColumnType [] types){

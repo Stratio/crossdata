@@ -242,9 +242,11 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
 
 
-    private int compareCells(SimpleValue toBeOrdered, SimpleValue alreadyOrdered, OrderDirection direction) {
+    protected int compareCells(SimpleValue toBeOrdered, SimpleValue alreadyOrdered, OrderDirection direction) {
         int result = -1;
+
         InMemoryOperations.GT.compare(toBeOrdered.getValue(), alreadyOrdered.getValue());
+
         if(InMemoryOperations.EQ.compare(toBeOrdered.getValue(), alreadyOrdered.getValue())){
             result = 0;
         } else if(direction == OrderDirection.ASC){

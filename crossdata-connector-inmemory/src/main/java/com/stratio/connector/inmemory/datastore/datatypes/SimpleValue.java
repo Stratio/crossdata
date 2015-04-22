@@ -35,4 +35,12 @@ public class SimpleValue {
     public void setColumn(InMemorySelector column) {
         this.column = column;
     }
+
+    @Override
+    public String toString() {
+        return "SimpleValue{" +
+                "column=" + column +
+                ", value=" + value +
+                '}';
+    }
 }
