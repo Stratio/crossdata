@@ -27,7 +27,7 @@ public class TableNameTest {
     public void isVirtualTest() {
 
         Assert.assertFalse((new TableName("virtual","virtual").isVirtual()));
-        Assert.assertFalse((new TableName("virtual", Constants.VIRTUAL_CATALOG_NAME).isVirtual()));
-        Assert.assertTrue((new TableName(Constants.VIRTUAL_CATALOG_NAME, "").isVirtual()));
+        Assert.assertFalse((new TableName("virtual", Constants.VIRTUAL_NAME).isVirtual()));
+        Assert.assertTrue((new TableName(Constants.VIRTUAL_NAME, "").isVirtual()));
     }
 }

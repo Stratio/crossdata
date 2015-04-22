@@ -189,10 +189,13 @@ public class ColumnName extends Name {
     }
 
     public String toSQLString() {
-        return toString();
-       /*if(tableName.getAlias() != null){
-           return tableName.getAlias() + n
-       }*/
+        if(tableName == null){
+            return name;
+        }
+        if(tableName.getAlias() != null){
+            return tableName.getAlias() + "." + name;
+        }
+       return toString();
     }
 
 

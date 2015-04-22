@@ -458,7 +458,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
         String strSelectStatement = sb.toString().replaceAll("  ", " ");
 
-        return (withSQLSyntax) ? strSelectStatement.replaceAll(Constants.VIRTUAL_CATALOG_NAME+"\\.", "") : strSelectStatement;
+        return (withSQLSyntax) ? strSelectStatement.replaceAll(Constants.VIRTUAL_NAME +"\\.", "") : strSelectStatement;
     }
 
 
@@ -504,7 +504,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(" LIMIT ").append(limit);
         }
 
-        return sb.toString().replaceAll("  ", " ").replaceAll(Constants.VIRTUAL_CATALOG_NAME+"\\.", "");
+        return sb.toString().replaceAll("  ", " ").replaceAll(Constants.VIRTUAL_NAME +"\\.", "");
     }
 
 

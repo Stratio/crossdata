@@ -79,7 +79,7 @@ public class TableName extends Name {
      * @return true if the table is created using a select statement; false if the table is associated to a real data store.
      */
     public boolean isVirtual(){
-        return (catalogName != null) ? Constants.VIRTUAL_CATALOG_NAME.equals(catalogName.getName()) : false;
+        return (catalogName != null) ? Constants.VIRTUAL_NAME.equals(catalogName.getName()) : false;
     }
 
     @Override public boolean isCompletedName() {

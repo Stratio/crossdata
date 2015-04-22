@@ -618,7 +618,7 @@ selectStatement returns [SelectStatement slctst]
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap]
     T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS
-        subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_CATALOG_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
+        subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
         | tablename=getAliasedTableID[tablesAliasesMap])
     {$slctst = new SelectStatement(selClause, tablename);}
 

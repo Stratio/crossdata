@@ -1615,8 +1615,8 @@ public class SelectStatementTest extends BasicValidatorTest {
     public void simpleSubqueryTest(){
 
         String inputText = "SELECT * FROM ( SELECT demo.users.name AS n, demo.users.age FROM demo.users ) t WHERE n = 'name_1'";
-        String expectedText = "SELECT "+Constants.VIRTUAL_CATALOG_NAME+".t.n AS n, "+Constants.VIRTUAL_CATALOG_NAME+".t.age FROM ( SELECT demo.users.name AS n, demo.users.age FROM demo.users ) AS t " +
-                        "WHERE "+ Constants.VIRTUAL_CATALOG_NAME+".t.n = 'name_1'";
+        String expectedText = "SELECT "+Constants.VIRTUAL_NAME +".t.n AS n, "+Constants.VIRTUAL_NAME +".t.age FROM ( SELECT demo.users.name AS n, demo.users.age FROM demo.users ) AS t " +
+                        "WHERE "+ Constants.VIRTUAL_NAME +".t.n = 'name_1'";
 
         ColumnName n1 = new ColumnName("demo", "users", "name");
         Selector selector1 = new ColumnSelector(n1);
@@ -1631,7 +1631,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<Selector> selectorListSuperquery = new ArrayList<>();
         selectorListSuperquery.add(new AsteriskSelector());
-        TableName virtualTable = new TableName(Constants.VIRTUAL_CATALOG_NAME, "t");
+        TableName virtualTable = new TableName(Constants.VIRTUAL_NAME, "t");
         virtualTable.setAlias("t");
         SelectStatement selectStatement = new SelectStatement(new SelectExpression(selectorListSuperquery), virtualTable);
         selectStatement.setSubquery(subquerySelectStatement, "t");
@@ -1675,7 +1675,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<Selector> selectorListSuperquery = new ArrayList<>();
         selectorListSuperquery.add(new AsteriskSelector());
-        TableName virtualTable = new TableName(Constants.VIRTUAL_CATALOG_NAME, "t");
+        TableName virtualTable = new TableName(Constants.VIRTUAL_NAME, "t");
         virtualTable.setAlias("t");
         SelectStatement selectStatement = new SelectStatement(new SelectExpression(selectorListSuperquery), virtualTable);
         selectStatement.setSubquery(subquerySelectStatement, "t");

@@ -30,7 +30,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.stratio.crossdata.core.metadata.MetadataManager;
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
+import javax.transaction.SystemException;
+
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -52,10 +57,9 @@ import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
-
-import javax.transaction.*;
 
 public class BenchmarkTests extends PlannerBaseTest {
 
@@ -159,11 +163,17 @@ public class BenchmarkTests extends PlannerBaseTest {
         substringFunction.setDescription("Substring");
         benchmarkFunctions.add(substringFunction);
         //Concat function
-        FunctionType functionType = new FunctionType();
-        functionType.setFunctionName("concat");
-        functionType.setSignature("concat(Tuple[Text, Text]):Tuple[Text]");
-        functionType.setFunctionType("simple");
-        benchmarkFunctions.add(functionType);
+        FunctionType concatType = new FunctionType();
+        concatType.setFunctionName("concat");
+        concatType.setSignature("concat(Tuple[Text, Text]):Tuple[Text]");
+        concatType.setFunctionType("simple");
+        benchmarkFunctions.add(concatType);
+        //Extract function
+        FunctionType extractFunction = new FunctionType();
+        extractFunction.setFunctionName("extract");
+        extractFunction.setSignature("extract(Tuple[Any, Text]):Tuple[Text]");
+        extractFunction.setFunctionType("simple");
+        benchmarkFunctions.add(extractFunction);
 
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("benchmarkConnector", dataStoreName,
                 clusterWithDefaultPriority, benchmarkOperations, "benchmarkActorRef", benchmarkFunctions);
@@ -833,11 +843,7 @@ public class BenchmarkTests extends PlannerBaseTest {
 
         String inputText = "[demo], SELECT "
                     + "o_year, "
-                    + "sum(CASE "
-                    + "WHEN nation = 'BRAZIL' "
-                    + "THEN volume "
-                    + "ELSE 0 "
-                    + "end) / sum(volume) AS mkt_share "
+                    + "sum(CASE WHEN nation = 'BRAZIL'THEN volume ELSE 0 end) / sum(volume) AS mkt_share "
                     + "FROM ( "
                     + "SELECT "
                     + "extract(o_orderdate,\"year\") AS o_year, "

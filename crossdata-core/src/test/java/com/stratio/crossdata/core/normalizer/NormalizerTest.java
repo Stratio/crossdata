@@ -506,12 +506,12 @@ public class NormalizerTest {
         String inputText = "SELECT * FROM  "
                         + "( SELECT colsales, 1 FROM tableClients ) AS t";
 
-        String virtualTableQN = Constants.VIRTUAL_CATALOG_NAME+".t";
+        String virtualTableQN = Constants.VIRTUAL_NAME +".t";
 
         String expectedText = "SELECT "+virtualTableQN+".colSales, "+virtualTableQN+".1 FROM ( SELECT demo.tableClients.colsales, 1 FROM demo.tableClients ) AS t";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("Constants.VIRTUAL_CATALOG_NAME"),"sessionTest");
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("Constants.VIRTUAL_NAME"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();
@@ -525,9 +525,9 @@ public class NormalizerTest {
 
         //SELECT
         List<Selector> selectorList2 = new ArrayList<>();
-        selectorList2.add(new AsteriskSelector(new TableName(Constants.VIRTUAL_CATALOG_NAME,"t")));
+        selectorList2.add(new AsteriskSelector(new TableName(Constants.VIRTUAL_NAME,"t")));
         SelectExpression selectExpression2 = new SelectExpression(selectorList2);
-        SelectStatement selectStatement = new SelectStatement(selectExpression2,new TableName(Constants.VIRTUAL_CATALOG_NAME,"t"));
+        SelectStatement selectStatement = new SelectStatement(selectExpression2,new TableName(Constants.VIRTUAL_NAME,"t"));
         selectStatement.setSubquery(subqueryStatement,"t");
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
