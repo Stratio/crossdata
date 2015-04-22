@@ -189,6 +189,9 @@ public class ColumnName extends Name {
     }
 
     public String toSQLString() {
+        if(tableName == null){
+            return name;
+        }
         if(tableName.getAlias() != null){
             return tableName.getAlias() + "." + name;
         }

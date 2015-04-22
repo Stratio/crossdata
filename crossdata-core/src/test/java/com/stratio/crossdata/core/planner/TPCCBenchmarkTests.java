@@ -754,8 +754,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "ORDER BY count( *)desc " +
                 "LIMIT 10;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4RWI", false, false, order,
-                customer);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testQ04RewriteWithoutImplicits", false, false, order, customer);
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
         //assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         //assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
