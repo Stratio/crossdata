@@ -172,10 +172,10 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         // DAYS_BETWEEN function
         FunctionType days_between = new FunctionType();
-        days_between.setFunctionName("days_between");
-        days_between.setSignature("days_between(Tuple[Any*]):Tuple[Any]");
+        days_between.setFunctionName("datediff");
+        days_between.setSignature("datediff(Tuple[Any*]):Tuple[Any]");
         days_between.setFunctionType("simple");
-        days_between.setDescription("days_between");
+        days_between.setDescription("datediff");
         functions1.add(days_between);
 
         // to_date function
@@ -473,9 +473,9 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         String inputText2 = "[tpcc], SELECT substr(c_state,1,1) AS country, count(*) AS numcust, " +
                 "sum(c_balance) AS totacctbal FROM " +
                 "(SELECT avg(sub.C_BALANCE) AS balance " +
-                "FROM testmetastore.customer sub " +
+                "FROM tpcc.customer sub " +
                 "WHERE sub.c_balance > 0.00 AND substr(sub.c_phone,1,1) IN ['1','2','3','4','5','6','7']) y " +
-                "INNER JOIN testmetastore.customer ON c_balance > y.balance " +
+                "INNER JOIN tpcc.customer ON c_balance > y.balance " +
                 "WHERE substr(c_phone,1,1) IN ['1','2','3','4','5','6','7'] " +
                 "GROUP BY substring(c_state,1,1) " +
                 "ORDER BY country;";
@@ -721,6 +721,26 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
 
     }
+
+
+
+    @Test
+    public void testQ04Failure() throws ManifestException {
+        init();
+
+        String inputText = "[tpcc], select  c.c_state, datediff(to_date(o.o_entry_d),to_date(ol.ol_delivery_d)), sum(ol.ol_amount),avg(ol.ol_amount), count(*) AS cantidad from " +
+                "(select date_sub(to_date(max(c_since)),7) AS fecha from tpcc.customer ) y" +
+                " INNER JOIN tpcc.customer c ON c.c_since >= y.fecha INNER JOIN tpcc.order o ON o.o_id=ol.ol_o_id  and o.o_d_id=ol.ol_d_id  and o.o_w_id=ol.ol_w_id" +
+                " INNER JOIN tpcc.order_line ol ON o.o_c_id=c.c_id and o.o_d_id=c.c_d_id and o.o_w_id=c.c_w_id " +
+                "where c.c_w_id=100 and  datediff(to_date(o.o_entry_d),to_date(ol.ol_delivery_d))>30 group by c.c_state,datediff(to_date(o.o_entry_d),to_date(ol.ol_delivery_d)) order by cantidad desc limit 10;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ04Previous", false, false,
+                order, customer);
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
+    }
+
+
 
     @Test
     public void testQ04RewriteWithoutImplicits() throws ManifestException {
@@ -1349,6 +1369,22 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         // SQL DIRECT REVIEWED
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
 
+    }
+
+    @Test
+    public void testQWithSubquery() throws ManifestException {
+
+        init();
+
+        String inputText = "[tpcc], " +
+                "SELECT OL.ol_w_id, OL.ol_d_id, OL.ol_o_id, AVG_Amoun, avg(OL.ol_amount) AS average " +
+                "FROM (SELECT d_id, d_w_id, avg(ol_amount) AS AVG_Amoun FROM tpcc.district D INNER JOIN tpcc.order_line OL_A ON D.d_id=OL_A.ol_d_id AND D.d_w_id=OL_A.ol_w_id WHERE d_id=3 AND d_w_id=241 GROUP BY d_id,d_w_id ) A " +
+                "INNER JOIN tpcc.order_line OL ON A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id WHERE OL.ol_d_id=3 AND OL.ol_w_id=241 " +
+                "GROUP BY OL.ol_w_id, OL.ol_d_id, OL.ol_o_id, AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun " +
+                "ORDER BY average desc;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQWithSubquery", false, false, district, order_line);
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
     }
 
 }

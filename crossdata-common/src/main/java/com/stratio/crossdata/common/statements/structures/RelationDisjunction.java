@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.utils.StringUtils;
 
 import java.util.ArrayList;
@@ -134,4 +135,33 @@ public class RelationDisjunction extends AbstractRelation {
         return sb.toString().replace("(", "").replace(")", "");
     }
 
+    @Override
+    public Set<TableName> getAbstractRelationTables() {
+        Set<TableName> allTables = new LinkedHashSet<>();
+        for(RelationTerm rt: terms){
+            allTables.addAll(getAbstractRelationTables(rt));
+        }
+        return allTables;
+    }
+
+    public Set<TableName> getAbstractRelationTables(RelationTerm relationTerm) {
+        Set<TableName> allTables = new HashSet<>();
+        allTables.addAll(relationTerm.getSelectorTables());
+        return allTables;
+    }
+
+
+
+
+    @Override
+    public boolean isBasicRelation(){
+        Set<TableName> tableNameSet = new HashSet<>();
+        //TODO while: stop when tableName.size > 1
+        for (RelationTerm term : terms) {
+            for (AbstractRelation abstractRelation : term.getRelations()) {
+                tableNameSet.addAll(abstractRelation.getAbstractRelationTables());
+            }
+        }
+        return tableNameSet.size() <= 1;
+    }
 }
