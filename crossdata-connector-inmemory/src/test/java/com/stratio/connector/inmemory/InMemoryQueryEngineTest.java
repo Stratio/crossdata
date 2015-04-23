@@ -271,7 +271,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         TableMetadata usersTable = buildUsersTable();
 
         String [] usersColumnNames = {"boss"};
-        ColumnType[] usersTypes = {new ColumnType(DataType.INT)};
+        ColumnType[] usersTypes = {new ColumnType(DataType.BOOLEAN)};
 
         OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "boss", OrderDirection.DESC);
         Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
@@ -299,38 +299,20 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
     @Test
     public void sortNumberASC() throws UnsupportedException, ExecutionException {
-        TableMetadata usersTable = buildUsersTable();
-        String [] usersColumnNames = {"id"};
-        ColumnType[] usersTypes = {new ColumnType(DataType.INT)};
-
-        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "id", OrderDirection.ASC);
-        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
-        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
-
-        InMemorySelector column = new InMemoryColumnSelector("id");
-        List<SimpleValue[]> results = new ArrayList<>();
-        results.add(new SimpleValue[]{new SimpleValue(column, 2)});
-        results.add(new SimpleValue[]{new SimpleValue(column, 1)});
-        results.add(new SimpleValue[]{new SimpleValue(column, 3)});
-        results.add(new SimpleValue[]{new SimpleValue(column, 4)});
-
-        //Experimentation
-        List<SimpleValue[]> result = ((InMemoryQueryEngine)connector.getQueryEngine()).orderResult(results, workflow);
-
-        //Espectations
-        int i = 1;
-        for (SimpleValue[] value: result){
-            assertEquals(value[0].getValue(), i++, "Invalid Order");
-        }
+        sortNumber(OrderDirection.ASC);
     }
 
     @Test
     public void sortNumberDES() throws UnsupportedException, ExecutionException {
+        sortNumber(OrderDirection.DESC);
+    }
+
+    public void sortNumber(OrderDirection direction) throws UnsupportedException, ExecutionException {
         TableMetadata usersTable = buildUsersTable();
         String [] usersColumnNames = {"id"};
         ColumnType[] usersTypes = {new ColumnType(DataType.INT)};
 
-        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "id", OrderDirection.DESC);
+        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "id", direction);
         Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
         LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
 
@@ -345,12 +327,11 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         List<SimpleValue[]> result = ((InMemoryQueryEngine)connector.getQueryEngine()).orderResult(results, workflow);
 
         //Espectations
-        int i =result.size();
+        int i =direction.equals(OrderDirection.DESC) ? result.size():1;
         for (SimpleValue[] value: result){
-            assertEquals(value[0].getValue(), i--, "Invalid Order");
+            assertEquals(value[0].getValue(), direction.equals(OrderDirection.DESC) ? i-- : i++, "Invalid Order");
         }
     }
-
 
     @Test
     public void sortBoolDES() throws UnsupportedException, ExecutionException {
