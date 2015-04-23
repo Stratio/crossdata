@@ -176,6 +176,26 @@ public abstract class InMemoryQueryEngineTestParent {
         return table;
     }
 
+    protected TableMetadata buildIncomeTable(){
+
+        Map<String, DataType> columns = new LinkedHashMap<>();
+        columns.put("id", DataType.INT);
+        columns.put("money", DataType.DOUBLE);
+        columns.put("reten", DataType.DOUBLE);
+
+        TableMetadata table = createTestTable("income", columns);
+
+        for(int i = 1; i < 5; i++){
+            Map<String, Object> values = new HashMap<>();
+            values.put("id", i);
+            values.put("money",i+i*0.1);
+            values.put("reten", i*10+i*0.1);
+            insertTestData(clusterName, table, values);
+        }
+
+        return table;
+    }
+
     protected void insertTestData(ClusterName targetCluster, TableMetadata targetTable, Map<String, Object> values) {
         try {
             Row row = new Row();

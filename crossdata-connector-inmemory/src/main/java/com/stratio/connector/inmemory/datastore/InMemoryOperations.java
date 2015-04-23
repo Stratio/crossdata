@@ -154,6 +154,7 @@ public enum InMemoryOperations {
 
     /**
      * Transform a number into a BigDecimal for comparison reasons.
+     * See http://docs.oracle.com/javase/6/docs/api/java/math/BigDecimal.html#BigDecimal%28double%29
      * @param n The number.
      * @return A {@link java.math.BigDecimal}.
      */
@@ -166,7 +167,7 @@ public enum InMemoryOperations {
         }else if(Integer.class.isInstance(n) || Long.class.isInstance(n)){
             result = new BigDecimal(n.longValue());
         }else if(Float.class.isInstance(n) || Double.class.isInstance(n)){
-            result = new BigDecimal(n.doubleValue());
+            result = new BigDecimal(n.toString());
         }
         return result;
     }

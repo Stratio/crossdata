@@ -36,7 +36,9 @@ import com.stratio.crossdata.common.statements.structures.*;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -422,6 +424,48 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         int result = ((InMemoryQueryEngine)connector.getQueryEngine()).compareCells(toBeOrdered, alreadyOrdered, direction);
 
         assertEquals(result, expected);
+
+    }
+
+
+
+    @Test
+    public void testBugCROSSDATA_516(){
+
+        TableMetadata incomeTable = buildIncomeTable();
+
+        Map<String, Object> values = new HashMap<>();
+        values.put("id", 5);
+        values.put("money",4.4);
+        values.put("reten", new Double(-40.4));
+        insertTestData(clusterName, incomeTable, values);
+
+        String [] columnNames = {"money", "reten"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.DOUBLE), new ColumnType(DataType.DOUBLE)};
+
+        Project project = generateProjectAndSelect(columnNames, usersTypes, incomeTable.getName());
+
+        ColumnSelector left = new ColumnSelector(project.getColumnList().get(1));
+        FloatingPointSelector right = new  FloatingPointSelector(project.getTableName(), new Double(-40.40));
+        Filter filter = new Filter(singleton(Operations.FILTER_NON_INDEXED_LT), new Relation(left, Operator.LT, right));
+
+        Select s = Select.class.cast(project.getNextStep());
+        filter.setNextStep(s);
+        project.setNextStep(filter);
+        filter.setPrevious(project);
+        s.setPrevious(filter);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) project));
+
+        ResultSet results = null;
+        try {
+            QueryResult result = connector.getQueryEngine().execute(workflow);
+            results = result.getResultSet();
+        } catch (ConnectorException e) {
+            fail("Cannot retrieve data", e);
+        }
+
+        assertEquals(results.size(), 0, "Invalid number of results returned");
+
 
     }
 
