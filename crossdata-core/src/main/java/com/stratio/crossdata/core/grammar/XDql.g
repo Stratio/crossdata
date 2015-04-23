@@ -629,21 +629,34 @@ selectStatement returns [SelectStatement slctst]
 
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
 
-    ((T_INNER {joinType=JoinType.INNER;}
-        | T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}
-        | T_RIGHT {joinType=JoinType.RIGHT_OUTER;}
-        | T_LEFT {joinType=JoinType.LEFT_OUTER;}
-        | T_LEFT T_OUTER {joinType=JoinType.LEFT_OUTER;}
-        | T_FULL T_OUTER {joinType=JoinType.FULL_OUTER;}
-        | T_CROSS {joinType=JoinType.CROSS;})?
-    T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
-    identJoin=getAliasedTableID[workaroundTablesAliasesMap]
-    T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
-    joinRelations=getConditions[null]
-    { List<TableName> joinTables = new ArrayList<>();
-    joinTables.add(tablename);
-    joinTables.add(identJoin);
-    $slctst.addJoin(new InnerJoin(joinTables, joinRelations, joinType));})*
+    //Add joins
+    (
+        //CROSS_JOIN
+        (   T_CROSS T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
+            identJoin=getAliasedTableID[workaroundTablesAliasesMap]
+            { List<TableName> joinTables = new ArrayList<>();
+            joinTables.add(tablename);
+            joinTables.add(identJoin);
+            $slctst.addJoin(new Join(joinTables));}
+        )
+        //JOINs WITH ON
+        |(
+            (T_INNER {joinType=JoinType.INNER;}
+                | T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}
+                | T_RIGHT {joinType=JoinType.RIGHT_OUTER;}
+                | T_LEFT {joinType=JoinType.LEFT_OUTER;}
+                | T_LEFT T_OUTER {joinType=JoinType.LEFT_OUTER;}
+                | T_FULL T_OUTER {joinType=JoinType.FULL_OUTER;})?
+            T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
+            identJoin=getAliasedTableID[workaroundTablesAliasesMap]
+            T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
+            joinRelations=getConditions[null]
+            { List<TableName> joinTables = new ArrayList<>();
+            joinTables.add(tablename);
+            joinTables.add(identJoin);
+            $slctst.addJoin(new Join(joinTables, joinRelations, joinType));}
+         )
+    )*
 
     (T_WHERE { whereInc = true;} whereClauses=getConditions[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
@@ -673,7 +686,7 @@ selectStatement returns [SelectStatement slctst]
              $slctst.setSubquery(subquery, subqueryAlias);
         }
         if(implicitJoin){
-            $slctst.addJoin(new InnerJoin(implicitTables, new ArrayList<AbstractRelation>()));
+            $slctst.addJoin(new Join(implicitTables, new ArrayList<AbstractRelation>()));
         }
     }
 ;

@@ -35,7 +35,7 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.structures.GroupByClause;
-import com.stratio.crossdata.core.structures.InnerJoin;
+import com.stratio.crossdata.core.structures.Join;
 
 /**
  * Collection of fields that are processed by a {@link com.stratio.crossdata.core.normalizer.Normalizator} process.
@@ -68,7 +68,7 @@ public class NormalizedFields {
     /**
      * List of Inner join information.
      */
-    private final List<InnerJoin> joinList = new ArrayList<>();
+    private final List<Join> joinList = new ArrayList<>();
 
     private final List<Relation> implicitWhere = new ArrayList<>();
 
@@ -173,18 +173,18 @@ public class NormalizedFields {
     /**
      * Get the inner join information.
      *
-     * @return A {@link com.stratio.crossdata.core.structures.InnerJoin}.
+     * @return A {@link com.stratio.crossdata.core.structures.Join}.
      */
-    public List<InnerJoin> getJoinList() {
+    public List<Join> getJoinList() {
         return joinList;
     }
 
     /**
      * Set the inner join information.
      *
-     * @param join A {@link com.stratio.crossdata.core.structures.InnerJoin}.
+     * @param join A {@link com.stratio.crossdata.core.structures.Join}.
      */
-    public void addJoin(InnerJoin join) {
+    public void addJoin(Join join) {
         this.joinList.add(join);
     }
 

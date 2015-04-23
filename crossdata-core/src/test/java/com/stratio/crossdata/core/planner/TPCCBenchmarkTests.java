@@ -122,6 +122,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
         operationsC1.add(Operations.FILTER_PK_IN);
         operationsC1.add(Operations.SELECT_LEFT_OUTER_JOIN);
+        operationsC1.add(Operations.SELECT_CROSS_JOIN);
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -608,6 +609,23 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 + "WHERE A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id AND OL.ol_d_id=3 AND OL.ol_w_id=241 "
                 + "GROUP BY OL.ol_w_id, OL.ol_d_id, OL.ol_o_id, AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun "
                 + "ORDER BY average desc;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testQ02", false, false, order_line);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+    @Test
+    public void testQ02CrossJoin() throws ManifestException {
+
+        init();
+
+        String inputText = "SELECT * FROM tpcc.customer CROSS JOIN tpcc.order_line;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testQ02", false, false, order_line);

@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Arrays;
 
+import com.stratio.crossdata.core.structures.Join;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
@@ -77,7 +78,6 @@ import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.GroupByClause;
-import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.Validator;
 
 /**
@@ -222,22 +222,22 @@ public class Normalizator {
      * @throws ValidationException
      */
     public void normalizeJoins() throws ValidationException {
-        List<InnerJoin> innerJoinList = parsedQuery.getStatement().getJoinList();
-        if (!innerJoinList.isEmpty()) {
-            addImplicitJoins(innerJoinList);
-            for (InnerJoin innerJoin: innerJoinList) {
-                normalizeJoins(innerJoin);
-                fields.addJoin(innerJoin);
+        List<Join> joinList = parsedQuery.getStatement().getJoinList();
+        if (!joinList.isEmpty()) {
+            addImplicitJoins(joinList);
+            for (Join join : joinList) {
+                normalizeJoins(join);
+                fields.addJoin(join);
             }
         }
     }
 
-    private void addImplicitJoins(List<InnerJoin> innerJoinList) {
+    private void addImplicitJoins(List<Join> joinList) {
         if(fields.getImplicitWhere() == null || fields.getImplicitWhere().isEmpty()){
             return;
         }
 
-        for(InnerJoin join: innerJoinList){
+        for(Join join: joinList){
             List<TableName> tablesFromJoin = join.getTableNames();
             for(Relation r: fields.getImplicitWhere()){
                 if(tablesFromJoin.contains(r.getLeftTerm().getTableName())
@@ -251,11 +251,11 @@ public class Normalizator {
     /**
      * Normalize a specific inner join of a parsed query.
      *
-     * @param innerJoin The inner join
+     * @param join The inner join
      * @throws ValidationException
      */
-    public void normalizeJoins(InnerJoin innerJoin) throws ValidationException {
-        checkJoinRelations(innerJoin.getRelations());
+    public void normalizeJoins(Join join) throws ValidationException {
+        checkJoinRelations(join.getRelations());
     }
 
     private void normalizeWhere() throws ValidationException {

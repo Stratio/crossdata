@@ -37,7 +37,7 @@ import com.stratio.crossdata.common.statements.structures.window.Window;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.GroupByClause;
-import com.stratio.crossdata.core.structures.InnerJoin;
+import com.stratio.crossdata.core.structures.Join;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 
@@ -68,9 +68,9 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     private boolean joinInc = false;
     /**
-     * The List of {@link com.stratio.crossdata.core.structures.InnerJoin} for the statement.
+     * The List of {@link com.stratio.crossdata.core.structures.Join} for the statement.
      */
-    private List<InnerJoin> joinList = new ArrayList<>();
+    private List<Join> joinList = new ArrayList<>();
 
     /**
      * Whether the Select contains a WHERE clause.
@@ -199,17 +199,17 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
     /**
      * Get the list of joins of the statement.
-     * @return A list of {@link com.stratio.crossdata.core.structures.InnerJoin} .
+     * @return A list of {@link com.stratio.crossdata.core.structures.Join} .
      */
-    public List<InnerJoin> getJoinList() {
+    public List<Join> getJoinList() {
         return joinList;
     }
 
     /**
      * Set the join list.
-     * @param joinList The list of {@link com.stratio.crossdata.core.structures.InnerJoin} .
+     * @param joinList The list of {@link com.stratio.crossdata.core.structures.Join} .
      */
-    public void setJoinList(List<InnerJoin> joinList) {
+    public void setJoinList(List<Join> joinList) {
         this.joinList = joinList;
         if (!joinList.isEmpty()){
             joinInc=true;
@@ -222,7 +222,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      * Add a new join to the list of joins.
      * @param join The join.
      */
-    public void addJoin(InnerJoin join){
+    public void addJoin(Join join){
         joinList.add(join);
         joinInc=true;
     }
@@ -231,7 +231,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      * Remove the specified join of the list of joins.
      * @param join The join.
      */
-    public void removeJoin(InnerJoin join){
+    public void removeJoin(Join join){
         joinList.remove(join);
     }
 
@@ -420,7 +420,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         }
 
         if (joinInc) {
-            for (InnerJoin myJoin:joinList) {
+            for (Join myJoin:joinList) {
                 sb.append(" ").append(myJoin.getType().toString().replace("_"," ")).append(" JOIN ").append(myJoin
                                 .toString());
             }
@@ -479,7 +479,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         }
 
         if (joinInc) {
-            for (InnerJoin myJoin: joinList) {
+            for (Join myJoin: joinList) {
                 sb.append(" ").append(myJoin.toSQLString());
             }
         }
@@ -574,7 +574,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         Set<TableName> tableNames = new LinkedHashSet<>();
         tableNames.add(tableName);
         if (!joinList.isEmpty()) {
-            for (InnerJoin myJoin:joinList) {
+            for (Join myJoin:joinList) {
                 tableNames.addAll(myJoin.getTableNames());
             }
         }

@@ -1193,6 +1193,41 @@ public enum MetadataManager {
     }
 
     /**
+     * Get the names of the supported functions for a given connector.
+     *
+     * @param cn A {@link com.stratio.crossdata.common.data.ConnectorName}.
+     * @return A set with the function names.
+     */
+    public Set<String> getSupportedFunctionNames(ConnectorName cn, ClusterName... clusters) {
+        Set<String> functions = new HashSet<>();
+        ConnectorMetadata connector = getConnector(cn);
+
+        for (FunctionType ft : connector.getConnectorFunctions()) {
+            functions.add(ft.getFunctionName());
+        }
+
+        Set<DataStoreName> dataStoreNames = new HashSet<>();
+        for (ClusterName cluster : clusters) {
+            dataStoreNames.add(getCluster(cluster).getDataStoreRef());
+        }
+
+        for(DataStoreName dsn: connector.getDataStoreRefs()){
+
+            if (dataStoreNames.contains(dsn)){
+                DataStoreMetadata datastore = getDataStore(dsn);
+
+                for(FunctionType ft: datastore.getFunctions()){
+                    functions.add(ft.getFunctionName());
+                }
+            }
+
+        }
+        functions.removeAll(connector.getExcludedFunctions());
+        return functions;
+    }
+
+
+    /**
      * Get the set of supported function types for a given connector.
      *
      * @param cn The {@link com.stratio.crossdata.common.data.ConnectorName}.
