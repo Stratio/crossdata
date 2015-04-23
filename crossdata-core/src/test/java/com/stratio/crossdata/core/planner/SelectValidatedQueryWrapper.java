@@ -130,4 +130,17 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
     public List<TableMetadata> getTableMetadata() {
         return tableMetadataList;
     }
+
+    @Override
+    public List<AbstractRelation> getBasicRelations() {
+        List<AbstractRelation> relationList = new ArrayList<>();
+        if(getRelations()!=null) {
+            for (AbstractRelation relation : getRelations()) {
+                if (relation.isBasicRelation()) {
+                    relationList.add(relation);
+                }
+            }
+        }
+        return relationList;
+    }
 }

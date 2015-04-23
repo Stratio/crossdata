@@ -119,4 +119,9 @@ public class RelationSelector extends Selector {
         result = 31 * result + relation.hashCode();
         return result;
     }
+
+    public SelectorType getReturningType() {
+        SelectorType returningType = SelectorType.FLOATING_POINT;
+        return returningType;
+    }
 }

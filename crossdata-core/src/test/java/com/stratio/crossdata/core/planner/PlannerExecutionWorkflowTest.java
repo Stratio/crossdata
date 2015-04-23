@@ -75,6 +75,7 @@ import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
@@ -82,6 +83,7 @@ import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
@@ -92,6 +94,7 @@ import com.stratio.crossdata.core.statements.AlterCatalogStatement;
 import com.stratio.crossdata.core.statements.AlterTableStatement;
 import com.stratio.crossdata.core.statements.DropCatalogStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
+import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
 
 /**
@@ -274,8 +277,15 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionWorkflow executionWorkflow = null;
         try {
             BaseQuery bq = new BaseQuery("qid", "", null, null);
-            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
-            executionWorkflow = planner.buildExecutionWorkflow(svq, workflow);
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+            executionWorkflow = planner.buildExecutionWorkflow(svqw, workflow);
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
@@ -309,8 +319,15 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionWorkflow executionWorkflow = null;
         try {
             BaseQuery bq = new BaseQuery("qid", "", null, null);
-            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
-            executionWorkflow = planner.buildExecutionWorkflow(svq, workflow);
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+            executionWorkflow = planner.buildExecutionWorkflow(svqw, workflow);
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
@@ -345,9 +362,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionPath path = null;
         try {
-            BaseQuery bq = new BaseQuery("qid", "", null, null);
-            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
-            path = plannerWrapper.defineExecutionPath(project, availableConnectors, svq);
+            path = plannerWrapper.defineExecutionPath(project, availableConnectors,null);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
         }
@@ -380,9 +395,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         availableConnectors.add(connector2);
 
         try {
-            BaseQuery bq = new BaseQuery("qid", "", null, null);
-            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
-            ExecutionPath path = plannerWrapper.defineExecutionPath(project, availableConnectors, svq);
+            ExecutionPath path = plannerWrapper.defineExecutionPath(project, availableConnectors, null);
             fail("Planning exception expected");
         } catch (PlanningException e) {
             assertNotNull(e, "Expecting Planning exception");
@@ -413,9 +426,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionWorkflow executionWorkflow = null;
         try {
             BaseQuery bq = new BaseQuery("qid", "", null, null);
-            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    svq, Arrays.asList(path),
+                    svqw, Arrays.asList(path),
                     new LinkedHashMap<UnionStep, LinkedHashSet<ExecutionPath>>());
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
@@ -466,9 +486,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionWorkflow executionWorkflow = null;
         try {
             BaseQuery bq = new BaseQuery("qid", "", null, null);
-            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    svq, new ArrayList<>(paths),
+                    svqw, new ArrayList<>(paths),
                     unions);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
@@ -579,8 +606,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         try {
             BaseQuery bq = new BaseQuery("qid", "", null, null);
-            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
-            plannerWrapper.mergeExecutionPaths(svq, new ArrayList<>(paths), unions);
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+
+            plannerWrapper.mergeExecutionPaths(svqw, new ArrayList<>(paths), unions);
             fail("Expecting planning exception");
         } catch (PlanningException e) {
             assertNotNull(e, "Expecting Planning exception");
@@ -632,9 +667,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionWorkflow executionWorkflow = null;
         try {
             BaseQuery bq = new BaseQuery("qid", "", null, null);
-            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    svq, new ArrayList<>(paths),
+                    svqw, new ArrayList<>(paths),
                     unions);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
@@ -696,9 +738,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionWorkflow executionWorkflow = null;
         try {
             BaseQuery bq = new BaseQuery("qid", "", null, null);
-            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    svq, new ArrayList<>(paths),
+                    svqw, new ArrayList<>(paths),
                     unions);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
