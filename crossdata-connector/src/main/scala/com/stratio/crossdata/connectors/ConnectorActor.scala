@@ -98,7 +98,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   val connector = conn
   var state = State.Stopped
 
-
   /*
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
     logger.info(s"heartbeat (no of simultaneous running jobs = ${runningJobs.size}")
@@ -224,7 +223,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 */
   override def receive: Receive = {
 
-
     case u: PatchMetadata=> {
       //TODO: continue
       val r=try{
@@ -285,7 +283,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
     }
 
-
     case connectRequest: com.stratio.crossdata.communication.Connect => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received connect command")
@@ -300,11 +297,11 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
           logger.error(e.getMessage)
           val result = Result.createConnectionErrorResult(e.getMessage)
           result.setQueryId(connectRequest.queryId)
-
           sender ! result
         }
       }
     }
+
     case disconnectRequest: com.stratio.crossdata.communication.DisconnectFromCluster => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received disconnectFromCluster command")

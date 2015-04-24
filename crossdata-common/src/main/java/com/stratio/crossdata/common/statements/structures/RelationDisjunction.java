@@ -18,15 +18,15 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
-import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.utils.StringUtils;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.utils.StringUtils;
 
 public class RelationDisjunction extends AbstractRelation {
 
@@ -112,7 +112,7 @@ public class RelationDisjunction extends AbstractRelation {
                     iter = rd.getTerms().get(0).getRelations().iterator();
                 } else {
                     Relation r = (Relation) ab;
-                    return r.getLeftTerm().getTableName().toString();
+                    return r.getLeftTerm().getTableName().toString().split(" AS ")[0];
                 }
             }
         }

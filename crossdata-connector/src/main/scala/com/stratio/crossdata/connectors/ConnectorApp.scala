@@ -20,12 +20,11 @@ package com.stratio.crossdata.connectors
 
 import java.util
 
-import akka.serialization.Serialization
 import com.codahale.metrics._
 import akka.agent.Agent
-import akka.actor.{Props, ActorSelection, ActorRef, ActorSystem}
+import akka.actor._
 import akka.pattern.ask
-import akka.routing.{DefaultResizer, RoundRobinPool}
+import akka.routing.DefaultResizer
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.metadata.{UpdatableMetadata, CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
@@ -35,9 +34,16 @@ import org.apache.log4j.Logger
 import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import com.stratio.crossdata.communication.{GetTableMetadata, GetCatalogMetadata, GetCatalogs, Shutdown}
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 import scala.collection.JavaConversions._
+import com.stratio.crossdata.communication.GetCatalogs
+import akka.routing.RoundRobinPool
+import scala.util.Failure
+import scala.Some
+import com.stratio.crossdata.communication.GetCatalogMetadata
+import com.stratio.crossdata.communication.GetTableMetadata
+import scala.util.Success
+import com.stratio.crossdata.communication.Shutdown
 
 
 object ConnectorApp extends App {

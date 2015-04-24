@@ -83,6 +83,7 @@ public class QueryWorkflow extends ExecutionWorkflow {
         if(workflow.getPagination() > 0){
             return new PagedExecute(queryId, workflow, workflow.getPagination());
         }
+        //TODO: Either sever configuration should include an option or client
         return new Execute(queryId, workflow);
     }
 

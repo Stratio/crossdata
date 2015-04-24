@@ -194,6 +194,14 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         toAddFunction.setDescription("add_days");
         functions1.add(toAddFunction);
 
+        // date_sub function
+        FunctionType date_sub = new FunctionType();
+        date_sub.setFunctionName("date_sub");
+        date_sub.setSignature("date_sub(Tuple[Any*]):Tuple[Any]");
+        date_sub.setFunctionType("simple");
+        date_sub.setDescription("date_sub");
+        functions1.add(date_sub);
+
         connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName,
                 clusterWithDefaultPriority, operationsC1, "actorRef1", functions1);
 
@@ -464,7 +472,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 "[tpcc], SELECT substr(c_state,1,1) AS country, count(*) AS numcust, sum(c_balance) AS totacctbal "
                         + "FROM "
                         + " ( SELECT avg(sub.c_balance) AS balance "
-                        + "FROM tpcc.customer sub WHERE  sub.c_balance > 0.00 AND substr(sub.c_phone,1,1) IN ['1','2','3','4','5','6','7']"
+                        + "FROM tpcc.customer sub WHERE sub.c_balance > 0.00 AND substr(sub.c_phone,1,1) IN ['1','2','3','4','5','6','7']"
                         + " ) y INNER JOIN tpcc.customer ON c_balance > y.balance"
                         + "    WHERE  substr(c_phone,1,1) IN ['1','2','3','4','5','6','7']"
                         + "    GROUP BY substring(c_state,1,1)"
@@ -663,8 +671,8 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 + "    WHERE c_w_id=168  GROUP BY c_credit,c_d_id "
                 + "    ORDER BY c_d_id, c_credit;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ3", false, false, customer,
-                order);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ3", false, false,
+                customer, order);
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
@@ -722,8 +730,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
     }
 
-
-
     @Test
     public void testQ04Failure() throws ManifestException {
         init();
@@ -739,8 +745,6 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
 
     }
-
-
 
     @Test
     public void testQ04RewriteWithoutImplicits() throws ManifestException {
