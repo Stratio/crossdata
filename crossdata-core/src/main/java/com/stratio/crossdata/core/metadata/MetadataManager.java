@@ -1198,7 +1198,7 @@ public enum MetadataManager {
      * @param cn A {@link com.stratio.crossdata.common.data.ConnectorName}.
      * @return A set with the function names.
      */
-    public Set<String> getSupportedFunctionNames(ConnectorName cn, ClusterName... clusters) {
+    public Set<String> getSupportedFunctionNames(ConnectorName cn, Set<ClusterName> clusters) {
         Set<String> functions = new HashSet<>();
         ConnectorMetadata connector = getConnector(cn);
 

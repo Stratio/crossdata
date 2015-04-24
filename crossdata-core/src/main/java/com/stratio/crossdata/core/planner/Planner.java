@@ -598,25 +598,13 @@ public class Planner {
         List<ClusterName> involvedClusters = new ArrayList<>(executionPaths.size());
 
         for (ExecutionPath path: executionPaths) {
-            LogicalStep initialStep = path.getInitial();
-            if(initialStep instanceof Project){
-                Project project = (Project) initialStep;
-                involvedClusters.add(project.getClusterName());
-                initialSteps.add(project);
-            } else {
-                //Retrieve the unionStep
-                while(initialStep instanceof TransformationStep){
-                    initialStep = initialStep.getFirstPrevious();
-                }
-
-                UnionStep us = (UnionStep) initialStep;
-                Set<Project> firstSteps = findFirstSteps(us);
-                initialSteps.addAll(firstSteps);
-                for(Project p: firstSteps){
-                    involvedClusters.add(p.getClusterName());
-                }
-            }
+            Set<Project> previousInitialProjects = findPreviousInitialProjects(path.getInitial());
+            initialSteps.addAll(previousInitialProjects);
             path.getLast().setNextStep(mergePath.getInitial()); //TODO; Previous?
+        }
+
+        for (LogicalStep previousProject : initialSteps) {
+            involvedClusters.add(((Project) previousProject).getClusterName());
         }
 
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
@@ -627,6 +615,26 @@ public class Planner {
 
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
+
+
+    private Set<Project> findPreviousInitialProjects(LogicalStep initialStep){
+        Set<Project> initialProjects = new HashSet<>();
+
+        if(initialStep instanceof Project){
+            Project project = (Project) initialStep;
+            initialProjects.add(project);
+        } else {
+            //Retrieve the unionStep
+            while(initialStep instanceof TransformationStep){
+                initialStep = initialStep.getFirstPrevious();
+            }
+            UnionStep us = (UnionStep) initialStep;
+            Set<Project> firstSteps = findFirstSteps(us);
+            initialProjects.addAll(firstSteps);
+        }
+        return initialProjects;
+    }
+
 
     private Set<Project> findFirstSteps(UnionStep unionStep) {
         Set<Project> projects = new LinkedHashSet<>();
@@ -694,16 +702,13 @@ public class Planner {
                     for(Operations currentOperation: current.getOperations()){
                         if (currentOperation.getOperationsStr().toLowerCase().contains("function")) {
 
+                            Set<Project> previousInitialProjects = findPreviousInitialProjects(initial);
+                            Set<ClusterName> clusterNames = new HashSet<>();
+                            for (Project previousProject : previousInitialProjects) {
+                                clusterNames.add(previousProject.getClusterName());
+                            }
 
-                            //List<ClusterName> clusterNames = new ArrayList<>();
-                            //TODO getClusters => getSupportedFunctionNames(connector.getName(), clusterNames)
-                            /*if (initial instanceof Project){
-                                clusterNames.add(((Project) initial).getClusterName());
-                            }else (initial instanceof UnionStep){
-                                clusterNames.add(((UnionStep) initial).getClusterName());
-                            }*/
-
-                            Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName());
+                            Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName(), clusterNames);
                             switch (currentOperation) {
                             case SELECT_FUNCTIONS:
                                 Select select = (Select) current;
