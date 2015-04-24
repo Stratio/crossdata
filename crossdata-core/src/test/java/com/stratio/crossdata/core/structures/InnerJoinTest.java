@@ -58,7 +58,7 @@ public class InnerJoinTest {
         JoinType type = JoinType.INNER;
 
         // Create join
-        InnerJoin join = new InnerJoin(tableNames, joinRelations, type);
+        Join join = new Join(tableNames, joinRelations, type);
 
         List<Relation> orderedRelations = join.getOrderedRelations();
 

@@ -122,6 +122,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
         operationsC1.add(Operations.FILTER_NON_INDEXED_GET);
         operationsC1.add(Operations.FILTER_PK_IN);
         operationsC1.add(Operations.SELECT_LEFT_OUTER_JOIN);
+        operationsC1.add(Operations.SELECT_CROSS_JOIN);
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -462,6 +463,26 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 */
     }
 
+
+    @Test
+    public void testQ00Alias() throws ManifestException {
+
+        init();
+
+        String inputText =
+                "[tpcc], SELECT * FROM tpcc.customer alias WHERE  alias.c_state > 'hola';";
+
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ00Hive", false, false,
+                customer);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
+    }
+
+
     //Subquery is not supported within an innerJoin clause by the grammar
     @Test
     public void testQ00Hive() throws ManifestException {
@@ -502,7 +523,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc], SELECT substring(y.c_state, 1, 1) AS country FROM tpcc.customer INNER JOIN tpcc" +
+        String inputText = "[tpcc], SELECT substr(y.c_state, 1, 1) AS country FROM tpcc.customer INNER JOIN tpcc" +
                 ".customer y ON y.c_balance = c_balance ;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ0", false, false, customer);
@@ -625,6 +646,23 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
                 + "WHERE A.d_id=OL.ol_d_id AND A.d_w_id=OL.ol_w_id AND OL.ol_d_id=3 AND OL.ol_w_id=241 "
                 + "GROUP BY OL.ol_w_id, OL.ol_d_id, OL.ol_o_id, AVG_Amoun having avg(OL.ol_amount) > AVG_Amoun "
                 + "ORDER BY average desc;";
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testQ02", false, false, order_line);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+    }
+
+    @Test
+    public void testQ02CrossJoin() throws ManifestException {
+
+        init();
+
+        String inputText = "SELECT * FROM tpcc.customer CROSS JOIN tpcc.order_line;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testQ02", false, false, order_line);

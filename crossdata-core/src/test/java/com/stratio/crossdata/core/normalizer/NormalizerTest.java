@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.stratio.crossdata.core.structures.Join;
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -70,7 +71,6 @@ import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.GroupByClause;
-import com.stratio.crossdata.core.structures.InnerJoin;
 
 public class NormalizerTest {
 
@@ -377,8 +377,8 @@ public class NormalizerTest {
         List<TableName> tables = new ArrayList<>();
         tables.add(new TableName("demo", "tableClients"));
         tables.add(new TableName("myCatalog", "tableCostumers"));
-        InnerJoin innerJoin = new InnerJoin(tables, joinRelations);
-        selectStatement.addJoin(innerJoin);
+        Join join = new Join(tables, joinRelations);
+        selectStatement.addJoin(join);
 
 
         // WHERE CLAUSES
@@ -451,8 +451,8 @@ public class NormalizerTest {
 
         List<TableName> tables = new ArrayList<>();
         tables.add(new TableName("demo", "tableClients"));
-        InnerJoin innerJoin = new InnerJoin(tables, joinRelations);        
-        selectStatement.addJoin(innerJoin);
+        Join join = new Join(tables, joinRelations);
+        selectStatement.addJoin(join);
 
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);

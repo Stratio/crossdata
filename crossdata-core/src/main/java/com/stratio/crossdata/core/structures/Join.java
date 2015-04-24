@@ -34,9 +34,9 @@ import com.stratio.crossdata.common.utils.StringUtils;
 
 
 /**
- * InnerJoin metadata class.
+ * Join metadata class.
  */
-public class InnerJoin implements Serializable {
+public class Join implements Serializable {
 
     private final List<TableName> tableNames = new ArrayList<>();
 
@@ -44,7 +44,10 @@ public class InnerJoin implements Serializable {
 
     private JoinType type;
 
-    private InnerJoin(List<TableName> tableNames) {
+    private Join(List<TableName> tableNames, boolean isCrossJoin) {
+        if(isCrossJoin){
+            type = JoinType.CROSS;
+        }
         LinkedHashSet setOfTables = new LinkedHashSet<>();
         setOfTables.addAll(tableNames);
         this.tableNames.addAll(setOfTables);
@@ -55,8 +58,8 @@ public class InnerJoin implements Serializable {
      * @param tableNames The table names of the join.
      * @param joinRelations The list of relations of the join.
      */
-    public InnerJoin(List<TableName> tableNames, List<AbstractRelation> joinRelations) {
-        this(tableNames);
+    public Join(List<TableName> tableNames, List<AbstractRelation> joinRelations) {
+        this(tableNames, false);
         this.relations.addAll(joinRelations);
         this.type=JoinType.INNER;
     }
@@ -67,10 +70,14 @@ public class InnerJoin implements Serializable {
      * @param joinRelations The list of relations of the join.
      * @param type The type of the join.
      */
-    public InnerJoin(List<TableName> tableNames, List<AbstractRelation> joinRelations, JoinType type) {
-        this(tableNames);
+    public Join(List<TableName> tableNames, List<AbstractRelation> joinRelations, JoinType type) {
+        this(tableNames, false);
         this.relations.addAll(joinRelations);
         this.type=type;
+    }
+
+   public Join(List<TableName> tableNames){
+        this(tableNames, true);
     }
 
     public List<TableName> getTableNames() {
@@ -220,9 +227,11 @@ public class InnerJoin implements Serializable {
                 sb.append(", ");
             }
         }
-        sb.append(" ON ");
 
-        sb.append(StringUtils.sqlStringList(relations, " AND ", false));
+        if(JoinType.CROSS != type){
+            sb.append(" ON ");
+            sb.append(StringUtils.sqlStringList(relations, " AND ", false));
+        }
 
         return sb.toString();
     }

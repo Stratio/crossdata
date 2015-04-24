@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.stratio.crossdata.core.structures.Join;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -58,7 +59,6 @@ import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
-import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -118,8 +118,10 @@ public class SelectStatementTest extends BasicValidatorTest {
                 "WHERE age = 25 * 3 + (SELECT * FROM test.table1) - phrase + (SELECT rating FROM test.table2)" +
                 " AND email = 25*(SELECT member FROM table3)" +
                 "               +(SELECT name, address FROM table3 WHERE address=(SELECT * FROM sales.customers)+age);";
-       
 
+        /*String query = "SELECT age, email FROM users " +
+                "WHERE email = (SELECT name, address FROM table3 WHERE address=(SELECT * FROM sales.customers));";
+                */
 
         BaseQuery baseQuery = new BaseQuery("validateSubqueriesInWhereClauses", query, new CatalogName("demo"),"sessionTest");
 
@@ -726,7 +728,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -772,7 +774,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("unknown", "users"));
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -818,7 +820,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
         joinTables.add(new TableName("unknown", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -864,7 +866,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
         joinTables.add(new TableName("demo", "unknown"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -909,7 +911,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -920,7 +922,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not valid catalog in parameter ON of an InnerJoin ");
+            fail("Not valid catalog in parameter ON of an Join ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -954,7 +956,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -965,7 +967,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not valid catalog in parameter ON of an InnerJoin ");
+            fail("Not valid catalog in parameter ON of an Join ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -999,7 +1001,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -1010,7 +1012,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not valid columnName in parameter ON of an InnerJoin ");
+            fail("Not valid columnName in parameter ON of an Join ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -1044,7 +1046,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -1055,7 +1057,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not valid columnName in parameter ON of an InnerJoin ");
+            fail("Not valid columnName in parameter ON of an Join ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -1091,7 +1093,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
         joinTables.add(new TableName("demo", "users_info"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         List<AbstractRelation> where = new ArrayList<>();
@@ -1110,7 +1112,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not valid columnName in parameter ON of an InnerJoin ");
+            fail("Not valid columnName in parameter ON of an Join ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -1146,7 +1148,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
         joinTables.add(new TableName("demo", "users_info"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         List<AbstractRelation> where = new ArrayList<>();
@@ -1569,7 +1571,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(tablename);
         joinTables.add(joinTable);
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
 
         List<AbstractRelation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));

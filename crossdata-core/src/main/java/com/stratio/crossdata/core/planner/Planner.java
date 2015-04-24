@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.stratio.crossdata.core.structures.Join;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.AlterOperation;
@@ -62,7 +63,6 @@ import com.stratio.crossdata.common.logicalplan.Disjunction;
 import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.GroupBy;
 import com.stratio.crossdata.common.logicalplan.ITerm;
-import com.stratio.crossdata.common.logicalplan.Join;
 import com.stratio.crossdata.common.logicalplan.Limit;
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
@@ -74,7 +74,6 @@ import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Virtualizable;
 import com.stratio.crossdata.common.logicalplan.Window;
 import com.stratio.crossdata.common.logicalplan.TransformationStep;
-import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
@@ -118,7 +117,6 @@ import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.*;
 import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
-import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.utils.CoreUtils;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -324,7 +322,7 @@ public class Planner {
         boolean result = false;
         while(step.getNextStep() != null){
             step = step.getNextStep();
-            if(step instanceof Join){
+            if(step instanceof com.stratio.crossdata.common.logicalplan.Join){
                 result = true;
                 break;
             }
@@ -600,20 +598,13 @@ public class Planner {
         List<ClusterName> involvedClusters = new ArrayList<>(executionPaths.size());
 
         for (ExecutionPath path: executionPaths) {
-            LogicalStep initialStep = path.getInitial();
-            if(initialStep instanceof Project){
-                Project project = (Project) initialStep;
-                involvedClusters.add(project.getClusterName());
-                initialSteps.add(project);
-            } else {
-                UnionStep us = (UnionStep) initialStep;
-                Set<Project> firstSteps = findFirstSteps(us);
-                initialSteps.addAll(firstSteps);
-                for(Project p: firstSteps){
-                    involvedClusters.add(p.getClusterName());
-                }
-            }
+            Set<Project> previousInitialProjects = findPreviousInitialProjects(path.getInitial());
+            initialSteps.addAll(previousInitialProjects);
             path.getLast().setNextStep(mergePath.getInitial()); //TODO; Previous?
+        }
+
+        for (LogicalStep previousProject : initialSteps) {
+            involvedClusters.add(((Project) previousProject).getClusterName());
         }
 
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
@@ -624,6 +615,26 @@ public class Planner {
 
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
     }
+
+
+    private Set<Project> findPreviousInitialProjects(LogicalStep initialStep){
+        Set<Project> initialProjects = new HashSet<>();
+
+        if(initialStep instanceof Project){
+            Project project = (Project) initialStep;
+            initialProjects.add(project);
+        } else {
+            //Retrieve the unionStep
+            while(initialStep instanceof TransformationStep){
+                initialStep = initialStep.getFirstPrevious();
+            }
+            UnionStep us = (UnionStep) initialStep;
+            Set<Project> firstSteps = findFirstSteps(us);
+            initialProjects.addAll(firstSteps);
+        }
+        return initialProjects;
+    }
+
 
     private Set<Project> findFirstSteps(UnionStep unionStep) {
         Set<Project> projects = new LinkedHashSet<>();
@@ -690,7 +701,14 @@ public class Planner {
                      */
                     for(Operations currentOperation: current.getOperations()){
                         if (currentOperation.getOperationsStr().toLowerCase().contains("function")) {
-                            Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName());
+
+                            Set<Project> previousInitialProjects = findPreviousInitialProjects(initial);
+                            Set<ClusterName> clusterNames = new HashSet<>();
+                            for (Project previousProject : previousInitialProjects) {
+                                clusterNames.add(previousProject.getClusterName());
+                            }
+
+                            Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName(), clusterNames);
                             switch (currentOperation) {
                             case SELECT_FUNCTIONS:
                                 Select select = (Select) current;
@@ -950,7 +968,7 @@ public class Planner {
                     }
                     for (LogicalStep step : lastSteps.values()) {
                         if (UnionStep.class.isInstance(step)){
-                            if( ((Join) step).getSourceIdentifiers().containsAll(sourceIdentifiersFromAbstractRelationTable) ){
+                            if( ((com.stratio.crossdata.common.logicalplan.Join) step).getSourceIdentifiers().containsAll(sourceIdentifiersFromAbstractRelationTable) ){
                                 LogicalStep stepNextStep = step.getNextStep();
                                 if (stepNextStep != null){
                                     f.setNextStep(stepNextStep);
@@ -1000,7 +1018,7 @@ public class Planner {
                 }
                 for (LogicalStep step : lastSteps.values()) {
                     if (UnionStep.class.isInstance(step)){
-                        if( ((Join) step).getSourceIdentifiers().containsAll(sourceIdentifiersFromAbstractRelationTable) ){
+                        if( ((com.stratio.crossdata.common.logicalplan.Join) step).getSourceIdentifiers().containsAll(sourceIdentifiersFromAbstractRelationTable) ){
                             LogicalStep stepNextStep = step.getNextStep();
                             if (stepNextStep != null){
                                 d.setNextStep(stepNextStep);
@@ -2164,114 +2182,138 @@ public class Planner {
      */
     private Map<String, LogicalStep> addJoin(LinkedHashMap<String, LogicalStep> stepMap, SelectValidatedQuery query) {
 
-        //TODO refactor rename InnerJoin -> Join
-        for (InnerJoin queryJoin: query.getJoinList()) {
+        for (Join queryJoin: query.getJoinList()) {
 
-            Join join = getJoin(queryJoin.getType(), query.getStatement().getWindow() != null);
+            com.stratio.crossdata.common.logicalplan.Join join = getJoin(queryJoin.getType(), query.getStatement().getWindow() != null);
 
             StringBuilder sb = new StringBuilder();
 
-            for(AbstractRelation ab: queryJoin.getRelations()){
-                Relation rel = (Relation) ab;
+            if( join.getType() == JoinType.CROSS){
 
-                if(sb.length() > 0){
-                    sb.append(" & ");
-                }
-
-                sb.append(rel.getLeftTerm().getTableName().getQualifiedName()).append("$")
-                        .append(rel.getRightTerm().getTableName().getQualifiedName());
-
-                //Attach to input tables path
-                LogicalStep t1 = stepMap.get(rel.getLeftTerm().getSelectorTablesAsString());
-                while(t1.getNextStep() != null){
-                    t1 = t1.getNextStep();
-                }
-                LogicalStep t2 = stepMap.get(rel.getRightTerm().getSelectorTablesAsString());
-                while(t2.getNextStep() != null){
-                    t2 = t2.getNextStep();
-                }
-
-                if (Filter.class.isInstance(t1)) {
-                    String qualifiedTableName = ((Filter) t1).getRelation().getLeftTerm()
-                            .getTableName().getQualifiedName();
-                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
-                        join.addSourceIdentifier(qualifiedTableName);
+                Iterator<TableName> tableNameIterator = queryJoin.getTableNames().iterator();
+                List<LogicalStep> logicalStepsList = new ArrayList<>();
+                while (tableNameIterator.hasNext()) {
+                    TableName tableName = tableNameIterator.next();
+                    join.addSourceIdentifier(tableName.getQualifiedName());
+                    logicalStepsList.add(stepMap.get(tableName.getQualifiedName()));
+                    if(tableNameIterator.hasNext()){
+                        sb.append("$");
                     }
-                } else if (Project.class.isInstance(t1)) {
-                    String qualifiedTableName = ((Project) t1).getTableName().getQualifiedName();
-                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
-                        join.addSourceIdentifier(qualifiedTableName);
+                }
+                for (LogicalStep logicalStep : logicalStepsList) {
+                    while (logicalStep.getNextStep() != null) {
+                        logicalStep = logicalStep.getNextStep();
                     }
-                } else if (Join.class.isInstance(t1)) {
-                    List<String> si = ((Join) t1).getSourceIdentifiers();
-                    for(String t: si){
-                        if(!join.getSourceIdentifiers().contains(t)){
-                            join.addSourceIdentifier(t);
+                    if (!logicalStep.equals(join)) {
+                        logicalStep.setNextStep(join);
+                    }
+                    join.addPreviousSteps(logicalStep);
+                }
+
+            }else {
+                for (AbstractRelation ab : queryJoin.getRelations()) {
+                    Relation rel = (Relation) ab;
+
+                    if (sb.length() > 0) {
+                        sb.append(" & ");
+                    }
+
+                    sb.append(rel.getLeftTerm().getTableName().getQualifiedName()).append("$")
+                            .append(rel.getRightTerm().getTableName().getQualifiedName());
+
+                    //Attach to input tables path
+                    LogicalStep t1 = stepMap.get(rel.getLeftTerm().getSelectorTablesAsString());
+                    while (t1.getNextStep() != null) {
+                        t1 = t1.getNextStep();
+                    }
+                    LogicalStep t2 = stepMap.get(rel.getRightTerm().getSelectorTablesAsString());
+                    while (t2.getNextStep() != null) {
+                        t2 = t2.getNextStep();
+                    }
+
+                    if (Filter.class.isInstance(t1)) {
+                        String qualifiedTableName = ((Filter) t1).getRelation().getLeftTerm()
+                                .getTableName().getQualifiedName();
+                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
+                            join.addSourceIdentifier(qualifiedTableName);
+                        }
+                    } else if (Project.class.isInstance(t1)) {
+                        String qualifiedTableName = ((Project) t1).getTableName().getQualifiedName();
+                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
+                            join.addSourceIdentifier(qualifiedTableName);
+                        }
+                    } else if (com.stratio.crossdata.common.logicalplan.Join.class.isInstance(t1)) {
+                        List<String> si = ((com.stratio.crossdata.common.logicalplan.Join) t1).getSourceIdentifiers();
+                        for (String t : si) {
+                            if (!join.getSourceIdentifiers().contains(t)) {
+                                join.addSourceIdentifier(t);
+                            }
+                        }
+                    } else {
+                        String qualifiedTableName = rel.getLeftTerm().getTableName().getQualifiedName();
+                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
+                            join.addSourceIdentifier(qualifiedTableName);
                         }
                     }
-                } else {
-                    String qualifiedTableName = rel.getLeftTerm().getTableName().getQualifiedName();
-                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
-                        join.addSourceIdentifier(qualifiedTableName);
-                    }
-                }
 
-                if (Filter.class.isInstance(t2)) {
-                    String qualifiedTableName = ((Filter) t2).getRelation().getLeftTerm().getTableName().getQualifiedName();
-                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
-                        join.addSourceIdentifier(qualifiedTableName);
-                    }
-                } else if (Project.class.isInstance(t2)) {
-                    String qualifiedTableName = ((Project) t2).getTableName().getQualifiedName();
-                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
-                        join.addSourceIdentifier(qualifiedTableName);
-                    }
-                } else if (Join.class.isInstance(t2)) {
-                    List<String> si = ((Join) t2).getSourceIdentifiers();
-                    for(String t: si){
-                        if(!join.getSourceIdentifiers().contains(t)){
-                            join.addSourceIdentifier(t);
+                    if (Filter.class.isInstance(t2)) {
+                        String qualifiedTableName = ((Filter) t2).getRelation().getLeftTerm().getTableName().getQualifiedName();
+                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
+                            join.addSourceIdentifier(qualifiedTableName);
+                        }
+                    } else if (Project.class.isInstance(t2)) {
+                        String qualifiedTableName = ((Project) t2).getTableName().getQualifiedName();
+                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
+                            join.addSourceIdentifier(qualifiedTableName);
+                        }
+                    } else if (com.stratio.crossdata.common.logicalplan.Join.class.isInstance(t2)) {
+                        List<String> si = ((com.stratio.crossdata.common.logicalplan.Join) t2).getSourceIdentifiers();
+                        for (String t : si) {
+                            if (!join.getSourceIdentifiers().contains(t)) {
+                                join.addSourceIdentifier(t);
+                            }
+                        }
+                    } else {
+                        String qualifiedTableName = rel.getRightTerm().getTableName().getQualifiedName();
+                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
+                            join.addSourceIdentifier(qualifiedTableName);
                         }
                     }
-                } else {
-                    String qualifiedTableName = rel.getRightTerm().getTableName().getQualifiedName();
-                    if(!join.getSourceIdentifiers().contains(qualifiedTableName)){
-                        join.addSourceIdentifier(qualifiedTableName);
-                    }
-                }
 
-                List<Relation> or = queryJoin.getOrderedRelations();
-                for(Relation r: or){
-                    if(!join.getJoinRelations().contains(r)){
-                        join.addJoinRelation(r);
+                    List<Relation> or = queryJoin.getOrderedRelations();
+                    for (Relation r : or) {
+                        if (!join.getJoinRelations().contains(r)) {
+                            join.addJoinRelation(r);
+                        }
                     }
-                }
 
-                if (t1.getNextStep() != null) {
-                    if(!t1.equals(join)){
-                        t1.getNextStep().setNextStep(join);
+                    //TODO t1 and t2 can't be null
+                    if (t1.getNextStep() != null) {
+                        if (!t1.equals(join)) {
+                            t1.getNextStep().setNextStep(join);
+                        }
+                    } else {
+                        if (!t1.equals(join)) {
+                            t1.setNextStep(join);
+                        }
                     }
-                } else {
-                    if(!t1.equals(join)){
-                        t1.setNextStep(join);
+                    if (t2.getNextStep() != null) {
+                        if (!t2.equals(join)) {
+                            t2.getNextStep().setNextStep(join);
+                        }
+                    } else {
+                        if (!t2.equals(join)) {
+                            t2.setNextStep(join);
+                        }
                     }
-                }
-                if (t2.getNextStep() != null) {
-                    if(!t2.equals(join)){
-                        t2.getNextStep().setNextStep(join);
-                    }
-                } else {
-                    if(!t2.equals(join)){
-                        t2.setNextStep(join);
-                    }
-                }
 
-                List<LogicalStep> previousSteps = join.getPreviousSteps();
-                if((!previousSteps.contains(t1)) && (!t1.equals(join))){
-                    join.addPreviousSteps(t1);
-                }
-                if((!previousSteps.contains(t2)) && (!t2.equals(join))){
-                    join.addPreviousSteps(t2);
+                    List<LogicalStep> previousSteps = join.getPreviousSteps();
+                    if ((!previousSteps.contains(t1)) && (!t1.equals(join))) {
+                        join.addPreviousSteps(t1);
+                    }
+                    if ((!previousSteps.contains(t2)) && (!t2.equals(join))) {
+                        join.addPreviousSteps(t2);
+                    }
                 }
             }
             stepMap.put(sb.toString(), join);
@@ -2280,27 +2322,27 @@ public class Planner {
     }
 
 
-    private Join getJoin(JoinType type, boolean isWindowInc){
-        Join join = null;
+    private com.stratio.crossdata.common.logicalplan.Join getJoin(JoinType type, boolean isWindowInc){
+        com.stratio.crossdata.common.logicalplan.Join join = null;
         switch(type){
             case INNER:
-                join = isWindowInc ? new Join(Collections.singleton(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS), "innerJoinPR"): new Join(Collections.singleton(Operations.SELECT_INNER_JOIN), "innerJoin");
+                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS), "innerJoinPR"): new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_INNER_JOIN), "innerJoin");
                 join.setType(JoinType.INNER);
                 break;
             case CROSS:
-                join = isWindowInc ? new Join(Collections.singleton(Operations.SELECT_CROSS_JOIN_PARTIALS_RESULTS), "crossJoinPR"): new Join(Collections.singleton(Operations.SELECT_CROSS_JOIN), "crossJoin");
+                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_CROSS_JOIN_PARTIALS_RESULTS), "crossJoinPR"): new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_CROSS_JOIN), "crossJoin");
                 join.setType(JoinType.CROSS);
                 break;
             case LEFT_OUTER:
-                join = isWindowInc ? new Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS), "leftJoinPR") :new Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN), "leftJoin");
+                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS), "leftJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN), "leftJoin");
                 join.setType(JoinType.LEFT_OUTER);
                 break;
             case FULL_OUTER:
-                join = isWindowInc ? new Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS), "fullOuterJoinPR") :new Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN), "fullOuterJoin");
+                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS), "fullOuterJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN), "fullOuterJoin");
                 join.setType(JoinType.FULL_OUTER);
                 break;
             case RIGHT_OUTER:
-                join = isWindowInc ? new Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS), "rightJoinPR") :new Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN), "rightJoin");
+                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS), "rightJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN), "rightJoin");
                 join.setType(JoinType.RIGHT_OUTER);
                 break;
         }
@@ -2357,13 +2399,11 @@ public class Planner {
         LinkedHashMap<Selector, String> aliasMap = new LinkedHashMap<>();
         LinkedHashMap<String, ColumnType> typeMap = new LinkedHashMap<>();
         LinkedHashMap<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
-        boolean addAll = false;
+
         Set<Operations> requiredOperations = new HashSet<>();
         requiredOperations.add(Operations.SELECT_OPERATOR);
         for (Selector s: selectStatement.getSelectExpression().getSelectorList()) {
-            if (AsteriskSelector.class.isInstance(s)) {
-                addAll = true;
-            } else if (ColumnSelector.class.isInstance(s)) {
+            if (ColumnSelector.class.isInstance(s)) {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
 
                 String alias;
@@ -2437,44 +2477,6 @@ public class Planner {
             }
         }
 
-        if (addAll) {
-            //TODO check whether it is dead code
-            TableMetadata metadata = tableMetadataMap.get(selectStatement.getTableName().getQualifiedName());
-            for (Map.Entry<ColumnName, ColumnMetadata> column: metadata.getColumns().entrySet()) {
-                ColumnSelector cs = new ColumnSelector(column.getKey());
-
-                String alias = column.getKey().getName();
-                if (aliasMap.containsValue(alias)) {
-                    alias = cs.getColumnName().getTableName().getName() + "_" + column.getKey().getName();
-                }
-
-                aliasMap.put(cs, alias);
-                typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-                typeMap.put(alias, column.getValue().getColumnType());
-            }
-
-            if (!selectStatement.getJoinList().isEmpty()) {
-                for (InnerJoin innerJoin: selectStatement.getJoinList()) {
-                    List<TableName> tables = innerJoin.getTableNames();
-                    tables.remove(selectStatement.getTableName());
-                    for(TableName table: tables){
-                        TableMetadata tableMetadata = tableMetadataMap.get(table.getQualifiedName());
-                        for (Map.Entry<ColumnName, ColumnMetadata> column: tableMetadata.getColumns().entrySet()) {
-                            ColumnSelector cs = new ColumnSelector(column.getKey());
-
-                            String alias = column.getKey().getName();
-                            if (aliasMap.containsValue(alias)) {
-                                alias = column.getKey().getTableName().getName() + "_" + column.getKey().getName();
-                            }
-
-                            aliasMap.put(cs, alias);
-                            typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-                            typeMap.put(alias, column.getValue().getColumnType());
-                        }
-                    }
-                }
-            }
-        }
 
         return new Select(requiredOperations, aliasMap, typeMap, typeMapFromColumnName);
     }

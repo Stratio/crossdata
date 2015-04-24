@@ -781,7 +781,7 @@ public enum Operations {
     /**
      * The filter of like operator over a PK.
      */
-    FILTER_PK_LIKE("FILTER_LIKE"),
+    FILTER_PK_LIKE("FILTER_PK_LIKE"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns

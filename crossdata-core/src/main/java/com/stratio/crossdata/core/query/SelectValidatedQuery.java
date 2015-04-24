@@ -31,7 +31,7 @@ import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
 import com.stratio.crossdata.common.statements.structures.RelationTerm;
-import com.stratio.crossdata.core.structures.InnerJoin;
+import com.stratio.crossdata.core.structures.Join;
 
 /**
  * Class that implement the logic to de select validated queries.
@@ -43,7 +43,7 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     private List<AbstractRelation> relations = new ArrayList<>();
     private List<TableName> tables = new ArrayList<>();
     private SelectValidatedQuery subqueryValidatedQuery;
-    private List<InnerJoin> joinList=new ArrayList<>();
+    private List<Join> joinList=new ArrayList<>();
 
     /**
      * Constructor class.
@@ -156,17 +156,17 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
     /**
      * Get the list of Joins of the validated select query.
-     * @return A  list of {@link com.stratio.crossdata.core.structures.InnerJoin} .
+     * @return A  list of {@link com.stratio.crossdata.core.structures.Join} .
      */
-    public List<InnerJoin> getJoinList() {
+    public List<Join> getJoinList() {
         return joinList;
     }
 
     /**
      * Add a join metadata to the select validated query.
-     * @param join The {@link com.stratio.crossdata.core.structures.InnerJoin} .
+     * @param join The {@link com.stratio.crossdata.core.structures.Join} .
      */
-    public void addJoin(InnerJoin join) {
+    public void addJoin(Join join) {
         this.joinList.add(join);
     }
 
@@ -190,10 +190,10 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
     /**
      * Set a complete list of inner joins.
-     * @param innerJoinList The inner join list.
+     * @param joinList The inner join list.
      */
-    public void setJoinList(List<InnerJoin> innerJoinList){
-        this.joinList=innerJoinList;
+    public void setJoinList(List<Join> joinList){
+        this.joinList= joinList;
     }
 
     /** Try to optimize the query in order to reduce its complexity.
@@ -237,10 +237,10 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
     private void optimizeJoins() {
         if(tables.size() == 1){
-            for(InnerJoin innerJoin:joinList) {
-                relations.addAll(innerJoin.getRelations());
+            for(Join join :joinList) {
+                relations.addAll(join.getRelations());
                 this.getStatement().setWhere(relations);
-                this.getStatement().removeJoin(innerJoin);
+                this.getStatement().removeJoin(join);
             }
             joinList.clear();
         }

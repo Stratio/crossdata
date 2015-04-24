@@ -21,6 +21,7 @@ package com.stratio.crossdata.core.planner;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.stratio.crossdata.core.structures.Join;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.ColumnName;
@@ -35,7 +36,6 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
-import com.stratio.crossdata.core.structures.InnerJoin;
 
 /**
  * Query wrapper to return non-processed list of tables, columns, etc.
@@ -65,7 +65,7 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
     public List<TableName> getTables() {
         List<TableName> tableNames = new ArrayList<>();
         tableNames.add(stmt.getTableName());
-        for(InnerJoin join :stmt.getJoinList()) {
+        for(Join join :stmt.getJoinList()) {
             if (join != null) {
                 tableNames.addAll(join.getTableNames());
             }
@@ -79,7 +79,7 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
         for (Selector s : stmt.getSelectExpression().getSelectorList()) {
             columnNames.addAll(getSelectorColumns(s));
         }
-        for(InnerJoin join :stmt.getJoinList()) {
+        for(Join join :stmt.getJoinList()) {
             if (join != null) {
                 columnNames.addAll(getColumns(join.getRelations()));
             }
@@ -117,7 +117,7 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
     }
 
     @Override
-    public List<InnerJoin> getJoinList() {
+    public List<Join> getJoinList() {
         return stmt.getJoinList();
     }
 
@@ -129,5 +129,18 @@ public class SelectValidatedQueryWrapper extends SelectValidatedQuery {
     @Override
     public List<TableMetadata> getTableMetadata() {
         return tableMetadataList;
+    }
+
+    @Override
+    public List<AbstractRelation> getBasicRelations() {
+        List<AbstractRelation> relationList = new ArrayList<>();
+        if(getRelations()!=null) {
+            for (AbstractRelation relation : getRelations()) {
+                if (relation.isBasicRelation()) {
+                    relationList.add(relation);
+                }
+            }
+        }
+        return relationList;
     }
 }
