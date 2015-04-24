@@ -455,6 +455,26 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 */
     }
 
+
+    @Test
+    public void testQ00Alias() throws ManifestException {
+
+        init();
+
+        String inputText =
+                "[tpcc], SELECT * FROM tpcc.customer alias WHERE  alias.c_state > 'hola';";
+
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ00Hive", false, false,
+                customer);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
+    }
+
+
     //Subquery is not supported within an innerJoin clause by the grammar
     @Test
     public void testQ00Hive() throws ManifestException {
@@ -495,7 +515,7 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[tpcc], SELECT substring(y.c_state, 1, 1) AS country FROM tpcc.customer INNER JOIN tpcc" +
+        String inputText = "[tpcc], SELECT substr(y.c_state, 1, 1) AS country FROM tpcc.customer INNER JOIN tpcc" +
                 ".customer y ON y.c_balance = c_balance ;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ0", false, false, customer);

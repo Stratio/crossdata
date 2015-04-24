@@ -2394,13 +2394,11 @@ public class Planner {
         LinkedHashMap<Selector, String> aliasMap = new LinkedHashMap<>();
         LinkedHashMap<String, ColumnType> typeMap = new LinkedHashMap<>();
         LinkedHashMap<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
-        boolean addAll = false;
+
         Set<Operations> requiredOperations = new HashSet<>();
         requiredOperations.add(Operations.SELECT_OPERATOR);
         for (Selector s: selectStatement.getSelectExpression().getSelectorList()) {
-            if (AsteriskSelector.class.isInstance(s)) {
-                addAll = true;
-            } else if (ColumnSelector.class.isInstance(s)) {
+            if (ColumnSelector.class.isInstance(s)) {
                 ColumnSelector cs = ColumnSelector.class.cast(s);
 
                 String alias;
@@ -2474,44 +2472,6 @@ public class Planner {
             }
         }
 
-        if (addAll) {
-            //TODO check whether it is dead code
-            TableMetadata metadata = tableMetadataMap.get(selectStatement.getTableName().getQualifiedName());
-            for (Map.Entry<ColumnName, ColumnMetadata> column: metadata.getColumns().entrySet()) {
-                ColumnSelector cs = new ColumnSelector(column.getKey());
-
-                String alias = column.getKey().getName();
-                if (aliasMap.containsValue(alias)) {
-                    alias = cs.getColumnName().getTableName().getName() + "_" + column.getKey().getName();
-                }
-
-                aliasMap.put(cs, alias);
-                typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-                typeMap.put(alias, column.getValue().getColumnType());
-            }
-
-            if (!selectStatement.getJoinList().isEmpty()) {
-                for (Join join : selectStatement.getJoinList()) {
-                    List<TableName> tables = join.getTableNames();
-                    tables.remove(selectStatement.getTableName());
-                    for(TableName table: tables){
-                        TableMetadata tableMetadata = tableMetadataMap.get(table.getQualifiedName());
-                        for (Map.Entry<ColumnName, ColumnMetadata> column: tableMetadata.getColumns().entrySet()) {
-                            ColumnSelector cs = new ColumnSelector(column.getKey());
-
-                            String alias = column.getKey().getName();
-                            if (aliasMap.containsValue(alias)) {
-                                alias = column.getKey().getTableName().getName() + "_" + column.getKey().getName();
-                            }
-
-                            aliasMap.put(cs, alias);
-                            typeMapFromColumnName.put(cs, column.getValue().getColumnType());
-                            typeMap.put(alias, column.getValue().getColumnType());
-                        }
-                    }
-                }
-            }
-        }
 
         return new Select(requiredOperations, aliasMap, typeMap, typeMapFromColumnName);
     }

@@ -989,6 +989,8 @@ public class Normalizator {
                 TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(table);
                 for (ColumnName columnName : tableMetadata.getColumns().keySet()) {
                     ColumnSelector selector = new ColumnSelector(columnName);
+                    columnName.setTableName(table);
+                    selector.setTableName(table);
                     aSelectors.add(selector);
                     fields.getColumnNames().add(columnName);
                 }
