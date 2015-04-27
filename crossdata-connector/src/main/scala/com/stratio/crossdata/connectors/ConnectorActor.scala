@@ -69,6 +69,8 @@ import com.stratio.crossdata.communication.DropCatalog
 import com.stratio.crossdata.communication.PatchMetadata
 import com.stratio.crossdata.communication.DropTable
 import com.stratio.crossdata.communication.Insert
+import akka.event.Logging
+import akka.AkkaException
 
 
 object State extends Enumeration {
@@ -112,6 +114,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   override def preStart():Unit = {
     Cluster(context.system).subscribe(self,classOf[ClusterDomainEvent])
+    context.system.eventStream.subscribe(this.self, classOf[Logging.Error])
   }
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
@@ -221,7 +224,36 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     true
   })
 */
+
+  def extractMessage(m: String): String = {
+    //Error(akka.remote.OversizedPayloadException: Discarding oversized payload sent to Actor[akka.tcp://CrossdataServerCluster@127.0.0.1:13420/user/crossdata-server/CoordinatorActor/$b#-1349652793]: max allowed size 31457280 bytes, actual size of encoded class com.stratio.crossdata.common.result.QueryResult was 41402769 bytes.,akka.tcp://CrossdataServerCluster@127.0.0.1:58594/system/endpointManager/reliableEndpointWriter-akka.tcp%3A%2F%2FCrossdataServerCluster%40127.0.0.1%3A13420-0/endpointWriter,class akka.remote.EndpointWriter,Transient association error (association remains live))
+    m.substring(m.indexOf("]:")+2, m.indexOf(".,")).trim
+  }
+
+  def extractSender(m: String): String = {
+    //Error(akka.remote.OversizedPayloadException: Discarding oversized payload sent to Actor[akka.tcp://CrossdataServerCluster@127.0.0.1:13420/user/crossdata-server/CoordinatorActor/$b#-1349652793]: max allowed size 31457280 bytes, actual size of encoded class com.stratio.crossdata.common.result.QueryResult was 41402769 bytes.,akka.tcp://CrossdataServerCluster@127.0.0.1:58594/system/endpointManager/reliableEndpointWriter-akka.tcp%3A%2F%2FCrossdataServerCluster%40127.0.0.1%3A13420-0/endpointWriter,class akka.remote.EndpointWriter,Transient association error (association remains live))
+    m.substring(m.indexOf("[")+1, m.indexOf("$")).trim
+  }
+
+  def sendOversizedError(message: String): Unit = {
+    val client = extractSender(message)
+    val errorMessage = extractMessage(message)
+    logger.error("Sending error to: " + client + ", error: " + errorMessage)
+    context.actorSelection(client) ! Result.createExecutionErrorResult(errorMessage)
+  }
+
   override def receive: Receive = {
+
+    case le: Logging.Error => {
+      logger.info(" >>> CROSSDATA >>> Logging.Error >>> " +
+        System.lineSeparator() + le)
+      if(le.toString.contains("OversizedPayloadException")){
+        sendOversizedError(le.toString)
+      }
+      //val ope = le.asInstanceOf[akka.remote.OversizedPayloadException]
+      //val ope = le.asInstanceOf[akka.remote.EndpointException]
+      //val ope = le.asInstanceOf[AkkaException]
+    }
 
     case u: PatchMetadata=> {
       //TODO: continue

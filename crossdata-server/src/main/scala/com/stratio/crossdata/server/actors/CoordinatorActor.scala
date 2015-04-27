@@ -518,6 +518,10 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         log.error(result.asInstanceOf[ErrorResult].getErrorMessage)
       }
       try {
+        if(queryId == null){
+          return
+        }
+
         val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
         //TODO Add two methods to StringUtils to retrieve AkkaActorRefUri tokening with # for connectors,
         // and $ for clients
@@ -526,7 +530,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         val clientActor = context.actorSelection(target)
 
         var sendResultToClient = true
-
 
         if(queryId.contains("#")){
           if(queryId.endsWith("#1")){
