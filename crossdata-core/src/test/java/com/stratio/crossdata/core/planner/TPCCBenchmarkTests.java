@@ -720,6 +720,34 @@ public class TPCCBenchmarkTests extends PlannerBaseTest {
 
     }
 
+
+    @Test
+    public void testQ04Crossdata() throws ManifestException {
+
+        init();
+
+        String inputText =   "[tpcc], SELECT c.c_state, datediff(to_date(o.o_entry_d), to_date(ol.ol_delivery_d)), sum(ol.ol_amount) , avg(ol.ol_amount), count(*) AS cantidad   " +
+                "  FROM ( SELECT date_sub(to_date(max(c_since)), 7) AS fecha FROM tpcc.customer ) y  " +
+                "   INNER JOIN tpcc.customer AS c ON c_since >= y.fecha  " +
+                "   INNER JOIN tpcc.order_line AS ol ON o.o_c_id = c.c_id AND o.o_d_id = c.c_d_id AND o.o_w_id = c.c_w_id   " +
+                "  INNER JOIN tpcc.order AS o ON o.o_id = ol.ol_o_id AND o.o_d_id = ol.ol_d_id AND o.o_w_id = ol.ol_w_id  " +
+                "   WHERE c.c_w_id = 100 AND datediff(to_date(o.o_entry_d), to_date(ol.ol_delivery_d)) > 30  " +
+                "   GROUP BY c.c_state, datediff(to_date(o.o_entry_d), to_date(ol.ol_delivery_d))  " +
+                "   ORDER BY cantidad DESC LIMIT 10;"
+                ;
+
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ4Crossdata", false, false,
+                customer, order);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+
+        // SQL DIRECT NOT REVIEWED
+        LOG.info("SQL DIRECT: " + queryWorkflow.getWorkflow().getSqlDirectQuery());
+
+    }
+
+
     @Test
     public void testQ04SomeRewrite() throws ManifestException {
 

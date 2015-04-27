@@ -688,18 +688,18 @@ public class Planner {
 
         while (!exit) {
             // Evaluate the connectors
-            for (ConnectorMetadata connector: availableConnectors) {
-                if (!connector.supports(current.getOperations())) {
-                    // Check selector functions
-                    toRemove.add(connector);
-                    LOG.debug("Connector " + connector + " doesn't support all these operations: "
-                            + current.getOperations());
-                } else {
+            for (ConnectorMetadata connector : availableConnectors) {
+
+                for (Operations currentOperation : current.getOperations()) {
+                    if (!connector.supports(currentOperation)) {
+                        // Check selector functions
+                        toRemove.add(connector);
+                        LOG.debug("Connector " + connector + " doesn't support : " + currentOperation);
+                    } else {
                     /*
                      * This connector support the operation but we also have to check if support for a specific
                      * function is required support.
                      */
-                    for(Operations currentOperation: current.getOperations()){
                         if (currentOperation.getOperationsStr().toLowerCase().contains("function")) {
 
                             Set<Project> previousInitialProjects = findPreviousInitialProjects(initial);
@@ -757,8 +757,11 @@ public class Planner {
                             && !connector.supports(Operations.SELECT_SUBQUERY)) {
                         toRemove.add(connector);
                     }
+
+
                 }
             }
+
             // Remove invalid connectors
             if (toRemove.size() == availableConnectors.size()) {
                 throw new PlanningException(
