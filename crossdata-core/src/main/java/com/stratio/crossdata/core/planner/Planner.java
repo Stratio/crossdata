@@ -715,8 +715,10 @@ public class Planner {
                                 Set<Selector> cols = select.getColumnMap().keySet();
                                 if (!checkFunctionsConsistency(connector, sFunctions, cols, svq)) {
                                     toRemove.add(connector);
-                                    LOG.debug("Connector " + connector + " doesn't support all these operations: "
-                                            + current.getOperations());
+                                    LOG.error(
+                                            "Connector " + connector + " can't validate the function: " + cols.toString
+                                                    ());
+
                                 }
                                 break;
                             case FILTER_FUNCTION_IN:
@@ -731,6 +733,20 @@ public class Planner {
                             case FILTER_FUNCTION_NOT_BETWEEEN:
                             case FILTER_FUNCTION_NOT_IN:
                             case FILTER_FUNCTION_NOT_LIKE:
+                                Filter filter = (Filter) current;
+                                FunctionSelector functionSelector;
+                                if(FunctionSelector.class.isInstance(filter.getRelation().getLeftTerm())){
+                                    functionSelector= ((FunctionSelector) filter.getRelation().getLeftTerm());
+                                }else{
+                                    functionSelector= ((FunctionSelector) filter.getRelation().getRightTerm());
+                                }
+                                Set<Selector> cols2 = new HashSet<>();
+                                cols2.add(functionSelector);
+                                if (!checkFunctionsConsistency(connector, sFunctions, cols2, svq)) {
+                                    toRemove.add(connector);
+                                    LOG.error("Connector " + connector + " can't validate the function: " + cols2
+                                            .toString());
+                                }
                                 break;
                             default:
                                 throw new PlanningException(currentOperation + " not supported yet.");
