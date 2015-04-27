@@ -39,6 +39,8 @@ public class FunctionTypeTest {
         Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int*]", "Tuple[Int,Any,Int]"));
         Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Any*]", "Tuple[Int,Any,Int]"));
         Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int*]", "Tuple[Any]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Any]", "Tuple[Int]"));
+        Assert.assertTrue(FunctionTypeHelper.checkInputSignatureCompatibility("Tuple[Int]", "Tuple[Any]"));
 
     }
 

@@ -688,18 +688,18 @@ public class Planner {
 
         while (!exit) {
             // Evaluate the connectors
-            for (ConnectorMetadata connector: availableConnectors) {
-                if (!connector.supports(current.getOperations())) {
-                    // Check selector functions
-                    toRemove.add(connector);
-                    LOG.debug("Connector " + connector + " doesn't support all these operations: "
-                            + current.getOperations());
-                } else {
+            for (ConnectorMetadata connector : availableConnectors) {
+
+                for (Operations currentOperation : current.getOperations()) {
+                    if (!connector.supports(currentOperation)) {
+                        // Check selector functions
+                        toRemove.add(connector);
+                        LOG.debug("Connector " + connector + " doesn't support : " + currentOperation);
+                    } else {
                     /*
                      * This connector support the operation but we also have to check if support for a specific
                      * function is required support.
                      */
-                    for(Operations currentOperation: current.getOperations()){
                         if (currentOperation.getOperationsStr().toLowerCase().contains("function")) {
 
                             Set<Project> previousInitialProjects = findPreviousInitialProjects(initial);
@@ -710,30 +710,30 @@ public class Planner {
 
                             Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName(), clusterNames);
                             switch (currentOperation) {
-                            case SELECT_FUNCTIONS:
-                                Select select = (Select) current;
-                                Set<Selector> cols = select.getColumnMap().keySet();
-                                if (!checkFunctionsConsistency(connector, sFunctions, cols, svq)) {
-                                    toRemove.add(connector);
-                                    LOG.debug("Connector " + connector + " doesn't support all these operations: "
-                                            + current.getOperations());
-                                }
-                                break;
-                            case FILTER_FUNCTION_IN:
-                            case FILTER_FUNCTION_BETWEEEN:
-                            case FILTER_FUNCTION_DISTINCT:
-                            case FILTER_FUNCTION_EQ:
-                            case FILTER_FUNCTION_GET:
-                            case FILTER_FUNCTION_GT:
-                            case FILTER_FUNCTION_LET:
-                            case FILTER_FUNCTION_LIKE:
-                            case FILTER_FUNCTION_LT:
-                            case FILTER_FUNCTION_NOT_BETWEEEN:
-                            case FILTER_FUNCTION_NOT_IN:
-                            case FILTER_FUNCTION_NOT_LIKE:
-                                break;
-                            default:
-                                throw new PlanningException(currentOperation + " not supported yet.");
+                                case SELECT_FUNCTIONS:
+                                    Select select = (Select) current;
+                                    Set<Selector> cols = select.getColumnMap().keySet();
+                                    if (!checkFunctionsConsistency(connector, sFunctions, cols, svq)) {
+                                        toRemove.add(connector);
+                                        LOG.debug("Connector " + connector + " doesn't support all these operations: "
+                                                + current.getOperations());
+                                    }
+                                    break;
+                                case FILTER_FUNCTION_IN:
+                                case FILTER_FUNCTION_BETWEEEN:
+                                case FILTER_FUNCTION_DISTINCT:
+                                case FILTER_FUNCTION_EQ:
+                                case FILTER_FUNCTION_GET:
+                                case FILTER_FUNCTION_GT:
+                                case FILTER_FUNCTION_LET:
+                                case FILTER_FUNCTION_LIKE:
+                                case FILTER_FUNCTION_LT:
+                                case FILTER_FUNCTION_NOT_BETWEEEN:
+                                case FILTER_FUNCTION_NOT_IN:
+                                case FILTER_FUNCTION_NOT_LIKE:
+                                    break;
+                                default:
+                                    throw new PlanningException(currentOperation + " not supported yet.");
                             }
                         }
                     }
@@ -741,8 +741,11 @@ public class Planner {
                             && !connector.supports(Operations.SELECT_SUBQUERY)) {
                         toRemove.add(connector);
                     }
+
+
                 }
             }
+
             // Remove invalid connectors
             if (toRemove.size() == availableConnectors.size()) {
                 throw new PlanningException(
