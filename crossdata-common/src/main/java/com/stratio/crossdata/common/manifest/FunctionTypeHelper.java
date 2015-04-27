@@ -48,6 +48,7 @@ public class FunctionTypeHelper {
                     } else {
                         wrongQuerySignatureFound = !(queryType.equals(storeType)
                                         || queryType.endsWith(storeType + "*")
+                                        || queryType.startsWith("Any")
                                         || checkNumericTypes(queryType, storeType));
                     }
                 }
