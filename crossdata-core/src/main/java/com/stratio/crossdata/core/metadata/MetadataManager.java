@@ -1254,7 +1254,8 @@ public enum MetadataManager {
      * @param connectorName The name of the connector.
      * @return A boolean with the check result.
      */
-    public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName, SelectValidatedQuery subQuery)
+    public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName,
+            SelectValidatedQuery subQuery)
             throws PlanningException {
         boolean result = false;
         FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
@@ -1265,6 +1266,56 @@ public enum MetadataManager {
             result = inputStoredSignature.equals(inputSignatureFromSelector) ||
                     FunctionTypeHelper.checkInputSignatureCompatibility(inputStoredSignature, inputSignatureFromSelector);
         }
+        return result;
+    }
+
+    /**
+     * Check if the connector has associated the input signature of the function and its result signature.
+     * @param fSelector The function Selector with the signature.
+     * @param connectorName The name of the connector.
+     * @return A boolean with the check result.
+     */
+    public boolean checkFunctionReturnSignature(FunctionSelector fSelector, Selector selector, ConnectorName
+            connectorName, SelectValidatedQuery subQuery) throws PlanningException {
+        boolean result = false;
+        FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
+        if(ft != null){
+            String storedSignature = ft.getSignature();
+            String resultStoredSignature = storedSignature.substring(storedSignature.lastIndexOf(":Tuple["),
+                    storedSignature.length());
+            String querySignature="";
+            switch(selector.getType()){
+
+            case FUNCTION:
+            case RELATION:
+            case SELECT:
+            case GROUP:
+            case CASE_WHEN:
+            case NULL:
+            case LIST:
+            case ALIAS:
+            case ASTERISK:
+                return true;
+            case COLUMN:
+                ColumnSelector columnSelector=(ColumnSelector)selector;
+                querySignature="Tuple[" + columnSelector.getType().name() + "]";
+                break;
+            case BOOLEAN:
+                querySignature="Tuple[Boolean]";
+                break;
+            case STRING:
+                querySignature="Tuple[Text]";
+                break;
+            case INTEGER:
+                querySignature="Tuple[Int]";
+                break;
+            case FLOATING_POINT:
+                querySignature="Tuple[Double]";
+                break;
+            }
+            result= FunctionTypeHelper.checkInputSignatureCompatibility(resultStoredSignature,querySignature);
+        }
+
         return result;
     }
 
