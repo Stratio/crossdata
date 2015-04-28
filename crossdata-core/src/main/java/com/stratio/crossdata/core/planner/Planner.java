@@ -735,17 +735,28 @@ public class Planner {
                             case FILTER_FUNCTION_NOT_LIKE:
                                 Filter filter = (Filter) current;
                                 FunctionSelector functionSelector;
+                                Set<Selector> cols2 = new HashSet<>();
                                 if(FunctionSelector.class.isInstance(filter.getRelation().getLeftTerm())){
                                     functionSelector= ((FunctionSelector) filter.getRelation().getLeftTerm());
+                                    //add the functionSelector
+                                    cols2.add(functionSelector);
+                                    //add the result as a selector
+                                    cols2.add(filter.getRelation().getRightTerm());
                                 }else{
                                     functionSelector= ((FunctionSelector) filter.getRelation().getRightTerm());
+                                    //add the functionSelector
+                                    cols2.add(functionSelector);
+                                    //add the result as a Selector
+                                    cols2.add(filter.getRelation().getLeftTerm());
                                 }
-                                Set<Selector> cols2 = new HashSet<>();
-                                cols2.add(functionSelector);
-                                if (!checkFunctionsConsistency(connector, sFunctions, cols2, svq)) {
+
+                                //Check function signature and its result
+                                if (!checkFunctionsConsistency(connector, sFunctions, cols2, svq)
+                                        || (!checkFunctionsResultConsistency(connector, cols2, svq))) {
                                     toRemove.add(connector);
                                     LOG.error("Connector " + connector + " can't validate the function: " + cols2
                                             .toString());
+
                                 }
                                 break;
                             default:
@@ -796,16 +807,17 @@ public class Planner {
 
         boolean areFunctionsConsistent = true;
         Iterator<Selector> selectorIterator = selectors.iterator();
-
+        FunctionSelector fSelector=null;
         while (selectorIterator.hasNext() && areFunctionsConsistent) {
             Selector selector = selectorIterator.next();
             if (selector instanceof FunctionSelector) {
-                FunctionSelector fSelector = (FunctionSelector) selector;
+                fSelector = (FunctionSelector) selector;
                 if (!supportedFunctions.contains(fSelector.getFunctionName())) {
                     areFunctionsConsistent = false;
                     break;
                 } else {
-                    if (!MetadataManager.MANAGER.checkInputSignature(fSelector, connectorMetadata.getName(), svq.getSubqueryValidatedQuery())) {
+                    if (!MetadataManager.MANAGER.checkInputSignature(fSelector, connectorMetadata.getName(),
+                            svq.getSubqueryValidatedQuery())) {
                         areFunctionsConsistent = false;
                         break;
                     }
@@ -814,10 +826,34 @@ public class Planner {
                         connectorMetadata, supportedFunctions,
                         new HashSet<>(fSelector.getFunctionColumns()),
                         svq);
+
             }
         }
         return areFunctionsConsistent;
     }
+
+    private boolean checkFunctionsResultConsistency(ConnectorMetadata connectorMetadata, Set<Selector> selectors,
+            SelectValidatedQuery svq ) throws PlanningException {
+        boolean areFunctionsConsistent = true;
+        FunctionSelector fSelector=null;
+        Selector retSelector=null;
+        for (Selector selector:selectors){
+            if (FunctionSelector.class.isInstance(selector)){
+                fSelector=(FunctionSelector)selector;
+            }else{
+                retSelector=selector;
+            }
+        }
+        //check return signature
+        if (!MetadataManager.MANAGER.checkFunctionReturnSignature(fSelector, retSelector,
+                connectorMetadata.getName(),
+                svq.getSubqueryValidatedQuery())) {
+            areFunctionsConsistent = false;
+
+        }
+        return areFunctionsConsistent;
+    }
+
 
     /**
      * Get the list of tables accessed in a list of initial steps.
