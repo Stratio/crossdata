@@ -519,7 +519,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       }
       try {
         if(queryId == null){
-          return
+          log.error("queryId is null")
         }
 
         val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
