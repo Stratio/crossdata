@@ -69,9 +69,7 @@ import com.stratio.crossdata.communication.DropCatalog
 import com.stratio.crossdata.communication.PatchMetadata
 import com.stratio.crossdata.communication.DropTable
 import com.stratio.crossdata.communication.Insert
-import akka.event.Logging
-import akka.AkkaException
-
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object State extends Enumeration {
   type state = Value
@@ -114,7 +112,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   override def preStart():Unit = {
     Cluster(context.system).subscribe(self,classOf[ClusterDomainEvent])
-    context.system.eventStream.subscribe(this.self, classOf[Logging.Error])
+    //context.system.eventStream.subscribe(this.self, classOf[Logging.Error])
   }
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
@@ -225,35 +223,26 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   })
 */
 
-  def extractMessage(m: String): String = {
-    //Error(akka.remote.OversizedPayloadException: Discarding oversized payload sent to Actor[akka.tcp://CrossdataServerCluster@127.0.0.1:13420/user/crossdata-server/CoordinatorActor/$b#-1349652793]: max allowed size 31457280 bytes, actual size of encoded class com.stratio.crossdata.common.result.QueryResult was 41402769 bytes.,akka.tcp://CrossdataServerCluster@127.0.0.1:58594/system/endpointManager/reliableEndpointWriter-akka.tcp%3A%2F%2FCrossdataServerCluster%40127.0.0.1%3A13420-0/endpointWriter,class akka.remote.EndpointWriter,Transient association error (association remains live))
-    m.substring(m.indexOf("]:")+2, m.indexOf(".,")).trim
-  }
-
   def extractSender(m: String): String = {
-    //Error(akka.remote.OversizedPayloadException: Discarding oversized payload sent to Actor[akka.tcp://CrossdataServerCluster@127.0.0.1:13420/user/crossdata-server/CoordinatorActor/$b#-1349652793]: max allowed size 31457280 bytes, actual size of encoded class com.stratio.crossdata.common.result.QueryResult was 41402769 bytes.,akka.tcp://CrossdataServerCluster@127.0.0.1:58594/system/endpointManager/reliableEndpointWriter-akka.tcp%3A%2F%2FCrossdataServerCluster%40127.0.0.1%3A13420-0/endpointWriter,class akka.remote.EndpointWriter,Transient association error (association remains live))
     m.substring(m.indexOf("[")+1, m.indexOf("$")).trim
-  }
-
-  def sendOversizedError(message: String): Unit = {
-    val client = extractSender(message)
-    val errorMessage = extractMessage(message)
-    logger.error("Sending error to: " + client + ", error: " + errorMessage)
-    context.actorSelection(client) ! Result.createExecutionErrorResult(errorMessage)
   }
 
   override def receive: Receive = {
 
+    /*
     case le: Logging.Error => {
       logger.info(" >>> CROSSDATA >>> Logging.Error >>> " +
-        System.lineSeparator() + le)
+        System.lineSeparator() + le +
+        System.lineSeparator() + le.logClass +
+        System.lineSeparator() + le.logSource +
+        System.lineSeparator() + le.message +
+        System.lineSeparator() + le.timestamp +
+        System.lineSeparator() + le.thread)
       if(le.toString.contains("OversizedPayloadException")){
         sendOversizedError(le.toString)
       }
-      //val ope = le.asInstanceOf[akka.remote.OversizedPayloadException]
-      //val ope = le.asInstanceOf[akka.remote.EndpointException]
-      //val ope = le.asInstanceOf[AkkaException]
     }
+    */
 
     case u: PatchMetadata=> {
       //TODO: continue
@@ -452,8 +441,15 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       logger.error("Results for query " + result.getQueryId + " cannot be sent")
     }
     if(result.isLastResultSet){
+      sendACK(source, result.getQueryId)
       runningJobs.send{runningJobs => runningJobs.remove(result.getQueryId); runningJobs}
+    }
+  }
 
+  private def sendACK(actorRef: ActorRef, qId: String): Unit ={
+    context.system.scheduler.scheduleOnce(4 seconds){
+      logger.debug("Sending second ACK to: " + actorRef);
+      actorRef ! new ACK(qId, QueryStatus.EXECUTED)
     }
   }
 
@@ -463,6 +459,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       val result = connector.getQueryEngine().execute(ex.workflow)
       result.setQueryId(ex.queryId)
       s ! result
+      sendACK(s, ex.queryId)
     } catch {
       case e: Exception => {
         val result = Result.createExecutionErrorResult(e.getMessage)
@@ -484,7 +481,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     val asyncSender = sender
     try {
       runningJobs.send{runningJobs => runningJobs.put(aex.queryId, asyncSender); runningJobs}
-
       connector.getQueryEngine().asyncExecute(aex.queryId, aex.workflow, this)
       asyncSender ! ACK(aex.queryId, QueryStatus.IN_PROGRESS)
     } catch {

@@ -62,7 +62,7 @@ public class QueryWorkflow extends ExecutionWorkflow {
             if(Window.class.isInstance(lastStep)){
                 return true;
             }else{
-                for(LogicalStep p : lastStep.getPreviousSteps()){
+                for(LogicalStep p: lastStep.getPreviousSteps()){
                     result |= checkStreaming(p);
                 }
             }
@@ -83,7 +83,7 @@ public class QueryWorkflow extends ExecutionWorkflow {
         if(workflow.getPagination() > 0){
             return new PagedExecute(queryId, workflow, workflow.getPagination());
         }
-        //TODO: Either sever configuration should include an option or client
+        //TODO: Either server configuration should include an option or client
         return new Execute(queryId, workflow);
     }
 

@@ -422,7 +422,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             val actorRef = StringUtils.getAkkaActorRefUri(queryWorkflow.getActorRef(), false)
             val actorSelection = context.actorSelection(actorRef)
             val operation = queryWorkflow.getExecuteOperation(queryId)
-            executionInfo.setRemoveOnSuccess(Execute.getClass.isInstance(operation))
+            executionInfo.setRemoveOnSuccess(operation.isInstanceOf[Execute])
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
 
             actorSelection.asInstanceOf[ActorSelection] ! operation
@@ -509,7 +509,21 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         }
       }
 
-
+    case ack: ACK => {
+      if(ExecutionManager.MANAGER.exists(ack.queryId)){
+        log.error("Query " + ack.queryId + " failed")
+        val executionInfo = ExecutionManager.MANAGER.getValue(ack.queryId)
+        if(executionInfo != null){
+          val target = executionInfo.asInstanceOf[ExecutionInfo].getSender
+            .replace("Actor[", "").replace("]", "").split("#")(0)
+          val clientActor = context.actorSelection(target)
+          ExecutionManager.MANAGER.deleteEntry(ack.queryId)
+          val result = Result.createErrorResult(new ExecutionException("Query failed"))
+          result.setQueryId(ack.queryId)
+          clientActor ! result
+        }
+      }
+    }
 
     case result: Result => {
       val queryId = result.getQueryId
@@ -520,9 +534,13 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       try {
         if(queryId == null){
           log.error("queryId is null")
+          return null
         }
 
         val executionInfo = ExecutionManager.MANAGER.getValue(queryId)
+        if(executionInfo == null){
+          return null
+        }
         //TODO Add two methods to StringUtils to retrieve AkkaActorRefUri tokening with # for connectors,
         // and $ for clients
         val target = executionInfo.asInstanceOf[ExecutionInfo].getSender
