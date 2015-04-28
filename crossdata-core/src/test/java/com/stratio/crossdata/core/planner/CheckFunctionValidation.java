@@ -344,7 +344,7 @@ public class CheckFunctionValidation extends PlannerBaseTest {
         String inputText =
                 "[all], SELECT * FROM all.item where substr(data,1,5)=5.9;";
 
-        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ05", false, false, item);
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(inputText, "testQ05", false, true, item);
         Assert.assertTrue(true);
 
     }
