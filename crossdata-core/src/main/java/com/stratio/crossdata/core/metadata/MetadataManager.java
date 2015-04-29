@@ -48,6 +48,8 @@ import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
+import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.FunctionTypeHelper;
@@ -1196,9 +1198,10 @@ public enum MetadataManager {
      * Get the names of the supported functions for a given connector.
      *
      * @param cn A {@link com.stratio.crossdata.common.data.ConnectorName}.
+     * @param projects initial projects.
      * @return A set with the function names.
      */
-    public Set<String> getSupportedFunctionNames(ConnectorName cn, Set<ClusterName> clusters) {
+    public Set<String> getSupportedFunctionNames(ConnectorName cn, Set<Project> projects) {
         Set<String> functions = new HashSet<>();
         ConnectorMetadata connector = getConnector(cn);
 
@@ -1207,9 +1210,10 @@ public enum MetadataManager {
         }
 
         Set<DataStoreName> dataStoreNames = new HashSet<>();
-        for (ClusterName cluster : clusters) {
-            dataStoreNames.add(getCluster(cluster).getDataStoreRef());
+        for (Project project : projects) {
+            dataStoreNames.add(getCluster(project.getClusterName()).getDataStoreRef());
         }
+
 
         for(DataStoreName dsn: connector.getDataStoreRefs()){
 
@@ -1226,6 +1230,38 @@ public enum MetadataManager {
         return functions;
     }
 
+
+    /**
+     * Get the set of supported function types for a given connector.
+     *
+     * @param cn The {@link com.stratio.crossdata.common.data.ConnectorName}.
+     * @param projects list of clusters.
+     * @return A set of {@link com.stratio.crossdata.common.manifest.FunctionType}.
+     */
+    public Set<FunctionType> getSupportedFunctions(ConnectorName cn, Set<Project> projects) {
+        Set<FunctionType> functions = new HashSet<>();
+        ConnectorMetadata connector = getConnector(cn);
+        functions.addAll(connector.getConnectorFunctions());
+
+        //datastoreNames
+        Set<DataStoreName> dataStoreNames = new HashSet<>();
+        for (Project project : projects) {
+            dataStoreNames.add(getCluster(project.getClusterName()).getDataStoreRef());
+        }
+
+        for(DataStoreName dsn: connector.getDataStoreRefs()){
+
+            if(dataStoreNames.contains(dsn)) {
+                DataStoreMetadata datastore = getDataStore(dsn);
+                for (FunctionType df : datastore.getFunctions()) {
+                    if (!connector.getExcludedFunctions().contains(df.getFunctionName())) {
+                        functions.add(df);
+                    }
+                }
+            }
+        }
+        return functions;
+    }
 
     /**
      * Get the set of supported function types for a given connector.
@@ -1254,12 +1290,12 @@ public enum MetadataManager {
      * @param connectorName The name of the connector.
      * @return A boolean with the check result.
      */
-    public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName, SelectValidatedQuery subQuery)
+    public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName, SelectValidatedQuery subQuery, Set<Project> initialProjects)
             throws PlanningException {
         boolean result = false;
-        FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
+        FunctionType ft = getFunction(connectorName, fSelector.getFunctionName(), initialProjects);
         if(ft != null){
-            String inputSignatureFromSelector = createInputSignature(fSelector, connectorName, subQuery);
+            String inputSignatureFromSelector = createInputSignature(fSelector, connectorName, subQuery, initialProjects);
             String storedSignature = ft.getSignature();
             String inputStoredSignature = storedSignature.substring(0,storedSignature.lastIndexOf(":Tuple["));
             result = inputStoredSignature.equals(inputSignatureFromSelector) ||
@@ -1287,11 +1323,31 @@ public enum MetadataManager {
     }
 
     /**
+     * Get the function type from the specified connector.
+     * @param connectorName The connector name.
+     * @param functionName The function name.
+     * @param projects Set of clusters whose datastore associated contains the functions supported.
+     * @return The {@link com.stratio.crossdata.common.manifest.FunctionType} if the function is defined; null otherwise.
+     */
+    public FunctionType getFunction(ConnectorName connectorName, String functionName, Set<Project> projects) {
+        FunctionType result = null;
+        Set<FunctionType> candidateFunctions = getSupportedFunctions(connectorName, projects);
+        for(FunctionType ft: candidateFunctions){
+            if(ft.getFunctionName().equals(functionName)){
+                result = ft;
+                break;
+            }
+        }
+        return result;
+    }
+
+
+    /**
      * Generates the input signature of a given function selector.
      * @param functionSelector The function selector.
      * @return A String with the input signature.
      */
-    private String createInputSignature(FunctionSelector functionSelector, ConnectorName connectorName, SelectValidatedQuery subQuery)
+    private String createInputSignature(FunctionSelector functionSelector, ConnectorName connectorName, SelectValidatedQuery subQuery, Set<Project> initialProjects)
                     throws PlanningException {
 
         StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
@@ -1299,7 +1355,7 @@ public enum MetadataManager {
         Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
         while(iter.hasNext()){
             Selector selector = iter.next();
-            sb.append(inferDataType(selector, connectorName, subQuery));
+            sb.append(inferDataType(selector, connectorName, subQuery, initialProjects));
             if(iter.hasNext()){
                 sb.append(",");
             }
@@ -1308,7 +1364,7 @@ public enum MetadataManager {
         return  sb.toString();
     }
 
-    private String inferDataType(Selector selector, ConnectorName connectorName, SelectValidatedQuery subQuery) throws
+    private String inferDataType(Selector selector, ConnectorName connectorName, SelectValidatedQuery subQuery, Set<Project> initialProjects) throws
             PlanningException {
         String result = null;
         switch(selector.getType()){
@@ -1329,7 +1385,7 @@ public enum MetadataManager {
                 for(Selector ss: subSelectors){
                     if(ss.getColumnName().getName().equals(cs.getColumnName().getName())
                             || ( ss.getAlias()!=null && ss.getAlias().equals(cs.getColumnName().getName()))){
-                        result = inferDataType(ss, connectorName, subQuery.getSubqueryValidatedQuery());
+                        result = inferDataType(ss, connectorName, subQuery.getSubqueryValidatedQuery(), initialProjects);
                         break;
                     }
                 }
@@ -1361,13 +1417,13 @@ public enum MetadataManager {
             break;
         case CASE_WHEN:
             CaseWhenSelector cws = (CaseWhenSelector) selector;
-            result = inferDataType(cws.getDefaultValue(), connectorName, null);
+            result = inferDataType(cws.getDefaultValue(), connectorName, null, initialProjects);
             break;
         case SELECT:
             SelectSelector ss = (SelectSelector) selector;
             Select select = (Select) ss.getQueryWorkflow().getLastStep();
             Selector s = select.getColumnMap().keySet().iterator().next();
-            result = inferDataType(s, connectorName, subQuery);
+            result = inferDataType(s, connectorName, subQuery, initialProjects);
             break;
         case ALIAS:
             result = new ColumnType(DataType.TEXT).getCrossdataType();

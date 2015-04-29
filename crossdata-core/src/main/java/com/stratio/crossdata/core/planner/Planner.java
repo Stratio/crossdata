@@ -557,7 +557,7 @@ public class Planner {
             if (FunctionSelector.class.isInstance(s)) {
                 FunctionSelector fs = FunctionSelector.class.cast(s);
                 String functionName = fs.getFunctionName();
-                FunctionType ft = MetadataManager.MANAGER.getFunction(connectorName, functionName);
+                FunctionType ft = MetadataManager.MANAGER.getFunction(connectorName, functionName, getSetOfProjects(workflow.getInitialSteps()));
                 if(ft == null){
                     throw new PlanningException("Function: '" + functionName + "' unrecognized");
                 }
@@ -571,6 +571,15 @@ public class Planner {
                 typeMap.put(stringKey, ct);
             }
         }
+    }
+
+    //TODO Use generics.
+    private Set<Project> getSetOfProjects(List<LogicalStep> initialSteps){
+        Set<Project> initialProjects = new HashSet<>();
+        for (LogicalStep initialStep : initialSteps) {
+            initialProjects.add((Project) initialStep);
+        }
+        return initialProjects;
     }
 
     private void linkPathsToUnionStep(List<ExecutionPath> executionPaths,
@@ -703,17 +712,14 @@ public class Planner {
                         if (currentOperation.getOperationsStr().toLowerCase().contains("function")) {
 
                             Set<Project> previousInitialProjects = findPreviousInitialProjects(initial);
-                            Set<ClusterName> clusterNames = new HashSet<>();
-                            for (Project previousProject : previousInitialProjects) {
-                                clusterNames.add(previousProject.getClusterName());
-                            }
 
-                            Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName(), clusterNames);
+
+                            Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName(), previousInitialProjects);
                             switch (currentOperation) {
                                 case SELECT_FUNCTIONS:
                                     Select select = (Select) current;
                                     Set<Selector> cols = select.getColumnMap().keySet();
-                                    if (!checkFunctionsConsistency(connector, sFunctions, cols, svq)) {
+                                    if (!checkFunctionsConsistency(connector, sFunctions, cols, svq, previousInitialProjects)) {
                                         toRemove.add(connector);
                                         LOG.debug("Connector " + connector + " doesn't support all these operations: "
                                                 + current.getOperations());
@@ -776,8 +782,9 @@ public class Planner {
      * @throws PlanningException
      */
     private boolean checkFunctionsConsistency(ConnectorMetadata connectorMetadata, Set<String> supportedFunctions,
-            Set<Selector> selectors, SelectValidatedQuery svq) throws PlanningException {
+            Set<Selector> selectors, SelectValidatedQuery svq, Set<Project> initialProjects) throws PlanningException {
 
+        //TODO refactor, initialthe recursivity should
         boolean areFunctionsConsistent = true;
         Iterator<Selector> selectorIterator = selectors.iterator();
 
@@ -789,7 +796,7 @@ public class Planner {
                     areFunctionsConsistent = false;
                     break;
                 } else {
-                    if (!MetadataManager.MANAGER.checkInputSignature(fSelector, connectorMetadata.getName(), svq.getSubqueryValidatedQuery())) {
+                    if (!MetadataManager.MANAGER.checkInputSignature(fSelector, connectorMetadata.getName(), svq.getSubqueryValidatedQuery(), initialProjects)) {
                         areFunctionsConsistent = false;
                         break;
                     }
@@ -797,7 +804,7 @@ public class Planner {
                 areFunctionsConsistent = checkFunctionsConsistency(
                         connectorMetadata, supportedFunctions,
                         new HashSet<>(fSelector.getFunctionColumns()),
-                        svq);
+                        svq, initialProjects);
             }
         }
         return areFunctionsConsistent;
@@ -1276,17 +1283,20 @@ public class Planner {
                 createTableStatement.getClusterName())) {
 
             try {
+                clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
+                actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
                 if (!createTableStatement.isExternal()) {
-                    actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
                     executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
                 }else {
-                    clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
-                    Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
-                    if (connectorNames != null && !connectorNames.isEmpty()){
-                        LOG.debug("The catalog should have been created before registering table");
-                        for (ConnectorName connectorName: clusterMetadata.getConnectorAttachedRefs().keySet()) {
-                            if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_CATALOG)){
-                                throw new PlanningException("The catalog should have been created before registering table. The connector: "+connectorName.getQualifiedName()+" supports CREATE_CATALOG");
+                    executionType = ExecutionType.REGISTER_TABLE_AND_CATALOG;
+                    if(actorRefUri == null) {
+
+                        Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
+                        if (connectorNames != null && !connectorNames.isEmpty()) {
+                            for (ConnectorName connectorName : clusterMetadata.getConnectorAttachedRefs().keySet()) {
+                                if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_CATALOG)) {
+                                    throw new PlanningException("The catalog should have been created before registering table. The connector: " + connectorName.getQualifiedName() + " supports CREATE_CATALOG");
+                                }
                             }
                         }
                     }
