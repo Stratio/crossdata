@@ -175,6 +175,7 @@ fragment POINT: '.';
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_REGISTER: R E G I S T E R;
+T_UNREGISTER: U N R E G I S T E R;
 T_ALTER: A L T E R;
 T_NOT: N O T;
 T_WITH: W I T H;
@@ -736,10 +737,11 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
 dropTableStatement returns [DropTableStatement drtbst]
     @init{
         boolean ifExists = false;
+        boolean isExternal = false;
     }:
-    T_DROP T_TABLE (T_IF T_EXISTS { ifExists = true; })?
+    (T_DROP | T_UNREGISTER {isExternal = true;}) T_TABLE (T_IF T_EXISTS { ifExists = true; })?
     identID=getTableName {
-        $drtbst = new DropTableStatement(identID, ifExists);
+        $drtbst = new DropTableStatement(identID, ifExists, isExternal);
     }
 ;
 
