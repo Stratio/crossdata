@@ -113,6 +113,19 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             executionInfo.setWorkflow(metadataWorkflow)
             ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
+          } else if(metadataWorkflow.getExecutionType == ExecutionType.UNREGISTER_TABLE) {
+            // Drop table in the Crossdata servers through the MetadataManager
+            coordinator.persistDropTable(metadataWorkflow.getTableName)
+
+            var result:MetadataResult = null
+
+            val tableMetadata = metadataWorkflow.getTableMetadata
+            updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = true)
+            executionInfo.setQueryStatus(QueryStatus.PLANNED)
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_UNREGISTER_TABLE)
+            result.setQueryId(queryId)
+            sender ! result
+
           } else if (metadataWorkflow.getExecutionType == ExecutionType.ALTER_TABLE) {
 
             executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)

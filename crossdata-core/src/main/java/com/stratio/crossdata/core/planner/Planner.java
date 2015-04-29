@@ -1490,17 +1490,21 @@ public class Planner {
             throws PlanningException {
 
         MetadataWorkflow metadataWorkflow;
+        ClusterMetadata clusterMetadata=null;
+        String actorRefUri = null;
         DropTableStatement dropTableStatement = (DropTableStatement) metadataStatement;
         ExecutionType executionType = ExecutionType.DROP_TABLE;
         ResultType type = ResultType.RESULTS;
-
         TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(dropTableStatement.getTableName());
+        if (!dropTableStatement.isExternal()) {
 
+
+            actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.DROP_TABLE);
+        }else{
+            executionType = ExecutionType.UNREGISTER_TABLE;
+        }
         ClusterName clusterName = tableMetadata.getClusterRef();
-        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
-
-        String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.DROP_TABLE);
-
+        clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
         metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
         metadataWorkflow.setTableMetadata(tableMetadata);
