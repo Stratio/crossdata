@@ -69,7 +69,7 @@ import com.stratio.crossdata.communication.DropCatalog
 import com.stratio.crossdata.communication.PatchMetadata
 import com.stratio.crossdata.communication.DropTable
 import com.stratio.crossdata.communication.Insert
-
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object State extends Enumeration {
   type state = Value
@@ -112,6 +112,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   override def preStart():Unit = {
     Cluster(context.system).subscribe(self,classOf[ClusterDomainEvent])
+    //context.system.eventStream.subscribe(this.self, classOf[Logging.Error])
   }
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
@@ -221,7 +222,27 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     true
   })
 */
+
+  def extractSender(m: String): String = {
+    m.substring(m.indexOf("[")+1, m.indexOf("$")).trim
+  }
+
   override def receive: Receive = {
+
+    /*
+    case le: Logging.Error => {
+      logger.info(" >>> CROSSDATA >>> Logging.Error >>> " +
+        System.lineSeparator() + le +
+        System.lineSeparator() + le.logClass +
+        System.lineSeparator() + le.logSource +
+        System.lineSeparator() + le.message +
+        System.lineSeparator() + le.timestamp +
+        System.lineSeparator() + le.thread)
+      if(le.toString.contains("OversizedPayloadException")){
+        sendOversizedError(le.toString)
+      }
+    }
+    */
 
     case u: PatchMetadata=> {
       //TODO: continue
@@ -420,8 +441,15 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       logger.error("Results for query " + result.getQueryId + " cannot be sent")
     }
     if(result.isLastResultSet){
+      sendACK(source, result.getQueryId)
       runningJobs.send{runningJobs => runningJobs.remove(result.getQueryId); runningJobs}
+    }
+  }
 
+  private def sendACK(actorRef: ActorRef, qId: String): Unit ={
+    context.system.scheduler.scheduleOnce(4 seconds){
+      logger.debug("Sending second ACK to: " + actorRef);
+      actorRef ! new ACK(qId, QueryStatus.EXECUTED)
     }
   }
 
@@ -431,6 +459,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       val result = connector.getQueryEngine().execute(ex.workflow)
       result.setQueryId(ex.queryId)
       s ! result
+      sendACK(s, ex.queryId)
     } catch {
       case e: Exception => {
         val result = Result.createExecutionErrorResult(e.getMessage)
@@ -452,7 +481,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     val asyncSender = sender
     try {
       runningJobs.send{runningJobs => runningJobs.put(aex.queryId, asyncSender); runningJobs}
-
       connector.getQueryEngine().asyncExecute(aex.queryId, aex.workflow, this)
       asyncSender ! ACK(aex.queryId, QueryStatus.IN_PROGRESS)
     } catch {

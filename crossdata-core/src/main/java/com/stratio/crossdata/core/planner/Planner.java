@@ -691,6 +691,8 @@ public class Planner {
         LogicalStep last = null;
         LogicalStep current = initial;
         List<ConnectorMetadata> toRemove = new ArrayList<>();
+        boolean unregisteredFunction=false;
+        String unregisteredFunctionMsg="";
         boolean exit = false;
 
         LOG.info("Available connectors: " + availableConnectors);
@@ -716,30 +718,61 @@ public class Planner {
 
                             Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName(), previousInitialProjects);
                             switch (currentOperation) {
-                                case SELECT_FUNCTIONS:
-                                    Select select = (Select) current;
-                                    Set<Selector> cols = select.getColumnMap().keySet();
-                                    if (!checkFunctionsConsistency(connector, sFunctions, cols, svq, previousInitialProjects)) {
-                                        toRemove.add(connector);
-                                        LOG.debug("Connector " + connector + " doesn't support all these operations: "
-                                                + current.getOperations());
-                                    }
-                                    break;
-                                case FILTER_FUNCTION_IN:
-                                case FILTER_FUNCTION_BETWEEEN:
-                                case FILTER_FUNCTION_DISTINCT:
-                                case FILTER_FUNCTION_EQ:
-                                case FILTER_FUNCTION_GET:
-                                case FILTER_FUNCTION_GT:
-                                case FILTER_FUNCTION_LET:
-                                case FILTER_FUNCTION_LIKE:
-                                case FILTER_FUNCTION_LT:
-                                case FILTER_FUNCTION_NOT_BETWEEEN:
-                                case FILTER_FUNCTION_NOT_IN:
-                                case FILTER_FUNCTION_NOT_LIKE:
-                                    break;
-                                default:
-                                    throw new PlanningException(currentOperation + " not supported yet.");
+
+                            case SELECT_FUNCTIONS:
+                                Select select = (Select) current;
+                                Set<Selector> cols = select.getColumnMap().keySet();
+                                if (!checkFunctionsConsistency(connector, sFunctions, cols, svq, previousInitialProjects)) {
+                                    toRemove.add(connector);
+                                    unregisteredFunction=true;
+                                    unregisteredFunctionMsg= "Connector " + connector.getName() + " can't validate the " +
+                                            "function: " + cols.toString();
+                                    LOG.error(unregisteredFunctionMsg);
+
+                                }
+                                break;
+                            case FILTER_FUNCTION_IN:
+                            case FILTER_FUNCTION_BETWEEEN:
+                            case FILTER_FUNCTION_DISTINCT:
+                            case FILTER_FUNCTION_EQ:
+                            case FILTER_FUNCTION_GET:
+                            case FILTER_FUNCTION_GT:
+                            case FILTER_FUNCTION_LET:
+                            case FILTER_FUNCTION_LIKE:
+                            case FILTER_FUNCTION_LT:
+                            case FILTER_FUNCTION_NOT_BETWEEEN:
+                            case FILTER_FUNCTION_NOT_IN:
+                            case FILTER_FUNCTION_NOT_LIKE:
+                                Filter filter = (Filter) current;
+                                FunctionSelector functionSelector;
+                                Set<Selector> cols2 = new HashSet<>();
+                                if(FunctionSelector.class.isInstance(filter.getRelation().getLeftTerm())){
+                                    functionSelector= ((FunctionSelector) filter.getRelation().getLeftTerm());
+                                    //add the functionSelector
+                                    cols2.add(functionSelector);
+                                    //add the result as a selector
+                                    cols2.add(filter.getRelation().getRightTerm());
+                                }else{
+                                    functionSelector= ((FunctionSelector) filter.getRelation().getRightTerm());
+                                    //add the functionSelector
+                                    cols2.add(functionSelector);
+                                    //add the result as a Selector
+                                    cols2.add(filter.getRelation().getLeftTerm());
+                                }
+
+                                //Check function signature and its result
+                                if (!checkFunctionsConsistency(connector, sFunctions, cols2, svq, previousInitialProjects)
+                                        || (!checkFunctionsResultConsistency(connector, cols2, svq))) {
+                                    toRemove.add(connector);
+                                    unregisteredFunction = true;
+                                    unregisteredFunctionMsg= "Connector " + connector.getName() + " can't validate the " +
+                                            "function: " + cols2.toString();
+                                    LOG.error(unregisteredFunctionMsg);
+
+                                }
+                                break;
+                            default:
+                                throw new PlanningException(currentOperation + " not supported yet.");
                             }
                         }
                     }
@@ -747,15 +780,17 @@ public class Planner {
                             && !connector.supports(Operations.SELECT_SUBQUERY)) {
                         toRemove.add(connector);
                     }
-
-
                 }
             }
 
             // Remove invalid connectors
             if (toRemove.size() == availableConnectors.size()) {
-                throw new PlanningException(
-                        "Cannot determine execution path as no connector supports " + current.toString());
+                if (unregisteredFunction){
+                    throw new PlanningException(unregisteredFunctionMsg);
+                } else {
+                    throw new PlanningException(
+                            "Cannot determine execution path as no connector supports " + current.toString());
+                }
             } else {
                 availableConnectors.removeAll(toRemove);
 
@@ -784,31 +819,53 @@ public class Planner {
     private boolean checkFunctionsConsistency(ConnectorMetadata connectorMetadata, Set<String> supportedFunctions,
             Set<Selector> selectors, SelectValidatedQuery svq, Set<Project> initialProjects) throws PlanningException {
 
-        //TODO refactor, initialthe recursivity should
         boolean areFunctionsConsistent = true;
         Iterator<Selector> selectorIterator = selectors.iterator();
-
+        FunctionSelector fSelector=null;
         while (selectorIterator.hasNext() && areFunctionsConsistent) {
             Selector selector = selectorIterator.next();
             if (selector instanceof FunctionSelector) {
-                FunctionSelector fSelector = (FunctionSelector) selector;
+                fSelector = (FunctionSelector) selector;
                 if (!supportedFunctions.contains(fSelector.getFunctionName())) {
                     areFunctionsConsistent = false;
                     break;
                 } else {
                     if (!MetadataManager.MANAGER.checkInputSignature(fSelector, connectorMetadata.getName(), svq.getSubqueryValidatedQuery(), initialProjects)) {
+
                         areFunctionsConsistent = false;
                         break;
                     }
                 }
                 areFunctionsConsistent = checkFunctionsConsistency(
                         connectorMetadata, supportedFunctions,
-                        new HashSet<>(fSelector.getFunctionColumns()),
-                        svq, initialProjects);
+                        new HashSet<>(fSelector.getFunctionColumns()), svq, initialProjects);
             }
         }
         return areFunctionsConsistent;
     }
+
+    private boolean checkFunctionsResultConsistency(ConnectorMetadata connectorMetadata, Set<Selector> selectors,
+            SelectValidatedQuery svq ) throws PlanningException {
+        boolean areFunctionsConsistent = true;
+        FunctionSelector fSelector=null;
+        Selector retSelector=null;
+        for (Selector selector:selectors){
+            if (FunctionSelector.class.isInstance(selector)){
+                fSelector=(FunctionSelector)selector;
+            }else{
+                retSelector=selector;
+            }
+        }
+        //check return signature
+        if (!MetadataManager.MANAGER.checkFunctionReturnSignature(fSelector, retSelector,
+                connectorMetadata.getName(),
+                svq.getSubqueryValidatedQuery())) {
+            areFunctionsConsistent = false;
+
+        }
+        return areFunctionsConsistent;
+    }
+
 
     /**
      * Get the list of tables accessed in a list of initial steps.
