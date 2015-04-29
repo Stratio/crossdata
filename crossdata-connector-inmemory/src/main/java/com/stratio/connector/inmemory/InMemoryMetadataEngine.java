@@ -120,9 +120,8 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
             }
 
             try {
-                //Create catalog if not exists
                 if(!datastore.existsCatalog(catalogName)){
-                    datastore.createCatalog(catalogName);
+                    throw new ExecutionException("The catalog "+catalogName+ " does not exist");
                 }
                 datastore.createTable(catalogName, tableName, columnNames, columnTypes, primaryKey);
             } catch (Exception e) {
