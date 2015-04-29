@@ -682,6 +682,8 @@ public class Planner {
         LogicalStep last = null;
         LogicalStep current = initial;
         List<ConnectorMetadata> toRemove = new ArrayList<>();
+        boolean unregisteredFunction=false;
+        String unregisteredFunctionMsg="";
         boolean exit = false;
 
         LOG.info("Available connectors: " + availableConnectors);
@@ -715,9 +717,10 @@ public class Planner {
                                 Set<Selector> cols = select.getColumnMap().keySet();
                                 if (!checkFunctionsConsistency(connector, sFunctions, cols, svq)) {
                                     toRemove.add(connector);
-                                    LOG.error(
-                                            "Connector " + connector + " can't validate the function: " + cols.toString
-                                                    ());
+                                    unregisteredFunction=true;
+                                    unregisteredFunctionMsg= "Connector " + connector.getName() + " can't validate the " +
+                                            "function: " + cols.toString();
+                                    LOG.error(unregisteredFunctionMsg);
 
                                 }
                                 break;
@@ -754,8 +757,10 @@ public class Planner {
                                 if (!checkFunctionsConsistency(connector, sFunctions, cols2, svq)
                                         || (!checkFunctionsResultConsistency(connector, cols2, svq))) {
                                     toRemove.add(connector);
-                                    LOG.error("Connector " + connector + " can't validate the function: " + cols2
-                                            .toString());
+                                    unregisteredFunction = true;
+                                    unregisteredFunctionMsg= "Connector " + connector.getName() + " can't validate the " +
+                                            "function: " + cols2.toString();
+                                    LOG.error(unregisteredFunctionMsg);
 
                                 }
                                 break;
@@ -768,15 +773,17 @@ public class Planner {
                             && !connector.supports(Operations.SELECT_SUBQUERY)) {
                         toRemove.add(connector);
                     }
-
-
                 }
             }
 
             // Remove invalid connectors
             if (toRemove.size() == availableConnectors.size()) {
-                throw new PlanningException(
-                        "Cannot determine execution path as no connector supports " + current.toString());
+                if (unregisteredFunction){
+                    throw new PlanningException(unregisteredFunctionMsg);
+                } else {
+                    throw new PlanningException(
+                            "Cannot determine execution path as no connector supports " + current.toString());
+                }
             } else {
                 availableConnectors.removeAll(toRemove);
 
