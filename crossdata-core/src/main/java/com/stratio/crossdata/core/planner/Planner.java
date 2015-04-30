@@ -529,7 +529,7 @@ public class Planner {
     private ConnectorMetadata findBestConnector(List<ConnectorMetadata> connectors, List<ClusterName> clusters) {
         //TODO: Add logic to this method according to native or not
         //TODO: Add logic to this method according to statistics
-        ConnectorMetadata highestPriorityConnector = null;
+        ConnectorMetadata highestPriorityConnector = connectors.get(0);
         int minPriority = Integer.MAX_VALUE;
 
         for (ConnectorMetadata connector: connectors) {
