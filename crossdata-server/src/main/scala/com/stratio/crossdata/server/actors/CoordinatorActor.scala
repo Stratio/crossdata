@@ -510,7 +510,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       }
 
     case ack: ACK => {
-      if(ExecutionManager.MANAGER.exists(ack.queryId)){
+      if(ExecutionManager.MANAGER.exists(ack.queryId) && (ack.status == QueryStatus.EXECUTED)){
         log.error("Query " + ack.queryId + " failed")
         val executionInfo = ExecutionManager.MANAGER.getValue(ack.queryId)
         if(executionInfo != null){
@@ -627,9 +627,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
           }
 
-          if (executionInfo.asInstanceOf[ExecutionInfo].isRemoveOnSuccess) {
+          if (executionInfo.asInstanceOf[ExecutionInfo].isRemoveOnSuccess
+            || (result.isInstanceOf[QueryResult] && result.asInstanceOf[QueryResult].isLastResultSet)) {
             ExecutionManager.MANAGER.deleteEntry(queryId)
           }
+
           if (queryId.endsWith(CoordinatorActor.TriggerToken)) {
             sendResultToClient = false
             val triggerQueryId = queryId.substring(0, queryId.length - CoordinatorActor.TriggerToken.length)
