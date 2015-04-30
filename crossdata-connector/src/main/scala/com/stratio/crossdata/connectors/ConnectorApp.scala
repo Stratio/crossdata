@@ -122,7 +122,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val future = actorClusterNode.get.?(GetTableMetadata(clusterName,tableName ))(timeout)
     Try(Await.result(future, Duration.fromNanos(timeout*1000000L))) match {
       case Success(cMetadataList) =>
-        Some(cMetadataList.asInstanceOf[TableMetadata])
+        Option(cMetadataList.asInstanceOf[TableMetadata])
       case Failure(exception) =>
         logger.debug("Error fetching the catalog metadata from the ObservableMap: "+exception.getMessage)
         None
@@ -134,7 +134,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val future = actorClusterNode.get.?(GetCatalogMetadata(catalogName))(timeout)
     Try(Await.result(future,Duration.fromNanos(timeout*1000000L))) match {
       case Success(cMetadataList) =>
-        Some(cMetadataList.asInstanceOf[CatalogMetadata])
+        Option(cMetadataList.asInstanceOf[CatalogMetadata])
       case Failure(exception) =>
         logger.debug("Error fetching the catalog metadata from the ObservableMap: "+exception.getMessage)
         None
@@ -151,7 +151,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val future = actorClusterNode.get.ask(GetCatalogs(cluster))(timeout)
     Try(Await.result(future, Duration.fromNanos(timeout*1000000L))) match {
       case Success(cMetadataList) =>
-        Some(cMetadataList.asInstanceOf[util.List[CatalogMetadata]])
+        Option(cMetadataList.asInstanceOf[util.List[CatalogMetadata]])
       case Failure(exception) =>
         logger.debug("Error fetching the catalogs from the ObservableMap: "+exception.getMessage)
         None
