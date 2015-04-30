@@ -38,11 +38,8 @@ import scala.util.Try
 import scala.collection.JavaConversions._
 import com.stratio.crossdata.communication.GetCatalogs
 import akka.routing.RoundRobinPool
-import scala.util.Failure
-import scala.Some
 import com.stratio.crossdata.communication.GetCatalogMetadata
 import com.stratio.crossdata.communication.GetTableMetadata
-import scala.util.Success
 import com.stratio.crossdata.communication.Shutdown
 
 
@@ -126,7 +123,6 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   }
 
   override def getCatalogMetadata(catalogName: CatalogName, timeout: Int): Option[CatalogMetadata] ={
-    //TODO Future[Any] => Future[T] using akka(?) ?? Try(Await.result(future,Duration.fromNanos(timeout*1000000L))).map{ Some (_)}.recover{ case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: "+e.getMessage); None }.get
     val future = actorClusterNode.get.?(GetCatalogMetadata(catalogName))(timeout)
     Try(Await.result(future.mapTo[CatalogMetadata],Duration.fromNanos(timeout*1000000L))).map{ Some (_)}.recover{
       case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: "+e.getMessage); None
