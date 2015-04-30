@@ -510,6 +510,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         val result = Result.createExecutionErrorResult(e.getMessage())
         result.setQueryId(queryId)
         sender ! result
+
       }
       case err: Error =>
         logger.error("Error in ConnectorActor (Receiving stop process)")
@@ -524,7 +525,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       if(logger.isDebugEnabled){
         logger.debug("concurrent running Jobs = "+runningJobs.get.size)
       }
-      //Thread.sleep(4*60*1000)
       connector.getQueryEngine().pagedExecute(pex.queryId, pex.workflow, this, pex.pageSize)
       pagedSender ! ACK(pex.queryId, QueryStatus.IN_PROGRESS)
     } catch {
@@ -536,7 +536,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       case err: Error =>
         logger.error("error in ConnectorActor (Receiving paged LogicalWorkflow)")
     }
-
   }
 
   private def methodMetadataOp(metadataOp: MetadataOperation, s: ActorRef): Unit = {

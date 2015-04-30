@@ -636,7 +636,11 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
     }
 
     public int getPriorityFromClusterName(ClusterName clusterName){
-        return clusterPriorities.get(clusterName);
+        int result = Integer.MAX_VALUE;
+        if(clusterPriorities.containsKey(clusterName)){
+            result = clusterPriorities.get(clusterName);
+        }
+        return result;
     }
 
     @Override

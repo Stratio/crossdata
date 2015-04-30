@@ -23,17 +23,17 @@ import static com.stratio.crossdata.common.statements.structures.SelectorType.FU
 import static com.stratio.crossdata.common.statements.structures.SelectorType.RELATION;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Arrays;
 
-import com.stratio.crossdata.core.structures.Join;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
@@ -78,6 +78,7 @@ import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.GroupByClause;
+import com.stratio.crossdata.core.structures.Join;
 import com.stratio.crossdata.core.validator.Validator;
 
 /**
@@ -95,6 +96,8 @@ public class Normalizator {
     private SelectParsedQuery parsedQuery;
 
     private Normalizator subqueryNormalizator;
+
+    private Map<String, Integer> aliasFunctionMap=new HashMap<>();
 
     /**
      * Class Constructor.
@@ -796,7 +799,7 @@ public class Normalizator {
 
         fields.addColumnName(columnName, selector.getAlias());
         selector.setName(columnName);
-
+        selector.setTableName(columnName.getTableName());
     }
 
     private boolean checkVirtualColumnSelector(ColumnSelector selector, ColumnName columnName)
@@ -1026,6 +1029,7 @@ public class Normalizator {
             switch (selector.getType()) {
             case FUNCTION:
                 FunctionSelector functionSelector = (FunctionSelector) selector;
+                getNormalizedFunctionAlias(functionSelector);
                 checkFunctionSelector(functionSelector);
                 functionSelector.setTableName(firstTableName);
                 result.add(functionSelector);
@@ -1148,6 +1152,17 @@ public class Normalizator {
             }
         }
         return result;
+    }
+
+    private FunctionSelector getNormalizedFunctionAlias(FunctionSelector functionSelector) {
+        if (aliasFunctionMap.containsKey(functionSelector.getAlias())){
+            int index=aliasFunctionMap.get(functionSelector.getAlias());
+            functionSelector.setAlias(functionSelector.getAlias() + Integer.toString(index+1));
+            aliasFunctionMap.put(functionSelector.getAlias(), index+1);
+        }else{
+            aliasFunctionMap.put(functionSelector.getAlias(), 0);
+        }
+        return functionSelector;
     }
 
     /**
