@@ -291,8 +291,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                 val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_REGISTER_TABLE)
                 if (metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE) {
                   //Connector is not able to create the catalog of the registered table
-                  coordinator.persistCreateCatalog(metadataWorkflow.getCatalogMetadata, metadataWorkflow.isIfNotExists)
-                  coordinator.persistCreateCatalogInCluster(metadataWorkflow.getCatalogName, metadataWorkflow.getClusterName)
+                  coordinator.persistCreateCatalogInCluster(metadataWorkflow.getTableName.getCatalogName, metadataWorkflow.getClusterName)
                   coordinator.persistCreateTable(metadataWorkflow.getTableMetadata)
                   val tableMetadata = metadataWorkflow.getTableMetadata
                   updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)

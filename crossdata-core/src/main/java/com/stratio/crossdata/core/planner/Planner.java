@@ -1303,7 +1303,7 @@ public class Planner {
         return metadataWorkflow;
     }
 
-    private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId) throws PlanningException{
+    private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId) throws PlanningException {
         MetadataWorkflow metadataWorkflow;
         // Create parameters for metadata workflow
         CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
@@ -1316,20 +1316,20 @@ public class Planner {
             executionType = ExecutionType.CREATE_TABLE;
             clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
             Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
-            if (connectorNames.isEmpty()){
-                throw new PlanningException("There is no connector attached to cluster "+clusterMetadata.getName().getName());
+            if (connectorNames.isEmpty()) {
+                throw new PlanningException("There is no connector attached to cluster " + clusterMetadata.getName().getName());
             }
             try {
                 actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
             } catch (PlanningException pe) {
-                LOG.debug( "No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
-                for (ConnectorName connectorName: connectorNames) {
-                    if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_TABLE)){
-                        throw new PlanningException(connectorName.getQualifiedName()+" supports CREATE_TABLE but no connector was found to execute CREATE_TABLE");
+                LOG.debug("No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
+                for (ConnectorName connectorName : connectorNames) {
+                    if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_TABLE)) {
+                        throw new PlanningException(connectorName.getQualifiedName() + " supports CREATE_TABLE but no connector was found to execute CREATE_TABLE");
                     }
                 }
             }
-        }else{
+        } else {
             executionType = ExecutionType.REGISTER_TABLE;
         }
 
@@ -1350,7 +1350,7 @@ public class Planner {
                 LOG.debug("Cannot determine any connector for the operation: " + Operations.CREATE_CATALOG
                         + System.lineSeparator() + pe.getMessage());
 
-                if(actorRefUri == null && createTableStatement.isExternal()) {
+                if (actorRefUri == null && createTableStatement.isExternal()) {
                     Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
                     if (connectorNames != null && !connectorNames.isEmpty()) {
                         for (ConnectorName connectorName : clusterMetadata.getConnectorAttachedRefs().keySet()) {
@@ -1362,10 +1362,9 @@ public class Planner {
                 }
             }
 
-            // Create MetadataWorkFlow
+
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
 
-            // Add CatalogMetadata to the WorkFlow
             metadataWorkflow.setCatalogName(createTableStatement.getTableName().getCatalogName());
 
             metadataWorkflow.setCatalogMetadata(MetadataManager.MANAGER
@@ -1378,7 +1377,7 @@ public class Planner {
         TableName name = createTableStatement.getTableName();
         Map<Selector, Selector> options = createTableStatement.getProperties();
         LinkedHashMap<ColumnName, ColumnMetadata> columnMap = new LinkedHashMap<>();
-        for (Map.Entry<ColumnName, ColumnType> c: createTableStatement.getColumnsWithTypes().entrySet()) {
+        for (Map.Entry<ColumnName, ColumnType> c : createTableStatement.getColumnsWithTypes().entrySet()) {
             ColumnName columnName = c.getKey();
             ColumnMetadata columnMetadata = new ColumnMetadata(columnName, null, c.getValue());
             columnMap.put(columnName, columnMetadata);
