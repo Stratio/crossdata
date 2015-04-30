@@ -23,6 +23,7 @@ import static com.stratio.crossdata.common.statements.structures.SelectorType.FU
 import static com.stratio.crossdata.common.statements.structures.SelectorType.RELATION;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -31,9 +32,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Arrays;
 
-import com.stratio.crossdata.core.structures.Join;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
@@ -78,6 +77,7 @@ import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.GroupByClause;
+import com.stratio.crossdata.core.structures.Join;
 import com.stratio.crossdata.core.validator.Validator;
 
 /**
@@ -796,7 +796,7 @@ public class Normalizator {
 
         fields.addColumnName(columnName, selector.getAlias());
         selector.setName(columnName);
-
+        selector.setTableName(columnName.getTableName());
     }
 
     private boolean checkVirtualColumnSelector(ColumnSelector selector, ColumnName columnName)

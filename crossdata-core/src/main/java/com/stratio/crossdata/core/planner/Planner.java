@@ -33,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.stratio.crossdata.core.structures.Join;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.AlterOperation;
@@ -70,10 +69,10 @@ import com.stratio.crossdata.common.logicalplan.OrderBy;
 import com.stratio.crossdata.common.logicalplan.PartialResults;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
+import com.stratio.crossdata.common.logicalplan.TransformationStep;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Virtualizable;
 import com.stratio.crossdata.common.logicalplan.Window;
-import com.stratio.crossdata.common.logicalplan.TransformationStep;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
@@ -87,7 +86,6 @@ import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
-import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
@@ -117,6 +115,7 @@ import com.stratio.crossdata.core.query.StoragePlannedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.*;
 import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
+import com.stratio.crossdata.core.structures.Join;
 import com.stratio.crossdata.core.utils.CoreUtils;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -252,7 +251,11 @@ public class Planner {
                 if(ep.getLast().getNextStep() == null){
                     break;
                 }
-                ep = defineExecutionPath(ep.getLast().getNextStep(), candidatesConnectors.get(targetTable), query);
+                ep = new ExecutionPath(
+                        ep.getLast().getNextStep(),
+                        ep.getLast().getNextStep(),
+                        new ArrayList<ConnectorMetadata>());
+                //ep = defineExecutionPath(ep.getLast().getNextStep(), candidatesConnectors.get(targetTable), query);
             }
         }
         // Add ExecutionPath from last union step, if present; otherwise, add the whole path
@@ -260,7 +263,7 @@ public class Planner {
         LogicalStep lastUnion = getLastUnion(initialStep);
         ExecutionPath lastExecPath = defineExecutionPath(
                 lastUnion,
-                candidatesConnectors.get(((Project) initialStep).getTableName()), //TODO: candidates must be all connectors online
+                MetadataManager.MANAGER.getConnectors(Status.ONLINE),
                 query);
         executionPaths.add(lastExecPath);
 
