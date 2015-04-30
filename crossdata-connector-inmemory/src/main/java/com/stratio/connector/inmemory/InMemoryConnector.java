@@ -201,7 +201,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
 
 
     private void restoreSchema(ClusterName cluster) throws ConnectorException {
-        List<CatalogMetadata> catalogList = getCatalogs(cluster, DEFAULT_TIMEOUT_IN_MS);
+        List<CatalogMetadata> catalogList = getCatalogs(cluster, DEFAULT_TIMEOUT_IN_MS).get();
         if (catalogList != null){
             for (CatalogMetadata catalogMetadata : catalogList) {
                 LOG.debug("Restoring catalog: "+catalogMetadata.toString());
