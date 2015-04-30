@@ -261,9 +261,13 @@ public class Planner {
         // Add ExecutionPath from last union step, if present; otherwise, add the whole path
         LogicalStep initialStep = workflow.getInitialSteps().get(0);
         LogicalStep lastUnion = getLastUnion(initialStep);
+        List<ConnectorMetadata> connectorsForLastStep = MetadataManager.MANAGER.getConnectors(Status.ONLINE);
+        if(initialStep.equals(lastUnion)){
+            connectorsForLastStep = candidatesConnectors.get(((Project) initialStep).getTableName());
+        }
         ExecutionPath lastExecPath = defineExecutionPath(
                 lastUnion,
-                MetadataManager.MANAGER.getConnectors(Status.ONLINE),
+                connectorsForLastStep,
                 query);
         executionPaths.add(lastExecPath);
 
