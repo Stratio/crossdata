@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -95,6 +96,8 @@ public class Normalizator {
     private SelectParsedQuery parsedQuery;
 
     private Normalizator subqueryNormalizator;
+
+    private Map<String, Integer> aliasFunctionMap=new HashMap<>();
 
     /**
      * Class Constructor.
@@ -1026,6 +1029,7 @@ public class Normalizator {
             switch (selector.getType()) {
             case FUNCTION:
                 FunctionSelector functionSelector = (FunctionSelector) selector;
+                getNormalizedFunctionAlias(functionSelector);
                 checkFunctionSelector(functionSelector);
                 functionSelector.setTableName(firstTableName);
                 result.add(functionSelector);
@@ -1148,6 +1152,17 @@ public class Normalizator {
             }
         }
         return result;
+    }
+
+    private FunctionSelector getNormalizedFunctionAlias(FunctionSelector functionSelector) {
+        if (aliasFunctionMap.containsKey(functionSelector.getAlias())){
+            int index=aliasFunctionMap.get(functionSelector.getAlias());
+            functionSelector.setAlias(functionSelector.getAlias() + Integer.toString(index+1));
+            aliasFunctionMap.put(functionSelector.getAlias(), index+1);
+        }else{
+            aliasFunctionMap.put(functionSelector.getAlias(), 0);
+        }
+        return functionSelector;
     }
 
     /**
