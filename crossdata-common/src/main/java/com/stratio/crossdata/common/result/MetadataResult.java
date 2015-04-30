@@ -106,6 +106,9 @@ public final class MetadataResult extends Result {
 
     public static final int OPERATION_REGISTER_TABLE = 18;
 
+    public static final int OPERATION_UNREGISTER_TABLE = 19;
+
+
     /**
      * Operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}.
      */

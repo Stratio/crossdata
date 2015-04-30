@@ -108,7 +108,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorSelection
   }
 
-  override def getTableMetadata(clusterName: ClusterName, tableName: TableName, timeout: Int): TableMetadata = {
+  override def getTableMetadata(clusterName: ClusterName, tableName: TableName, timeout: Int): Option[TableMetadata] = {
     /*TODO: for querying actor internal state, only messages should be used.
       i.e.{{{
         import scala.concurrent.duration._
@@ -122,21 +122,22 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val future = actorClusterNode.get.?(GetTableMetadata(clusterName,tableName ))(timeout)
     Try(Await.result(future, Duration.fromNanos(timeout*1000000L))) match {
       case Success(cMetadataList) =>
-        cMetadataList.asInstanceOf[TableMetadata]
+        Some(cMetadataList.asInstanceOf[TableMetadata])
       case Failure(exception) =>
         logger.debug("Error fetching the catalog metadata from the ObservableMap: "+exception.getMessage)
-        null
+        None
     }
   }
 
-  override def getCatalogMetadata(catalogName: CatalogName, timeout: Int): CatalogMetadata ={
+  override def getCatalogMetadata(catalogName: CatalogName, timeout: Int): Option[CatalogMetadata] ={
+    //TODO Future[Any] => Future[T] using akka(?) ?? Try(Await.result(future,Duration.fromNanos(timeout*1000000L))).map{ Some (_)}.recover{ case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: "+e.getMessage); None }.get
     val future = actorClusterNode.get.?(GetCatalogMetadata(catalogName))(timeout)
     Try(Await.result(future,Duration.fromNanos(timeout*1000000L))) match {
       case Success(cMetadataList) =>
-        cMetadataList.asInstanceOf[CatalogMetadata]
+        Some(cMetadataList.asInstanceOf[CatalogMetadata])
       case Failure(exception) =>
         logger.debug("Error fetching the catalog metadata from the ObservableMap: "+exception.getMessage)
-        null
+        None
     }
   }
 
@@ -146,14 +147,14 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
    * @param timeout the timeout in ms.
    * @return The list of catalog metadata or null if the list is not ready after waiting the specified time.
    */
-  override def getCatalogs(cluster: ClusterName,timeout: Int = 10000): util.List[CatalogMetadata] ={
+  override def getCatalogs(cluster: ClusterName,timeout: Int = 10000): Option[util.List[CatalogMetadata]] ={
     val future = actorClusterNode.get.ask(GetCatalogs(cluster))(timeout)
     Try(Await.result(future, Duration.fromNanos(timeout*1000000L))) match {
       case Success(cMetadataList) =>
-        cMetadataList.asInstanceOf[util.List[CatalogMetadata]]
+        Some(cMetadataList.asInstanceOf[util.List[CatalogMetadata]])
       case Failure(exception) =>
         logger.debug("Error fetching the catalogs from the ObservableMap: "+exception.getMessage)
-        null
+        None
     }
   }
 

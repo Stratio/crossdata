@@ -37,7 +37,9 @@ public enum ExecutionType {
     IMPORT_CATALOGS,
     IMPORT_CATALOG,
     IMPORT_TABLE,
+    UNREGISTER_TABLE,
     REGISTER_TABLE,
+    REGISTER_TABLE_AND_CATALOG,
 
     //IStorage
     INSERT,

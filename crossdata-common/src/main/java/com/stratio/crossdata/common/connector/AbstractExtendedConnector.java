@@ -28,6 +28,7 @@ import com.stratio.crossdata.common.data.ConnectionStatus;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import scala.Option;
 
 /**
  * Abstract class to provided IConnector implementations an easy access to the parent
@@ -55,7 +56,7 @@ public abstract class AbstractExtendedConnector implements IConnector{
      * @param timeout the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata}.
      */
-    public TableMetadata getTableMetadata(ClusterName cluster, TableName tableName, int timeout){
+    public Option<TableMetadata> getTableMetadata(ClusterName cluster, TableName tableName, int timeout){
         return connectorApp.getTableMetadata(cluster, tableName, timeout);
     }
 
@@ -65,7 +66,7 @@ public abstract class AbstractExtendedConnector implements IConnector{
      * @param timeout the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    public CatalogMetadata getCatalogMetadata(CatalogName catalogName, int timeout){
+    public Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout){
         return connectorApp.getCatalogMetadata(catalogName, timeout);
     }
 
@@ -75,9 +76,9 @@ public abstract class AbstractExtendedConnector implements IConnector{
      * @param timeout the timeout in ms.
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    public List<CatalogMetadata> getCatalogs(ClusterName cluster, int timeout){
+    public Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout){
         if((connectorApp == null) || (cluster == null)){
-            return new ArrayList<>();
+            return Option.empty();
         }
         return connectorApp.getCatalogs(cluster,timeout);
     }

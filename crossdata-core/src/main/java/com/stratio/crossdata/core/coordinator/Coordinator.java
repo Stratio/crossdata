@@ -82,6 +82,7 @@ public class Coordinator implements Serializable {
             persistCreateIndex(metadataWorkflow.getIndexMetadata());
             break;
         case CREATE_TABLE_AND_CATALOG:
+        case REGISTER_TABLE_AND_CATALOG:
             persistCreateCatalogInCluster(metadataWorkflow.getCatalogName(), metadataWorkflow.getClusterName());
             persistCreateTable(metadataWorkflow.getTableMetadata());
             break;
