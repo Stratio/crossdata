@@ -34,6 +34,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.data.AlterOperation;
+import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -351,5 +353,73 @@ public class CoordinatorTest {
                 "Expected: " + index + System.lineSeparator() +
                         "Found:    " + storedIndexName);
     }
+
+
+    @Test
+    public void persistAlterCatalogTest() throws Exception {
+        CatalogName catalogName = new CatalogName("catalog1");
+        Map<TableName, TableMetadata> catalogTables = new HashMap<>();
+        Map<Selector, Selector> options = new HashMap<>();
+        CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);
+
+        String queryId = "persistAlterCatalog";
+        String actorRef = "AlterCatalogActorRef";
+        ExecutionType executionType = ExecutionType.ALTER_CATALOG;
+        ResultType type = ResultType.RESULTS;
+        MetadataWorkflow metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+        metadataWorkflow.setCatalogName(catalogMetadata.getName());
+        metadataWorkflow.setCatalogMetadata(catalogMetadata);
+        MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_CATALOG);
+
+        Coordinator coordinator = new Coordinator();
+        coordinator.persist(metadataWorkflow, result);
+
+        assertEquals(MetadataManager.MANAGER.getCatalog(catalogMetadata.getName()).getName(),
+                catalogMetadata.getName()," Alter Catalog Error Test");
+    }
+
+
+    @Test
+    public void persistAlterTableTest() throws Exception {
+
+        String datastore = "dataStoreTest";
+        String cluster = "production";
+        String catalog = "testCatalog";
+        String tableString = "testTable";
+
+
+
+        TableName tableName = new TableName(catalog, tableString);
+        String[] columnNames1 = { "id", "user" };
+        ColumnType[] columnTypes = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
+        String[] partitionKeys = { "id" };
+        String[] clusteringKeys = { };
+        TableMetadata tableMetadata = MetadataManagerTestHelper.HELPER.defineTable(
+                new ClusterName(cluster),
+                catalog,
+                tableString,
+                columnNames1,
+                columnTypes,
+                partitionKeys,
+                clusteringKeys);
+
+        String queryId = "alterTableQueryId";
+        String actorRef = "alterTableActorRef";
+        AlterOptions alterOptions=new AlterOptions(AlterOperation.ALTER_OPTIONS,new HashMap<Selector,Selector>(),null);
+        ExecutionType executionType = ExecutionType.ALTER_TABLE;
+        ResultType type = ResultType.RESULTS;
+        MetadataWorkflow metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+        metadataWorkflow.setTableName(tableName);
+        metadataWorkflow.setTableMetadata(tableMetadata);
+        metadataWorkflow.setAlterOptions(alterOptions);
+
+        MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_TABLE);
+        Coordinator coordinator = new Coordinator();
+        coordinator.persist(metadataWorkflow, result);
+
+        assertEquals(MetadataManager.MANAGER.getTable(tableName).getName(), tableMetadata.getName(),
+                "Test alter table fail");
+    }
+
 
 }
