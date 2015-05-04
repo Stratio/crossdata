@@ -26,15 +26,19 @@ import static org.testng.Assert.fail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
@@ -45,6 +49,7 @@ import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.manifest.SupportedOperationsType;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ErrorResult;
+import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
@@ -387,5 +392,185 @@ public class APIManagerTest {
                 "Expected: " + "CrossdataManifest added" + System.lineSeparator() +
                 "Found:    " + resultStr);
     }
+
+
+    @Test
+    public void cleanMetadataTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        Command cmd = new Command("CLEAN", APICommand.CLEAN_METADATA(), new ArrayList<>(), "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
+        CommandResult cmdR = (CommandResult) result;
+        String resultStr = (String) cmdR.getResult();
+
+        assertTrue(resultStr.startsWith("Metadata cleaned."),
+                "Expected: " + "    Metadata cleaned. " + System.lineSeparator() +
+                        "Found:    " + resultStr);
+
+        try {
+            MetadataManagerTestHelper.HELPER.createTestEnvironment();
+        } catch (ManifestException e) {
+            fail("Error when try to restore test.");
+        }
+    }
+
+    @Test
+    public void describeCatalogTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        List<Object> params=new ArrayList<>();
+        params.add(new CatalogName("testCatalog"));
+        Command cmd = new Command("DescribeCatalog", APICommand.DESCRIBE_CATALOG(), params, "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof MetadataResult, "testProcessRequest should return a MetadataResult");
+        MetadataResult res = (MetadataResult) result;
+        Assert.assertTrue(res.getCatalogMetadataList().size() > 0, "The test should return almost one catalog");
+    }
+
+    @Test
+    public void describeClusterTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        List<Object> params=new ArrayList<>();
+        params.add(new ClusterName("production"));
+        Command cmd = new Command("DescribeCluster", APICommand.DESCRIBE_CLUSTER(), params, "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
+        CommandResult cmdR = (CommandResult) result;
+        String resultStr = (String) cmdR.getResult();
+
+        assertTrue(resultStr.contains("cluster.production"),
+                "Expected: " + "    cluster.production  " + System.lineSeparator() +
+                        "Found:    " + resultStr);
+    }
+
+
+    @Test
+    public void describeClustersTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        List<Object> params=new ArrayList<>();
+
+        Command cmd = new Command("DescribeCluster", APICommand.DESCRIBE_CLUSTERS(), params, "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
+        CommandResult cmdR = (CommandResult) result;
+        String resultStr = (String) cmdR.getResult();
+
+        assertTrue(resultStr.contains("cluster.production"),
+                "Expected: " + "    cluster.production  " + System.lineSeparator() +
+                        "Found:    " + resultStr);
+    }
+
+    @Test
+    public void describeConnectorTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        List<Object> params=new ArrayList<>();
+        params.add(new ConnectorName("connector1"));
+        Command cmd = new Command("DescribeConnector", APICommand.DESCRIBE_CONNECTOR(), params, "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
+        CommandResult cmdR = (CommandResult) result;
+        String resultStr = (String) cmdR.getResult();
+
+        assertTrue(resultStr.contains("connector1"),
+                "Expected: " + "    connector1  " + System.lineSeparator() +
+                        "Found:    " + resultStr);
+    }
+
+    @Test
+    public void describeConnectorsTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        List<Object> params=new ArrayList<>();
+
+        Command cmd = new Command("DescribeConnectors", APICommand.DESCRIBE_CONNECTORS(), params, "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
+        CommandResult cmdR = (CommandResult) result;
+        String resultStr = (String) cmdR.getResult();
+
+        assertTrue(resultStr.contains("connector1"),
+                "Expected: " + "    connector1  " + System.lineSeparator() +
+                        "Found:    " + resultStr);
+    }
+
+
+    @Test
+    public void describeDataStoreTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        List<Object> params=new ArrayList<>();
+        params.add(new DataStoreName("dataStoreTest"));
+        Command cmd = new Command("DescribeDataStore", APICommand.DESCRIBE_DATASTORE(), params, "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
+        CommandResult cmdR = (CommandResult) result;
+        String resultStr = (String) cmdR.getResult();
+
+        assertTrue(resultStr.contains("dataStoreTest"),
+                "Expected: " + "    dataStoreTest  " + System.lineSeparator() +
+                        "Found:    " + resultStr);
+    }
+
+    @Test
+    public void describeDataStoresTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        List<Object> params=new ArrayList<>();
+
+        Command cmd = new Command("DescribeDataStore", APICommand.DESCRIBE_DATASTORES(), params, "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
+        CommandResult cmdR = (CommandResult) result;
+        String resultStr = (String) cmdR.getResult();
+
+        assertTrue(resultStr.contains("dataStoreTest"),
+                "Expected: " + "    dataStoreTest  " + System.lineSeparator() +
+                        "Found:    " + resultStr);
+    }
+
+    @Test
+    public void describeSystemTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        List<Object> params=new ArrayList<>();
+
+        Command cmd = new Command("DescribeSystem", APICommand.DESCRIBE_SYSTEM(), params, "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
+        CommandResult cmdR = (CommandResult) result;
+        String resultStr = (String) cmdR.getResult();
+
+        assertTrue(resultStr.contains("\n"
+                        + "Datastore datastore.dataStoreTest:\n"
+                        + "\tCluster production:\n"),
+                "Expected: " + "    \n"
+                        + "Datastore datastore.dataStoreTest:\n"
+                        + "\tCluster production:\n  " + System.lineSeparator() +
+                        "Found:    " + resultStr);
+    }
+
+    @Test
+    public void describeTablesTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        List<Object> params=new ArrayList<>();
+        params.add(new CatalogName("testCatalog"));
+        Command cmd = new Command("DescribeTables", APICommand.DESCRIBE_TABLES(), params, "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof CommandResult, "testProcessRequest should return a CommandResult");
+        CommandResult cmdR = (CommandResult) result;
+        String resultStr = (String) cmdR.getResult();
+        assertTrue(resultStr.contains("testCatalog.testTable"),  "Expected: " + " testCatalog.testTable " + System
+                .lineSeparator() +
+                "Found:    " + resultStr);
+    }
+
+
+    @Test
+    public void describeTableTest(){
+        APIManager ApiManager = new APIManager(parser, validator, planner);
+        List<Object> params=new ArrayList<>();
+        params.add(new TableName("testCatalog","testTable"));
+        Command cmd = new Command("DescribeTables", APICommand.DESCRIBE_TABLE(), params, "sessionTest");
+        Result result = ApiManager.processRequest(cmd);
+        assertTrue(result instanceof MetadataResult, "testProcessRequest should return a MetadataResult");
+        MetadataResult res = (MetadataResult) result;
+        Assert.assertTrue(res.getTableList().size() > 0, "The test should return almost one catalog");
+    }
+
 
 }
