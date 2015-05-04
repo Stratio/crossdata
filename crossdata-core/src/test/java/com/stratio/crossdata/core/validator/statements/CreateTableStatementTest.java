@@ -21,6 +21,7 @@ package com.stratio.crossdata.core.validator.statements;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 
+import com.stratio.crossdata.common.exceptions.validation.NotValidColumnException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -45,14 +46,11 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     public void createTable() {
         String query = "CREATE TABLE demo.users2 ( name varchar, gender varchar, age int, PRIMARY KEY (name)) ";
         boolean isExternal = false;
-        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
         LinkedHashSet<ColumnName> primaryKey = new LinkedHashSet<>();
         ColumnName partitionColumn1 = new ColumnName("demo", "users2", "name");
         primaryKey.add(partitionColumn1);
 
-        columns.put(new ColumnName(new TableName("demo", "users2"), "name"), new ColumnType(DataType.TEXT));
-        columns.put(new ColumnName(new TableName("demo", "users2"), "gender"), new ColumnType(DataType.TEXT));
-        columns.put(new ColumnName(new TableName("demo", "users2"), "age"), new ColumnType(DataType.INT));
+        LinkedHashMap<ColumnName, ColumnType> columns = createColumnsMap();
 
         LinkedHashSet<ColumnName> clusterKey = new LinkedHashSet<>();
         CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "users2"),
@@ -78,15 +76,12 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     @Test
     public void createTableWithOptions() {
         String query = "CREATE TABLE demo.users2 ( name varchar, gender varchar, age int, PRIMARY KEY (name)) WITH comment='Users2 table'";
-        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
         LinkedHashSet<ColumnName> primaryKey = new LinkedHashSet<>();
         ColumnName partitionColumn1 = new ColumnName("demo", "users2", "name");
         primaryKey.add(partitionColumn1);
         boolean isExternal = false;
 
-        columns.put(new ColumnName(new TableName("demo", "users2"), "name"), new ColumnType(DataType.TEXT));
-        columns.put(new ColumnName(new TableName("demo", "users2"), "gender"), new ColumnType(DataType.TEXT));
-        columns.put(new ColumnName(new TableName("demo", "users2"), "age"), new ColumnType(DataType.INT));
+        LinkedHashMap<ColumnName, ColumnType> columns = createColumnsMap();
 
         LinkedHashSet<ColumnName> clusterKey = new LinkedHashSet<>();
         CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "users2"),
@@ -114,13 +109,13 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     @Test
     public void createTableUnknownCatalog() {
         String query = "CREATE TABLE unknown.users2 ( name varchar, gender varchar, age int, PRIMARY KEY (name))";
-        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
         LinkedHashSet<ColumnName> primaryKey = new LinkedHashSet<>();
         ColumnName partitionColumn1 = new ColumnName("unknown", "users2", "name");
         primaryKey.add(partitionColumn1);
         boolean isExternal = false;
         TableName tableName = new TableName("unknown", "users2");
 
+        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
         columns.put(new ColumnName(tableName, "name"), new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "gender"), new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "age"), new ColumnType(DataType.INT));
@@ -148,11 +143,11 @@ public class CreateTableStatementTest extends BasicValidatorTest {
     public void createDuplicateTable() {
         String query = "CREATE TABLE demo.users ( name varchar, gender varchar, age int, PRIMARY KEY (name)) ";
         boolean isExternal = false;
-        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
         LinkedHashSet<ColumnName> primaryKey = new LinkedHashSet<>();
         ColumnName partitionColumn1 = new ColumnName("demo", "users", "name");
         primaryKey.add(partitionColumn1);
 
+        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
         columns.put(new ColumnName(new TableName("demo", "users"), "name"), new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(new TableName("demo", "users"), "gender"), new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(new TableName("demo", "users"), "age"), new ColumnType(DataType.INT));
@@ -174,4 +169,62 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         }
     }
 
+
+    @Test(expectedExceptions = NotValidColumnException.class)
+    public void badPrimaryKeyName() throws ValidationException, IgnoreQueryException {
+        String query = "CREATE TABLE demo.users2 ( name varchar, gender varchar, age int, PRIMARY KEY (NoExist)) ";
+        boolean isExternal = false;
+        LinkedHashSet<ColumnName> primaryKey = new LinkedHashSet<>();
+        primaryKey.add(new ColumnName("demo", "users2", "NoExist"));
+
+        LinkedHashMap<ColumnName, ColumnType> columns = createColumnsMap();
+
+        LinkedHashSet<ColumnName> clusterKey = new LinkedHashSet<>();
+        CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "users2"),
+                new ClusterName("cluster"),
+                columns,
+                primaryKey,
+                clusterKey,isExternal);
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
+
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
+
+        validator.validate(parsedQuery);
+    }
+
+    @Test(expectedExceptions = NotValidColumnException.class)
+    public void badMultiplePrimaryKeyName() throws ValidationException, IgnoreQueryException {
+        String query = "CREATE TABLE demo.users2 ( name varchar, gender varchar, age int, PRIMARY KEY (NoExist)) ";
+        boolean isExternal = false;
+        LinkedHashSet<ColumnName> primaryKey = new LinkedHashSet<>();
+
+        primaryKey.add( new ColumnName("demo", "users2", "name"));
+        primaryKey.add( new ColumnName("demo", "users2", "NoExist2"));
+
+        LinkedHashMap<ColumnName, ColumnType> columns = createColumnsMap();
+
+        LinkedHashSet<ColumnName> clusterKey = new LinkedHashSet<>();
+        CreateTableStatement createTableStatement = new CreateTableStatement(new TableName("demo", "users2"),
+                new ClusterName("cluster"),
+                columns,
+                primaryKey,
+                clusterKey,isExternal);
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
+
+        IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createTableStatement);
+
+        validator.validate(parsedQuery);
+    }
+
+    private LinkedHashMap<ColumnName, ColumnType> createColumnsMap() {
+        LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
+        columns.put(new ColumnName(new TableName("demo", "users2"), "name"), new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users2"), "gender"), new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(new TableName("demo", "users2"), "age"), new ColumnType(DataType.INT));
+        return columns;
+    }
 }
