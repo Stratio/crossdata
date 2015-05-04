@@ -57,7 +57,7 @@ trait ServerConfig extends GridConfig with NumberActorConfig {
   lazy val engineConfig: EngineConfig = {
     val result = new EngineConfig()
     result.setGridListenAddress(gridListenAddress)
-    if(ips.length==1)result.setGridListenAddress(ips(1))
+    //if(ips.length==1)result.setGridListenAddress(ips(0))
     result.setGridContactHosts(gridContactHosts)
     result.setGridPort(gridPort)
     result.setGridMinInitialMembers(gridMinInitialMembers)
