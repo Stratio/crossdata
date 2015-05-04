@@ -532,9 +532,10 @@ public class Normalizator {
             if (relation instanceof RelationDisjunction) {
                 throw new BadFormatException("Join relations cannot contain or operators");
             }
-            checkJoinTablesRelation(relation);
+
             checkRelation(relation);
             checkJoinRelation(relation);
+            checkJoinTablesRelation(relation);
         }
     }
 
@@ -542,7 +543,7 @@ public class Normalizator {
         if (abstractRelation instanceof Relation) {
             Relation relation = (Relation) abstractRelation;
             if (!joinTableSet.contains(relation.getLeftTerm().getColumnName().getTableName()) ||
-                    !joinTableSet.contains(relation.getRightTerm().getColumnName().getTableName()) ){
+                    !joinTableSet.contains(relation.getRightTerm().getColumnName().getTableName())){
                 throw new BadFormatException("Join relation malformed. You can only use columns of tables implied in " +
                         "the actual join and previous joins");
             }
