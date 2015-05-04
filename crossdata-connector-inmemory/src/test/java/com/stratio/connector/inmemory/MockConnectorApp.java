@@ -54,10 +54,11 @@ public class MockConnectorApp implements IConnectorApp {
      * @param timeout the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    @Override
+    /*@Override
     public Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout) {
         return Option.apply( new CatalogMetadata(null, null, null));
     }
+    */
 
     /**
      * Get the list of existing catalogs in a cluster.

@@ -21,6 +21,7 @@ package com.stratio.crossdata.common.connector;
 import java.util.List;
 
 import com.codahale.metrics.Metric;
+import com.stratio.crossdata.common.annotation.Experimental;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectionStatus;
@@ -49,7 +50,7 @@ public interface IConnectorApp {
      * @param timeout the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata} or null if the catalog metadata is not ready after waiting the specified time.
      */
-    Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout);
+    //Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout);
 
     /**
      * Get the list of existing catalogs in a cluster.
@@ -57,6 +58,7 @@ public interface IConnectorApp {
      * @param timeout the timeout in ms.
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata} or null if the table metadata is not ready after waiting the specified time..
      */
+    @Experimental
     Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout);
 
     /**

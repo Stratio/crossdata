@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.codahale.metrics.Metric;
+import com.stratio.crossdata.common.annotation.Experimental;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectionStatus;
@@ -66,9 +67,10 @@ public abstract class AbstractExtendedConnector implements IConnector{
      * @param timeout the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    public Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout){
+   /* public Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout){
         return connectorApp.getCatalogMetadata(catalogName, timeout);
     }
+    */
 
     /**
      * Get the list of existing catalogs in a cluster.
@@ -76,6 +78,7 @@ public abstract class AbstractExtendedConnector implements IConnector{
      * @param timeout the timeout in ms.
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
+    @Experimental
     public Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout){
         if((connectorApp == null) || (cluster == null)){
             return Option.empty();

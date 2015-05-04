@@ -182,8 +182,11 @@ public class MetadataWorkflow extends ExecutionWorkflow {
         case CREATE_TABLE_AND_CATALOG:
             result = new CreateTableAndCatalog(queryId, this.clusterName, this.catalogMetadata, this.tableMetadata);
             break;
-        case REGISTER_TABLE_AND_CATALOG:
+        case REGISTER_TABLE_CREATE_CATALOG:
             result = new CreateCatalog(queryId, this.clusterName, this.catalogMetadata);
+            break;
+        case CREATE_TABLE_REGISTER_CATALOG:
+            result = new CreateTable(queryId, this.clusterName, this.tableMetadata);
             break;
         case DROP_TABLE:
             result = new DropTable(queryId, this.clusterName, this.tableName);

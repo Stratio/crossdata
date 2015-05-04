@@ -25,6 +25,7 @@ import akka.agent.Agent
 import akka.actor._
 import akka.pattern.ask
 import akka.routing.DefaultResizer
+import com.stratio.crossdata.common.annotation.Experimental
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.metadata.{UpdatableMetadata, CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
@@ -38,7 +39,6 @@ import scala.util.Try
 import scala.collection.JavaConversions._
 import com.stratio.crossdata.communication.GetCatalogs
 import akka.routing.RoundRobinPool
-import com.stratio.crossdata.communication.GetCatalogMetadata
 import com.stratio.crossdata.communication.GetTableMetadata
 import com.stratio.crossdata.communication.Shutdown
 
@@ -122,6 +122,8 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   }
 
+  /*
+  TODO Review 0.4.0
   override def getCatalogMetadata(catalogName: CatalogName, timeout: Int): Option[CatalogMetadata] ={
     val future = actorClusterNode.get.?(GetCatalogMetadata(catalogName))(timeout)
     Try(Await.result(future.mapTo[CatalogMetadata],Duration.fromNanos(timeout*1000000L))).map{ Some (_)}.recover{
@@ -129,6 +131,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     }.get
 
   }
+ */
 
   /**
    * Recover the list of catalogs associated to the specified cluster.
@@ -136,12 +139,12 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
    * @param timeout the timeout in ms.
    * @return The list of catalog metadata or null if the list is not ready after waiting the specified time.
    */
+  @Experimental
   override def getCatalogs(cluster: ClusterName,timeout: Int = 10000): Option[util.List[CatalogMetadata]] ={
     val future = actorClusterNode.get.ask(GetCatalogs(cluster))(timeout)
     Try(Await.result(future.mapTo[util.List[CatalogMetadata]],Duration.fromNanos(timeout*1000000L))).map{ Some (_)}.recover {
       case e: Exception => logger.debug("Error fetching the catalogs from the ObservableMap: "+e.getMessage); None
     }.get
-
   }
 
   override def getConnectionStatus(): ConnectionStatus = {
