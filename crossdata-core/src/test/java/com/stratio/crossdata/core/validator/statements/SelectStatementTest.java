@@ -1568,7 +1568,8 @@ public class SelectStatementTest extends BasicValidatorTest {
     @Test
     public void multipleFunctionsAlias3(){
         String inputText = "SELECT getYear(users.age), getYear(users.average) FROM demo.users";
-        String expectedText = "SELECT getYear(demo.users.age) AS getYear, getYear(demo.users.average) AS getYear1 " +
+        String expectedText = "SELECT getYear(demo.users.age) AS getYear, " +
+                "getYear(demo.users.average) AS getYear1 " +
                 "FROM demo.users";
 
         ColumnName col1 = new ColumnName(null, "users", "age");
@@ -1810,6 +1811,59 @@ public class SelectStatementTest extends BasicValidatorTest {
         assertNotNull(validatedQuery, "Expecting validated query");
         assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
     }
+
+    @Test
+    public void simpleSubqueryAliasTest(){
+
+        String inputText = "SELECT now() FROM ( SELECT demo.users.name AS n, " +
+                "now() FROM demo.users ) t WHERE n = 'name_1'";
+        String expectedText = "SELECT now() AS now FROM ( SELECT demo.users.name AS n, " +
+                "now() AS now FROM demo.users ) AS t " +
+                "WHERE "+ Constants.VIRTUAL_NAME +".t.n = 'name_1'";
+
+        ColumnName n1 = new ColumnName("demo", "users", "name");
+
+        Selector selector1 = new ColumnSelector(n1);
+        selector1.setAlias("n");
+
+        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "now", new LinkedList<Selector>());
+        List<Selector> selectorList = new ArrayList<>();
+
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        TableName tablename = new TableName("demo", "users");
+        SelectStatement subquerySelectStatement = new SelectStatement(selectExpression, tablename);
+
+        List<Selector> selectorListSuperquery = new ArrayList<>();
+        selectorListSuperquery.add(new FunctionSelector(new TableName("demo", "users"), "now", new LinkedList<Selector>()));
+        TableName virtualTable = new TableName(Constants.VIRTUAL_NAME, "t");
+        virtualTable.setAlias("t");
+        SelectStatement selectStatement = new SelectStatement(new SelectExpression(selectorListSuperquery), virtualTable);
+        selectStatement.setSubquery(subquerySelectStatement, "t");
+
+        List<AbstractRelation> where = new ArrayList<>();
+        Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
+        Selector rightWh = new StringSelector(new TableName("", ""), "name_1");
+        Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
+        where.add(relationWh);
+        selectStatement.setWhere(where);
+
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+    }
+
 
     @Test
     public void simpleSubqueryWithAmbiguousNameTest(){
