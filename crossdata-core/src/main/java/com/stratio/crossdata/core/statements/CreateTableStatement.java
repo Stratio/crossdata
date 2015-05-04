@@ -240,7 +240,9 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
     public ValidationRequirements getValidationRequirements() {
         ValidationRequirements requirements = new ValidationRequirements()
                 .add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_CLUSTER);
+                .add(ValidationTypes.MUST_EXIST_CLUSTER)
+                .add(ValidationTypes.MUST_BE_A_VALID_PK);
+
         if (!isIfNotExists()) {
             requirements = requirements.add(ValidationTypes.MUST_NOT_EXIST_TABLE);
         }
@@ -263,5 +265,13 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
      */
     public boolean isExternal() {
         return isExternal;
+    }
+
+    /**
+     * Get the list of columns that are part of the primary key.
+     * @return
+     */
+    public Set<ColumnName> getPrimaryKey() {
+        return primaryKey;
     }
 }
