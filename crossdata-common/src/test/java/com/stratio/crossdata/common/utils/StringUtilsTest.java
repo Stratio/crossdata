@@ -21,7 +21,13 @@ import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import difflib.Patch;
@@ -59,5 +65,54 @@ public class StringUtilsTest {
         assertTrue(b.equals(c));
     }
 
+    @Test
+    public void testConvertJavaTypeToXdType(){
+
+        Assert.assertEquals(new ColumnType(DataType.BIGINT), StringUtils.convertJavaTypeToXdType("Long"));
+        Assert.assertEquals(new ColumnType(DataType.BOOLEAN), StringUtils.convertJavaTypeToXdType("Boolean"));
+        Assert.assertEquals(new ColumnType(DataType.DOUBLE), StringUtils.convertJavaTypeToXdType("Double"));
+        Assert.assertEquals(new ColumnType(DataType.DOUBLE), StringUtils.convertJavaTypeToXdType("Float"));
+        Assert.assertEquals(new ColumnType(DataType.INT), StringUtils.convertJavaTypeToXdType("Integer"));
+        Assert.assertEquals(new ColumnType(DataType.TEXT), StringUtils.convertJavaTypeToXdType("String"));
+        Assert.assertEquals(new ColumnType(DataType.SET), StringUtils.convertJavaTypeToXdType("Set"));
+        Assert.assertEquals(new ColumnType(DataType.LIST), StringUtils.convertJavaTypeToXdType("List"));
+        Assert.assertEquals(new ColumnType(DataType.MAP), StringUtils.convertJavaTypeToXdType("Map"));
+
+        ColumnType nativeType = new ColumnType(DataType.NATIVE);
+        nativeType.setDbType("NATIVE");
+        nativeType.setODBCType("NATIVE");
+        Assert.assertEquals(nativeType, StringUtils.convertJavaTypeToXdType("NATIVE"));
+    }
+
+    @Test
+    public void testConvertJsonToMap(){
+
+        String json = "{'name':'cool name', 'booleanValue':true, 'intValue':42, 'doubleValue':3.1415}";
+        Map<String, Object> result = StringUtils.convertJsonToMap(json);
+
+        Map<String, Object> expected = new LinkedHashMap<>();
+        expected.put("name", "cool name");
+        expected.put("booleanValue", true);
+        expected.put("intValue", 42);
+        expected.put("doubleValue", 3.1415);
+
+
+        Assert.assertEquals(expected, result);
+    }
+
+    @Test
+    public void testConvertXdTypeToColumnType(){
+        Assert.assertEquals(new ColumnType(DataType.BIGINT), StringUtils.convertXdTypeToColumnType("BigInt"));
+        Assert.assertEquals(new ColumnType(DataType.BOOLEAN), StringUtils.convertXdTypeToColumnType("Bool"));
+        Assert.assertEquals(new ColumnType(DataType.DOUBLE), StringUtils.convertXdTypeToColumnType("Double"));
+        Assert.assertEquals(new ColumnType(DataType.FLOAT), StringUtils.convertXdTypeToColumnType("Float"));
+        Assert.assertEquals(new ColumnType(DataType.INT), StringUtils.convertXdTypeToColumnType("Integer"));
+        Assert.assertEquals(new ColumnType(DataType.TEXT), StringUtils.convertXdTypeToColumnType("Text"));
+        Assert.assertEquals(new ColumnType(DataType.VARCHAR), StringUtils.convertXdTypeToColumnType("Varchar"));
+        Assert.assertEquals(new ColumnType(DataType.SET), StringUtils.convertXdTypeToColumnType("Set"));
+        Assert.assertEquals(new ColumnType(DataType.LIST), StringUtils.convertXdTypeToColumnType("List"));
+        Assert.assertEquals(new ColumnType(DataType.MAP), StringUtils.convertXdTypeToColumnType("Map"));
+
+    }
 
 }

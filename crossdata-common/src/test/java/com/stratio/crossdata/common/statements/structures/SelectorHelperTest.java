@@ -18,8 +18,33 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.ColumnName;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by lcisneros on 5/05/15.
  */
 public class SelectorHelperTest {
+
+
+    @Test
+    public void testConvertSelectorMapToStringMap(){
+
+        Map<Selector, Selector> selectorsMap = new HashMap<>();
+        ColumnSelector col = new ColumnSelector(new ColumnName("CatalogName", "TableName", "ColumnName"));
+        StringSelector value = new StringSelector("Cool Value");
+        selectorsMap.put(col, value);
+
+        //Experimentation
+        Map<String, String> stringsMap = SelectorHelper.convertSelectorMapToStringMap(selectorsMap);
+
+        //Expectations
+        Assert.assertEquals(stringsMap.get(col.getStringValue()), "Cool Value");
+        Assert.assertEquals(col.getStringValue(), "CatalogName.TableName.ColumnName");
+
+    }
 }
