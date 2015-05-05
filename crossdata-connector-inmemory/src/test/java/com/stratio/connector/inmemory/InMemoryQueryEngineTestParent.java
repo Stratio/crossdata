@@ -18,34 +18,52 @@
 
 package com.stratio.connector.inmemory;
 
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.testng.annotations.BeforeMethod;
+
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.connector.IConfiguration;
 import com.stratio.crossdata.common.connector.IConnector;
 import com.stratio.crossdata.common.connector.IConnectorApp;
-import com.stratio.crossdata.common.data.*;
+import com.stratio.crossdata.common.data.CatalogName;
+import com.stratio.crossdata.common.data.Cell;
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.IndexName;
+import com.stratio.crossdata.common.data.ResultSet;
+import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
-import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.logicalplan.OrderBy;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
-import com.stratio.crossdata.common.metadata.*;
+import com.stratio.crossdata.common.metadata.CatalogMetadata;
+import com.stratio.crossdata.common.metadata.ColumnMetadata;
+import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
+import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.OrderDirection;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import org.testng.annotations.BeforeTest;
 
-import java.util.*;
-
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
-
-/**
- * Created by lcisneros on 14/04/15.
- */
 public abstract class InMemoryQueryEngineTestParent {
 
     protected static final int NUM_ROWS = 10;
@@ -54,7 +72,7 @@ public abstract class InMemoryQueryEngineTestParent {
     protected IConnector connector = new InMemoryConnector(connectorApp);
     protected CatalogMetadata catalogMetadata;
 
-    @BeforeTest
+    @BeforeMethod
     public void prepareTest() throws Exception {
         startConnector();
         catalogMetadata = new CatalogMetadata(new CatalogName("test_catalog"), null, null);

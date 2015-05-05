@@ -18,27 +18,40 @@
 
 package com.stratio.connector.inmemory;
 
-import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
-import com.stratio.crossdata.common.connector.IConfiguration;
-import com.stratio.crossdata.common.connector.IConnector;
-import com.stratio.crossdata.common.connector.IConnectorApp;
-import com.stratio.crossdata.common.data.*;
-import com.stratio.crossdata.common.exceptions.ConnectionException;
-import com.stratio.crossdata.common.exceptions.ConnectorException;
-import com.stratio.crossdata.common.exceptions.InitializationException;
-import com.stratio.crossdata.common.logicalplan.*;
-import com.stratio.crossdata.common.metadata.*;
-import com.stratio.crossdata.common.result.QueryResult;
-import com.stratio.crossdata.common.security.ICredentials;
-import com.stratio.crossdata.common.statements.structures.*;
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
-
-import java.util.*;
-
 import static java.util.Collections.singleton;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.testng.annotations.Test;
+
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.ResultSet;
+import com.stratio.crossdata.common.exceptions.ConnectorException;
+import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.logicalplan.Join;
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
+import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
+import com.stratio.crossdata.common.logicalplan.Project;
+import com.stratio.crossdata.common.logicalplan.Select;
+import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
+import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.result.QueryResult;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * Query engine test.
