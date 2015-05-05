@@ -64,17 +64,14 @@ public class SelectSelector extends Selector {
     }
 
     @Override public String toString() {
-        StringBuilder sb = new StringBuilder("(" + selectQuery);
-        sb.append(")");
+        StringBuilder sb = new StringBuilder("(");
+        sb.append(selectQuery).append(")");
         return sb.toString();
     }
 
     @Override
     public String toSQLString(boolean withAlias) {
-        StringBuilder sb = new StringBuilder("(");
-        sb.append(selectQuery);
-        sb.append(")");
-        return sb.toString();
+        return toString();
     }
 
     @Override
