@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
 import com.stratio.crossdata.core.structures.Join;
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
@@ -421,7 +422,7 @@ public class NormalizerTest {
 
 
 
-    @Test(expectedExceptions = NotValidTableException.class)
+    @Test(expectedExceptions = BadFormatException.class)
     public void testNormalizeWrongInnerJoin() throws Exception {
 
         insertData();

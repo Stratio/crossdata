@@ -414,6 +414,7 @@ public class Planner {
                     mergeStep.addPreviousSteps(partialResults);
                     mergeStep.removePreviousStep(mergePaths[index].getLast());
                     mergePaths[index].getLast().setNextStep(null);
+
                     //Create a trigger execution workflow with the partial results step.
                     ExecutionWorkflow w = toExecutionWorkflow(queryId, Arrays.asList(mergePaths[index]),
                             mergePaths[index].getLast(), mergePaths[index].getAvailableConnectors(),
@@ -421,6 +422,15 @@ public class Planner {
                     w.setTriggerStep(partialResults);
 
                     triggerResults.put(partialResults, w);
+
+                    // Add select step for connector
+                    Project project = (Project) mergePaths[index].getInitial();
+                    Select previousSelect = generateSelectFromProject(project);
+                    QueryWorkflow qw = (QueryWorkflow) w;
+                    LogicalStep lastStep = qw.getWorkflow().getLastStep();
+                    lastStep.setNextStep(previousSelect);
+                    previousSelect.setPrevious(lastStep);
+                    qw.getWorkflow().setLastStep(previousSelect);
 
                     workflows.add(w);
                     intermediateResults[index] = true;
@@ -464,6 +474,27 @@ public class Planner {
             }
         }
         return buildExecutionTree(first, triggerResults, triggerWorkflow);
+    }
+
+    private Select generateSelectFromProject(Project project) {
+        Set<Operations> requiredOperations = Collections.singleton(Operations.SELECT_OPERATOR);
+        Map<Selector, String> columnMap = new LinkedHashMap<>();
+        Map<String, ColumnType> typeMap = new LinkedHashMap<>();
+        Map<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
+        for(ColumnName cn: project.getColumnList()){
+            ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(cn);
+            ColumnType ct = columnMetadata.getColumnType();
+            if(columnMetadata.getName().getAlias() == null){
+                columnMetadata.getName().setAlias(columnMetadata.getName().getName());
+            }
+            String alias = columnMetadata.getName().getAlias();
+            ColumnSelector cs = new ColumnSelector(columnMetadata.getName());
+            cs.setAlias(alias);
+            columnMap.put(cs, alias);
+            typeMap.put(alias, ct);
+            typeMapFromColumnName.put(cs, ct);
+        }
+        return new Select(requiredOperations, columnMap, typeMap, typeMapFromColumnName);
     }
 
     /**
