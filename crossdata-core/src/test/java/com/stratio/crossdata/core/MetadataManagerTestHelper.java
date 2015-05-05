@@ -88,6 +88,7 @@ public enum MetadataManagerTestHelper {
     private final Planner planner = new Planner();
     private final APIManager apiManager = new APIManager(parser, validator, planner);
     private boolean initialized = false;
+    private static final String VERSION = "0.3.0";
 
     public APIManager getApiManager() {
         return apiManager;
@@ -215,7 +216,6 @@ public enum MetadataManagerTestHelper {
 
     public DataStoreMetadata insertDataStore(String dataStore, String cluster) {
         DataStoreName dataStoreName = new DataStoreName(dataStore);
-        String version = "0.2.0";
 
         Set<PropertyType> requiredPropertiesForDataStore = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
@@ -233,7 +233,7 @@ public enum MetadataManagerTestHelper {
         function.setSignature("shorten(Tuple[Text]):Tuple[Any]");
         functions.add(function);
 
-        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, version,
+        DataStoreMetadata dataStoreMetadata = new DataStoreMetadata(dataStoreName, VERSION,
                 requiredPropertiesForDataStore, othersProperties, behaviors, functions);
 
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs = new HashMap<>();
@@ -276,13 +276,12 @@ public enum MetadataManagerTestHelper {
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName,
             String actorRef) {
-        final String version = "0.2.0";
         ConnectorName connectorName = new ConnectorName(name);
         ArrayList<String> dataStoreRefs = new ArrayList<>();
         dataStoreRefs.add(dataStoreName.getName());
         ConnectorMetadata connectorMetadata = null;
         try {
-            connectorMetadata = new ConnectorMetadata(connectorName, version,
+            connectorMetadata = new ConnectorMetadata(connectorName, VERSION,
                     dataStoreRefs, new ArrayList<PropertyType>(), new ArrayList<PropertyType>(),
                     new ArrayList<String>(), null,null);
         } catch (ManifestException e) {
@@ -302,12 +301,11 @@ public enum MetadataManagerTestHelper {
      */
     public ConnectorName createTestConnector(String name, DataStoreName dataStoreName, Set<ClusterName> clusterList,
             String actorRef) throws ManifestException {
-        final String version = "0.2.0";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
 
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, VERSION, dataStoreRefs,
                 clusterProperties, new HashMap<ClusterName,Integer>(),new HashSet<PropertyType>(), new HashSet<PropertyType>(),
                 new HashSet<Operations>(),null);
         connectorMetadata.setClusterRefs(clusterList);
@@ -330,7 +328,6 @@ public enum MetadataManagerTestHelper {
             Set<Operations> options,
             String actorRef,
             List<FunctionType> functionsList) throws ManifestException {
-        final String version = "0.2.0";
         ConnectorName connectorName = new ConnectorName(name);
         Set<DataStoreName> dataStoreRefs = Collections.singleton(dataStoreName);
         Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
@@ -345,7 +342,7 @@ public enum MetadataManagerTestHelper {
         } else {
             functions.getFunction().addAll(functionsList);
         }
-        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, version, dataStoreRefs,
+        ConnectorMetadata connectorMetadata = new ConnectorMetadata(connectorName, VERSION, dataStoreRefs,
                 clusterProperties, clusterWithPriorities, new HashSet<PropertyType>(), new HashSet<PropertyType>(), options, functions);
         connectorMetadata.setClusterRefs(new HashSet<>(clusterWithPriorities.keySet()));
         connectorMetadata.addActorRef(actorRef);

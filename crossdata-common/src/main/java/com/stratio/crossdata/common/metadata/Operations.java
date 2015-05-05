@@ -53,6 +53,9 @@ public enum Operations {
      */
     DROP_TABLE("DROP_TABLE"),
 
+    /**
+     * The engine supports Metadata Discovery.
+     */
     IMPORT_METADATA("IMPORT_METADATA"),
 
     /**
@@ -341,12 +344,12 @@ public enum Operations {
      * a includes as part of a relation using with between operator.
      */
     UPDATE_FUNCTION_BETWEEN("UPDATE_FUNCTION_BETWEEN"),
+
     /**
      * The engine supports update operations using
      * a includes as part of a relation using with not between operator.
      */
     UPDATE_FUNCTION_NOT_BETWEEN("UPDATE_FUNCTION_NOT_BETWEEN"),
-
 
     /**
      * The engine supports deleting all the data from a table without removing its metadata.
@@ -440,7 +443,6 @@ public enum Operations {
      * that are part of the primary key with not between operator.
      */
     DELETE_PK_NOT_BETWEEN("DELETE_PK_NOT_BETWEEN"),
-
 
     /**
      * The engine supports delete operations on columns
@@ -667,7 +669,6 @@ public enum Operations {
      */
     DROP_INDEX("DROP_INDEX"),
 
-
     /**
      * The engine supports retrieving a set of columns from a specific table.
      */
@@ -723,18 +724,6 @@ public enum Operations {
      * The engine supports aggregator operations (e.g., sum, avg, etc.) on a Select statement.
      */
     SELECT_FUNCTIONS("SELECT_FUNCTIONS"),
-
-    /**
-     * The engine supports in relationships in {@link com.stratio.crossdata.common.logicalplan.Filter}
-     * operations.
-     */
-    SELECT_WHERE_IN("SELECT_WHERE_IN"),
-
-    /**
-     * The engine supports between relationships in {@link com.stratio.crossdata.common.logicalplan.Filter}
-     * operations.
-     */
-    SELECT_WHERE_BETWEEN("SELECT_WHERE_BETWEEN"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
@@ -1088,22 +1077,27 @@ public enum Operations {
      * The engine supports cross joins.
      */
     SELECT_CROSS_JOIN("SELECT_CROSS_JOIN"),
+
     /**
      * The engine supports left outer joins with partial results.
      */
     SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS("SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS"),
+
     /**
      * The engine supports right outer joins with partial results.
      */
     SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS("SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS"),
+
     /**
      * The engine supports full outer joins with partial results.
      */
     SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS("SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS"),
+
     /**
      * The engine supports cross joins with partial results.
      */
     SELECT_CROSS_JOIN_PARTIALS_RESULTS("SELECT_CROSS_JOIN_PARTIALS_RESULTS"),
+
     /**
      * The engine supports operations which refer to the result of previous queries by using aliases.
      */

@@ -73,6 +73,8 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class CoordinatorTest {
 
+    private static final String VERSION = "0.3.0";
+
     @BeforeClass
     public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
@@ -177,7 +179,7 @@ public class CoordinatorTest {
 
         // Create and add a test connector metadata to the metadataManager
         ConnectorName connectorName = new ConnectorName("connectorTest");
-        String connectorVersion = "0.2.0";
+        String connectorVersion = VERSION;
         List<String> dataStoreRefs = new ArrayList<>();
         List<PropertyType> requiredProperties = new ArrayList<>();
         List<PropertyType> optionalProperties = new ArrayList<>();
