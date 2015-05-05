@@ -261,7 +261,7 @@ ImplicitSender with BeforeAndAfterAll{
     selectPlannedQuery = new SelectPlannedQuery(selectValidatedQueryWrapper,
       new QueryWorkflow(queryId + queryIdIncrement,
         StringUtils.getAkkaActorRefUri(connectorActor, false),
-        ExecutionType.SELECT, ResultType.RESULTS,workflow))
+        ExecutionType.SELECT, ResultType.RESULTS,workflow, false))
   }
 
   /**
