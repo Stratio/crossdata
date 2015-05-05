@@ -125,7 +125,8 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         }
 
         //Try to restore existing schema 2 seconds after the connection
-        new java.util.Timer().schedule(
+        //TODO waiting for Crossdata version 0.4.0
+        /*new java.util.Timer().schedule(
                 new java.util.TimerTask() {
                     @Override
                     public void run() {
@@ -138,6 +139,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
                 },
                 2000
         );
+        */
 
         //End Metric
         long millis = connectTimerContext.stop() / 1000000;
@@ -200,7 +202,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
     }
 
 
-    private void restoreSchema(ClusterName cluster) throws ConnectorException {
+   /* private void restoreSchema(ClusterName cluster) throws ConnectorException {
         List<CatalogMetadata> catalogList = getCatalogs(cluster, DEFAULT_TIMEOUT_IN_MS).get();
         if (catalogList != null){
             for (CatalogMetadata catalogMetadata : catalogList) {
@@ -214,8 +216,8 @@ public class InMemoryConnector extends AbstractExtendedConnector {
             }
         }
 
+    }*/
 
-    }
 
     /**
      * Run an InMemory Connector using a {@link com.stratio.crossdata.connectors.ConnectorApp}.
