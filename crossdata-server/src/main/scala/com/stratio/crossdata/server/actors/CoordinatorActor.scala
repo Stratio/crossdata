@@ -553,7 +553,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       }
 
     case ack: ACK => {
-      if(ExecutionManager.MANAGER.exists(ack.queryId) && (ack.status == QueryStatus.EXECUTED)){
+      if(ExecutionManager.MANAGER.exists(ack.queryId) && (ack.status == QueryStatus.EXECUTED) &&
+        ExecutionManager.MANAGER.getValue(ack.queryId).asInstanceOf[ExecutionInfo].isRemoveOnSuccess
+        && !ExecutionManager.MANAGER.getValue(ack.queryId).asInstanceOf[ExecutionInfo].isTriggeredByStreaming){
         log.error("Query " + ack.queryId + " failed")
         val executionInfo = ExecutionManager.MANAGER.getValue(ack.queryId)
         if(executionInfo != null){
@@ -677,7 +679,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
           }
 
           if (executionInfo.asInstanceOf[ExecutionInfo].isRemoveOnSuccess
-            || (result.isInstanceOf[QueryResult] && result.asInstanceOf[QueryResult].isLastResultSet)) {
+            || (result.isInstanceOf[QueryResult] && result.asInstanceOf[QueryResult].isLastResultSet
+                && !executionInfo.asInstanceOf[ExecutionInfo].isTriggeredByStreaming)) {
             ExecutionManager.MANAGER.deleteEntry(queryId)
           }
 
