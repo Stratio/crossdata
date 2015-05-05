@@ -62,6 +62,7 @@ public class APIManagerTest {
     private final Parser parser = new Parser();
     private final Validator validator = new Validator();
     private final Planner planner = new Planner();
+    private static final String VERSION = "0.3.0";
 
     @BeforeClass
     public void setUp() throws ManifestException {
@@ -81,7 +82,7 @@ public class APIManagerTest {
 
         dataStoreType.setName("dataStoreMock");
 
-        dataStoreType.setVersion("0.2.0");
+        dataStoreType.setVersion(VERSION);
 
         PropertiesType requiredProperties = new PropertiesType();
         List<PropertyType> property = new ArrayList<>();
@@ -115,7 +116,7 @@ public class APIManagerTest {
         String expectedResult =
                 "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
                         "Name: dataStoreMock" + System.lineSeparator()
-                        + "Version: 0.2.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                        + "Version: " + VERSION + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                         "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                         System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()
                         + "Optional properties: " +
@@ -145,7 +146,7 @@ public class APIManagerTest {
 
         DataStoreType dataStoreType = new DataStoreType();
 
-        dataStoreType.setVersion("0.2.0");
+        dataStoreType.setVersion(VERSION);
 
         PropertiesType requiredProperties = new PropertiesType();
         List<PropertyType> property = new ArrayList<>();
@@ -179,7 +180,7 @@ public class APIManagerTest {
         String expectedResult =
                 "CrossdataManifest added " + System.lineSeparator() + "DATASTORE" + System.lineSeparator() +
                         "Name: dataStoreTest" + System.lineSeparator()
-                        + "Version: 0.2.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                        + "Version: " + VERSION + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                         "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                         System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator()
                         + "Optional properties: " +
@@ -202,7 +203,7 @@ public class APIManagerTest {
 
         connectorType.setConnectorName("connectorTest");
 
-        connectorType.setVersion("0.2.0");
+        connectorType.setVersion(VERSION);
 
         connectorType.setDataStores(new DataStoreRefsType());
 
@@ -238,7 +239,7 @@ public class APIManagerTest {
         String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "CONNECTOR" +
                 System.lineSeparator() + "ConnectorName: connectorTest" + System.lineSeparator()
                 + "DataStores: " + System.lineSeparator()
-                + "Version: 0.2.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                + "Version: " + VERSION + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                 "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                 System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() + "Optional properties: " +
                 System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +
@@ -259,7 +260,7 @@ public class APIManagerTest {
 
         ConnectorType connectorType = new ConnectorType();
 
-        connectorType.setVersion("0.2.0");
+        connectorType.setVersion(VERSION);
 
         connectorType.setDataStores(new DataStoreRefsType());
 
@@ -295,7 +296,7 @@ public class APIManagerTest {
         String expectedResult = "CrossdataManifest added " + System.lineSeparator() + "CONNECTOR" +
                 System.lineSeparator() + "ConnectorName: connectorTest" + System.lineSeparator()
                 + "DataStores: " + System.lineSeparator()
-                + "Version: 0.2.0" + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
+                + "Version: " + VERSION + System.lineSeparator() + "Required properties: " + System.lineSeparator() +
                 "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: RequiredProperty" +
                 System.lineSeparator() + "\t\tDescription: Test" + System.lineSeparator() + "Optional properties: " +
                 System.lineSeparator() + "\tProperty: " + System.lineSeparator() + "\t\tPropertyName: " +

@@ -51,7 +51,7 @@ existing SQL implementation.
 -   Centralized schema
 -   Mutable data
 -   P2P storage backend (if Stratio Cassandra is used as datastore)
-
+-   Use of data types from any data source.
 
 
 
@@ -95,11 +95,13 @@ Supported types
 ---------------
 
 -   TEXT
+-   VARCHAR
 -   BIGINT
 -   INT
 -   DOUBLE
 -   FLOAT
 -   BOOLEAN
+-   LIST
 
 ADD DATASTORE
 -------------
@@ -306,37 +308,30 @@ Example:
 
 SELECT
 ------
-SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)? ((INNER)? JOIN
-\<tablename\> (AS \<identifier\>) ON \<field1\>=\<field2\>)? (WHERE \<where-clause\>)? (ORDER BY \<select-list\>)?
-(GROUP BY \<select-list\>)? (LIMIT \<integer\>)? ';'
+SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)?
+((<inner-type>)? JOIN \<tablename\> (AS \<identifier\>)
+ON \<field1\>=\<field2\>)? (WHERE \<where-clause\>)?
+(ORDER BY \<select-list\>)?
+(GROUP BY \<select-list\>)?
+(LIMIT \<integer\>)? ';'
 
 \<selection-list\> ::= \<identifier\> (AS \<identifier\>)? (',' \<selector\> (AS \<identifier\>)? )\* | '\*'
 
 \<where-clause\> ::= \<relation\> ( AND \<relation\> )\*
 
-\<relation\> ::= \<identifier\> ('=' | '\<' | '\>' | '\<=' | '\>=' | '\<\>'  | 'MATCH') \<data-types\>      
+\<relation\> ::= \<identifier\> \<comparator\> \<data-types\>
+
+\<inner-type\> ::= INNER | (RIGHT | LEFT | FULL) OUTER | FULL NATURAL | CROSS
     
-Modifications:
+\<comparator\> ::= ('=' | '\<' | '\>' | '\<=' | '\>=' | '\<\>'  | 'MATCH' | 'LIKE' | 'IN' | 'BETWEEN')
 
--   The SELECT statement has been extended to support the following
-    features:
-
-    -   Inner join: Inner join creates a new result table by combining
-        column values of two tables (A and B) based upon the join-predicate.
-        The query compares each row of A with each row of B to find all
-        pairs of rows which satisfy the join-predicate. When the
-        join-predicate is satisfied, column values for each matched pair of
-        rows of A and B are combined into a result row.
-    -   Window: The user is able to specify the selection window for
-        streaming queries. The window can be either an absolute number of
-        tuples or a time window.
-    -   New comparison operators (\<\>, LIKE, and MATCH)
+LIKE, IN and BETWEEN comparators can be preceded by the modifier NOT.
 
 Example:
 
     SELECT field1, field2 FROM demo.clients AS table1 INNER JOIN sales AS table2 ON identifier = codeID;
 
-Implicit joins are also supported:
+Implicit joins are also supported when only 2 tables are involved:
 
 SELECT \<select-list\> FROM \<tablename\> (AS \<identifier\>)? ',' \<tablename\> (AS \<identifier\>)? (WITH WINDOW \<integer\> \<time-unit\>)? ON
 \<field1\>=\<field2\> (WHERE \<where-clause\>)? (ORDER BY \<select-list\>)? (GROUP BY \<select-list\>)? (LIMIT

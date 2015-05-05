@@ -88,13 +88,16 @@ intention and the expected behaviour of the function.
 Use in grammar
 ==============
 
-As for version 0.2.0, **THE USE OF FUNCTIONS IS LIMITED TO SELECTORS**. Functions are not supported yet for where
-clauses and other structures of a query. Therefore, when issuing a select statement,
+As for version 0.3.0, you can use nested functions and they can be used as selectors or in where clauses. Therefore,
+when issuing a crossdata statement,
 we only have to provide the name of the function and the name of the columns (if any) in parenthesis. In that way,
 a generic query with a function will look like::
 
     SELECT col1, function_name(col2, col3) FROM table_name;
 
+    SELECT col1, col2, col3 FROM table_name WHERE function_name(col3) > 10;
+
+    INSERT INTO tableTest(id, product, price, date) VALUES (25, 'Milk', 5, now());
 
 
 Example
