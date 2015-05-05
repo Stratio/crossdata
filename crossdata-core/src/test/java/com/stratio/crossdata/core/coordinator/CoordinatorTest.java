@@ -237,7 +237,7 @@ public class CoordinatorTest {
     // CREATE CATALOG
     @Test
     public void testCreateCatalogCheckName() throws Exception {
-        CatalogName catalogName = new CatalogName("catalog1");
+        CatalogName catalogName = new CatalogName("catalog2");
         Map<TableName, TableMetadata> catalogTables = new HashMap<>();
         Map<Selector, Selector> options = new HashMap<>();
         CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);
