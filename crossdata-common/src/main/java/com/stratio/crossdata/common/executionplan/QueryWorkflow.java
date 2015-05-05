@@ -38,6 +38,11 @@ public class QueryWorkflow extends ExecutionWorkflow {
     private final LogicalWorkflow workflow;
 
     /**
+     * Whether the target supports asynchronous queries.
+     */
+    private final boolean isAsync;
+
+    /**
      * Class constructor.
      *
      * @param queryId Query identifier.
@@ -45,11 +50,13 @@ public class QueryWorkflow extends ExecutionWorkflow {
      * @param executionType Type of execution.
      * @param type          Type of results.
      * @param workflow      The logical workflow.
+     * @param isAsync       Whether the target supports asynchronous queries.
      */
     public QueryWorkflow(String queryId, String actorRef, ExecutionType executionType,
-            ResultType type, LogicalWorkflow workflow) {
+            ResultType type, LogicalWorkflow workflow, boolean isAsync) {
         super(queryId, actorRef, executionType, type);
         this.workflow = workflow;
+        this.isAsync = isAsync;
     }
 
     public LogicalWorkflow getWorkflow() {
@@ -76,15 +83,17 @@ public class QueryWorkflow extends ExecutionWorkflow {
      * @return A {@link com.stratio.crossdata.communication.ExecuteOperation}
      */
     public ExecuteOperation getExecuteOperation(String queryId){
+
+        ExecuteOperation executeOperation;
         //Look for window operators.
-        if(checkStreaming(workflow.getLastStep())) {
-            return new AsyncExecute(queryId, workflow);
-        }
         if(workflow.getPagination() > 0){
-            return new PagedExecute(queryId, workflow, workflow.getPagination());
+            executeOperation = new PagedExecute(queryId, workflow, workflow.getPagination());
+        }else if(isAsync || checkStreaming(workflow.getLastStep()) ) {
+            executeOperation =  new AsyncExecute(queryId, workflow);
+        }else {
+            executeOperation = new Execute(queryId, workflow);
         }
-        //TODO: Either server configuration should include an option or client
-        return new Execute(queryId, workflow);
+        return executeOperation;
     }
 
     @Override

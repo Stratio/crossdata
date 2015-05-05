@@ -321,7 +321,7 @@ public class Planner {
             workflow.setPagination(connectorMetadata.getPageSize());
         }
 
-        return new QueryWorkflow(queryId, connectorMetadata.getActorRef(), executionType, type, workflow);
+        return new QueryWorkflow(queryId, connectorMetadata.getActorRef(), executionType, type, workflow, supportedOperations.contains(Operations.ASYNC_QUERY));
     }
 
 
@@ -558,7 +558,7 @@ public class Planner {
             workflow.setPagination(connectorMetadata.getPageSize());
         }
 
-        return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
+        return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow,  connectorMetadata.getSupportedOperations().contains(Operations.ASYNC_QUERY));
     }
 
     private ConnectorMetadata findBestConnector(List<ConnectorMetadata> connectors, List<ClusterName> clusters) {
@@ -660,7 +660,7 @@ public class Planner {
         ConnectorMetadata connectorMetadata = findBestConnector(mergePath.getAvailableConnectors(), involvedClusters);
         String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
 
-        return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow);
+        return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow,  connectorMetadata.getSupportedOperations().contains(Operations.ASYNC_QUERY));
     }
 
 
@@ -1348,71 +1348,95 @@ public class Planner {
         String actorRefUri = null;
         ResultType type = ResultType.RESULTS;
         ExecutionType executionType;
-        ClusterMetadata clusterMetadata = null;
+        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
 
-        if (!createTableStatement.isExternal()) {
-            executionType = ExecutionType.CREATE_TABLE;
-            clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
-            Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
-            if (connectorNames.isEmpty()) {
-                throw new PlanningException("There is no connector attached to cluster " + clusterMetadata.getName().getName());
-            }
-            try {
-                actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
-            } catch (PlanningException pe) {
-                LOG.debug("No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
-                for (ConnectorName connectorName : connectorNames) {
-                    if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_TABLE)) {
-                        throw new PlanningException(connectorName.getQualifiedName() + " supports CREATE_TABLE but no connector was found to execute CREATE_TABLE");
-                    }
+        // Create & add TableMetadata to the MetadataWorkflow
+        ClusterName clusterName = createTableStatement.getClusterName();
+        TableName tableName = createTableStatement.getTableName();
+        TableMetadata tableMetadata = buildTableMetadata(createTableStatement);
+
+
+        if (existsCatalogInCluster(tableName.getCatalogName(), clusterName)) {
+            if (!createTableStatement.isExternal()) {
+
+                Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
+                if (connectorNames.isEmpty()) {
+                    throw new PlanningException("There is no connector attached to cluster " + clusterMetadata.getName().getName());
                 }
-            }
-        } else {
-            executionType = ExecutionType.REGISTER_TABLE;
-        }
-
-        metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
-        metadataWorkflow.setIfNotExists(createTableStatement.isIfNotExists());
-
-        if (!existsCatalogInCluster(createTableStatement.getTableName().getCatalogName(),
-                createTableStatement.getClusterName())) {
-
-            clusterMetadata = MetadataManager.MANAGER.getCluster(createTableStatement.getClusterName());
-            executionType = (!createTableStatement.isExternal()) ? ExecutionType.CREATE_TABLE_AND_CATALOG : ExecutionType.REGISTER_TABLE_AND_CATALOG;
-            //find connectors
-            try {
-
-                actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
-
-            } catch (PlanningException pe) {
-                LOG.debug("Cannot determine any connector for the operation: " + Operations.CREATE_CATALOG
-                        + System.lineSeparator() + pe.getMessage());
-
-                if (actorRefUri == null && createTableStatement.isExternal()) {
-                    Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
-                    if (connectorNames != null && !connectorNames.isEmpty()) {
-                        for (ConnectorName connectorName : clusterMetadata.getConnectorAttachedRefs().keySet()) {
-                            if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_CATALOG)) {
-                                throw new PlanningException("The catalog should have been created before registering table. The connector: " + connectorName.getQualifiedName() + " supports CREATE_CATALOG");
-                            }
+                try {
+                    actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
+                    executionType = ExecutionType.CREATE_TABLE;
+                } catch (PlanningException pe) {
+                    LOG.debug("No connector was found to execute CREATE_TABLE: " + System.lineSeparator() + pe.getMessage());
+                    executionType = ExecutionType.REGISTER_TABLE;
+                    for (ConnectorName connectorName : connectorNames) {
+                        if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_TABLE)) {
+                            throw new PlanningException(connectorName.getQualifiedName() + " supports CREATE_TABLE but no connector was found to execute CREATE_TABLE");
                         }
                     }
                 }
+            } else {
+                executionType = ExecutionType.REGISTER_TABLE;
+            }
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
+            //The catalog needs to be associated with the cluster
+        } else {
+
+            if (!createTableStatement.isExternal()) {
+
+                Set<ConnectorName> connectorNames = clusterMetadata.getConnectorAttachedRefs().keySet();
+                if (connectorNames.isEmpty()) {
+                    throw new PlanningException("There is no connector attached to cluster " + clusterMetadata.getName().getName());
+                }
+                try {
+                    actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG, Operations.CREATE_TABLE);
+                    executionType = ExecutionType.CREATE_TABLE_AND_CATALOG;
+                } catch (PlanningException pe) {
+                    LOG.debug("No connector was found to execute CREATE_CATALOG: " + System.lineSeparator() + pe.getMessage());
+                    for (ConnectorName connectorName : connectorNames) {
+                        if (MetadataManager.MANAGER.getConnector(connectorName).getSupportedOperations().contains(Operations.CREATE_CATALOG)) {
+                            throw new PlanningException(connectorName.getQualifiedName() + " supports CREATE_CATALOG but no connector was found to execute CREATE_CATALOG AND CREATE_TABLE. The table should be registered");
+                        }
+                    }
+                    //if there is no connector supporting create table an exception is thrown
+                    actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
+                    executionType = ExecutionType.CREATE_TABLE_REGISTER_CATALOG;
+                }
+
+            //REGISTER TABLE
+            } else {
+                try {
+                    actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
+                    executionType = ExecutionType.REGISTER_TABLE_CREATE_CATALOG;
+                } catch (PlanningException pe) {
+                    executionType = ExecutionType.REGISTER_TABLE_AND_CATALOG;
+                }
             }
 
-
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
-
             metadataWorkflow.setCatalogName(createTableStatement.getTableName().getCatalogName());
-
             metadataWorkflow.setCatalogMetadata(MetadataManager.MANAGER
-                    .getCatalog(createTableStatement.getTableName().getCatalogName()));
-
+                    .getCatalog(tableName.getCatalogName()));
 
         }
 
-        // Create & add TableMetadata to the MetadataWorkflow
+
+        metadataWorkflow.setIfNotExists(createTableStatement.isIfNotExists());
+        metadataWorkflow.setTableName(tableName);
+        metadataWorkflow.setTableMetadata(tableMetadata);
+        metadataWorkflow.setClusterName(clusterName);
+
+
+        return metadataWorkflow;
+    }
+
+
+
+
+
+    private TableMetadata buildTableMetadata(CreateTableStatement createTableStatement) {
         TableName name = createTableStatement.getTableName();
+
         Map<Selector, Selector> options = createTableStatement.getProperties();
         LinkedHashMap<ColumnName, ColumnMetadata> columnMap = new LinkedHashMap<>();
         for (Map.Entry<ColumnName, ColumnType> c : createTableStatement.getColumnsWithTypes().entrySet()) {
@@ -1426,13 +1450,9 @@ public class Planner {
         List<ColumnName> clusterKey = new LinkedList<>();
         clusterKey.addAll(createTableStatement.getClusterKey());
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
-        TableMetadata tableMetadata = new TableMetadata(name, options, columnMap, indexes, clusterName, partitionKey,
+        return new TableMetadata(name, options, columnMap, indexes, clusterName, partitionKey,
                 clusterKey);
-        metadataWorkflow.setTableName(name);
-        metadataWorkflow.setTableMetadata(tableMetadata);
-        metadataWorkflow.setClusterName(clusterName);
 
-        return metadataWorkflow;
     }
 
 

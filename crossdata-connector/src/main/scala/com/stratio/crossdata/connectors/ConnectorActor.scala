@@ -116,6 +116,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   }
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+    mapAgent.get.get(tableName).asInstanceOf[TableMetadata]
+      /*TODO 0.4.0 using FirstLevelName
       val catalogName = tableName.getCatalogName
       val catalogMetadata = mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
       val tableMetadata = catalogMetadata.getTables.get(tableName)
@@ -123,6 +125,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         return tableMetadata
       else
         return null
+
+        */
   }
 
   def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata={
@@ -254,25 +258,26 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       //println("result="+r)
     }
 
+    //TODO iface UpdatableMetadata with getName, getMetadata
     case UpdateMetadata(umetadata, java.lang.Boolean.FALSE) => {
       umetadata match{
         case cMetadata:CatalogMetadata => {
           mapAgent.get.put(cMetadata.getName,cMetadata)
         }
           //TODO remove asInstanceOf
-        case _:ClusterMetadata => {
-          mapAgent.send(oMap => {oMap.put(umetadata.asInstanceOf[ClusterMetadata].getName,umetadata); oMap })
+        case uMetadata:ClusterMetadata => {
+          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
 
         }
-        case _:ConnectorMetadata => {
-          mapAgent.send(oMap => {oMap.put(umetadata.asInstanceOf[ConnectorMetadata].getName,umetadata); oMap })
+        case uMetadata:ConnectorMetadata => {
+          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
         }
-        case _:DataStoreMetadata =>{
-          mapAgent.send(oMap => {oMap.put(umetadata.asInstanceOf[DataStoreMetadata].getName,umetadata); oMap })
+        case uMetadata:DataStoreMetadata =>{
+          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
         }
 
-        case _:TableMetadata => {
-          mapAgent.send(oMap => {oMap.put(umetadata.asInstanceOf[TableMetadata].getName,umetadata); oMap })
+        case uMetadata:TableMetadata => {
+          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
         }
 
       }
@@ -282,20 +287,20 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
     case UpdateMetadata(umetadata, java.lang.Boolean.TRUE) => {
        umetadata match{
-        case _:CatalogMetadata => {
-          mapAgent.send(oMap => {oMap.remove(umetadata.asInstanceOf[CatalogMetadata].getName); oMap })
+        case umetadata:CatalogMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
         }
-        case _:ClusterMetadata => {
-          mapAgent.send(oMap => {oMap.remove(umetadata.asInstanceOf[ClusterMetadata].getName); oMap })
+        case umetadata:ClusterMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
         }
-        case _:ConnectorMetadata => {
-          mapAgent.send(oMap => {oMap.remove(umetadata.asInstanceOf[ConnectorMetadata].getName); oMap })
+        case umetadata:ConnectorMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
         }
-        case _:DataStoreMetadata =>{
-          mapAgent.send(oMap => {oMap.remove(umetadata.asInstanceOf[DataStoreMetadata].getName); oMap })
+        case umetadata:DataStoreMetadata =>{
+          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
         }
-        case _:TableMetadata => {
-          mapAgent.send(oMap => {oMap.remove(umetadata.asInstanceOf[TableMetadata].getName); oMap })
+        case umetadata:TableMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
         }
 
       }

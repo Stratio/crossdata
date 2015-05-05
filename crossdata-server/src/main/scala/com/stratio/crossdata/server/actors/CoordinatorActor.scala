@@ -212,19 +212,24 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             log.info("ActorRef: " + actorRef.toString())
             actorRef.asInstanceOf[ActorSelection] ! metadataWorkflow.createMetadataOperationMessage()
 
-          } else if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_CATALOG ||
-            metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG ||
+          } else if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_CATALOG){
+              coordinator.persistCreateCatalog(metadataWorkflow.getCatalogMetadata, metadataWorkflow.isIfNotExists)
+              executionInfo.setQueryStatus(QueryStatus.EXECUTED)
+              val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG)
+              result.setQueryId(queryId)
+              sender ! result
+
+          }else if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG ||
             metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE) {
 
-            if (metadataWorkflow.getExecutionType != ExecutionType.CREATE_CATALOG
-              && metadataWorkflow.isIfNotExists
-              && MetadataManager.MANAGER.exists(metadataWorkflow.getTableName)) {
+            if (metadataWorkflow.isIfNotExists && MetadataManager.MANAGER.exists(metadataWorkflow.getTableName)) {
               val result: MetadataResult = MetadataResult.createSuccessMetadataResult(
                 MetadataResult.OPERATION_CREATE_TABLE, metadataWorkflow.isIfNotExists)
               result.setQueryId(queryId)
               sender ! result
 
             } else {
+
               if (metadataWorkflow.getActorRef != null && metadataWorkflow.getActorRef.length() > 0) {
 
                 val actorRef = context.actorSelection(metadataWorkflow.getActorRef)
@@ -237,34 +242,29 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                 actorRef.asInstanceOf[ActorSelection] ! metadataWorkflow.createMetadataOperationMessage()
 
               } else {
-
-                var result: MetadataResult = null
-
-                if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_CATALOG) {
-
-                  coordinator.persistCreateCatalog(metadataWorkflow.getCatalogMetadata, metadataWorkflow.isIfNotExists)
-                  executionInfo.setQueryStatus(QueryStatus.PLANNED)
-                  result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG)
-                } else if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE
-                  || metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE_AND_CATALOG) {
-                  coordinator.persistCreateCatalogInCluster(metadataWorkflow.getCatalogName, metadataWorkflow.getClusterName)
-                  coordinator.persistCreateTable(metadataWorkflow.getTableMetadata)
-                  val tableMetadata = metadataWorkflow.getTableMetadata
-
-                  updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
-                  executionInfo.setQueryStatus(QueryStatus.PLANNED)
-                  result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_TABLE)
-                } else {
-                  throw new CoordinationException("Invalid operation");
-                }
-
-                result.setQueryId(queryId)
-                sender ! result
-
+                  throw new CoordinationException("Actor ref URI is null");
               }
+
             }
 
-          } else if (metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE || metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE_AND_CATALOG) {
+          } else if (metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE_CREATE_CATALOG
+            || metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE_REGISTER_CATALOG) {
+            //Connector is able to create the catalog of the registered table
+            if (metadataWorkflow.getActorRef != null && metadataWorkflow.getActorRef.length() > 0) {
+              val actorRef = context.actorSelection(metadataWorkflow.getActorRef)
+              executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+              executionInfo.setPersistOnSuccess(true)
+              executionInfo.setUpdateOnSuccess(true)
+              ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+              log.info("ActorRef: " + actorRef.toString())
+
+              actorRef.asInstanceOf[ActorSelection] ! metadataWorkflow.createMetadataOperationMessage()
+            } else {
+              throw new CoordinationException("Actor ref URI is null");
+
+            }
+          }else if (metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE
+            || metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE_AND_CATALOG) {
 
             if (metadataWorkflow.isIfNotExists && MetadataManager.MANAGER.exists(metadataWorkflow.getTableName)) {
               val result: MetadataResult = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_REGISTER_TABLE, metadataWorkflow.isIfNotExists)
@@ -273,44 +273,20 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             } else {
 
-              //Connector is able to create the catalog of the registered table
-              if (metadataWorkflow.getActorRef != null && metadataWorkflow.getActorRef.length() > 0) {
-
-                require(metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE_AND_CATALOG)
-
-                val actorRef = context.actorSelection(metadataWorkflow.getActorRef)
-                executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
-                executionInfo.setPersistOnSuccess(true)
-                executionInfo.setUpdateOnSuccess(true)
-                ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
-                log.info("ActorRef: " + actorRef.toString())
-
-                actorRef.asInstanceOf[ActorSelection] ! metadataWorkflow.createMetadataOperationMessage()
-
-              } else {
                 val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_REGISTER_TABLE)
-                if (metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE) {
-                  //Connector is not able to create the catalog of the registered table
-                  coordinator.persistCreateCatalogInCluster(metadataWorkflow.getTableName.getCatalogName, metadataWorkflow.getClusterName)
-                  coordinator.persistCreateTable(metadataWorkflow.getTableMetadata)
-                  val tableMetadata = metadataWorkflow.getTableMetadata
-                  updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
-                  executionInfo.setQueryStatus(QueryStatus.EXECUTED)
-
-                } else {
-                  //The catalog already exists
+                if (metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE_AND_CATALOG) {
                   coordinator.persistCreateCatalogInCluster(metadataWorkflow.getCatalogName, metadataWorkflow.getClusterName)
-                  coordinator.persistCreateTable(metadataWorkflow.getTableMetadata)
-                  val tableMetadata = metadataWorkflow.getTableMetadata
-                  updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
-                  executionInfo.setQueryStatus(QueryStatus.EXECUTED)
                 }
+                //Connector is not able to create the catalog of the registered table
+                coordinator.persistCreateTable(metadataWorkflow.getTableMetadata)
+                val tableMetadata = metadataWorkflow.getTableMetadata
+                updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
+                executionInfo.setQueryStatus(QueryStatus.EXECUTED)
 
                 result.setQueryId(queryId)
                 sender ! result
 
               }
-            }
 
           } else {
             throw new CoordinationException("Operation not supported yet");
@@ -621,7 +597,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                   updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
                 }
 
-                case ExecutionType.CREATE_TABLE_AND_CATALOG | ExecutionType.REGISTER_TABLE_AND_CATALOG => {
+                case ExecutionType.CREATE_TABLE_AND_CATALOG | ExecutionType.CREATE_TABLE_REGISTER_CATALOG | ExecutionType.REGISTER_TABLE_CREATE_CATALOG => {
                   val tableMetadata = mw.getTableMetadata
                   //TODO updateMetadata(mw.getCatalogMetadata, ...)?
                   updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)

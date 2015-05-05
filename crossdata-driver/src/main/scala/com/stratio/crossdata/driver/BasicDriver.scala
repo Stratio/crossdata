@@ -806,8 +806,14 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return Whether the callback has been removed.
    */
   def removeResultHandler(queryId: String): Boolean = {
-    logger.info("Query " + queryId + " finished. " + queries.get(queryId).getExecutionInfo())
-    queries.remove(queryId) != null
+    Option(queries.get(queryId)).fold{
+      logger.warn("Trying to remove the query " + queryId + " but it doesn't exist")
+      false
+    }{ queryData =>
+      logger.info("Query " + queryId + " finished. " + queryData.getExecutionInfo())
+      queries.remove(queryId) != null
+    }
+
   }
 
   /**

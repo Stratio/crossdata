@@ -80,17 +80,6 @@ public class ShellTest {
         fail("Connection with server should not have been established");
     }
 
-    @Test(timeOut = 4000)
-    public void testRemoveResultsHandler() {
-        boolean ok = true;
-        try {
-            Shell shell = new Shell(false);
-            shell.removeResultsHandler("queryId25");
-        } catch (Exception e) {
-            fail("testRemoveResultsHandler failed.");
-        }
-        Assert.assertEquals(true, ok, "testRemoveResultsHandler failed.");
-    }
 
     @Test(timeOut = 4000)
     public void testShellDisConnectWithoutServer() {
