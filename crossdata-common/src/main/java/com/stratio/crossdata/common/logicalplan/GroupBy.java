@@ -100,7 +100,11 @@ public class GroupBy extends TransformationStep {
      * @param havingIds Identifiers to be assigned.
      */
     public void setHavingIds(List<AbstractRelation> havingIds) {
+
         this.havingIds = havingIds;
+        if (havingIds!= null && !havingIds.isEmpty()){
+            this.havingInc=true;
+        }
     }
 
     @Override public String toString() {
