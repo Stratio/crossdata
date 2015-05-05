@@ -90,29 +90,29 @@ You can also find help in https://groups.google.com/forum/#!forum/crossdata-user
 Grammar
 =======
 
-Grammar specification for this release can be found `here <Grammar.html>`_.
+Grammar specification for this release can be found `here <doc/src/site/sphinx/Grammar.rst>`_.
 
 
 Getting started
 ===============
-In this `link <GettingStarted.html>`_ you can follow an example of Crossdata with a Cassandra Connector as an access
+In this `link <GettingStarted.rst>`_ you can follow an example of Crossdata with a Cassandra Connector as an access
 to a Cassandra datastore.
 
 
 Connectors
 ==========
 
-`List of Crossdata Connectors <List-of-Crossdata-Connectors.html>`_
+`List of Crossdata Connectors <doc/src/site/sphinx/List-of-Crossdata-Connectors.rst>`_
 
-`InMemory Connector development tutorial <InMemory-Connector-Development-Tutorial.html>`_
+`InMemory Connector development tutorial <doc/src/site/sphinx/InMemory-Connector-Development-Tutorial.rst>`_
 
-`Definition of Connector Operations <ConnectorOperations.html>`_
+`Definition of Connector Operations <doc/src/site/sphinx/ConnectorOperations.rst>`_
 
 
 Sandbox
 =======
 
-If you want to test Crossdata you can get our Sandbox follow the instructions of this `link <Sandbox.html>`_
+If you want to test Crossdata you can get our Sandbox follow the instructions of this `link <doc/src/site/sphinx/Sandbox.rst>`_
 
 License
 =======
