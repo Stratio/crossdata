@@ -46,6 +46,7 @@ import com.stratio.crossdata.communication.ProvideTableMetadata;
  */
 public class MetadataWorkflow extends ExecutionWorkflow {
 
+    private static final long serialVersionUID = -1493230411166411507L;
     private CatalogName catalogName = null;
 
     private ClusterName clusterName = null;
@@ -165,7 +166,6 @@ public class MetadataWorkflow extends ExecutionWorkflow {
      */
     public MetadataOperation createMetadataOperationMessage() {
         MetadataOperation result = null;
-
         switch (this.executionType) {
         case CREATE_CATALOG:
             result = new CreateCatalog(queryId, this.clusterName, this.catalogMetadata);
@@ -181,6 +181,12 @@ public class MetadataWorkflow extends ExecutionWorkflow {
             break;
         case CREATE_TABLE_AND_CATALOG:
             result = new CreateTableAndCatalog(queryId, this.clusterName, this.catalogMetadata, this.tableMetadata);
+            break;
+        case REGISTER_TABLE_CREATE_CATALOG:
+            result = new CreateCatalog(queryId, this.clusterName, this.catalogMetadata);
+            break;
+        case CREATE_TABLE_REGISTER_CATALOG:
+            result = new CreateTable(queryId, this.clusterName, this.tableMetadata);
             break;
         case DROP_TABLE:
             result = new DropTable(queryId, this.clusterName, this.tableName);

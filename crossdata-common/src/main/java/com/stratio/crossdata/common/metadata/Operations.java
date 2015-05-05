@@ -38,7 +38,7 @@ public enum Operations {
      */
     DROP_CATALOG("DROP_CATALOG"),
 
-   /**
+    /**
      * The engine supports creating new tables given an existing catalog.
      */
     CREATE_TABLE("CREATE_TABLE"),
@@ -53,6 +53,9 @@ public enum Operations {
      */
     DROP_TABLE("DROP_TABLE"),
 
+    /**
+     * The engine supports Metadata Discovery.
+     */
     IMPORT_METADATA("IMPORT_METADATA"),
 
     /**
@@ -92,6 +95,48 @@ public enum Operations {
 
     /**
      * The engine supports update operations on columns
+     * that are part of the primary key with distinct operator.
+     */
+    UPDATE_PK_DISTINCT("UPDATE_PK_DISTINCT"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are part of the primary key with like operator.
+     */
+    UPDATE_PK_LIKE("UPDATE_PK_LIKE"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are part of the primary key with not like operator.
+     */
+    UPDATE_PK_NOT_LIKE("UPDATE_PK_NOT_LIKE"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are part of the primary key with in operator.
+     */
+    UPDATE_PK_IN("UPDATE_PK_IN"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are part of the primary key with not in operator.
+     */
+    UPDATE_PK_NOT_IN("UPDATE_PK_NOT_IN"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are part of the primary key with between operator.
+     */
+    UPDATE_PK_BETWEEN("UPDATE_PK_BETWEEN"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are part of the primary key with not between operator.
+     */
+    UPDATE_PK_NOT_BETWEEN("UPDATE_PK_NOT_BETWEEN"),
+
+    /**
+     * The engine supports update operations on columns
      * that are not indexed by the underlying datastore with an equal operator.
      */
     UPDATE_NON_INDEXED_EQ("UPDATE_NON_INDEXED_EQ"),
@@ -119,6 +164,48 @@ public enum Operations {
      * that are not indexed by the underlying datastore with less than or equal operator.
      */
     UPDATE_NON_INDEXED_LET("UPDATE_NON_INDEXED_LET"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with distinct operator.
+     */
+    UPDATE_NON_INDEXED_DISTINCT("UPDATE_NON_INDEXED_DISTINCT"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with like operator.
+     */
+    UPDATE_NON_INDEXED_LIKE("UPDATE_NON_INDEXED_LIKE"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with not like operator.
+     */
+    UPDATE_NON_INDEXED_NOT_LIKE("UPDATE_NON_INDEXED_NOT_LIKE"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with in operator.
+     */
+    UPDATE_NON_INDEXED_IN("UPDATE_NON_INDEXED_IN"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with not in operator.
+     */
+    UPDATE_NON_INDEXED_NOT_IN("UPDATE_NON_INDEXED_NOT_IN"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with between operator.
+     */
+    UPDATE_NON_INDEXED_BETWEEN("UPDATE_NON_INDEXED_BETWEEN"),
+
+    /**
+     * The engine supports update operations on columns
+     * that are not indexed by the underlying datastore with less than or equal operator.
+     */
+    UPDATE_NON_INDEXED_NOT_BETWEEN("UPDATE_NON_INDEXED_NOT_BETWEEN"),
 
     /**
      * The engine supports update operations on columns
@@ -151,6 +238,48 @@ public enum Operations {
     UPDATE_INDEXED_LET("UPDATE_INDEXED_LET"),
 
     /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with distinct operator.
+     */
+    UPDATE_INDEXED_DISTINCT("UPDATE_INDEXED_DISTINCT"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with like operator.
+     */
+    UPDATE_INDEXED_LIKE("UPDATE_INDEXED_LIKE"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with not like operator.
+     */
+    UPDATE_INDEXED_NOT_LIKE("UPDATE_INDEXED_NOT_LIKE"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with in operator.
+     */
+    UPDATE_INDEXED_IN("UPDATE_INDEXED_IN"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with not in operator.
+     */
+    UPDATE_INDEXED_NOT_IN("UPDATE_INDEXED_NOT_IN"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with between operator.
+     */
+    UPDATE_INDEXED_BETWEEN("UPDATE_INDEXED_BETWEEN"),
+
+    /**
+     * The engine supports update operations on columns
+     * that have an associated index in the underlying datastore with not between operator.
+     */
+    UPDATE_INDEXED_NOT_BETWEEN("UPDATE_INDEXED_NOT_BETWEEN"),
+
+    /**
      * The engine supports update operations using
      * a includes as part of a relation using with an equal operator.
      */
@@ -179,6 +308,48 @@ public enum Operations {
      * a includes as part of a relation using with a less than or equal operator.
      */
     UPDATE_FUNCTION_LET("UPDATE_FUNCTION_LET"),
+
+    /**
+     * The engine supports update operations using
+     * a includes as part of a relation using with distinct operator.
+     */
+    UPDATE_FUNCTION_DISTINCT("UPDATE_FUNCTION_DISTINCT"),
+
+    /**
+     * The engine supports update operations using
+     * a includes as part of a relation using with like operator.
+     */
+    UPDATE_FUNCTION_LIKE("UPDATE_FUNCTION_LIKE"),
+
+    /**
+     * The engine supports update operations using
+     * a includes as part of a relation using with not like operator.
+     */
+    UPDATE_FUNCTION_NOT_LIKE("UPDATE_FUNCTION_NOT_LIKE"),
+
+    /**
+     * The engine supports update operations using
+     * a includes as part of a relation using with in operator.
+     */
+    UPDATE_FUNCTION_IN("UPDATE_FUNCTION_IN"),
+
+    /**
+     * The engine supports update operations using
+     * a includes as part of a relation using with not in operator.
+     */
+    UPDATE_FUNCTION_NOT_IN("UPDATE_FUNCTION_NOT_IN"),
+
+    /**
+     * The engine supports update operations using
+     * a includes as part of a relation using with between operator.
+     */
+    UPDATE_FUNCTION_BETWEEN("UPDATE_FUNCTION_BETWEEN"),
+
+    /**
+     * The engine supports update operations using
+     * a includes as part of a relation using with not between operator.
+     */
+    UPDATE_FUNCTION_NOT_BETWEEN("UPDATE_FUNCTION_NOT_BETWEEN"),
 
     /**
      * The engine supports deleting all the data from a table without removing its metadata.
@@ -233,6 +404,48 @@ public enum Operations {
 
     /**
      * The engine supports delete operations on columns
+     * that are part of the primary key with distinct operator.
+     */
+    DELETE_PK_DISTINCT("DELETE_PK_DISTINCT"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with like operator.
+     */
+    DELETE_PK_LIKE("DELETE_PK_LIKE"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with not like operator.
+     */
+    DELETE_PK_NOT_LIKE("DELETE_PK_NOT_LIKE"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with in operator.
+     */
+    DELETE_PK_IN("DELETE_PK_IN"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with not in operator.
+     */
+    DELETE_PK_NOT_IN("DELETE_PK_NOT_IN"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with between operator.
+     */
+    DELETE_PK_BETWEEN("DELETE_PK_BETWEEN"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are part of the primary key with not between operator.
+     */
+    DELETE_PK_NOT_BETWEEN("DELETE_PK_NOT_BETWEEN"),
+
+    /**
+     * The engine supports delete operations on columns
      * that are not indexed by the underlying datastore with an equal operator.
      */
     DELETE_NON_INDEXED_EQ("DELETE_NON_INDEXED_EQ"),
@@ -260,6 +473,48 @@ public enum Operations {
      * that are not indexed by the underlying datastore with less than or equal operator.
      */
     DELETE_NON_INDEXED_LET("DELETE_NON_INDEXED_LET"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with distinct operator.
+     */
+    DELETE_NON_INDEXED_DISTINCT("DELETE_NON_INDEXED_DISTINCT"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with like operator.
+     */
+    DELETE_NON_INDEXED_LIKE("DELETE_NON_INDEXED_LIKE"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with not like operator.
+     */
+    DELETE_NON_INDEXED_NOT_LIKE("DELETE_NON_INDEXED_NOT_LIKE"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with in operator.
+     */
+    DELETE_NON_INDEXED_IN("DELETE_NON_INDEXED_IN"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with not in operator.
+     */
+    DELETE_NON_INDEXED_NOT_IN("DELETE_NON_INDEXED_NOT_IN"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with between operator.
+     */
+    DELETE_NON_INDEXED_BETWEEN("DELETE_NON_INDEXED_BETWEEN"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that are not indexed by the underlying datastore with not between operator.
+     */
+    DELETE_NON_INDEXED_NOT_BETWEEN("DELETE_NON_INDEXED_NOT_BETWEEN"),
 
     /**
      * The engine supports delete operations on columns
@@ -292,6 +547,47 @@ public enum Operations {
     DELETE_INDEXED_LET("DELETE_INDEXED_LET"),
 
     /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with distinct operator.
+     */
+    DELETE_INDEXED_DISTINCT("DELETE_INDEXED_DISTINCT"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with like operator.
+     */
+    DELETE_INDEXED_LIKE("DELETE_INDEXED_LIKE"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with not like operator.
+     */
+    DELETE_INDEXED_NOT_LIKE("DELETE_INDEXED_NOT_LIKE"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with inl operator.
+     */
+    DELETE_INDEXED_IN("DELETE_INDEXED_IN"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with not in operator.
+     */
+    DELETE_INDEXED_NOT_IN("DELETE_INDEXED_NOT_IN"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with between operator.
+     */
+    DELETE_INDEXED_BETWEEN("DELETE_INDEXED_BETWEEN"),
+
+    /**
+     * The engine supports delete operations on columns
+     * that have an associated index in the underlying datastore with not between operator.
+     */
+    DELETE_INDEXED_NOT_BETWEEN("DELETE_INDEXED_NOT_BETWEEN"),
+    /**
      * The engine supports delete operations using
      * a includes as part of a relation using with an equal operator.
      */
@@ -322,6 +618,48 @@ public enum Operations {
     DELETE_FUNCTION_LET("DELETE_FUNCTION_LET"),
 
     /**
+     * The engine supports delete operations using
+     * a includes as part of a relation using with distinct operator.
+     */
+    DELETE_FUNCTION_DISTINCT("DELETE_FUNCTION_DISTINCT"),
+
+    /**
+     * The engine supports delete operations using
+     * a includes as part of a relation using with like operator.
+     */
+    DELETE_FUNCTION_LIKE("DELETE_FUNCTION_LIKE"),
+
+    /**
+     * The engine supports delete operations using
+     * a includes as part of a relation using with not like operator.
+     */
+    DELETE_FUNCTION_NOT_LIKE("DELETE_FUNCTION_NOT_LIKE"),
+
+    /**
+     * The engine supports delete operations using
+     * a includes as part of a relation using with in operator.
+     */
+    DELETE_FUNCTION_IN("DELETE_FUNCTION_IN"),
+
+    /**
+     * The engine supports delete operations using
+     * a includes as part of a relation using with not in operator.
+     */
+    DELETE_FUNCTION_NOT_IN("DELETE_FUNCTION_NOT_IN"),
+
+    /**
+     * The engine supports delete operations using
+     * a includes as part of a relation using with between operator.
+     */
+    DELETE_FUNCTION_BETWEEN("DELETE_FUNCTION_BETWEEN"),
+
+    /**
+     * The engine supports delete operations using
+     * a includes as part of a relation using with not between operator.
+     */
+    DELETE_FUNCTION_NOT_BETWEEN("DELETE_FUNCTION_NOT_BETWEEN"),
+
+    /**
      * The engine supports index creation from existing tables.
      */
     CREATE_INDEX("CREATE_INDEX"),
@@ -330,7 +668,6 @@ public enum Operations {
      * The engine supports index deletion from existing tables.
      */
     DROP_INDEX("DROP_INDEX"),
-
 
     /**
      * The engine supports retrieving a set of columns from a specific table.
@@ -359,6 +696,11 @@ public enum Operations {
     SELECT_LIMIT("SELECT_LIMIT"),
 
     /**
+     * The engine supports case when selector.
+     */
+    SELECT_CASE_WHEN("SELECT_CASE_WHEN"),
+
+    /**
      * The engine supports inner joins.
      */
     SELECT_INNER_JOIN("SELECT_INNER_JOIN"),
@@ -382,18 +724,6 @@ public enum Operations {
      * The engine supports aggregator operations (e.g., sum, avg, etc.) on a Select statement.
      */
     SELECT_FUNCTIONS("SELECT_FUNCTIONS"),
-
-    /**
-     * The engine supports in relationships in {@link com.stratio.crossdata.common.logicalplan.Filter}
-     * operations.
-     */
-    SELECT_WHERE_IN("SELECT_WHERE_IN"),
-
-    /**
-     * The engine supports between relationships in {@link com.stratio.crossdata.common.logicalplan.Filter}
-     * operations.
-     */
-    SELECT_WHERE_BETWEEN("SELECT_WHERE_BETWEEN"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
@@ -433,15 +763,44 @@ public enum Operations {
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
-     * that are part of the primary key with like operator.
+     * that are part of the primary key with match operator.
+     */
+    FILTER_PK_MATCH("FILTER_PK_MATCH"),
+
+    /**
+     * The filter of like operator over a PK.
      */
     FILTER_PK_LIKE("FILTER_PK_LIKE"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
-     * that are part of the primary key with match operator.
+     * that are part of the primary key with not like operator.
      */
-    FILTER_PK_MATCH("FILTER_PK_MATCH"),
+    FILTER_PK_NOT_LIKE("FILTER_PK_NOT_LIKE"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are part of the primary key with in operator.
+     */
+    FILTER_PK_IN("FILTER_PK_IN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are part of the primary key with not in operator.
+     */
+    FILTER_PK_NOT_IN("FILTER_PK_NOT_IN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are part of the primary key with between operator.
+     */
+    FILTER_PK_BETWEEN("FILTER_PK_BETWEEN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are part of the primary key with not between operator.
+     */
+    FILTER_PK_NOT_BETWEEN("FILTER_PK_NOT_BETWEEN"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
@@ -478,6 +837,47 @@ public enum Operations {
      * that are not indexed by the underlying datastore with a distinct operator.
      */
     FILTER_NON_INDEXED_DISTINCT("FILTER_NON_INDEXED_DISTINCT"),
+
+    /**
+     * The engine supports full text search syntax in {@link com.stratio.crossdata.common.logicalplan.Filter}
+     * operations with a MATCH Operator in non indexed columns.
+     */
+    FILTER_NON_INDEXED_MATCH("FILTER_NON_INDEXED_MATCH"),
+
+    /**
+     * The filter of like operator.
+     */
+    FILTER_NON_INDEXED_LIKE("FILTER_NON_INDEXED_LIKE"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are not indexed by the underlying datastore with not like operator.
+     */
+    FILTER_NON_INDEXED_NOT_LIKE("FILTER_NON_INDEXED_NOT_LIKE"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are not indexed by the underlying datastore with a IN operator for collections.
+     */
+    FILTER_NON_INDEXED_IN("FILTER_NON_INDEXED_IN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are not indexed by the underlying datastore with not in operator.
+     */
+    FILTER_NON_INDEXED_NOT_IN("FILTER_NON_INDEXED_NOT_IN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are not indexed by the underlying datastore with between operator.
+     */
+    FILTER_NON_INDEXED_BETWEEN("FILTER_NON_INDEXED_BETWEEN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that are not indexed by the underlying datastore with not between operator.
+     */
+    FILTER_NON_INDEXED_NOT_BETWEEN("FILTER_NON_INDEXED_NOT_BETWEEN"),
 
     /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
@@ -522,6 +922,41 @@ public enum Operations {
     FILTER_INDEXED_MATCH("FILTER_INDEXED_MATCH"),
 
     /**
+     * The filter of like operator over an index.
+     */
+    FILTER_INDEXED_LIKE("FILTER_INDEXED_LIKE"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that have an associated index in the underlying datastore with not like operator.
+     */
+    FILTER_INDEXED_NOT_LIKE("FILTER_INDEXED_NOT_LIKE"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that have an associated index in the underlying datastore with in operator.
+     */
+    FILTER_INDEXED_IN("FILTER_INDEXED_IN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that have an associated index in the underlying datastore with not in operator.
+     */
+    FILTER_INDEXED_NOT_IN("FILTER_INDEXED_NOT_IN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that have an associated index in the underlying datastore with between operator.
+     */
+    FILTER_INDEXED_BETWEEN("FILTER_INDEXED_BETWEEN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations on columns
+     * that have an associated index in the underlying datastore with not between operator.
+     */
+    FILTER_INDEXED_NOT_BETWEEN("FILTER_INDEXED_NOT_BETWEEN"),
+
+    /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
      * a includes as part of a relation using with an equal operator.
      */
@@ -558,10 +993,116 @@ public enum Operations {
     FILTER_FUNCTION_DISTINCT("FILTER_FUNCTION_DISTINCT"),
 
     /**
+     * The filter of like operator.
+     */
+    FILTER_FUNCTION_LIKE("FILTER_FUNCTION_LIKE"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
+     * a includes as part of a relation using with not like operator.
+     */
+    FILTER_FUNCTION_NOT_LIKE("FILTER_FUNCTION_NOT_LIKE"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
+     * a includes as part of a relation using with in operator.
+     */
+    FILTER_FUNCTION_IN("FILTER_FUNCTION_IN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
+     * a includes as part of a relation using with not in operator.
+     */
+    FILTER_FUNCTION_NOT_IN("FILTER_FUNCTION_NOT_IN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
+     * a includes as part of a relation using with between operator.
+     */
+    FILTER_FUNCTION_BETWEEEN("FILTER_FUNCTION_BETWEEEN"),
+
+    /**
+     * The engine supports {@link com.stratio.crossdata.common.logicalplan.Filter} operations using
+     * a includes as part of a relation using with not between operator.
+     */
+    FILTER_FUNCTION_NOT_BETWEEEN("FILTER_FUNCTION_NOT_BETWEEEN"),
+
+    /**
+     * The engine supports OR operator.
+     */
+    FILTER_DISJUNCTION("FILTER_DISJUNCTION"),
+
+    /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.PartialResults} operations
      * to read a list of partial results.
      */
-    PARTIAL_RESULTS("PARTIAL_RESULTS");
+    PARTIAL_RESULTS("PARTIAL_RESULTS"),
+
+    /**
+     * The engine supports chunking the result of a Select query.
+     */
+    PAGINATION("PAGINATION"),
+
+    /**
+     * The engine supports direct execution of SQL queries.
+     */
+    SQL_DIRECT("SQL_DIRECT"),
+
+    /**
+     * The engine support insert into from select queries.
+     */
+    INSERT_FROM_SELECT("INSERT_FROM_SELECT"),
+
+    /**
+     * The engine supports left outer joins.
+     */
+    SELECT_LEFT_OUTER_JOIN("SELECT_LEFT_OUTER_JOIN"),
+
+    /**
+     * The engine supports right outer joins.
+     */
+    SELECT_RIGHT_OUTER_JOIN("SELECT_OUTER_RIGHT_JOIN"),
+
+    /**
+     * The engine supports FULL outer joins.
+     */
+    SELECT_FULL_OUTER_JOIN("SELECT_FULL_OUTER_JOIN"),
+
+    /**
+     * The engine supports natural joins.
+     */
+    SELECT_FULL_NATURAL_JOIN("SELECT_NATURAL_JOIN"),
+
+    /**
+     * The engine supports cross joins.
+     */
+    SELECT_CROSS_JOIN("SELECT_CROSS_JOIN"),
+
+    /**
+     * The engine supports left outer joins with partial results.
+     */
+    SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS("SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS"),
+
+    /**
+     * The engine supports right outer joins with partial results.
+     */
+    SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS("SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS"),
+
+    /**
+     * The engine supports full outer joins with partial results.
+     */
+    SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS("SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS"),
+
+    /**
+     * The engine supports cross joins with partial results.
+     */
+    SELECT_CROSS_JOIN_PARTIALS_RESULTS("SELECT_CROSS_JOIN_PARTIALS_RESULTS"),
+
+    /**
+     * The engine supports operations which refer to the result of previous queries by using aliases.
+     */
+    SELECT_SUBQUERY("SELECT_SUBQUERY");
+
 
     private String operationsStr;
 

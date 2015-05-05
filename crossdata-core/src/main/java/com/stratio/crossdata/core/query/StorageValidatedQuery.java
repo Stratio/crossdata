@@ -25,6 +25,8 @@ import com.stratio.crossdata.common.result.QueryStatus;
  */
 public class StorageValidatedQuery extends StorageParsedQuery implements IValidatedQuery {
 
+    private String sqlQuery;
+
     /**
      * Constructor class based in a Storage Statement that was parsed.
      * @param storageParsedQuery the parsed statement.
@@ -40,6 +42,22 @@ public class StorageValidatedQuery extends StorageParsedQuery implements IValida
      */
     public StorageValidatedQuery(StorageValidatedQuery storageValidatedQuery) {
         this((StorageParsedQuery) storageValidatedQuery);
+    }
+
+    /**
+     * Get the sql direct query.
+     * @return a String.
+     */
+    public String getSqlQuery() {
+        return sqlQuery;
+    }
+
+    /**
+     * Set the sql query obtained once normalizator phase is done.
+     * @param sqlQuery The sql obtained in the normalizator phase.
+     */
+    public void setSqlQuery(String sqlQuery) {
+        this.sqlQuery = sqlQuery;
     }
 
 }

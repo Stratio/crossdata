@@ -46,6 +46,7 @@ import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
+import com.stratio.crossdata.common.result.DisconnectResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.InProgressResult;
 import com.stratio.crossdata.common.result.MetadataResult;
@@ -101,7 +102,10 @@ public final class ConsoleUtils {
         } else if (result instanceof ConnectResult) {
             ConnectResult connectResult = (ConnectResult) result;
             return String.valueOf("Connected with SessionId=" + connectResult.getSessionId());
-        } else if (result instanceof MetadataResult) {
+        } else if (result instanceof DisconnectResult){
+            DisconnectResult disconnectResult = (DisconnectResult) result;
+            return String.valueOf("Disconnected from SessionId=" + disconnectResult.getSessionId());
+        }else if (result instanceof MetadataResult) {
             MetadataResult metadataResult = (MetadataResult) result;
             return metadataResult.toString();
         } else if (result instanceof StorageResult) {
@@ -155,8 +159,8 @@ public final class ConsoleUtils {
         for (Row row : resultSet) {
             sb.append("| ");
             for (String columnName: columnNames) {
-                String str = String.valueOf(row.getCell(columnName.toLowerCase()).getValue());
-                sb.append(StringUtils.rightPad(str, colWidths.get(columnName.toLowerCase())));
+                String str = String.valueOf(row.getCell(columnName).getValue());
+                sb.append(StringUtils.rightPad(str, colWidths.get(columnName)));
                 sb.append(" | ");
             }
             sb.append(System.lineSeparator());

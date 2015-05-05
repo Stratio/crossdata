@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 
 /**
@@ -37,11 +38,11 @@ public class AbstractInMemoryFunction {
         this.arguments.addAll(arguments);
     }
 
-    public Object apply(Map<String, Integer> columnIndex, Object [] row) throws Exception{
+    public Object apply(Map<String, Integer> columnIndex, SimpleValue [] row) throws Exception{
         throw new Exception("Function cannot be applied to a row");
     }
 
-    public List<Object []> apply(Map<String, Integer> columnIndex, List<Object []> rows) throws Exception{
+    public List<SimpleValue []> apply(Map<String, Integer> columnIndex, List<SimpleValue []> rows) throws Exception{
         throw new Exception("Function cannot be applied to a list of rows");
     }
 

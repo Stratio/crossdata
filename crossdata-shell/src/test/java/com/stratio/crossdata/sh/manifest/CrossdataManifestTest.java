@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.sh.manifest;
 
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
 import org.testng.annotations.Test;
@@ -95,7 +95,8 @@ public class CrossdataManifestTest {
         sbError.append("Expecting:  ").append(sb.toString()).append(System.lineSeparator());
         sbError.append("Instead of: ").append(parsedManifest);
 
-        assertTrue(parsedManifest.equalsIgnoreCase(sb.toString()), sbError.toString());
+        //assertTrue(parsedManifest.equalsIgnoreCase(sb.toString()), sbError.toString());
+        assertEquals(parsedManifest, sb.toString(), sbError.toString());
     }
 
     @Test
@@ -122,7 +123,7 @@ public class CrossdataManifestTest {
         sb.append("\t").append("DataStoreName: ").append("cassandra").append(System.lineSeparator());
 
         // VERSION
-        sb.append("Version: ").append("0.2.0").append(System.lineSeparator());
+        sb.append("Version: ").append("0.3.0").append(System.lineSeparator());
 
         // REQUIRED PROPERTIES
         sb.append("Required properties: ").append(System.lineSeparator());
@@ -177,7 +178,8 @@ public class CrossdataManifestTest {
         sbError.append("Expecting:  ").append(sb.toString()).append(System.lineSeparator());
         sbError.append("Instead of: ").append(parsedManifest);
 
-        assertTrue(parsedManifest.equalsIgnoreCase(sb.toString()), sbError.toString());
+        //assertTrue(parsedManifest.equalsIgnoreCase(sb.toString()), sbError.toString());
+        assertEquals(parsedManifest, sb.toString(), sbError.toString());
     }
 
 }

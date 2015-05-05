@@ -74,6 +74,11 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
     private boolean ifNotExists;
 
     /**
+     * Whether the table has been created previously or not
+     */
+    private boolean isExternal;
+
+    /**
      * Class constructor.
      *
      * @param tableType    TABLE type {@link com.stratio.crossdata.common.metadata.structures.TableType}.
@@ -82,10 +87,11 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
      * @param columns      A map with the name of the columns in the table and the associated data type.
      * @param partitionKey The list of columns that are part of the primary key.
      * @param clusterKey   The list of columns that are part of the clustering key.
+     * @param isExternal   Whether the table has been created previously or not.
      */
     public CreateTableStatement(TableType tableType, TableName tableName, ClusterName clusterName,
             LinkedHashMap<ColumnName, ColumnType> columns,
-            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey) {
+            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey, boolean isExternal) {
         this.command = false;
         this.tableType = tableType;
         this.tableStatement.setTableName(tableName);
@@ -93,12 +99,14 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
         this.columnsWithType = columns;
         this.partitionKey = partitionKey;
         this.clusterKey = clusterKey;
+        this.isExternal = isExternal;
         if (partitionKey != null) {
             this.primaryKey.addAll(partitionKey);
         }
         if (clusterKey != null) {
             this.primaryKey.addAll(clusterKey);
         }
+
     }
 
     /**
@@ -109,11 +117,12 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
      * @param clusterName  The cluster name that correspond with the table.
      * @param partitionKey The list of columns that are part of the primary key.
      * @param clusterKey   The list of columns that are part of the clustering key.
+     * @param isExternal   Whether the table has been created previously or not.
      */
     public CreateTableStatement(TableName tableName, ClusterName clusterName,
             LinkedHashMap<ColumnName, ColumnType> columns,
-            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey) {
-        this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey);
+            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey, boolean isExternal) {
+        this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey, isExternal);
     }
 
     /**
@@ -137,8 +146,8 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
     /**
      * Get the columns and its types.
      *
-     * @return A map of {@link com.stratio.crossdata.common.data.ColumnName} and {@link com.stratio.crossdata.common
-     * .metadata.ColumnType} .
+     * @return A map of {@link com.stratio.crossdata.common.data.ColumnName} and
+     * {@link com.stratio.crossdata.common.metadata.ColumnType} .
      */
     public Map<ColumnName, ColumnType> getColumnsWithTypes() {
         return columnsWithType;
@@ -189,7 +198,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("CREATE ");
+        StringBuilder sb = new StringBuilder( (isExternal) ? "REGISTER " :"CREATE ");
         if (tableType != TableType.DATABASE) {
             sb.append(tableType);
         }
@@ -231,7 +240,9 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
     public ValidationRequirements getValidationRequirements() {
         ValidationRequirements requirements = new ValidationRequirements()
                 .add(ValidationTypes.MUST_EXIST_CATALOG)
-                .add(ValidationTypes.MUST_EXIST_CLUSTER);
+                .add(ValidationTypes.MUST_EXIST_CLUSTER)
+                .add(ValidationTypes.MUST_BE_A_VALID_PK);
+
         if (!isIfNotExists()) {
             requirements = requirements.add(ValidationTypes.MUST_NOT_EXIST_TABLE);
         }
@@ -245,5 +256,22 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
      */
     public boolean isIfNotExists() {
         return ifNotExists;
+    }
+
+    /**
+     * Get isExternal value.
+     *
+     * @return true if the table has been created previously.
+     */
+    public boolean isExternal() {
+        return isExternal;
+    }
+
+    /**
+     * Get the list of columns that are part of the primary key.
+     * @return
+     */
+    public Set<ColumnName> getPrimaryKey() {
+        return primaryKey;
     }
 }

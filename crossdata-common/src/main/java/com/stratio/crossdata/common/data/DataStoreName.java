@@ -39,7 +39,7 @@ public class DataStoreName extends FirstLevelName {
      */
     public DataStoreName(String dataStoreName) {
         super();
-        this.name = dataStoreName.toLowerCase();
+        this.name = dataStoreName;
     }
 
     /**
@@ -64,5 +64,33 @@ public class DataStoreName extends FirstLevelName {
     @Override
     public NameType getType() {
         return NameType.DATASTORE;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+
+        DataStoreName that = (DataStoreName) o;
+
+        if (name != null ? !name.equals(that.name) : that.name != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
     }
 }

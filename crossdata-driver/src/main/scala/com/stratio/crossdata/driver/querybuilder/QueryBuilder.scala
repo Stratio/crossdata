@@ -20,7 +20,7 @@ package com.stratio.crossdata.driver.querybuilder
 
 /**
  * Query builder that simplifies the creation of valid sentences accepted
- * by the Crossdata SQL language.
+ * by the Crossdata QL language.
  */
 object QueryBuilder {
 

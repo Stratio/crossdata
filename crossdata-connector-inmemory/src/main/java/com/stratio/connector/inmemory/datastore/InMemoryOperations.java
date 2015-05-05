@@ -20,6 +20,7 @@ package com.stratio.connector.inmemory.datastore;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
 
 /**
  * Enumeration of the different operations that can be applied
@@ -65,7 +66,7 @@ public enum InMemoryOperations {
             if(Number.class.isInstance(o1) && Number.class.isInstance(o2)){
                 return compareNumbers(Number.class.cast(o1), Number.class.cast(o2)) < 0;
             } else if (Boolean.class.isInstance(o1) && Boolean.class.isInstance(o2)){
-                return compareTo(Boolean.class.cast(o1), Boolean.class.cast(o2)) > 0;
+                return compareTo(Boolean.class.cast(o1), Boolean.class.cast(o2)) < 0;
             } else if(o1.getClass().equals(o2.getClass()) && String.class.equals(o1.getClass())){
                 return compareTo(String.class.cast(o1), String.class.cast(o2)) < 0;
             }
@@ -105,6 +106,27 @@ public enum InMemoryOperations {
             }
             return false;
         }
+    },
+
+
+    /**
+     * IN operator
+     */
+    IN{
+        @Override
+        public boolean compare(Object o1, Object o2) {
+
+            List<Object> listOfObjects = (List<Object>) o2;
+            for (Object inEntry : listOfObjects) {
+                if (Number.class.isInstance(o1) && Number.class.isInstance(inEntry) && compareNumbers(Number.class.cast(o1), Number.class.cast(inEntry)) == 0) {
+                    return true;
+                }else if (o1.equals(inEntry)){
+                    return true;
+                }
+            }
+
+            return false;
+        }
     };
 
     public abstract boolean compare(Object o1, Object o2);
@@ -132,6 +154,7 @@ public enum InMemoryOperations {
 
     /**
      * Transform a number into a BigDecimal for comparison reasons.
+     * See http://docs.oracle.com/javase/6/docs/api/java/math/BigDecimal.html#BigDecimal%28double%29
      * @param n The number.
      * @return A {@link java.math.BigDecimal}.
      */
@@ -144,7 +167,7 @@ public enum InMemoryOperations {
         }else if(Integer.class.isInstance(n) || Long.class.isInstance(n)){
             result = new BigDecimal(n.longValue());
         }else if(Float.class.isInstance(n) || Double.class.isInstance(n)){
-            result = new BigDecimal(n.doubleValue());
+            result = new BigDecimal(n.toString());
         }
         return result;
     }

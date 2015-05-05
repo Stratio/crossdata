@@ -19,8 +19,11 @@
 package com.stratio.crossdata.common.statements.structures;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import com.stratio.crossdata.common.data.ColumnName;
 
 /**
  * Class that contains the list of elements requested by the user in a SELECT statement. For
@@ -29,6 +32,7 @@ import java.util.List;
  */
 public class SelectExpression implements Serializable {
 
+    private static final long serialVersionUID = -6978154423835994360L;
     /**
      * List of selectors.
      */
@@ -44,6 +48,16 @@ public class SelectExpression implements Serializable {
 
     public List<Selector> getSelectorList() {
         return selectorList;
+    }
+
+
+    public static SelectExpression create(List<ColumnName> columnList) {
+        List<Selector> selectors = new ArrayList<>();
+        for(ColumnName cn: columnList){
+            selectors.add(new ColumnSelector(cn));
+        }
+        SelectExpression ss = new SelectExpression(selectors);
+        return ss;
     }
 
     @Override
@@ -75,6 +89,23 @@ public class SelectExpression implements Serializable {
         Iterator<Selector> selectors = selectorList.iterator();
         while (selectors.hasNext()) {
             sb.append(selectors.next().toString());
+            if (selectors.hasNext()) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
+    }
+
+
+    public String toSQLString() {
+        StringBuilder sb = new StringBuilder();
+        Iterator<Selector> selectors = selectorList.iterator();
+        while (selectors.hasNext()) {
+            Selector selector = selectors.next();
+            sb.append(selector.toSQLString(false));
+            if(selector.getAlias() != null){
+                sb.append(" AS "+selector.getAlias());
+            }
             if (selectors.hasNext()) {
                 sb.append(", ");
             }

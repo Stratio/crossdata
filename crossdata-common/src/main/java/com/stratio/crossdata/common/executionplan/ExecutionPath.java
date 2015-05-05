@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.executionplan;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
@@ -26,8 +27,9 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 /**
  * Execution path of a logical workflow.
  */
-public class ExecutionPath {
+public class ExecutionPath implements Serializable {
 
+    private static final long serialVersionUID = -2712382478581678360L;
     private final LogicalStep initial;
 
     private LogicalStep last;
@@ -76,5 +78,39 @@ public class ExecutionPath {
             pointer = pointer.getNextStep();
         }
         return sb.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ExecutionPath that = (ExecutionPath) o;
+
+        if (availableConnectors != null ?
+                !availableConnectors.equals(that.availableConnectors) :
+                that.availableConnectors != null) {
+            return false;
+        }
+        if (initial != null ? !initial.equals(that.initial) : that.initial != null) {
+            return false;
+        }
+        if (last != null ? !last.equals(that.last) : that.last != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = initial != null ? initial.hashCode() : 0;
+        result = 31 * result + (last != null ? last.hashCode() : 0);
+        result = 31 * result + (availableConnectors != null ? availableConnectors.hashCode() : 0);
+        return result;
     }
 }

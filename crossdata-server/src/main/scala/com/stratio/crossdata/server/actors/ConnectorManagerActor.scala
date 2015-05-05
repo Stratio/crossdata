@@ -25,37 +25,39 @@ MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEv
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
+import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionType, ManagementWorkflow, ExecutionWorkflow}
 import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{replyConnectorName, getConnectorName,Connect}
-import com.stratio.crossdata.core.execution.ExecutionManager
+import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
+import com.stratio.crossdata.core.loadWatcher.LoadWatcherManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
-import java.util.UUID
+import java.util.{Collections, UUID}
 
 object ConnectorManagerActor {
-  def props(): Props = Props(new ConnectorManagerActor)
+  def props(cluster:Cluster): Props = Props(new ConnectorManagerActor(cluster))
 }
 
-class ConnectorManagerActor() extends Actor with ActorLogging {
+class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
-  val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
+  val coordinatorActorRef = context.actorSelection("../../CoordinatorActor")//context.actorSelection("../CoordinatorActor")
   var connectorsAlreadyReset = false
 
   log.info("Lifting connector manager actor")
 
   override def preStart(): Unit = {
-    Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
+    cluster.subscribe(self, classOf[ClusterDomainEvent])
   }
 
   override def postStop(): Unit = {
-    Cluster(context.system).unsubscribe(self)
+    cluster.unsubscribe(self)
   }
 
   def receive : Receive= {
@@ -91,42 +93,56 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
      */
     case msg: replyConnectorName => {
       logger.info("Connector Name " + msg.name + " received from " + sender)
-      val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
-      logger.info("Registering connector at: " + actorRefUri)
-      val connectorName = new ConnectorName(msg.name)
-      ExecutionManager.MANAGER.createEntry(actorRefUri, connectorName, true)
+      val actorRefUri = StringUtils.getAkkaActorRefUri(sender, false)
+      logger.info("Registering connector from: " + actorRefUri)
 
-      MetadataManager.MANAGER.addConnectorRef(connectorName, actorRefUri)
+      if(actorRefUri != null){
+        val connectorName = new ConnectorName(msg.name)
+        ExecutionManager.MANAGER.createEntry(actorRefUri, connectorName, true)
 
-      val connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName)
-      val clusterProps = connectorMetadata.getClusterProperties
+        MetadataManager.MANAGER.addConnectorRef(connectorName, actorRefUri)
 
-      if((clusterProps != null) && (!clusterProps.isEmpty)){
-        for(clusterProp <- clusterProps.entrySet()){
-          val clusterName = clusterProp.getKey
-          val optsCluster = MetadataManager.MANAGER.getCluster(clusterName).getOptions;
+        val connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName)
+        val clusterProps = connectorMetadata.getClusterProperties
 
-          val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
-          val datastoreName = clusterMetadata.getDataStoreRef;
-          val datastoreMetadata = MetadataManager.MANAGER.getDataStore(datastoreName)
-          val optsDatastore = datastoreMetadata.getClusterAttachedRefs.get(clusterName)
+        if((clusterProps != null) && (!clusterProps.isEmpty)){
 
-          val clusterConfig = new ConnectorClusterConfig(clusterName,
-            SelectorHelper.convertSelectorMapToStringMap(optsCluster),
-            SelectorHelper.convertSelectorMapToStringMap(optsDatastore.getProperties))
+          for(clusterProp <- clusterProps.entrySet()){
+            val clusterName = clusterProp.getKey
+            val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
+            val optsCluster = MetadataManager.MANAGER.getCluster(clusterName).getOptions;
 
-          clusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
+            val optsConnector = clusterMetadata.getConnectorAttachedRefs.get(connectorName).getProperties
 
-          sender ! new Connect(UUID.randomUUID().toString, null, clusterConfig)
+            val clusterConfig = new ConnectorClusterConfig(clusterName,
+              SelectorHelper.convertSelectorMapToStringMap(optsConnector),
+              SelectorHelper.convertSelectorMapToStringMap(optsCluster))
+
+            clusterConfig.setDataStoreName(clusterMetadata.getDataStoreRef)
+
+            val reconnectQueryUUID = UUID.randomUUID().toString
+            val executionInfo = new ExecutionInfo
+            executionInfo.setRemoveOnSuccess(true)
+            executionInfo.setUpdateOnSuccess(true)
+            val executionWorkflow = new ManagementWorkflow(reconnectQueryUUID, Collections.emptySet[String](), ExecutionType.ATTACH_CONNECTOR,ResultType.RESULTS)
+            executionWorkflow.setClusterName(clusterName)
+            executionInfo.setWorkflow(executionWorkflow)
+            ExecutionManager.MANAGER.createEntry(reconnectQueryUUID, executionInfo)
+
+            sender ! new Connect(reconnectQueryUUID, null, clusterConfig)
+          }
         }
+        MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
+        MetadataManager.MANAGER.setNodeStatus(new NodeName(sender.path.address.toString), Status.ONLINE)
+      } else {
+        logger.error("Actor reference of the sender can't be null")
       }
-      MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE)
-      MetadataManager.MANAGER.setNodeStatus(new NodeName(sender.path.address.toString), Status.ONLINE)
+
     }
 
     case c: ConnectResult => {
       logger.info("Connect result from " + sender + " => " + c.getSessionId)
-      coordinatorActorRef ! c
+      coordinatorActorRef forward c
     }
 
     case er: ErrorResult => {
@@ -165,19 +181,28 @@ class ConnectorManagerActor() extends Actor with ActorLogging {
     case member: MemberRemoved => {
       logger.info("Member is Removed: " + member.member.address)
       logger.info("Member info: " + member.toString)
-      val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address)
-      if(ExecutionManager.MANAGER.exists(actorRefUri + "/user/ConnectorActor/")){
-        val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri + "/user/ConnectorActor/")
-        MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName], Status.OFFLINE)
+      val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address, false)+"/user/ConnectorActor/"
+      if(ExecutionManager.MANAGER.exists(actorRefUri)){
+        val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
+        logger.info("Removing Connector: " + connectorName)
+        MetadataManager.MANAGER.removeActorRefFromConnector(connectorName.asInstanceOf[ConnectorName], actorRefUri)
         MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
+        ExecutionManager.MANAGER.deleteEntry(actorRefUri)
+      } else {
+        logger.warn(actorRefUri + " not found in the Execution Manager")
+      }
+      // example of member.member.address = akka.tcp://CrossdataServerCluster@127.0.0.1:13421
+      val lwmkey=member.member.address.toString.split("@")(1).split(":")(0)
+      if(LoadWatcherManager.MANAGER.exists(lwmkey)){
+        LoadWatcherManager.MANAGER.deleteEntry(lwmkey)
       }
     }
 
     case member: MemberExited => {
       logger.info("Member is exiting: " + member.member.address)
-      val actorRefUri = StringUtils.getAkkaActorRefUri(sender)
+      val actorRefUri = StringUtils.getAkkaActorRefUri(sender, false)
       val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
-      MetadataManager.MANAGER.setConnectorStatus(connectorName.asInstanceOf[ConnectorName], Status.SHUTTING_DOWN)
+      MetadataManager.MANAGER.removeActorRefFromConnector(connectorName.asInstanceOf[ConnectorName], actorRefUri)
       MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
     }
 

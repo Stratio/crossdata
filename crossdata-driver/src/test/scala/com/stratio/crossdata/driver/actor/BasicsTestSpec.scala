@@ -22,6 +22,7 @@ import akka.actor.{ActorSystem, Props}
 import akka.contrib.pattern.ClusterClient.Send
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestKit}
 import com.stratio.crossdata.common.result.ErrorResult
+import com.stratio.crossdata.driver.BasicDriver
 import com.stratio.crossdata.driver.utils.RetryPolitics
 import com.typesafe.config.ConfigFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike}
@@ -36,9 +37,9 @@ class BasicsTestSpec extends TestKit(ActorSystem("TestKitUsageSpec", ConfigFacto
 with ImplicitSender with DefaultTimeout with FunSuiteLike with BeforeAndAfterAll {
 
   val test:String="test"
-  val proxyRef = system.actorOf(Props(classOf[ProxyActor], testActor,test, null))
+  val proxyRef = system.actorOf(Props(classOf[ProxyActor], testActor,test, new BasicDriver()))
 
-  val retryTestRef = system.actorOf(Props(classOf[ProxyActor], testActor, test, null))
+  val retryTestRef = system.actorOf(Props(classOf[ProxyActor], testActor, test, new BasicDriver()))
   val retryPolitics: RetryPolitics = new RetryPolitics(3, 1)
 
   override def afterAll() {
@@ -68,6 +69,7 @@ object TestKitUsageSpec {
     akka {
     loglevel = "WARNING"
     }
+    config.balancing=false
                """
 }
 

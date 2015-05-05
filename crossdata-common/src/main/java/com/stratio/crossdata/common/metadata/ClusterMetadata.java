@@ -34,7 +34,7 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 /**
  * Metadata information of a cluster.
  */
-public class ClusterMetadata implements IMetadata {
+public class ClusterMetadata implements IMetadata, UpdatableMetadata {
 
     /**
      * Serial version UID in order to be {@link java.io.Serializable}.

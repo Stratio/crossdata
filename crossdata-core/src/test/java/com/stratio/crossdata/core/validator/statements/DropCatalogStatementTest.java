@@ -39,7 +39,7 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
         DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("demo"), true);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropCatalogid", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropCatalogid", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
         try {
@@ -58,7 +58,7 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
         DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("unknown"), true);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropCatalogid", query, new CatalogName("unknown"));
+        BaseQuery baseQuery = new BaseQuery("dropCatalogid", query, new CatalogName("unknown"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
         try {
@@ -78,7 +78,7 @@ public class DropCatalogStatementTest extends BasicValidatorTest {
         DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("unknown"), false);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropCatalogid", query, new CatalogName("unknown"));
+        BaseQuery baseQuery = new BaseQuery("dropCatalogid", query, new CatalogName("unknown"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
         try {

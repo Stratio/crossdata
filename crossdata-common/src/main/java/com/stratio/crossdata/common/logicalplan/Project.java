@@ -21,17 +21,19 @@ package com.stratio.crossdata.common.logicalplan;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
-import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.metadata.Operations;
 
 /**
  * Project operation to retrieve a list of columns from the datastore.
  */
-public class Project extends TransformationStep {
+public class Project extends TransformationStep implements Virtualizable {
 
+    private static final long serialVersionUID = 413155415353651161L;
     /**
      * CLUSTER name.
      */
@@ -50,12 +52,12 @@ public class Project extends TransformationStep {
     /**
      * Create a projection.
      *
-     * @param operation   The operation to be applied.
+     * @param operations   The operations to be applied.
      * @param tableName   The table name.
      * @param clusterName The cluster name.
      */
-    public Project(Operations operation, TableName tableName, ClusterName clusterName) {
-        super(operation);
+    public Project(Set<Operations> operations, TableName tableName, ClusterName clusterName) {
+        super(operations);
         this.tableName = tableName;
         this.clusterName = clusterName;
     }
@@ -63,13 +65,13 @@ public class Project extends TransformationStep {
     /**
      * Create a projection.
      *
-     * @param operation   The operation to be applied.
+     * @param operations   The operations to be applied.
      * @param tableName   TABLE name.
      * @param clusterName The cluster name.
      * @param columnList  List of columns.
      */
-    public Project(Operations operation, TableName tableName, ClusterName clusterName, List<ColumnName> columnList) {
-        super(operation);
+    public Project(Set<Operations> operations, TableName tableName, ClusterName clusterName, List<ColumnName> columnList) {
+        super(operations);
         this.tableName = tableName;
         this.clusterName = clusterName;
         this.columnList.addAll(columnList);
@@ -137,5 +139,10 @@ public class Project extends TransformationStep {
         }
         sb.append(")");
         return sb.toString();
+    }
+
+    @Override
+    public final boolean isVirtual() {
+        return tableName.isVirtual();
     }
 }

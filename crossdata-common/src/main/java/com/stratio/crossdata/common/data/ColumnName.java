@@ -50,7 +50,7 @@ public class ColumnName extends Name {
             this.tableName = null;
         }
         if(columnName != null && !columnName.isEmpty()){
-            this.name = columnName.toLowerCase();
+            this.name = columnName;
         } else {
             this.name = null;
         }
@@ -69,7 +69,7 @@ public class ColumnName extends Name {
             this.tableName = null;
         }
         if(columnName != null && !columnName.isEmpty()){
-            this.name = columnName.toLowerCase();
+            this.name = columnName;
         } else {
             this.name = null;
         }
@@ -186,6 +186,16 @@ public class ColumnName extends Name {
      */
     public String getAlias() {
         return alias;
+    }
+
+    public String toSQLString() {
+        if(tableName == null){
+            return name;
+        }
+        if(tableName.getAlias() != null){
+            return tableName.getAlias() + "." + name;
+        }
+       return toString();
     }
 
 

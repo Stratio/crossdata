@@ -31,6 +31,7 @@ import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.utils.Constants;
 
 public class ConnectorAttachedMetadataTest {
 
@@ -41,8 +42,9 @@ public class ConnectorAttachedMetadataTest {
         ConnectorName connectorRef = new ConnectorName("testConnector");
         ClusterName clusterRef = new ClusterName("testCluster");
         Map<Selector, Selector> properties = new HashMap<>();
+        Integer priority = Constants.DEFAULT_PRIORITY;
         properties.put(new StringSelector("DefaultLimit"), new IntegerSelector(100));
-        cam = new ConnectorAttachedMetadata(connectorRef, clusterRef, properties);
+        cam = new ConnectorAttachedMetadata(connectorRef, clusterRef, properties, priority);
     }
 
     @Test
@@ -71,5 +73,14 @@ public class ConnectorAttachedMetadataTest {
                 System.lineSeparator() +
                 "Result:   " + cam.getConnectorRef() + System.lineSeparator() +
                 "Expected: " + expected);
+    }
+
+    @Test
+    public void testGetPriority() throws Exception {
+        Integer expected = Constants.DEFAULT_PRIORITY;
+        assertTrue(expected.equals(cam.getPriority()),
+                        System.lineSeparator() +
+                                        "Result:   " + cam.getConnectorRef() + System.lineSeparator() +
+                                        "Expected: " + expected);
     }
 }

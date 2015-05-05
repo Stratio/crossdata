@@ -25,6 +25,8 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class AsteriskSelector extends Selector {
 
+    private static final long serialVersionUID = 3370725707713353255L;
+
     /**
      * Basic Constructor class.
      */
@@ -43,6 +45,11 @@ public class AsteriskSelector extends Selector {
     @Override
     public String toString() {
         return "*";
+    }
+
+    @Override
+    public String toSQLString(boolean withAlias) {
+        return toString();
     }
 
     @Override public SelectorType getType() {
@@ -68,4 +75,6 @@ public class AsteriskSelector extends Selector {
         }
         return result;
     }
+
+
 }

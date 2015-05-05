@@ -45,7 +45,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
@@ -68,7 +68,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {
@@ -91,7 +91,7 @@ public class CreateIndexStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createIndexStatement);
         try {

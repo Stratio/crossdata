@@ -20,8 +20,10 @@ package com.stratio.crossdata.common.metadata;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.ClusterName;
@@ -40,8 +42,9 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 /**
  * Metadata information associated with a Connector.
  */
-public class ConnectorMetadata implements IMetadata {
+public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
 
+    private static final long serialVersionUID = -7255054732193616017L;
     /**
      * Connector name.
      */
@@ -70,6 +73,12 @@ public class ConnectorMetadata implements IMetadata {
     private Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
 
     /**
+     * A map of cluster names with their priorities.
+     */
+    private Map<ClusterName, Integer> clusterPriorities;
+
+
+    /**
      * The connector status.
      */
     private Status status;
@@ -77,7 +86,7 @@ public class ConnectorMetadata implements IMetadata {
     /**
      * The actor Akka reference.
      */
-    private String actorRef;
+    private Set<String> actorRefs = new HashSet<>();
 
     /**
      * The set of required properties.
@@ -102,6 +111,7 @@ public class ConnectorMetadata implements IMetadata {
      * Whether the manifest of this connector was already added or not.
      */
     private boolean manifestAdded = false;
+    private int pageSize;
 
     /**
      * Class constructor.
@@ -110,17 +120,18 @@ public class ConnectorMetadata implements IMetadata {
      * @param version             The connector version.
      * @param dataStoreRefs       The set of datastores the connector may access.
      * @param clusterProperties   The map of clusters associated with this connector and their associated properties.
+     * @param clusterPriorities   The map of clusters associated with this connector and their associated priority.
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
      * @param supportedOperations The set of supported operations.
      * @param functions           The set of supported functions.
      */
     public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
-            Map<ClusterName, Map<Selector, Selector>> clusterProperties,
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties, Map<ClusterName, Integer> clusterPriorities,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations, ConnectorFunctionsType functions) throws ManifestException {
-        this(name, version, dataStoreRefs, clusterProperties, Status.OFFLINE, null, requiredProperties,
-                optionalProperties, supportedOperations, functions);
+        this(name, version, dataStoreRefs, clusterProperties, clusterPriorities,Status.OFFLINE,
+                new HashSet<String>(), requiredProperties, optionalProperties, supportedOperations, functions);
     }
 
     /**
@@ -130,17 +141,22 @@ public class ConnectorMetadata implements IMetadata {
      * @param version             The connector version.
      * @param dataStoreRefs       The set of datastores the connector may access.
      * @param clusterProperties   The map of clusters associated with this connector and their associated properties.
+     * @param clusterPriorities   The map of clusters associated with this connector and their associated priority.
      * @param status              The connector status.
-     * @param actorRef            The actor Akka reference.
+     * @param actorRefs           The set of actor Akka references.
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
      * @param supportedOperations The set of supported operations.
      * @param functions           The functions allow by the connector.
      */
-    public ConnectorMetadata(ConnectorName name, String version,
+    public ConnectorMetadata(
+            ConnectorName name,
+            String version,
             Set<DataStoreName> dataStoreRefs,
-            Map<ClusterName, Map<Selector, Selector>> clusterProperties, Status status,
-            String actorRef,
+            Map<ClusterName, Map<Selector, Selector>> clusterProperties,
+            Map<ClusterName, Integer> clusterPriorities,
+            Status status,
+            Set<String> actorRefs,
             Set<PropertyType> requiredProperties,
             Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations,
@@ -166,6 +182,9 @@ public class ConnectorMetadata implements IMetadata {
         this.requiredProperties = (requiredProperties!=null)?requiredProperties:new HashSet<PropertyType>();
         this.optionalProperties = (optionalProperties!=null)?optionalProperties:new HashSet<PropertyType>();
         this.supportedOperations = (supportedOperations!=null)?supportedOperations:new HashSet<Operations>();
+
+        this.clusterPriorities = (clusterPriorities!= null) ?clusterPriorities : new HashMap<ClusterName, Integer>();
+
         if(functions==null){
             this.connectorFunctions = new HashSet<>();
             this.excludedFunctions = new HashSet<>();
@@ -184,7 +203,7 @@ public class ConnectorMetadata implements IMetadata {
             }
         }
         this.status = status;
-        this.actorRef = actorRef;
+        this.actorRefs = actorRefs;
     }
 
     /**
@@ -311,7 +330,11 @@ public class ConnectorMetadata implements IMetadata {
      * @return A set of {@link com.stratio.crossdata.common.data.ClusterName}.
      */
     public Set<ClusterName> getClusterRefs() {
-        return clusterRefs;
+        Set<ClusterName> clusters = clusterRefs;
+        if((clusters == null) || (clusters.isEmpty())){
+            clusters = clusterProperties.keySet();
+        }
+        return clusters;
     }
 
     /**
@@ -331,6 +354,15 @@ public class ConnectorMetadata implements IMetadata {
      */
     public Map<ClusterName, Map<Selector, Selector>> getClusterProperties() {
         return clusterProperties;
+    }
+
+    /**
+     * Get the map of clusters associated with this connector and their associated properties.
+     *
+     * @return A map of {@link com.stratio.crossdata.common.data.ClusterName} associated with the priority.
+     */
+    public Map<ClusterName, Integer> getClusterPriorities() {
+        return clusterPriorities;
     }
 
     /**
@@ -366,18 +398,24 @@ public class ConnectorMetadata implements IMetadata {
      *
      * @return A String Akka reference.
      */
-    public String getActorRef() {
-        return actorRef;
+    public Set<String> getActorRefs() {
+        return actorRefs;
     }
 
     /**
      * Sets the actor Akka reference.
      *
-     * @param actorRef String of the actor reference path.
+     * @param actorRefs Set of Strings of the actor reference paths.
      */
-    public void setActorRef(String actorRef) {
-        this.status = Status.ONLINE;
-        this.actorRef = actorRef;
+    public void setActorRefs(Set<String> actorRefs) {
+        if((actorRefs != null) && (!actorRefs.isEmpty())){
+            this.status = Status.ONLINE;
+        }
+        this.actorRefs = actorRefs;
+    }
+
+    public boolean supports(Set<Operations> operations) {
+        return supportedOperations.containsAll(operations);
     }
 
     /**
@@ -401,6 +439,19 @@ public class ConnectorMetadata implements IMetadata {
             this.clusterProperties = new HashMap<>();
         }
         clusterProperties.put(clusterName, options);
+    }
+
+    /**
+     * Adds a priority to a cluster.
+     *
+     * @param clusterName The cluster name.
+     * @param priority    The connector priority for the cluster.
+     */
+    public void addClusterPriority(ClusterName clusterName, Integer priority) {
+        if (clusterPriorities == null) {
+            this.clusterPriorities = new HashMap<>();
+        }
+        clusterPriorities.put(clusterName, priority);
     }
 
     /**
@@ -466,6 +517,14 @@ public class ConnectorMetadata implements IMetadata {
        this.connectorFunctions = new HashSet<>(supportedFunctions.getFunction());
     }
 
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+    }
+
+    public int getPageSize() {
+        return pageSize;
+    }
+
     /**
      * Get if manifest is added.
      * @return The check result.
@@ -520,7 +579,7 @@ public class ConnectorMetadata implements IMetadata {
 
     /**
      * Get the excluded functions of the manifest.
-     * @return A set of strings with the exluded functions of the manifest.
+     * @return A set of strings with the excluded functions of the manifest.
      */
     public Set<String> getExcludedFunctions() {
         HashSet<String> exFunctionsLowercase = new HashSet<>();
@@ -531,17 +590,72 @@ public class ConnectorMetadata implements IMetadata {
     }
 
     /**
-     * Set the exluded functions of the connector.
-     * @param excludedFunctions A set of String with the exluded functions.
+     * Set the excluded functions of the connector.
+     * @param excludedFunctions A set of String with the excluded functions.
      */
     public void setExcludedFunctions(Set<String> excludedFunctions) {
         this.excludedFunctions = excludedFunctions;
     }
 
+    public void addActorRef(String actorRef){
+        actorRefs.add(actorRef);
+        this.status = Status.ONLINE;
+    }
+
+    public void removeActorRef(String actorRef){
+        actorRefs.remove(actorRef);
+        if(actorRefs.isEmpty()){
+            this.status = Status.OFFLINE;
+        }
+    }
+
+    public String getActorRef(){
+        // Random election (Kind of load balancing?)
+        String actorRef = null;
+        if((actorRefs != null) & (!actorRefs.isEmpty())){
+            int randomNum = (new Random()).nextInt(actorRefs.size());
+            int count = 0;
+            Iterator<String> iter = actorRefs.iterator();
+            actorRef = iter.next();
+            while(count < randomNum){
+                actorRef = iter.next();
+                count++;
+            }
+        }
+        return actorRef;
+    }
+
+    public int getPriorityFromClusterNames(List<ClusterName> clusterNames){
+        int priority = 0;
+        for (ClusterName clusterName: clusterNames) {
+            if(!clusterName.isVirtual()){
+                priority += getPriorityFromClusterName(clusterName);
+            }
+        }
+        return priority;
+    }
+
+    public int getPriorityFromClusterName(ClusterName clusterName){
+        int result = Integer.MAX_VALUE;
+        if(clusterPriorities.containsKey(clusterName)){
+            result = clusterPriorities.get(clusterName);
+        }
+        return result;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Connector: ");
-        sb.append(name).append(" status: ").append(status).append(" actorRef: ").append(actorRef);
+        sb.append(name).append(" status: ").append(status).append(" actorRefs: ");
+        Iterator<String> iter = actorRefs.iterator();
+        while(iter.hasNext()){
+            String actorRef = iter.next();
+            sb.append(actorRef);
+            if(iter.hasNext()){
+                sb.append(" & ");
+            }
+        }
         return sb.toString();
     }
+
 }

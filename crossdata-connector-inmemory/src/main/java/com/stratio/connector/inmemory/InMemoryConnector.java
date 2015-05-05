@@ -18,28 +18,23 @@
 
 package com.stratio.connector.inmemory;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.log4j.Logger;
-
+import com.codahale.metrics.Timer;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
-import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
-import com.stratio.crossdata.common.connector.AbstractExtendedConnector;
-import com.stratio.crossdata.common.connector.IConfiguration;
-import com.stratio.crossdata.common.connector.IConnectorApp;
-import com.stratio.crossdata.common.connector.IMetadataEngine;
-import com.stratio.crossdata.common.connector.IQueryEngine;
-import com.stratio.crossdata.common.connector.IStorageEngine;
+import com.stratio.connector.inmemory.metadata.MetadataListener;
+import com.stratio.crossdata.common.connector.*;
 import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.exceptions.ConnectionException;
-import com.stratio.crossdata.common.exceptions.ExecutionException;
-import com.stratio.crossdata.common.exceptions.InitializationException;
-import com.stratio.crossdata.common.exceptions.UnsupportedException;
+import com.stratio.crossdata.common.exceptions.*;
+import com.stratio.crossdata.common.metadata.CatalogMetadata;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.connectors.ConnectorApp;
+import org.apache.log4j.Logger;
 
-import akka.cluster.Cluster;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * InMemory connector that demonstrates the internals of a crossdata connector.
@@ -48,16 +43,26 @@ import akka.cluster.Cluster;
  */
 public class InMemoryConnector extends AbstractExtendedConnector {
 
+
     /**
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(InMemoryConnector.class);
+    private static final int DEFAULT_TIMEOUT_IN_MS = 5000;
 
     /**
      * Map associating the {@link com.stratio.crossdata.common.data.ClusterName}s with
      * the InMemoryDatastores. This type of map usually links with the established connections.
      */
     private final Map<ClusterName, InMemoryDatastore> clusters = new HashMap<>();
+
+    private InMemoryQueryEngine queryEngine;
+
+    private InMemoryStorageEngine storageEngine;
+
+    private InMemoryMetadataEngine metadataEngine;
+
+    private final Timer connectTimer;
 
     /**
      * Constant defining the required datastore property.
@@ -66,6 +71,9 @@ public class InMemoryConnector extends AbstractExtendedConnector {
 
     public InMemoryConnector(IConnectorApp connectorApp) {
         super(connectorApp);
+        connectTimer = new Timer();
+        String timerName = name(InMemoryConnector.class, "connect");
+        registerMetric(timerName, connectTimer);
     }
 
     @Override
@@ -87,7 +95,11 @@ public class InMemoryConnector extends AbstractExtendedConnector {
 
     @Override
     public void connect(ICredentials credentials, ConnectorClusterConfig config) throws ConnectionException {
-        ClusterName targetCluster = config.getName();
+        //Init Metric
+        Timer.Context connectTimerContext = connectTimer.time();
+
+        // Connection
+        final ClusterName targetCluster = config.getName();
         Map<String, String> options = config.getClusterOptions();
         LOG.info("clusterOptions: " + config.getClusterOptions().toString() + " connectorOptions: " + config.getConnectorOptions());
         if(!options.isEmpty() && options.get(DATASTORE_PROPERTY) != null){
@@ -95,12 +107,30 @@ public class InMemoryConnector extends AbstractExtendedConnector {
             //we instantiate the Datastore instead.
             InMemoryDatastore datastore = new InMemoryDatastore(Integer.valueOf(options.get(DATASTORE_PROPERTY)));
             clusters.put(targetCluster, datastore);
-        }else{
+        } else {
+            long millis = connectTimerContext.stop() / 1000000;
+            LOG.info("Connection took " + millis + " milliseconds");
             throw new ConnectionException("Invalid options, expecting TableRowLimit");
         }
 
-        //Try to restore existing schema
-        restoreSchema(targetCluster);
+        //Try to restore existing schema 2 seconds after the connection
+        new java.util.Timer().schedule(
+                new java.util.TimerTask() {
+                    @Override
+                    public void run() {
+                        try {
+                            restoreSchema(targetCluster);
+                        }catch(ConnectorException ce){
+                            LOG.error("Error fetching existing schema from Crossdata server");
+                        }
+                    }
+                },
+                2000
+        );
+
+        //End Metric
+        long millis = connectTimerContext.stop() / 1000000;
+        LOG.info("Connection took " + millis + " milliseconds");
     }
 
     @Override
@@ -125,18 +155,29 @@ public class InMemoryConnector extends AbstractExtendedConnector {
 
     @Override
     public IStorageEngine getStorageEngine() throws UnsupportedException {
-        return new InMemoryStorageEngine(this);
+        if(storageEngine == null){
+            storageEngine = new InMemoryStorageEngine(this);
+        }
+        return storageEngine;
     }
 
     @Override
     public IQueryEngine getQueryEngine() throws UnsupportedException {
-        return new InMemoryQueryEngine(this);
+        if(queryEngine == null){
+            queryEngine = new InMemoryQueryEngine(this);
+        }
+        return queryEngine;
     }
 
     @Override
     public IMetadataEngine getMetadataEngine() throws UnsupportedException {
-        return new InMemoryMetadataEngine(this);
+        if(metadataEngine == null){
+            metadataEngine = new InMemoryMetadataEngine(this);
+        }
+        return metadataEngine;
     }
+
+
 
     /**
      * Get the datastore associated to a given cluster.
@@ -148,7 +189,20 @@ public class InMemoryConnector extends AbstractExtendedConnector {
     }
 
 
-    private void restoreSchema(ClusterName cluster){
+    private void restoreSchema(ClusterName cluster) throws ConnectorException {
+        List<CatalogMetadata> catalogList = getCatalogs(cluster, DEFAULT_TIMEOUT_IN_MS).get();
+        if (catalogList != null){
+            for (CatalogMetadata catalogMetadata : catalogList) {
+                LOG.debug("Restoring catalog: "+catalogMetadata.toString());
+                getMetadataEngine().createCatalog(catalogMetadata.getTables().values().iterator().next().getClusterRef(),
+                                catalogMetadata);
+                for (TableMetadata tableMetadata : catalogMetadata.getTables().values()) {
+                    LOG.debug("Restoring table: "+tableMetadata.toString());
+                    getMetadataEngine().createTable(tableMetadata.getClusterRef(),tableMetadata);
+                }
+            }
+        }
+
 
     }
 
@@ -160,5 +214,8 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         ConnectorApp connectorApp = new ConnectorApp();
         InMemoryConnector inMemoryConnector = new InMemoryConnector(connectorApp);
         connectorApp.startup(inMemoryConnector);
+        MetadataListener metadataListener = new MetadataListener();
+        connectorApp.subscribeToMetadataUpdate(metadataListener);
+
     }
 }

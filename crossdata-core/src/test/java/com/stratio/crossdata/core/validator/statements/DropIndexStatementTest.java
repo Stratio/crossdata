@@ -41,7 +41,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
         dropIndexStatement.setName(new IndexName("demo", "users", "gender_idx"));
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
@@ -63,7 +63,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {
@@ -84,7 +84,7 @@ public class DropIndexStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropIndexId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropIndexStatement);
         try {

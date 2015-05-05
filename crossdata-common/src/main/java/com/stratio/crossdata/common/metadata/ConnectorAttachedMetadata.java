@@ -34,19 +34,24 @@ public class ConnectorAttachedMetadata implements Serializable {
     private final ConnectorName connectorRef;
     private final ClusterName clusterRef;
     private final Map<Selector, Selector> properties;
+    private final Integer priority;
 
     /**
      * Constructor class.
      * @param connectorRef The connector name.
      * @param clusterRef The cluster where the connector will be attached.
      * @param properties The properties of the connector.
+     * @param priority   The priority of the connector for the associated cluster.
      */
     public ConnectorAttachedMetadata(ConnectorName connectorRef, ClusterName clusterRef,
-            Map<Selector, Selector> properties) {
+            Map<Selector, Selector> properties, Integer priority) {
         this.connectorRef = connectorRef;
         this.clusterRef = clusterRef;
         this.properties = properties;
+        this.priority = priority;
     }
+
+
 
     public ConnectorName getConnectorRef() {
         return connectorRef;
@@ -58,5 +63,8 @@ public class ConnectorAttachedMetadata implements Serializable {
 
     public Map<Selector, Selector> getProperties() {
         return properties;
+    }
+    public Integer getPriority() {
+        return priority;
     }
 }

@@ -29,5 +29,19 @@ public enum SelectorType {
     STRING,
     INTEGER,
     FLOATING_POINT,
-    RELATION
+    RELATION,
+    SELECT,
+    GROUP,
+    CASE_WHEN,
+    NULL,
+    LIST,
+    ALIAS;
+
+    public boolean isNumeric() {
+        if((this == SelectorType.FLOATING_POINT)
+                || (this == SelectorType.INTEGER)){
+            return true;
+        }
+        return false;
+    }
 }

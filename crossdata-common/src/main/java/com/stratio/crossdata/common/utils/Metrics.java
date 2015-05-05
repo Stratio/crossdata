@@ -18,13 +18,17 @@
 
 package com.stratio.crossdata.common.utils;
 
+import java.io.Serializable;
+
 import com.codahale.metrics.JmxReporter;
 import com.codahale.metrics.MetricRegistry;
 
 /**
  * Class that provides an interface for JMX metrics.
  */
-public final class Metrics {
+public final class Metrics implements Serializable {
+
+    private static final long serialVersionUID = -832742868693958469L;
 
     /**
      * Metrics registry.

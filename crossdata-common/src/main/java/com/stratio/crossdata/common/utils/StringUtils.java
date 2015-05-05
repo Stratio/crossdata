@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.utils;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,6 +28,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.crossdata.common.statements.structures.*;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
@@ -36,11 +38,7 @@ import org.codehaus.jackson.map.SerializationConfig;
 
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.statements.structures.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.metadata.DataType;
 
 import difflib.DiffUtils;
 import difflib.Patch;
@@ -49,7 +47,9 @@ import difflib.PatchFailedException;
 /**
  * Utility class for String transformation operations.
  */
-public final class StringUtils {
+public final class StringUtils implements Serializable {
+
+    private static final long serialVersionUID = 4917945078917981844L;
 
     /**
      * Private constructor as StringUtils is a utility class.
@@ -71,8 +71,27 @@ public final class StringUtils {
      */
     public static String stringList(List<?> ids, String separator) {
         StringBuilder sb = new StringBuilder();
-        for (Object value : ids) {
+        for (Object value: ids) {
             sb.append(value.toString()).append(separator);
+        }
+        if (sb.length() > separator.length()) {
+            return sb.substring(0, sb.length() - separator.length());
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Create a string from a list of ISqlExpression using a separator between objects.
+     *
+     * @param ids       The list of objects.
+     * @param separator The separator.
+     * @return A String.
+     */
+    public static <T extends ISqlExpression> String sqlStringList ( List<T> ids, String separator, boolean withAlias) {
+        StringBuilder sb = new StringBuilder();
+        for (ISqlExpression value: ids) {
+            sb.append(value.toSQLString(withAlias)).append(separator);
         }
         if (sb.length() > separator.length()) {
             return sb.substring(0, sb.length() - separator.length());
@@ -136,15 +155,41 @@ public final class StringUtils {
         return selector;
     }
 
+    public static String getAkkaActorRefUri(Object object) {
+        return getAkkaActorRefUri(object, true);
+    }
+
     /**
      * Get the string representation of a AKKA actor reference URI.
      *
      * @param object The object with the Actor ref.
      * @return A string with the URI
      */
-    public static String getAkkaActorRefUri(Object object) {
+    public static String getAkkaActorRefUri(Object object, boolean resultForActorSelection) {
         if (object != null) {
-            return object.toString().replace("Actor[", "").replace("]", "").split("\\$")[0].split("#")[0];
+            // context.actorSelection("akka.tcp://app@otherhost:1234/user/serviceB")
+            String result = object.toString().replace("Actor[", "").replace("]", "").split("\\$")[0].split("#")[0];
+            if(resultForActorSelection){
+                if (result.contains("akka.tcp")) {
+                    result = result.substring(result.lastIndexOf("akka.tcp"));
+                }
+                if(result.contains("%3A%2F%2F")) {
+                    result = result.replace("%3A%2F%2F", "://");
+                }
+                if(result.contains("%40")) {
+                    result = result.replace("%40", "@");
+                }
+                if(result.contains("%3A")){
+                    result = result.replace("%3A", ":");
+                }
+                if(result.contains("%2F")) {
+                    result = result.replace("%2F", "/");
+                }
+                if(result.contains("%")) {
+                    result = result.substring(0, result.lastIndexOf("%"));
+                }
+            }
+            return result;
         }
         return null;
     }
@@ -156,25 +201,29 @@ public final class StringUtils {
      */
 
     public static ColumnType convertJavaTypeToXdType(String javaType) {
-        ColumnType ct = ColumnType.NATIVE;
+        ColumnType ct = new ColumnType(DataType.NATIVE);
         if (javaType.equalsIgnoreCase("Long")) {
-            ct = ColumnType.BIGINT;
+            ct = new ColumnType(DataType.BIGINT);
         } else if (javaType.equalsIgnoreCase("Boolean")) {
-            ct = ColumnType.BOOLEAN;
+            ct = new ColumnType(DataType.BOOLEAN);
         } else if (javaType.equalsIgnoreCase("Double")) {
-            ct = ColumnType.DOUBLE;
+            ct = new ColumnType(DataType.DOUBLE);
         } else if (javaType.equalsIgnoreCase("Float")) {
-            ct = ColumnType.DOUBLE;
+            ct = new ColumnType(DataType.DOUBLE);
         } else if (javaType.equalsIgnoreCase("Integer")) {
-            ct = ColumnType.INT;
+            ct = new ColumnType(DataType.INT);
         } else if (javaType.equalsIgnoreCase("String")) {
-            ct = ColumnType.TEXT;
+            ct = new ColumnType(DataType.TEXT);
         } else if (javaType.equalsIgnoreCase("Set")) {
-            ct = ColumnType.SET;
+            ct = new ColumnType(DataType.SET);
         } else if (javaType.equalsIgnoreCase("List")) {
-            ct = ColumnType.LIST;
-        } else if (javaType.equalsIgnoreCase("MAP")) {
-            ct = ColumnType.MAP;
+            ct = new ColumnType(DataType.LIST);
+        } else if (javaType.equalsIgnoreCase("Map")) {
+            ct = new ColumnType(DataType.MAP);
+        }
+        if(ct.getDataType() == DataType.NATIVE){
+            ct.setDbType(javaType);
+            ct.setODBCType(javaType);
         }
         return ct;
     }
@@ -255,28 +304,28 @@ public final class StringUtils {
      * @return A {@link com.stratio.crossdata.common.metadata.ColumnType}.
      */
     public static ColumnType convertXdTypeToColumnType(String xdType) {
-        ColumnType ct = null;
+        ColumnType ct = new ColumnType(DataType.NATIVE);
         String stringType = xdType.replace("Tuple", "").replace("[", "").replace("]", "").trim();
         if (stringType.equalsIgnoreCase("BigInt")) {
-            ct = ColumnType.BIGINT;
+            ct = new ColumnType(DataType.BIGINT);
         } else if (stringType.equalsIgnoreCase("Bool") || stringType.equalsIgnoreCase("Boolean")) {
-            ct = ColumnType.BOOLEAN;
+            ct = new ColumnType(DataType.BOOLEAN);
         } else if (stringType.equalsIgnoreCase("Double")) {
-            ct = ColumnType.DOUBLE;
+            ct = new ColumnType(DataType.DOUBLE);
         } else if (stringType.equalsIgnoreCase("Float")) {
-            ct = ColumnType.FLOAT;
+            ct = new ColumnType(DataType.FLOAT);
         } else if (stringType.equalsIgnoreCase("Int") || stringType.equalsIgnoreCase("Integer")) {
-            ct = ColumnType.INT;
+            ct = new ColumnType(DataType.INT);
         } else if (stringType.equalsIgnoreCase("Text")) {
-            ct = ColumnType.TEXT;
+            ct = new ColumnType(DataType.TEXT);
         } else if (stringType.equalsIgnoreCase("Varchar")) {
-            ct = ColumnType.VARCHAR;
+            ct = new ColumnType(DataType.VARCHAR);
         } else if (stringType.equalsIgnoreCase("Set")) {
-            ct = ColumnType.SET;
+            ct = new ColumnType(DataType.SET);
         } else if (stringType.equalsIgnoreCase("List")) {
-            ct = ColumnType.LIST;
+            ct = new ColumnType(DataType.LIST);
         } else if (stringType.equalsIgnoreCase("Map")) {
-            ct = ColumnType.MAP;
+            ct = new ColumnType(DataType.MAP);
         }
         return ct;
     }
@@ -291,5 +340,41 @@ public final class StringUtils {
                 .replace("Tuple[", "")
                 .replace("]", "")
                 .trim();
+    }
+
+    public static Map<String, Object> convertJsonToMap(String json) {
+        Map<String, Object> options = new LinkedHashMap<>();
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+        mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
+        JsonFactory factory = mapper.getJsonFactory();
+        JsonParser jp;
+        try {
+            jp = factory.createJsonParser(json);
+            JsonNode root = mapper.readTree(jp);
+            Iterator<Map.Entry<String, JsonNode>> iter = root.getFields();
+            while (iter.hasNext()) {
+                Map.Entry<String, JsonNode> entry = iter.next();
+                Object obj = convertJsonNodeToJavaType(entry.getValue());
+                options.put(entry.getKey(), obj);
+            }
+        } catch (IOException e) {
+            LOG.error(e);
+        }
+        return options;
+    }
+
+    private static Object convertJsonNodeToJavaType(JsonNode jsonNode) {
+        Object obj;
+        if (jsonNode.isBigDecimal() || jsonNode.isDouble()) {
+            obj = jsonNode.getDoubleValue();
+        } else if (jsonNode.isBoolean()) {
+            obj = jsonNode.getBooleanValue();
+        } else if (jsonNode.isInt() || jsonNode.isBigInteger() || jsonNode.isLong()) {
+            obj = jsonNode.getIntValue();
+        } else {
+            obj = jsonNode.getTextValue();
+        }
+        return obj;
     }
 }

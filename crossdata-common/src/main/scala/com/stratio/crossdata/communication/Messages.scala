@@ -20,6 +20,7 @@ package com.stratio.crossdata.communication
 
 import java.util
 
+import com.stratio.crossdata.common.ask.{Command, Query}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.logicalplan.Filter
 import com.stratio.crossdata.common.data._
@@ -33,51 +34,72 @@ import com.stratio.crossdata.common.statements.structures.{Relation, Selector}
  * Parent class for all operations to be executed on CONNECTOR Actors.
  * @param queryId The query identifier.
  */
-@SerialVersionUID(-4155642367894752659L)
+
+@SerialVersionUID(-415564237894752659L)
 class Operation(val queryId: String) extends Serializable
 
-@SerialVersionUID(-4155622367894752659L)
-case class ACK(queryId: String, status: QueryStatus) extends Serializable
 
-@SerialVersionUID(-4225642367894752659L)
-case class Connect(queryId: String, credentials: ICredentials, connectorClusterConfig: ConnectorClusterConfig) extends Serializable
+@SerialVersionUID(-855342469894792659L)
+case class CPUUsage(val queryId: Double)
 
-@SerialVersionUID(-2255642367894752659L)
-case class Reply(msg: String) extends Serializable
+@SerialVersionUID(-455628367894852859L)
+case class ReroutedQuery(msg:Query)
 
-@SerialVersionUID(-4155642367894752622L)
-case class Disconnect(userId: String) extends Serializable
+@SerialVersionUID(-487562836787485759L)
+case class ReroutedCommand(msg:Command)
 
-@SerialVersionUID(-3815643667894592648L)
+@SerialVersionUID(-415562236789472659L)
+case class ACK(queryId: String, status: QueryStatus)
+
+@SerialVersionUID(-422564236794752659L)
+case class Connect(queryId: String, credentials: ICredentials, connectorClusterConfig: ConnectorClusterConfig)
+
+@SerialVersionUID(-225564237894752659L)
+case class Reply(msg: String)
+
+@SerialVersionUID(-415562367894752622L)
+case class Disconnect(userId: String)
+
+@SerialVersionUID(-315643667894592648L)
 case class DisconnectFromCluster(override val queryId: String, clusterName: String) extends Operation(queryId)
 
 //CONNECTOR messages
-@SerialVersionUID(-4155642367894222659L)
-case class ConnectToConnector(msg: String) extends Serializable
+@SerialVersionUID(-415564236789422659L)
+case class ConnectToConnector(msg: String)
 
-@SerialVersionUID(-3355642367894752659L)
-case class DisconnectFromConnector(msg: String) extends Serializable
+@SerialVersionUID(-335564237894752659L)
+case class DisconnectFromConnector(msg: String)
 
-@SerialVersionUID(-4133642367894752659L)
-case class Request(msg: String) extends Serializable
+@SerialVersionUID(-413364236784752659L)
+case class Request(msg: String)
 
-@SerialVersionUID(-4155642367894752633L)
-case class Response(msg: String) extends Serializable
+@SerialVersionUID(-415564236789472633L)
+case class Response(msg: String)
 
-@SerialVersionUID(-5555642367894752659L)
-case class MetadataStruct(clusterName: String, connectorName: String, metadata: String) extends Serializable
+@SerialVersionUID(-555564236789475265L)
+case class MetadataStruct(clusterName: String, connectorName: String, metadata: String)
 
-@SerialVersionUID(-4155552367894752659L)
-case class StorageQueryStruct(clusterName: String, connectorName: String, storageQuery: String) extends Serializable
+@SerialVersionUID(-415554367894752659L)
+case class StorageQueryStruct(clusterName: String, connectorName: String, storageQuery: String)
 
-@SerialVersionUID(-4155642367855752659L)
-case class WorkflowStruct(clusterName: String, connectorName: String, workFlow: LogicalWorkflow) extends Serializable
+@SerialVersionUID(-415542367855752659L)
+case class WorkflowStruct(clusterName: String, connectorName: String, workFlow: LogicalWorkflow)
 
-@SerialVersionUID(-4155642367894755559L)
-case class replyConnectorName(name: String) extends Serializable
+@SerialVersionUID(-415564236794755559L)
+case class replyConnectorName(name: String)
 
-@SerialVersionUID(-6655642367894752659L)
-case class getConnectorName() extends Serializable
+@SerialVersionUID(-665564236789475259L)
+case class getConnectorName()
+
+@SerialVersionUID(-665564236789475258L)
+case class GetCatalogs(clusterName: ClusterName)
+
+@SerialVersionUID(-665564236789475257L)
+case class GetTableMetadata(clusterName: ClusterName, tableName: TableName)
+
+@SerialVersionUID(-665564236789475256L)
+case class GetCatalogMetadata(catalogName: CatalogName)
+
 
 // ============================================================================
 //                                IStorageEngine
@@ -102,6 +124,8 @@ case class Update(override val queryId: String, targetCluster: ClusterName, targ
 case class Truncate(override val queryId: String, targetCluster: ClusterName, targetTable: TableName) extends
     StorageOperation(queryId)
 
+
+
 // ============================================================================
 //                                IQueryEngine
 // ============================================================================
@@ -111,6 +135,10 @@ sealed abstract class ExecuteOperation(queryId: String) extends Operation(queryI
 case class Execute(override val queryId: String, workflow: LogicalWorkflow) extends ExecuteOperation(queryId)
 
 case class AsyncExecute(override val queryId: String, workflow: LogicalWorkflow) extends ExecuteOperation(queryId)
+
+case class PagedExecute(override val queryId: String, workflow: LogicalWorkflow, pageSize: Int) extends ExecuteOperation(queryId)
+
+case class StopProcess(override val queryId: String, targetQueryId: String) extends ExecuteOperation(queryId)
 
 // ============================================================================
 //                                IMetadataEngine
@@ -171,10 +199,14 @@ case class AlterCluster(override val queryId: String, targetCluster: ClusterName
 case class DetachCluster(override val queryId: String, targetCluster: ClusterName,
                          datastoreName:DataStoreName) extends ManagementOperation(queryId)
 
-case class AttachConnector(override val queryId: String, targetCluster: ClusterName,
-                           connectorName: ConnectorName, options: java.util.Map[Selector, Selector]) extends ManagementOperation(queryId)
+case class AttachConnector(override val queryId: String, targetCluster: ClusterName, connectorName: ConnectorName, options: java.util.Map[Selector, Selector],
+                           priority: Int, pageSize: Int) extends ManagementOperation(queryId)
+
 
 case class DetachConnector(override val queryId: String, targetCluster: ClusterName,
                            connectorName: ConnectorName) extends ManagementOperation(queryId)
+
+case class ForceDetachConnector(override val queryId: String, val targetCluster: ClusterName,
+                                val connectorName: ConnectorName) extends ManagementOperation(queryId)
 
 

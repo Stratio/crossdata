@@ -25,6 +25,8 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class RelationSelector extends Selector {
 
+    private static final long serialVersionUID = 5420806618352269424L;
+
     /**
      * The relation associated with the selector.
      */
@@ -66,7 +68,28 @@ public class RelationSelector extends Selector {
 
     @Override
     public String toString() {
-        return relation.toString();
+        StringBuilder sb = new StringBuilder();
+        if(parenthesis){
+            sb.append("(");
+        }
+        sb.append(relation);
+        if(parenthesis){
+            sb.append(")");
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder();
+        if(parenthesis){
+            sb.append("(");
+        }
+        sb.append(relation.toSQLString(withAlias));
+        if(parenthesis){
+            sb.append(")");
+        }
+        return sb.toString();
     }
 
     @Override
@@ -95,5 +118,10 @@ public class RelationSelector extends Selector {
         }
         result = 31 * result + relation.hashCode();
         return result;
+    }
+
+    public SelectorType getReturningType() {
+        SelectorType returningType = SelectorType.FLOATING_POINT;
+        return returningType;
     }
 }

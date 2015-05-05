@@ -18,55 +18,66 @@
 
 package com.stratio.crossdata.server.actors
 
-import java.util.UUID
+import java.util.{Random, UUID}
 
 import akka.actor.{Actor, Props, ReceiveTimeout}
-import akka.routing.RoundRobinRouter
+import akka.cluster.Cluster
+import akka.routing.{RoundRobinPool, DefaultResizer, RoundRobinRouter}
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
-import com.stratio.crossdata.common.result.{DisconnectResult, ConnectResult, Result}
+import com.stratio.crossdata.common.result.{ConnectResult, DisconnectResult, Result}
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
 
 object ServerActor {
-  def props(engine: Engine): Props = Props(new ServerActor(engine))
+  def props(engine: Engine,cluster: Cluster): Props = Props(new ServerActor(engine,cluster))
 }
 
-class ServerActor(engine: Engine) extends Actor with ServerConfig {
+class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConfig {
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
+  val random=new Random
+  val hostname=config.getString("akka.remote.netty.tcp.hostname")
+  val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
-  val connectorManagerActorRef = context.actorOf(ConnectorManagerActor.props().
-    withRouter(RoundRobinRouter(nrOfInstances = num_connector_manag_actor)), "ConnectorManagerActor")
-  val coordinatorActorRef = context.actorOf(CoordinatorActor.props(connectorManagerActorRef, engine.getCoordinator()).
-    withRouter(RoundRobinRouter(nrOfInstances = num_coordinator_actor)), "CoordinatorActor")
-  val plannerActorRef = context.actorOf(PlannerActor.props(coordinatorActorRef, engine.getPlanner).
-    withRouter(RoundRobinRouter(nrOfInstances = num_planner_actor)), "PlannerActor")
-  val validatorActorRef = context.actorOf(ValidatorActor.props(plannerActorRef, engine.getValidator).
-    withRouter(RoundRobinRouter(nrOfInstances = num_validator_actor)), "ValidatorActor")
-  val parserActorRef = context.actorOf(ParserActor.props(validatorActorRef, engine.getParser()).
-    withRouter(RoundRobinRouter(nrOfInstances = num_parser_actor)), "ParserActor")
-  val APIActorRef = context.actorOf(APIActor.props(engine.getAPIManager()).
-    withRouter(RoundRobinRouter(nrOfInstances = num_api_actor)), "APIActor")
+  val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(hostname), "loadWatcherActor")
+  val connectorManagerActorRef = context.actorOf( RoundRobinPool(num_connector_manag_actor, Some(resizer))
+     .props(Props(classOf[ConnectorManagerActor], cluster)), "ConnectorManagerActor")
+
+  val coordinatorActorRef = context.actorOf( RoundRobinPool(num_coordinator_actor, Some(resizer))
+     .props(Props(classOf[CoordinatorActor], connectorManagerActorRef, engine.getCoordinator)), "CoordinatorActor")
+
+  val plannerActorRef = context.actorOf( RoundRobinPool(num_planner_actor, Some(resizer))
+     .props(Props(classOf[PlannerActor], coordinatorActorRef, engine.getPlanner)), "PlannerActor")
+
+  val validatorActorRef = context.actorOf( RoundRobinPool(num_validator_actor, Some(resizer))
+     .props(Props(classOf[ValidatorActor], plannerActorRef, engine.getValidator)), "ValidatorActor")
+
+  val parserActorRef = context.actorOf( RoundRobinPool(num_parser_actor, Some(resizer))
+     .props(Props(classOf[ParserActor], validatorActorRef, engine.getParser)), "ParserActor")
+
+  val APIActorRef = context.actorOf( RoundRobinPool(num_api_actor, Some(resizer))
+     .props(Props(classOf[APIActor], engine.getAPIManager, coordinatorActorRef )), "APIActor")
 
   def receive : Receive= {
-    case query: Query => {
-      logger.info("query: " + query + " sender: " + sender.path.address)
+    case "watchload"=>
+      loadWatcherActorRef forward "watchload"
+    case query: Query =>{
+      logger.info("Query received: " + query.statement.toString)
       parserActorRef forward query
     }
-    case Connect(user) => {
-      logger.info("Welcome " + user + "! from " + sender.path.address)
+    case Connect(user,pass) => {
+      logger.info(s"Welcome $user! from  ${sender.path.address} ( host =${sender.path.address}) ")
       sender ! ConnectResult.createConnectResult(UUID.randomUUID().toString)
     }
     case Disconnect(user) => {
       logger.info("Goodbye " + user + ".")
       sender ! DisconnectResult.createDisconnectResult(user)
     }
-    case cmd: Command => {
-      logger.info("API Command call " + cmd.commandType)
+    case cmd: Command =>{
+      logger.info("API Command call received " + cmd.commandType)
       APIActorRef forward cmd
     }
-
     case ReceiveTimeout => {
       logger.warn("ReceiveTimeout")
       //TODO Process ReceiveTimeout

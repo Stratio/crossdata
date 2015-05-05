@@ -18,50 +18,58 @@
 
 package com.stratio.crossdata.common.executionplan;
 
-
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.Window;
 import com.stratio.crossdata.communication.AsyncExecute;
 import com.stratio.crossdata.communication.Execute;
 import com.stratio.crossdata.communication.ExecuteOperation;
+import com.stratio.crossdata.communication.PagedExecute;
 
 /**
  * Execution step for query operations.
  */
 public class QueryWorkflow extends ExecutionWorkflow {
 
+    private static final long serialVersionUID = -600963332114323650L;
     /**
      * Workflow to be executed.
      */
     private final LogicalWorkflow workflow;
 
     /**
+     * Whether the target supports asynchronous queries.
+     */
+    private final boolean isAsync;
+
+    /**
      * Class constructor.
      *
-     * @param queryId Query identifer.
+     * @param queryId Query identifier.
      * @param actorRef      Target actor reference.
      * @param executionType Type of execution.
      * @param type          Type of results.
      * @param workflow      The logical workflow.
+     * @param isAsync       Whether the target supports asynchronous queries.
      */
     public QueryWorkflow(String queryId, String actorRef, ExecutionType executionType,
-            ResultType type, LogicalWorkflow workflow) {
+            ResultType type, LogicalWorkflow workflow, boolean isAsync) {
         super(queryId, actorRef, executionType, type);
         this.workflow = workflow;
+        this.isAsync = isAsync;
     }
 
     public LogicalWorkflow getWorkflow() {
         return workflow;
     }
 
-    private boolean checkStreaming(LogicalStep lastStep){
+    public static boolean checkStreaming(LogicalStep lastStep){
         boolean result = false;
         if(lastStep != null){
             if(Window.class.isInstance(lastStep)){
                 return true;
             }else{
-                for(LogicalStep p : lastStep.getPreviousSteps()){
+                for(LogicalStep p: lastStep.getPreviousSteps()){
                     result |= checkStreaming(p);
                 }
             }
@@ -75,11 +83,17 @@ public class QueryWorkflow extends ExecutionWorkflow {
      * @return A {@link com.stratio.crossdata.communication.ExecuteOperation}
      */
     public ExecuteOperation getExecuteOperation(String queryId){
+
+        ExecuteOperation executeOperation;
         //Look for window operators.
-        if(checkStreaming(workflow.getLastStep())) {
-            return new AsyncExecute(queryId, workflow);
+        if(workflow.getPagination() > 0){
+            executeOperation = new PagedExecute(queryId, workflow, workflow.getPagination());
+        }else if(isAsync || checkStreaming(workflow.getLastStep()) ) {
+            executeOperation =  new AsyncExecute(queryId, workflow);
+        }else {
+            executeOperation = new Execute(queryId, workflow);
         }
-        return new Execute(queryId, workflow);
+        return executeOperation;
     }
 
     @Override

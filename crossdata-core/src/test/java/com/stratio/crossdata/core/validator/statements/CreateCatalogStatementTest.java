@@ -39,7 +39,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
         CreateCatalogStatement alterCatalogStatement = new CreateCatalogStatement(new CatalogName("demo2"), true, "");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo2"));
+        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo2"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
@@ -59,7 +59,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
         CreateCatalogStatement createCatalogStatement = new CreateCatalogStatement(new CatalogName("demo"), true, "");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, createCatalogStatement);
         try {
@@ -79,7 +79,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
         CreateCatalogStatement alterCatalogStatement = new CreateCatalogStatement(new CatalogName("demo"), false, "");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {
@@ -100,7 +100,7 @@ public class CreateCatalogStatementTest extends BasicValidatorTest {
                 false, "");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("createCatalogid", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         try {

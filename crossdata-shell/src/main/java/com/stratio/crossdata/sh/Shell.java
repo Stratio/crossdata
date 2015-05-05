@@ -18,13 +18,7 @@
 
 package com.stratio.crossdata.sh;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 
 import org.antlr.runtime.ANTLRStringStream;
@@ -36,6 +30,7 @@ import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.IDriverResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
@@ -102,6 +97,7 @@ public class Shell {
     private static final String DEFAULT_PROMPT = "xdsh:";
 
     private static final char DEFAULT_TEMP_PROMPT = '»';
+    private String sessionId;
 
     /**
      * Class constructor.
@@ -143,19 +139,43 @@ public class Shell {
         }
 
         Shell sh = new Shell(async);
-        if (sh.connect()) {
-            if (initScript != null) {
-                sh.executeScript(initScript);
+        //Get the User and pass
+        Character mask=(args.length == 0) ? new Character((char)0) : new Character(args[0].charAt(0));
+        String user="";
+        String pass="";
+
+        if (sh.isAuthEnable()) {
+            try {
+                ConsoleReader reader = new ConsoleReader();
+                user = reader.readLine("user>");
+                pass = reader.readLine("Enter password> ", mask);
+            } catch (IOException e) {
+                LOG.error(e.getMessage());
             }
-            sh.loop();
+        }
+        if (sh.connect(user,pass)) {
+            boolean enterLoop = true;
+            if (initScript != null) {
+                enterLoop = sh.executeScript(initScript);
+            }
+            if(enterLoop){
+                sh.loop();
+            }
         }
         sh.closeConsole();
+    }
+
+    private boolean isAuthEnable() {
+        return crossdataDriver.isAuthEnable();
     }
 
     /**
      * Initialize the console settings.
      */
     private void initialize() {
+
+        LOG.info(getWelcomeScreen());
+
         crossdataDriver = new BasicDriver();
         // Take the username from the system.
         crossdataDriver.setUserName(System.getProperty("user.name"));
@@ -284,10 +304,11 @@ public class Shell {
      *
      * @return Whether the connection has been successfully established.
      */
-    public boolean connect() {
+    public boolean connect(String user, String pass) {
         boolean result = true;
         try {
-            Result connectionResult = crossdataDriver.connect(crossdataDriver.getUserName());
+            Result connectionResult = crossdataDriver.connect(user, pass);
+            sessionId=((ConnectResult)connectionResult).getSessionId();
             LOG.info("Driver connections established");
             LOG.info(ConsoleUtils.stringResult(connectionResult));
         } catch (ConnectionException ce) {
@@ -351,7 +372,7 @@ public class Shell {
                         showHelp(sb.toString());
                     } else {
                         try {
-                            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler);
+                            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler,sessionId);
                             LOG.info(ConsoleUtils.stringResult(result));
                             updatePrompt(result);
                         } catch (Exception ex) {
@@ -399,7 +420,8 @@ public class Shell {
      *
      * @param scriptPath The script path.
      */
-    public void executeScript(String scriptPath) {
+    public boolean executeScript(String scriptPath) {
+        boolean enterLoop = true;
         BufferedReader input = null;
         String query;
         int numberOps = 0;
@@ -414,14 +436,19 @@ public class Shell {
                 query = query.trim();
                 if (query.length() > 0 && !query.startsWith("#")) {
                     LOG.info("Executing: "+query);
-                    if(useAsync){
-                        result = crossdataDriver.executeAsyncRawQuery(query, resultHandler);
-                        Thread.sleep(1000);
+                    if(query.startsWith("exit") || query.startsWith("quit")){
+                        enterLoop = false;
+                        break;
                     } else {
-                        result = crossdataDriver.executeRawQuery(query);
+                        if(useAsync){
+                            result = crossdataDriver.executeAsyncRawQuery(query, resultHandler, sessionId);
+                            Thread.sleep(1000);
+                        } else {
+                            result = crossdataDriver.executeRawQuery(query,sessionId);
+                        }
+                        LOG.info(ConsoleUtils.stringResult(result));
+                        updatePrompt(result);
                     }
-                    LOG.info(ConsoleUtils.stringResult(result));
-                    updatePrompt(result);
                     numberOps++;
                 }
             }
@@ -443,6 +470,30 @@ public class Shell {
             }
         }
         println("Script " + scriptPath + " executed (" + numberOps + " sentences)");
+        return enterLoop;
+    }
+
+    /**
+     * Generate a Cool Welcome Screen
+     *
+     * @return java.lang.String with the welcome Text.
+     */
+    private String getWelcomeScreen(){
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("Welcome to \n");
+        sb.append("       __ _             _   _             \n");
+        sb.append("      / _\\ |_ _ __ __ _| |_(_) ___       \n");
+        sb.append("      \\ \\| __| '__/ _` | __| |/ _ \\    \n");
+        sb.append("      _\\ \\ |_| | | (_| | |_| | (_) |    \n");
+        sb.append("      \\__/\\__|_|  \\__,_|\\__|_|\\___/  \n");
+        sb.append("         ___                      _       _               \n");
+        sb.append("        / __\\ __ ___  ___ ___  __| | __ _| |_ __ _       \n");
+        sb.append("       / / | '__/ _ \\/ __/ __|/ _` |/ _` | __/ _` |      \n");
+        sb.append("      / /__| | | (_) \\__ \\__ \\ (_| | (_| | || (_| |    \n");
+        sb.append("      \\____/_|  \\___/|___/___/\\__,_|\\__,_|\\__\\__,_| \n");
+
+        return sb.toString();
     }
 
 }

@@ -38,15 +38,31 @@ public class SelectStatementTest extends ParsingTest {
 
     @Test
     public void basicSelectAsteriskWithLimit() {
-        String inputText = "[test], SELECT * FROM table1 LIMIT 1;";
+        String inputText = "[test], SELECT * FROM table1 Limit 1;";
         String expectedText = "SELECT * FROM test.table1 LIMIT 1;";
         testRegularStatement(inputText, expectedText, "basicSelectAsterisk");
+    }
+
+    @Test
+    public void basicSelectWithNull() {
+        String inputText = "SELECT test.table1.id, NULL FROM test.table1;";
+        String expectedText = "SELECT test.table1.id, NULL FROM test.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectNull");
     }
 
     @Test
     public void basicSelectAsteriskWithCatalog() {
         String inputText = "SELECT * FROM catalog1.table1;";
         testRegularStatement(inputText, "basicSelectAsteriskWithCatalog");
+    }
+
+    @Test
+    public void basicSelectGroupHaving() {
+        String inputText = "SELECT * FROM catalog1.table1 GROUP BY catalog1.table1.column1 HAVING count(catalog1" +
+                ".table1.comlumn2)>5;";
+        String expectedText="SELECT * FROM catalog1.table1 GROUP BY catalog1.table1.column1 HAVING count(catalog1" +
+                ".table1.comlumn2) AS count > 5;";
+        testRegularStatement(inputText, expectedText, "basicSelectGroupHaving");
     }
 
     @Test
@@ -61,6 +77,15 @@ public class SelectStatementTest extends ParsingTest {
         String inputText = "SELECT newks.newtb.lucene FROM newks.newtb;";
         testRegularStatement(inputText, "singleColumnWithCatalog");
     }
+
+
+    @Test
+    public void caseWhenColumn() {
+        String inputText = "SELECT case when newks.newtb.a = 5 and newks.newtb.a = 3 then 'hello' when newks.newtb.a = 2 then 'bye' " +
+                "else 'puff' end FROM newks.newtb;";
+        testRegularStatement(inputText, "singleColumnWithCatalog");
+    }
+
 
     @Test
     public void functionSingleColumn() {
@@ -191,17 +216,17 @@ public class SelectStatementTest extends ParsingTest {
     }
 
     @Test
-    public void selectWithParenthesisInWhere() {
-        String inputText = "SELECT * FROM demo.emp WHERE a = 10 AND ( b = 20 AND ( c = 30 AND d = 40));";
+    public void selectSimpleWithWhere() {
+        String inputText = "SELECT * FROM demo.emp WHERE a = 10 AND b = 20 AND c = 30 AND d = 40;";
         String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a = 10 AND <unknown_name>.<unknown_name>.b = 20 AND <unknown_name>.<unknown_name>.c = 30 AND <unknown_name>.<unknown_name>.d = 40;";
-        testRegularStatement(inputText, expectedText, "selectWithParenthesisInWhere");
+        testRegularStatement(inputText, expectedText, "selectSimpleWithWhere");
     }
 
     @Test
-    public void selectWithParenthesisInWhere2() {
-        String inputText = "SELECT * FROM demo.emp WHERE (a = 10 AND b = 20) AND (c = 30 AND (d = 40 AND e = 50));";
+    public void selectSimpleWithWhere2() {
+        String inputText = "SELECT * FROM demo.emp WHERE a = 10 AND b = 20 AND c = 30 AND d = 40 AND e = 50;";
         String expectedText = "SELECT * FROM demo.emp WHERE <unknown_name>.<unknown_name>.a = 10 AND <unknown_name>.<unknown_name>.b = 20 AND <unknown_name>.<unknown_name>.c = 30 AND <unknown_name>.<unknown_name>.d = 40 AND <unknown_name>.<unknown_name>.e = 50;";
-        testRegularStatement(inputText, expectedText, "selectWithParenthesisInWhere2");
+        testRegularStatement(inputText, expectedText, "selectSimpleWithWhere2");
     }
 
     //
@@ -273,21 +298,21 @@ public class SelectStatementTest extends ParsingTest {
                 "SELECT colSales, colRevenues FROM tableClients "
                 + "INNER JOIN tableCostumers ON AssistantId = clientId "
                 + "WHERE colCity = 'Madrid' "
-                + "ORDER BY age "
-                + "GROUP BY gender;";
+                + "GROUP BY gender "
+                + "ORDER BY age;";
         String expectedText =
                 "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
                         + "INNER JOIN test.tableCostumers ON <unknown_name>.<unknown_name>.AssistantId = <unknown_name>.<unknown_name>.clientId "
                         + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
-                        + "ORDER BY [<unknown_name>.<unknown_name>.age] "
-                        + "GROUP BY <unknown_name>.<unknown_name>.gender;";
+                        + "GROUP BY <unknown_name>.<unknown_name>.gender "
+                        + "ORDER BY <unknown_name>.<unknown_name>.age;";
         testRegularStatement(inputText, expectedText, "selectStatementJoinComplex");
     }
 
     @Test
     public void selectStatementJoinWithParenthesis() {
         String inputText = "[catalogTest], " +
-                "SELECT c.a, c.b FROM c INNER JOIN tablename t ON (field1=field2) WHERE c.x = y;";
+                "SELECT c.a, c.b FROM c INNER JOIN tablename t ON field1=field2 WHERE c.x = y;";
         String expectedText =
                 "SELECT catalogTest.c.a, catalogTest.c.b FROM catalogTest.c INNER JOIN catalogTest.tablename AS t " +
                         "ON <unknown_name>.<unknown_name>.field1 = <unknown_name>.<unknown_name>.field2 " +
@@ -343,10 +368,10 @@ public class SelectStatementTest extends ParsingTest {
                 " ASC, demo.b.extracol DESC", " DESC, demo.b.extracol DESC",
                 " DESC, demo.b.extracol ASC" }) {
             String inputText =
-                    "SELECT demo.b.a FROM demo.b ORDER BY demo.b.id1 " + s + " GROUP BY demo.b.col1 LIMIT 50;";
+                    "SELECT demo.b.a FROM demo.b GROUP BY demo.b.col1 ORDER BY demo.b.id1 " + s + " LIMIT 50;";
             String expectedText =
-                    "SELECT demo.b.a FROM demo.b ORDER BY [demo.b.id1" + (s.replace(" ASC", "")) + "]"
-                            + " GROUP BY demo.b.col1 LIMIT 50;";
+                    "SELECT demo.b.a FROM demo.b GROUP BY demo.b.col1 " +
+                            "ORDER BY demo.b.id1" + (s.replace(" ASC", "")) + " LIMIT 50;";
             testRegularStatement(inputText, expectedText, "selectStatementCombineOrderby");
         }
     }
@@ -368,6 +393,15 @@ public class SelectStatementTest extends ParsingTest {
     }
 
     @Test
+    public void selectWithInClauseOk() {
+
+        String inputText = "SELECT users.name FROM demo.users WHERE users.age IN [19, 31];";
+        String expectedText = "SELECT <UNKNOWN_NAME>.users.name FROM demo.users WHERE <UNKNOWN_NAME>.users.age IN (19, 31);";
+        testRegularStatement(inputText, expectedText, "selectWithInClauseOk");
+    }
+
+
+    @Test
     public void selectSelectorsUDF() {
         for (String c : new String[] { "myUDF(c.table0.field0)", "myUDF(c.table0.field0, c.table0.field1)" }) {
             String inputText = "SELECT " + c + " AS myUDF from c.table0;";
@@ -378,28 +412,22 @@ public class SelectStatementTest extends ParsingTest {
 
 
 
-
-  /*
-  @Test
-  public void selectWithInClauseOk() {
-
-    String inputText = "SELECT users.name FROM demo.users WHERE users.age IN (19, 31);";
-    testRegularStatement(inputText, "selectWithInClauseOk");
-  }
-
   @Test
   public void selectWithInClauseLongerOk() {
-
     String inputText =
-        "SELECT users.name FROM demo.users WHERE users.age IN (19, 31, 23, 90, 100);";
-    testRegularStatement(inputText, "selectWithInClauseLongerOk");
+        "SELECT users.name FROM demo.users WHERE users.age IN [19, 31, 23, 90, 100];";
+      String expectedText =
+                      "SELECT <UNKNOWN_NAME>.users.name FROM demo.users WHERE <UNKNOWN_NAME>.users.age IN (19, 31, 23, 90, 100);";
+    testRegularStatement(inputText, expectedText, "selectWithInClauseLongerOk");
   }
 
   @Test
   public void selectWithInClauseOneValueOk() {
 
-    String inputText = "SELECT users.name FROM demo.users WHERE users.age IN (19);";
-    testRegularStatement(inputText, "selectWithInClauseOneValueOk");
+    String inputText = "SELECT users.name FROM demo.users WHERE users.age IN [19];";
+      String expectedText =
+                      "SELECT <UNKNOWN_NAME>.users.name FROM demo.users WHERE <UNKNOWN_NAME>.users.age IN (19);";
+    testRegularStatement(inputText, expectedText, "selectWithInClauseOneValueOk");
   }
 
   @Test
@@ -407,7 +435,8 @@ public class SelectStatementTest extends ParsingTest {
 
     String inputText =
         "SELECT users.name FROM demo.users WHERE users.email BETWEEN 'aaaa_00@domain.com' AND 'zzzz_99@domain.com';";
-    testRegularStatement(inputText, "selectWithBetweenClauseOk");
+      String expectedText = "SELECT <UNKNOWN_NAME>.users.name FROM demo.users WHERE <UNKNOWN_NAME>.users.email BETWEEN 'aaaa_00@domain.com' AND 'zzzz_99@domain.com';";
+    testRegularStatement(inputText, expectedText, "selectWithBetweenClauseOk");
   }
 
   @Test
@@ -425,7 +454,7 @@ public class SelectStatementTest extends ParsingTest {
         "SELECT users.name FROM demo.users WHERE users.email BETWEEN 'aaaa_00@domain.com';";
     testParserFails(inputText, "selectWithInClauseOneValueOk");
   }
-*/
+
 
     @Test
     public void selectGroupedWithCountOk() {
@@ -454,7 +483,7 @@ public class SelectStatementTest extends ParsingTest {
     @Test
     public void selectSimpleOrderByOk() {
         String inputText = "SELECT users.gender FROM myCatalog.users ORDER BY users.age;";
-        String expectedText = "SELECT myCatalog.users.gender FROM myCatalog.users ORDER BY [myCatalog.users.age];";
+        String expectedText = "SELECT myCatalog.users.gender FROM myCatalog.users ORDER BY myCatalog.users.age;";
         testRegularStatementSession("myCatalog", inputText, expectedText, "selectSimpleOrderByOk");
     }
 
@@ -462,21 +491,21 @@ public class SelectStatementTest extends ParsingTest {
     public void selectMultipleOrderByOk() {
         String inputText = "[myCatalog], SELECT users.gender FROM myCatalog.users ORDER BY users.age, users.gender;";
         String expectedText = "SELECT myCatalog.users.gender FROM myCatalog.users " +
-                "ORDER BY [myCatalog.users.age, myCatalog.users.gender];";
+                "ORDER BY myCatalog.users.age, myCatalog.users.gender;";
         testRegularStatement(inputText, expectedText, "selectMultipleOrderByOk");
     }
 
     @Test
     public void selectSimpleOrderByWithoutTableOk() {
         String inputText = "[demo], SELECT users.gender FROM demo.users ORDER BY users.age;";
-        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY [demo.users.age];";
+        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY demo.users.age;";
         testRegularStatement(inputText, expectedText, "selectSimpleOrderByOk");
     }
 
     @Test
     public void selectMultipleOrderByWithoutTableOk() {
         String inputText = "[demo], SELECT users.gender FROM demo.users ORDER BY users.age, users.gender;";
-        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY [demo.users.age, demo.users.gender];";
+        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY demo.users.age, demo.users.gender;";
         testRegularStatement(inputText, expectedText, "selectSimpleOrderByOk");
     }
 
@@ -485,21 +514,21 @@ public class SelectStatementTest extends ParsingTest {
         String inputText = "[demo], " +
                 "SELECT users.gender FROM demo.users ORDER BY users.age ASC, users.gender DESC;";
         String expectedText =
-                "SELECT demo.users.gender FROM demo.users ORDER BY [demo.users.age, demo.users.gender DESC];";
+                "SELECT demo.users.gender FROM demo.users ORDER BY demo.users.age, demo.users.gender DESC;";
         testRegularStatement(inputText, expectedText, "selectSimpleOrderByOk");
     }
 
     @Test
     public void selectSimpleOrderByWithAscDirectionOk() {
         String inputText = "SELECT users.gender FROM demo.users ORDER BY users.age ASC;";
-        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY [demo.users.age];";
+        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY demo.users.age;";
         testRegularStatementSession("demo", inputText, expectedText, "selectSimpleOrderByWithAscDirectionOk");
     }
 
     @Test
     public void selectSimpleOrderByWithDescDirectionOk() {
         String inputText = "[demo], SELECT users.gender FROM demo.users ORDER BY users.age DESC;";
-        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY [demo.users.age DESC];";
+        String expectedText = "SELECT demo.users.gender FROM demo.users ORDER BY demo.users.age DESC;";
         testRegularStatement(inputText, expectedText, "selectSimpleOrderByWithDescDirectionOk");
     }
 
@@ -552,14 +581,14 @@ public class SelectStatementTest extends ParsingTest {
         String inputText =
                 "[test], SELECT colSales, colRevenues FROM tableClients "
                         + "WHERE colCity = 'Madrid' "
-                        + "ORDER BY age DESC, rating ASC "
-                        + "GROUP BY gender;";
+                        + "GROUP BY gender "
+                        + "ORDER BY age DESC, rating ASC;";
         String expectedText =
                 "SELECT <unknown_name>.<unknown_name>.colSales, <unknown_name>.<unknown_name>.colRevenues FROM test.tableClients "
                         + "WHERE <unknown_name>.<unknown_name>.colCity = 'Madrid' "
-                        + "ORDER BY [<unknown_name>.<unknown_name>.age DESC, " +
-                        "<unknown_name>.<unknown_name>.rating] "
-                        + "GROUP BY <unknown_name>.<unknown_name>.gender;";
+                        + "GROUP BY <unknown_name>.<unknown_name>.gender "
+                        + "ORDER BY <unknown_name>.<unknown_name>.age DESC, " +
+                        "<unknown_name>.<unknown_name>.rating;";
         testRegularStatement(inputText, expectedText, "selectComplex");
     }
 
@@ -569,12 +598,215 @@ public class SelectStatementTest extends ParsingTest {
         testParserFails("demo", inputText, "selectWithWrongLeftTermTypeInWhere");
     }
 
-    @Test
+
+
+   /* @Test
     public void implicitJoin() {
         String inputText = "SELECT * FROM table1, table2 WHERE table1.id = table2.id;";
         String expectedText = "SELECT * FROM myCatalog.table1 INNER JOIN myCatalog.table2 " +
                 "ON myCatalog.table1.id = myCatalog.table2.id;";
         testRegularStatementSession("myCatalog", inputText, expectedText, "implicitJoin");
+    }*/
+
+
+    @Test
+    public void testJoinAndStreaming() {
+        String inputText = "SELECT id, name, amount FROM demo.table1 WITH WINDOW 5 Mins " +
+                "JOIN demo.table2 ON table1.id = table2.id;";
+        String expectedText = "SELECT <UNKNOWN_NAME>.<UNKNOWN_NAME>.id, <UNKNOWN_NAME>.<UNKNOWN_NAME>.name, <UNKNOWN_NAME>.<UNKNOWN_NAME>.amount" +
+                " FROM demo.table1 WITH WINDOW 5 MINUTES INNER JOIN demo.table2 ON demo.table1.id = demo.table2.id;";
+        testRegularStatementSession("demo", inputText, expectedText, "testJoinAndStreaming");
     }
+
+
+    @Test
+    public void selectSubquery() {
+        String inputText = "SELECT * FROM ( SELECT * FROM test.table1 ) t;";
+        String expectedText = "SELECT * FROM ( SELECT * FROM test.table1 ) AS t;";
+        testRegularStatement(inputText, expectedText, "basicSelectDoubleColumn");
+    }
+
+    @Test
+    public void selectOrOperatorSimple1() {
+        String inputText = "SELECT * FROM test.table1 WHERE"
+                + " col1 = col2"
+                + " AND col3 = 'test'"
+                + " AND col4 = 'Spain' OR col6 = 13022013;";
+        String expectedText = "SELECT * FROM test.table1 WHERE"
+                + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col3 = 'test'"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'Spain' OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013;";
+        testRegularStatement(inputText, expectedText, "selectOrOperatorSimple1");
+    }
+
+    @Test
+    public void selectOrOperatorSimple2() {
+        String inputText = "SELECT * FROM test.table1 WHERE"
+                + " col1 = col2"
+                + " OR col6 = 13022013;";
+        String expectedText = "SELECT * FROM test.table1 WHERE"
+                + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
+                + " OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013;";
+        testRegularStatement(inputText, expectedText, "selectOrOperatorSimple2");
+    }
+
+    @Test
+    public void selectOrOperatorSimple3() {
+        String inputText = "SELECT * FROM test.table1 WHERE"
+                + " col1 = col2"
+                + " AND col3 = 'test'"
+                + " AND col4 = 'Spain' OR col6 = 13022013 AND col7 = 25;";
+        String expectedText = "SELECT * FROM test.table1 WHERE"
+                + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col3 = 'test'"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'Spain' OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013 "
+                                                                     + "AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col7 = 25;";
+        testRegularStatement(inputText, expectedText, "selectOrOperatorSimple3");
+    }
+
+    @Test
+    public void selectOrOperatorWithSimplePreference() {
+        String inputText = "SELECT * FROM test.table1 WHERE"
+                + " col1 = col2"
+                + " AND col1 = 25"
+                + " AND (col4 = 'Spain' OR col4 = 'USA');";
+        String expectedText = "SELECT * FROM test.table1 WHERE"
+                + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = 25"
+                + " AND (<UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'Spain' OR <UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'USA');";
+        testRegularStatement(inputText, expectedText, "selectOrOperatorWithSimplePreference");
+    }
+
+    @Test
+    public void selectOrOperatorWithPreference() {
+        String inputText = "SELECT * FROM test.table1 WHERE"
+                + " col1 = col2"
+                + " AND col1 = 25"
+                + " AND col3 = 'test'"
+                + " AND ((col4 = 'Spain' AND col5 = 'USA')"
+                + " OR (col4 = 'USA' AND col5 = 'Spain'))"
+                + " AND col6 = 13022013;";
+        String expectedText = "SELECT * FROM test.table1 WHERE"
+                + " <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = <UNKNOWN_NAME>.<UNKNOWN_NAME>.col2"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col1 = 25"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col3 = 'test'"
+                + " AND ((<UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'Spain' AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col5 = 'USA')"
+                + " OR (<UNKNOWN_NAME>.<UNKNOWN_NAME>.col4 = 'USA' AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col5 = 'Spain'))"
+                + " AND <UNKNOWN_NAME>.<UNKNOWN_NAME>.col6 = 13022013;";
+        testRegularStatement(inputText, expectedText, "selectOrOperatorWithPreference");
+    }
+
+    @Test
+    public void selectWithPreferenceOperatorsSimple1(){
+        String inputText = "SELECT "
+                + "name, "
+                + "size*retailprice "
+                + "FROM part "
+                + "ORDER BY name;";
+        String expectedText = "SELECT "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.name, "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.size * <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice "
+                + "FROM demo.part "
+                + "ORDER BY <UNKNOWN_NAME>.<UNKNOWN_NAME>.name;";
+        testRegularStatementSession("demo", inputText, expectedText, "selectWithPreferenceOperatorsSimple1");
+    }
+
+    @Test
+    public void selectWithPreferenceOperatorsSimple2(){
+        String inputText = "SELECT "
+                + "name, "
+                + "(2/retailprice) "
+                + "FROM part;";
+        String expectedText = "SELECT "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.name, "
+                + "(2 / <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice) "
+                + "FROM demo.part;";
+        testRegularStatementSession("demo", inputText, expectedText, "selectWithPreferenceOperatorsSimple2");
+    }
+
+    @Test
+    public void selectWithPreferenceOperators(){
+        String inputText = "SELECT "
+                + "name, "
+                + "size*retailprice, "
+                + "(2*retailprice), "
+                + "sum(size*(1-size)*(1+retailprice)) as sum_charge, "
+                + "avg(size) as avg_size, "
+                + "count(*) as count_order "
+                + "FROM part "
+                + "WHERE "
+                + "date <= '1998-12-01' - interval('1998-12-01', 3) "
+                + "GROUP BY name "
+                + "ORDER BY name;";
+        String expectedText = "SELECT "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.name, "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.size * <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice, "
+                + "(2 * <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice), "
+                + "sum(<UNKNOWN_NAME>.<UNKNOWN_NAME>.size * (1 - <UNKNOWN_NAME>.<UNKNOWN_NAME>.size) * " +
+                        "(1 + <UNKNOWN_NAME>.<UNKNOWN_NAME>.retailprice)) AS sum_charge, "
+                + "avg(<UNKNOWN_NAME>.<UNKNOWN_NAME>.size) AS avg_size, "
+                + "count(*) AS count_order "
+                + "FROM demo.part "
+                + "WHERE "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.date <= '1998-12-01' - interval('1998-12-01', 3) AS interval "
+                + "GROUP BY <UNKNOWN_NAME>.<UNKNOWN_NAME>.name "
+                + "ORDER BY <UNKNOWN_NAME>.<UNKNOWN_NAME>.name;";
+        testRegularStatementSession("demo", inputText, expectedText, "selectWithPreferenceOperators");
+    }
+
+    @Test
+    public void selectWithListType(){
+        String inputText = "SELECT "
+                + "id, "
+                + "name, "
+                + "position "
+                + "FROM players "
+                + "WHERE position IN ['midfielder', 'striker'];";
+        String expectedText = "SELECT "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.id, "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.name, "
+                + "<UNKNOWN_NAME>.<UNKNOWN_NAME>.position "
+                + "FROM team.players "
+                + "WHERE <UNKNOWN_NAME>.<UNKNOWN_NAME>.position IN ('midfielder', 'striker');";
+        testRegularStatementSession("team", inputText, expectedText, "selectWithListType");
+    }
+
+    @Test
+    public void selectWithNotInClauseOneValueWrong() {
+
+        String inputText = "SELECT users.name FROM demo.users WHERE users.age NOT IN (19);";
+        testParserFails(inputText, "selectWithNotInClauseOneValueWrong");
+    }
+
+    @Test
+    public void selectWithNotInClauseOneValueOk() {
+        String inputText = "SELECT users.name FROM demo.users WHERE users.age NOT IN [19];";
+        String expectedText = "SELECT <UNKNOWN_NAME>.users.name FROM demo.users WHERE <UNKNOWN_NAME>.users.age NOT IN (19);";
+        testRegularStatement(inputText, expectedText, "selectWithNotInClauseOneValueOk");
+    }
+
+    @Test
+    public void selectWithNotBetweenClauseOk() {
+
+        String inputText =
+                        "SELECT users.name FROM demo.users WHERE users.email NOT BETWEEN 1 AND 3;";
+        String expectedText = "SELECT <UNKNOWN_NAME>.users.name FROM demo.users WHERE <UNKNOWN_NAME>.users.email NOT BETWEEN 1 AND 3;";
+        testRegularStatement(inputText, expectedText, "selectWithNotBetweenClauseOk");
+    }
+
+    @Test
+    public void selectWithNotLikeClauseOk() {
+
+        String inputText = "SELECT users.name FROM demo.users WHERE users.email NOT LIKE '%meta%';";
+        String expectedText = "SELECT <UNKNOWN_NAME>.users.name FROM demo.users WHERE <UNKNOWN_NAME>.users.email NOT LIKE '%meta%';";
+        testRegularStatement(inputText, expectedText, "selectWithNotLikeClauseOk");
+    }
+
+    @Test
+    public void selectWithNotLikeClauseWrong() {
+        String inputText = "SELECT users.name FROM demo.users WHERE users.email NOT NOT LIKE \"'%meta%\"'";
+        testParserFails(inputText, "selectWithNotLikeClauseOk");
+    }
+
 
 }

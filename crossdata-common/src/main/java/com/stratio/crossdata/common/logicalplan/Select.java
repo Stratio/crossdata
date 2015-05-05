@@ -22,10 +22,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-import com.stratio.crossdata.common.metadata.Operations;
-import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
@@ -34,10 +34,11 @@ import com.stratio.crossdata.common.statements.structures.Selector;
  */
 public class Select extends TransformationStep {
 
+    private static final long serialVersionUID = -2816531584230162082L;
     /**
      * Map of columns associating the name given in the Project logical steps with the name expected in the results.
      */
-    private final Map<Selector, String> columnMap;
+    private Map<Selector, String> columnMap;
 
     /**
      * Map of {@link com.stratio.crossdata.common.metadata.ColumnType} associated with each column.
@@ -52,8 +53,8 @@ public class Select extends TransformationStep {
     /**
      * Class constructor.
      * 
-     * @param operation
-     *            The operation to be applied.
+     * @param requiredOperations
+     *            A set of operations to be applied.
      * @param columnMap
      *            Map of columns associating the name given in the Project logical steps with the name expected in the
      *            result.
@@ -61,9 +62,9 @@ public class Select extends TransformationStep {
      *            The mapping of column types.
      * @param typeMapFromColumnName  The types of selectors.
      */
-    public Select(Operations operation, Map<Selector, String> columnMap, Map<String, ColumnType> typeMap,
+    public Select(Set<Operations> requiredOperations, Map<Selector, String> columnMap, Map<String, ColumnType> typeMap,
             Map<Selector, ColumnType> typeMapFromColumnName) {
-        super(operation);
+        super(requiredOperations);
         this.columnMap = columnMap;
         this.typeMap = typeMap;
         this.typeMapFromColumnName = typeMapFromColumnName;
@@ -81,6 +82,10 @@ public class Select extends TransformationStep {
         return typeMapFromColumnName;
     }
 
+    public void setColumnMap(Map<Selector, String> columnMap) {
+        this.columnMap = columnMap;
+    }
+
     public void setTypeMap(Map<String, ColumnType> typeMap) {
         this.typeMap = typeMap;
     }
@@ -96,25 +101,10 @@ public class Select extends TransformationStep {
      */
     public List<Selector> getOutputSelectorOrder(){
         List<Selector> result = new ArrayList<>();
-        for(Selector selector : columnMap.keySet()){
+        for(Selector selector: columnMap.keySet()){
             result.add(selector);
         }
         return result;
-    }
-
-    /**
-     * @deprecated
-     * Get the columns in the expected order. With the introduction of function support
-     * this method is marked as Deprecated in favour of #getOutputSelectorOrder().
-     * @return A list of {@link com.stratio.crossdata.common.data.ColumnName}.
-     */
-    @Deprecated
-    public List<ColumnName> getColumnOrder(){
-        List<ColumnName> results = new ArrayList<>();
-        for(Selector selector: columnMap.keySet()){
-            results.add(selector.getColumnName());
-        }
-        return results;
     }
 
     @Override

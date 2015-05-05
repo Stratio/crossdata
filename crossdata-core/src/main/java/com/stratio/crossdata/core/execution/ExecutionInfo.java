@@ -44,6 +44,16 @@ public class ExecutionInfo implements Serializable {
      */
     private boolean removeOnSuccess = true;
 
+    /**
+     * Update the metadata of the connectors attached to the cluster affected by the execution.
+     */
+    private boolean updateMetadataOnSuccess = false;
+
+    /**
+     * Whether the result has been obtained after executing a streaming query.
+     */
+    private boolean isTriggeredByStreaming = false;
+
     public ExecutionInfo() {
     }
 
@@ -85,5 +95,21 @@ public class ExecutionInfo implements Serializable {
 
     public void setRemoveOnSuccess(boolean removeOnSuccess) {
         this.removeOnSuccess = removeOnSuccess;
+    }
+
+    public boolean isUpdateOnSuccess() {
+        return updateMetadataOnSuccess;
+    }
+
+    public void setUpdateOnSuccess(boolean updateMetadataOnSuccess) {
+        this.updateMetadataOnSuccess = updateMetadataOnSuccess;
+    }
+
+    public boolean isTriggeredByStreaming() {
+        return isTriggeredByStreaming;
+    }
+
+    public void setTriggeredByStreaming(boolean isTriggeredByStreaming) {
+        this.isTriggeredByStreaming = isTriggeredByStreaming;
     }
 }

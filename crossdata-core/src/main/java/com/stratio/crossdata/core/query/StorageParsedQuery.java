@@ -33,6 +33,11 @@ public class StorageParsedQuery extends BaseQuery implements IParsedQuery {
     private CrossdataStatement statement;
 
     /**
+     * The sessionId of the query.
+     */
+
+
+    /**
      * Constructor class.
      * @param baseQuery The base storage query.
      * @param statement The statement.
@@ -42,6 +47,7 @@ public class StorageParsedQuery extends BaseQuery implements IParsedQuery {
         super(baseQuery);
         this.statement = statement;
         setQueryStatus(QueryStatus.PARSED);
+
     }
 
     /**
@@ -57,8 +63,13 @@ public class StorageParsedQuery extends BaseQuery implements IParsedQuery {
         return (StorageStatement) statement;
     }
 
+    @Override public String getSessionId() {
+        return super.getSessionId();
+    }
+
     @Override public String toString() {
         return statement.toString();
     }
+
 
 }

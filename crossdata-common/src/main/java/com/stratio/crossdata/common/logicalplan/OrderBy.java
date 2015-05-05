@@ -21,6 +21,7 @@ package com.stratio.crossdata.common.logicalplan;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
@@ -30,6 +31,7 @@ import com.stratio.crossdata.common.statements.structures.OrderByClause;
  */
 public class OrderBy extends TransformationStep {
 
+    private static final long serialVersionUID = 5002531611664685013L;
     /**
      * Identifiers.
      */
@@ -38,11 +40,11 @@ public class OrderBy extends TransformationStep {
     /**
      * Class constructor.
      *
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      * @param ids Identifiers.
      */
-    public OrderBy(Operations operation, List<OrderByClause> ids) {
-        super(operation);
+    public OrderBy(Set<Operations> operations, List<OrderByClause> ids) {
+        super(operations);
         this.ids = ids;
     }
 

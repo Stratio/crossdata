@@ -42,4 +42,5 @@ object APICommand extends Enumeration {
   val RESET_SERVERDATA = Value("RESET_SERVERDATA")
   val CLEAN_METADATA = Value("CLEAN_METADATA")
   val EXPLAIN_PLAN = Value("EXPLAIN_PLAN")
+  val STOP_PROCESS = Value("STOP_PROCESS")
 }

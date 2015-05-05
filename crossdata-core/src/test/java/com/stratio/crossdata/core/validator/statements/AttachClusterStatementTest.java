@@ -55,7 +55,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
                 "");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
 
@@ -79,7 +79,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
                 "");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
@@ -101,7 +101,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
                 "{'comment':'attach cluster'}");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
@@ -127,7 +127,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
                 "{'comment':'attach cluster'}");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("CreateTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
@@ -167,7 +167,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
                 "{'comment':'attach cluster'}");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("attachToADifferentDatastore", query, new CatalogName("catalogTest"));
+        BaseQuery baseQuery = new BaseQuery("attachToADifferentDatastore", query, new CatalogName("catalogTest"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
@@ -211,7 +211,7 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
                 "{'replication':2}");
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("attachClusterWithProperties", query, new CatalogName("catalogTest"));
+        BaseQuery baseQuery = new BaseQuery("attachClusterWithProperties", query, new CatalogName("catalogTest"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, attachClusterStatement);
         try {
@@ -221,5 +221,6 @@ public class AttachClusterStatementTest extends BasicValidatorTest {
             fail(e.getMessage());
         }
     }
+
 
 }

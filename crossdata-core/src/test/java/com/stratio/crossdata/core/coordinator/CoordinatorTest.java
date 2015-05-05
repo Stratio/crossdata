@@ -31,8 +31,11 @@ import java.util.Set;
 
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.data.AlterOperation;
+import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
@@ -55,6 +58,7 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
@@ -62,16 +66,25 @@ import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.communication.ManagementOperation;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class CoordinatorTest {
 
+    private static final String VERSION = "0.3.0";
+
     @BeforeClass
     public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
+    }
+
+    @BeforeMethod
+    public void createEnvironment() throws ManifestException {
         MetadataManagerTestHelper.HELPER.createTestEnvironment();
+        // Create and add a test datastore metadata to the metadataManager
+        MetadataManagerTestHelper.HELPER.insertDataStore("datastoreTest", "production");
     }
 
     @AfterClass
@@ -87,10 +100,7 @@ public class CoordinatorTest {
     @Test
     public void testAttachCluster() throws Exception {
 
-        // Create and add a test datastore metadata to the metadataManager
-        DataStoreMetadata datastoreTest = MetadataManagerTestHelper.HELPER.insertDataStore("datastoreTest", "production");
-
-        ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.ATTACH_CLUSTER,
+        ManagementWorkflow workflow = new ManagementWorkflow("", "", ExecutionType.ATTACH_CLUSTER,
                 ResultType.RESULTS);
         workflow.setClusterName(new ClusterName("clusterTest"));
         workflow.setConnectorName(new ConnectorName("myConnector"));
@@ -99,7 +109,7 @@ public class CoordinatorTest {
         ManagementOperation op = workflow.createManagementOperationMessage();
         coordinator.executeManagementOperation(op);
         // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
-        datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
+        DataStoreMetadata datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
                 datastoreTest.getClusterAttachedRefs();
         boolean found = false;
@@ -107,7 +117,7 @@ public class CoordinatorTest {
             ClusterAttachedMetadata clusterAttachedMetadata =
                     clusterAttachedRefsTest.get(clusterNameTest);
             if (clusterAttachedMetadata.getClusterRef().equals(new ClusterName("clusterTest"))) {
-                assertEquals(clusterAttachedMetadata.getDataStoreRef(), new DataStoreName("datastoreTest"),
+                assertEquals(clusterAttachedMetadata.getDataStoreRef(), new DataStoreName("dataStoreTest"),
                         "Wrong attachment for clusterTest");
                 found = true;
                 break;
@@ -124,10 +134,7 @@ public class CoordinatorTest {
     @Test
     public void testDetachCluster() throws Exception {
 
-        // Create and add a test datastore metadata to the metadataManager
-        DataStoreMetadata datastoreTest = MetadataManagerTestHelper.HELPER.insertDataStore("datastoreTest", "production");
-
-        ManagementWorkflow workflow = new ManagementWorkflow("", null, ExecutionType.DETACH_CLUSTER,
+        ManagementWorkflow workflow = new ManagementWorkflow("", "", ExecutionType.DETACH_CLUSTER,
                 ResultType.RESULTS);
         workflow.setClusterName(new ClusterName("clusterTest"));
         workflow.setConnectorName(new ConnectorName("myConnector"));
@@ -136,7 +143,7 @@ public class CoordinatorTest {
         ManagementOperation op = workflow.createManagementOperationMessage();
         coordinator.executeManagementOperation(op);
         // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
-        datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
+        DataStoreMetadata datastoreTest = MetadataManager.MANAGER.getDataStore(new DataStoreName("dataStoreTest"));
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefsTest =
                 datastoreTest.getClusterAttachedRefs();
         boolean found = false;
@@ -172,7 +179,7 @@ public class CoordinatorTest {
 
         // Create and add a test connector metadata to the metadataManager
         ConnectorName connectorName = new ConnectorName("connectorTest");
-        String connectorVersion = "0.2.0";
+        String connectorVersion = VERSION;
         List<String> dataStoreRefs = new ArrayList<>();
         List<PropertyType> requiredProperties = new ArrayList<>();
         List<PropertyType> optionalProperties = new ArrayList<>();
@@ -202,6 +209,7 @@ public class CoordinatorTest {
         managementWorkflow.setConnectorName(connectorName);
         options.put(new StringSelector("Limit"), new IntegerSelector(100));
         managementWorkflow.setOptions(options);
+        managementWorkflow.setPriority(Constants.DEFAULT_PRIORITY);
 
         Coordinator coordinator = new Coordinator();
 
@@ -231,7 +239,7 @@ public class CoordinatorTest {
     // CREATE CATALOG
     @Test
     public void testCreateCatalogCheckName() throws Exception {
-        CatalogName catalogName = new CatalogName("catalog1");
+        CatalogName catalogName = new CatalogName("catalog2");
         Map<TableName, TableMetadata> catalogTables = new HashMap<>();
         Map<Selector, Selector> options = new HashMap<>();
         CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);
@@ -267,7 +275,7 @@ public class CoordinatorTest {
 
         TableName tableName = new TableName(catalog, tableString);
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys = { "id" };
         String[] clusteringKeys = { };
         TableMetadata tableMetadata = MetadataManagerTestHelper.HELPER.defineTable(
@@ -312,14 +320,15 @@ public class CoordinatorTest {
 
         TableName tableName = new TableName(catalog, table);
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys = { "id" };
         String[] clusteringKeys = { };
 
         Set<IndexMetadata> indexes = new HashSet<>();
         IndexName indexName = new IndexName(new ColumnName(catalog, table, index));
         Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
-        ColumnMetadata column = new ColumnMetadata(new ColumnName(catalog, table, "user"), null, ColumnType.TEXT);
+        ColumnMetadata column = new ColumnMetadata(new ColumnName(catalog, table, "user"), null,
+                new ColumnType(DataType.TEXT));
         columns.put(column.getName(), column);
         IndexType indexType = IndexType.DEFAULT;
         Map<Selector, Selector> options = new HashMap<>();
@@ -346,5 +355,73 @@ public class CoordinatorTest {
                 "Expected: " + index + System.lineSeparator() +
                         "Found:    " + storedIndexName);
     }
+
+
+    @Test
+    public void persistAlterCatalogTest() throws Exception {
+        CatalogName catalogName = new CatalogName("catalog1");
+        Map<TableName, TableMetadata> catalogTables = new HashMap<>();
+        Map<Selector, Selector> options = new HashMap<>();
+        CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, catalogTables);
+
+        String queryId = "persistAlterCatalog";
+        String actorRef = "AlterCatalogActorRef";
+        ExecutionType executionType = ExecutionType.ALTER_CATALOG;
+        ResultType type = ResultType.RESULTS;
+        MetadataWorkflow metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+        metadataWorkflow.setCatalogName(catalogMetadata.getName());
+        metadataWorkflow.setCatalogMetadata(catalogMetadata);
+        MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_CATALOG);
+
+        Coordinator coordinator = new Coordinator();
+        coordinator.persist(metadataWorkflow, result);
+
+        assertEquals(MetadataManager.MANAGER.getCatalog(catalogMetadata.getName()).getName(),
+                catalogMetadata.getName()," Alter Catalog Error Test");
+    }
+
+
+    @Test
+    public void persistAlterTableTest() throws Exception {
+
+        String datastore = "dataStoreTest";
+        String cluster = "production";
+        String catalog = "testCatalog";
+        String tableString = "testTable";
+
+
+
+        TableName tableName = new TableName(catalog, tableString);
+        String[] columnNames1 = { "id", "user" };
+        ColumnType[] columnTypes = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
+        String[] partitionKeys = { "id" };
+        String[] clusteringKeys = { };
+        TableMetadata tableMetadata = MetadataManagerTestHelper.HELPER.defineTable(
+                new ClusterName(cluster),
+                catalog,
+                tableString,
+                columnNames1,
+                columnTypes,
+                partitionKeys,
+                clusteringKeys);
+
+        String queryId = "alterTableQueryId";
+        String actorRef = "alterTableActorRef";
+        AlterOptions alterOptions=new AlterOptions(AlterOperation.ALTER_OPTIONS,new HashMap<Selector,Selector>(),null);
+        ExecutionType executionType = ExecutionType.ALTER_TABLE;
+        ResultType type = ResultType.RESULTS;
+        MetadataWorkflow metadataWorkflow = new MetadataWorkflow(queryId, actorRef, executionType, type);
+        metadataWorkflow.setTableName(tableName);
+        metadataWorkflow.setTableMetadata(tableMetadata);
+        metadataWorkflow.setAlterOptions(alterOptions);
+
+        MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_TABLE);
+        Coordinator coordinator = new Coordinator();
+        coordinator.persist(metadataWorkflow, result);
+
+        assertEquals(MetadataManager.MANAGER.getTable(tableName).getName(), tableMetadata.getName(),
+                "Test alter table fail");
+    }
+
 
 }

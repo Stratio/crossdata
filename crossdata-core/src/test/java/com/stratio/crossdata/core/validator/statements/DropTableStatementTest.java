@@ -40,7 +40,7 @@ public class DropTableStatementTest extends BasicValidatorTest {
         DropTableStatement dropTableStatement = new DropTableStatement(new TableName("demo", "users"), true);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
         try {
@@ -59,7 +59,7 @@ public class DropTableStatementTest extends BasicValidatorTest {
         DropTableStatement dropTableStatement = new DropTableStatement(new TableName("demo", "unknown"), true);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
         try {
@@ -78,7 +78,7 @@ public class DropTableStatementTest extends BasicValidatorTest {
         DropTableStatement dropTableStatement = new DropTableStatement(new TableName("demo", "unknown"), false);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("dropTableid", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, dropTableStatement);
         try {

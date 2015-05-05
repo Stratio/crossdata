@@ -23,7 +23,9 @@ import java.io.Serializable;
 /**
  * OrderByClause Class.
  */
-public class OrderByClause implements Serializable {
+public class OrderByClause implements Serializable, ISqlExpression{
+
+    private static final long serialVersionUID = 738701511608570694L;
     private Selector selector;
     private OrderDirection direction = OrderDirection.ASC;
 
@@ -117,6 +119,18 @@ public class OrderByClause implements Serializable {
         StringBuilder sb = new StringBuilder();
 
         sb.append(selector);
+
+        if (direction == OrderDirection.DESC) {
+            sb.append(" DESC");
+        }
+
+        return sb.toString();
+    }
+
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(selector.toSQLString(false));
 
         if (direction == OrderDirection.DESC) {
             sb.append(" DESC");

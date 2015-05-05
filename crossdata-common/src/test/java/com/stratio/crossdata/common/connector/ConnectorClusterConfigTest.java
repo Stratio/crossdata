@@ -38,7 +38,7 @@ public class ConnectorClusterConfigTest {
         ConnectorClusterConfig connectorClusterConfig = new ConnectorClusterConfig(new ClusterName("myCluster"),
                 connectorOptions, clusterOptions);
 
-        Assert.assertTrue(connectorClusterConfig.getName().getName().equals("mycluster"), "Invalid cluster name");
+        Assert.assertTrue(connectorClusterConfig.getName().getName().equalsIgnoreCase("mycluster"), "Invalid cluster name");
         Assert.assertFalse(connectorClusterConfig.getConnectorOptions().isEmpty(), "Empty connector options");
         Assert.assertFalse(connectorClusterConfig.getClusterOptions().isEmpty(), "Empty cluster options");
     }

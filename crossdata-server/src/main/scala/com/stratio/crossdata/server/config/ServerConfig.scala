@@ -23,14 +23,17 @@ import java.io.File
 import com.stratio.crossdata.core.engine.EngineConfig
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.log4j.Logger
+import scala.collection.JavaConversions.enumerationAsScalaIterator
 
 object ServerConfig {
   val SERVER_BASIC_CONFIG = "server-reference.conf"
   val PARENT_CONFIG_NAME = "crossdata-server"
 
-
   val SERVER_CLUSTER_NAME_KEY = "config.cluster.name"
   val SERVER_ACTOR_NAME_KEY = "config.cluster.actor"
+  val SERVER_API_REST = "config.api.rest.server"
+  val SERVER_API_REST_HOSTNAME = "config.api.rest.hostname"
+  val SERVER_API_REST_PORT = "config.api.rest.port"
   val SERVER_USER_CONFIG_FILE = "external.config.filename"
   val SERVER_USER_CONFIG_RESOURCE = "external.config.resource"
 
@@ -39,10 +42,22 @@ object ServerConfig {
 
 trait ServerConfig extends GridConfig with NumberActorConfig {
 
+  def getLocalIPs():List[String] = {
+    val addresses = for {
+      networkInterface <- java.net.NetworkInterface.getNetworkInterfaces()
+      address <- networkInterface.getInetAddresses
+    } yield address.toString
+    val filterthese = List(".*127.0.0.1", ".*localhost.*", ".*::1", ".*0:0:0:0:0:0:0:1")
+    for {r <- addresses.toList; if (filterthese.find(e => r.matches(e)).isEmpty)} yield r
+  }
+
+  val ips=getLocalIPs()
+
   lazy val logger: Logger = ???
   lazy val engineConfig: EngineConfig = {
     val result = new EngineConfig()
     result.setGridListenAddress(gridListenAddress)
+    //if(ips.length==1)result.setGridListenAddress(ips(0))
     result.setGridContactHosts(gridContactHosts)
     result.setGridPort(gridPort)
     result.setGridMinInitialMembers(gridMinInitialMembers)
@@ -50,6 +65,9 @@ trait ServerConfig extends GridConfig with NumberActorConfig {
     result.setGridPersistencePath(gridPersistencePath)
     result
   }
+  lazy val apiRest: Boolean = config.getBoolean(ServerConfig.SERVER_API_REST)
+  lazy val apiRestHostname: String = config.getString(ServerConfig.SERVER_API_REST_HOSTNAME)
+  lazy val apiRestPort: Int = config.getInt(ServerConfig.SERVER_API_REST_PORT)
   lazy val clusterName = config.getString(ServerConfig.SERVER_CLUSTER_NAME_KEY)
   lazy val actorName = config.getString(ServerConfig.SERVER_ACTOR_NAME_KEY)
   override val config: Config = {

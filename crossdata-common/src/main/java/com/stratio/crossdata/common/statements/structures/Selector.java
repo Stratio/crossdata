@@ -29,7 +29,7 @@ import com.stratio.crossdata.common.data.TableName;
 /**
  * This class represents one of the elements requested in a SELECT statement.
  */
-public abstract class Selector implements Serializable {
+public abstract class Selector implements Serializable, ISqlExpression {
 
     /**
      * Serial version UID in order to be serializable.
@@ -45,6 +45,8 @@ public abstract class Selector implements Serializable {
      * The associated {@link com.stratio.crossdata.common.data.TableName}.
      */
     protected TableName tableName;
+
+    protected boolean parenthesis = false;
 
     /**
      * Class constructor.
@@ -116,7 +118,11 @@ public abstract class Selector implements Serializable {
         StringBuilder sb = new StringBuilder();
         Iterator<TableName> it = getSelectorTables().iterator();
         while (it.hasNext()) {
-            sb.append(it.next().getQualifiedName());
+            TableName t=it.next();
+            if (t==null){
+                continue;
+            }
+            sb.append(t.getQualifiedName());
             if (it.hasNext()) {
                 sb.append("-");
             }
@@ -142,10 +148,19 @@ public abstract class Selector implements Serializable {
         return new ColumnName(tableName, alias);
     }
 
+    public boolean isParenthesis() {
+        return parenthesis;
+    }
+
+    public void setParenthesis(boolean parenthesis) {
+        this.parenthesis = parenthesis;
+    }
+
     @Override
     public abstract boolean equals(Object o);
 
     @Override
     public abstract int hashCode();
+
 
 }

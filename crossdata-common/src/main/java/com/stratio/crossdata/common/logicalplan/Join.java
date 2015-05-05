@@ -20,7 +20,9 @@ package com.stratio.crossdata.common.logicalplan;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
+import com.stratio.crossdata.common.data.JoinType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.Relation;
 
@@ -29,10 +31,17 @@ import com.stratio.crossdata.common.statements.structures.Relation;
  */
 public class Join extends UnionStep {
 
+    private static final long serialVersionUID = -5886407607386975852L;
     /**
      * Join identifier.
      */
     private final String id;
+
+    /**
+     *
+     * Join type.
+     */
+    private JoinType type;
 
     /**
      * List of logical step identifiers involved in the join.
@@ -47,11 +56,11 @@ public class Join extends UnionStep {
     /**
      * Class constructor.
      *
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      * @param id        The join identifier.
      */
-    public Join(Operations operation, String id) {
-        super(operation);
+    public Join(Set<Operations> operations, String id) {
+        super(operations);
         this.id = id;
     }
 
@@ -87,6 +96,10 @@ public class Join extends UnionStep {
         sourceIdentifiers.add(id);
     }
 
+    public void addSourceIdentifier(List<String> ids) {
+        sourceIdentifiers.addAll(ids);
+    }
+
     /**
      * Get the Identifiers.
      * @return List of logical step identifiers involved in the join.
@@ -101,6 +114,22 @@ public class Join extends UnionStep {
      */
     public String getId() {
         return id;
+    }
+
+    /**
+     * Get the type.
+     * @return a {@link com.stratio.crossdata.common.data.JoinType} .
+     */
+    public JoinType getType() {
+        return type;
+    }
+
+    /**
+     * Set the type.
+     * @param type The type.
+     */
+    public void setType(JoinType type) {
+        this.type = type;
     }
 
     @Override

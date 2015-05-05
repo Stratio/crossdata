@@ -22,38 +22,37 @@ import java.io.Serializable
 import java.util
 import java.util.concurrent.locks.Lock
 import javax.transaction.TransactionManager
+
+import akka.cluster.Cluster
 import akka.pattern.ask
 import akka.testkit.ImplicitSender
-import com.stratio.crossdata.common.data.{CatalogName, ClusterName, ColumnName, ConnectorName, Status,
-DataStoreName, FirstLevelName, IndexName, TableName}
-import com.stratio.crossdata.common.executionplan.{StorageWorkflow, ExecutionType, ResultType, MetadataWorkflow,
-QueryWorkflow}
+import com.stratio.crossdata.common.data.{CatalogName, ClusterName, ColumnName, ConnectorName, DataStoreName, FirstLevelName, IndexName, Status, TableName}
+import com.stratio.crossdata.common.executionplan.{ExecutionType, MetadataWorkflow, QueryWorkflow, ResultType, StorageWorkflow}
 import com.stratio.crossdata.common.logicalplan.{LogicalStep, LogicalWorkflow, Project, Select}
-import com.stratio.crossdata.common.manifest.PropertyType
-import com.stratio.crossdata.common.metadata.{ColumnType, CatalogMetadata, TableMetadata, ColumnMetadata,
-IndexMetadata, IMetadata, Operations, ConnectorAttachedMetadata}
+import com.stratio.crossdata.common.manifest.{FunctionType, PropertyType}
+import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.metadata.structures.TableType
 import com.stratio.crossdata.common.statements.structures.Selector
-import com.stratio.crossdata.common.utils.StringUtils
+import com.stratio.crossdata.common.utils.{Constants, StringUtils}
 import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
+import com.stratio.crossdata.core.MetadataManagerTestHelper
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.grid.Grid
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.planner.{PlannerExecutionWorkflowTest, SelectValidatedQueryWrapper}
-import com.stratio.crossdata.core.query.{SelectPlannedQuery, SelectParsedQuery, BaseQuery, StorageParsedQuery,
-StorageValidatedQuery, StoragePlannedQuery, MetadataParsedQuery, MetadataValidatedQuery, MetadataPlannedQuery}
-import com.stratio.crossdata.core.statements.{CreateCatalogStatement, CreateTableStatement, InsertIntoStatement,
-MetadataStatement, SelectStatement}
+import com.stratio.crossdata.core.query.{BaseQuery, MetadataParsedQuery, MetadataPlannedQuery, MetadataValidatedQuery, SelectParsedQuery, SelectPlannedQuery, StorageParsedQuery, StoragePlannedQuery, StorageValidatedQuery}
+import com.stratio.crossdata.core.statements.{CreateCatalogStatement, CreateTableStatement, InsertIntoStatement, MetadataStatement, SelectStatement}
 import com.stratio.crossdata.server.actors.{ConnectorManagerActor, CoordinatorActor}
 import com.stratio.crossdata.server.config.{ActorReceiveUtils, ServerConfig}
 import com.stratio.crossdata.server.mocks.MockConnectorActor
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{BeforeAndAfterAll, FunSuiteLike, Suite}
+
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
-import com.stratio.crossdata.core.MetadataManagerTestHelper
 
+import java.util.Collections
 
 trait ServerActorTest extends ActorReceiveUtils with FunSuiteLike with MockFactory with ServerConfig with
 ImplicitSender with BeforeAndAfterAll{
@@ -78,7 +77,7 @@ ImplicitSender with BeforeAndAfterAll{
   }
 
   //Actors in this tests
-  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(), "ConnectorManagerActor")
+  val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(Cluster(system)), "ConnectorManagerActor")
   val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
     "CoordinatorActor")
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
@@ -95,7 +94,7 @@ ImplicitSender with BeforeAndAfterAll{
   val myClusterName ="myCluster"
   val myExecutionData="myExecutionData"
   val columnNames1: Array[String] = Array(id, "user")
-  val columnTypes1: Array[ColumnType] = Array(ColumnType.INT, ColumnType.TEXT)
+  val columnTypes1: Array[ColumnType] = Array(new ColumnType(DataType.INT), new ColumnType(DataType.TEXT))
   val partitionKeys1: Array[String] = Array(id)
   val clusteringKeys1: Array[String] = Array(id)
   val clusterName1: ClusterName = new ClusterName(myClusterName)
@@ -106,7 +105,8 @@ ImplicitSender with BeforeAndAfterAll{
   val selectStatement: SelectStatement = new SelectStatement(new TableName(catalogName,tableName))
   val selectParsedQuery = new SelectParsedQuery(new BaseQuery(incQueryId(), "SELECT FROM " + catalogName + "." +
     tableName,
-    new CatalogName(catalogName)), selectStatement)
+    new CatalogName(catalogName),
+    "sessionTest"), selectStatement)
   //val selectValidatedQuery = new SelectValidatedQuery(selectParsedQuery)
   val selectValidatedQueryWrapper = new SelectValidatedQueryWrapper(selectStatement,selectParsedQuery)
 
@@ -115,14 +115,14 @@ ImplicitSender with BeforeAndAfterAll{
   //make the implementation of storageStatement.
   val storageParsedQuery = new StorageParsedQuery(new BaseQuery(incQueryId(), "insert (uno," +
     "dos) into " + tableName + ";",
-    new CatalogName(catalogName)), storageStatement)
+    new CatalogName(catalogName),"sessionTest"), storageStatement)
   val storageValidatedQuery = new StorageValidatedQuery(storageParsedQuery)
   val storagePlannedQuery = new StoragePlannedQuery(storageValidatedQuery, new StorageWorkflow(queryId + queryIdIncrement,
-    StringUtils.getAkkaActorRefUri(connectorActor), ExecutionType.INSERT, ResultType.RESULTS))
+    StringUtils.getAkkaActorRefUri(connectorActor, false), ExecutionType.INSERT, ResultType.RESULTS))
 
   val metadataStatement0: MetadataStatement = new CreateCatalogStatement(
     new CatalogName(catalogName),true,"")
-  val metadataParsedQuery0 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName)),
+  val metadataParsedQuery0 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "", new CatalogName(catalogName),"sessionTest"),
     metadataStatement0)
   val metadataValidatedQuery0: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery0)
   val metadataWorkflow0=new MetadataWorkflow(queryId + queryIdIncrement,  null, ExecutionType.CREATE_CATALOG, ResultType.RESULTS)
@@ -135,21 +135,22 @@ ImplicitSender with BeforeAndAfterAll{
   )
   val metadataPlannedQuery0 = new MetadataPlannedQuery(metadataValidatedQuery0,metadataWorkflow0)
 
-
+  val isExternal = false;
   val metadataStatement1: MetadataStatement =  new CreateTableStatement(TableType.DATABASE,
 
     new TableName(catalogName,tableName1),
     new ClusterName(myClusterName),
-
     new util.LinkedHashMap[ColumnName, ColumnType](),
     new util.LinkedHashSet[ColumnName](),
-    new util.LinkedHashSet[ColumnName]()
+    new util.LinkedHashSet[ColumnName](),
+    isExternal
   )
   val metadataParsedQuery1 = new MetadataParsedQuery(new BaseQuery(incQueryId(), "create table " + tableName1 + ";",
-    new CatalogName(catalogName)),
+    new CatalogName(catalogName),
+    "sessionTest"),
     metadataStatement1)
   val metadataValidatedQuery1: MetadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery1)
-  val metadataWorkflow1=new MetadataWorkflow(queryId + queryIdIncrement,  StringUtils.getAkkaActorRefUri(connectorActor),
+  val metadataWorkflow1=new MetadataWorkflow(queryId + queryIdIncrement,  StringUtils.getAkkaActorRefUri(connectorActor, false),
     ExecutionType.CREATE_TABLE,
     ResultType.RESULTS)
   metadataWorkflow1.setCatalogMetadata(
@@ -213,8 +214,8 @@ ImplicitSender with BeforeAndAfterAll{
 
     //Create cluster
     val testcluster= metadataManager.createTestCluster(myClusterName, myDatastore)
-    val clusternames=new java.util.HashSet[ClusterName]()
-    clusternames.add(testcluster)
+    val clusterwithPriorities=new java.util.LinkedHashMap[ClusterName, Integer]()
+    clusterwithPriorities.put(testcluster, Constants.DEFAULT_PRIORITY)
 
     val future = connectorActor ? getConnectorName()
     val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
@@ -222,10 +223,13 @@ ImplicitSender with BeforeAndAfterAll{
 
 
     //Create connector
-    val myConnector=metadataManager.createTestConnector(connectorName.name,new DataStoreName(myDatastore.getName()),
-      clusternames,
+    val myConnector=metadataManager.createTestConnector(
+      connectorName.name,
+      new DataStoreName(myDatastore.getName()),
+      clusterwithPriorities,
       operations,
-      StringUtils.getAkkaActorRefUri(connectorActor))
+      StringUtils.getAkkaActorRefUri(connectorActor, false),
+      new util.ArrayList[FunctionType]())
 
     //create catalog
     metadataManager.createTestCatalog(catalogName)
@@ -234,18 +238,18 @@ ImplicitSender with BeforeAndAfterAll{
     val clusterMetadata = MetadataManager.MANAGER.getCluster(testcluster)
     val connectorsMap = new java.util.HashMap[ConnectorName, ConnectorAttachedMetadata]()
     connectorsMap.put(new ConnectorName(connectorName.name), new ConnectorAttachedMetadata(new ConnectorName
-    (connectorName.name), testcluster, new util.HashMap[Selector, Selector]()))
+    (connectorName.name), testcluster, new util.HashMap[Selector, Selector](),Constants.DEFAULT_PRIORITY))
     clusterMetadata.setConnectorAttachedRefs(connectorsMap)
     MetadataManager.MANAGER.createCluster(clusterMetadata, false)
 
     //create table
     val table1= metadataManager.createTestTable(clusterName1, catalogName, tableName, Array(name, "age"),
-      Array(ColumnType.TEXT, ColumnType.INT), Array(name), Array(name), null)
+      Array(new ColumnType(DataType.TEXT), new ColumnType(DataType.INT)), Array(name), Array(name), null)
 
     val initialSteps: java.util.List[LogicalStep] = new java.util.LinkedList[LogicalStep]
     val project: Project = getProject(tableName2)
     val columns: Array[ColumnName] = Array(new ColumnName(table1.getName, id), new ColumnName(table1.getName, "user"))
-    val types: Array[ColumnType] = Array(ColumnType.INT, ColumnType.TEXT)
+    val types: Array[ColumnType] = Array(new ColumnType(DataType.INT), new ColumnType(DataType.TEXT))
     val select: Select = plannerTest.getSelect(columns, types)
     project.setNextStep(select)
 
@@ -256,8 +260,8 @@ ImplicitSender with BeforeAndAfterAll{
 
     selectPlannedQuery = new SelectPlannedQuery(selectValidatedQueryWrapper,
       new QueryWorkflow(queryId + queryIdIncrement,
-        StringUtils.getAkkaActorRefUri(connectorActor),
-        ExecutionType.SELECT, ResultType.RESULTS,workflow))
+        StringUtils.getAkkaActorRefUri(connectorActor, false),
+        ExecutionType.SELECT, ResultType.RESULTS,workflow, false))
   }
 
   /**
@@ -269,7 +273,10 @@ ImplicitSender with BeforeAndAfterAll{
    */
   def getProject (tableName: String, columns: ColumnName *): Project = {
     val operation: Operations = Operations.PROJECT
-    val project: Project = new Project (operation, new TableName (catalogName, tableName), new ClusterName (myClusterName) )
+    val project: Project = new Project (
+      Collections.singleton(operation),
+      new TableName(catalogName, tableName),
+      new ClusterName(myClusterName) )
     for (cn <- columns) {
       project.addColumn (cn)
     }

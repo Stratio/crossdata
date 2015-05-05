@@ -47,7 +47,12 @@ import com.stratio.crossdata.common.data.NodeName;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
+import com.stratio.crossdata.common.exceptions.PlanningException;
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
+import com.stratio.crossdata.common.logicalplan.Project;
+import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.manifest.FunctionType;
+import com.stratio.crossdata.common.manifest.FunctionTypeHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
@@ -57,14 +62,18 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IMetadata;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.NodeMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.crossdata.common.statements.structures.SelectSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
 
 /**
  * Singleton to manage the metadata store.
@@ -278,7 +287,7 @@ public enum MetadataManager {
      * @throws SystemException            If the transaction manager is not available.
      * @throws NotSupportedException      If the operation is not supported.
      * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
-     * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
+     * @throws HeuristicMixedException    If the transaction has been partially committed due to the use of a heuristic.
      * @throws RollbackException          If the transaction is marked as rollback only.
      */
     public synchronized void clear()
@@ -697,12 +706,13 @@ public enum MetadataManager {
             String version = null;
             Set<DataStoreName> dataStoreRefs = new HashSet<>();
             Map<ClusterName, Map<Selector, Selector>> clusterProperties = new HashMap<>();
+            Map<ClusterName, Integer> clusterPriorities = new HashMap<>();
             Set<PropertyType> requiredProperties = new HashSet<>();
             Set<PropertyType> optionalProperties = new HashSet<>();
             Set<Operations> supportedOperations = new HashSet<>();
             ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
-                    clusterProperties, requiredProperties, optionalProperties, supportedOperations, null);
-            connectorMetadata.setActorRef(actorRef);
+                    clusterProperties, clusterPriorities, requiredProperties, optionalProperties, supportedOperations, null);
+            connectorMetadata.addActorRef(actorRef);
             try {
                 writeLock.lock();
                 beginTransaction();
@@ -715,7 +725,7 @@ public enum MetadataManager {
             }
         } else {
             ConnectorMetadata connectorMetadata = getConnector(name);
-            connectorMetadata.setActorRef(actorRef);
+            connectorMetadata.addActorRef(actorRef);
             createConnector(connectorMetadata, false);
         }
     }
@@ -739,9 +749,22 @@ public enum MetadataManager {
      * @param status New connector status.
      */
     public void setConnectorStatus(List<ConnectorName> names, Status status) {
-        for (ConnectorName connectorName : names) {
+        for (ConnectorName connectorName: names) {
+            removeActorRefsFromConnector(connectorName);
             setConnectorStatus(connectorName, status);
         }
+    }
+
+    private void removeActorRefsFromConnector(ConnectorName name) {
+        ConnectorMetadata connectorMetadata = getConnector(name);
+        connectorMetadata.setActorRefs(new HashSet<String>());
+        createConnector(connectorMetadata, false);
+    }
+
+    public void removeActorRefFromConnector(ConnectorName name, String actorRef){
+        ConnectorMetadata connectorMetadata = getConnector(name);
+        connectorMetadata.removeActorRef(actorRef);
+        createConnector(connectorMetadata, false);
     }
 
     /**
@@ -1158,16 +1181,85 @@ public enum MetadataManager {
         ConnectorMetadata connector = getConnector(cn);
 
         for (FunctionType ft : connector.getConnectorFunctions()) {
-            functions.add(ft.getFunctionName().toLowerCase());
+            functions.add(ft.getFunctionName());
         }
 
         for(DataStoreName dsn: connector.getDataStoreRefs()){
             DataStoreMetadata datastore = getDataStore(dsn);
             for(FunctionType ft: datastore.getFunctions()){
-                functions.add(ft.getFunctionName().toLowerCase());
+                functions.add(ft.getFunctionName());
             }
         }
         functions.removeAll(connector.getExcludedFunctions());
+        return functions;
+    }
+
+    /**
+     * Get the names of the supported functions for a given connector.
+     *
+     * @param cn A {@link com.stratio.crossdata.common.data.ConnectorName}.
+     * @param projects initial projects.
+     * @return A set with the function names.
+     */
+    public Set<String> getSupportedFunctionNames(ConnectorName cn, Set<Project> projects) {
+        Set<String> functions = new HashSet<>();
+        ConnectorMetadata connector = getConnector(cn);
+
+        for (FunctionType ft : connector.getConnectorFunctions()) {
+            functions.add(ft.getFunctionName());
+        }
+
+        Set<DataStoreName> dataStoreNames = new HashSet<>();
+        for (Project project : projects) {
+            dataStoreNames.add(getCluster(project.getClusterName()).getDataStoreRef());
+        }
+
+
+        for(DataStoreName dsn: connector.getDataStoreRefs()){
+
+            if (dataStoreNames.contains(dsn)){
+                DataStoreMetadata datastore = getDataStore(dsn);
+
+                for(FunctionType ft: datastore.getFunctions()){
+                    functions.add(ft.getFunctionName());
+                }
+            }
+
+        }
+        functions.removeAll(connector.getExcludedFunctions());
+        return functions;
+    }
+
+
+    /**
+     * Get the set of supported function types for a given connector.
+     *
+     * @param cn The {@link com.stratio.crossdata.common.data.ConnectorName}.
+     * @param projects list of clusters.
+     * @return A set of {@link com.stratio.crossdata.common.manifest.FunctionType}.
+     */
+    public Set<FunctionType> getSupportedFunctions(ConnectorName cn, Set<Project> projects) {
+        Set<FunctionType> functions = new HashSet<>();
+        ConnectorMetadata connector = getConnector(cn);
+        functions.addAll(connector.getConnectorFunctions());
+
+        //datastoreNames
+        Set<DataStoreName> dataStoreNames = new HashSet<>();
+        for (Project project : projects) {
+            dataStoreNames.add(getCluster(project.getClusterName()).getDataStoreRef());
+        }
+
+        for(DataStoreName dsn: connector.getDataStoreRefs()){
+
+            if(dataStoreNames.contains(dsn)) {
+                DataStoreMetadata datastore = getDataStore(dsn);
+                for (FunctionType df : datastore.getFunctions()) {
+                    if (!connector.getExcludedFunctions().contains(df.getFunctionName())) {
+                        functions.add(df);
+                    }
+                }
+            }
+        }
         return functions;
     }
 
@@ -1184,7 +1276,7 @@ public enum MetadataManager {
         for(DataStoreName dsn: connector.getDataStoreRefs()){
             DataStoreMetadata datastore = getDataStore(dsn);
             for(FunctionType df: datastore.getFunctions()){
-                if(!connector.getExcludedFunctions().contains(df.getFunctionName().toLowerCase())){
+                if(!connector.getExcludedFunctions().contains(df.getFunctionName())){
                     functions.add(df);
                 }
             }
@@ -1193,31 +1285,86 @@ public enum MetadataManager {
     }
 
     /**
-     * Check if the connector has associated the signature of the function.
+     * Check if the connector has associated the input signature of the function.
      * @param fSelector The function Selector with the signature.
      * @param connectorName The name of the connector.
      * @return A boolean with the check result.
      */
-    public boolean checkSignature(FunctionSelector fSelector, ConnectorName connectorName){
+    public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName, SelectValidatedQuery subQuery, Set<Project> initialProjects)
+            throws PlanningException {
         boolean result = false;
-        FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
+        FunctionType ft = getFunction(connectorName, fSelector.getFunctionName(), initialProjects);
         if(ft != null){
-            result = checkSignature(fSelector, ft);
+            String inputSignatureFromSelector = createInputSignature(fSelector, connectorName, subQuery, initialProjects);
+            String storedSignature = ft.getSignature();
+            String inputStoredSignature = storedSignature.substring(0,storedSignature.lastIndexOf(":Tuple["));
+            result = inputStoredSignature.equals(inputSignatureFromSelector) ||
+                    FunctionTypeHelper.checkInputSignatureCompatibility(inputStoredSignature, inputSignatureFromSelector);
         }
         return result;
     }
 
     /**
-     *  Get the set of function types from all existing connectors.
+     * Check if the connector has associated the input signature of the function and its result signature.
+     * @param fSelector The function Selector with the signature.
+     * @param connectorName The name of the connector.
+     * @return A boolean with the check result.
+     */
+    public boolean checkFunctionReturnSignature(FunctionSelector fSelector, Selector selector, ConnectorName
+            connectorName, SelectValidatedQuery subQuery) throws PlanningException {
+        boolean result = false;
+        FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
+        if(ft != null){
+            String storedSignature = ft.getSignature();
+            String resultStoredSignature = storedSignature.substring(storedSignature.lastIndexOf(":Tuple["),
+                    storedSignature.length());
+            String querySignature="";
+            switch(selector.getType()){
+
+            case FUNCTION:
+            case RELATION:
+            case SELECT:
+            case GROUP:
+            case CASE_WHEN:
+            case NULL:
+            case LIST:
+            case ALIAS:
+            case ASTERISK:
+                return true;
+            case COLUMN:
+                ColumnSelector columnSelector=(ColumnSelector)selector;
+                querySignature="Tuple[" + columnSelector.getType().name() + "]";
+                break;
+            case BOOLEAN:
+                querySignature="Tuple[Boolean]";
+                break;
+            case STRING:
+                querySignature="Tuple[Text]";
+                break;
+            case INTEGER:
+                querySignature="Tuple[Int]";
+                break;
+            case FLOATING_POINT:
+                querySignature="Tuple[Double]";
+                break;
+            }
+            result= FunctionTypeHelper.checkInputSignatureCompatibility(resultStoredSignature,querySignature);
+        }
+
+        return result;
+    }
+
+    /**
+     * Get the function type from the specified connector.
      * @param connectorName The connector name.
      * @param functionName The function name.
-     * @return A set of {@link com.stratio.crossdata.common.manifest.FunctionType}.
+     * @return The {@link com.stratio.crossdata.common.manifest.FunctionType} if the function is defined; null otherwise.
      */
     public FunctionType getFunction(ConnectorName connectorName, String functionName) {
         FunctionType result = null;
         Set<FunctionType> candidateFunctions = getSupportedFunctions(connectorName);
         for(FunctionType ft: candidateFunctions){
-            if(ft.getFunctionName().equalsIgnoreCase(functionName)){
+            if(ft.getFunctionName().equals(functionName)){
                 result = ft;
                 break;
             }
@@ -1226,100 +1373,115 @@ public enum MetadataManager {
     }
 
     /**
-     * Check if the given statement signature is allowed by the registered function signature.
-     * @param functionSelector The function selector.
-     * @param functionConnector The function Type.
-     * @return A boolean with the check result.
+     * Get the function type from the specified connector.
+     * @param connectorName The connector name.
+     * @param functionName The function name.
+     * @param projects Set of clusters whose datastore associated contains the functions supported.
+     * @return The {@link com.stratio.crossdata.common.manifest.FunctionType} if the function is defined; null otherwise.
      */
-    public boolean checkSignature(FunctionSelector functionSelector, FunctionType functionConnector){
-        boolean result = false;
-        String signatureFromSelector = createSignature(functionSelector);
-        String storedSignature = functionConnector.getSignature();
-        if(storedSignature.equalsIgnoreCase(signatureFromSelector)){
-            result = true;
-        } else if(checkSignatureCompatibility(storedSignature, signatureFromSelector)){
-            result = true;
+    public FunctionType getFunction(ConnectorName connectorName, String functionName, Set<Project> projects) {
+        FunctionType result = null;
+        Set<FunctionType> candidateFunctions = getSupportedFunctions(connectorName, projects);
+        for(FunctionType ft: candidateFunctions){
+            if(ft.getFunctionName().equals(functionName)){
+                result = ft;
+                break;
+            }
         }
         return result;
     }
 
-    /**
-     * Check the signature of to functions.
-     * @param storedSignature The string with the first signature.
-     * @param querySignature The string with the second signature.
-     * @return A boolean with the check result.
-     */
-    private boolean checkSignatureCompatibility(String storedSignature, String querySignature) {
-        boolean result = false;
-        String querySignature1=querySignature;
-        if(storedSignature.contains("Any*]")){
-            String typesInStoresSignature = storedSignature.substring(
-                    storedSignature.indexOf("Tuple["),
-                    storedSignature.indexOf(']')+1);
-            querySignature1 = querySignature.replaceFirst("Tuple\\[[^\\]]*]", typesInStoresSignature);
-        }
-
-        String querySignature2=querySignature1;
-        if(storedSignature.endsWith(":Tuple[Any]")){
-            querySignature2 = querySignature1.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
-        }
-        String storedSignature1=storedSignature;
-        if(querySignature1.endsWith(":Tuple[Any]")){
-            storedSignature1 = storedSignature.replaceAll(":Tuple\\[[^\\]]*]", ":Tuple[Any]");
-        }
-        if(storedSignature1.equalsIgnoreCase(querySignature2)){
-            result = true;
-        }
-        return result;
-    }
 
     /**
-     * Generates the signature of a given function selector.
+     * Generates the input signature of a given function selector.
      * @param functionSelector The function selector.
-     * @return A String with the signature.
+     * @return A String with the input signature.
      */
-    public String createSignature(FunctionSelector functionSelector) {
+    private String createInputSignature(FunctionSelector functionSelector, ConnectorName connectorName, SelectValidatedQuery subQuery, Set<Project> initialProjects)
+                    throws PlanningException {
+
         StringBuilder sb = new StringBuilder(functionSelector.getFunctionName());
         sb.append("(Tuple[");
         Iterator<Selector> iter = functionSelector.getFunctionColumns().iterator();
         while(iter.hasNext()){
             Selector selector = iter.next();
-            switch(selector.getType()){
-            case FUNCTION:
+            sb.append(inferDataType(selector, connectorName, subQuery, initialProjects));
+            if(iter.hasNext()){
+                sb.append(",");
+            }
+        }
+        sb.append("])");
+        return  sb.toString();
+    }
 
-                break;
-            case COLUMN:
-                ColumnSelector cs = (ColumnSelector) selector;
+    private String inferDataType(Selector selector, ConnectorName connectorName, SelectValidatedQuery subQuery, Set<Project> initialProjects) throws
+            PlanningException {
+        String result = null;
+        switch(selector.getType()){
+        case FUNCTION:
+            FunctionSelector fs = (FunctionSelector) selector;
+            String fSignature = getFunction(connectorName, fs.getFunctionName()).getSignature();
+            String functionType = fSignature.substring(
+                    fSignature.lastIndexOf(":Tuple[") + 7, fSignature.length() - 1);
+            result = functionType;
+            break;
+        case COLUMN:
+            ColumnSelector cs = (ColumnSelector) selector;
+            if(cs.getName().getTableName().isVirtual()){
+                if(subQuery == null){
+                    throw new PlanningException("Can't infer data type for " + selector);
+                }
+                List<Selector> subSelectors = subQuery.getStatement().getSelectExpression().getSelectorList();
+                for(Selector ss: subSelectors){
+                    if(ss.getColumnName().getName().equals(cs.getColumnName().getName())
+                            || ( ss.getAlias()!=null && ss.getAlias().equals(cs.getColumnName().getName()))){
+                        result = inferDataType(ss, connectorName, subQuery.getSubqueryValidatedQuery(), initialProjects);
+                        break;
+                    }
+                }
+            } else {
                 ColumnName columnName = cs.getName();
                 ColumnMetadata column = getColumn(columnName);
                 ColumnType columnType = column.getColumnType();
-                sb.append(columnType.getCrossdataType().toLowerCase());
-                break;
-            case ASTERISK:
-
-                break;
-            case BOOLEAN:
-
-                break;
-            case STRING:
-
-                break;
-            case INTEGER:
-
-                break;
-            case FLOATING_POINT:
-
-                break;
-            case RELATION:
-
-                break;
+                result = columnType.getCrossdataType();
             }
-            if(iter.hasNext()){
-                sb.append(", ");
-            }
+            break;
+        case BOOLEAN:
+            result = new ColumnType(DataType.BOOLEAN).getCrossdataType();
+            break;
+        case STRING:
+            result = new ColumnType(DataType.TEXT).getCrossdataType();
+            break;
+        case INTEGER:
+            result = new ColumnType(DataType.INT).getCrossdataType();
+            break;
+        case FLOATING_POINT:
+            result = new ColumnType(DataType.DOUBLE).getCrossdataType();
+            break;
+        //TODO check the real returning type
+        case RELATION:
+            result = new ColumnType(DataType.DOUBLE).getCrossdataType();
+            break;
+        case LIST:
+            result = new ColumnType(DataType.LIST).getCrossdataType();
+            break;
+        case CASE_WHEN:
+            CaseWhenSelector cws = (CaseWhenSelector) selector;
+            result = inferDataType(cws.getDefaultValue(), connectorName, null, initialProjects);
+            break;
+        case SELECT:
+            SelectSelector ss = (SelectSelector) selector;
+            Select select = (Select) ss.getQueryWorkflow().getLastStep();
+            Selector s = select.getColumnMap().keySet().iterator().next();
+            result = inferDataType(s, connectorName, subQuery, initialProjects);
+            break;
+        case ALIAS:
+            result = new ColumnType(DataType.TEXT).getCrossdataType();
+            break;
+        default:
+            throw new PlanningException("The input type : "+selector.getType()+" is not supported yet");
         }
-        sb.append("]):Tuple[Any]");
-        return  sb.toString();
+        return result;
     }
 
     /**

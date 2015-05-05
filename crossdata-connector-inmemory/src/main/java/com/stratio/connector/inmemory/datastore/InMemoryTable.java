@@ -18,16 +18,13 @@
 
 package com.stratio.connector.inmemory.datastore;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import com.stratio.connector.inmemory.datastore.datatypes.AbstractInMemoryDataType;
+import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.connector.inmemory.datastore.functions.AbstractInMemoryFunction;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryLiteralSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+import com.stratio.connector.inmemory.datastore.selector.*;
 
 /**
  * This class provides a basic abstraction of a database-like table stored in memory.
@@ -62,7 +59,7 @@ public class InMemoryTable {
     /**
      * Map of rows indexed by primary key.
      */
-    private final Map<String, Object[]> rows = new HashMap<>();
+    private final Map<String, Object[]> rows = new LinkedHashMap<>();
 
     /**
      * Maximum number of rows in the table.
@@ -89,6 +86,10 @@ public class InMemoryTable {
             index++;
         }
         this.maxRows = maxRows;
+    }
+
+    public String getTableName() {
+        return tableName;
     }
 
     /**
@@ -122,8 +123,16 @@ public class InMemoryTable {
     public void insert(Map<String, Object> row) throws Exception {
         checkTableSpace();
         Object [] rowObjects = new Object[columnNames.length];
-        for(Map.Entry<String, Object> cols : row.entrySet()){
+        for(Map.Entry<String, Object> cols: row.entrySet()){
             rowObjects[columnIndex.get(cols.getKey())] = cols.getValue();
+            // Check if it's a native data type
+            Class clazz = getColumnTypes()[columnIndex.get(cols.getKey())];
+            AbstractInMemoryDataType inMemoryDataType =
+                    AbstractInMemoryDataType.castToNativeDataType(clazz.getSimpleName());
+            if(inMemoryDataType != null){
+                rowObjects[columnIndex.get(cols.getKey())] =
+                        inMemoryDataType.convertStringToInMemoryDataType(String.valueOf(cols.getValue()));
+            }
         }
         String key = generatePrimaryKey(row);
         rows.put(key, rowObjects);
@@ -146,7 +155,7 @@ public class InMemoryTable {
      * @throws Exception If the row does not contains all required values.
      */
     private String generatePrimaryKey(Map<String, Object> row) throws Exception {
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for(String keyColumn: primaryKey){
             if(!row.containsKey(keyColumn)){
                 throw new Exception("Key column " + keyColumn + " not found in the row to be inserted.");
@@ -170,13 +179,13 @@ public class InMemoryTable {
      * @param outputColumns The output columns in order.
      * @return A list with the matching columns.
      */
-    public List<Object[]> fullScanSearch(
+    public List<SimpleValue[]> fullScanSearch(
             List<InMemoryRelation> relations,
             List<InMemorySelector> outputColumns)
     throws Exception{
 
-        List<Object[]> results = new ArrayList<>();
-        boolean toAdd = true;
+        List<SimpleValue[]> results = new ArrayList<>();
+        boolean toAdd;
         for(Object [] row : rows.values()){
             toAdd = true;
             for(InMemoryRelation relation : relations){
@@ -199,22 +208,27 @@ public class InMemoryTable {
      * @param outputColumns The set of output columns.
      * @return A row with the projected columns.
      */
-    private Object[] projectColumns(final Object[] row, final List<InMemorySelector> outputColumns) throws Exception{
-        Object [] result = new Object[outputColumns.size()];
+    private SimpleValue[] projectColumns(final Object[] row, final List<InMemorySelector> outputColumns) throws Exception{
+        SimpleValue [] result = new SimpleValue[outputColumns.size()];
         int index = 0;
         for(InMemorySelector selector : outputColumns){
             if(InMemoryFunctionSelector.class.isInstance(selector)){
                //Process function.
                 AbstractInMemoryFunction f = InMemoryFunctionSelector.class.cast(selector).getFunction();
                 if(f.isRowFunction()) {
-                    result[index] = f.apply(columnIndex, row);
+                    result[index] = new SimpleValue(selector, f.apply(columnIndex, convertToSimpleValueRow(selector, row)));
                 }
             }else if(InMemoryColumnSelector.class.isInstance(selector)){
                 Integer pos = columnIndex.get(selector.getName());
-                result[index] = row[pos];
+                result[index] = new SimpleValue(selector,row[pos]);
             }else if(InMemoryLiteralSelector.class.isInstance(selector)){
-                result[index] = selector.getName();
-            }else{
+                result[index] = new SimpleValue(selector,selector.getName());
+            }else if (InMemoryJoinSelector.class.isInstance(selector)){
+                InMemoryJoinSelector join = InMemoryJoinSelector.class.cast(selector);
+                String column = join.getMyTerm().getColumnName().getName();
+                Integer pos = columnIndex.get(column);
+                result[index] = new JoinValue(join, row[pos]);
+            } else{
                 throw new Exception("Cannot recognize selector class " + selector.getClass());
             }
             index++;
@@ -228,5 +242,16 @@ public class InMemoryTable {
      */
     public int size(){
         return rows.size();
+    }
+
+
+    private SimpleValue[] convertToSimpleValueRow(InMemorySelector selector, Object[] row){
+        SimpleValue[] result = new SimpleValue[row.length];
+
+        int i = 0;
+        for (Object field:row){
+            result[i]=new SimpleValue(selector, field);
+        }
+        return result;
     }
 }

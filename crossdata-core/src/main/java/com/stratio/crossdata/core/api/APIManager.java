@@ -18,13 +18,7 @@
 
 package com.stratio.crossdata.core.api;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -32,16 +26,20 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 
+import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
+import com.stratio.crossdata.common.executionplan.ExecutionType;
+import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
+import com.stratio.crossdata.common.executionplan.ResultType;
+import com.stratio.crossdata.common.result.*;
+import com.stratio.crossdata.core.query.*;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ApiException;
@@ -70,29 +68,17 @@ import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
-import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.result.CommandResult;
-import com.stratio.crossdata.common.result.ErrorResult;
-import com.stratio.crossdata.common.result.MetadataResult;
-import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerException;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
-import com.stratio.crossdata.core.query.BaseQuery;
-import com.stratio.crossdata.core.query.IParsedQuery;
-import com.stratio.crossdata.core.query.IValidatedQuery;
-import com.stratio.crossdata.core.query.MetadataPlannedQuery;
-import com.stratio.crossdata.core.query.MetadataValidatedQuery;
-import com.stratio.crossdata.core.query.SelectPlannedQuery;
-import com.stratio.crossdata.core.query.SelectValidatedQuery;
-import com.stratio.crossdata.core.query.StoragePlannedQuery;
-import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.validator.Validator;
+
+import static com.stratio.crossdata.common.statements.structures.SelectorHelper.*;
 
 /**
  * Class that manages the Crossdata API requests.
@@ -140,7 +126,7 @@ public class APIManager {
 
         result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_LIST_CATALOGS);
         List<String> catalogs = new ArrayList<>();
-        for (CatalogMetadata catalogMetadata : catalogsMetadata) {
+        for (CatalogMetadata catalogMetadata: catalogsMetadata) {
             catalogs.add(catalogMetadata.getName().getName());
         }
         ((MetadataResult) result).setCatalogList(catalogs);
@@ -266,7 +252,7 @@ public class APIManager {
         } else if (APICommand.EXPLAIN_PLAN().equals(cmd.commandType())) {
             LOG.info(PROCESSING + APICommand.EXPLAIN_PLAN().toString());
             result = explainPlan(cmd);
-        } else {
+        } else{
             result = Result.createUnsupportedOperationErrorResult("Command " + cmd.commandType() + " not supported");
             LOG.error(ErrorResult.class.cast(result).getErrorMessage());
         }
@@ -405,26 +391,14 @@ public class APIManager {
 
     private Result describeCatalog(CatalogName name) {
         Result result;
-
+        LOG.info("Processing " + APICommand.DESCRIBE_CATALOG().toString());
+        LOG.info(PROCESSING + APICommand.DESCRIBE_CATALOG().toString());
         try {
-            CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name);
-            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
-
-            sb.append("Catalog: ").append(catalog.getName()).append(System.lineSeparator());
-
-            sb.append("Options: ").append(System.lineSeparator());
-            for (Map.Entry<Selector, Selector> entry : catalog.getOptions().entrySet()) {
-                sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue())
-                        .append(System.lineSeparator());
-            }
-
-            sb.append("Tables: ").append(catalog.getTables().keySet()).append(System.lineSeparator());
-
-            result = CommandResult.createCommandResult(sb.toString());
-
-        } catch (MetadataManagerException mme) {
-            LOG.info(mme.getMessage(),mme);
-            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
+            CatalogMetadata catalogMetadata = MetadataManager.MANAGER.getCatalog(name);
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_CATALOG);
+            ((MetadataResult) result).setCatalogMetadataList(Arrays.asList(catalogMetadata));
+        }catch(MetadataManagerException e){
+            result=MetadataResult.createExecutionErrorResult(e.getMessage());
         }
 
         return result;
@@ -452,50 +426,15 @@ public class APIManager {
 
     private Result describeTable(TableName name) {
         Result result;
+        LOG.info("Processing " + APICommand.DESCRIBE_TABLE().toString());
+        LOG.info(PROCESSING + APICommand.DESCRIBE_TABLE().toString());
 
-        try{
-            CatalogMetadata catalog = MetadataManager.MANAGER.getCatalog(name.getCatalogName());
-            TableMetadata table = catalog.getTables().get(name);
-            StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
-
-            if(table == null){
-                throw new MetadataManagerException("[" + name + "] doesn't exist yet");
-            }
-
-            sb.append("Table: ").append(table.getName()).append(System.lineSeparator());
-
-            sb.append("Cluster: ").append(table.getClusterRef()).append(System.lineSeparator());
-
-            sb.append("Columns: ").append(System.lineSeparator());
-            Map<ColumnName, ColumnMetadata> columns = table.getColumns();
-            for (Map.Entry<ColumnName, ColumnMetadata> entry : columns.entrySet()) {
-                sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue().getColumnType())
-                        .append(System.lineSeparator());
-            }
-
-            sb.append("Partition key: ").append(table.getPartitionKey()).append(System.lineSeparator());
-
-            sb.append("Cluster key: ").append(table.getClusterKey()).append(System.lineSeparator());
-
-            sb.append("Indexes: ").append(System.lineSeparator());
-            Map<IndexName, IndexMetadata> indexes = table.getIndexes();
-            for (Map.Entry<IndexName, IndexMetadata> idx : indexes.entrySet()) {
-                sb.append("\t").append(idx.getKey()).append("(").append(idx.getValue().getType()).append(")");
-                sb.append(": ").append(idx.getValue().getColumns().keySet());
-                sb.append(System.lineSeparator());
-            }
-
-            sb.append("Options: ").append(System.lineSeparator());
-            Map<Selector, Selector> options = table.getOptions();
-            for (Map.Entry<Selector, Selector> opt : options.entrySet()) {
-                sb.append("\t").append(opt.getKey()).append(": ").append(opt.getValue())
-                        .append(System.lineSeparator());
-            }
-
-            result = CommandResult.createCommandResult(sb.toString());
-        } catch (MetadataManagerException mme) {
-            LOG.info(mme.getMessage(),mme);
-            result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
+        try {
+            TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(name);
+            result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_TABLE);
+            ((MetadataResult) result).setTableList(Arrays.asList(tableMetadata));
+        }catch(MetadataManagerException e){
+            result=MetadataResult.createExecutionErrorResult(e.getMessage());
         }
 
         return result;
@@ -555,12 +494,12 @@ public class APIManager {
                         .append(Arrays.toString(connector.getDataStoreRefs().toArray()));
             }
             // ActorRef
-            if (connector.getActorRef() == null) {
+            if ((connector.getActorRefs() == null) || (connector.getActorRefs().isEmpty())) {
                 sb = sb.append("\t")
                         .append("UNKNOWN");
             } else {
                 sb = sb.append("\t")
-                        .append(connector.getActorRef());
+                        .append(connector.getActorRefs());
             }
 
             sb = sb.append(System.getProperty("line.separator"));
@@ -596,16 +535,21 @@ public class APIManager {
     }
 
     private Result resetServerdata() {
-        Result result = CommandResult.createCommandResult("Crossdata server reset.");
+
+        Result result = null;
         try {
+            result = createResetServerDataCommand();
+
             List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
             MetadataManager.MANAGER.clear();
-            ExecutionManager.MANAGER.clear();
             for (ConnectorMetadata cm : connectors) {
                 if (cm.getStatus() == Status.ONLINE) {
                     ConnectorName connectorName = cm.getName();
-                    String actorRef = cm.getActorRef();
-                    MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+                    Set<String> actorRefs = cm.getActorRefs();
+                    for(String actorRef: actorRefs){
+                        MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
+                    }
+
                     MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE);
                 }
             }
@@ -614,12 +558,58 @@ public class APIManager {
             result = CommandResult.createErrorResult(ex);
             LOG.error(ex.getMessage());
         }
+
         return result;
+    }
+
+    /**
+     * If there are Connectors atteched to Clusters, return a ResetServerDataResult with a Set of
+     * ForceDetachQuery used to send a detach order to each connector.
+     *
+     * If there aren't connectors, return a simple CommandResult.
+     *
+     * @return
+     */
+    private Result createResetServerDataCommand(){
+        Collection<IParsedQuery> commands = new ArrayList<>();
+        for (ClusterMetadata cluster: MetadataManager.MANAGER.getClusters()){
+            for (ConnectorName connector : cluster.getConnectorAttachedRefs().keySet()){
+                commands.add(createForceDetachQuery(cluster, connector));
+            }
+        }
+
+        if (!commands.isEmpty()){
+            ResetServerDataResult result = new ResetServerDataResult(CommandResult.createCommandResult("Crossdata server reset."));
+            result.getResetCommands().addAll(commands);
+            return result;
+        }else{
+            return CommandResult.createCommandResult("Crossdata server reset.");
+        }
+    }
+
+    private ForceDetachQuery createForceDetachQuery(ClusterMetadata cluster, ConnectorName connector) {
+        ClusterName clusterName = cluster.getName();
+        Set<String> actorRefs = Collections.singleton(MetadataManager.MANAGER.getConnectorRef(connector));
+
+        Map<String, String> clusterProperties = convertSelectorMapToStringMap(MetadataManager.MANAGER.getConnector(connector).getClusterProperties().get(clusterName));
+        Map<String, String> clusterOptions = convertSelectorMapToStringMap(MetadataManager.MANAGER.getCluster(clusterName).getOptions());
+        ConnectorClusterConfig connectorClusterConfig = new ConnectorClusterConfig(clusterName, clusterProperties, clusterOptions);
+        connectorClusterConfig.setDataStoreName(cluster.getDataStoreRef());
+
+        ManagementWorkflow executionWorkflow = new ManagementWorkflow(UUID.randomUUID().toString(), actorRefs, ExecutionType.FORCE_DETACH_CONNECTOR, ResultType.RESULTS);
+        executionWorkflow.setClusterName(clusterName);
+        executionWorkflow.setConnectorName(connector);
+        executionWorkflow.setConnectorClusterConfig(connectorClusterConfig);
+
+        return new ForceDetachQuery(executionWorkflow);
     }
 
     private Result cleanMetadata() {
         Result result = CommandResult.createCommandResult("Metadata cleaned.");
         try {
+            for (CatalogMetadata catalogMetadata : MetadataManager.MANAGER.getCatalogs()) {
+                MetadataManager.MANAGER.removeCatalogFromClusters(catalogMetadata.getName());
+            }
             MetadataManager.MANAGER.clearCatalogs();
             ExecutionManager.MANAGER.clear();
         } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException
@@ -629,6 +619,8 @@ public class APIManager {
         }
         return result;
     }
+
+
 
     private void persistManifest(CrossdataManifest manifest) throws ApiException {
         try {
@@ -825,7 +817,7 @@ public class APIManager {
             StringBuilder plan = new StringBuilder("Explain plan for: ");
             plan.append(statement).append(System.lineSeparator());
             String realStatement=statement.substring(17);
-            BaseQuery query = new BaseQuery(cmd.queryId(), realStatement, new CatalogName(catalog));
+            BaseQuery query = new BaseQuery(cmd.queryId(), realStatement, new CatalogName(catalog), cmd.sessionId());
             try {
                 IParsedQuery parsedQuery = parser.parse(query);
                 IValidatedQuery validatedQuery = validator.validate(parsedQuery);

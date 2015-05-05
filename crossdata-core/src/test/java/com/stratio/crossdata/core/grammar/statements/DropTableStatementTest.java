@@ -51,4 +51,11 @@ public class DropTableStatementTest extends ParsingTest {
         testRegularStatement(inputText, expectedText, "dropTableWithEmptyCatalog");
     }
 
+    @Test
+    public void unregisterTableWithEmptyCatalog() {
+        String inputText = "[test], unregister TABLE lastTable;";
+        String expectedText = "UNREGISTER TABLE test.lastTable;";
+        testRegularStatement(inputText, expectedText, "unregisterTableWithEmptyCatalog");
+    }
+
 }

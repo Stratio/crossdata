@@ -18,15 +18,18 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
-import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
  */
-public class Relation implements Serializable {
+public class Relation extends AbstractRelation {
+
+    private static final long serialVersionUID = -3836506017515944374L;
 
     /**
      * Identifier in the left part of the relationship.
@@ -88,6 +91,14 @@ public class Relation implements Serializable {
         return rightTerm;
     }
 
+    public void setLeftTerm(Selector leftTerm) {
+        this.leftTerm = leftTerm;
+    }
+
+    public void setRightTerm(Selector rightTerm) {
+        this.rightTerm = rightTerm;
+    }
+
     /**
      * Get the tables queried on the selector.
      *
@@ -95,6 +106,29 @@ public class Relation implements Serializable {
      */
     public Set<TableName> getSelectorTables() {
         return leftTerm.getSelectorTables();
+    }
+
+    /**
+     * Get the columns involved in the relations.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.data.ColumnName}.
+     */
+    public Set<ColumnName> getSelectorColumns() {
+        Set<ColumnName> columns = new HashSet<>();
+
+        if(leftTerm instanceof ColumnSelector){
+            columns.add(leftTerm.getColumnName());
+        }else if(leftTerm instanceof RelationSelector){
+            columns.addAll(((RelationSelector)leftTerm).getRelation().getSelectorColumns());
+        }
+
+        if(rightTerm instanceof ColumnSelector){
+            columns.add(rightTerm.getColumnName());
+        }else if(rightTerm instanceof RelationSelector){
+            columns.addAll(((RelationSelector) rightTerm).getRelation().getSelectorColumns());
+        }
+
+        return columns;
     }
 
     @Override
@@ -131,10 +165,42 @@ public class Relation implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder(leftTerm.toString());
+        StringBuilder sb = new StringBuilder();
+        if(isParenthesis()){
+            sb.append("(");
+        }
+        sb.append(leftTerm.toString());
         sb.append(" ").append(operator).append(" ");
-        sb.append(rightTerm);
+        sb.append(rightTerm.toString());
+        if(isParenthesis()){
+            sb.append(")");
+        }
         return sb.toString();
     }
 
+
+    @Override
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder();
+        if(isParenthesis()){
+            sb.append("(");
+        }
+        sb.append(leftTerm.toSQLString(withAlias));
+        sb.append(" ").append(operator.toSQLString()).append(" ");
+        sb.append(rightTerm.toSQLString(withAlias));
+        if(isParenthesis()){
+            sb.append(")");
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public boolean isBasicRelation(){
+        return getSelectorTables().size() <= 1;
+    }
+
+    @Override
+    public Set<TableName> getAbstractRelationTables() {
+        return getSelectorTables();
+    }
 }

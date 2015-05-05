@@ -18,55 +18,22 @@
 
 package com.stratio.crossdata.core.validator;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.log4j.Logger;
-
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.Name;
-import com.stratio.crossdata.common.data.Status;
-import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.data.*;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
-import com.stratio.crossdata.common.exceptions.validation.ConnectionHasNoRefsException;
-import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
-import com.stratio.crossdata.common.exceptions.validation.NotConnectionException;
-import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
-import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
+import com.stratio.crossdata.common.exceptions.validation.*;
 import com.stratio.crossdata.common.manifest.PropertyType;
-import com.stratio.crossdata.common.metadata.ClusterMetadata;
-import com.stratio.crossdata.common.metadata.ColumnMetadata;
-import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
-import com.stratio.crossdata.common.metadata.ConnectorMetadata;
-import com.stratio.crossdata.common.metadata.DataStoreMetadata;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.metadata.*;
+import com.stratio.crossdata.common.statements.structures.*;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
 import com.stratio.crossdata.core.normalizer.NormalizedFields;
-import com.stratio.crossdata.core.query.IParsedQuery;
-import com.stratio.crossdata.core.query.IValidatedQuery;
-import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.MetadataValidatedQuery;
-import com.stratio.crossdata.core.query.SelectParsedQuery;
-import com.stratio.crossdata.core.query.SelectValidatedQuery;
-import com.stratio.crossdata.core.query.StorageParsedQuery;
-import com.stratio.crossdata.core.query.StorageValidatedQuery;
+import com.stratio.crossdata.core.query.*;
 import com.stratio.crossdata.core.statements.*;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import org.apache.log4j.Logger;
+
+import java.util.*;
 
 /**
  * Validator Class.
@@ -78,6 +45,10 @@ public class Validator {
     private static final Logger LOG = Logger.getLogger(Validator.class);
     private Normalizator normalizator = null;
 
+    public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
+        return validate(parsedQuery, new HashSet<TableName>());
+    }
+
     /**
      * validate a parsed query.
      *
@@ -86,10 +57,11 @@ public class Validator {
      * @throws ValidationException
      * @throws IgnoreQueryException
      */
-    public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
+    public IValidatedQuery validate(IParsedQuery parsedQuery, Set<TableName> parentsTableNames)
+            throws ValidationException, IgnoreQueryException {
         IValidatedQuery validatedQuery = null;
         LOG.info("Validating CrossdataStatements...");
-        for (ValidationTypes val: parsedQuery.getStatement().getValidationRequirements().getValidations()) {
+        for (ValidationTypes val : parsedQuery.getStatement().getValidationRequirements().getValidations()) {
             switch (val) {
             case MUST_NOT_EXIST_CATALOG:
                 validateCatalog(parsedQuery.getStatement(), false);
@@ -121,6 +93,8 @@ public class Validator {
             case MUST_NOT_EXIST_DATASTORE:
                 validateDatastore(parsedQuery.getStatement(), false);
                 break;
+            case VALID_DATASTORE_MANIFEST:
+                break;
             case VALID_CLUSTER_OPTIONS:
                 validateOptions(parsedQuery.getStatement());
                 break;
@@ -129,6 +103,8 @@ public class Validator {
                 break;
             case MUST_EXIST_ATTACH_CONNECTOR_CLUSTER:
                 validateConnectorAttachedRefs(parsedQuery.getStatement());
+                break;
+            case VALID_CONNECTOR_MANIFEST:
                 break;
             case MUST_EXIST_PROPERTIES:
                 validateExistsProperties(parsedQuery.getStatement());
@@ -146,10 +122,10 @@ public class Validator {
                 validateColumn(parsedQuery.getStatement(), false);
                 break;
             case VALIDATE_TYPES:
-                validateInsertTypes(parsedQuery.getStatement());
+                validateInsertTypes(parsedQuery);
                 break;
             case VALIDATE_SELECT:
-                validateSelect(parsedQuery);
+                validateSelect(parsedQuery, parentsTableNames);
                 break;
             case MUST_BE_CONNECTED:
                 validateConnectorConnected(parsedQuery.getStatement());
@@ -157,26 +133,131 @@ public class Validator {
             case MUST_BE_UNIQUE_DATASTORE:
                 validatePreviousAttachment(parsedQuery.getStatement());
                 break;
+            case PAGINATION_SUPPORT:
+                validatePaginationSupport(parsedQuery.getStatement());
+                break;
+            case VALIDATE_PRIORITY:
+                validatePriority(parsedQuery.getStatement());
+                break;
+            case VALIDATE_SCOPE:
+                validateScope(parsedQuery.getStatement());
+                break;
+            case MUST_NOT_EXIST_FULL_TEXT_INDEX:
+                validateNotExistLuceneIndex(parsedQuery.getStatement());
+                break;
+            case MUST_BE_A_VALID_PK:
+                validatePKColumn(parsedQuery.getStatement());
             default:
                 break;
             }
         }
 
+
         if (parsedQuery instanceof MetadataParsedQuery) {
             validatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) parsedQuery);
         } else if (parsedQuery instanceof StorageParsedQuery) {
             validatedQuery = new StorageValidatedQuery((StorageParsedQuery) parsedQuery);
+            ((StorageValidatedQuery) validatedQuery).setSqlQuery(parsedQuery.getStatement().toString());
         } else if (parsedQuery instanceof SelectParsedQuery) {
-            validatedQuery = new SelectValidatedQuery((SelectParsedQuery) parsedQuery);
-            NormalizedFields fields = normalizator.getFields();
-            ((SelectValidatedQuery) validatedQuery).setTableMetadata(fields.getTablesMetadata());
-            ((SelectValidatedQuery) validatedQuery).getColumns().addAll(fields.getColumnNames());
-            ((SelectValidatedQuery) validatedQuery).getTables().addAll(fields.getTableNames());
-            ((SelectValidatedQuery) validatedQuery).getRelations().addAll(fields.getWhere());
-            ((SelectValidatedQuery) validatedQuery).setJoin(fields.getJoin());
+            validatedQuery = createValidatedQuery(normalizator, ((SelectParsedQuery) parsedQuery));
         }
 
         return validatedQuery;
+    }
+
+    private void validatePKColumn(CrossdataStatement statement) throws NotValidColumnException {
+
+        CreateTableStatement createStm = (CreateTableStatement)  statement;
+        createStm.getColumnsWithTypes();
+        for (ColumnName pkColumn : createStm.getPrimaryKey()){
+            if (!createStm.getColumnsWithTypes().keySet().contains(pkColumn)){
+                throw new NotValidColumnException(pkColumn);
+            }
+        }
+    }
+
+    private SelectValidatedQuery createValidatedQuery(Normalizator normalizer,SelectParsedQuery selectParsedQuery) {
+
+        SelectValidatedQuery partialValidatedQuery = new SelectValidatedQuery(selectParsedQuery);
+        NormalizedFields fields = normalizer.getFields();
+
+        //Prepare nextQuery
+        if(selectParsedQuery.getChildParsedQuery() != null) {
+            partialValidatedQuery.setSubqueryValidatedQuery(createValidatedQuery(normalizer.getSubqueryNormalizator(),selectParsedQuery.getChildParsedQuery()));
+        }
+
+        partialValidatedQuery.setTableMetadata(fields.getTablesMetadata());
+        partialValidatedQuery.getColumns().addAll(fields.getColumnNames());
+        partialValidatedQuery.getTables().addAll(fields.getTableNames());
+        partialValidatedQuery.getRelations().addAll(fields.getWhere());
+        partialValidatedQuery.setJoinList(fields.getJoinList());
+
+        return  partialValidatedQuery;
+    }
+
+    private void validateNotExistLuceneIndex(CrossdataStatement statement) throws ExistLuceneIndexException {
+
+        TableName tableName = ((CreateIndexStatement) statement).getTableName();
+        TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(tableName);
+        Map<IndexName, IndexMetadata> indexes = tableMetadata.getIndexes();
+
+        for (Map.Entry<IndexName, IndexMetadata> entry : indexes.entrySet()) {
+            if (entry.getValue().getType() == IndexType.FULL_TEXT) {
+                throw new ExistLuceneIndexException(tableName);
+            }
+        }
+    }
+
+
+
+    private void validatePaginationSupport(CrossdataStatement crossdataStatement) throws BadFormatException {
+        AttachConnectorStatement acs = (AttachConnectorStatement) crossdataStatement;
+        int pageSize = acs.getPagination();
+        if (pageSize > 0) {
+            ConnectorName connectorName = acs.getConnectorName();
+            ConnectorMetadata connector = MetadataManager.MANAGER.getConnector(connectorName);
+            Set<Operations> supportedOperations = connector.getSupportedOperations();
+            if (!supportedOperations.contains(Operations.PAGINATION)) {
+                throw new BadFormatException("Pagination is not supported by the connector " + connectorName);
+            }
+        }
+    }
+
+    private void validatePriority(CrossdataStatement statement) throws BadFormatException {
+        if (statement instanceof AttachConnectorStatement) {
+            Integer priority = ((AttachConnectorStatement) statement).getPriority();
+
+            if (priority < 1 || priority > 9) {
+                throw new BadFormatException("The priority is out of range: Must be [1-9]");
+
+            }
+        }
+    }
+
+    /**
+     * Checks if the columns used in the query are within the scope of the table affected by the statement
+     *
+     * @param statement the Crossdata statement
+     */
+    private void validateScope(CrossdataStatement statement) throws ValidationException {
+
+        if (statement instanceof StorageStatement) {
+            StorageStatement storageStatement = (StorageStatement) statement;
+            TableName affectedTableName = storageStatement.getTableName();
+
+            for (ColumnName columnName : storageStatement.getColumns()) {
+                if (columnName.getTableName() != null) {
+                    if (!columnName.getTableName().getName().equals(affectedTableName.getName())) {
+                        throw new NotValidTableException(columnName.getTableName());
+                    }
+                    if (columnName.getTableName().getCatalogName() != null && !columnName.getTableName()
+                            .getCatalogName().getName().equals(affectedTableName.getCatalogName().getName())) {
+                        throw new NotValidCatalogException(columnName.getTableName().getCatalogName());
+                    }
+                }
+            }
+        }
+
     }
 
     private void validatePreviousAttachment(CrossdataStatement statement) throws BadFormatException {
@@ -240,10 +321,11 @@ public class Validator {
         }
     }
 
-    private void validateSelect(IParsedQuery parsedQuery) throws ValidationException {
+    private void  validateSelect(IParsedQuery parsedQuery, Set<TableName> parentsTableNames)
+            throws ValidationException {
         SelectParsedQuery selectParsedQuery = (SelectParsedQuery) parsedQuery;
         normalizator = new Normalizator(selectParsedQuery);
-        normalizator.execute();
+        normalizator.execute(parentsTableNames);
     }
 
     private void validateConnector(CrossdataStatement stmt, boolean exist) throws IgnoreQueryException,
@@ -325,13 +407,13 @@ public class Validator {
         // Get property names of the attachment
         Set<String> attProps = new HashSet<>();
         for (Selector sel : opts.keySet()) {
-            attProps.add(sel.getStringValue().toLowerCase());
+            attProps.add(sel.getStringValue());
         }
 
         // Verify required properties
         Set<String> props = new HashSet<>();
         for (PropertyType pt : requiredProps) {
-            props.add(pt.getPropertyName().toLowerCase());
+            props.add(pt.getPropertyName());
         }
         if (!attProps.containsAll(props)) {
             throw new BadFormatException("Some required properties are missing");
@@ -341,7 +423,7 @@ public class Validator {
         // Verify optional properties
         props = new HashSet<>();
         for (PropertyType pt : optProps) {
-            props.add(pt.getPropertyName().toLowerCase());
+            props.add(pt.getPropertyName());
         }
         if (!props.containsAll(attProps)) {
             throw new BadFormatException("Some properties are not found in the manifest");
@@ -448,7 +530,7 @@ public class Validator {
             CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
             tableName = createIndexStatement.getTableName();
             hasIfExists = createIndexStatement.isCreateIfNotExists();
-        } else if(stmt instanceof DropIndexStatement) {
+        } else if (stmt instanceof DropIndexStatement) {
             DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
             tableName = dropIndexStatement.getName().getTableName();
         } else if (stmt instanceof UpdateTableStatement) {
@@ -500,7 +582,7 @@ public class Validator {
         } else if (stmt instanceof CreateIndexStatement) {
             CreateIndexStatement createIndexStatement = (CreateIndexStatement) stmt;
             catalogName = createIndexStatement.getTableName().getCatalogName();
-        } else if (stmt instanceof DropIndexStatement){
+        } else if (stmt instanceof DropIndexStatement) {
             DropIndexStatement dropIndexStatement = (DropIndexStatement) stmt;
             catalogName = dropIndexStatement.getName().getTableName().getCatalogName();
         } else {
@@ -542,24 +624,80 @@ public class Validator {
         validateName(exist, name, hasIfExist);
     }
 
-    private void validateInsertTypes(CrossdataStatement stmt)
-            throws BadFormatException, NotMatchDataTypeException {
+    private void validateInsertTypes(IParsedQuery parsedQuery)
+            throws ValidationException, IgnoreQueryException {
+        CrossdataStatement stmt = parsedQuery.getStatement();
         if (stmt instanceof InsertIntoStatement) {
             InsertIntoStatement insertIntoStatement = (InsertIntoStatement) stmt;
             List<ColumnName> columnNameList = insertIntoStatement.getIds();
-            List<Selector> selectorList = insertIntoStatement.getCellValues();
 
-            List<Selector> resultingList = new ArrayList<>();
-            for (int i = 0; i < columnNameList.size(); i++) {
-                ColumnName columnName = columnNameList.get(i);
-                Selector valueSelector = selectorList.get(i);
-                ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+            if (insertIntoStatement.getTypeValues() == InsertIntoStatement.TYPE_VALUES_CLAUSE) {
+                List<Selector> selectorList = insertIntoStatement.getCellValues();
+                List<Selector> resultingList = new ArrayList<>();
+                for (int i = 0; i < columnNameList.size(); i++) {
+                    ColumnName columnName = columnNameList.get(i);
+                    Selector valueSelector = selectorList.get(i);
+                    ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+                    Selector resultingSelector = validateColumnType(columnMetadata, valueSelector, true);
+                    resultingList.add(resultingSelector);
+                }
+                insertIntoStatement.setCellValues(resultingList);
+            } else if (insertIntoStatement.getTypeValues() == InsertIntoStatement.TYPE_SELECT_CLAUSE) {
+                SelectStatement ss = insertIntoStatement.getSelectStatement();
 
-                Selector resultingSelector = validateColumnType(columnMetadata, valueSelector, true);
-                resultingList.add(resultingSelector);
+                List<ColumnName> cols = ss.getColumns();
+
+                List<Selector> selectorList = ss.getSelectExpression().getSelectorList();
+                if ((selectorList.size()) == 1 && (selectorList.get(0) instanceof AsteriskSelector)) {
+                    cols.clear();
+                    List<ColumnMetadata> columnsMetadata = MetadataManager.MANAGER.getColumnByTable(
+                            ss.getTableName().getCatalogName().getName(),
+                            ss.getTableName().getName());
+                    for (ColumnMetadata cm : columnsMetadata) {
+                        cols.add(cm.getName());
+                    }
+                }
+
+                checkValuesLength(columnNameList.size(), cols.size());
+
+                BaseQuery baseQuery = new BaseQuery(
+                        UUID.randomUUID().toString(),
+                        ss.toString(),
+                        parsedQuery.getDefaultCatalog(),parsedQuery.getSessionId());
+
+                SelectParsedQuery spq = new SelectParsedQuery(baseQuery, ss);
+                SelectValidatedQuery selectValidatedQuery = (SelectValidatedQuery) validate(spq);
+
+                cols = selectValidatedQuery.getColumns();
+
+                for (int i = 0; i < columnNameList.size(); i++) {
+                    ColumnName columnName = columnNameList.get(i);
+                    ColumnMetadata columnFromSelect = MetadataManager.MANAGER.getColumn(cols.get(i));
+                    ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+                    validateColumnType(columnMetadata, columnFromSelect);
+                }
+
+                insertIntoStatement.setSelectStatement(selectValidatedQuery.getStatement());
             }
-            insertIntoStatement.setCellValues(resultingList);
+
         }
+    }
+
+    private void checkValuesLength(int idsLength, int valuesLength) throws BadFormatException {
+        if (idsLength != valuesLength) {
+            throw new BadFormatException(
+                    "Values length doesn't correspond to the identifiers length" +
+                            System.lineSeparator() +
+                            "Identifiers Length = " + idsLength +
+                            System.lineSeparator() +
+                            "Values Length = " + valuesLength);
+        }
+    }
+
+    private void validateColumnType(ColumnMetadata columnMetadata, ColumnMetadata columnFromSelect)
+            throws NotMatchDataTypeException, BadFormatException {
+        Selector selector = columnFromSelect.getColumnType().createSelector();
+        validateColumnType(columnMetadata, selector, false);
     }
 
     private Selector validateColumnType(ColumnMetadata columnMetadata, Selector querySelector, boolean tryConversion)
@@ -582,19 +720,20 @@ public class Validator {
             badFormatException = new BadFormatException("Asterisk not supported in relations.");
             break;
         case BOOLEAN:
-            if (columnMetadata.getColumnType() != ColumnType.BOOLEAN) {
+            if (columnMetadata.getColumnType().getDataType() != DataType.BOOLEAN) {
                 notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case STRING:
-            if (columnMetadata.getColumnType() != ColumnType.TEXT) {
+            if ((columnMetadata.getColumnType().getDataType() != DataType.TEXT) &&
+                    (columnMetadata.getColumnType().getDataType() != DataType.NATIVE)) {
                 notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
         case INTEGER:
-            if (columnMetadata.getColumnType() != ColumnType.INT &&
-                    columnMetadata.getColumnType() != ColumnType.BIGINT) {
-                if(tryConversion){
+            if ((columnMetadata.getColumnType().getDataType() != DataType.INT) &&
+                    (columnMetadata.getColumnType().getDataType() != DataType.BIGINT)) {
+                if (tryConversion) {
                     resultingSelector = convertIntegerSelector(
                             (IntegerSelector) querySelector,
                             columnMetadata.getColumnType(),
@@ -605,8 +744,8 @@ public class Validator {
             }
             break;
         case FLOATING_POINT:
-            if (columnMetadata.getColumnType() != ColumnType.FLOAT &&
-                    columnMetadata.getColumnType() != ColumnType.DOUBLE) {
+            if ((columnMetadata.getColumnType().getDataType() != DataType.FLOAT) &&
+                    (columnMetadata.getColumnType().getDataType() != DataType.DOUBLE)) {
                 notMatchDataTypeException = new NotMatchDataTypeException(columnMetadata.getName());
             }
             break;
@@ -628,7 +767,7 @@ public class Validator {
     private Selector convertIntegerSelector(IntegerSelector querySelector, ColumnType columnType, ColumnName name)
             throws NotMatchDataTypeException {
         Selector resultingSelector;
-        if(columnType == ColumnType.DOUBLE || columnType == ColumnType.FLOAT){
+        if (columnType.getDataType() == DataType.DOUBLE || columnType.getDataType() == DataType.FLOAT) {
             resultingSelector = new FloatingPointSelector(querySelector.getTableName(), querySelector.getValue());
         } else {
             throw new NotMatchDataTypeException(name);

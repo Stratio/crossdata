@@ -19,7 +19,7 @@
 package com.stratio.crossdata.communication
 
 import com.stratio.crossdata.common.data.Name
-import com.stratio.crossdata.common.metadata.IMetadata
+import com.stratio.crossdata.common.metadata.{UpdatableMetadata, IMetadata}
 import difflib.Patch
 
 //CONNECTOR messages
@@ -33,7 +33,7 @@ case class IAmAlive(queryId:String)
 
 case class Stop()
 
-case class UpdateMetadata(metadata:IMetadata)
+case class UpdateMetadata(metadata: UpdatableMetadata, remove: java.lang.Boolean)
 
 case class PatchMetadata(diffs:Patch,metadataClass:java.lang.Class[_],name:Name)
 

@@ -13,6 +13,7 @@ if [ -r /etc/default/crossdata ]; then
  fi
 fi
 
+
 # resolve links - $0 may be a softlink
 PRG="$0"
 

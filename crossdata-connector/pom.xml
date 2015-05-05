@@ -23,7 +23,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>crossdata-parent</artifactId>
-        <version>0.2.1</version>
+        <version>0.3.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>crossdata-connector</artifactId>
@@ -37,10 +37,6 @@
         </license>
     </licenses>
 
-    <scm>
-        <url>scm:git:git@github.com:Stratio/crossdata.git</url>
-        <connection>https://github.com/Stratio/crossdata/</connection>
-    </scm>
 
     <developers>
         <developer>
@@ -84,13 +80,7 @@
     </properties>
 
     <dependencies>
-
         <!-- CONNECTOR INTERFACE AND ALL THE CONNECTORS -->
-        <dependency>
-            <groupId>com.stratio.crossdata</groupId>
-            <artifactId>crossdata-core</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-common</artifactId>
@@ -192,6 +182,7 @@
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-testkit_2.10</artifactId>
             <version>${akka.version}</version>
+            <scope>test</scope>
             <exclusions>
                 <exclusion>
                     <artifactId>config</artifactId>
@@ -202,6 +193,22 @@
                     <groupId>org.scala-lang</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.typesafe.akka</groupId>
+            <artifactId>akka-agent_2.10</artifactId>
+            <version>${akka.version}</version>
+            <exclusions>
+            <exclusion>
+                <groupId>org.scala-lang</groupId>
+                <artifactId>scala-library</artifactId>
+            </exclusion>
+            <exclusion>
+                <groupId>com.typesafe.akka</groupId>
+                <artifactId>akka-actor_2.10</artifactId>
+            </exclusion>
+            </exclusions>
+
         </dependency>
         <dependency>
             <groupId>com.typesafe</groupId>
@@ -285,6 +292,7 @@
                 <version>1.0</version>
                 <configuration>
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+		    <skipTests>${skipUTs}</skipTests>
                     <junitxml>.</junitxml>
                     <filereports>WDF TestSuite.txt</filereports>
                 </configuration>

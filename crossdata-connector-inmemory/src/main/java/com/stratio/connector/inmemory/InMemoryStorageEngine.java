@@ -61,16 +61,16 @@ public class InMemoryStorageEngine implements IStorageEngine{
             String catalogName = targetTable.getName().getCatalogName().getQualifiedName();
             String tableName = targetTable.getName().getName();
             Map<String, Object> toAdd = new HashMap<>();
-            for(Map.Entry<String, Cell> col : row.getCells().entrySet()){
-                toAdd.put(col.getKey(), col.getValue().getValue());
+            for(Map.Entry<String, Cell> col: row.getCells().entrySet()){
+                Object value = col.getValue().getValue();
+                toAdd.put(col.getKey(), value);
             }
-
             try {
                 datastore.insert(catalogName, tableName, toAdd);
             } catch (Exception e) {
                 throw new ExecutionException(e);
             }
-        }else{
+        } else {
             throw new ExecutionException("No datastore connected to " + targetCluster);
         }
     }

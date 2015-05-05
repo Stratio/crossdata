@@ -160,9 +160,11 @@ public class InsertIntoStatement extends StorageStatement {
 
     @Override
     public ValidationRequirements getValidationRequirements() {
-        return new ValidationRequirements().add(ValidationTypes.MUST_EXIST_CATALOG)
+        return new ValidationRequirements()
+                .add(ValidationTypes.MUST_EXIST_CATALOG)
                 .add(ValidationTypes.MUST_EXIST_TABLE)
-                .add(ValidationTypes.VALIDATE_TYPES);
+                .add(ValidationTypes.VALIDATE_TYPES)
+                .add(ValidationTypes.VALIDATE_SCOPE);
     }
 
     public TableName getTableName() {
@@ -175,17 +177,41 @@ public class InsertIntoStatement extends StorageStatement {
 
     /**
      * Return the catalogue of the table where the insert table is.
-     * @return A {@link com.stratio.crossdata.common.data.CatalogName} .
+     * @return A {@link com.stratio.crossdata.common.data.CatalogName}.
      */
     public CatalogName getCatalogName() {
         return tableName.getCatalogName();
     }
 
+    /**
+     * Return the list of columns to be assigned.
+     *
+     * @deprecated use {@link #getColumns()} instead.
+     * @return the list of columns to be assigned.
+     */
+    @Deprecated
     public List<ColumnName> getIds() {
         return ids;
     }
 
     public List<Selector> getCellValues() {
         return cellValues;
+    }
+
+    @Override
+    public List<ColumnName> getColumns() {
+        return ids;
+    }
+
+    public SelectStatement getSelectStatement() {
+        return selectStatement;
+    }
+
+    public void setSelectStatement(SelectStatement selectStatement) {
+        this.selectStatement = selectStatement;
+    }
+
+    public int getTypeValues() {
+        return typeValues;
     }
 }

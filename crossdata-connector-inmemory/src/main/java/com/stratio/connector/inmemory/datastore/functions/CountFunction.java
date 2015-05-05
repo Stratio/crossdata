@@ -18,6 +18,8 @@
 
 package com.stratio.connector.inmemory.datastore.functions;
 
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,9 +34,10 @@ public class CountFunction extends AbstractInMemoryFunction {
         this.rowFunction = false;
     }
 
-    @Override public List<Object[]> apply(Map<String, Integer> columnIndex, List<Object[]> rows) throws Exception {
-        Object [] size = {rows.size()};
-        List<Object []> result = new ArrayList<>();
+    @Override public List<SimpleValue[]> apply(Map<String, Integer> columnIndex, List<SimpleValue[]> rows) throws Exception {
+
+        List<SimpleValue []> result = new ArrayList<>();
+        SimpleValue [] size = {new SimpleValue(rows.size())};
         result.add(size);
         return result;
     }

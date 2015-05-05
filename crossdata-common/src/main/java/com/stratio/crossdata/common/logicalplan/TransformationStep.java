@@ -18,8 +18,10 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import com.stratio.crossdata.common.metadata.Operations;
 
@@ -29,6 +31,7 @@ import com.stratio.crossdata.common.metadata.Operations;
  */
 public class TransformationStep extends LogicalStep {
 
+    private static final long serialVersionUID = -1043700197197777113L;
     /**
      * Single previous step.
      */
@@ -37,14 +40,17 @@ public class TransformationStep extends LogicalStep {
     /**
      * Class constructor.
      *
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      */
-    public TransformationStep(Operations operation) {
-        super(operation);
+    public TransformationStep(Set<Operations> operations) {
+        super(operations);
     }
 
     @Override
     public List<LogicalStep> getPreviousSteps() {
+        if(previous == null){
+            return new ArrayList<>();
+        }
         return Arrays.asList(previous);
     }
 

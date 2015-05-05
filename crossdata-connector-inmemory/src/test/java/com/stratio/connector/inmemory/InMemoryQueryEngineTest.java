@@ -18,199 +18,47 @@
 
 package com.stratio.connector.inmemory;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Map;
-
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
-import com.stratio.crossdata.common.connector.IConfiguration;
-import com.stratio.crossdata.common.connector.IConnector;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.Cell;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.IndexName;
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
+import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
+import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
-import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
-import com.stratio.crossdata.common.exceptions.InitializationException;
-import com.stratio.crossdata.common.logicalplan.Filter;
-import com.stratio.crossdata.common.logicalplan.LogicalStep;
-import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
-import com.stratio.crossdata.common.logicalplan.Project;
-import com.stratio.crossdata.common.logicalplan.Select;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
-import com.stratio.crossdata.common.metadata.ColumnMetadata;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
+import com.stratio.crossdata.common.exceptions.UnsupportedException;
+import com.stratio.crossdata.common.logicalplan.*;
 import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.IndexMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.QueryResult;
-import com.stratio.crossdata.common.security.ICredentials;
-import com.stratio.crossdata.common.statements.structures.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.statements.structures.*;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+import static org.testng.Assert.*;
 
 /**
  * Query engine test.
  */
-public class InMemoryQueryEngineTest {
-
-    private ClusterName clusterName = null;
-
-    private TableMetadata tableMetadata = null;
-
-    private IConnector connector = new InMemoryConnector(null);
-
-    private static final int NUM_ROWS = 100;
-
-    public IConnector startConnector() {
-        try {
-            connector.init(new IConfiguration() {
-                @Override public int hashCode() {
-                    return super.hashCode();
-                }
-            });
-        } catch (InitializationException e) {
-            fail("Failed to init the connector", e);
-        }
-
-        Map<String,String> clusterOptions = new HashMap<>();
-        Map<String,String> connectorOptions = new HashMap<>();
-        clusterOptions.put("TableRowLimit", "1000");
-        clusterName = new ClusterName("test_cluster");
-        ConnectorClusterConfig config = new ConnectorClusterConfig(clusterName, connectorOptions, clusterOptions);
-
-        try {
-            connector.connect(new ICredentials() {
-                @Override public int hashCode() {
-                    return super.hashCode();
-                }
-            }, config);
-        } catch (ConnectionException e) {
-            fail("Cannot connect to inmemory cluster", e);
-        }
-        return connector;
-    }
-
-    private TableMetadata getTestTableMetadata(ClusterName targetCluster) {
-        TableName targetTable = new TableName("test_catalog", "types");
-        Map<Selector, Selector> options = new HashMap<>();
-        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
-        LinkedList<ColumnName> partitionKey = new LinkedList<>();
-        LinkedList<ColumnName> clusterKey = new LinkedList<>();
-        Object[] parameters = { };
-        columns.put(new ColumnName(targetTable, "text_column"),
-                new ColumnMetadata(new ColumnName(targetTable, "text_column"), parameters,
-                        ColumnType.TEXT)
-        );
-        partitionKey.add(columns.keySet().iterator().next());
-
-        columns.put(new ColumnName(targetTable, "int_column"),
-                new ColumnMetadata(new ColumnName(targetTable, "int_column"), parameters,
-                        ColumnType.INT)
-        );
-        columns.put(new ColumnName(targetTable, "bool_column"),
-                new ColumnMetadata(new ColumnName(targetTable, "bool_column"), parameters,
-                        ColumnType.BOOLEAN)
-        );
-
-        Map<IndexName, IndexMetadata> indexes = new HashMap<>();
-        TableMetadata table =
-                new TableMetadata(targetTable, options, columns, indexes, targetCluster, partitionKey,
-                        clusterKey);
-        return table;
-    }
-
-    public void createTestTable() {
-
-        CatalogMetadata catalogMetadata = new CatalogMetadata(new CatalogName("test_catalog"), null, null);
-        try {
-            connector.getMetadataEngine().createCatalog(clusterName, catalogMetadata);
-            tableMetadata = getTestTableMetadata(clusterName);
-            connector.getMetadataEngine().createTable(clusterName, tableMetadata);
-        } catch (ConnectorException e) {
-            fail("Cannot create test environment", e);
-        }
-    }
-
-    public void insertTestData(ClusterName targetCluster, TableMetadata targetTable, int numberRows) {
-        try {
-            for (int index = 0; index < numberRows; index++) {
-                Row row = new Row();
-                row.addCell("text_column", new Cell("text_" + index));
-                row.addCell("int_column", new Cell(index));
-                row.addCell("bool_column", new Cell(index % 2 == 0));
-                connector.getStorageEngine().insert(targetCluster, targetTable, row, false);
-            }
-        } catch (ConnectorException e) {
-            fail("Insertion failed", e);
-        }
-    }
-
-    @BeforeClass
-    public void beforeClass() {
-        startConnector();
-        createTestTable();
-        insertTestData(clusterName, tableMetadata, NUM_ROWS);
-    }
-
-    public Project generateProjectAndSelect(String [] columnNames, ColumnType [] types){
-        Project project = new Project(Operations.PROJECT, tableMetadata.getName(), clusterName);
-        for(String columnName : columnNames) {
-            project.addColumn(new ColumnName(tableMetadata.getName(), columnName));
-        }
-
-        Map<Selector, String> columnMap = new LinkedHashMap<>();
-        Map<String, ColumnType> typeMap = new LinkedHashMap<>();
-        Map<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
-
-        int index = 0;
-        for(ColumnName column : project.getColumnList()){
-            ColumnSelector cs = new ColumnSelector(column);
-            columnMap.put(cs, column.getName());
-            typeMap.put(column.getName(), types[index]);
-            typeMapFromColumnName.put(cs, types[index]);
-            index++;
-        }
-        Select select = new Select(Operations.SELECT_OPERATOR, columnMap, typeMap, typeMapFromColumnName);
-
-        //Link the elements
-        project.setNextStep(select);
-        return project;
-    }
-
-    public void checkResultMetadata(ResultSet results, String [] columnNames, ColumnType [] types){
-        assertEquals(results.getColumnMetadata().size(), columnNames.length, "Expecting one column");
-        for(int index = 0; index < columnNames.length; index++) {
-            assertEquals(results.getColumnMetadata().get(index).getName().getAlias(), columnNames[index],
-                    "Expecting matching column name");
-            assertEquals(results.getColumnMetadata().get(index).getColumnType(), types[index],
-                    "Expecting matching column type");
-        }
-    }
+public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
     @Test
     public void simpleSelect() {
-        String [] columnNames = {"text_column"};
-        ColumnType[] types = { ColumnType.TEXT };
 
-        Project project = generateProjectAndSelect(columnNames, types);
-        LogicalWorkflow workflow = new LogicalWorkflow(Arrays.asList((LogicalStep)project));
+        TableMetadata usersTable = buildUsersTable();
+
+        String [] usersColumnNames = {"name"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.TEXT)};
+
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName());
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
 
         ResultSet results = null;
         try {
@@ -221,16 +69,20 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), NUM_ROWS, "Invalid number of results returned");
-        checkResultMetadata(results, columnNames, types);
+        checkResultMetadata(results, usersColumnNames, usersTypes);
     }
 
     @Test
     public void simpleSelectAllColumns() {
-        String [] columnNames = {"text_column", "int_column", "bool_column"};
-        ColumnType[] types = { ColumnType.TEXT, ColumnType.INT, ColumnType.BOOLEAN };
+        TableMetadata usersTable = buildUsersTable();
 
-        Project project = generateProjectAndSelect(columnNames, types);
-        LogicalWorkflow workflow = new LogicalWorkflow(Arrays.asList((LogicalStep)project));
+        String [] usersColumnNames = {"id", "name", "boss"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT),
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.BOOLEAN)};
+
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName());
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
 
         ResultSet results = null;
         try {
@@ -241,26 +93,30 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), NUM_ROWS, "Invalid number of results returned");
-        checkResultMetadata(results, columnNames, types);
+        checkResultMetadata(results, usersColumnNames, usersTypes);
     }
 
     @Test
     public void simpleSelectFilterTextEQ() {
-        String [] columnNames = {"text_column"};
-        ColumnType[] types = { ColumnType.TEXT };
+        TableMetadata usersTable = buildUsersTable();
 
-        Project project = generateProjectAndSelect(columnNames, types);
+        String [] usersColumnNames = {"id", "name"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT), new ColumnType(DataType.TEXT)};
 
-        ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        StringSelector right = new StringSelector(project.getTableName(), "text_42");
-        Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName());
 
-        Select s = Select.class.cast(project.getNextStep());
+        ColumnSelector left = new ColumnSelector(projectUsers.getColumnList().get(1));
+        StringSelector right = new StringSelector(projectUsers.getTableName(), "User-9");
+        Filter filter = new Filter(
+                singleton(Operations.FILTER_NON_INDEXED_EQ),
+                new Relation(left, Operator.EQ, right));
+
+        Select s = Select.class.cast(projectUsers.getNextStep());
         filter.setNextStep(s);
-        project.setNextStep(filter);
-        filter.setPrevious(project);
+        projectUsers.setNextStep(filter);
+        filter.setPrevious(projectUsers);
         s.setPrevious(filter);
-        LogicalWorkflow workflow = new LogicalWorkflow(Arrays.asList((LogicalStep)project));
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
 
         ResultSet results = null;
         try {
@@ -271,26 +127,30 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), 1, "Invalid number of results returned");
-        checkResultMetadata(results, columnNames, types);
+        checkResultMetadata(results, usersColumnNames, usersTypes);
     }
 
     @Test
     public void simpleSelectFilterBoolEQ() {
-        String [] columnNames = {"bool_column"};
-        ColumnType[] types = { ColumnType.BOOLEAN };
+        TableMetadata usersTable = buildUsersTable();
 
-        Project project = generateProjectAndSelect(columnNames, types);
+        String [] usersColumnNames = {"boss"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.BOOLEAN)};
 
-        ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        BooleanSelector right = new BooleanSelector(project.getTableName(), true);
-        Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName());
 
-        Select s = Select.class.cast(project.getNextStep());
+        ColumnSelector left = new ColumnSelector(projectUsers.getColumnList().get(0));
+        BooleanSelector right = new BooleanSelector(projectUsers.getTableName(), true);
+        Filter filter = new Filter(
+                singleton(Operations.FILTER_NON_INDEXED_EQ),
+                new Relation(left, Operator.EQ, right));
+
+        Select s = Select.class.cast(projectUsers.getNextStep());
         filter.setNextStep(s);
-        project.setNextStep(filter);
-        filter.setPrevious(project);
+        projectUsers.setNextStep(filter);
+        filter.setPrevious(projectUsers);
         s.setPrevious(filter);
-        LogicalWorkflow workflow = new LogicalWorkflow(Arrays.asList((LogicalStep)project));
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
 
         ResultSet results = null;
         try {
@@ -301,26 +161,64 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), NUM_ROWS / 2, "Invalid number of results returned");
-        checkResultMetadata(results, columnNames, types);
+        checkResultMetadata(results, usersColumnNames, usersTypes);
+    }
+
+    @Test
+    public void simpleSelectFilterTextEQNoResult() {
+        TableMetadata usersTable = buildUsersTable();
+
+        String [] usersColumnNames = {"id", "name"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT), new ColumnType(DataType.TEXT)};
+
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName());
+
+        ColumnSelector left = new ColumnSelector(projectUsers.getColumnList().get(1));
+        StringSelector right = new StringSelector(projectUsers.getTableName(), "User-50");
+        Filter filter = new Filter(
+                singleton(Operations.FILTER_NON_INDEXED_EQ),
+                new Relation(left, Operator.EQ, right));
+
+        Select s = Select.class.cast(projectUsers.getNextStep());
+        filter.setNextStep(s);
+        projectUsers.setNextStep(filter);
+        filter.setPrevious(projectUsers);
+        s.setPrevious(filter);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
+
+        ResultSet results = null;
+        try {
+            QueryResult result = connector.getQueryEngine().execute(workflow);
+            results = result.getResultSet();
+        } catch (ConnectorException e) {
+            fail("Cannot retrieve data", e);
+        }
+
+        assertEquals(results.size(), 0, "Invalid number of results returned");
+        checkResultMetadata(results, usersColumnNames, usersTypes);
     }
 
     @Test
     public void simpleSelectFilterIntEQ() {
-        String [] columnNames = {"int_column"};
-        ColumnType[] types = { ColumnType.INT };
 
-        Project project = generateProjectAndSelect(columnNames, types);
+        TableMetadata usersTable = buildUsersTable();
+        String [] usersColumnNames = {"id"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT)};
 
-        ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        IntegerSelector right = new IntegerSelector(project.getTableName(), 42);
-        Filter filter = new Filter(Operations.FILTER_NON_INDEXED_EQ, new Relation(left, Operator.EQ, right));
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName());
 
-        Select s = Select.class.cast(project.getNextStep());
+        ColumnSelector left = new ColumnSelector(projectUsers.getColumnList().get(0));
+        IntegerSelector right = new IntegerSelector(projectUsers.getTableName(), 5);
+        Filter filter = new Filter(
+                singleton(Operations.FILTER_NON_INDEXED_EQ),
+                new Relation(left, Operator.EQ, right));
+
+        Select s = Select.class.cast(projectUsers.getNextStep());
         filter.setNextStep(s);
-        project.setNextStep(filter);
-        filter.setPrevious(project);
+        projectUsers.setNextStep(filter);
+        filter.setPrevious(projectUsers);
         s.setPrevious(filter);
-        LogicalWorkflow workflow = new LogicalWorkflow(Arrays.asList((LogicalStep)project));
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
 
         ResultSet results = null;
         try {
@@ -331,26 +229,30 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), 1, "Invalid number of results returned");
-        checkResultMetadata(results, columnNames, types);
+        checkResultMetadata(results, usersColumnNames, usersTypes);
     }
 
     @Test
     public void simpleSelectFilterNonIndexedIntGT() {
-        String [] columnNames = {"int_column"};
-        ColumnType[] types = { ColumnType.INT };
 
-        Project project = generateProjectAndSelect(columnNames, types);
+        TableMetadata usersTable = buildUsersTable();
 
-        ColumnSelector left = new ColumnSelector(project.getColumnList().get(0));
-        IntegerSelector right = new IntegerSelector(project.getTableName(), NUM_ROWS/2);
-        Filter filter = new Filter(Operations.FILTER_NON_INDEXED_GT, new Relation(left, Operator.GT, right));
+        String [] usersColumnNames = {"id"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT)};
 
-        Select s = Select.class.cast(project.getNextStep());
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName());
+
+        ColumnSelector left = new ColumnSelector(projectUsers.getColumnList().get(0));
+        IntegerSelector right = new IntegerSelector(projectUsers.getTableName(), NUM_ROWS/2);
+        Filter filter = new Filter(singleton(Operations.FILTER_NON_INDEXED_GT),
+                new Relation(left, Operator.GT, right));
+
+        Select s = Select.class.cast(projectUsers.getNextStep());
         filter.setNextStep(s);
-        project.setNextStep(filter);
-        filter.setPrevious(project);
+        projectUsers.setNextStep(filter);
+        filter.setPrevious(projectUsers);
         s.setPrevious(filter);
-        LogicalWorkflow workflow = new LogicalWorkflow(Arrays.asList((LogicalStep)project));
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
 
         ResultSet results = null;
         try {
@@ -361,7 +263,210 @@ public class InMemoryQueryEngineTest {
         }
 
         assertEquals(results.size(), (NUM_ROWS/2)-1, "Invalid number of results returned");
-        checkResultMetadata(results, columnNames, types);
+        checkResultMetadata(results, usersColumnNames, usersTypes);
+    }
+
+
+    @Test
+    public void simpleSelectBoolOrder() {
+        TableMetadata usersTable = buildUsersTable();
+
+        String [] usersColumnNames = {"boss"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.BOOLEAN)};
+
+        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "boss", OrderDirection.DESC);
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
+
+        ResultSet results = null;
+        try {
+            QueryResult result = connector.getQueryEngine().execute(workflow);
+            results = result.getResultSet();
+        } catch (ConnectorException e) {
+            fail("Cannot retrieve data", e);
+        }
+
+        assertEquals(results.size(), NUM_ROWS, "Invalid number of results returned");
+        int i = 0;
+        for (Row row: results.getRows()){
+            if (i<5){
+                assertTrue((Boolean) row.getCell("boss").getValue(),"Invalid Result OrderBy");
+            }else{
+                assertFalse((Boolean) row.getCell("boss").getValue(), "Invalid Result OrderBy");
+            }
+            i++;
+        }
+    }
+
+    @Test
+    public void sortNumberASC() throws UnsupportedException, ExecutionException {
+        sortNumber(OrderDirection.ASC);
+    }
+
+    @Test
+    public void sortNumberDES() throws UnsupportedException, ExecutionException {
+        sortNumber(OrderDirection.DESC);
+    }
+
+    public void sortNumber(OrderDirection direction) throws UnsupportedException, ExecutionException {
+        TableMetadata usersTable = buildUsersTable();
+        String [] usersColumnNames = {"id"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT)};
+
+        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "id", direction);
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
+
+        InMemorySelector column = new InMemoryColumnSelector("id");
+        List<SimpleValue[]> results = new ArrayList<>();
+        results.add(new SimpleValue[]{new SimpleValue(column, 2)});
+        results.add(new SimpleValue[]{new SimpleValue(column, 1)});
+        results.add(new SimpleValue[]{new SimpleValue(column, 3)});
+        results.add(new SimpleValue[]{new SimpleValue(column, 4)});
+
+        //Experimentation
+        List<SimpleValue[]> result = ((InMemoryQueryEngine)connector.getQueryEngine()).orderResult(results, workflow);
+
+        //Espectations
+        int i =direction.equals(OrderDirection.DESC) ? result.size():1;
+        for (SimpleValue[] value: result){
+            assertEquals(value[0].getValue(), direction.equals(OrderDirection.DESC) ? i-- : i++, "Invalid Order");
+        }
+    }
+
+    @Test
+    public void sortBoolDES() throws UnsupportedException, ExecutionException {
+        sortBool(OrderDirection.DESC);
+    }
+
+    @Test
+    public void sortBoolASC() throws UnsupportedException, ExecutionException {
+        sortBool(OrderDirection.ASC);
+    }
+
+    public void sortBool(OrderDirection direction) throws UnsupportedException, ExecutionException {
+        TableMetadata usersTable = buildUsersTable();
+        String [] usersColumnNames = {"id","boss"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.INT), new ColumnType(DataType.BOOLEAN)};
+
+        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "boss", direction);
+        Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
+
+        InMemorySelector columnBoss = new InMemoryColumnSelector("boss");
+        InMemorySelector columnId = new InMemoryColumnSelector("id");
+        List<SimpleValue[]> results = new ArrayList<>();
+        results.add(new SimpleValue[]{new SimpleValue(columnId, 1),new SimpleValue(columnBoss, false)});
+        results.add(new SimpleValue[]{new SimpleValue(columnId, 2),new SimpleValue(columnBoss, true)});
+        results.add(new SimpleValue[]{new SimpleValue(columnId, 3),new SimpleValue(columnBoss, false)});
+        results.add(new SimpleValue[]{new SimpleValue(columnId, 4),new SimpleValue(columnBoss, true)});
+
+
+        //Experimentation
+        List<SimpleValue[]> result = ((InMemoryQueryEngine)connector.getQueryEngine()).orderResult(results, workflow);
+
+        //Espectations
+        int i = 0;
+        for (SimpleValue[] value: result){
+            if (direction.equals(OrderDirection.ASC)){
+                assertTrue((Boolean) value[1].getValue().equals(i >= result.size()/2) , "Bad Order");
+            }else{
+                assertTrue((Boolean) value[1].getValue().equals(i < result.size()/2) , "Bad Order");
+            }
+            i++;
+        }
+    }
+
+
+    @Test
+    public void testCompareCellsASC() throws UnsupportedException {
+        testCompareCell(OrderDirection.ASC, true, false, -1);
+    }
+
+
+    @Test
+    public void testCompareCellsASCCase2() throws UnsupportedException {
+        testCompareCell(OrderDirection.ASC, false, true, 1);
+    }
+
+    @Test
+    public void testCompareCellsDESC() throws UnsupportedException {
+        testCompareCell(OrderDirection.DESC, true, false, 1);
+    }
+
+    @Test
+    public void testCompareCellsDESCCase2() throws UnsupportedException {
+        testCompareCell(OrderDirection.DESC, false, true, -1);
+    }
+
+    @Test
+    public void testCompareCellsDESCNumber() throws UnsupportedException {
+        testCompareCell(OrderDirection.DESC, 1, 2, -1);
+    }
+
+    @Test
+    public void testCompareCellsASCNumber() throws UnsupportedException {
+        testCompareCell(OrderDirection.ASC, 1, 2, 1);
+    }
+
+    @Test
+    public void testCompareCellsASCNumberEQ() throws UnsupportedException {
+        testCompareCell(OrderDirection.DESC, 1, 1, 0);
+    }
+
+    public void testCompareCell(OrderDirection direction, Object value1, Object value2, int expected) throws UnsupportedException {
+
+        buildUsersTable();
+
+        SimpleValue toBeOrdered = new SimpleValue(null, value1);
+        SimpleValue alreadyOrdered =  new SimpleValue(null, value2);
+
+        int result = ((InMemoryQueryEngine)connector.getQueryEngine()).compareCells(toBeOrdered, alreadyOrdered, direction);
+
+        assertEquals(result, expected);
+
+    }
+
+
+
+    @Test
+    public void testBugCROSSDATA_516(){
+
+        TableMetadata incomeTable = buildIncomeTable();
+
+        Map<String, Object> values = new HashMap<>();
+        values.put("id", 5);
+        values.put("money",4.4);
+        values.put("reten", new Double(-40.4));
+        insertTestData(clusterName, incomeTable, values);
+
+        String [] columnNames = {"money", "reten"};
+        ColumnType[] usersTypes = {new ColumnType(DataType.DOUBLE), new ColumnType(DataType.DOUBLE)};
+
+        Project project = generateProjectAndSelect(columnNames, usersTypes, incomeTable.getName());
+
+        ColumnSelector left = new ColumnSelector(project.getColumnList().get(1));
+        FloatingPointSelector right = new  FloatingPointSelector(project.getTableName(), new Double(-40.40));
+        Filter filter = new Filter(singleton(Operations.FILTER_NON_INDEXED_LT), new Relation(left, Operator.LT, right));
+
+        Select s = Select.class.cast(project.getNextStep());
+        filter.setNextStep(s);
+        project.setNextStep(filter);
+        filter.setPrevious(project);
+        s.setPrevious(filter);
+        LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) project));
+
+        ResultSet results = null;
+        try {
+            QueryResult result = connector.getQueryEngine().execute(workflow);
+            results = result.getResultSet();
+        } catch (ConnectorException e) {
+            fail("Cannot retrieve data", e);
+        }
+
+        assertEquals(results.size(), 0, "Invalid number of results returned");
+
+
     }
 
 }

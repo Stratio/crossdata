@@ -25,6 +25,8 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
  */
 public class NotConnectionException extends ValidationException {
 
+    private static final long serialVersionUID = 7552980267092073964L;
+
     /**
      * Constructor class.
      * @param msg The cause of the exception.

@@ -30,6 +30,7 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class ColumnSelector extends Selector {
 
+    private static final long serialVersionUID = 1912743509341730253L;
     /**
      * Name of the selected column.
      */
@@ -77,11 +78,34 @@ public class ColumnSelector extends Selector {
         return new HashSet(Arrays.asList(this.name.getTableName()));
     }
 
+    /**
+     * Get the associated table name.
+     *
+     * @return A {@link com.stratio.crossdata.common.data.TableName}.
+     */
+    @Override
+    public TableName getTableName() {
+        if(tableName != null){
+            return tableName;
+        } else if((tableName == null) && (name != null)){
+            return name.getTableName();
+        }
+        return new TableName("<UNKNOWN_NAME>", "<UNKNOWN_NAME>");
+    }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(name.toString());
         if (this.alias != null) {
+            sb.append(" AS ").append(alias);
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder(name.toSQLString());
+        if (withAlias && this.alias != null) {
             sb.append(" AS ").append(alias);
         }
         return sb.toString();

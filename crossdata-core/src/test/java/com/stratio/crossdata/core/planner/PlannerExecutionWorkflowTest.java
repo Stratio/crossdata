@@ -24,9 +24,11 @@ import static org.testng.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -59,10 +61,12 @@ import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Window;
+import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
@@ -73,17 +77,21 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
 import com.stratio.crossdata.core.query.MetadataValidatedQuery;
+import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
 import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.AlterCatalogStatement;
 import com.stratio.crossdata.core.statements.AlterTableStatement;
 import com.stratio.crossdata.core.statements.DropCatalogStatement;
 import com.stratio.crossdata.core.statements.InsertIntoStatement;
+import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.statements.StorageStatement;
 
 /**
@@ -99,67 +107,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
     private PlannerWrapper plannerWrapper = new PlannerWrapper();
 
     private ConnectorMetadata connector1 = null;
-
     private ConnectorMetadata connector2 = null;
 
     private ClusterName clusterName = null;
 
     private TableMetadata table1 = null;
     private TableMetadata table2 = null;
+    private TableMetadata table4 = null;
 
-    /**
-     * Create a test Project operator.
-     *
-     * @param tableName Name of the table.
-     * @param columns   List of columns.
-     * @return A {@link com.stratio.crossdata.common.logicalplan.Project}.
-     */
-    public Project getProject(String tableName, ColumnName... columns) {
-        Operations operation = Operations.PROJECT;
-        Project project = new Project(operation, new TableName("demo", tableName), new ClusterName("TestCluster1"));
-        for (ColumnName cn : columns) {
-            project.addColumn(cn);
-        }
-        return project;
-    }
-
-    public Filter getFilter(Operations operation, ColumnName left, Operator operator, Selector right) {
-        Relation relation = new Relation(new ColumnSelector(left), operator, right);
-        Filter filter = new Filter(operation, relation);
-        return filter;
-    }
-
-    public Select getSelect(ColumnName[] columns, ColumnType[] types) {
-        Operations operation = Operations.SELECT_OPERATOR;
-        Map<Selector, String> columnMap = new LinkedHashMap<>();
-        Map<String, ColumnType> typeMap = new LinkedHashMap<>();
-        Map<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
-
-        for (int index = 0; index < columns.length; index++) {
-            ColumnSelector cs = new ColumnSelector(columns[index]);
-            columnMap.put(cs, columns[index].getName());
-            typeMapFromColumnName.put(cs, types[index]);
-            typeMap.put(columns[index].getName(), types[index]);
-        }
-        Select select = new Select(operation, columnMap, typeMap, typeMapFromColumnName);
-        return select;
-    }
-
-    private ColumnName[] getColumnNames(TableMetadata table) {
-        return table.getColumns().keySet().toArray(new ColumnName[table.getColumns().size()]);
-    }
-
-    public Join getJoin(String joinId, Relation... relations) {
-        Join j = new Join(Operations.SELECT_INNER_JOIN, joinId);
-        for (Relation r : relations) {
-            j.addJoinRelation(r);
-        }
-        return j;
-    }
-
-    @BeforeClass
-    public void setUp() throws ManifestException {
-        //super.setUp();
+    @BeforeClass(dependsOnMethods = {"setUp"})
+    public void init() throws ManifestException {
         DataStoreName dataStoreName = MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         //Connector with join.
@@ -177,38 +134,118 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.SELECT_WINDOW);
 
-        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, new HashSet<ClusterName>(), operationsC1,
-                "actorRef1");
-        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, new HashSet<ClusterName>(), operationsC2,
-                "actorRef2");
+        String strClusterName = "TestCluster1";
 
-        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster("TestCluster1", dataStoreName, connector1.getName());
+
+        Map<ClusterName, Integer> clusterWithDefaultPriority = new LinkedHashMap<>();
+        clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
+
+        Map<ClusterName, Integer> clusterWithTopPriority = new LinkedHashMap<>();
+        clusterWithTopPriority.put(new ClusterName(strClusterName), 1);
+
+        connector1 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector1", dataStoreName, clusterWithDefaultPriority, operationsC1,
+                        "actorRef1", new ArrayList<FunctionType>());
+        connector2 = MetadataManagerTestHelper.HELPER.createTestConnector("TestConnector2", dataStoreName, clusterWithDefaultPriority, operationsC2,
+                        "actorRef2", new ArrayList<FunctionType>());
+
+        clusterName = MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connector1.getName());
         MetadataManagerTestHelper.HELPER.createTestCatalog("demo");
         MetadataManagerTestHelper.HELPER.createTestCatalog("demo2");
         createTestTables();
     }
 
+    /**
+     * Create a test Project operator.
+     *
+     * @param tableName Name of the table.
+     * @param columns   List of columns.
+     * @return A {@link com.stratio.crossdata.common.logicalplan.Project}.
+     */
+    public Project getProject(String tableName, ColumnName... columns) {
+        Operations operation = Operations.PROJECT;
+        Project project = new Project(
+                Collections.singleton(operation),
+                new TableName("demo", tableName),
+                new ClusterName("TestCluster1"));
+        for (ColumnName cn : columns) {
+            project.addColumn(cn);
+        }
+        return project;
+    }
+
+    public Filter getFilter(Operations operation, ColumnName left, Operator operator, Selector right) {
+        Relation relation = new Relation(new ColumnSelector(left), operator, right);
+        Filter filter = new Filter(
+                Collections.singleton(operation),
+                relation);
+        return filter;
+    }
+
+    public Select getSelect(ColumnName[] columns, ColumnType[] types) {
+        Operations operation = Operations.SELECT_OPERATOR;
+        Map<Selector, String> columnMap = new LinkedHashMap<>();
+        Map<String, ColumnType> typeMap = new LinkedHashMap<>();
+        Map<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
+
+        for (int index = 0; index < columns.length; index++) {
+            ColumnSelector cs = new ColumnSelector(columns[index]);
+            columnMap.put(cs, columns[index].getName());
+            typeMapFromColumnName.put(cs, types[index]);
+            typeMap.put(columns[index].getName(), types[index]);
+        }
+        Select select = new Select(
+                Collections.singleton(operation),
+                columnMap,
+                typeMap,
+                typeMapFromColumnName);
+        return select;
+    }
+
+    private ColumnName[] getColumnNames(TableMetadata table) {
+        return table.getColumns().keySet().toArray(new ColumnName[table.getColumns().size()]);
+    }
+
+    public Join getJoin(String joinId, Relation... relations) {
+        Join j = new Join(
+                Collections.singleton(Operations.SELECT_INNER_JOIN),
+                joinId);
+        for (Relation r : relations) {
+            j.addJoinRelation(r);
+        }
+        return j;
+    }
+
     public void createTestTables() {
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
         table1 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table1", columnNames1, columnTypes1,
                 partitionKeys1, clusteringKeys1, null);
 
         String[] columnNames2 = { "id", "email" };
-        ColumnType[] columnTypes2 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes2 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys2 = { "id" };
         String[] clusteringKeys2 = { };
         table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table2", columnNames2, columnTypes2,
                 partitionKeys2, clusteringKeys2, null);
 
         String[] columnNames3 = { "id", "email" };
-        ColumnType[] columnTypes3 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes3 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys3 = { "id" };
         String[] clusteringKeys3 = { };
         table2 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table3", columnNames3, columnTypes3,
                 partitionKeys3, clusteringKeys3, null);
+
+
+        String[] columnNames4 = { "id", "description" };
+        ColumnType[] columnTypes4 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
+        String[] partitionKeys4 = { "id" };
+        String[] clusteringKeys4 = { };
+        table4 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "table4", columnNames4,
+                columnTypes4,
+                partitionKeys4, clusteringKeys4, null);
+
     }
 
     /**
@@ -222,7 +259,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         //Link the elements
@@ -235,7 +272,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         //TEST
         ExecutionWorkflow executionWorkflow = null;
         try {
-            executionWorkflow = planner.buildExecutionWorkflow("qid", workflow);
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+            executionWorkflow = planner.buildExecutionWorkflow(svqw, workflow);
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
@@ -250,7 +296,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
@@ -268,7 +314,16 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionWorkflow executionWorkflow = null;
         try {
-            executionWorkflow = planner.buildExecutionWorkflow("qid", workflow);
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+            executionWorkflow = planner.buildExecutionWorkflow(svqw, workflow);
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
@@ -286,7 +341,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
@@ -303,7 +358,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionPath path = null;
         try {
-            path = plannerWrapper.defineExecutionPath(project, availableConnectors);
+            path = plannerWrapper.defineExecutionPath(project, availableConnectors,null);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
         }
@@ -321,7 +376,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
@@ -336,12 +391,11 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         availableConnectors.add(connector2);
 
         try {
-            ExecutionPath path = plannerWrapper.defineExecutionPath(project, availableConnectors);
+            ExecutionPath path = plannerWrapper.defineExecutionPath(project, availableConnectors, null);
             fail("Planning exception expected");
         } catch (PlanningException e) {
             assertNotNull(e, "Expecting Planning exception");
         }
-
     }
 
     @Test
@@ -350,7 +404,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project = getProject("table1");
 
         ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns[0], Operator.EQ,
@@ -367,9 +421,18 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         ExecutionWorkflow executionWorkflow = null;
         try {
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    "qid", Arrays.asList(path),
-                    new HashMap<UnionStep, Set<ExecutionPath>>());
+                    svqw, Arrays.asList(path),
+                    new LinkedHashMap<UnionStep, LinkedHashSet<ExecutionPath>>());
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
         }
@@ -389,7 +452,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns1, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
@@ -410,10 +473,84 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionPath path1 = new ExecutionPath(project1, filter, availableConnectors);
         ExecutionPath path2 = new ExecutionPath(project2, project2, availableConnectors);
 
+        HashMap<UnionStep, LinkedHashSet<ExecutionPath>> unions = new HashMap<>();
+        LinkedHashSet<ExecutionPath> paths = new LinkedHashSet<>();
+        paths.add(path1);
+        paths.add(path2);
+        unions.put(join, paths);
+
+        ExecutionWorkflow executionWorkflow = null;
+        try {
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+            executionWorkflow = plannerWrapper.mergeExecutionPaths(
+                    svqw, new ArrayList<>(paths),
+                    unions);
+        } catch (PlanningException e) {
+            fail("Not expecting Planning Exception", e);
+        }
+
+        assertNotNull(executionWorkflow, "Null execution workflow received");
+        assertExecutionWorkflow(executionWorkflow, 1,
+                new String[] { connector1.getActorRef().toString() });
+
+    }
+
+/*
+    @Test
+    public void mergeExecutionPathsJoinMultiple() {
+
+        ColumnName[] columns1 = getColumnNames(table1);
+        ColumnName[] columns2 = getColumnNames(table2);
+        ColumnName[] columns4 = getColumnNames(table4);
+
+        Project project1 = getProject("table1", columns1);
+        Project project2 = getProject("table2", columns2);
+        Project project4 = getProject("table4", columns4);
+
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
+        Select select = getSelect(columns1, types);
+
+        Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
+
+        Filter filter2 = getFilter(Operations.FILTER_PK_EQ, columns4[0], Operator.EQ,
+                new IntegerSelector(table1.getName(), 42));
+
+        Join join = getJoin("joinId");
+        Join join2 = getJoin("joinId2");
+
+        //Link the elements
+        project1.setNextStep(filter);
+        filter.setNextStep(join);
+
+        project2.setNextStep(join);
+        join.setNextStep(select);
+
+        project4.setNextStep(filter2);
+        filter2.setNextStep(join2);
+        join.setNextStep(join2);
+
+        List<ConnectorMetadata> availableConnectors = new ArrayList<>();
+        availableConnectors.add(connector1);
+        availableConnectors.add(connector2);
+
+        ExecutionPath path1 = new ExecutionPath(project1, filter, availableConnectors);
+        ExecutionPath path2 = new ExecutionPath(project2, project2, availableConnectors);
+        ExecutionPath path3 = new ExecutionPath(project4, filter2, availableConnectors);
+
         HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
         Set<ExecutionPath> paths = new HashSet<>();
         paths.add(path1);
         paths.add(path2);
+        paths.add(path3);
         unions.put(join, paths);
 
         ExecutionWorkflow executionWorkflow = null;
@@ -430,6 +567,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
                 new String[] { connector1.getActorRef().toString() });
 
     }
+*/
 
     @Test
     public void mergeExecutionPathsJoinException() {
@@ -440,7 +578,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns1, types);
 
         Join join = getJoin("joinId");
@@ -456,15 +594,24 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionPath path1 = new ExecutionPath(project1, project1, availableConnectors);
         ExecutionPath path2 = new ExecutionPath(project2, project2, availableConnectors);
 
-        HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
-        Set<ExecutionPath> paths = new HashSet<>();
+        LinkedHashMap<UnionStep, LinkedHashSet<ExecutionPath>> unions = new LinkedHashMap<>();
+        LinkedHashSet<ExecutionPath> paths = new LinkedHashSet<>();
         paths.add(path1);
         paths.add(path2);
         unions.put(join, paths);
 
-        ExecutionWorkflow executionWorkflow = null;
         try {
-            executionWorkflow = plannerWrapper.mergeExecutionPaths("qid", new ArrayList<>(paths), unions);
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+
+            plannerWrapper.mergeExecutionPaths(svqw, new ArrayList<>(paths), unions);
             fail("Expecting planning exception");
         } catch (PlanningException e) {
             assertNotNull(e, "Expecting Planning exception");
@@ -481,7 +628,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns1, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
@@ -507,16 +654,25 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionPath path1 = new ExecutionPath(project1, filter, availableConnectors1);
         ExecutionPath path2 = new ExecutionPath(project2, project2, availableConnectors2);
 
-        HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
-        Set<ExecutionPath> paths = new HashSet<>();
+        LinkedHashMap<UnionStep, LinkedHashSet<ExecutionPath>> unions = new LinkedHashMap<>();
+        LinkedHashSet<ExecutionPath> paths = new LinkedHashSet<>();
         paths.add(path1);
         paths.add(path2);
         unions.put(join, paths);
 
         ExecutionWorkflow executionWorkflow = null;
         try {
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    "qid", new ArrayList<>(paths),
+                    svqw, new ArrayList<>(paths),
                     unions);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
@@ -537,7 +693,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Project project1 = getProject("table1", columns1);
         Project project2 = getProject("table2", columns2);
 
-        ColumnType[] types = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         Select select = getSelect(columns1, types);
 
         Filter filter = getFilter(Operations.FILTER_PK_EQ, columns1[0], Operator.EQ,
@@ -546,7 +702,9 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         Relation r = new Relation(new ColumnSelector(columns1[0]), Operator.EQ,
                 new ColumnSelector(columns2[0]));
 
-        Window streamingWindow = new Window(Operations.SELECT_WINDOW, WindowType.NUM_ROWS);
+        Window streamingWindow = new Window(
+                Collections.singleton(Operations.SELECT_WINDOW),
+                WindowType.NUM_ROWS);
         streamingWindow.setNumRows(10);
 
         Join join = getJoin("joinId", r);
@@ -567,16 +725,25 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         ExecutionPath path1 = new ExecutionPath(project1, filter, availableConnectors1);
         ExecutionPath path2 = new ExecutionPath(project2, streamingWindow, availableConnectors2);
 
-        HashMap<UnionStep, Set<ExecutionPath>> unions = new HashMap<>();
-        Set<ExecutionPath> paths = new HashSet<>();
+        LinkedHashMap<UnionStep, LinkedHashSet<ExecutionPath>> unions = new LinkedHashMap<>();
+        LinkedHashSet<ExecutionPath> paths = new LinkedHashSet<>();
         paths.add(path1);
         paths.add(path2);
         unions.put(join, paths);
 
         ExecutionWorkflow executionWorkflow = null;
         try {
+            BaseQuery bq = new BaseQuery("qid", "", null, null);
+            //SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq,
+            //        new SelectStatement(new SelectExpression(new ArrayList<Selector>()))));
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
             executionWorkflow = plannerWrapper.mergeExecutionPaths(
-                    "qid", new ArrayList<>(paths),
+                    svqw, new ArrayList<>(paths),
                     unions);
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
@@ -595,22 +762,31 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         operations.add(Operations.INSERT);
         operations.add(Operations.INSERT_IF_NOT_EXISTS);
         ConnectorMetadata connectorMetadata = null;
+
+        String strClusterName = "cluster";
+        Map<ClusterName, Integer> clusterWithDefaultPriority = new LinkedHashMap<>();
+        clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
+
         try {
             connectorMetadata = MetadataManagerTestHelper.HELPER.createTestConnector("cassandraConnector", dataStoreName,
-                    new HashSet<ClusterName>(), operations, "ActorRefTest");
+                            clusterWithDefaultPriority, operations, "ActorRefTest", new ArrayList<FunctionType>());
         } catch (ManifestException e) {
             fail();
         }
         try {
-            MetadataManagerTestHelper.HELPER.createTestCluster("cluster", dataStoreName, connectorMetadata.getName());
+            MetadataManagerTestHelper.HELPER.createTestCluster(strClusterName, dataStoreName, connectorMetadata.getName());
         } catch (ManifestException e) {
             fail();
         }
 
         String[] columnNames = { "name", "gender", "age", "bool", "phrase", "email" };
-        ColumnType[] columnTypes = { ColumnType.TEXT, ColumnType.TEXT, ColumnType.INT, ColumnType.BOOLEAN,
-                ColumnType.TEXT,
-                ColumnType.TEXT };
+        ColumnType[] columnTypes = {
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.BOOLEAN),
+                new ColumnType(DataType.TEXT),
+                new ColumnType(DataType.TEXT) };
         String[] partitionKeys = { "name", "age" };
         String[] clusteringKeys = { "gender" };
         MetadataManagerTestHelper.HELPER.createTestTable(new ClusterName("cluster"), "demo", "users", columnNames, columnTypes,
@@ -638,7 +814,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns,
                 null, values, true, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
 
-        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"),"sessionTest");
 
         StorageParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         StorageValidatedQuery storageValidatedQuery = new StorageValidatedQuery(parsedQuery);
@@ -659,7 +835,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         DropCatalogStatement dropCatalogStatement = new DropCatalogStatement(new CatalogName("demo2"), true);
         String query = "Drop Catalog demo2;";
-        BaseQuery baseQuery = new BaseQuery("dropId", query, new CatalogName("demo2"));
+        BaseQuery baseQuery = new BaseQuery("dropId", query, new CatalogName("demo2"),"sessionTest");
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
         MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
@@ -678,7 +854,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         String options = "{comment:'the new comment'}";
         AlterCatalogStatement alterCatalogStatement = new AlterCatalogStatement(new CatalogName("demo2"), options);
         String query = "ALTER CATALOG demo2 WITH {comment:'the new comment'};";
-        BaseQuery baseQuery = new BaseQuery("alterId", query, new CatalogName("demo2"));
+        BaseQuery baseQuery = new BaseQuery("alterId", query, new CatalogName("demo2"),"sessionTest");
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
@@ -698,13 +874,13 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
     public void alterTableWorkflowTest() {
         Object[] parameters = { };
         ColumnMetadata columnMetadata = new ColumnMetadata(new ColumnName(new TableName("demo", "table3"),
-                "email"), parameters, ColumnType.VARCHAR);
+                "email"), parameters, new ColumnType(DataType.VARCHAR));
         AlterOptions alterOptions = new AlterOptions(AlterOperation.ALTER_COLUMN, null, columnMetadata);
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(columnMetadata.getName().getTableName(),
-                columnMetadata.getName(), ColumnType.VARCHAR, null, AlterOperation.ALTER_COLUMN);
+                columnMetadata.getName(), new ColumnType(DataType.VARCHAR), null, AlterOperation.ALTER_COLUMN);
         String query = "ALTER TABLE demo.table3 ALTER table3.email TYPE varchar;";
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
@@ -722,5 +898,6 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         }
 
     }
+
 
 }

@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import org.testng.annotations.Test;
 
 import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
@@ -132,16 +133,16 @@ public class InMemoryTableTest {
         int indexToFind = (INSERT_TEST_SIZE-1);
         InMemoryRelation relation = new InMemoryRelation(columnNames[0], InMemoryOperations.EQ,
                 columnNames[0]+indexToFind);
-        List<Object[]> result = null;
+        List<SimpleValue[]> result = null;
         try {
             result = table.fullScanSearch(Arrays.asList(relation), Arrays.asList(outputColumn));
         } catch (Exception e) {
             fail("Cannot execute query", e);
         }
         assertEquals(result.size(), 1, "Invalid size");
-        Object[] row = result.get(0);
+        SimpleValue[] row = result.get(0);
         assertEquals(row.length, 1, "Invalid number of columns returned.");
-        assertEquals(row[0], columnNames[0]+indexToFind, "Invalid row retrieved.");
+        assertEquals(row[0].getValue(), columnNames[0]+indexToFind, "Invalid row retrieved.");
     }
 
     @Test
@@ -169,17 +170,17 @@ public class InMemoryTableTest {
         int indexToFind = (INSERT_TEST_SIZE-1);
         InMemoryRelation relation = new InMemoryRelation(columnNames[0], InMemoryOperations.EQ,
                 columnNames[0]+indexToFind);
-        List<Object[]> result = null;
+        List<SimpleValue[]> result = null;
         try {
             result = table.fullScanSearch(Arrays.asList(relation), Arrays.asList(toUpper));
         } catch (Exception e) {
             fail("Cannot execute query", e);
         }
         assertEquals(result.size(), 1, "Invalid size");
-        Object[] row = result.get(0);
+        SimpleValue[] row = result.get(0);
         assertEquals(row.length, 1, "Invalid number of columns returned.");
         String expected = (columnNames[0]+indexToFind).toUpperCase();
-        assertEquals(row[0], expected, "Invalid row retrieved.");
+        assertEquals(row[0].getValue(), expected, "Invalid row retrieved.");
     }
 
     @Test
@@ -205,7 +206,7 @@ public class InMemoryTableTest {
         InMemorySelector literalColumn = new InMemoryLiteralSelector("CONCAT_TEST");
         InMemorySelector concat = new InMemoryFunctionSelector("concat", Arrays.asList(stringColumn, literalColumn));
 
-        List<Object[]> result = null;
+        List<SimpleValue[]> result = null;
         try {
             result = table.fullScanSearch(new ArrayList<InMemoryRelation>(), Arrays.asList(concat));
         } catch (Exception e) {
@@ -214,9 +215,9 @@ public class InMemoryTableTest {
         assertEquals(result.size(), INSERT_TEST_SIZE, "Invalid size");
 
         List<String> toCheck = new ArrayList<>();
-        for(Object [] row : result) {
+        for(SimpleValue [] row : result) {
             assertEquals(row.length, 1, "Invalid number of columns returned.");
-            toCheck.add(row[0].toString());
+            toCheck.add(row[0].getValue().toString());
         }
 
         for (int index = 0; index < INSERT_TEST_SIZE; index++) {

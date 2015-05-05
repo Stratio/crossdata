@@ -18,10 +18,14 @@
 
 package com.stratio.crossdata.common.data;
 
+import java.io.Serializable;
+
 /**
  * Helper class to provide qualified names for cluster, tables, and columns.
  */
-public final class QualifiedNames {
+public final class QualifiedNames implements Serializable {
+
+    private static final long serialVersionUID = 3409400422750005391L;
 
     /**
      * Private constructor as all methods are static.
@@ -36,7 +40,7 @@ public final class QualifiedNames {
      * @return The name of the catalog in lower-case.
      */
     public static String getCatalogQualifiedName(String name) {
-        return normalize(name);
+        return name;
     }
 
     /**
@@ -61,7 +65,7 @@ public final class QualifiedNames {
      * @return A lower-case string with the elements separated by the dot character.
      */
     public static String getTableQualifiedName(String catalog, String name) {
-        return normalize(getCatalogQualifiedName(catalog) + "." + name);
+        return catalog + "." + name;
     }
 
     /**
@@ -73,7 +77,7 @@ public final class QualifiedNames {
      * @return A lower-case string with the elements separated by the dot character.
      */
     public static String getColumnQualifiedName(String catalog, String table, String name) {
-        return normalize(getTableQualifiedName(catalog, table) + "." + name);
+        return getTableQualifiedName(catalog, table) + "." + name;
     }
 
     /**
@@ -83,7 +87,7 @@ public final class QualifiedNames {
      * @return The name of cluster preceded by {@code cluster.}.
      */
     public static String getClusterQualifiedName(String name) {
-        return normalize("cluster." + name);
+        return "cluster." + name;
     }
 
     /**
@@ -93,7 +97,7 @@ public final class QualifiedNames {
      * @return The name of the connector preceded by {@code connector.}.
      */
     public static String getConnectorQualifiedName(String name) {
-        return normalize("connector." + name);
+        return "connector." + name;
     }
 
     /**
@@ -103,7 +107,7 @@ public final class QualifiedNames {
      * @return The name of the node preceded by {@code node.}.
      */
     public static String getNodeQualifiedName(String name) {
-        return normalize("node." + name);
+        return "node." + name;
     }
 
     /**
@@ -112,7 +116,7 @@ public final class QualifiedNames {
      * @return A string.
      */
     public static String getFunctionQualifiedName(String name) {
-        return normalize("function." + name);
+        return "function." + name;
     }
 
     /**
@@ -122,7 +126,7 @@ public final class QualifiedNames {
      * @return The name of the datastore preceded by {@code datastore.}.
      */
     public static String getDataStoreQualifiedName(String name) {
-        return normalize("datastore." + name);
+        return "datastore." + name;
     }
 
     /**
@@ -135,16 +139,8 @@ public final class QualifiedNames {
      */
     public static String getIndexQualifiedName(String catalog, String table,
             String name) {
-        return normalize(getTableQualifiedName(catalog, table) + ".INDEX[" + name + "]");
+        return getTableQualifiedName(catalog, table) + ".INDEX[" + name + "]";
     }
 
-    /**
-     * Transform an element name into lower-case.
-     *
-     * @param qName The name.
-     * @return A lower-case version of the input name.
-     */
-    private static String normalize(String qName) {
-        return qName.toLowerCase();
-    }
+
 }

@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.data;
 
+import com.stratio.crossdata.common.utils.Constants;
+
 /**
  * TABLE name recognized by the parser. The name may contain:
  * <ul>
@@ -27,6 +29,7 @@ package com.stratio.crossdata.common.data;
  */
 public class TableName extends Name {
 
+    private static final long serialVersionUID = -1224192139573160759L;
     private final String name;
 
     private CatalogName catalogName;
@@ -47,7 +50,7 @@ public class TableName extends Name {
         if(tableName == null || tableName.isEmpty()){
             this.name = null;
         } else {
-            this.name = tableName.toLowerCase();
+            this.name = tableName;
         }
     }
 
@@ -69,6 +72,14 @@ public class TableName extends Name {
 
     public void setAlias(String alias) {
         this.alias = alias;
+    }
+
+    /**
+     * Return whether the table is virtual or not.
+     * @return true if the table is created using a select statement; false if the table is associated to a real data store.
+     */
+    public boolean isVirtual(){
+        return (catalogName != null) ? Constants.VIRTUAL_NAME.equals(catalogName.getName()) : false;
     }
 
     @Override public boolean isCompletedName() {
@@ -93,15 +104,6 @@ public class TableName extends Name {
         return NameType.TABLE;
     }
 
-    @Override public String toString() {
-        if(alias == null){
-            return this.getQualifiedName();
-        }
-        StringBuilder sb = new StringBuilder(this.getQualifiedName());
-        sb.append(" AS ").append(alias);
-        return sb.toString();
-    }
-
     @Override
     public int hashCode() {
         String code;
@@ -114,5 +116,14 @@ public class TableName extends Name {
     @Override
     public boolean equals(Object o) {
         return (this == o) || ((o instanceof TableName) && (this.hashCode() == o.hashCode()));
+    }
+
+    @Override public String toString() {
+        if(alias == null){
+            return this.getQualifiedName();
+        }
+        StringBuilder sb = new StringBuilder(this.getQualifiedName());
+        sb.append(" AS ").append(alias);
+        return sb.toString();
     }
 }

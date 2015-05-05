@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.core.normalizer;
 
+import java.util.HashSet;
+
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
@@ -35,7 +38,7 @@ public class Normalizer {
      */
     public SelectValidatedQuery normalize(SelectParsedQuery parsedQuery) throws ValidationException {
         Normalizator normalizator = new Normalizator(parsedQuery);
-        normalizator.execute();
+        normalizator.execute(new HashSet<TableName>());
         return new SelectValidatedQuery(parsedQuery);
     }
 

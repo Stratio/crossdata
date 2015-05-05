@@ -42,7 +42,7 @@ public class DetachConnectorStatementTest extends BasicValidatorTest {
                 new ConnectorName("CassandraConnector"), new ClusterName("cluster"));
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("detachConnectorId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("detachConnectorId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, detachConnectorStatement);
         try {
@@ -62,7 +62,7 @@ public class DetachConnectorStatementTest extends BasicValidatorTest {
                 new ClusterName("cluster"));
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("detachConnectorId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("detachConnectorId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, detachConnectorStatement);
         try {
@@ -83,7 +83,7 @@ public class DetachConnectorStatementTest extends BasicValidatorTest {
                 new ConnectorName("CassandraConnector"), new ClusterName("Unknown"));
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("detachConnectorId", query, new CatalogName("system"));
+        BaseQuery baseQuery = new BaseQuery("detachConnectorId", query, new CatalogName("system"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, detachConnectorStatement);
         try {

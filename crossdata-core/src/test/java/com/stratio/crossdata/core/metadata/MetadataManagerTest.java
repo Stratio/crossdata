@@ -49,12 +49,15 @@ import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
 import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class MetadataManagerTest {
+
+    private static final String VERSION = "0.3.0";
 
     @BeforeClass
     public void setUp() throws ManifestException {
@@ -127,6 +130,8 @@ public class MetadataManagerTest {
         // Create catalog
         CatalogName catalogName = MetadataManagerTestHelper.HELPER.createTestCatalog("testCatalog").getName();
 
+
+
         //Check catalog persistence
         assertEquals(MetadataManager.MANAGER.getCatalog(catalogName).getName(), catalogName,
                 "Expected: " + catalogName + System.lineSeparator() +
@@ -145,7 +150,7 @@ public class MetadataManagerTest {
 
         // Create and add test table to the MetadataManager
         String[] columnNames1 = { "id", "user" };
-        ColumnType[] columnTypes1 = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys1 = { "id" };
         String[] clusteringKeys1 = { };
         TableMetadata table = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(),
@@ -304,10 +309,13 @@ public class MetadataManagerTest {
 
     @Test(dependsOnMethods = { "testCreateCatalog" } )
     public void testGetCatalogs() {
+        // TODO We should avoid dependencies between tests.
+
         String catalog = "catalogTest";
         MetadataManagerTestHelper.HELPER.createTestCatalog(catalog);
 
         List<CatalogMetadata> catalogs = MetadataManager.MANAGER.getCatalogs();
+
 
         int expectedNumber = 1;
 
@@ -412,12 +420,20 @@ public class MetadataManagerTest {
     @Test
     public void testGetConnectors() {
 
+        //TODO there should be no dependency with other tests.
+
         testCreateConnector();
 
         Status status = Status.ONLINE;
         List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors(status);
 
-        int expectedSize = 4;
+        int expectedSize =  4;
+
+        for(ConnectorMetadata connector: connectors){
+            if(connector.getName().equals(new ConnectorName("InMemoryConnector"))){
+                expectedSize++;
+            }
+        }
 
         assertTrue(connectors.size() == expectedSize,
                 "Connectors size is wrong." + System.lineSeparator() +
@@ -437,21 +453,22 @@ public class MetadataManagerTest {
 
         int expectedSize = 4;
 
+        for(ConnectorName connector: connectors){
+            if(connector.equals(new ConnectorName("InMemoryConnector"))){
+                expectedSize++;
+            }
+        }
+
         assertTrue(connectors.size() == expectedSize,
                 "Connectors size is wrong." + System.lineSeparator() +
                 "Expected: " + expectedSize + System.lineSeparator() +
                 "Found:    " + connectors.size());
-        /*
-        assertTrue(connectors.get(0).getName().equalsIgnoreCase("connectorTest"),
-                "Expected: " + "connectorTest" + System.lineSeparator() +
-                "Found:    " + connectors.get(0).getName());
-        */
     }
 
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testShouldBeUniqueException() {
         DataStoreName name = MetadataManagerTestHelper.HELPER.createTestDatastore();
-        String version = "0.2.0";
+        String version = VERSION;
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
@@ -481,7 +498,7 @@ public class MetadataManagerTest {
         String catalogName = "catalogTest";
         String tableName = "tableTest";
         String[] columnNames = { "firstCol", "SecondCol" };
-        ColumnType[] columnTypes = { ColumnType.INT, ColumnType.TEXT };
+        ColumnType[] columnTypes = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
         String[] partitionKeys = { "firstCol" };
         String[] clusteringKeys = new String[0];
         MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName, tableName, columnNames, columnTypes,
@@ -526,7 +543,7 @@ public class MetadataManagerTest {
         MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         DataStoreName name = new DataStoreName("dataStoreTest");
-        String version = "0.2.0";
+        String version = VERSION;
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
@@ -544,7 +561,7 @@ public class MetadataManagerTest {
         String actorRef = "akkaRefTest";
         MetadataManagerTestHelper.HELPER.createTestConnector(name, dataStoreName, actorRef);
 
-        String version = "0.2.0";
+        String version = VERSION;
         List<String> dataStoreRefs = new ArrayList<>();
         List<PropertyType> requiredProperties = new ArrayList<>();
         List<PropertyType> optionalProperties = new ArrayList<>();

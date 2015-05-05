@@ -38,8 +38,9 @@ import com.stratio.crossdata.communication.Update;
 /**
  * Storage related operations.
  */
-public class StorageWorkflow extends ExecutionWorkflow{
+public class StorageWorkflow extends ExecutionWorkflow {
 
+    private static final long serialVersionUID = 3929350966531076463L;
     private ClusterName clusterName = null;
 
     private TableMetadata tableMetadata = null;
@@ -56,10 +57,12 @@ public class StorageWorkflow extends ExecutionWorkflow{
 
     private boolean ifNotExists;
 
+    private ExecutionWorkflow previousExecutionWorkflow;
+
     /**
      * Class constructor.
      *
-     * @param queryId Query identifer.
+     * @param queryId Query identifier.
      * @param actorRef      Target actor reference.
      * @param executionType Type of execution.
      * @param type          Type of results.
@@ -153,5 +156,15 @@ public class StorageWorkflow extends ExecutionWorkflow{
 
     public void setIfNotExists(boolean ifNotExists) {
         this.ifNotExists = ifNotExists;
+    }
+
+
+
+    public ExecutionWorkflow getPreviousExecutionWorkflow() {
+        return previousExecutionWorkflow;
+    }
+
+    public void setPreviousExecutionWorkflow(ExecutionWorkflow previousExecutionWorkflow) {
+        this.previousExecutionWorkflow = previousExecutionWorkflow;
     }
 }

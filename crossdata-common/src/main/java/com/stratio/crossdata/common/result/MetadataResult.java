@@ -72,33 +72,42 @@ public final class MetadataResult extends Result {
      */
     public static final int OPERATION_LIST_CATALOGS = 7;
 
+    public static final int OPERATION_DESCRIBE_CATALOG = 8;
+
     /**
      * Operation identifier to list tables.
      */
-    public static final int OPERATION_LIST_TABLES = 8;
+    public static final int OPERATION_LIST_TABLES = 9;
+
+    public static final int OPERATION_DESCRIBE_TABLE = 10;
 
     /**
      * Operation identifier to list columns.
      */
-    public static final int OPERATION_LIST_COLUMNS = 9;
+    public static final int OPERATION_LIST_COLUMNS = 11;
 
     /**
      * Operation identifier to ALTER CATALOG.
      */
-    public static final int OPERATION_ALTER_CATALOG = 10;
+    public static final int OPERATION_ALTER_CATALOG = 12;
 
     /**
      * Operation identifier to ALTER TABLE.
      */
-    public static final int OPERATION_ALTER_TABLE = 11;
+    public static final int OPERATION_ALTER_TABLE = 13;
 
-    public static final int OPERATION_DISCOVER_METADATA = 12;
+    public static final int OPERATION_DISCOVER_METADATA = 14;
 
-    public static final int OPERATION_IMPORT_CATALOGS = 13;
+    public static final int OPERATION_IMPORT_CATALOGS = 15;
 
-    public static final int OPERATION_IMPORT_CATALOG = 14;
+    public static final int OPERATION_IMPORT_CATALOG = 16;
 
-    public static final int OPERATION_IMPORT_TABLE = 15;
+    public static final int OPERATION_IMPORT_TABLE = 17;
+
+    public static final int OPERATION_REGISTER_TABLE = 18;
+
+    public static final int OPERATION_UNREGISTER_TABLE = 19;
+
 
     /**
      * Operation bound to the {@link com.stratio.crossdata.common.result.MetadataResult}.
@@ -234,6 +243,8 @@ public final class MetadataResult extends Result {
             return "CATALOG created successfully";
         case MetadataResult.OPERATION_CREATE_TABLE:
             return "TABLE created successfully";
+        case MetadataResult.OPERATION_REGISTER_TABLE:
+            return "TABLE registered successfully";
         case MetadataResult.OPERATION_CREATE_INDEX:
             return "INDEX created successfully";
         case MetadataResult.OPERATION_DROP_CATALOG:
@@ -244,8 +255,12 @@ public final class MetadataResult extends Result {
             return "INDEX dropped successfully";
         case MetadataResult.OPERATION_LIST_CATALOGS:
             return catalogList.toString();
+        case MetadataResult.OPERATION_DESCRIBE_CATALOG:
+            return catalogMetadataList.get(0).toString();
         case MetadataResult.OPERATION_LIST_TABLES:
             return tableList.toString();
+        case MetadataResult.OPERATION_DESCRIBE_TABLE:
+            return tableList.get(0).toString();
         case MetadataResult.OPERATION_LIST_COLUMNS:
             return columnList.toString();
         case MetadataResult.OPERATION_DISCOVER_METADATA:

@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
+import java.util.Set;
+
 import com.stratio.crossdata.common.metadata.Operations;
 
 /**
@@ -25,6 +27,7 @@ import com.stratio.crossdata.common.metadata.Operations;
  */
 public class Limit extends TransformationStep {
 
+    private static final long serialVersionUID = -8755883109886275085L;
     /**
      * The number of tuples to be returned.
      */
@@ -34,10 +37,10 @@ public class Limit extends TransformationStep {
      * Class constructor.
      *
      * @param limit  The max of results.
-     * @param operation The operation to be applied.
+     * @param operations The operations to be applied.
      */
-    public Limit(Operations operation, int limit) {
-        super(operation);
+    public Limit(Set<Operations> operations, int limit) {
+        super(operations);
         this.limit = limit;
     }
 

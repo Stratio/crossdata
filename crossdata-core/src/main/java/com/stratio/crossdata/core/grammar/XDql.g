@@ -22,7 +22,7 @@ grammar XDql;
 options {
     k = 0;
     language = Java;
-    backtrack = false;
+    backtrack = true;
     memoize = true;
 }
  
@@ -45,11 +45,19 @@ options {
     import java.util.HashSet;
     import org.apache.commons.lang3.tuple.MutablePair;
     import com.stratio.crossdata.common.exceptions.*;
+    import com.stratio.crossdata.common.utils.Constants;
+    import java.util.UUID;
+    import org.apache.commons.lang3.tuple.ImmutablePair;
+    import org.apache.commons.lang3.tuple.Pair;
 }
 
 @members {
 
     private String sessionCatalog = "";
+
+    private TableName workaroundTable = null;
+
+    private Map workaroundTablesAliasesMap = new LinkedHashMap<String, String>();
 
     public String getEffectiveCatalog(CatalogName cn) {
         return ((cn != null) && (!cn.getName().isEmpty()))? cn.getName(): sessionCatalog;
@@ -90,15 +98,15 @@ options {
     }
 
     public IndexName normalizeIndexName(String str){
-            String [] indexTokens = str.split("\\.");
-            if((indexTokens.length) == 2 && (!sessionCatalog.isEmpty())){
-                return new IndexName(sessionCatalog, indexTokens[0], indexTokens[1]);
-            } else if(indexTokens.length == 3) {
-                return new IndexName(indexTokens[0], indexTokens[1], indexTokens[2]);
-            } else {
-                throwParsingException("Catalog can't be empty");
-            }
-            return null;
+        String [] indexTokens = str.split("\\.");
+        if((indexTokens.length) == 2 && (!sessionCatalog.isEmpty())){
+            return new IndexName(sessionCatalog, indexTokens[0], indexTokens[1]);
+        } else if(indexTokens.length == 3) {
+            return new IndexName(indexTokens[0], indexTokens[1], indexTokens[2]);
+        } else {
+            throwParsingException("Catalog can't be empty");
+        }
+        return null;
     }
 
     private ErrorsHelper foundErrors = new ErrorsHelper();
@@ -109,18 +117,6 @@ options {
 
     public void throwParsingException(String message) {
         throw new ParsingException(message);
-    }
-
-    public boolean checkWhereClauses(List<Relation> whereClauses){
-        if((whereClauses == null) || (whereClauses.isEmpty())){
-            return true;
-        }
-        for(Relation relation: whereClauses){
-            if(!(relation.getLeftTerm() instanceof ColumnSelector)){
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override
@@ -178,6 +174,8 @@ fragment POINT: '.';
 // Case-insensitive keywords
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
+T_REGISTER: R E G I S T E R;
+T_UNREGISTER: U N R E G I S T E R;
 T_ALTER: A L T E R;
 T_NOT: N O T;
 T_WITH: W I T H;
@@ -187,6 +185,7 @@ T_TABLES: T A B L E S;
 T_IF: I F;
 T_EXISTS: E X I S T S;
 T_AND: A N D;
+T_OR: O R;
 T_USE: U S E;
 T_SET: S E T;
 T_OPTIONS: O P T I O N S;
@@ -197,9 +196,7 @@ T_FOR: F O R;
 T_INDEX: I N D E X;
 T_LIST: L I S T;
 T_REMOVE: R E M O V E;
-T_UDF: U D F;
 T_PROCESS: P R O C E S S;
-T_TRIGGER: T R I G G E R;
 T_STOP: S T O P;
 T_ON: O N;
 T_USING: U S I N G;
@@ -209,11 +206,9 @@ T_PRIMARY: P R I M A R Y;
 T_KEY: K E Y;
 T_INSERT: I N S E R T;
 T_INTO: I N T O;
-T_COMPACT: C O M P A C T;
 T_STORAGE: S T O R A G E;
 T_CLUSTER: C L U S T E R;
 T_CLUSTERS: C L U S T E R S;
-T_CLUSTERING: C L U S T E R I N G;
 T_ORDER: O R D E R;
 T_SELECT: S E L E C T;
 T_VALUES: V A L U E S;
@@ -228,6 +223,12 @@ T_LAST: L A S T;
 T_ROWS: R O W S;
 T_INNER: I N N E R;
 T_JOIN: J O I N;
+T_OUTER: O U T E R;
+T_LEFT: L E F T;
+T_RIGHT: R I G H T;
+T_CROSS: C R O S S;
+T_NATURAL: N A T U R A L;
+T_FULL: F U L L;
 T_BY: B Y;
 T_LIMIT: L I M I T;
 T_AS: A S;
@@ -303,6 +304,15 @@ T_BIGINT: B I G I N T;
 T_IMPORT: I M P O R T;
 T_DISCOVER: D I S C O V E R;
 T_METADATA: M E T A D A T A;
+T_PRIORITY: P R I O R I T Y;
+T_PAGINATION: P A G I N A T I O N;
+
+T_CASE: C A S E;
+T_THEN: T H E N;
+T_ELSE: E L S E;
+T_END: E N D;
+T_HAVING: H A V I N G;
+
 
 fragment LETTER: ('A'..'Z' | 'a'..'z');
 fragment DIGIT: '0'..'9';
@@ -377,12 +387,16 @@ alterClusterStatement returns [AlterClusterStatement acs]
 attachConnectorStatement returns [AttachConnectorStatement acs]
     @init{
         optionsJson = "";
+        int priority = 5;
+        int pagination = 0;
     }
     @after{
         $acs = new AttachConnectorStatement(new ConnectorName($connectorName.text),
-        new ClusterName($clusterName.text), optionsJson);
+        new ClusterName($clusterName.text), optionsJson, priority, pagination);
     }:
     T_ATTACH T_CONNECTOR connectorName=T_IDENT T_TO clusterName=T_IDENT (T_WITH (T_OPTIONS)? optionsJson=getJson)?
+    (T_AND T_PRIORITY T_EQUAL number=T_CONSTANT { priority = Integer.parseInt($number.text); } )?
+    (T_AND T_PAGINATION T_EQUAL pageSize=T_CONSTANT { pagination = Integer.parseInt($pageSize.text); } )?
 ;
 
 detachConnectorStatement returns [DetachConnectorStatement dcs]
@@ -436,8 +450,7 @@ deleteStatement returns [DeleteStatement ds]
 		$ds = new DeleteStatement(tablename, whereClauses);
 	}:
 	T_DELETE T_FROM tablename=getTableName
-	(T_WHERE whereClauses=getWhereClauses[tablename]
-	    { if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name"); })?
+	(T_WHERE whereClauses=getWhereClauses[tablename])?
 ;
 
 //DROP INDEX IF EXISTS index_name;
@@ -511,7 +524,6 @@ updateTableStatement returns [UpdateTableStatement pdtbst]
     (T_WHERE whereClauses=getWhereClauses[tablename])?
     (T_WITH j=getJson)?
     {
-        if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
         $pdtbst = new UpdateTableStatement(tablename, assignations, whereClauses, j);
     }
 ;
@@ -522,8 +534,9 @@ createTableStatement returns [CreateTableStatement crtast]
         LinkedHashSet<ColumnName> partitionKey = new LinkedHashSet<>();
         LinkedHashSet<ColumnName> clusterKey = new LinkedHashSet<>();
         boolean ifNotExists = false;
+        boolean isExternal = false;
     }:
-    T_CREATE tableType=getTableType T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
+    (T_CREATE | T_REGISTER {isExternal = true;}) tableType=getTableType T_TABLE (T_IF T_NOT T_EXISTS {ifNotExists = true;})?
     tablename=getTableName { if(!tablename.isCompletedName()) throwParsingException("Catalog is missing") ; }
     T_ON T_CLUSTER clusterID=T_IDENT
     T_START_PARENTHESIS
@@ -552,7 +565,7 @@ createTableStatement returns [CreateTableStatement crtast]
     {
         if(partitionKey.isEmpty()) throwParsingException("Primary Key definition missing");
         $crtast = new CreateTableStatement(tableType, tablename, new ClusterName($clusterID.text), columns,
-        partitionKey, clusterKey);
+        partitionKey, clusterKey, isExternal);
         $crtast.setProperties(j);
         $crtast.setIfNotExists(ifNotExists);
     }
@@ -564,6 +577,7 @@ getTableType returns [TableType tableType]
     }:
     ( T_EPHEMERAL { tableType = TableType.EPHEMERAL; } )?
 ;
+
 
 alterTableStatement returns [AlterTableStatement altast]
     @init{
@@ -586,46 +600,105 @@ selectStatement returns [SelectStatement slctst]
         boolean orderInc = false;
         boolean groupInc = false;
         boolean limitInc = false;
+        boolean havingInc = false;
         Map fieldsAliasesMap = new LinkedHashMap<String, String>();
         Map tablesAliasesMap = new LinkedHashMap<String, String>();
         MutablePair<String, String> pair = new MutablePair<>();
         boolean implicitJoin = false;
+        boolean subqueryInc = false;
+        JoinType joinType=JoinType.INNER;
+        List<TableName> implicitTables = new ArrayList<>();
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
         slctst.setTablesAliases(tablesAliasesMap);
     }:
-    T_SELECT selClause=getSelectExpression[fieldsAliasesMap] T_FROM tablename=getAliasedTableID[tablesAliasesMap]
-    (T_COMMA { joinInc = true; implicitJoin = true; } identJoin=getAliasedTableID[tablesAliasesMap])?
+    T_SELECT selClause=getSelectExpression[fieldsAliasesMap]
+    T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS
+        subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
+        | tablename=getAliasedTableID[tablesAliasesMap])
+    {$slctst = new SelectStatement(selClause, tablename);}
+
+    (T_COMMA { implicitJoin = true; workaroundTablesAliasesMap = tablesAliasesMap; implicitTables.add(tablename); }
+        implicitTable=getAliasedTableID[workaroundTablesAliasesMap]
+        { tablesAliasesMap = workaroundTablesAliasesMap;
+          implicitTables.add(implicitTable); })*
+
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
-    ((T_INNER)? T_JOIN { joinInc = true;} identJoin=getAliasedTableID[tablesAliasesMap] T_ON
-    joinRelations=getWhereClauses[null])?
-    (T_WHERE { if(!implicitJoin) whereInc = true; } whereClauses=getWhereClauses[null])?
-    (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
+
+    //Add joins
+    (
+        //CROSS_JOIN
+        (   T_CROSS T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
+            identJoin=getAliasedTableID[workaroundTablesAliasesMap]
+            { List<TableName> joinTables = new ArrayList<>();
+            joinTables.add(tablename);
+            joinTables.add(identJoin);
+            $slctst.addJoin(new Join(joinTables));}
+        )
+        //JOINs WITH ON
+        |(
+            (T_INNER {joinType=JoinType.INNER;}
+                | T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}
+                | T_RIGHT {joinType=JoinType.RIGHT_OUTER;}
+                | T_LEFT {joinType=JoinType.LEFT_OUTER;}
+                | T_LEFT T_OUTER {joinType=JoinType.LEFT_OUTER;}
+                | T_FULL T_OUTER {joinType=JoinType.FULL_OUTER;})?
+            T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
+            identJoin=getAliasedTableID[workaroundTablesAliasesMap]
+            T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
+            joinRelations=getConditions[null]
+            { List<TableName> joinTables = new ArrayList<>();
+            joinTables.add(tablename);
+            joinTables.add(identJoin);
+            $slctst.addJoin(new Join(joinTables, joinRelations, joinType));}
+         )
+    )*
+
+    (T_WHERE { whereInc = true;} whereClauses=getConditions[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
+    (T_HAVING {havingInc = true;} havingClause=getConditions[null])?
+    (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
     {
-        if(!checkWhereClauses(whereClauses)) throwParsingException("Left terms of where clauses must be a column name");
-        $slctst = new SelectStatement(selClause, tablename);
-        if(windowInc)
+        if(windowInc){
             $slctst.setWindow(window);
-        if(joinInc)
-            if(implicitJoin)
-                $slctst.setJoin(new InnerJoin(identJoin, whereClauses));
-            else
-                $slctst.setJoin(new InnerJoin(identJoin, joinRelations));
-        if(whereInc)
-             $slctst.setWhere(whereClauses);
-        if(orderInc)
+        }
+        if(whereInc){
+            $slctst.setWhere(whereClauses);
+        }
+        if(orderInc){
              $slctst.setOrderByClauses(orderByClauses);
-        if(groupInc)
+        }
+        if(groupInc){
              $slctst.setGroupByClause(new GroupByClause(groupByClause));
-        if(limitInc)
+        }
+        if(havingInc){
+             $slctst.setHavingClause(havingClause);
+        }
+        if(limitInc){
              $slctst.setLimit(Integer.parseInt($constant.text));
-
-        //$slctst.replaceAliasesWithName(fieldsAliasesMap, tablesAliasesMap);
-        //$slctst.updateTableNames();
+        }
+        if(subqueryInc){
+             $slctst.setSubquery(subquery, subqueryAlias);
+        }
+        if(implicitJoin){
+            $slctst.addJoin(new Join(implicitTables, new ArrayList<AbstractRelation>()));
+        }
     }
+;
+
+getSubqueryAlias returns [String sAlias]
+   @init{
+        boolean aliasInc = false;
+   }
+   @after{
+        if(aliasInc)
+            $sAlias = $alias.text;
+        else
+            $sAlias = UUID.randomUUID().toString();
+   }:
+   ((T_AS)? alias=T_IDENT {aliasInc = true;})?
 ;
 
 insertIntoStatement returns [InsertIntoStatement nsntst]
@@ -660,10 +733,11 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
 dropTableStatement returns [DropTableStatement drtbst]
     @init{
         boolean ifExists = false;
+        boolean isExternal = false;
     }:
-    T_DROP T_TABLE (T_IF T_EXISTS { ifExists = true; })?
+    (T_DROP | T_UNREGISTER {isExternal = true;}) T_TABLE (T_IF T_EXISTS { ifExists = true; })?
     identID=getTableName {
-        $drtbst = new DropTableStatement(identID, ifExists);
+        $drtbst = new DropTableStatement(identID, ifExists, isExternal);
     }
 ;
 
@@ -696,16 +770,20 @@ importMetadataStatement returns [ImportMetadataStatement imst]
     )
     T_CLUSTER clusterName=T_IDENT
     {
-        //ImportMetadataStatement(clusterName, catalogName, tableName, discover);
         $imst = new ImportMetadataStatement(new ClusterName($clusterName.text), catalog, table, discover);
     }
 ;
+
+// ========================================================
+// CROSSDATA STATEMENT
+// ========================================================
 
 crossdataStatement returns [CrossdataStatement st]:
     (T_START_BRACKET
         ( gID=getGenericID { sessionCatalog = gID;} )?
     T_END_BRACKET T_COMMA)?
-    (st_nsnt  = insertIntoStatement { $st = st_nsnt;}
+    (
+    st_nsnt  = insertIntoStatement { $st = st_nsnt;}
     | st_slct = selectStatement { $st = st_slct;}
     | st_crta = createTableStatement { $st = st_crta;}
     | st_altt = alterTableStatement { $st = st_altt;}
@@ -723,7 +801,8 @@ crossdataStatement returns [CrossdataStatement st]:
     | st_decn = detachConnectorStatement { $st = st_decn;}
     | st_cixs = createIndexStatement { $st = st_cixs; }
     | st_dixs = dropIndexStatement { $st = st_dixs; }
-    | st_imst = importMetadataStatement { $st = st_imst; })
+    | st_imst = importMetadataStatement { $st = st_imst; }
+    )
 ;
 
 query returns [CrossdataStatement st]:
@@ -740,30 +819,34 @@ getDataType returns [ColumnType dataType]:
 ;
 
 getBasicType returns [ColumnType dataType]:
-    T_BIGINT { $dataType=ColumnType.BIGINT; }
-    | T_BOOL { $dataType=ColumnType.BOOLEAN; }
-    | T_BOOLEAN { $dataType=ColumnType.BOOLEAN; }
-    | T_DOUBLE { $dataType=ColumnType.DOUBLE; }
-    | T_FLOAT { $dataType=ColumnType.FLOAT; }
-    | T_INT { $dataType=ColumnType.INT; }
-    | T_INTEGER { $dataType=ColumnType.INT; }
-    | T_TEXT { $dataType=ColumnType.TEXT; }
-    | T_VARCHAR { $dataType=ColumnType.VARCHAR; }
+    T_BIGINT { $dataType=new ColumnType(DataType.BIGINT); }
+    | T_BOOL { $dataType=new ColumnType(DataType.BOOLEAN); }
+    | T_BOOLEAN { $dataType=new ColumnType(DataType.BOOLEAN); }
+    | T_DOUBLE { $dataType=new ColumnType(DataType.DOUBLE); }
+    | T_FLOAT { $dataType=new ColumnType(DataType.FLOAT); }
+    | T_INT { $dataType=new ColumnType(DataType.INT); }
+    | T_INTEGER { $dataType=new ColumnType(DataType.INT); }
+    | T_TEXT { $dataType=new ColumnType(DataType.TEXT); }
+    | T_VARCHAR { $dataType=new ColumnType(DataType.VARCHAR); }
+    | nativeType=T_IDENT { $dataType = new ColumnType(DataType.NATIVE);
+                           $dataType.setDBMapping($nativeType.text, Object.class);
+                           $dataType.setODBCType($nativeType.text);
+                         }
 ;
 
 getCollectionType returns [ColumnType dataType]:
-    T_SET { $dataType = ColumnType.SET; }
-    | T_LIST { $dataType = ColumnType.LIST; }
+    T_SET { $dataType = new ColumnType(DataType.SET); }
+    | T_LIST { $dataType = new ColumnType(DataType.LIST); }
 ;
 
 getMapType returns [ColumnType dataType]:
-    T_MAP { $dataType = ColumnType.MAP; }
+    T_MAP { $dataType = new ColumnType(DataType.MAP); }
 ;
 
 getOrdering[TableName tablename] returns [List<OrderByClause> orderByClauses]
     @init{
         List<OrderByClause> sels = new ArrayList<>();
-        OrderDirection dir;
+        OrderDirection dir = null;
     }
     @after{
         $orderByClauses = sels;
@@ -773,8 +856,7 @@ getOrdering[TableName tablename] returns [List<OrderByClause> orderByClauses]
     {sels.add(new OrderByClause(dir, ident1));}
     (T_COMMA identN=getSelector[tablename] {dir = OrderDirection.ASC;}
         (T_ASC | T_DESC { dir = OrderDirection.DESC; } )?
-    {sels.add(new OrderByClause(dir, identN));}
-    )*
+    {sels.add(new OrderByClause(dir, identN));})*
 ;
 
 getGroupBy[TableName tablename] returns [ArrayList<Selector> groups]
@@ -785,19 +867,75 @@ getGroupBy[TableName tablename] returns [ArrayList<Selector> groups]
     (T_COMMA identN=getSelector[tablename] {groups.add(identN);})*
 ;
 
+getHaving[TableName tablename] returns [ArrayList<Selector> groups]
+    @init{
+        groups = new ArrayList<>();
+    }:
+    ident1=getSelector[tablename] {groups.add(ident1);}
+    (T_COMMA identN=getSelector[tablename] {groups.add(identN);})*
+;
+
+getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
+    @init{
+        clauses = new ArrayList<>();
+        workaroundTable = tablename;
+    }:
+    firstRel=getAbstractRelation[workaroundTable] { clauses.addAll(firstRel); }
+            (T_AND relN=getAbstractRelation[workaroundTable] { clauses.addAll(relN); })*
+;
+
+getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
+    @init{
+        workaroundTable = tablename;
+        firstTerm = new ArrayList<>();
+        anotherTerm = new ArrayList<>();
+        RelationDisjunction rd = new RelationDisjunction();
+        boolean withParenthesis = false;
+        boolean simpleRelation = true;
+        RelationTerm rt = null;
+        result = new ArrayList<>();
+    }
+    @after{
+        if(simpleRelation){
+            result = firstTerm;
+        } else {
+            result.add(rd);
+        }
+    }:
+    (T_START_PARENTHESIS firstTerm=getConditions[workaroundTable] T_END_PARENTHESIS
+        { withParenthesis = true;
+        if((!firstTerm.isEmpty()) && (firstTerm.size()==1)) firstTerm.get(0).setParenthesis(true); }
+    | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } )
+    { rd.getTerms().add(new RelationTerm(firstTerm, withParenthesis)); }
+    (T_OR { simpleRelation = false; }
+        (T_START_PARENTHESIS anotherTerm=getConditions[workaroundTable] T_END_PARENTHESIS
+            { rt = new RelationTerm(anotherTerm, true); }
+        | anotherRel=getRelation[workaroundTable] { rt = new RelationTerm(anotherRel); } )
+    { rd.getTerms().add(rt); } )*
+;
+
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
     @init{
         clauses = new ArrayList<>();
+        workaroundTable = tablename;
     }:
-    T_START_PARENTHESIS rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})* T_END_PARENTHESIS (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
-    | rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND wcs=getWhereClauses[tablename] {clauses.addAll(wcs);})*
+    rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND relN=getRelation[workaroundTable] {clauses.add(relN);})*
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]
+    @init{
+            workaroundTable = tablename;
+    }
     @after{
         $mrel = new Relation(s, operator, rs);
     }:
-    s=getSelector[tablename] operator=getComparator rs=getSelector[tablename]
+    s=getSelector[workaroundTable] ( ( operator=getBetweenOperator rs=getInterval[workaroundTable])
+                                       | operator=getComparator rs=getSelector[workaroundTable] )
+;
+
+getBetweenOperator returns [Operator op]:
+ T_BETWEEN {$op = Operator.BETWEEN;}
+ | T_NOT T_BETWEEN {$op = Operator.NOT_BETWEEN;}
 ;
 
 getFields[MutablePair pair]:
@@ -843,46 +981,174 @@ getSelectExpression[Map fieldsAliasesMap] returns [SelectExpression se]
             fieldsAliasesMap.put(aliasN, s.toString());})? {selectors.add(s);})*
 ;
 
-getSelector[TableName tablename] returns [Selector s]
+getSelector[TableName tablename] returns [Selector sel]
+    @init{
+        String name = null;
+        boolean relationSelector = false;
+        boolean caseWhenSelector = false;
+        RelationSelector rs=null;
+        CaseWhenSelector caseWhen=null;
+        workaroundTable = tablename;
+    }
+    @after{
+        if(relationSelector){
+            sel = new RelationSelector(new Relation(firstSelector, operator, secondSelector));
+        } else {
+            sel = firstSelector;
+        }
+    }:
+    (T_START_PARENTHESIS
+        (selectStmnt=selectStatement { firstSelector  = new ExtendedSelectSelector(selectStmnt, sessionCatalog); }
+        | firstSelector=getSelector[tablename]) { firstSelector.setParenthesis(true); }
+    T_END_PARENTHESIS
+    | firstSelector=getFunctionSelector[tablename]
+    | firstSelector=getSimpleSelector[tablename]
+    | firstSelector=getCaseWhenSelector[tablename]
+    | firstSelector=getCollectionSelector[tablename])
+    (operator=getOperator {relationSelector=true;} secondSelector=getSelector[workaroundTable])?
+;
+
+getCollectionSelector[TableName tablename] returns [Selector selector]
+    @after{
+        selector = collectionSelector;
+    }:
+    collectionSelector=getListSelector[tablename]
+;
+
+getListSelector[TableName tablename] returns [Selector selector]
+    @init{
+        List<Selector> selectorsList = new ArrayList<>();
+    }
+    @after{
+        selector = new ListSelector(tablename, selectorsList);
+    }:
+    T_START_BRACKET
+        (basicSelector=getBasicSelector[tablename] { selectorsList.add(basicSelector); }
+            (T_COMMA basicSelector=getBasicSelector[tablename] { selectorsList.add(basicSelector); })*)?
+    T_END_BRACKET
+;
+
+getCaseWhenSelector[TableName tablename] returns [Selector selector]
+    @init{
+        List<Pair<List<AbstractRelation>, Selector>> restrictions=new ArrayList<>();
+    }
+    @after{
+        selector = new CaseWhenSelector(workaroundTable, restrictions, defaultSelector);
+    }:
+    T_CASE
+        (T_WHEN conditions=getConditions[tablename] T_THEN
+            firstSelector=getSelector[tablename]
+            {
+                Pair<List<AbstractRelation>, Selector> restriction = new ImmutablePair<>(conditions, firstSelector);
+                restrictions.add(restriction);
+            })*
+    T_ELSE
+        defaultSelector=getSelector[tablename]
+    T_END
+;
+
+getFunctionSelector[TableName tablename] returns [Selector selector]
     @init{
         LinkedList<Selector> params = new LinkedList<>();
-        String name = null;
+    }
+    @after{
+        String functionStr = functionName;
+        selector = new FunctionSelector(tablename, functionStr, params);
     }:
-    (
-        functionName=getFunctionName
-        T_START_PARENTHESIS
-            (select1=getSelector[tablename] {params.add(select1);}
-                (T_COMMA selectN=getSelector[tablename] {params.add(selectN);})*
-            )?
-        T_END_PARENTHESIS { String functionStr = functionName;
-                            /*if(functionStr.equalsIgnoreCase("count") && (!params.toString().equalsIgnoreCase("[*]"))
-                             && (!params.toString().equalsIgnoreCase("[1]"))) throwParsingException("COUNT includes
-                             only accepts '*' or '1'");*/
-                            s = new FunctionSelector(tablename, functionStr, params);}
-        |
-        (
-            columnName=getColumnName[tablename] {s = new ColumnSelector(columnName);}
-            | floatingNumber=T_FLOATING {s = new FloatingPointSelector(tablename, $floatingNumber.text);}
-            | constant=T_CONSTANT {s = new IntegerSelector(tablename, $constant.text);}
-            | T_FALSE {s = new BooleanSelector(tablename, false);}
-            | T_TRUE {s = new BooleanSelector(tablename, true);}
-            | T_ASTERISK {s = new AsteriskSelector(tablename);}
-            | qLiteral=QUOTED_LITERAL {s = new StringSelector(tablename, $qLiteral.text);}
-        )
+    functionName=getFunctionName
+    T_START_PARENTHESIS
+        (select1=getSelector[workaroundTable] {params.add(select1);}
+            (T_COMMA selectN=getSelector[workaroundTable] {params.add(selectN);})*)?
+    T_END_PARENTHESIS
+;
+
+
+getBasicSelector[TableName tablename] returns [Selector selector]
+    @init{
+        Selector defaultSelector = null;
+    }
+    @after{
+        selector = defaultSelector;
+    }:
+    (floatingNumber=T_FLOATING {defaultSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
+    | constant=T_CONSTANT {defaultSelector = new IntegerSelector(tablename, $constant.text);}
+    | T_FALSE {defaultSelector = new BooleanSelector(tablename, false);}
+    | T_TRUE {defaultSelector = new BooleanSelector(tablename, true);}
+    | qLiteral=QUOTED_LITERAL {defaultSelector = new StringSelector(tablename, $qLiteral.text);}
+    | T_NULL {defaultSelector = new NullSelector(tablename, "null");})
+;
+
+getSimpleSelector[TableName tablename] returns [Selector selector]
+    @init{
+        Selector firstSelector = null;
+        workaroundTable = tablename;
+    }
+    @after{
+        selector = firstSelector;
+    }:
+    ( basicSelector=getBasicSelector[tablename] {firstSelector = basicSelector; }
+    | columnName=getColumnName[tablename] {firstSelector = new ColumnSelector(columnName);}
+    | T_ASTERISK {firstSelector = new AsteriskSelector(tablename);})
+;
+
+getInterval[TableName tablename] returns [Selector sel]
+    @init{
+            Selector firstSelector = null;
+            Selector lastSelector=null;
+            workaroundTable = tablename;
+    }
+    @after{
+           sel = new GroupSelector(workaroundTable,firstSelector,lastSelector);
+    }:
+    ( qLiteral=QUOTED_LITERAL {firstSelector = new StringSelector(workaroundTable, $qLiteral.text);}
+        | as= getArithmeticRelationSelector[workaroundTable] { firstSelector = as; } )
+    T_AND
+    ( qLiteral=QUOTED_LITERAL {lastSelector = new StringSelector(workaroundTable, $qLiteral.text);}
+            | as= getArithmeticRelationSelector[workaroundTable] { lastSelector = as; } )
+;
+
+getArithmeticRelationSelector[TableName tablename] returns [Selector mrel]
+    @init{
+            workaroundTable = tablename;
+            boolean relationFound = false;
+    }
+    @after{
+        if (relationFound) {
+            $mrel = new RelationSelector(tablename, new Relation(s, operator, ss));
+        }else{
+            $mrel=s;
+        }
+    }:
+    s=getArithmeticSelector[workaroundTable] ( operator=getOperator ss=getArithmeticRelationSelector[workaroundTable] {relationFound = true;} )?
+;
+
+getArithmeticSelector[TableName tablename] returns [Selector selector]
+    @init{
+        Selector defaultSelector = null;
+    }
+    @after{
+        selector = defaultSelector;
+    }:
+    (floatingNumber=T_FLOATING {defaultSelector = new FloatingPointSelector(tablename, $floatingNumber.text);}
+    | constant=T_CONSTANT {defaultSelector = new IntegerSelector(tablename, $constant.text);}
+    | fs=getFunctionSelector[tablename] {defaultSelector = fs;} 
     )
 ;
 
 getAssignment[TableName tablename] returns [Relation assign]
+    @init{
+        ColumnSelector leftTerm = null;
+    }
     @after{
         $assign = new Relation(leftTerm, Operator.EQ, rightTerm);
     }:
-    leftTerm=getSelector[tablename] T_EQUAL rightTerm=getRightTermInAssignment[tablename]
+    columnName=getColumnName[tablename] {leftTerm = new ColumnSelector(columnName);} T_EQUAL rightTerm=getRightTermInAssignment[tablename]
 ;
-
 
 getRightTermInAssignment[TableName tablename] returns [Selector leftSelector]
     @init{
         boolean relationSelector = false;
+        workaroundTable = tablename;
     }
     @after{
         if(relationSelector)
@@ -890,7 +1156,9 @@ getRightTermInAssignment[TableName tablename] returns [Selector leftSelector]
         else
             $leftSelector = firstSel;
     }:
-    firstSel=getSelector[tablename] (operator=getOperator secondSel=getRightTermInAssignment[tablename] { relationSelector = true; })?
+    firstSel=getSelector[tablename]
+    (operator=getOperator
+        secondSel=getRightTermInAssignment[workaroundTable] { relationSelector = true; })?
     //TODO: Support index for collections (Example: cities[2] = 'Madrid')
 ;
 
@@ -910,6 +1178,11 @@ getComparator returns [Operator op]:
     | T_NOT_EQUAL {$op = Operator.DISTINCT;}
     | T_LIKE {$op = Operator.LIKE;}
     | T_MATCH {$op = Operator.MATCH;}
+    | T_IN {$op = Operator.IN;}
+    | T_NOT (
+            T_LIKE {$op = Operator.NOT_LIKE;}
+            | T_IN {$op = Operator.NOT_IN;}
+            )
 ;
 
 getIds returns [ArrayList<String> listStrs]

@@ -20,44 +20,75 @@ package com.stratio.crossdata.connectors
 
 import java.util
 
-import akka.actor.{ActorLogging, ActorRef, Props}
+import akka.actor._
+import akka.agent.Agent
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
 import akka.util.Timeout
 import com.stratio.crossdata
-import com.stratio.crossdata.common.connector.{IConnector, IMetadataEngine, IResultHandler}
+import com.stratio.crossdata.common.ask.APICommand
+import com.stratio.crossdata.common.connector._
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata, _}
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{ACK, AlterCatalog, AlterTable, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DeleteRows, DropCatalog, DropIndex, DropTable, Execute, HeartbeatSig, IAmAlive, Insert, InsertBatch, ProvideCatalogMetadata, ProvideCatalogsMetadata, ProvideMetadata, ProvideTableMetadata, Truncate, Update, UpdateMetadata, getConnectorName, replyConnectorName, _}
+import com.stratio.crossdata.communication._
 import difflib.Patch
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable.{ListMap, Map, Set}
+import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.duration.DurationInt
-
+import com.stratio.crossdata.communication.CreateIndex
+import com.stratio.crossdata.communication.Update
+import akka.cluster.ClusterEvent.MemberRemoved
+import com.stratio.crossdata.communication.ACK
+import com.stratio.crossdata.communication.CreateTableAndCatalog
+import com.stratio.crossdata.communication.AlterTable
+import com.stratio.crossdata.communication.Truncate
+import com.stratio.crossdata.communication.CreateTable
+import com.stratio.crossdata.communication.AlterCatalog
+import com.stratio.crossdata.communication.InsertBatch
+import com.stratio.crossdata.communication.AsyncExecute
+import akka.cluster.ClusterEvent.UnreachableMember
+import com.stratio.crossdata.communication.ProvideCatalogMetadata
+import com.stratio.crossdata.communication.ProvideCatalogsMetadata
+import com.stratio.crossdata.communication.CreateCatalog
+import com.stratio.crossdata.communication.ProvideTableMetadata
+import com.stratio.crossdata.communication.PagedExecute
+import com.stratio.crossdata.communication.replyConnectorName
+import com.stratio.crossdata.communication.Execute
+import akka.cluster.ClusterEvent.MemberUp
+import com.stratio.crossdata.communication.getConnectorName
+import com.stratio.crossdata.communication.ProvideMetadata
+import com.stratio.crossdata.communication.DropIndex
+import com.stratio.crossdata.communication.UpdateMetadata
+import akka.cluster.ClusterEvent.CurrentClusterState
+import com.stratio.crossdata.communication.DeleteRows
+import com.stratio.crossdata.communication.DropCatalog
+import com.stratio.crossdata.communication.PatchMetadata
+import com.stratio.crossdata.communication.DropTable
+import com.stratio.crossdata.communication.Insert
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object State extends Enumeration {
   type state = Value
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector, connectedServers: Set[String]):
-      Props = Props(new ConnectorActor(connectorName, connector, connectedServers))
+  def props(connectorName: String, connector: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]],runningJobs: Agent[ListMap[String, ActorRef]]):
+      Props = Props(new ConnectorActor(connectorName, connector, connectedServers, mapAgent, runningJobs))
 }
 
 object ClassExtractor{
  def unapply(myClass:Class[_]):Option[String]=Option(myClass.toString)
 }
 
-class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String])
-  extends HeartbeatActor with ActorLogging with IResultHandler {
 
-  override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
-  val metadata: util.Map[FirstLevelName, IMetadata]=new util.HashMap[FirstLevelName,IMetadata]()
+class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]])
+  extends Actor with ActorLogging with IResultHandler {
+
+  lazy val logger = Logger.getLogger(classOf[ConnectorActor])
 
   logger.info("Lifting connector actor")
 
@@ -66,39 +97,49 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
   var state = State.Stopped
-  var runningJobs: Map[String, ActorRef] = new ListMap[String, ActorRef]()
 
+  /*
   override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
+    logger.info(s"heartbeat (no of simultaneous running jobs = ${runningJobs.size}")
     runningJobs.foreach {
-      keyVal: (String, ActorRef) => keyVal._2 ! IAmAlive(keyVal._1)
+      keyVal: (String, ActorRef) => {
+        logger.info("sending iamalive to "+StringUtils.getAkkaActorRefUri(keyVal._2) )
+        context.actorSelection(StringUtils.getAkkaActorRefUri(keyVal._2)) ! IAmAlive(keyVal._1)
+      }
     }
   }
+  */
 
   override def preStart():Unit = {
     Cluster(context.system).subscribe(self,classOf[ClusterDomainEvent])
+    //context.system.eventStream.subscribe(this.self, classOf[Logging.Error])
   }
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+    mapAgent.get.get(tableName).asInstanceOf[TableMetadata]
+      /*TODO 0.4.0 using FirstLevelName
       val catalogName = tableName.getCatalogName
-      val catalogMetadata = metadata.get(catalogName).asInstanceOf[CatalogMetadata]
+      val catalogMetadata = mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
       val tableMetadata = catalogMetadata.getTables.get(tableName)
       if(tableMetadata.getClusterRef==clusterName)
         return tableMetadata
       else
         return null
+
+        */
   }
 
   def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata={
-    return metadata.get(catalogName).asInstanceOf[CatalogMetadata]
+    return mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
   }
 
   def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
-    val r=new util.HashMap[CatalogName,CatalogMetadata]()
+    val r = new util.HashMap[CatalogName,CatalogMetadata]()
     //for(entry:java.util.Map.Entry[FirstLevelName,IMetadata] <- metadata.entrySet()){
-    for((k,v) <- metadata){
+    for((k,v) <- mapAgent.get){
        k match {
         case name:CatalogName=>{
-          val catalogMetadata = metadata.get(k).asInstanceOf[CatalogMetadata]
+          val catalogMetadata = mapAgent.get.get(k).asInstanceOf[CatalogMetadata]
           val tables = catalogMetadata.getTables
           for((tableName, tableMetadata) <- tables){
             if(tables.get(tableName).getClusterRef==cluster){
@@ -111,10 +152,15 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     return new util.ArrayList(r.values())
   }
 
+  def subscribeToMetadataUpdate(listener: IMetadataListener) = {
+    logger.debug()
+    mapAgent.send(oMap => {oMap.addListener(listener); oMap})
+  }
+
   def class2String(clazz:Class[_]):String=clazz.getName
   val patchFunctionHash=new java.util.HashMap[String,(Patch,Name)=>Boolean]()
   //TODO: could it be more generic?
-  patchFunctionHash.put(class2String(classOf[CatalogMetadata]),(diff:Patch, catalogName:Name)=>{
+  /*patchFunctionHash.put(class2String(classOf[CatalogMetadata]),(diff:Patch, catalogName:Name)=>{
     val name = catalogName.asInstanceOf[CatalogName]
     val catalog = metadata.get(catalogName).asInstanceOf[CatalogMetadata]
     val jsonResult = StringUtils.patchObject(catalog, diff); // patch object
@@ -179,8 +225,29 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       .put( name,result.asInstanceOf[IndexMetadata] )
     true
   })
+*/
 
-  override def receive: Receive = super.receive orElse {
+  def extractSender(m: String): String = {
+    m.substring(m.indexOf("[")+1, m.indexOf("$")).trim
+  }
+
+  override def receive: Receive = {
+
+    /*
+    case le: Logging.Error => {
+      logger.info(" >>> CROSSDATA >>> Logging.Error >>> " +
+        System.lineSeparator() + le +
+        System.lineSeparator() + le.logClass +
+        System.lineSeparator() + le.logSource +
+        System.lineSeparator() + le.message +
+        System.lineSeparator() + le.timestamp +
+        System.lineSeparator() + le.thread)
+      if(le.toString.contains("OversizedPayloadException")){
+        sendOversizedError(le.toString)
+      }
+    }
+    */
+
     case u: PatchMetadata=> {
       //TODO: continue
       val r=try{
@@ -188,49 +255,60 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       }catch{
         case _=>false
       }
-      println("result="+r)
+      //println("result="+r)
     }
 
-    case u: UpdateMetadata=> {
-      u.metadata match{
-        case _:CatalogMetadata => {
-          metadata.put(u.metadata.asInstanceOf[CatalogMetadata].getName,u.metadata)
+    //TODO iface UpdatableMetadata with getName, getMetadata
+    case UpdateMetadata(umetadata, java.lang.Boolean.FALSE) => {
+      umetadata match{
+        case cMetadata:CatalogMetadata => {
+          mapAgent.get.put(cMetadata.getName,cMetadata)
         }
-        case _:ClusterMetadata => {
-          metadata.put(u.metadata.asInstanceOf[ClusterMetadata].getName,u.metadata)
+          //TODO remove asInstanceOf
+        case uMetadata:ClusterMetadata => {
+          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
+
         }
-        case _:ConnectorMetadata => {
-          metadata.put(u.metadata.asInstanceOf[ConnectorMetadata].getName,u.metadata)
+        case uMetadata:ConnectorMetadata => {
+          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
         }
-        case _:DataStoreMetadata =>{
-          metadata.put(u.metadata.asInstanceOf[DataStoreMetadata].getName,u.metadata)
+        case uMetadata:DataStoreMetadata =>{
+          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
         }
-        case _:TableMetadata => {
-          val tableName = u.metadata.asInstanceOf[TableMetadata].getName
-          val catalogName = tableName.getCatalogName
-          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.put(
-            tableName,u.metadata.asInstanceOf[TableMetadata]
-          )
+
+        case uMetadata:TableMetadata => {
+          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
         }
-        case _:ColumnMetadata => {
-          val columName = u.metadata.asInstanceOf[ColumnMetadata].getName
-          val tableName = columName.getTableName
-          val catalogName = tableName.getCatalogName
-          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getColumns.put(
-            columName,u.metadata.asInstanceOf[ColumnMetadata]
-          )
-        }
-        case _:IndexMetadata => {
-          val indexName = u.metadata.asInstanceOf[IndexMetadata].getName
-          val tableName = indexName.getTableName
-          val catalogName = tableName.getCatalogName
-          metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getIndexes.put(
-            indexName,u.metadata.asInstanceOf[IndexMetadata]
-          )
-        }
+
       }
+      //TODO is it necessary?
       sender ! true
     }
+
+    case UpdateMetadata(umetadata, java.lang.Boolean.TRUE) => {
+       umetadata match{
+        case umetadata:CatalogMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
+        }
+        case umetadata:ClusterMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
+        }
+        case umetadata:ConnectorMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
+        }
+        case umetadata:DataStoreMetadata =>{
+          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
+        }
+        case umetadata:TableMetadata => {
+          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
+        }
+
+      }
+      //TODO is it necessary?
+      sender ! true
+
+    }
+
     case connectRequest: com.stratio.crossdata.communication.Connect => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received connect command")
@@ -249,13 +327,14 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         }
       }
     }
+
     case disconnectRequest: com.stratio.crossdata.communication.DisconnectFromCluster => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received disconnectFromCluster command")
       var result: Result = null
       try {
         connector.close(new ClusterName(disconnectRequest.clusterName))
-        result = ConnectResult.createConnectResult(
+        result = DisconnectResult.createDisconnectResult(
           "Disconnected successfully from " + disconnectRequest.clusterName)
       } catch {
         case ex: ConnectionException => {
@@ -278,6 +357,14 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       logger.info("Processing asynchronous query: " + aex)
       methodAsyncExecute(aex, sender)
     }
+    case StopProcess(queryId, targetQueryId) =>  {
+      logger.debug("Processing stop process: " + queryId)
+      methodStopProcess(queryId, targetQueryId, sender)
+    }
+    case pex: PagedExecute => {
+      logger.info("Processing paged query: " + pex)
+      methodPagedExecute(pex, sender)
+    }
     case metadataOp: MetadataOperation => {
       methodMetadataOp(metadataOp, sender)
     }
@@ -285,7 +372,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       methodStorageOp(storageOp, sender)
     }
     case msg: getConnectorName => {
-      logger.info(sender + " asked for my name")
+      logger.info(sender + " asked for my name: " + connectorName)
       connectedServers += sender.path.address.toString
       logger.info("Connected to Servers: " + connectedServers)
       sender ! replyConnectorName(connectorName)
@@ -310,9 +397,24 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       }
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
     }
-    case _: MemberEvent => {
-      logger.info("Receiving anything else")
+    case memberEvent: MemberEvent => {
+      logger.info("MemberEvent received: " + memberEvent.toString)
     }
+    case listener: IMetadataListener => {
+      logger.info("Adding new metadata listener")
+      subscribeToMetadataUpdate(listener)
+    }
+    case Request(message) if (message.equals(APICommand.CLEAN_METADATA.toString)) =>
+      mapAgent.send{ observableMap => observableMap.clear(); observableMap }
+
+    case GetCatalogs(clusterName) =>
+      sender ! getCatalogs(clusterName)
+
+    case GetTableMetadata(clusterName, tableName) =>
+      sender ! getTableMetadata(clusterName,tableName)
+
+    case  GetCatalogMetadata(catalogName) =>
+      sender ! getCatalogMetadata(catalogName)
   }
 
   def shutdown(): Unit = {
@@ -324,33 +426,48 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   override def processException(queryId: String, exception: ExecutionException): Unit = {
     logger.info("Processing exception for async query: " + queryId)
-    val source = runningJobs.get(queryId).get
+    val source = runningJobs.get.get(queryId).get
     if(source != None) {
-      source ! Result.createErrorResult(exception)
+      val res = Result.createErrorResult(exception)
+      res.setQueryId(queryId)
+      source ! res
     }else{
       logger.error("Exception for query " + queryId + " cannot be sent", exception)
     }
+    runningJobs.send{runningJobs => runningJobs.remove(queryId); runningJobs}
   }
 
   override def processResult(result: QueryResult): Unit = {
     logger.info("Processing results for async query: " + result.getQueryId)
-    val source = runningJobs.get(result.getQueryId).get
+    val source = runningJobs.get.get(result.getQueryId).get
     if(source != None) {
       source ! result
     }else{
       logger.error("Results for query " + result.getQueryId + " cannot be sent")
     }
+    if(result.isLastResultSet){
+      sendACK(source, result.getQueryId)
+      runningJobs.send{runningJobs => runningJobs.remove(result.getQueryId); runningJobs}
+    }
+  }
+
+  private def sendACK(actorRef: ActorRef, qId: String): Unit ={
+    context.system.scheduler.scheduleOnce(4 seconds){
+      logger.debug("Sending second ACK to: " + actorRef);
+      actorRef ! new ACK(qId, QueryStatus.EXECUTED)
+    }
   }
 
   private def methodExecute(ex:Execute, s:ActorRef): Unit ={
     try {
-      runningJobs.put(ex.queryId, s)
+      runningJobs.send{runningJobs => runningJobs.put(ex.queryId, s); runningJobs}
       val result = connector.getQueryEngine().execute(ex.workflow)
       result.setQueryId(ex.queryId)
       s ! result
+      sendACK(s, ex.queryId)
     } catch {
       case e: Exception => {
-        val result=Result.createExecutionErrorResult(e.getMessage)
+        val result = Result.createExecutionErrorResult(e.getMessage)
         result.setQueryId(ex.queryId)
         s ! result
       }
@@ -360,14 +477,15 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         result.setQueryId(ex.queryId)
         s ! result
     } finally {
-      runningJobs.remove(ex.queryId)
+      runningJobs.send{runningJobs => runningJobs.remove(ex.queryId); runningJobs}
+
     }
   }
 
-  private def methodAsyncExecute(aex: AsyncExecute, sender:ActorRef) : Unit = {
+  private def methodAsyncExecute(aex: AsyncExecute, sender: ActorRef) : Unit = {
     val asyncSender = sender
     try {
-      runningJobs.put(aex.queryId, asyncSender)
+      runningJobs.send{runningJobs => runningJobs.put(aex.queryId, asyncSender); runningJobs}
       connector.getQueryEngine().asyncExecute(aex.queryId, aex.workflow, this)
       asyncSender ! ACK(aex.queryId, QueryStatus.IN_PROGRESS)
     } catch {
@@ -375,10 +493,53 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         val result = Result.createExecutionErrorResult(e.getMessage())
         result.setQueryId(aex.queryId)
         asyncSender ! result
-        runningJobs.remove(aex.queryId)
       }
       case err: Error =>
-        logger.error("error in ConnectorActor( receiving async LogicalWorkflow )")
+        logger.error("Error in ConnectorActor (Receiving async LogicalWorkflow)")
+    }
+  }
+
+  private def methodStopProcess(queryId: String, targetQueryId: String, sender: ActorRef) : Unit = {
+    try {
+      if (!runningJobs.get.contains(targetQueryId)){
+        logger.debug("Received stop process for non-existing queryId "+targetQueryId)
+        sender ! Result.createExecutionErrorResult("Received stop process for non-existing queryId "+targetQueryId)
+      }else {
+        runningJobs.sendOff{runningJobs => runningJobs.remove(targetQueryId); runningJobs}(context.dispatcher)
+        connector.getQueryEngine.stop(targetQueryId)
+        sender ! ACK(queryId, QueryStatus.EXECUTED)
+      }
+
+    } catch {
+      case e: Exception => {
+        val result = Result.createExecutionErrorResult(e.getMessage())
+        result.setQueryId(queryId)
+        sender ! result
+
+      }
+      case err: Error =>
+        logger.error("Error in ConnectorActor (Receiving stop process)")
+    }
+  }
+
+  private def methodPagedExecute(pex: PagedExecute, sender: ActorRef): Unit = {
+    val pagedSender = sender
+    try {
+      logger.info("new running job: "+pex.queryId)
+      runningJobs.send{runningJobs => runningJobs.put(pex.queryId, pagedSender); runningJobs}
+      if(logger.isDebugEnabled){
+        logger.debug("concurrent running Jobs = "+runningJobs.get.size)
+      }
+      connector.getQueryEngine().pagedExecute(pex.queryId, pex.workflow, this, pex.pageSize)
+      pagedSender ! ACK(pex.queryId, QueryStatus.IN_PROGRESS)
+    } catch {
+      case e: Exception => {
+        val result = Result.createExecutionErrorResult(e.getMessage())
+        result.setQueryId(pex.queryId)
+        pagedSender ! result
+      }
+      case err: Error =>
+        logger.error("error in ConnectorActor (Receiving paged LogicalWorkflow)")
     }
   }
 
@@ -390,7 +551,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     try {
       val eng = connector.getMetadataEngine()
 
-      val answer = methodOpMetadata( metadataOp, eng)
+      val answer = methodOpMetadata(metadataOp, eng)
       qId = answer._1
       metadataOperation = answer._2
       result = MetadataResult.createSuccessMetadataResult(metadataOperation)

@@ -19,24 +19,22 @@
 package com.stratio.crossdata.common.executionplan;
 
 import java.util.Map;
+import java.util.Set;
 
+import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.communication.AlterCluster;
-import com.stratio.crossdata.communication.AttachCluster;
-import com.stratio.crossdata.communication.AttachConnector;
-import com.stratio.crossdata.communication.DetachCluster;
-import com.stratio.crossdata.communication.DetachConnector;
-import com.stratio.crossdata.communication.ManagementOperation;
+import com.stratio.crossdata.communication.*;
 
 /**
  * Execute operations related with connector and cluster management.
  */
 public class ManagementWorkflow extends ExecutionWorkflow {
 
+    private static final long serialVersionUID = -7714871332885230278L;
     /**
      * Name of the cluster.
      */
@@ -62,6 +60,16 @@ public class ManagementWorkflow extends ExecutionWorkflow {
      * A JSON with the options.
      */
     private Map<Selector, Selector> options = null;
+    private int pageSize;
+
+    /**
+     * Connector priority for the associated cluster.
+     */
+    private Integer priority = null;
+
+    private Set<String> actorRefs;
+
+    private ConnectorClusterConfig connectorClusterConfig;
 
     /**
      * Class constructor.
@@ -76,8 +84,18 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         super(queryId, actorRef, executionType, type);
     }
 
+    public ManagementWorkflow(String queryId, Set<String> actorRefs,
+            ExecutionType executionType, ResultType type) {
+        super(queryId, null, executionType, type);
+        this.actorRefs = actorRefs;
+    }
+
     public void setClusterName(ClusterName clusterName) {
         this.clusterName = clusterName;
+    }
+
+    public ClusterName getClusterName() {
+        return clusterName;
     }
 
     public CatalogName getCatalogName() {
@@ -87,7 +105,6 @@ public class ManagementWorkflow extends ExecutionWorkflow {
     public void setCatalogName(CatalogName catalogName) {
         this.catalogName = catalogName;
     }
-
 
     public void setDatastoreName(DataStoreName datastoreName) {
         this.datastoreName = datastoreName;
@@ -101,6 +118,31 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         this.options = options;
     }
 
+    public void setPageSize(int pageSize) {
+        this.pageSize = pageSize;
+
+    }
+
+    public ConnectorClusterConfig getConnectorClusterConfig() {
+        return connectorClusterConfig;
+    }
+
+    public void setConnectorClusterConfig(ConnectorClusterConfig connectorClusterConfig) {
+        this.connectorClusterConfig = connectorClusterConfig;
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
+    }
+
+    public Set<String> getActorRefs() {
+        return actorRefs;
+    }
+
+    public void setActorRefs(Set<String> actorRefs) {
+        this.actorRefs = actorRefs;
+    }
+
     /**
      * Determines the the type of operation in a workflow.
      * @return A {@link com.stratio.crossdata.communication.ManagementOperation} .
@@ -112,9 +154,11 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         } else if (ExecutionType.DETACH_CLUSTER.equals(this.executionType)) {
             result = new DetachCluster(queryId, this.clusterName, this.datastoreName);
         } else if (ExecutionType.ATTACH_CONNECTOR.equals(this.executionType)) {
-            result = new AttachConnector(queryId, this.clusterName, this.connectorName, this.options);
+            result = new AttachConnector(queryId, this.clusterName, this.connectorName, this.options,  this.priority, this.pageSize);
         } else if (ExecutionType.DETACH_CONNECTOR.equals(this.executionType)) {
             result = new DetachConnector(queryId, this.clusterName, this.connectorName);
+        } else if (ExecutionType.FORCE_DETACH_CONNECTOR.equals(this.executionType)){
+            result = new ForceDetachConnector(queryId, this.clusterName, this.connectorName);
         } else if (ExecutionType.ALTER_CLUSTER.equals(this.executionType)) {
             result = new AlterCluster(queryId, this.clusterName, this.datastoreName, this.options);
         }

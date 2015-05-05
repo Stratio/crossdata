@@ -62,6 +62,7 @@ import javax.xml.bind.annotation.XmlType;
 })
 public class ConnectorType extends CrossdataManifest {
 
+    private static final long serialVersionUID = -2878873028930698316L;
     @XmlElement(name = "ConnectorName", required = true)
     protected String connectorName;
     @XmlElement(name = "DataStores", required = true)

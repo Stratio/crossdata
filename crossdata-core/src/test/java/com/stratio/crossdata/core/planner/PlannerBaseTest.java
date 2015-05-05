@@ -27,17 +27,23 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.log4j.Logger;
+import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.logicalplan.GroupBy;
 import com.stratio.crossdata.common.logicalplan.Join;
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
@@ -50,10 +56,17 @@ import com.stratio.crossdata.common.statements.structures.window.TimeUnit;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.grammar.ParsingTest;
+import com.stratio.crossdata.core.parser.Parser;
+import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectPlannedQuery;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
+import com.stratio.crossdata.core.query.StorageParsedQuery;
+import com.stratio.crossdata.core.query.StoragePlannedQuery;
+import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.validator.Validator;
 
 /**
  * Base class for planner tests.
@@ -69,6 +82,7 @@ public class PlannerBaseTest {
 
     Planner planner = new Planner();
 
+
     @BeforeClass
     public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
@@ -80,36 +94,82 @@ public class PlannerBaseTest {
         MetadataManagerTestHelper.HELPER.closeHelper();
     }
 
+    public ExecutionWorkflow getPlannedQuery(String statement, String methodName,
+            boolean shouldFail, TableMetadata... tableMetadataList) {
+        return getPlannedQuery(statement, methodName, true, shouldFail, tableMetadataList);
+    }
+
     /**
      * Get the execution workflow from a statement.
      *
      * @param statement         A valid statement.
      * @param methodName        The test name.
+     * @param checkParser       Whether the planning should check parser result.
      * @param shouldFail        Whether the planning should succeed.
      * @param tableMetadataList The list of table metadata.
      * @return An {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow}.
      */
-    public ExecutionWorkflow getPlannedQuery(String statement, String methodName,
+    public ExecutionWorkflow getPlannedQuery(String statement, String methodName, boolean checkParser,
             boolean shouldFail, TableMetadata... tableMetadataList) {
 
-        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName, checkParser);
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
-        SelectStatement ss = spq.getStatement();
 
-        SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
-        for (TableMetadata tm : tableMetadataList) {
-            svqw.addTableMetadata(tm);
+        Validator validator = new Validator();
+        SelectValidatedQuery svq = null;
+        try {
+            svq = (SelectValidatedQuery) validator.validate(spq);
+        } catch (ValidationException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
         }
 
         SelectPlannedQuery plannedQuery = null;
         try {
-            plannedQuery = planner.planQuery(svqw);
+            plannedQuery = planner.planQuery(svq);
             if (shouldFail) {
                 fail("Expecting planning to fail");
             }
         } catch (PlanningException e) {
             if (!shouldFail) {
-                fail("Expecting planning to succeed");
+                e.printStackTrace();
+                fail("Expecting planning to succeed: " + e.getMessage()
+                        + System.lineSeparator());
+            } else {
+                assertNotNull(e, "Exception should not be null");
+                assertEquals(e.getClass(), PlanningException.class, "Exception class does not match.");
+            }
+        }
+        if(plannedQuery != null){
+            LOG.info(plannedQuery.getExecutionWorkflow());
+            return plannedQuery.getExecutionWorkflow();
+        }
+        return null;
+    }
+
+    public ExecutionWorkflow getPlannedStorageQuery(
+            String statement,
+            String methodName,
+            boolean shouldFail) throws ValidationException, IgnoreQueryException {
+
+        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+        StorageParsedQuery spq = StorageParsedQuery.class.cast(stmt);
+
+        Validator validator = new Validator();
+        StorageValidatedQuery storageValidatedQuery = (StorageValidatedQuery) validator.validate(spq);
+
+        StoragePlannedQuery plannedQuery = null;
+        try {
+            plannedQuery = planner.planQuery(storageValidatedQuery);
+            if (shouldFail) {
+                fail("Expecting planning to fail");
+            }
+        } catch (PlanningException e) {
+            if (!shouldFail) {
+                fail("Expecting planning to succeed: " + System.lineSeparator() + e.getMessage());
             } else {
                 assertNotNull(e, "Exception should not be null");
                 assertEquals(e.getClass(), PlanningException.class, "Exception class does not match.");
@@ -122,6 +182,66 @@ public class PlannerBaseTest {
     public LogicalWorkflow getWorkflow(String statement, String methodName,
             TableMetadata... tableMetadataList) throws PlanningException {
         IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+        SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+        SelectStatement ss = spq.getStatement();
+
+        SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+        for (TableMetadata tm : tableMetadataList) {
+            svqw.addTableMetadata(tm);
+        }
+
+        LogicalWorkflow workflow = planner.buildWorkflow(svqw);
+        LOG.info(workflow.toString());
+        return workflow;
+    }
+
+    public LogicalWorkflow getRealWorkflow(String statement, String methodName,
+            TableMetadata... tableMetadataList) throws PlanningException {
+        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+        SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+
+        Validator validator = new Validator();
+
+        SelectValidatedQuery svq = null;
+        try {
+            svq = (SelectValidatedQuery) validator.validate(spq);
+        } catch (ValidationException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+
+        SelectPlannedQuery plannedQuery = null;
+        try {
+            plannedQuery = planner.planQuery(svq);
+
+        } catch (PlanningException e) {
+                assertNotNull(e, "Exception should not be null");
+                assertEquals(e.getClass(), PlanningException.class, "Exception class does not match.");
+        }
+
+        if(plannedQuery != null){
+            LogicalWorkflow workflow = planner.buildWorkflow(svq);
+            LOG.info(workflow.toString());
+            return workflow;
+        }
+       return null;
+
+    }
+
+    public LogicalWorkflow getWorkflowNonParsed(String statement, String methodName,
+            TableMetadata... tableMetadataList) throws PlanningException {
+        Parser parser = new Parser();
+        IParsedQuery stmt;
+        BaseQuery baseQuery = new BaseQuery(
+                UUID.randomUUID().toString(),
+                statement,
+                new CatalogName(""),
+                "sessionTest");
+        stmt = parser.parse(baseQuery);
+
         SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
         SelectStatement ss = spq.getStatement();
 
@@ -163,8 +283,23 @@ public class PlannerBaseTest {
         boolean found = false;
         while (step != null && !found) {
             if (Filter.class.isInstance(step)) {
-                LOG.info("-> " + ((Filter) step).getOperation());
-                found = operation.equals(((Filter) step).getOperation());
+                LOG.info("-> " + step.getOperations());
+                found = step.getOperations().contains(operation);
+                //found = operation.equals(step.getOperation());
+            }
+            step = step.getNextStep();
+        }
+        assertTrue(found, "Filter " + operation + " not found.");
+    }
+
+    public void assertGroupByInPath(Project initialStep, Operations operation) {
+        LogicalStep step = initialStep;
+        boolean found = false;
+        while (step != null && !found) {
+            if (GroupBy.class.isInstance(step)) {
+                LOG.info("-> " + step.getOperations());
+                found = step.getOperations().contains(operation);
+                //found = operation.equals(step.getOperation());
             }
             step = step.getNextStep();
         }

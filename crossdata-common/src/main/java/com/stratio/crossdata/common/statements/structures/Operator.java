@@ -111,6 +111,8 @@ public enum Operator {
         public String toString() {
             return "MATCH";
         }
+        @Override
+        public String toSQLString() { return "LIKE"; }
     },
 
     /**
@@ -171,6 +173,36 @@ public enum Operator {
         public String toString() {
             return "LIKE";
         }
+    },
+
+    /**
+     * Not Like comparator.
+     */
+    NOT_LIKE(Group.COMPARATOR) {
+        @Override
+        public String toString() {
+            return "NOT LIKE";
+        }
+    },
+
+    /**
+     * Not between comparator.
+     */
+    NOT_BETWEEN(Group.COMPARATOR) {
+        @Override
+        public String toString() {
+            return "NOT BETWEEN";
+        }
+    },
+
+    /**
+     * Not in comparator.
+     */
+    NOT_IN(Group.COMPARATOR) {
+        @Override
+        public String toString() {
+            return "NOT IN";
+        }
     };
 
     /**
@@ -210,6 +242,10 @@ public enum Operator {
      */
     public boolean isInGroup(Group group) {
         return this.group == group;
+    }
+
+    public String toSQLString() {
+        return toString();
     }
 
 }

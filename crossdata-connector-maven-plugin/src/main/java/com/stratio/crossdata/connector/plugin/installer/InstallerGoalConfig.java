@@ -32,12 +32,14 @@ public class InstallerGoalConfig {
     private final File mainJarRepo;
     private final List<File> dependenciesJarRepo;
     private final String unixScriptTemplate;
+    private final String javaOpts;
     private final String jmxPort;
     private boolean useCallingUserAsService;
     private final String pidFileName;
 
     public InstallerGoalConfig(String outputDirectory, String configDirectory, String includeDirectory,
             String connectorName, String description, String userService, String mainClass,
+            String javaOpts,
             String jmxPort, File mainJarRepo,
             List<File> dependenciesJarRepo, String unixScriptTemplate, boolean useCallingUserAsService,
             String pidFileName) {
@@ -48,6 +50,7 @@ public class InstallerGoalConfig {
         this.description = description;
         this.userService = userService;
         this.mainClass = mainClass;
+        this.javaOpts = javaOpts;
         this.jmxPort = jmxPort;
         this.mainJarRepo = mainJarRepo;
         this.dependenciesJarRepo = dependenciesJarRepo;
@@ -80,6 +83,9 @@ public class InstallerGoalConfig {
         return mainClass;
     }
 
+    public String getJavaOpts() {
+        return javaOpts;
+    }
     public String getJmxPort() {
         return jmxPort;
     }

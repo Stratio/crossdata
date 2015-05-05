@@ -58,8 +58,10 @@ class PlannerActor(coordinator: ActorRef, planner: Planner) extends Actor with T
     }
     case query: SelectValidatedQuery => {
       log.info("Planning SelectValidatedQuery from " + sender)
+      val timer = initTimer()
       try {
         val planned = planner.planQuery(query)
+        finishTimer(timer)
         log.info("Planner actor Sending " + planned.getClass + " to " + coordinator)
         coordinator forward planned
       } catch {

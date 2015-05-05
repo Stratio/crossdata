@@ -22,6 +22,7 @@ import scala.annotation.tailrec
 
 object CrossdataApplication extends App {
   val crossdataServer: CrossdataServer = new CrossdataServer
+  
 
   /**
    * This method make a command loop.

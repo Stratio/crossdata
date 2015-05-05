@@ -28,6 +28,7 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.metadata.ColumnType;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.MetadataParsedQuery;
@@ -43,10 +44,10 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
                 new ColumnName("demo", "users", "age"),
-                ColumnType.BIGINT, null, AlterOperation.ALTER_COLUMN);
+                new ColumnType(DataType.BIGINT), null, AlterOperation.ALTER_COLUMN);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
@@ -65,10 +66,10 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
                 new ColumnName("demo", "users", "new"),
-                ColumnType.VARCHAR, null, AlterOperation.ADD_COLUMN);
+                new ColumnType(DataType.VARCHAR), null, AlterOperation.ADD_COLUMN);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
@@ -89,7 +90,7 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
@@ -108,10 +109,10 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
                 new ColumnName("demo", "users", "age"),
-                ColumnType.BIGINT, null, AlterOperation.DROP_COLUMN);
+                new ColumnType(DataType.BIGINT), null, AlterOperation.DROP_COLUMN);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
@@ -130,10 +131,10 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "unknown"),
                 new ColumnName("demo", "unknown", "age"),
-                ColumnType.BIGINT, null, AlterOperation.DROP_COLUMN);
+                new ColumnType(DataType.BIGINT), null, AlterOperation.DROP_COLUMN);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {
@@ -152,10 +153,10 @@ public class AlterTableStatementTest extends BasicValidatorTest {
 
         AlterTableStatement alterTableStatement = new AlterTableStatement(new TableName("demo", "users"),
                 new ColumnName("demo", "users", "unknown"),
-                ColumnType.BIGINT, null, AlterOperation.DROP_COLUMN);
+                new ColumnType(DataType.BIGINT), null, AlterOperation.DROP_COLUMN);
         Validator validator = new Validator();
 
-        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery("alterTableId", query, new CatalogName("demo"),"sessionTest");
 
         IParsedQuery parsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         try {

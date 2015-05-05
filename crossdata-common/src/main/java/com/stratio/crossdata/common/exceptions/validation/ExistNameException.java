@@ -18,13 +18,16 @@
 
 package com.stratio.crossdata.common.exceptions.validation;
 
-import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.exceptions.ValidationException;
 
 /**
  * ExistName class exception thrown when the name not exists.
  */
 public class ExistNameException extends ValidationException {
+
+    private static final long serialVersionUID = -893116716297668148L;
+
     /**
      * Constructor class.
      * @param name The name that not exists.

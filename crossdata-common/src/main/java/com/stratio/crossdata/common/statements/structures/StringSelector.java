@@ -25,6 +25,7 @@ import com.stratio.crossdata.common.data.TableName;
  */
 public class StringSelector extends Selector {
 
+    private static final long serialVersionUID = 1606966682293837040L;
     /**
      * The string value.
      */
@@ -66,6 +67,11 @@ public class StringSelector extends Selector {
 
     @Override
     public String toString() {
+        return toSQLString(false);
+    }
+
+    @Override
+    public String toSQLString(boolean withAlias) {
         StringBuilder sb=new StringBuilder();
         sb.append("'").append(value).append("'");
         return sb.toString();

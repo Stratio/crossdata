@@ -20,7 +20,7 @@ package com.stratio.crossdata.core.normalizer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,12 +29,13 @@ import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.structures.GroupByClause;
-import com.stratio.crossdata.core.structures.InnerJoin;
+import com.stratio.crossdata.core.structures.Join;
 
 /**
  * Collection of fields that are processed by a {@link com.stratio.crossdata.core.normalizer.Normalizator} process.
@@ -44,17 +45,19 @@ public class NormalizedFields {
     /**
      * Set of {@link com.stratio.crossdata.common.data.ColumnName} involved in a query.
      */
-    private Set<ColumnName> columnNames = new HashSet<>();
+    private Set<ColumnName> columnNames = new LinkedHashSet<>();
 
     /**
      * Set of {@link com.stratio.crossdata.common.data.TableName} involved in a query.
      */
-    private Set<TableName> tableNames = new HashSet<>();
+    private Set<TableName> tableNames = new LinkedHashSet<>();
+
+    private Set<TableName> preferredTableNames = new LinkedHashSet<>();
 
     /**
      * Set of {@link com.stratio.crossdata.common.data.CatalogName} involved in a query.
      */
-    private Set<CatalogName> catalogNames = new HashSet<>();
+    private Set<CatalogName> catalogNames = new LinkedHashSet<>();
 
     /**
      * List of {@link com.stratio.crossdata.common.statements.structures.Selector} involved in a query including
@@ -63,14 +66,16 @@ public class NormalizedFields {
     private List<Selector> selectors = new ArrayList<>();
 
     /**
-     * Inner join information.
+     * List of Inner join information.
      */
-    private InnerJoin join;
+    private final List<Join> joinList = new ArrayList<>();
+
+    private final List<Relation> implicitWhere = new ArrayList<>();
 
     /**
-     * List of {@link com.stratio.crossdata.common.statements.structures.Relation} in the where clause.
+     * List of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation} in the where clause.
      */
-    private List<Relation> where = new ArrayList<>();
+    private List<AbstractRelation> where = new ArrayList<>();
 
     /**
      * List of {@link com.stratio.crossdata.common.statements.structures.OrderByClause}.
@@ -96,11 +101,7 @@ public class NormalizedFields {
      * Map of column alias associating alias with ColumnNames.
      */
     private Map<String, ColumnName> columnNameAlias = new HashMap<>();
-
-    /**
-     * Map associating function name and function signatures.
-     */
-    private Map<String, String> signatures = new HashMap<>();
+    private List<AbstractRelation> havingClause;
 
     /**
      * Class constructor.
@@ -172,36 +173,44 @@ public class NormalizedFields {
     /**
      * Get the inner join information.
      *
-     * @return A {@link com.stratio.crossdata.core.structures.InnerJoin}.
+     * @return A {@link com.stratio.crossdata.core.structures.Join}.
      */
-    public InnerJoin getJoin() {
-        return join;
+    public List<Join> getJoinList() {
+        return joinList;
     }
 
     /**
      * Set the inner join information.
      *
-     * @param join A {@link com.stratio.crossdata.core.structures.InnerJoin}.
+     * @param join A {@link com.stratio.crossdata.core.structures.Join}.
      */
-    public void setJoin(InnerJoin join) {
-        this.join = join;
+    public void addJoin(Join join) {
+        this.joinList.add(join);
+    }
+
+    public List<Relation> getImplicitWhere() {
+        return implicitWhere;
+    }
+
+    public void addImplicitWhere(Relation relation) {
+        implicitWhere.add(relation);
     }
 
     /**
      * Get the list of relation on the where clause.
      *
-     * @return A list of {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     * @return A list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation}.
      */
-    public List<Relation> getWhere() {
+    public List<AbstractRelation> getWhere() {
         return where;
     }
 
     /**
      * Set the where clause.
      *
-     * @param where A list of {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     * @param where A list of {@link com.stratio.crossdata.common.statements.structures.AbstractRelation}.
      */
-    public void setWhere(List<Relation> where) {
+    public void setWhere(List<AbstractRelation> where) {
         this.where = where;
     }
 
@@ -238,10 +247,14 @@ public class NormalizedFields {
      * @return A list of {@link com.stratio.crossdata.common.metadata.TableMetadata}.
      */
     public List<TableMetadata> getTablesMetadata() {
-        //recover all Metadata about a tableName
-        for (TableName tableName : tableNames) {
-            tablesMetadata.add(MetadataManager.MANAGER.getTable(tableName));
-        }
+
+            //recover all Metadata about a tableName
+            for (TableName tableName : tableNames) {
+                if(!tableName.isVirtual()) {
+                    tablesMetadata.add(MetadataManager.MANAGER.getTable(tableName));
+                }
+            }
+
         return tablesMetadata;
     }
 
@@ -285,22 +298,19 @@ public class NormalizedFields {
         return columnNameAlias.get(alias);
     }
 
-    /**
-     * Get the map of functions with their a associated signatures.
-     *
-     * @return A map.
-     */
-    public Map<String, String> getSignatures() {
-        return signatures;
+    public Set<TableName> getPreferredTableNames() {
+        return preferredTableNames;
     }
 
-    /**
-     * Add a new signature.
-     *
-     * @param functionName The function name.
-     * @param signature    The signature.
-     */
-    public void addSignature(String functionName, String signature) {
-        signatures.put(functionName, signature);
+    public void setPreferredTableNames(Set<TableName> preferredTableNames) {
+        this.preferredTableNames = preferredTableNames;
+    }
+
+    public void setHavingClause(List<AbstractRelation> havingClause) {
+        this.havingClause = havingClause;
+    }
+
+    public List<AbstractRelation> getHavingClause() {
+        return havingClause;
     }
 }

@@ -115,4 +115,13 @@ public class InsertIntoStatementTest extends ParsingTest {
         testRegularStatementSession("demo", inputText, expectText, "insertIntoSelect");
     }
 
+    @Test
+    public void insertIntoWithListType() {
+        String inputText =
+                "INSERT INTO table1 (id, options) VALUES (25, ['payment', 'shipment']);";
+        String expectText =
+                "INSERT INTO demo.table1 (demo.table1.id, demo.table1.options) VALUES (25, ('payment', 'shipment'));";
+        testRegularStatementSession("demo", inputText, expectText, "insertIntoSelect");
+    }
+
 }

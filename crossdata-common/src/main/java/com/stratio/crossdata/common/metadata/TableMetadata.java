@@ -34,9 +34,9 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 /**
  * TableMetadata class.
  */
-public class TableMetadata implements Serializable {
+public class TableMetadata implements Serializable, UpdatableMetadata {
 
-    private static final long serialVersionUID = 937637791215246279L;
+    private static final long serialVersionUID = 5060206162720173380L;
 
     private final TableName name;
 
@@ -212,5 +212,41 @@ public class TableMetadata implements Serializable {
 
     public void setColumns(LinkedHashMap<ColumnName, ColumnMetadata> columns) {
         this.columns = columns;
+    }
+
+    @Override public String toString() {
+        StringBuilder sb = new StringBuilder().append(System.getProperty("line.separator"));
+
+        sb.append("Table: ").append(getName()).append(System.lineSeparator());
+
+        sb.append("Cluster: ").append(getClusterRef()).append(System.lineSeparator());
+
+        sb.append("Columns: ").append(System.lineSeparator());
+        Map<ColumnName, ColumnMetadata> columns = getColumns();
+        for (Map.Entry<ColumnName, ColumnMetadata> entry : columns.entrySet()) {
+            sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue().getColumnType())
+                    .append(System.lineSeparator());
+        }
+
+        sb.append("Partition key: ").append(getPartitionKey()).append(System.lineSeparator());
+
+        sb.append("Cluster key: ").append(getClusterKey()).append(System.lineSeparator());
+
+        sb.append("Indexes: ").append(System.lineSeparator());
+        Map<IndexName, IndexMetadata> indexes = getIndexes();
+        for (Map.Entry<IndexName, IndexMetadata> idx : indexes.entrySet()) {
+            sb.append("\t").append(idx.getKey()).append("(").append(idx.getValue().getType()).append(")");
+            sb.append(": ").append(idx.getValue().getColumns().keySet());
+            sb.append(System.lineSeparator());
+        }
+
+        sb.append("Options: ").append(System.lineSeparator());
+        Map<Selector, Selector> options = getOptions();
+        for (Map.Entry<Selector, Selector> opt : options.entrySet()) {
+            sb.append("\t").append(opt.getKey()).append(": ").append(opt.getValue())
+                    .append(System.lineSeparator());
+        }
+
+        return sb.toString();
     }
 }

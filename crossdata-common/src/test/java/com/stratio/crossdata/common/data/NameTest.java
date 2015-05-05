@@ -40,18 +40,7 @@ public class NameTest {
         Assert.assertFalse(name1.equals(name3));
     }
 
-    /*
-    @Test
-    public void tableNameEqualsWithAliasTest() {
-        Name name1 = new TableName("catalog", "table");
-        Name name2 = new TableName("catalog", "table");
-        ((TableName)name1).setAlias("Alias");
-        Assert.assertFalse(name1.equals(name2));
 
-        ((TableName)name2).setAlias("Alias");
-        Assert.assertTrue(name1.equals(name2));
-    }
-    */
 
     @Test
     public void columnNameEqualsTest() {
@@ -66,21 +55,6 @@ public class NameTest {
         Assert.assertFalse(name1.equals(name5));
     }
 
-    /*
-    @Test
-    public void columnNameEqualsWithAliasTest() {
-        Name name1 = new ColumnName("catalog", "table", "column");
-        Name name2 = new ColumnName("catalog", "table", "column");
-
-        ((ColumnName)name1).setAlias("alias");
-        Assert.assertFalse(name1.equals(name2));
-
-        ((ColumnName)name2).setAlias("alias");
-        Assert.assertTrue(name1.equals(name2));
-
-
-    }
-*/
 
 
     @Test
@@ -126,17 +100,6 @@ public class NameTest {
         Assert.assertTrue(name1.equals(name2));
 
     }
-/*
-    @Test
-    public void indexNameWithAliasTest(){
-        TableName tablename=new TableName("catalog","table");
-        tablename.setAlias("alias");
-        Name name1 = new IndexName(tablename,"column");
-        Name name2 = new IndexName(new ColumnName("catalog","table","column"));
-        Assert.assertFalse(name1.equals(name2));
-
-    }
-*/
 
 
 

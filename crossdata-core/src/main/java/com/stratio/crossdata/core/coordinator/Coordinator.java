@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.stratio.crossdata.communication.*;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.AlterOptions;
@@ -48,12 +49,6 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.communication.AlterCluster;
-import com.stratio.crossdata.communication.AttachCluster;
-import com.stratio.crossdata.communication.AttachConnector;
-import com.stratio.crossdata.communication.DetachCluster;
-import com.stratio.crossdata.communication.DetachConnector;
-import com.stratio.crossdata.communication.ManagementOperation;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 
 /**
@@ -82,6 +77,8 @@ public class Coordinator implements Serializable {
             persistCreateIndex(metadataWorkflow.getIndexMetadata());
             break;
         case CREATE_TABLE_AND_CATALOG:
+        case REGISTER_TABLE_CREATE_CATALOG:
+        case CREATE_TABLE_REGISTER_CATALOG:
             persistCreateCatalogInCluster(metadataWorkflow.getCatalogName(), metadataWorkflow.getClusterName());
             persistCreateTable(metadataWorkflow.getTableMetadata());
             break;
@@ -105,9 +102,11 @@ public class Coordinator implements Serializable {
             break;
         case IMPORT_CATALOGS:
             persistImportCatalogs(result.getCatalogMetadataList());
+            persistCreateCatalogsInCluster(result.getCatalogMetadataList(), metadataWorkflow.getClusterName());
             break;
         case IMPORT_CATALOG:
             persistImportCatalogs(result.getCatalogMetadataList());
+            persistCreateCatalogsInCluster(result.getCatalogMetadataList(), metadataWorkflow.getClusterName());
             break;
         case IMPORT_TABLE:
             persistTables(result.getTableList(), metadataWorkflow.getClusterName());
@@ -135,7 +134,9 @@ public class Coordinator implements Serializable {
             result = persistDetachCluster(dc.targetCluster());
         } else if (AttachConnector.class.isInstance(workflow)) {
             AttachConnector ac = AttachConnector.class.cast(workflow);
-            result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options());
+            result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options(), ac.priority(), ac.pageSize());
+        } else if (ForceDetachConnector.class.isInstance(workflow)) {
+            result = CommandResult.createCommandResult("CONNECTOR detached successfully");
         } else if (DetachConnector.class.isInstance(workflow)) {
             DetachConnector dc = DetachConnector.class.cast(workflow);
             result = persistDetachConnector(dc.targetCluster(), dc.connectorName());
@@ -291,6 +292,17 @@ public class Coordinator implements Serializable {
     }
 
     /**
+     * Persist the Catalog into Metadata Manager into its cluster.
+     * @param catalogMetadataList The catalogs to persist.
+     * @param clusterName The catalog cluster to persist.
+     */
+    public void persistCreateCatalogsInCluster(List<CatalogMetadata> catalogMetadataList, ClusterName clusterName) {
+        for (CatalogMetadata catalog:catalogMetadataList) {
+            MetadataManager.MANAGER.addCatalogToCluster(catalog.getName(), clusterName);
+        }
+    }
+
+    /**
      * Persists table Metadata in Metadata Manager.
      *
      * @param table The table metadata to be stored.
@@ -349,10 +361,11 @@ public class Coordinator implements Serializable {
      * @param clusterName   The cluster name.
      * @param connectorName The connector name.
      * @param options       The map of connector options.
+     * @param priority      The priority of the connector for the associated cluster.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistAttachConnector(ClusterName clusterName, ConnectorName connectorName,
-            Map<Selector, Selector> options) {
+            Map<Selector, Selector> options, int priority, int pageSize) {
 
         // Update information in Cluster
         ClusterMetadata clusterMetadata =
@@ -360,7 +373,7 @@ public class Coordinator implements Serializable {
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
                 clusterMetadata.getConnectorAttachedRefs();
         ConnectorAttachedMetadata value =
-                new ConnectorAttachedMetadata(connectorName, clusterName, options);
+                new ConnectorAttachedMetadata(connectorName, clusterName, options, priority);
         connectorAttachedRefs.put(connectorName, value);
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
@@ -368,6 +381,8 @@ public class Coordinator implements Serializable {
         // Update information in Connector
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
         connectorMetadata.addClusterProperties(clusterName, options);
+        connectorMetadata.setPageSize(pageSize);
+        connectorMetadata.addClusterPriority(clusterName, priority);
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
 
         return CommandResult.createCommandResult("Connector started its session successfully");
@@ -395,6 +410,7 @@ public class Coordinator implements Serializable {
         ConnectorMetadata connectorMetadata = MetadataManager.MANAGER.getConnector(connectorName);
         connectorMetadata.getClusterRefs().remove(clusterName);
         connectorMetadata.getClusterProperties().remove(clusterName);
+        connectorMetadata.getClusterPriorities().remove(clusterName);
 
         MetadataManager.MANAGER.createConnector(connectorMetadata, false);
 

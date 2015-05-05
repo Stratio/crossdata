@@ -15,24 +15,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package com.stratio.crossdata.connectors
 
 import Mocks.DummyIConnector
 import akka.actor.{ActorRef, ActorSystem}
+import akka.agent.Agent
 import akka.pattern.ask
 import akka.routing.RoundRobinRouter
 import akka.util.Timeout
+import com.stratio.crossdata.common.connector.ObservableMap
 import com.stratio.crossdata.common.data._
-import com.stratio.crossdata.common.metadata.{CatalogMetadata, ColumnMetadata, IndexMetadata, TableMetadata}
+import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.result.MetadataResult
 import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.communication.{CreateTable, UpdateMetadata}
-import com.stratio.crossdata.connectors.ConnectorActor
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import org.apache.log4j.Logger
 import org.scalamock.scalatest.MockFactory
 import org.scalatest.{FunSuite, Suite}
 
-import scala.collection.mutable.Set
+import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
@@ -61,8 +63,11 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val m = new DummyIConnector()
     val m2 =new DummyIConnector()
 
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set()))
-    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, Set()))
+    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
+    val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
+
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set(), agent, runningJobsAgent))
+    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, Set(),agent, runningJobsAgent))
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))
@@ -85,16 +90,16 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
   }
 
   test("Send MetadataInProgressQuery to Connector") {
-
     val queryId = "queryId"
     val m=new DummyIConnector()
     val m2=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set()))
-    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, Set()))
+    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
+    val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set(), agent, runningJobsAgent))
+    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, Set(), agent, runningJobsAgent))
     val routees = Vector[ActorRef](ca1, ca2)
-    val connectorActor = system1.actorOf(ConnectorActor.props(myconnector, m, Set()).withRouter(RoundRobinRouter(routees
-    = routees)))
 
+    val connectorActor = system1.actorOf(ConnectorActor.props(myconnector, m, Set(),agent, runningJobsAgent).withRouter(RoundRobinRouter(routees = routees)))
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))
@@ -122,12 +127,14 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
   }
 
   test("Send updateMetadata to Connector") {
+    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
+    val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
     val m=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set()))
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, Set(),agent, runningJobsAgent))
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
     val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
     catalog.getTables.put(table.getName,table)
-    val future1 = ask(ca1, UpdateMetadata(catalog))
+    val future1 = ask(ca1, UpdateMetadata(catalog, true))
     val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
     assert(result == true)
   }

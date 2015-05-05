@@ -18,7 +18,7 @@
 
 package Mocks
 
-import com.stratio.crossdata.common.connector.{ConnectorClusterConfig, IConfiguration, IConnector, IMetadataEngine, IQueryEngine, IStorageEngine}
+import com.stratio.crossdata.common.connector._
 import com.stratio.crossdata.common.data.ClusterName
 import com.stratio.crossdata.common.security.ICredentials
 
@@ -36,4 +36,6 @@ class DummyIConnector extends IConnector{
   override def connect(credentials: ICredentials, config: ConnectorClusterConfig): Unit = {}
   val c:Option[IStorageEngine]=None
   override def getStorageEngine: IStorageEngine = c.get
+
+
 }

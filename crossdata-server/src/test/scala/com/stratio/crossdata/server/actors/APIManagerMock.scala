@@ -27,6 +27,6 @@ import com.stratio.crossdata.core.parser.Parser
 
 class APIManagerMock extends APIManager(new Parser(), new Validator(), new Planner()) {
   override def processRequest(cmd:Command):Result={
-    CommandResult.createCommandResult("OK MOTHER FUCKER")
+    CommandResult.createCommandResult("OK META DATA")
   }
 }

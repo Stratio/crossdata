@@ -23,6 +23,7 @@ import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
@@ -56,7 +57,7 @@ public final class CoreUtils {
     public static Object convertSelectorToObject(Selector selector, ColumnName columnName) throws PlanningException {
         Object result = null;
         ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
-        switch (columnMetadata.getColumnType()) {
+        switch (columnMetadata.getColumnType().getDataType()) {
         case BIGINT:
             result = convertSelectorToLong(selector);
             break;
@@ -76,9 +77,11 @@ public final class CoreUtils {
         case TEXT:
             result = convertSelectorToString(selector);
             break;
+        case NATIVE:
+            result = convertSelectorToObject(selector);
+            break;
         case LIST:
         case MAP:
-        case NATIVE:
         case SET:
             throw new PlanningException("ColumnType: " + columnMetadata.getColumnType() + " not supported yet");
         }
@@ -90,6 +93,21 @@ public final class CoreUtils {
         try {
             StringSelector stringSelector = (StringSelector) selector;
             result = stringSelector.getValue();
+        } catch (ClassCastException cce) {
+            throw new PlanningException(selector + " cannot be converted to String", cce);
+        }
+        return result;
+    }
+
+    private static Object convertSelectorToObject(Selector selector) throws PlanningException {
+        String result;
+        try {
+            if (FunctionSelector.class.isInstance(selector)){
+                result = selector.getStringValue();
+            }else {
+                StringSelector stringSelector = (StringSelector) selector;
+                result = stringSelector.getValue();
+            }
         } catch (ClassCastException cce) {
             throw new PlanningException(selector + " cannot be converted to String", cce);
         }

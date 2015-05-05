@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
+import com.stratio.crossdata.core.structures.Join;
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -43,29 +45,33 @@ import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
+import com.stratio.crossdata.common.exceptions.validation.NotValidTableException;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ClusterMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
+import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.statements.structures.AbstractRelation;
+import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
 import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
-import com.stratio.crossdata.core.metadata.MetadataManager;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.GroupByClause;
-import com.stratio.crossdata.core.structures.InnerJoin;
 
 public class NormalizerTest {
 
@@ -113,37 +119,37 @@ public class NormalizerTest {
         ColumnMetadata columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "clientId"),
                 new Object[] { },
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "clientId"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "colSales"),
                 new Object[] { },
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columns.put(new ColumnName(tableName, "colSales"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "gender"),
                 new Object[] { },
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "gender"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "colExpenses"),
                 new Object[] { },
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columns.put(new ColumnName(tableName, "colExpenses"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "year"),
                 new Object[] { },
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columns.put(new ColumnName(tableName, "year"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "colPlace"),
                 new Object[] { },
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "colPlace"), columnMetadata);
 
         Map<IndexName, IndexMetadata> indexes = new HashMap<>();
@@ -188,25 +194,25 @@ public class NormalizerTest {
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "assistantId"),
                 new Object[] { },
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "assistantId"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "age"),
                 new Object[] { },
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columns.put(new ColumnName(tableName, "age"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "colFee"),
                 new Object[] { },
-                ColumnType.INT);
+                new ColumnType(DataType.INT));
         columns.put(new ColumnName(tableName, "colFee"), columnMetadata);
 
         columnMetadata = new ColumnMetadata(
                 new ColumnName(tableName, "colCity"),
                 new Object[] { },
-                ColumnType.TEXT);
+                new ColumnType(DataType.TEXT));
         columns.put(new ColumnName(tableName, "colCity"), columnMetadata);
 
         indexes = new HashMap<>();
@@ -267,16 +273,16 @@ public class NormalizerTest {
 
         String inputText = "SELECT colSales, colExpenses FROM tableClients "
                 + "WHERE colCity = 'Madrid' "
-                + "ORDER BY age "
-                + "GROUP BY colSales, colExpenses;";
+                + "GROUP BY colSales, colExpenses "
+                + "ORDER BY age;";
 
         String expectedText = "SELECT demo.tableClients.colSales, demo.tableClients.colExpenses FROM demo.tableClients "
                 + "WHERE demo.tableClients.colPlace = 'Madrid' "
-                + "ORDER BY [demo.tableClients.year] "
-                + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses";
+                + "GROUP BY demo.tableClients.colSales, demo.tableClients.colExpenses "
+                + "ORDER BY demo.tableClients.year";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();
@@ -289,7 +295,7 @@ public class NormalizerTest {
         SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
 
         // WHERE CLAUSES
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         where.add(new Relation(new ColumnSelector(new ColumnName(null, "colPlace")), Operator.EQ,
                 new StringSelector("Madrid")));
         selectStatement.setWhere(where);
@@ -339,18 +345,18 @@ public class NormalizerTest {
                 "SELECT colSales, colFee FROM tableClients "
                         + "INNER JOIN tableCostumers ON assistantId = clientId "
                         + "WHERE colCity = 'Madrid' "
-                        + "ORDER BY age "
-                        + "GROUP BY colSales, colFee;";
+                        + "GROUP BY colSales, colFee "
+                        + "ORDER BY age;";
 
         String expectedText =
                 "SELECT demo.tableClients.colSales, myCatalog.tableCostumers.colFee FROM demo.tableClients "
                         + "INNER JOIN myCatalog.tableCostumers ON myCatalog.tableCostumers.assistantId = demo.tableClients.clientId "
                         + "WHERE myCatalog.tableCostumers.colCity = 'Madrid' "
-                        + "ORDER BY [myCatalog.tableCostumers.age] "
-                        + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee";
+                        + "GROUP BY demo.tableClients.colSales, myCatalog.tableCostumers.colFee "
+                        + "ORDER BY myCatalog.tableCostumers.age";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();
@@ -362,17 +368,22 @@ public class NormalizerTest {
         // SELECT STATEMENT
         SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
 
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
         Relation relation = new Relation(
                 new ColumnSelector(new ColumnName(null, "assistantId")),
                 Operator.EQ,
                 new ColumnSelector(new ColumnName(null, "clientId")));
         joinRelations.add(relation);
-        InnerJoin innerJoin = new InnerJoin(new TableName("myCatalog", "tableCostumers"), joinRelations);
-        selectStatement.setJoin(innerJoin);
+
+        List<TableName> tables = new ArrayList<>();
+        tables.add(new TableName("demo", "tableClients"));
+        tables.add(new TableName("myCatalog", "tableCostumers"));
+        Join join = new Join(tables, joinRelations);
+        selectStatement.addJoin(join);
+
 
         // WHERE CLAUSES
-        List<Relation> where = new ArrayList<>();
+        List<AbstractRelation> where = new ArrayList<>();
         where.add(new Relation(new ColumnSelector(new ColumnName(null, "colCity")), Operator.EQ,
                 new StringSelector("Madrid")));
         selectStatement.setWhere(where);
@@ -421,7 +432,7 @@ public class NormalizerTest {
                                         + "INNER JOIN tableClients ON assistantId = clientId ";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();
@@ -432,14 +443,17 @@ public class NormalizerTest {
         // SELECT STATEMENT
         SelectStatement selectStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
 
-        List<Relation> joinRelations = new ArrayList<>();
+        List<AbstractRelation> joinRelations = new ArrayList<>();
         Relation relation = new Relation(
                         new ColumnSelector(new ColumnName(new TableName("myCatalog","tableCostumers"), "assistantId")),
                         Operator.EQ,
                         new ColumnSelector(new ColumnName(null, "clientId")));
         joinRelations.add(relation);
-        InnerJoin innerJoin = new InnerJoin(new TableName("demo", "tableClients"), joinRelations);
-        selectStatement.setJoin(innerJoin);
+
+        List<TableName> tables = new ArrayList<>();
+        tables.add(new TableName("demo", "tableClients"));
+        Join join = new Join(tables, joinRelations);
+        selectStatement.addJoin(join);
 
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
@@ -451,7 +465,7 @@ public class NormalizerTest {
 
     }
 
-    @Test(expectedExceptions = BadFormatException.class)
+    @Test(expectedExceptions = ValidationException.class)
     public void testNormalizeWrongBasicSelect() throws Exception {
 
         insertData();
@@ -460,7 +474,7 @@ public class NormalizerTest {
                         "SELECT myCatalog.tableCostumers.colFee FROM demo.tableClients";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"));
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("demo"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();
@@ -478,6 +492,60 @@ public class NormalizerTest {
         Normalizer normalizer = new Normalizer();
         normalizer.normalize(selectParsedQuery);
 
+
+    }
+
+
+
+    @Test
+    public void testNormalizeSubquery() throws Exception {
+
+        insertData();
+
+        String methodName = "testNormalizeSubquery";
+
+        String inputText = "SELECT * FROM  "
+                        + "( SELECT colsales, 1 FROM tableClients ) AS t";
+
+        String virtualTableQN = Constants.VIRTUAL_NAME +".t";
+
+        String expectedText = "SELECT "+virtualTableQN+".colSales, "+virtualTableQN+".1 FROM ( SELECT demo.tableClients.colsales, 1 FROM demo.tableClients ) AS t";
+
+        // BASE QUERY
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("Constants.VIRTUAL_NAME"),"sessionTest");
+
+        // SELECTORS
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(new ColumnSelector(new ColumnName(null, "colSales")));
+        selectorList.add(new IntegerSelector(1));
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        // SELECT STATEMENT
+        SelectStatement subqueryStatement = new SelectStatement(selectExpression, new TableName("demo", "tableClients"));
+
+
+        //SELECT
+        List<Selector> selectorList2 = new ArrayList<>();
+        selectorList2.add(new AsteriskSelector(new TableName(Constants.VIRTUAL_NAME,"t")));
+        SelectExpression selectExpression2 = new SelectExpression(selectorList2);
+        SelectStatement selectStatement = new SelectStatement(selectExpression2,new TableName(Constants.VIRTUAL_NAME,"t"));
+        selectStatement.setSubquery(subqueryStatement,"t");
+
+        SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        Normalizer normalizer = new Normalizer();
+
+        SelectValidatedQuery result = null;
+        try {
+            result = normalizer.normalize(selectParsedQuery);
+        } catch (ValidationException e) {
+            fail("Test failed: " + methodName + System.lineSeparator(), e);
+        }
+
+        assertTrue(result.toString().equalsIgnoreCase(expectedText),
+                        "Test failed: " + methodName + System.lineSeparator() +
+                                        "Result:   " + result.toString() + System.lineSeparator() +
+                                        "Expected: " + expectedText);
 
     }
 

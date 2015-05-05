@@ -34,6 +34,7 @@ import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
 import com.stratio.crossdata.core.grid.GridException;
 import com.stratio.crossdata.core.grid.GridInitializer;
+import com.stratio.crossdata.core.loadWatcher.LoadWatcherManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
@@ -75,6 +76,7 @@ public class Engine {
      */
     private final Coordinator coordinator;
 
+
     /**
      * Class constructor.
      *
@@ -100,6 +102,13 @@ public class Engine {
         Lock lockExecution = Grid.INSTANCE.lock("executionData");
         TransactionManager tmExecution = Grid.INSTANCE.transactionManager("executionData");
         ExecutionManager.MANAGER.init(executionMap, lockExecution, tmExecution);
+        
+        // Initialize ExecutionManager
+        Map<String, Serializable> loadWatcherMap = Grid.INSTANCE.map("loadManagerData");
+        Lock lockLoadWatcher= Grid.INSTANCE.lock("loadManagerData");
+        TransactionManager tmLoadWatcher = Grid.INSTANCE.transactionManager("loadManagerData");
+        LoadWatcherManager.MANAGER.init(loadWatcherMap, lockLoadWatcher, tmLoadWatcher);
+
 
         parser = new Parser();
         validator = new Validator();
