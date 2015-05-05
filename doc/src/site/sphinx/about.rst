@@ -1,7 +1,12 @@
 About
 *****
 
-Crossdata is a distributed framework that unifies the interaction with batch and streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies Crossdata defines a common unifying interface containing the set of operations that a datastore may support. New connectors can be easily added to increase its connectivity capabilities. Two types of connectors are defined: native and spark-based. Native connectors are faster for simple operations, while Spark-based connectors offer a larger set of functionality. The Crossdata planner decides which connector will be used for any request based its characteristics. We offer a shell, Java/REST APIs, and ODBC for BI.
+Crossdata (aka Meta) is a distributed framework and a data layer that unifies the interaction with batch and
+streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like
+ language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to
+ normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies
+ Crossdata defines a common unifying interface containing the set of operations that a datastore may support. New
+ connectors can be easily added to increase its connectivity capabilities. Two types of connectors are defined: native and spark-based. Native connectors are faster for simple operations, while Spark-based connectors offer a larger set of functionality. The Crossdata planner decides which connector will be used for any request based its characteristics. We offer a shell, Java/REST APIs, JDBC and ODBC for BI.
 
 Compiling Crossdata
 ===================
@@ -10,6 +15,10 @@ Compiling Crossdata involves generating a set of files (.tokens, Lexers and Pars
 files. To automatically build Stratio Crossdata execute the following command::
 
     > mvn clean install
+
+If you prefer to skip the unitary and integration tests, just type::
+
+    > mvn clean install -DskipUTs -DskipITs
 
 
 Running the com.stratio.crossdata-server
@@ -103,7 +112,7 @@ Connectors
 Sandbox
 =======
 
-if you want to test Crossdata you can get our Sandbox follow the instructions of this `link <Sandbox.html>`_
+If you want to test Crossdata you can get our Sandbox follow the instructions of this `link <Sandbox.html>`_
 
 License
 =======

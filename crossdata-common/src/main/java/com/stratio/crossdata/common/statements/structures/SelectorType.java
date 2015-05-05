@@ -35,5 +35,13 @@ public enum SelectorType {
     CASE_WHEN,
     NULL,
     LIST,
-    ALIAS
+    ALIAS;
+
+    public boolean isNumeric() {
+        if((this == SelectorType.FLOATING_POINT)
+                || (this == SelectorType.INTEGER)){
+            return true;
+        }
+        return false;
+    }
 }

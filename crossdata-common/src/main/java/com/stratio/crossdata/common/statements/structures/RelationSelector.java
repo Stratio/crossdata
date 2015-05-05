@@ -80,6 +80,19 @@ public class RelationSelector extends Selector {
     }
 
     @Override
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder();
+        if(parenthesis){
+            sb.append("(");
+        }
+        sb.append(relation.toSQLString(withAlias));
+        if(parenthesis){
+            sb.append(")");
+        }
+        return sb.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -105,5 +118,10 @@ public class RelationSelector extends Selector {
         }
         result = 31 * result + relation.hashCode();
         return result;
+    }
+
+    public SelectorType getReturningType() {
+        SelectorType returningType = SelectorType.FLOATING_POINT;
+        return returningType;
     }
 }

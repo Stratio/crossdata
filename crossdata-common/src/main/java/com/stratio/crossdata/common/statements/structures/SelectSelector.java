@@ -70,6 +70,14 @@ public class SelectSelector extends Selector {
     }
 
     @Override
+    public String toSQLString(boolean withAlias) {
+        StringBuilder sb = new StringBuilder("(");
+        sb.append(selectQuery);
+        sb.append(")");
+        return sb.toString();
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;

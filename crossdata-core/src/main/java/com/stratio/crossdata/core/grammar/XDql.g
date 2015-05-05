@@ -175,6 +175,7 @@ fragment POINT: '.';
 T_TRUNCATE: T R U N C A T E;
 T_CREATE: C R E A T E;
 T_REGISTER: R E G I S T E R;
+T_UNREGISTER: U N R E G I S T E R;
 T_ALTER: A L T E R;
 T_NOT: N O T;
 T_WITH: W I T H;
@@ -195,9 +196,7 @@ T_FOR: F O R;
 T_INDEX: I N D E X;
 T_LIST: L I S T;
 T_REMOVE: R E M O V E;
-T_UDF: U D F;
 T_PROCESS: P R O C E S S;
-T_TRIGGER: T R I G G E R;
 T_STOP: S T O P;
 T_ON: O N;
 T_USING: U S I N G;
@@ -207,11 +206,9 @@ T_PRIMARY: P R I M A R Y;
 T_KEY: K E Y;
 T_INSERT: I N S E R T;
 T_INTO: I N T O;
-T_COMPACT: C O M P A C T;
 T_STORAGE: S T O R A G E;
 T_CLUSTER: C L U S T E R;
 T_CLUSTERS: C L U S T E R S;
-T_CLUSTERING: C L U S T E R I N G;
 T_ORDER: O R D E R;
 T_SELECT: S E L E C T;
 T_VALUES: V A L U E S;
@@ -618,7 +615,7 @@ selectStatement returns [SelectStatement slctst]
     }:
     T_SELECT selClause=getSelectExpression[fieldsAliasesMap]
     T_FROM (T_START_PARENTHESIS subquery=selectStatement T_END_PARENTHESIS
-        subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_CATALOG_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
+        subqueryAlias=getSubqueryAlias { tablename = new TableName(Constants.VIRTUAL_NAME, subqueryAlias); tablename.setAlias(subqueryAlias) ; subqueryInc = true;}
         | tablename=getAliasedTableID[tablesAliasesMap])
     {$slctst = new SelectStatement(selClause, tablename);}
 
@@ -629,21 +626,34 @@ selectStatement returns [SelectStatement slctst]
 
     (T_WITH T_WINDOW {windowInc = true;} window=getWindow)?
 
-    ((T_INNER {joinType=JoinType.INNER;}
-        | T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}
-        | T_RIGHT {joinType=JoinType.RIGHT_OUTER;}
-        | T_LEFT {joinType=JoinType.LEFT_OUTER;}
-        | T_LEFT T_OUTER {joinType=JoinType.LEFT_OUTER;}
-        | T_FULL T_OUTER {joinType=JoinType.FULL_OUTER;}
-        | T_CROSS {joinType=JoinType.CROSS;})?
-    T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
-    identJoin=getAliasedTableID[workaroundTablesAliasesMap]
-    T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
-    joinRelations=getConditions[null]
-    { List<TableName> joinTables = new ArrayList<>();
-    joinTables.add(tablename);
-    joinTables.add(identJoin);
-    $slctst.addJoin(new InnerJoin(joinTables, joinRelations, joinType));})*
+    //Add joins
+    (
+        //CROSS_JOIN
+        (   T_CROSS T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
+            identJoin=getAliasedTableID[workaroundTablesAliasesMap]
+            { List<TableName> joinTables = new ArrayList<>();
+            joinTables.add(tablename);
+            joinTables.add(identJoin);
+            $slctst.addJoin(new Join(joinTables));}
+        )
+        //JOINs WITH ON
+        |(
+            (T_INNER {joinType=JoinType.INNER;}
+                | T_RIGHT T_OUTER {joinType=JoinType.RIGHT_OUTER;}
+                | T_RIGHT {joinType=JoinType.RIGHT_OUTER;}
+                | T_LEFT {joinType=JoinType.LEFT_OUTER;}
+                | T_LEFT T_OUTER {joinType=JoinType.LEFT_OUTER;}
+                | T_FULL T_OUTER {joinType=JoinType.FULL_OUTER;})?
+            T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
+            identJoin=getAliasedTableID[workaroundTablesAliasesMap]
+            T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
+            joinRelations=getConditions[null]
+            { List<TableName> joinTables = new ArrayList<>();
+            joinTables.add(tablename);
+            joinTables.add(identJoin);
+            $slctst.addJoin(new Join(joinTables, joinRelations, joinType));}
+         )
+    )*
 
     (T_WHERE { whereInc = true;} whereClauses=getConditions[null])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
@@ -673,7 +683,7 @@ selectStatement returns [SelectStatement slctst]
              $slctst.setSubquery(subquery, subqueryAlias);
         }
         if(implicitJoin){
-            $slctst.addJoin(new InnerJoin(implicitTables, new ArrayList<AbstractRelation>()));
+            $slctst.addJoin(new Join(implicitTables, new ArrayList<AbstractRelation>()));
         }
     }
 ;
@@ -723,10 +733,11 @@ insertIntoStatement returns [InsertIntoStatement nsntst]
 dropTableStatement returns [DropTableStatement drtbst]
     @init{
         boolean ifExists = false;
+        boolean isExternal = false;
     }:
-    T_DROP T_TABLE (T_IF T_EXISTS { ifExists = true; })?
+    (T_DROP | T_UNREGISTER {isExternal = true;}) T_TABLE (T_IF T_EXISTS { ifExists = true; })?
     identID=getTableName {
-        $drtbst = new DropTableStatement(identID, ifExists);
+        $drtbst = new DropTableStatement(identID, ifExists, isExternal);
     }
 ;
 
@@ -869,29 +880,38 @@ getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
         clauses = new ArrayList<>();
         workaroundTable = tablename;
     }:
-    rel1=getAbstractRelation[workaroundTable] { clauses.addAll(rel1); }
+    firstRel=getAbstractRelation[workaroundTable] { clauses.addAll(firstRel); }
             (T_AND relN=getAbstractRelation[workaroundTable] { clauses.addAll(relN); })*
 ;
 
 getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     @init{
         workaroundTable = tablename;
-        leftOperand = new ArrayList<>();
-        rightOperand = new ArrayList<>();
-        boolean leftParenthesis = false;
-        boolean rightParenthesis = false;
+        firstTerm = new ArrayList<>();
+        anotherTerm = new ArrayList<>();
+        RelationDisjunction rd = new RelationDisjunction();
+        boolean withParenthesis = false;
+        boolean simpleRelation = true;
+        RelationTerm rt = null;
+        result = new ArrayList<>();
+    }
+    @after{
+        if(simpleRelation){
+            result = firstTerm;
+        } else {
+            result.add(rd);
+        }
     }:
-    (T_START_PARENTHESIS leftOperand=getConditions[workaroundTable] T_END_PARENTHESIS
-        { leftParenthesis=true; if(leftOperand.size()==1) leftOperand.get(0).setParenthesis(true); }
-    | rel1=getRelation[workaroundTable] {leftOperand.add(rel1);}) {result = leftOperand;}
-        (T_OR (T_START_PARENTHESIS rightOperand=getConditions[workaroundTable] T_END_PARENTHESIS
-                    {rightParenthesis=true;}
-               | rel2=getRelation[workaroundTable] {rightOperand.add(rel2);} )
-        {result = new ArrayList<>();
-        RelationDisjunction rd = new RelationDisjunction(leftOperand, rightOperand);
-        rd.setLeftParenthesis(leftParenthesis);
-        rd.setRightParenthesis(rightParenthesis);
-        result.add(rd);} )?
+    (T_START_PARENTHESIS firstTerm=getConditions[workaroundTable] T_END_PARENTHESIS
+        { withParenthesis = true;
+        if((!firstTerm.isEmpty()) && (firstTerm.size()==1)) firstTerm.get(0).setParenthesis(true); }
+    | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } )
+    { rd.getTerms().add(new RelationTerm(firstTerm, withParenthesis)); }
+    (T_OR { simpleRelation = false; }
+        (T_START_PARENTHESIS anotherTerm=getConditions[workaroundTable] T_END_PARENTHESIS
+            { rt = new RelationTerm(anotherTerm, true); }
+        | anotherRel=getRelation[workaroundTable] { rt = new RelationTerm(anotherRel); } )
+    { rd.getTerms().add(rt); } )*
 ;
 
 getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
@@ -1017,13 +1037,13 @@ getCaseWhenSelector[TableName tablename] returns [Selector selector]
     }:
     T_CASE
         (T_WHEN conditions=getConditions[tablename] T_THEN
-            firstSelector=getBasicSelector[tablename]
+            firstSelector=getSelector[tablename]
             {
-                Pair<List<AbstractRelation>,Selector> restriction = new ImmutablePair<>(conditions, firstSelector);
+                Pair<List<AbstractRelation>, Selector> restriction = new ImmutablePair<>(conditions, firstSelector);
                 restrictions.add(restriction);
             })*
     T_ELSE
-        defaultSelector=getBasicSelector[tablename]
+        defaultSelector=getSelector[tablename]
     T_END
 ;
 
@@ -1041,6 +1061,7 @@ getFunctionSelector[TableName tablename] returns [Selector selector]
             (T_COMMA selectN=getSelector[workaroundTable] {params.add(selectN);})*)?
     T_END_PARENTHESIS
 ;
+
 
 getBasicSelector[TableName tablename] returns [Selector selector]
     @init{
@@ -1113,11 +1134,6 @@ getArithmeticSelector[TableName tablename] returns [Selector selector]
     | fs=getFunctionSelector[tablename] {defaultSelector = fs;} 
     )
 ;
-
-
-
-
-
 
 getAssignment[TableName tablename] returns [Relation assign]
     @init{

@@ -120,8 +120,10 @@ public class PlannerBaseTest {
         try {
             svq = (SelectValidatedQuery) validator.validate(spq);
         } catch (ValidationException e) {
+            e.printStackTrace();
             Assert.fail(e.getMessage());
         } catch (IgnoreQueryException e) {
+            e.printStackTrace();
             Assert.fail(e.getMessage());
         }
 
@@ -187,9 +189,46 @@ public class PlannerBaseTest {
         for (TableMetadata tm : tableMetadataList) {
             svqw.addTableMetadata(tm);
         }
+
         LogicalWorkflow workflow = planner.buildWorkflow(svqw);
         LOG.info(workflow.toString());
         return workflow;
+    }
+
+    public LogicalWorkflow getRealWorkflow(String statement, String methodName,
+            TableMetadata... tableMetadataList) throws PlanningException {
+        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+        SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+
+        Validator validator = new Validator();
+
+        SelectValidatedQuery svq = null;
+        try {
+            svq = (SelectValidatedQuery) validator.validate(spq);
+        } catch (ValidationException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            e.printStackTrace();
+            Assert.fail(e.getMessage());
+        }
+
+        SelectPlannedQuery plannedQuery = null;
+        try {
+            plannedQuery = planner.planQuery(svq);
+
+        } catch (PlanningException e) {
+                assertNotNull(e, "Exception should not be null");
+                assertEquals(e.getClass(), PlanningException.class, "Exception class does not match.");
+        }
+
+        if(plannedQuery != null){
+            LogicalWorkflow workflow = planner.buildWorkflow(svq);
+            LOG.info(workflow.toString());
+            return workflow;
+        }
+       return null;
+
     }
 
     public LogicalWorkflow getWorkflowNonParsed(String statement, String methodName,

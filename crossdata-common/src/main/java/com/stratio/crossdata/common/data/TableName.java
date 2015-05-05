@@ -79,7 +79,7 @@ public class TableName extends Name {
      * @return true if the table is created using a select statement; false if the table is associated to a real data store.
      */
     public boolean isVirtual(){
-        return (catalogName != null) ? Constants.VIRTUAL_CATALOG_NAME.equals(catalogName.getName()) : false;
+        return (catalogName != null) ? Constants.VIRTUAL_NAME.equals(catalogName.getName()) : false;
     }
 
     @Override public boolean isCompletedName() {
@@ -104,15 +104,6 @@ public class TableName extends Name {
         return NameType.TABLE;
     }
 
-    @Override public String toString() {
-        if(alias == null){
-            return this.getQualifiedName();
-        }
-        StringBuilder sb = new StringBuilder(this.getQualifiedName());
-        sb.append(" AS ").append(alias);
-        return sb.toString();
-    }
-
     @Override
     public int hashCode() {
         String code;
@@ -125,5 +116,14 @@ public class TableName extends Name {
     @Override
     public boolean equals(Object o) {
         return (this == o) || ((o instanceof TableName) && (this.hashCode() == o.hashCode()));
+    }
+
+    @Override public String toString() {
+        if(alias == null){
+            return this.getQualifiedName();
+        }
+        StringBuilder sb = new StringBuilder(this.getQualifiedName());
+        sb.append(" AS ").append(alias);
+        return sb.toString();
     }
 }

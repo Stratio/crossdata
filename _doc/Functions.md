@@ -1,7 +1,7 @@
 CROSSDATA Functions
 ---
 
-Version: 0.2.0
+Version: 0.3.0
 
 Date: 7, Jan, 2015
 

@@ -193,7 +193,7 @@ public class ExplainPlanAPIManagerTest {
         Command cmd = getCommand(inputText);
         Result r = MetadataManagerTestHelper.HELPER.getApiManager().processRequest(cmd);
         assertNotNull(r, "Expecting result");
-        assertEquals(r.getClass(), ErrorResult.class, "Expecting command result");
+        assertEquals(r.getClass(), ErrorResult.class, "Expecting error result");
         ErrorResult result = (ErrorResult) r;
         assertNotNull(result.getQueryId(), "Expecting query id on results");
         LOG.info(result.getErrorMessage());

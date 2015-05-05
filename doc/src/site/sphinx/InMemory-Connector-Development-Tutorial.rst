@@ -424,9 +424,9 @@ All operations defined in the different interfaces throw **ConnectorException** 
 +-------------------------------+------------------------------------------------------------------+
 | InitializationException       | If the connector initialization fails.                           |
 +-------------------------------+------------------------------------------------------------------+
-| UnsupportedException | If the invoked method is not implemented by the connector.                |
+| UnsupportedException          | If the invoked method is not implemented by the connector.       |
 +-------------------------------+------------------------------------------------------------------+
-| ExecutionException | If the operation to be executed fails. |
+| ExecutionException            | If the operation to be executed fails.                           |
 +-------------------------------+------------------------------------------------------------------+
 | CriticalExecutionException | If the operation to be executed fails, and the connector is not longer usable. In this situation the connector service is expected to be rebooted. |
 +-------------------------------+------------------------------------------------------------------+
@@ -439,8 +439,8 @@ The connector can be started in two different ways:
 1. Running the connector tests ::
 
     > mvn clean verify -DconnectorJar="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata-connector
-    -inmemory-0.2.0.jar" -DconnectorDefinition="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata
-    -connector-inmemory-0.2.0/conf/InMemoryConnector.xml" -DclusterOptions="[TableRowLimit-100]"
+    -inmemory-0.3.0.jar" -DconnectorDefinition="[CrossdataPath]/crossdata-connector-inmemory/target/crossdata
+    -connector-inmemory-0.3.0/conf/InMemoryConnector.xml" -DclusterOptions="[TableRowLimit-100]"
     -DconnectorCluster="TestCluster" -DconnectorMainClass="com.stratio.connector.inmemory.InMemoryConnector"
     
 2. Starting the connector with maven::

@@ -20,12 +20,12 @@ package com.stratio.crossdata.connectors
 
 import java.util
 
-import akka.serialization.Serialization
 import com.codahale.metrics._
 import akka.agent.Agent
-import akka.actor.{Props, ActorSelection, ActorRef, ActorSystem}
+import akka.actor._
 import akka.pattern.ask
-import akka.routing.{DefaultResizer, RoundRobinPool}
+import akka.routing.DefaultResizer
+import com.stratio.crossdata.common.annotation.Experimental
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.metadata.{UpdatableMetadata, CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
@@ -35,9 +35,12 @@ import org.apache.log4j.Logger
 import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import com.stratio.crossdata.communication.{GetTableMetadata, GetCatalogMetadata, GetCatalogs, Shutdown}
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 import scala.collection.JavaConversions._
+import com.stratio.crossdata.communication.GetCatalogs
+import akka.routing.RoundRobinPool
+import com.stratio.crossdata.communication.GetTableMetadata
+import com.stratio.crossdata.communication.Shutdown
 
 
 object ConnectorApp extends App {
@@ -102,7 +105,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorSelection
   }
 
-  override def getTableMetadata(clusterName: ClusterName, tableName: TableName, timeout: Int): TableMetadata = {
+  override def getTableMetadata(clusterName: ClusterName, tableName: TableName, timeout: Int): Option[TableMetadata] = {
     /*TODO: for querying actor internal state, only messages should be used.
       i.e.{{{
         import scala.concurrent.duration._
@@ -112,27 +115,23 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
         response.getOrElse(throw new IllegalStateException("Actor cluster node is not initialized"))
       }}}
     */
-    //actorClusterNode.get.asInstanceOf[ConnectorActor].getTableMetadata(clusterName, tableName)
     val future = actorClusterNode.get.?(GetTableMetadata(clusterName,tableName ))(timeout)
-    Try(Await.result(future, Duration.fromNanos(timeout*1000000L))) match {
-      case Success(cMetadataList) =>
-        cMetadataList.asInstanceOf[TableMetadata]
-      case Failure(exception) =>
-        logger.debug("Error fetching the catalog metadata from the ObservableMap: "+exception.getMessage)
-        null
-    }
+    Try(Await.result(future.mapTo[TableMetadata],Duration.fromNanos(timeout*1000000L))).map{ Some (_)}.recover{
+      case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: "+e.getMessage); None
+    }.get
+
   }
 
-  override def getCatalogMetadata(catalogName: CatalogName, timeout: Int): CatalogMetadata ={
+  /*
+  TODO Review 0.4.0
+  override def getCatalogMetadata(catalogName: CatalogName, timeout: Int): Option[CatalogMetadata] ={
     val future = actorClusterNode.get.?(GetCatalogMetadata(catalogName))(timeout)
-    Try(Await.result(future,Duration.fromNanos(timeout*1000000L))) match {
-      case Success(cMetadataList) =>
-        cMetadataList.asInstanceOf[CatalogMetadata]
-      case Failure(exception) =>
-        logger.debug("Error fetching the catalog metadata from the ObservableMap: "+exception.getMessage)
-        null
-    }
+    Try(Await.result(future.mapTo[CatalogMetadata],Duration.fromNanos(timeout*1000000L))).map{ Some (_)}.recover{
+      case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: "+e.getMessage); None
+    }.get
+
   }
+ */
 
   /**
    * Recover the list of catalogs associated to the specified cluster.
@@ -140,15 +139,12 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
    * @param timeout the timeout in ms.
    * @return The list of catalog metadata or null if the list is not ready after waiting the specified time.
    */
-  override def getCatalogs(cluster: ClusterName,timeout: Int = 10000): util.List[CatalogMetadata] ={
+  @Experimental
+  override def getCatalogs(cluster: ClusterName,timeout: Int = 10000): Option[util.List[CatalogMetadata]] ={
     val future = actorClusterNode.get.ask(GetCatalogs(cluster))(timeout)
-    Try(Await.result(future, Duration.fromNanos(timeout*1000000L))) match {
-      case Success(cMetadataList) =>
-        cMetadataList.asInstanceOf[util.List[CatalogMetadata]]
-      case Failure(exception) =>
-        logger.debug("Error fetching the catalogs from the ObservableMap: "+exception.getMessage)
-        null
-    }
+    Try(Await.result(future.mapTo[util.List[CatalogMetadata]],Duration.fromNanos(timeout*1000000L))).map{ Some (_)}.recover {
+      case e: Exception => logger.debug("Error fetching the catalogs from the ObservableMap: "+e.getMessage); None
+    }.get
   }
 
   override def getConnectionStatus(): ConnectionStatus = {

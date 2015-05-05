@@ -45,14 +45,14 @@ class ParserActor(validator: ActorRef, parser: Parser) extends Actor with TimeTr
         log.debug("Query parsed: " + stmt.getStatement)
         validator forward stmt
         //sender ! ACK(queryId, QueryStatus.PARSED)
-      }catch {
+      } catch {
         case pe: ParsingException => {
           log.error("Parsing error: " + pe.getMessage + " sender: " + sender.toString())
           val error = Result.createParsingErrorResult(pe.getMessage)
           error.setQueryId(queryId)
           sender ! error
         }
-      }finally{
+      } finally {
         finishTimer(timer)
       }
 

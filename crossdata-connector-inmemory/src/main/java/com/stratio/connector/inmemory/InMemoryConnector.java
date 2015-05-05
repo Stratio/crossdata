@@ -48,7 +48,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(InMemoryConnector.class);
-    private static final int DEFAULT_TIMEOUT_IN_MS = 2000;
+    private static final int DEFAULT_TIMEOUT_IN_MS = 5000;
 
     /**
      * Map associating the {@link com.stratio.crossdata.common.data.ClusterName}s with
@@ -190,7 +190,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
 
 
     private void restoreSchema(ClusterName cluster) throws ConnectorException {
-        List<CatalogMetadata> catalogList = getCatalogs(cluster, DEFAULT_TIMEOUT_IN_MS);
+        List<CatalogMetadata> catalogList = getCatalogs(cluster, DEFAULT_TIMEOUT_IN_MS).get();
         if (catalogList != null){
             for (CatalogMetadata catalogMetadata : catalogList) {
                 LOG.debug("Restoring catalog: "+catalogMetadata.toString());

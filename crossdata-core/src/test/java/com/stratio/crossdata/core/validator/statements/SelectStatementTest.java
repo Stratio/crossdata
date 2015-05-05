@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.stratio.crossdata.core.structures.Join;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -58,7 +59,6 @@ import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
-import com.stratio.crossdata.core.structures.InnerJoin;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -118,6 +118,10 @@ public class SelectStatementTest extends BasicValidatorTest {
                 "WHERE age = 25 * 3 + (SELECT * FROM test.table1) - phrase + (SELECT rating FROM test.table2)" +
                 " AND email = 25*(SELECT member FROM table3)" +
                 "               +(SELECT name, address FROM table3 WHERE address=(SELECT * FROM sales.customers)+age);";
+
+        /*String query = "SELECT age, email FROM users " +
+                "WHERE email = (SELECT name, address FROM table3 WHERE address=(SELECT * FROM sales.customers));";
+                */
 
         BaseQuery baseQuery = new BaseQuery("validateSubqueriesInWhereClauses", query, new CatalogName("demo"),"sessionTest");
 
@@ -724,7 +728,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -770,7 +774,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("unknown", "users"));
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -816,7 +820,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
         joinTables.add(new TableName("unknown", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -862,7 +866,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
         joinTables.add(new TableName("demo", "unknown"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -907,7 +911,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -918,7 +922,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not valid catalog in parameter ON of an InnerJoin ");
+            fail("Not valid catalog in parameter ON of an Join ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -952,7 +956,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -963,7 +967,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not valid catalog in parameter ON of an InnerJoin ");
+            fail("Not valid catalog in parameter ON of an Join ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -997,7 +1001,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -1008,7 +1012,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not valid columnName in parameter ON of an InnerJoin ");
+            fail("Not valid columnName in parameter ON of an Join ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -1042,7 +1046,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         Validator validator = new Validator();
@@ -1053,7 +1057,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not valid columnName in parameter ON of an InnerJoin ");
+            fail("Not valid columnName in parameter ON of an Join ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -1089,7 +1093,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
         joinTables.add(new TableName("demo", "users_info"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         List<AbstractRelation> where = new ArrayList<>();
@@ -1108,7 +1112,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         try {
             validator.validate(parsedQuery);
-            fail("Not valid columnName in parameter ON of an InnerJoin ");
+            fail("Not valid columnName in parameter ON of an Join ");
         } catch (ValidationException e) {
             Assert.assertTrue(true);
         } catch (IgnoreQueryException e) {
@@ -1144,7 +1148,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(new TableName("demo", "users"));
         joinTables.add(new TableName("demo", "users_info"));
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
         selectStatement.addJoin(join);
 
         List<AbstractRelation> where = new ArrayList<>();
@@ -1489,6 +1493,159 @@ public class SelectStatementTest extends BasicValidatorTest {
     }
 
     @Test
+    public void multipleFunctionsAlias(){
+        String inputText = "SELECT getYear(users.age) as year, getYear(users.average) as average FROM demo.users";
+        String expectedText = "SELECT getYear(demo.users.age) AS year, getYear(demo.users.average) AS average " +
+                "FROM demo.users";
+
+        ColumnName col1 = new ColumnName(null, "users", "age");
+        ColumnName col2 = new ColumnName(null, "users", "average");
+        Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
+                Collections.singleton(new ColumnSelector(col1))));
+        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
+                Collections.singleton(new ColumnSelector(col2))));
+        selector1.setAlias("year");
+        selector2.setAlias("average");
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        TableName tablename = new TableName("demo", "users");
+
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+    }
+
+    @Test
+    public void multipleFunctionsAlias2(){
+        String inputText = "SELECT getYear(users.age), getYear(users.average) as average FROM demo.users";
+        String expectedText = "SELECT getYear(demo.users.age) AS getYear, getYear(demo.users.average) AS average " +
+                "FROM demo.users";
+
+        ColumnName col1 = new ColumnName(null, "users", "age");
+        ColumnName col2 = new ColumnName(null, "users", "average");
+        Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
+                Collections.singleton(new ColumnSelector(col1))));
+        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
+                Collections.singleton(new ColumnSelector(col2))));
+        List<Selector> selectorList = new ArrayList<>();
+        selector2.setAlias("average");
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        TableName tablename = new TableName("demo", "users");
+
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+    }
+
+    @Test
+    public void multipleFunctionsAlias3(){
+        String inputText = "SELECT getYear(users.age), getYear(users.average) FROM demo.users";
+        String expectedText = "SELECT getYear(demo.users.age) AS getYear, " +
+                "getYear(demo.users.average) AS getYear1 " +
+                "FROM demo.users";
+
+        ColumnName col1 = new ColumnName(null, "users", "age");
+        ColumnName col2 = new ColumnName(null, "users", "average");
+        Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
+                Collections.singleton(new ColumnSelector(col1))));
+        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
+                Collections.singleton(new ColumnSelector(col2))));
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        TableName tablename = new TableName("demo", "users");
+
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+    }
+
+    @Test
+    public void functionsInWhereWithAlias() {
+        String query = "SELECT users.name, users.age FROM demo.users WHERE users.name = substr(users.name) as sub;";
+        List<Selector> selectorList = new ArrayList<>();
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        Selector selector2 = new StringSelector(tablename, "age");
+        selectorList.add(selector);
+        selectorList.add(selector2);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+
+        Selector functionSelector = new FunctionSelector(new TableName("demo", "users"), "getYear",
+                new LinkedList<Selector>(
+                Collections.singleton(new ColumnSelector(new ColumnName("demo","users","name")))));
+        functionSelector.setAlias("sub");
+        List<AbstractRelation> where = new ArrayList<>();
+        Selector left = new ColumnSelector(new ColumnName("demo", "users", "name"));
+        Selector right = functionSelector;
+        Relation relation = new Relation(left, Operator.EQ, right);
+        where.add(relation);
+
+        selectStatement.setWhere(where);
+
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
+
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            fail(e.getMessage());
+        }
+    }
+
+
+    @Test
     public void simpleSelectAlias(){
         String inputText = "SELECT demo.users.name AS n, demo.users.age FROM demo.users WHERE n = 'name_1'";
         String expectedText = "SELECT demo.users.name AS n, demo.users.age FROM demo.users " +
@@ -1567,7 +1724,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<TableName> joinTables = new ArrayList<>();
         joinTables.add(tablename);
         joinTables.add(joinTable);
-        InnerJoin join = new InnerJoin(joinTables, joinRelations);
+        Join join = new Join(joinTables, joinRelations);
 
         List<AbstractRelation> where = new ArrayList<>();
         Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
@@ -1613,8 +1770,8 @@ public class SelectStatementTest extends BasicValidatorTest {
     public void simpleSubqueryTest(){
 
         String inputText = "SELECT * FROM ( SELECT demo.users.name AS n, demo.users.age FROM demo.users ) t WHERE n = 'name_1'";
-        String expectedText = "SELECT "+Constants.VIRTUAL_CATALOG_NAME+".t.n AS n, "+Constants.VIRTUAL_CATALOG_NAME+".t.age FROM ( SELECT demo.users.name AS n, demo.users.age FROM demo.users ) AS t " +
-                        "WHERE "+ Constants.VIRTUAL_CATALOG_NAME+".t.n = 'name_1'";
+        String expectedText = "SELECT "+Constants.VIRTUAL_NAME +".t.n AS n, "+Constants.VIRTUAL_NAME +".t.age FROM ( SELECT demo.users.name AS n, demo.users.age FROM demo.users ) AS t " +
+                        "WHERE "+ Constants.VIRTUAL_NAME +".t.n = 'name_1'";
 
         ColumnName n1 = new ColumnName("demo", "users", "name");
         Selector selector1 = new ColumnSelector(n1);
@@ -1629,7 +1786,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<Selector> selectorListSuperquery = new ArrayList<>();
         selectorListSuperquery.add(new AsteriskSelector());
-        TableName virtualTable = new TableName(Constants.VIRTUAL_CATALOG_NAME, "t");
+        TableName virtualTable = new TableName(Constants.VIRTUAL_NAME, "t");
         virtualTable.setAlias("t");
         SelectStatement selectStatement = new SelectStatement(new SelectExpression(selectorListSuperquery), virtualTable);
         selectStatement.setSubquery(subquerySelectStatement, "t");
@@ -1656,6 +1813,59 @@ public class SelectStatementTest extends BasicValidatorTest {
     }
 
     @Test
+    public void simpleSubqueryAliasTest(){
+
+        String inputText = "SELECT now() FROM ( SELECT demo.users.name AS n, " +
+                "now() FROM demo.users ) t WHERE n = 'name_1'";
+        String expectedText = "SELECT now() AS now FROM ( SELECT demo.users.name AS n, " +
+                "now() AS now FROM demo.users ) AS t " +
+                "WHERE "+ Constants.VIRTUAL_NAME +".t.n = 'name_1'";
+
+        ColumnName n1 = new ColumnName("demo", "users", "name");
+
+        Selector selector1 = new ColumnSelector(n1);
+        selector1.setAlias("n");
+
+        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "now", new LinkedList<Selector>());
+        List<Selector> selectorList = new ArrayList<>();
+
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        TableName tablename = new TableName("demo", "users");
+        SelectStatement subquerySelectStatement = new SelectStatement(selectExpression, tablename);
+
+        List<Selector> selectorListSuperquery = new ArrayList<>();
+        selectorListSuperquery.add(new FunctionSelector(new TableName("demo", "users"), "now", new LinkedList<Selector>()));
+        TableName virtualTable = new TableName(Constants.VIRTUAL_NAME, "t");
+        virtualTable.setAlias("t");
+        SelectStatement selectStatement = new SelectStatement(new SelectExpression(selectorListSuperquery), virtualTable);
+        selectStatement.setSubquery(subquerySelectStatement, "t");
+
+        List<AbstractRelation> where = new ArrayList<>();
+        Selector leftWh = new ColumnSelector(new ColumnName("", "", "n"));
+        Selector rightWh = new StringSelector(new TableName("", ""), "name_1");
+        Relation relationWh = new Relation(leftWh, Operator.EQ, rightWh);
+        where.add(relationWh);
+        selectStatement.setWhere(where);
+
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+    }
+
+
+    @Test
     public void simpleSubqueryWithAmbiguousNameTest(){
 
         String inputText = "SELECT * FROM ( SELECT demo.users.name , demo.users.age AS name FROM demo.users )'";
@@ -1673,7 +1883,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         List<Selector> selectorListSuperquery = new ArrayList<>();
         selectorListSuperquery.add(new AsteriskSelector());
-        TableName virtualTable = new TableName(Constants.VIRTUAL_CATALOG_NAME, "t");
+        TableName virtualTable = new TableName(Constants.VIRTUAL_NAME, "t");
         virtualTable.setAlias("t");
         SelectStatement selectStatement = new SelectStatement(new SelectExpression(selectorListSuperquery), virtualTable);
         selectStatement.setSubquery(subquerySelectStatement, "t");

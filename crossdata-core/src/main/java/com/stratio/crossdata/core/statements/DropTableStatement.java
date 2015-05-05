@@ -39,6 +39,11 @@ public class DropTableStatement extends MetadataStatement {
     private boolean ifExists;
 
     /**
+     *Whether the drop is an unregister
+     */
+    private boolean isExternal=false;
+
+    /**
      * Class constructor.
      *
      * @param tableName The name of the table.
@@ -49,6 +54,18 @@ public class DropTableStatement extends MetadataStatement {
         this.ifExists = ifExists;
     }
 
+    /**
+     * Class constructor.
+     *
+     * @param tableName The name of the table.
+     * @param ifExists  Whether it should be dropped only if exists.
+     * @param isExternal Whether the operation is a unregister.
+     */
+    public DropTableStatement(TableName tableName, boolean ifExists, boolean isExternal) {
+        this.tableName = tableName;
+        this.ifExists = ifExists;
+        this.isExternal= isExternal;
+    }
     /**
      * Get the name of the table.
      *
@@ -69,7 +86,7 @@ public class DropTableStatement extends MetadataStatement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("DROP TABLE ");
+        StringBuilder sb = new StringBuilder((isExternal) ? "UNREGISTER TABLE " :"DROP TABLE ");
         if (ifExists) {
             sb.append("IF EXISTS ");
         }
@@ -88,6 +105,14 @@ public class DropTableStatement extends MetadataStatement {
 
     public boolean isIfExists() {
         return ifExists;
+    }
+
+    /**
+     * Return if the drop is an unregister operation.
+     * @return a boolean.
+     */
+    public boolean isExternal() {
+        return isExternal;
     }
 
     /**

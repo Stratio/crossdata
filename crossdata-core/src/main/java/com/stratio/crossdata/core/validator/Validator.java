@@ -18,67 +18,22 @@
 
 package com.stratio.crossdata.core.validator;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.log4j.Logger;
-
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.IndexName;
-import com.stratio.crossdata.common.data.Name;
-import com.stratio.crossdata.common.data.Status;
-import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.data.*;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
-import com.stratio.crossdata.common.exceptions.validation.ConnectionHasNoRefsException;
-import com.stratio.crossdata.common.exceptions.validation.ExistLuceneIndexException;
-import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
-import com.stratio.crossdata.common.exceptions.validation.NotConnectionException;
-import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
-import com.stratio.crossdata.common.exceptions.validation.NotMatchDataTypeException;
-import com.stratio.crossdata.common.exceptions.validation.NotValidCatalogException;
-import com.stratio.crossdata.common.exceptions.validation.NotValidTableException;
+import com.stratio.crossdata.common.exceptions.validation.*;
 import com.stratio.crossdata.common.manifest.PropertyType;
-import com.stratio.crossdata.common.metadata.ClusterMetadata;
-import com.stratio.crossdata.common.metadata.ColumnMetadata;
-import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
-import com.stratio.crossdata.common.metadata.ConnectorMetadata;
-import com.stratio.crossdata.common.metadata.DataStoreMetadata;
-import com.stratio.crossdata.common.metadata.DataType;
-import com.stratio.crossdata.common.metadata.IndexMetadata;
-import com.stratio.crossdata.common.metadata.IndexType;
-import com.stratio.crossdata.common.metadata.Operations;
-import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.metadata.*;
+import com.stratio.crossdata.common.statements.structures.*;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
 import com.stratio.crossdata.core.normalizer.NormalizedFields;
-import com.stratio.crossdata.core.query.BaseQuery;
-import com.stratio.crossdata.core.query.IParsedQuery;
-import com.stratio.crossdata.core.query.IValidatedQuery;
-import com.stratio.crossdata.core.query.MetadataParsedQuery;
-import com.stratio.crossdata.core.query.MetadataValidatedQuery;
-import com.stratio.crossdata.core.query.SelectParsedQuery;
-import com.stratio.crossdata.core.query.SelectValidatedQuery;
-import com.stratio.crossdata.core.query.StorageParsedQuery;
-import com.stratio.crossdata.core.query.StorageValidatedQuery;
+import com.stratio.crossdata.core.query.*;
 import com.stratio.crossdata.core.statements.*;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+import org.apache.log4j.Logger;
+
+import java.util.*;
 
 /**
  * Validator Class.
@@ -91,7 +46,7 @@ public class Validator {
     private Normalizator normalizator = null;
 
     public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
-        return validate(parsedQuery, new ArrayList<TableName>());
+        return validate(parsedQuery, new HashSet<TableName>());
     }
 
     /**
@@ -102,7 +57,7 @@ public class Validator {
      * @throws ValidationException
      * @throws IgnoreQueryException
      */
-    public IValidatedQuery validate(IParsedQuery parsedQuery, List<TableName> parentsTableNames)
+    public IValidatedQuery validate(IParsedQuery parsedQuery, Set<TableName> parentsTableNames)
             throws ValidationException, IgnoreQueryException {
         IValidatedQuery validatedQuery = null;
         LOG.info("Validating CrossdataStatements...");
@@ -189,6 +144,9 @@ public class Validator {
                 break;
             case MUST_NOT_EXIST_FULL_TEXT_INDEX:
                 validateNotExistLuceneIndex(parsedQuery.getStatement());
+                break;
+            case MUST_BE_A_VALID_PK:
+                validatePKColumn(parsedQuery.getStatement());
             default:
                 break;
             }
@@ -205,6 +163,17 @@ public class Validator {
         }
 
         return validatedQuery;
+    }
+
+    private void validatePKColumn(CrossdataStatement statement) throws NotValidColumnException {
+
+        CreateTableStatement createStm = (CreateTableStatement)  statement;
+        createStm.getColumnsWithTypes();
+        for (ColumnName pkColumn : createStm.getPrimaryKey()){
+            if (!createStm.getColumnsWithTypes().keySet().contains(pkColumn)){
+                throw new NotValidColumnException(pkColumn);
+            }
+        }
     }
 
     private SelectValidatedQuery createValidatedQuery(Normalizator normalizer,SelectParsedQuery selectParsedQuery) {
@@ -352,7 +321,8 @@ public class Validator {
         }
     }
 
-    private void  validateSelect(IParsedQuery parsedQuery, List<TableName> parentsTableNames) throws ValidationException {
+    private void  validateSelect(IParsedQuery parsedQuery, Set<TableName> parentsTableNames)
+            throws ValidationException {
         SelectParsedQuery selectParsedQuery = (SelectParsedQuery) parsedQuery;
         normalizator = new Normalizator(selectParsedQuery);
         normalizator.execute(parentsTableNames);

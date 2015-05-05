@@ -18,13 +18,19 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
-import java.io.Serializable;
+import com.stratio.crossdata.common.data.TableName;
 
-public abstract class AbstractRelation implements Serializable {
+import java.io.Serializable;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public abstract class AbstractRelation implements Serializable, ISqlExpression {
 
     private static final long serialVersionUID = 4458788192163528306L;
 
-    private boolean parenthesis = false;
+    protected boolean parenthesis = false;
+
 
     public boolean isParenthesis() {
         return parenthesis;
@@ -33,4 +39,21 @@ public abstract class AbstractRelation implements Serializable {
     public void setParenthesis(boolean parenthesis) {
         this.parenthesis = parenthesis;
     }
+
+
+    /**
+    /* Return whether the relation is basic.
+     * @return {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     */
+    public abstract boolean isBasicRelation();
+
+    /**
+     * Get the tables associated with the current selector.
+     *
+     * @return A set of {@link com.stratio.crossdata.common.data.TableName}.
+     */
+    public abstract Set<TableName> getAbstractRelationTables();
+
+
+
 }

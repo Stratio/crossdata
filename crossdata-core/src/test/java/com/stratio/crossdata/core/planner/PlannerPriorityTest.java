@@ -48,8 +48,10 @@ import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
+import com.stratio.crossdata.core.statements.SelectStatement;
 
 /**
  * Planner test concerning priority.
@@ -204,10 +206,15 @@ public class PlannerPriorityTest extends PlannerBaseTest {
         ExecutionPath path = null;
         ExecutionWorkflow executionWorkflow = null;
         try {
-            BaseQuery bq = new BaseQuery("qid", "", null, null);
-            SelectValidatedQuery svq = new SelectValidatedQuery(new SelectParsedQuery(bq, null));
-            path = plannerWrapper.defineExecutionPath(project, availableConnectors, svq);
-            executionWorkflow = plannerWrapper.buildExecutionWorkflow(svq, new LogicalWorkflow(initialSteps));
+
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+            path = plannerWrapper.defineExecutionPath(project, availableConnectors, svqw);
+            executionWorkflow = plannerWrapper.buildExecutionWorkflow(svqw, new LogicalWorkflow(initialSteps));
         } catch (PlanningException e) {
             fail("Not expecting Planning Exception", e);
         }

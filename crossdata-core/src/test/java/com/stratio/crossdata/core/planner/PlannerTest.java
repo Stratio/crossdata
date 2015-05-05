@@ -130,6 +130,8 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_SUBQUERY);
         operationsC1.add(Operations.FILTER_NON_INDEXED_LET);
         operationsC1.add(Operations.SELECT_ORDER_BY);
+        operationsC1.add(Operations.FILTER_PK_EQ);
+
 
         //Streaming connector.
         Set<Operations> operationsC2 = new HashSet<>();
@@ -249,6 +251,11 @@ public class PlannerTest extends PlannerBaseTest {
         assertNotNull(queryWorkflow, "Null workflow received.");
         assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 2, "Expecting 2 initial steps");
+        assertEquals(
+                queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep(),
+                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep(),
+                "Expecting 2 initial steps to converge to the same union step");
         assertEquals(queryWorkflow.getActorRef(), connector2.getActorRef(), "Wrong target actor");
     }
 
@@ -580,12 +587,11 @@ public class PlannerTest extends PlannerBaseTest {
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testJoinWithStreaming", false, table1, table3);
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
+        assertNotNull(queryWorkflow, "Planner failed");
         assertNotNull(queryWorkflow.getTriggerStep(), "Planner failed.");
         assertNotNull(queryWorkflow.getNextExecutionWorkflow(), "Planner failed.");
-        assertNotNull(queryWorkflow, "Planner failed");
     }
 
-/*
     @Test
     public void testMultipleJoin() throws ManifestException {
 
@@ -597,11 +603,21 @@ public class PlannerTest extends PlannerBaseTest {
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testMultipleJoin", false, table1, table2, table3);
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
-        assertNotNull(queryWorkflow.getTriggerStep(), "Planner failed.");
-        assertNotNull(queryWorkflow.getNextExecutionWorkflow(), "Planner failed.");
         assertNotNull(queryWorkflow, "Planner failed");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 3, "Expecting 3 initial steps");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep(),
+                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep(),
+                "Expecting 2 first initial steps to converge to the same union step");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep(),
+                queryWorkflow.getWorkflow().getInitialSteps().get(2).getNextStep(),
+                "Expecting first and third initial steps to converge to the same union step");
+        assertEquals(
+                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep().getNextStep().getNextStep().getClass(),
+                Select.class,
+                "Last step should be a Select");
+
     }
-*/
+
     @Test
     public void testInsertIntoFromSelectDirect() throws ManifestException {
 
@@ -753,9 +769,9 @@ public class PlannerTest extends PlannerBaseTest {
                 columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
 
         String inputText = "SELECT * FROM demo.table4 WHERE"
-                + " id = code"
-                + " AND ((id = 25 AND code = 25) OR (code = 14 AND id = 14))"
-                + " AND id = 25;";
+                + " id=code"
+                + " AND ((id=25 AND code=25) OR (code=14 AND id=14) OR (id=25 AND code=14))"
+                + " AND id=25;";
 
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
                 inputText, "testSelectWithDisjunctionAndParenthesis", false, false, table4);
@@ -771,14 +787,14 @@ public class PlannerTest extends PlannerBaseTest {
                 "Third step should be a Disjunction");
         assertEquals(
                 ((Disjunction) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep())
-                        .getLeftOperand().size(),
-                2,
-                "Left operand of the disjunction should have 2 relations");
+                        .getTerms().size(),
+                3,
+                "Disjunction should have 3 terms");
         assertEquals(
                 ((Disjunction) queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep())
-                        .getRightOperand().size(),
+                        .getTerms().get(1).size(),
                 2,
-                "Right operand of the disjunction should have 2 relations");
+                "Second term of the disjunction should have 2 relations");
     }
 
     @Test

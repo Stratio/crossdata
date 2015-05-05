@@ -90,4 +90,11 @@ public abstract class LogicalStep implements Serializable {
      */
     public abstract LogicalStep getFirstPrevious();
 
+    public LogicalStep getLastStep() {
+        LogicalStep ls = this;
+        while(ls.getNextStep() != null){
+            ls = ls.getNextStep();
+        }
+        return ls;
+    }
 }

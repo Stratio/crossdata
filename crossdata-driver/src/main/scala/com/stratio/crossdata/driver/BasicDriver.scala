@@ -32,7 +32,7 @@ import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
-import com.stratio.crossdata.driver.utils.{ManifestUtils, RetryPolitics}
+import com.stratio.crossdata.driver.utils.{QueryData, ManifestUtils, RetryPolitics}
 import org.apache.log4j.Logger
 
 import scala.concurrent.duration._
@@ -81,7 +81,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   val cpuLoadPingTimeInMillis:Long = 5000
   
   lazy val logger = BasicDriver.logger
-  lazy val queries: java.util.Map[String, IDriverResultHandler] = new java.util.HashMap[String, IDriverResultHandler]
+  lazy val queries: java.util.Map[String, QueryData] = new java.util.HashMap[String, QueryData]
   lazy val system = ActorSystem("CrossdataDriverSystem", BasicDriver.config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
@@ -190,7 +190,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
-    queries.put(queryId.toString, callback)
+    queries.put(queryId.toString, new QueryData(callback, query, sessionId))
     sendQuery(new Query(queryId.toString, currentCatalog, query, userId, sessionId))
     InProgressResult.createInProgressResult(queryId.toString)
   }
@@ -231,12 +231,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
     }
-    val queryId = UUID.randomUUID()
+    val queryId = UUID.randomUUID().toString
     val callback = new SyncDriverResultHandler
-    queries.put(queryId.toString, callback)
-    sendQuery(new Query(queryId.toString, currentCatalog, query, userId, sessionId))
+    queries.put(queryId, new QueryData(callback, query, sessionId))
+    sendQuery(new Query(queryId, currentCatalog, query, userId, sessionId))
     val r = callback.waitForResult()
-    queries.remove(queryId.toString)
+    logger.info("Query " + queryId + " finished. " + queries.get(queryId).getExecutionInfo())
+    queries.remove(queryId)
     r
   }
 
@@ -796,7 +797,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return The result handler.
    */
   def getResultHandler(queryId: String): IDriverResultHandler = {
-    queries.get(queryId)
+    queries.get(queryId).resultHandler
   }
 
   /**
@@ -805,7 +806,14 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return Whether the callback has been removed.
    */
   def removeResultHandler(queryId: String): Boolean = {
-    queries.remove(queryId) != null
+    Option(queries.get(queryId)).fold{
+      logger.warn("Trying to remove the query " + queryId + " but it doesn't exist")
+      false
+    }{ queryData =>
+      logger.info("Query " + queryId + " finished. " + queryData.getExecutionInfo())
+      queries.remove(queryId) != null
+    }
+
   }
 
   /**

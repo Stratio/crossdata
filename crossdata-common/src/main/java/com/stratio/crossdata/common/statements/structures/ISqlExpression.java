@@ -15,8 +15,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+package com.stratio.crossdata.common.statements.structures;
 
-package com.stratio.crossdata.common.logicalplan;
+public interface ISqlExpression {
 
-public interface IOperand {
+    public String toSQLString(boolean withAlias);
 }

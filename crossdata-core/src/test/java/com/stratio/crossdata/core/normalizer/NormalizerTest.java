@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import com.stratio.crossdata.common.exceptions.validation.BadFormatException;
+import com.stratio.crossdata.core.structures.Join;
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
@@ -70,7 +72,6 @@ import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 import com.stratio.crossdata.core.structures.GroupByClause;
-import com.stratio.crossdata.core.structures.InnerJoin;
 
 public class NormalizerTest {
 
@@ -377,8 +378,8 @@ public class NormalizerTest {
         List<TableName> tables = new ArrayList<>();
         tables.add(new TableName("demo", "tableClients"));
         tables.add(new TableName("myCatalog", "tableCostumers"));
-        InnerJoin innerJoin = new InnerJoin(tables, joinRelations);
-        selectStatement.addJoin(innerJoin);
+        Join join = new Join(tables, joinRelations);
+        selectStatement.addJoin(join);
 
 
         // WHERE CLAUSES
@@ -421,7 +422,7 @@ public class NormalizerTest {
 
 
 
-    @Test(expectedExceptions = NotValidTableException.class)
+    @Test(expectedExceptions = BadFormatException.class)
     public void testNormalizeWrongInnerJoin() throws Exception {
 
         insertData();
@@ -451,8 +452,8 @@ public class NormalizerTest {
 
         List<TableName> tables = new ArrayList<>();
         tables.add(new TableName("demo", "tableClients"));
-        InnerJoin innerJoin = new InnerJoin(tables, joinRelations);        
-        selectStatement.addJoin(innerJoin);
+        Join join = new Join(tables, joinRelations);
+        selectStatement.addJoin(join);
 
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
@@ -506,12 +507,12 @@ public class NormalizerTest {
         String inputText = "SELECT * FROM  "
                         + "( SELECT colsales, 1 FROM tableClients ) AS t";
 
-        String virtualTableQN = Constants.VIRTUAL_CATALOG_NAME+".t";
+        String virtualTableQN = Constants.VIRTUAL_NAME +".t";
 
         String expectedText = "SELECT "+virtualTableQN+".colSales, "+virtualTableQN+".1 FROM ( SELECT demo.tableClients.colsales, 1 FROM demo.tableClients ) AS t";
 
         // BASE QUERY
-        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("Constants.VIRTUAL_CATALOG_NAME"),"sessionTest");
+        BaseQuery baseQuery = new BaseQuery(UUID.randomUUID().toString(), inputText, new CatalogName("Constants.VIRTUAL_NAME"),"sessionTest");
 
         // SELECTORS
         List<Selector> selectorList = new ArrayList<>();
@@ -525,9 +526,9 @@ public class NormalizerTest {
 
         //SELECT
         List<Selector> selectorList2 = new ArrayList<>();
-        selectorList2.add(new AsteriskSelector(new TableName(Constants.VIRTUAL_CATALOG_NAME,"t")));
+        selectorList2.add(new AsteriskSelector(new TableName(Constants.VIRTUAL_NAME,"t")));
         SelectExpression selectExpression2 = new SelectExpression(selectorList2);
-        SelectStatement selectStatement = new SelectStatement(selectExpression2,new TableName(Constants.VIRTUAL_CATALOG_NAME,"t"));
+        SelectStatement selectStatement = new SelectStatement(selectExpression2,new TableName(Constants.VIRTUAL_NAME,"t"));
         selectStatement.setSubquery(subqueryStatement,"t");
 
         SelectParsedQuery selectParsedQuery = new SelectParsedQuery(baseQuery, selectStatement);

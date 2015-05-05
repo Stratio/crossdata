@@ -17,6 +17,8 @@ import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class MetadataManagerConstructorTest {
 
+    private static final String VERSION = "0.3.0";
+
     @BeforeClass
     public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
@@ -31,7 +33,7 @@ public class MetadataManagerConstructorTest {
     @Test
     public void testShouldBeInitException() {
         DataStoreName name = new DataStoreName("dataStoreTest");
-        String version = "0.2.0";
+        String version = VERSION;
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();

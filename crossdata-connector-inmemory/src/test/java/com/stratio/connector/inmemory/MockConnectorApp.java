@@ -31,6 +31,7 @@ import com.stratio.crossdata.common.data.ConnectionStatus;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import scala.Option;
 
 public class MockConnectorApp implements IConnectorApp {
     /**
@@ -42,8 +43,8 @@ public class MockConnectorApp implements IConnectorApp {
      * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata}.
      */
     @Override
-    public TableMetadata getTableMetadata(ClusterName cluster, TableName tableName, int timeout) {
-        return new TableMetadata(null, null, null, null, null, null, null);
+    public Option<TableMetadata> getTableMetadata(ClusterName cluster, TableName tableName, int timeout) {
+        return Option.apply(new TableMetadata(null, null, null, null, null, null, null));
     }
 
     /**
@@ -53,10 +54,11 @@ public class MockConnectorApp implements IConnectorApp {
      * @param timeout the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    @Override
-    public CatalogMetadata getCatalogMetadata(CatalogName catalogName, int timeout) {
-        return new CatalogMetadata(null, null, null);
+    /*@Override
+    public Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout) {
+        return Option.apply( new CatalogMetadata(null, null, null));
     }
+    */
 
     /**
      * Get the list of existing catalogs in a cluster.
@@ -66,8 +68,8 @@ public class MockConnectorApp implements IConnectorApp {
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
     @Override
-    public List<CatalogMetadata> getCatalogs(ClusterName cluster, int timeout) {
-        return new ArrayList<>();
+    public Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout) {
+        return Option.apply((List<CatalogMetadata>) new ArrayList<CatalogMetadata>());
     }
 
     /**

@@ -57,6 +57,8 @@ import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class MetadataManagerTest {
 
+    private static final String VERSION = "0.3.0";
+
     @BeforeClass
     public void setUp() throws ManifestException {
         MetadataManagerTestHelper.HELPER.initHelper();
@@ -466,7 +468,7 @@ public class MetadataManagerTest {
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testShouldBeUniqueException() {
         DataStoreName name = MetadataManagerTestHelper.HELPER.createTestDatastore();
-        String version = "0.2.0";
+        String version = VERSION;
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
@@ -541,7 +543,7 @@ public class MetadataManagerTest {
         MetadataManagerTestHelper.HELPER.createTestDatastore();
 
         DataStoreName name = new DataStoreName("dataStoreTest");
-        String version = "0.2.0";
+        String version = VERSION;
         Set<PropertyType> requiredProperties = new HashSet<>();
         Set<PropertyType> othersProperties = new HashSet<>();
         Set<String> behaviors = new HashSet<>();
@@ -559,7 +561,7 @@ public class MetadataManagerTest {
         String actorRef = "akkaRefTest";
         MetadataManagerTestHelper.HELPER.createTestConnector(name, dataStoreName, actorRef);
 
-        String version = "0.2.0";
+        String version = VERSION;
         List<String> dataStoreRefs = new ArrayList<>();
         List<PropertyType> requiredProperties = new ArrayList<>();
         List<PropertyType> optionalProperties = new ArrayList<>();

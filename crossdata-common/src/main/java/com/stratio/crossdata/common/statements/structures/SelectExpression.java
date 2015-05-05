@@ -95,4 +95,21 @@ public class SelectExpression implements Serializable {
         }
         return sb.toString();
     }
+
+
+    public String toSQLString() {
+        StringBuilder sb = new StringBuilder();
+        Iterator<Selector> selectors = selectorList.iterator();
+        while (selectors.hasNext()) {
+            Selector selector = selectors.next();
+            sb.append(selector.toSQLString(false));
+            if(selector.getAlias() != null){
+                sb.append(" AS "+selector.getAlias());
+            }
+            if (selectors.hasNext()) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
+    }
 }
