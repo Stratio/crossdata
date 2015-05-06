@@ -267,6 +267,27 @@ Example:
 
     TRUNCATE tableTest;
 
+REGISTER TABLE
+--------------
+REGISTER TABLE (IF NOT EXISTS)? \<tablename\> ON CLUSTER \<clusterName\> '('\<column-definition\> (',' \<column-definition\> )\* ')'
+(WITH \<JSON\>)? ';'
+
+\<column-definition\> ::= \<identifier\> \<type\> ( PRIMARY KEY )? | PRIMARY KEY '(' \<partition-key\> (',' \<identifier\> )\* ')'
+
+\<partition-key\> ::= \<partition-key\> | '(' \<partition-key\> ( ',' \<identifier\> )\* ')'        
+
+Example:
+
+    REGISTER TABLE tableTest ON CLUSTER cassandra_prod (id int PRIMARY KEY, name text);
+
+UNREGISTER TABLE
+----------------
+UNREGISTER TABLE (IF EXISTS)? \<tablename\> ';'
+
+Example:
+
+    UNREGISTER TABLE tableTest;
+
 DELETE
 ------
 DELETE FROM \<tablename\> (WHERE \<where-clause\>)? ';'
