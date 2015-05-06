@@ -380,50 +380,49 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
     @Test
     public void testCompareCellsASC() throws UnsupportedException {
-        testCompareCell(OrderDirection.ASC, true, false, -1);
+        assertEquals(compareCell(OrderDirection.ASC, true, false), -1);
     }
 
 
     @Test
     public void testCompareCellsASCCase2() throws UnsupportedException {
-        testCompareCell(OrderDirection.ASC, false, true, 1);
+        assertEquals(compareCell(OrderDirection.ASC, false, true), 1);
     }
 
     @Test
     public void testCompareCellsDESC() throws UnsupportedException {
-        testCompareCell(OrderDirection.DESC, true, false, 1);
+        assertEquals(compareCell(OrderDirection.DESC, true, false), 1);
     }
 
     @Test
     public void testCompareCellsDESCCase2() throws UnsupportedException {
-        testCompareCell(OrderDirection.DESC, false, true, -1);
+        assertEquals(compareCell(OrderDirection.DESC, false, true), -1);
     }
 
     @Test
     public void testCompareCellsDESCNumber() throws UnsupportedException {
-        testCompareCell(OrderDirection.DESC, 1, 2, -1);
+        assertEquals(compareCell(OrderDirection.DESC, 1, 2), -1);
     }
 
     @Test
     public void testCompareCellsASCNumber() throws UnsupportedException {
-        testCompareCell(OrderDirection.ASC, 1, 2, 1);
+        assertEquals(compareCell(OrderDirection.ASC, 1, 2), 1);
     }
 
     @Test
     public void testCompareCellsASCNumberEQ() throws UnsupportedException {
-        testCompareCell(OrderDirection.DESC, 1, 1, 0);
+        assertEquals(compareCell(OrderDirection.DESC, 1, 1), 0);
     }
 
-    public void testCompareCell(OrderDirection direction, Object value1, Object value2, int expected) throws UnsupportedException {
+    public int compareCell(OrderDirection direction, Object value1, Object value2) throws UnsupportedException {
 
         buildUsersTable();
 
         SimpleValue toBeOrdered = new SimpleValue(null, value1);
         SimpleValue alreadyOrdered =  new SimpleValue(null, value2);
 
-        int result = ((InMemoryQueryEngine)connector.getQueryEngine()).compareCells(toBeOrdered, alreadyOrdered, direction);
+        return ((InMemoryQueryEngine)connector.getQueryEngine()).compareCells(toBeOrdered, alreadyOrdered, direction);
 
-        assertEquals(result, expected);
 
     }
 
