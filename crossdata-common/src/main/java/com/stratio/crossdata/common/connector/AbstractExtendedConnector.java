@@ -78,13 +78,13 @@ public abstract class AbstractExtendedConnector implements IConnector{
      * @param timeout the timeout in ms.
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    @Experimental
+    /*@Experimental
     public Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout){
         if((connectorApp == null) || (cluster == null)){
             return Option.empty();
         }
         return connectorApp.getCatalogs(cluster,timeout);
-    }
+    }*/
 
     /**
      * Get the connection status with the Crossdata server.

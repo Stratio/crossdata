@@ -133,6 +133,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   }
  */
 
+  /*
   /**
    * Recover the list of catalogs associated to the specified cluster.
    * @param cluster the cluster name.
@@ -146,6 +147,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       case e: Exception => logger.debug("Error fetching the catalogs from the ObservableMap: "+e.getMessage); None
     }.get
   }
+ */
 
   override def getConnectionStatus(): ConnectionStatus = {
     var status: ConnectionStatus = ConnectionStatus.CONNECTED

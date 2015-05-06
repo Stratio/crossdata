@@ -67,10 +67,10 @@ public class MockConnectorApp implements IConnectorApp {
      * @param timeout the timeout in ms.
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
      */
-    @Override
+    /*@Override
     public Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout) {
         return Option.apply((List<CatalogMetadata>) new ArrayList<CatalogMetadata>());
-    }
+    }*/
 
     /**
      * Get the connection status with the Crossdata server.
