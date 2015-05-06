@@ -939,9 +939,6 @@ public class Planner {
         Map<String, LogicalStep> processed = getProjects(query, tableMetadataMap);
         addProjectedColumns(processed, query);
 
-        //TODO determine which is the correct target table if the order fails.
-        String selectTable = query.getStatement().getTableName().getQualifiedName();
-
         //Add filters
         if (query.getBasicRelations() != null) {
             processed = addFilter(processed, tableMetadataMap, query);
