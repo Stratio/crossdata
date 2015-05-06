@@ -128,7 +128,6 @@ public class FunctionSelector extends Selector {
 
     @Override
     public String getSelectorTablesAsString() {
-        StringBuilder sb = new StringBuilder();
         Iterator<TableName> it = getSelectorTables().iterator();
         while (it.hasNext()) {
             TableName t = it.next();

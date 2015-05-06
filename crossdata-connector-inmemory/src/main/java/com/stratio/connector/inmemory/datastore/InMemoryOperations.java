@@ -23,7 +23,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 /**
- * Enumeration of the different operations that can be applied
+ * Enumeration of the different operations that can be applied.
  */
 public enum InMemoryOperations {
     /**
@@ -110,7 +110,7 @@ public enum InMemoryOperations {
 
 
     /**
-     * IN operator
+     * IN operator.
      */
     IN{
         @Override

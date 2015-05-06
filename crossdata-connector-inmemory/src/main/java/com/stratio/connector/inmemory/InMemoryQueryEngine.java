@@ -130,7 +130,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
     }
 
     /**
-     * Orthers the results using the orderStep
+     * Orthers the results using the orderStep.
      * @param results
      * @return
      * @throws ExecutionException
