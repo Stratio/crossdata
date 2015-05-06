@@ -17,7 +17,17 @@
  */
 package com.stratio.crossdata.common.statements.structures;
 
-public interface ISqlExpression {
+import java.io.Serializable;
 
+/**
+ * The root interface for all structures in which a sql statement can be decomposed.
+ */
+public interface ISqlExpression extends Serializable{
+
+    /**
+     * Returns the string representation in sql syntax.
+     * @param withAlias Whether the expression must use alias or qualified names.
+     * @return          The sql string.
+     */
     public String toSQLString(boolean withAlias);
 }

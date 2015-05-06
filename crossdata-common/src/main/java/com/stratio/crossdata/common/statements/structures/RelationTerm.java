@@ -18,7 +18,6 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
-import com.google.common.collect.Table;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.utils.StringUtils;
 
@@ -30,6 +29,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 
+/**
+ * Class that contains the relationships that can be found on a {@link com.stratio.crossdata.common.statements.structures.RelationDisjunction}.
+ */
 public class RelationTerm implements Serializable, ISqlExpression {
 
     private static final long serialVersionUID = -3346305822266813889L;
@@ -38,7 +40,7 @@ public class RelationTerm implements Serializable, ISqlExpression {
     private boolean withParenthesis = false;
 
     public RelationTerm(List<AbstractRelation> relations) {
-        this.relations.addAll(relations);
+        this(relations, false);
     }
 
     public RelationTerm(List<AbstractRelation> relations, boolean withParenthesis) {

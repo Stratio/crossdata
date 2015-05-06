@@ -612,7 +612,7 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
     public String getActorRef(){
         // Random election (Kind of load balancing?)
         String actorRef = null;
-        if((actorRefs != null) & (!actorRefs.isEmpty())){
+        if(actorRefs != null && !actorRefs.isEmpty()){
             int randomNum = (new Random()).nextInt(actorRefs.size());
             int count = 0;
             Iterator<String> iter = actorRefs.iterator();

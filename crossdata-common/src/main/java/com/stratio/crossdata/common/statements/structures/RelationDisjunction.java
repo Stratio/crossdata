@@ -28,15 +28,28 @@ import java.util.Set;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.utils.StringUtils;
 
+/**
+ * Models OR relationships that can be found on a WHERE clause.
+ */
 public class RelationDisjunction extends AbstractRelation {
 
     private static final long serialVersionUID = 2085700590246602145L;
 
     private final List<RelationTerm> terms = new ArrayList<>();
 
+
+    /**
+     * Class constructor.
+     *
+     */
     public RelationDisjunction() {
     }
 
+    /**
+     * Class constructor.
+     *
+     * @param terms     Inner relations list.
+     */
     public RelationDisjunction(RelationTerm... terms) {
         for(int i = 0; i<terms.length; i++){
             this.terms.add(terms[i]);
@@ -69,7 +82,11 @@ public class RelationDisjunction extends AbstractRelation {
         return sb.toString();
     }
 
-
+    /**
+     * Returns the string representation in sql syntax.
+     * @param withAlias Whether the expression must use alias or qualified names.
+     * @return          The sql string.
+     */
     public String toSQLString(boolean withAlias) {
 
         StringBuilder sb = new StringBuilder();
@@ -83,6 +100,12 @@ public class RelationDisjunction extends AbstractRelation {
         return sb.toString();
     }
 
+
+    /**
+     * Get a string representation of the tables associated with the selector.
+     *
+     * @return A string with the table qualified names separated by -.
+     */
     public String getSelectorTablesAsString() {
         Set<String> allTables = new LinkedHashSet<>();
         // Inner relations
@@ -102,6 +125,11 @@ public class RelationDisjunction extends AbstractRelation {
         return sb.toString().replace("(", "").replace(")", "");
     }
 
+    /**
+     * Get a string representation of the tables associated with the first selector.
+     *
+     * @return A string with the table qualified names separated by -.
+     */
     public String getFirstSelectorTablesAsString() {
         for(RelationTerm rt: terms){
             Iterator<AbstractRelation> iter = rt.getRelations().iterator();
@@ -119,6 +147,12 @@ public class RelationDisjunction extends AbstractRelation {
         return getSelectorTablesAsString();
     }
 
+
+    /**
+     * Get the tables queried on the selector.
+     * @param   relationTerm
+     * @return A set of {@link com.stratio.crossdata.common.data.TableName}.
+     */
     public String getSelectorTablesAsString(RelationTerm relationTerm) {
         Set<String> allTables = new HashSet<>();
         allTables.add(relationTerm.getSelectorTablesAsString());
