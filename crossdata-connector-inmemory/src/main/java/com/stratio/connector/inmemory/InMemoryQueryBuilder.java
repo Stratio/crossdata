@@ -67,8 +67,6 @@ public class InMemoryQueryBuilder {
         result.getRelations().addAll(extractFilters(project));
         result.getOutputColumns().addAll(transformIntoSelectors(project.getColumnList()));
 
-        OrderBy orderByStep = extractStep(project, OrderBy.class);;
-
         processJoins(result.getOutputColumns(), project);
 
 
@@ -116,7 +114,7 @@ public class InMemoryQueryBuilder {
     }
 
     /**
-     * Adds the new Output Columns that holds the JoinColumns
+     * Adds the new Output Columns that holds the JoinColumns.
      */
     private void processJoins(List<InMemorySelector> outputColumns, Project project) throws ExecutionException {
 

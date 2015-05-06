@@ -74,7 +74,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
     private boolean ifNotExists;
 
     /**
-     * Whether the table has been created previously or not
+     * Whether the table has been created previously or not.
      */
     private boolean isExternal;
 
