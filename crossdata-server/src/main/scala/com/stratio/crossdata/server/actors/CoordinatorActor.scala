@@ -55,8 +55,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
   log.info("Lifting coordinator actor")
 
 
-
-
   def receive: Receive = {
 
     case plannedQuery: IPlannedQuery => {
