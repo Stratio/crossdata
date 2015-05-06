@@ -414,6 +414,11 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
         this.actorRefs = actorRefs;
     }
 
+    /**
+     * Return if the connector support a set of operations.
+     * @param operations A set of {@link com.stratio.crossdata.common.metadata.Operations}.
+     * @return A boolean.
+     */
     public boolean supports(Set<Operations> operations) {
         return supportedOperations.containsAll(operations);
     }
@@ -597,11 +602,19 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
         this.excludedFunctions = excludedFunctions;
     }
 
+    /**
+     * Add an actor reference to the connector.
+     * @param actorRef  The actor reference.
+     */
     public void addActorRef(String actorRef){
         actorRefs.add(actorRef);
         this.status = Status.ONLINE;
     }
 
+    /**
+     * Delete an actor reference of the connector.
+     * @param actorRef The actor reference.
+     */
     public void removeActorRef(String actorRef){
         actorRefs.remove(actorRef);
         if(actorRefs.isEmpty()){
@@ -609,10 +622,14 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
         }
     }
 
+    /**
+     * Obtain an actor reference (randomly if more than one exists) of the connector.
+     * @return A String with the actor reference.
+     */
     public String getActorRef(){
         // Random election (Kind of load balancing?)
         String actorRef = null;
-        if((actorRefs != null) & (!actorRefs.isEmpty())){
+        if(actorRefs != null && !actorRefs.isEmpty()){
             int randomNum = (new Random()).nextInt(actorRefs.size());
             int count = 0;
             Iterator<String> iter = actorRefs.iterator();
@@ -625,6 +642,11 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
         return actorRef;
     }
 
+    /**
+     * Get the sum of priority of the clusters attached to the connector.
+     * @param clusterNames A list of {@link com.stratio.crossdata.common.data.ClusterName}.
+     * @return The priority.
+     */
     public int getPriorityFromClusterNames(List<ClusterName> clusterNames){
         int priority = 0;
         for (ClusterName clusterName: clusterNames) {
@@ -635,6 +657,11 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
         return priority;
     }
 
+    /**
+     * Get the priority of the clusters attached to the connector.
+     * @param clusterName The {@link com.stratio.crossdata.common.data.ClusterName}.
+     * @return The priority.
+     */
     public int getPriorityFromClusterName(ClusterName clusterName){
         int result = Integer.MAX_VALUE;
         if(clusterPriorities.containsKey(clusterName)){
