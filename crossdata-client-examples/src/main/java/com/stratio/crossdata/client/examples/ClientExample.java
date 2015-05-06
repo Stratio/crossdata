@@ -20,6 +20,7 @@ package com.stratio.crossdata.client.examples;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -316,15 +317,29 @@ public class ClientExample {
             LOG.error(ex);
         }
 
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(output);
+        } catch (FileNotFoundException e) {
+            LOG.error(e);
+        }
         try {
             in.close();
             byte[] response = out.toByteArray();
 
-            FileOutputStream fos = new FileOutputStream(output);
+
             fos.write(response);
             fos.close();
         } catch (IOException ex) {
             LOG.error(ex);
+        }finally {
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    LOG.error(e);
+                }
+            }
         }
     }
 

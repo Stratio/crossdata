@@ -67,8 +67,6 @@ public class InMemoryQueryBuilder {
         result.getRelations().addAll(extractFilters(project));
         result.getOutputColumns().addAll(transformIntoSelectors(project.getColumnList()));
 
-        OrderBy orderByStep = extractStep(project, OrderBy.class);;
-
         processJoins(result.getOutputColumns(), project);
 
 

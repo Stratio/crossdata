@@ -77,8 +77,8 @@ public class InMemoryTable {
     public InMemoryTable(String tableName, String[] columnNames, Class[] columnTypes, List<String> primaryKey,
             int maxRows) {
         this.tableName = tableName;
-        this.columnNames = columnNames;
-        this.columnTypes = columnTypes;
+        this.columnNames = columnNames.clone();
+        this.columnTypes = columnTypes.clone();
         this.primaryKey.addAll(primaryKey);
         int index = 0;
         for(String col: columnNames){
