@@ -63,7 +63,7 @@ public class ConnectorFactory implements Serializable {
 
     /**
      * Create an instance of {@link ConnectorType }
-     * 
+     * @return A new {@link com.stratio.crossdata.common.manifest.ConnectorType}
      */
     public ConnectorType createConnectorType() {
         return new ConnectorType();
@@ -71,7 +71,7 @@ public class ConnectorFactory implements Serializable {
 
     /**
      * Create an instance of {@link PropertiesType }
-     * 
+     * @return A new {@link com.stratio.crossdata.common.manifest.PropertiesType}
      */
     public PropertiesType createPropertiesType() {
         return new PropertiesType();
@@ -79,7 +79,7 @@ public class ConnectorFactory implements Serializable {
 
     /**
      * Create an instance of {@link ConnectorFunctionsType }
-     * 
+     * @return A new {@link com.stratio.crossdata.common.manifest.ConnectorFunctionsType}
      */
     public ConnectorFunctionsType createConnectorFunctionsType() {
         return new ConnectorFunctionsType();
@@ -87,7 +87,7 @@ public class ConnectorFactory implements Serializable {
 
     /**
      * Create an instance of {@link PropertyType }
-     * 
+     * @return A new {@link com.stratio.crossdata.common.manifest.PropertyType}
      */
     public PropertyType createPropertyType() {
         return new PropertyType();
@@ -95,7 +95,7 @@ public class ConnectorFactory implements Serializable {
 
     /**
      * Create an instance of {@link FunctionType }
-     * 
+     * @return A new {@link com.stratio.crossdata.common.manifest.FunctionType}
      */
     public FunctionType createFunctionType() {
         return new FunctionType();
@@ -103,7 +103,7 @@ public class ConnectorFactory implements Serializable {
 
     /**
      * Create an instance of {@link DataStoreRefsType }
-     * 
+     * @return A new {@link com.stratio.crossdata.common.manifest.DataStoreRefsType}
      */
     public DataStoreRefsType createDataStoreRefsType() {
         return new DataStoreRefsType();
@@ -111,7 +111,7 @@ public class ConnectorFactory implements Serializable {
 
     /**
      * Create an instance of {@link ExcludeType }
-     * 
+     * @return A new {@link com.stratio.crossdata.common.manifest.ExcludeType}
      */
     public ExcludeType createExcludeType() {
         return new ExcludeType();
@@ -119,7 +119,7 @@ public class ConnectorFactory implements Serializable {
 
     /**
      * Create an instance of {@link SupportedOperationsType }
-     * 
+     * @return A new {@link com.stratio.crossdata.common.manifest.SupportedOperationsType}
      */
     public SupportedOperationsType createSupportedOperationsType() {
         return new SupportedOperationsType();
@@ -127,11 +127,12 @@ public class ConnectorFactory implements Serializable {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link ConnectorType }{@code >}}
-     * 
+     * @param connectorType A {@link com.stratio.crossdata.common.manifest.ConnectorType}
+     * @return A new {@link javax.xml.bind.JAXBElement}
      */
     @XmlElementDecl(namespace = "", name = "Connector")
-    public JAXBElement<ConnectorType> createConnector(ConnectorType value) {
-        return new JAXBElement<ConnectorType>(_Connector_QNAME, ConnectorType.class, null, value);
+    public JAXBElement<ConnectorType> createConnector(ConnectorType connectorType) {
+        return new JAXBElement<ConnectorType>(_Connector_QNAME, ConnectorType.class, null, connectorType);
     }
 
 }

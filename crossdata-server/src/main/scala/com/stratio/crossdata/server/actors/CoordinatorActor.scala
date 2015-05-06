@@ -510,7 +510,10 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
             }
             if (executionInfo.asInstanceOf[ExecutionInfo].isUpdateOnSuccess) {
                 for (catalogName <- MetadataManager.MANAGER.getCluster(managementWorkflow.getClusterName).getPersistedCatalogs.asScala.toList){
-                  sender ! UpdateMetadata(MetadataManager.MANAGER.getCatalog(catalogName), remove = false)
+                  for (tableMetadata <- MetadataManager.MANAGER.getTablesByCatalogName(catalogName.getName)){
+                    sender ! UpdateMetadata(tableMetadata, remove = false)
+                  }
+                  //sender ! UpdateMetadata(MetadataManager.MANAGER.getCatalog(catalogName), remove = false)
                 }
             }
             if (executionInfo.asInstanceOf[ExecutionInfo].isRemoveOnSuccess) {

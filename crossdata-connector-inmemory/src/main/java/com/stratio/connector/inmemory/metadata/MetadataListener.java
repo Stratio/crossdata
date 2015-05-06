@@ -21,19 +21,21 @@ package com.stratio.connector.inmemory.metadata;
 import com.stratio.crossdata.common.connector.IMetadataListener;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.UpdatableMetadata;
+import org.apache.log4j.Logger;
 
 public class MetadataListener implements IMetadataListener {
 
+    private static final Logger LOG = Logger.getLogger(MetadataListener.class);
     @Override
     public void updateMetadata(UpdatableMetadata uMetadata) {
-        System.out.println("UPDATE METADATA: "
+        LOG.info("RECEIVED UPDATE METADATA: "
                 + System.lineSeparator()
                 + uMetadata.toString());
     }
 
     @Override
     public void deleteMetadata(Name name) {
-        System.out.println("DELETE METADATA: "
+        LOG.info("RECEIVED DELETE METADATA: "
                 + System.lineSeparator()
                 + name.toString());
     }

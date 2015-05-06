@@ -25,7 +25,7 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 
 /**
- * Class that models the different types of relationships that can be found on a WHERE clause.
+ * Models OR relationships that can be found on a WHERE clause.
  */
 public class Relation extends AbstractRelation {
 

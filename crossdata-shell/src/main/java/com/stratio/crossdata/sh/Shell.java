@@ -140,7 +140,7 @@ public class Shell {
 
         Shell sh = new Shell(async);
         //Get the User and pass
-        Character mask=(args.length == 0) ? new Character((char)0) : new Character(args[0].charAt(0));
+        Character mask=(args.length == 0) ? Character.valueOf((char)0) : Character.valueOf(args[0].charAt(0));
         String user="";
         String pass="";
 

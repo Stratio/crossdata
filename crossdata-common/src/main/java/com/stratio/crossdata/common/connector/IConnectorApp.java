@@ -58,8 +58,9 @@ public interface IConnectorApp {
      * @param timeout the timeout in ms.
      * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata} or null if the table metadata is not ready after waiting the specified time..
      */
-    @Experimental
+    /*@Experimental
     Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout);
+    */
 
     /**
      * Get the connection status with the Crossdata server.
