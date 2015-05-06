@@ -87,7 +87,7 @@ public class AbstractExtendedConnectorTest {
 
 
 
-    @Test
+    /*@Test
     public void shouldreturnCatalogs(){
 
         Option<List<CatalogMetadata>> catalogs = mock(Option.class);
@@ -100,7 +100,7 @@ public class AbstractExtendedConnectorTest {
         //Expectations
         Assert.assertNotNull(result);
         verify(connectorApp).getCatalogs(cluster, 10);
-    }
+    }*/
 
     @Test
     public void shouldReturnTableMetadata(){
