@@ -47,63 +47,64 @@ public class DataStoreFactory implements Serializable {
     private static final long serialVersionUID = -1800454505250424666L;
 
     /**
-     * Create a new DataStoreFactory that can be used to create new instances of schema derived classes for package: generated
+     * Create a new DataStoreFactory that can be used to create new instances of schema derived classes for package:
+     * generated.
      * 
      */
     public DataStoreFactory() {
     }
 
     /**
-     * Create an instance of {@link DataStoreType }
-     * 
+     * Create an instance of {@link DataStoreType }.
+     * @return {@link com.stratio.crossdata.common.manifest.DataStoreFactory}.
      */
     public DataStoreType createDataStoreType() {
         return new DataStoreType();
     }
 
     /**
-     * Create an instance of {@link PropertiesType }
-     * 
+     * Create an instance of {@link PropertiesType }.
+     * @return {@link com.stratio.crossdata.common.manifest.PropertiesType}
      */
     public PropertiesType createPropertiesType() {
         return new PropertiesType();
     }
 
     /**
-     * Create an instance of {@link DataStoreFunctionsType }
-     * 
+     * Create an instance of {@link DataStoreFunctionsType }.
+     * @return A {@link DataStoreFunctionsType }.
      */
     public DataStoreFunctionsType createDataStoreFunctionsType() {
         return new DataStoreFunctionsType();
     }
 
     /**
-     * Create an instance of {@link PropertyType }
-     * 
+     * Create an instance of {@link PropertyType }.
+     * @return A {@link com.stratio.crossdata.common.manifest.PropertyType}.
      */
     public PropertyType createPropertyType() {
         return new PropertyType();
     }
 
     /**
-     * Create an instance of {@link BehaviorsType }
-     * 
+     * Create an instance of {@link BehaviorsType }.
+     * @return A {@link com.stratio.crossdata.common.manifest.BehaviorsType}.
      */
     public BehaviorsType createBehaviorsType() {
         return new BehaviorsType();
     }
 
     /**
-     * Create an instance of {@link FunctionType }
-     * 
+     * Create an instance of {@link FunctionType }.
+     * @return A {@link com.stratio.crossdata.common.manifest.FunctionType}.
      */
     public FunctionType createFunctionType() {
         return new FunctionType();
     }
 
     /**
-     * Create an instance of {@link JAXBElement }{@code <}{@link DataStoreType }{@code >}}
-     * 
+     * Create an instance of {@link JAXBElement }{@code <}{@link DataStoreType }{@code >}.
+     * @return A {@link javax.xml.bind.JAXBElement}.
      */
     @XmlElementDecl(namespace = "", name = "DataStore")
     public JAXBElement<DataStoreType> createDataStore(DataStoreType value) {
