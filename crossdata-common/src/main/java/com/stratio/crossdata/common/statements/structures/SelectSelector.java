@@ -22,16 +22,28 @@ import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 
+/**
+ * Select selector class for sub-queries.
+ */
 public class SelectSelector extends Selector {
 
     private String selectQuery;
 
     private LogicalWorkflow logicalWorkflow;
 
+    /**
+     * Class constructor.
+     * @param selectQuery The sub query select.
+     */
     public SelectSelector(String selectQuery) {
         this(null, selectQuery);
     }
 
+    /**
+     * Class constructor.
+     * @param tableName The table name.
+     * @param selectQuery The sub query select.
+     */
     public SelectSelector(TableName tableName, String selectQuery) {
         super(tableName);
         this.selectQuery = selectQuery.replaceAll(Name.UNKNOWN_NAME+".", "");

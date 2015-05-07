@@ -34,7 +34,10 @@ import com.stratio.crossdata.common.statements.structures.StringSelector;
  * NATIVE type has been added to map those types that are not generic and database dependant.
  */
 public class ColumnType implements Serializable {
-
+    /**
+     * Class constructor.
+     * @param dataType The {@link com.stratio.crossdata.common.metadata.DataType}
+     */
     public ColumnType(DataType dataType) {
         this.dataType = dataType;
         switch (dataType){
@@ -299,6 +302,10 @@ public class ColumnType implements Serializable {
         return clazz;
     }
 
+    /**
+     * Create a Selector with the dataType of the class.
+     * @return A type {@link com.stratio.crossdata.common.statements.structures.Selector} of the given dataType.
+     */
     public Selector createSelector() {
         Selector selector = null;
         switch (dataType){
@@ -336,6 +343,11 @@ public class ColumnType implements Serializable {
         return selector;
     }
 
+    /**
+     * Get a ColumnType of a name of a dataType.
+     * @param name The name of the dataType.
+     * @return A {@link com.stratio.crossdata.common.metadata.ColumnType}.
+     */
     public static ColumnType valueOf(String name){
         return new ColumnType(DataType.valueOf(name));
     }

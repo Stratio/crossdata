@@ -63,6 +63,11 @@ public class QueryWorkflow extends ExecutionWorkflow {
         return workflow;
     }
 
+    /**
+     * Check whether the last step is a streaming new query.
+     * @param lastStep The last step
+     * @return Whether is expected a streaming query.
+     */
     public static boolean checkStreaming(LogicalStep lastStep){
         boolean result = false;
         if(lastStep != null){

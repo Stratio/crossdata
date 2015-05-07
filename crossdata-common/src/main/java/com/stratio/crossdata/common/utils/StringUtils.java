@@ -86,6 +86,7 @@ public final class StringUtils implements Serializable {
      *
      * @param ids       The list of objects.
      * @param separator The separator.
+     * @param withAlias Whether alias is included.
      * @return A String.
      */
     public static <T extends ISqlExpression> String sqlStringList ( List<T> ids, String separator, boolean withAlias) {
@@ -155,6 +156,11 @@ public final class StringUtils implements Serializable {
         return selector;
     }
 
+    /**
+     * Get the actor reference of a given object.
+     * @param object The object.
+     * @return The actor ref.
+     */
     public static String getAkkaActorRefUri(Object object) {
         return getAkkaActorRefUri(object, true);
     }
@@ -163,6 +169,7 @@ public final class StringUtils implements Serializable {
      * Get the string representation of a AKKA actor reference URI.
      *
      * @param object The object with the Actor ref.
+     * @param resultForActorSelection The result for an actor.
      * @return A string with the URI
      */
     public static String getAkkaActorRefUri(Object object, boolean resultForActorSelection) {
@@ -342,6 +349,11 @@ public final class StringUtils implements Serializable {
                 .trim();
     }
 
+    /**
+     * Transform a Json to a map of key as string and its value as an object.
+     * @param json The JSON string.
+     * @return A map of String and Object with the JSON parsed.
+     */
     public static Map<String, Object> convertJsonToMap(String json) {
         Map<String, Object> options = new LinkedHashMap<>();
         ObjectMapper mapper = new ObjectMapper();

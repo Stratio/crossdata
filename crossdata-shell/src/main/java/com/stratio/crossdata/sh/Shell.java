@@ -301,7 +301,8 @@ public class Shell {
 
     /**
      * Establish the connection with the CROSSDATA servers.
-     *
+     * @param user The user.
+     * @param pass The password.
      * @return Whether the connection has been successfully established.
      */
     public boolean connect(String user, String pass) {
