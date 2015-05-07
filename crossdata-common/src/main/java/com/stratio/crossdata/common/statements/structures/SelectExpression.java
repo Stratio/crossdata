@@ -108,7 +108,7 @@ public class SelectExpression implements Serializable, ISqlExpression {
             Selector selector = selectors.next();
             sb.append(selector.toSQLString(false));
             if(selector.getAlias() != null){
-                sb.append(" AS "+selector.getAlias());
+                sb.append(" AS ").append(selector.getAlias());
             }
             if (selectors.hasNext()) {
                 sb.append(", ");

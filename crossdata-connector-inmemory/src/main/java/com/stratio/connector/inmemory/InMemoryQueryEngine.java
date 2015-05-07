@@ -143,7 +143,8 @@ public class InMemoryQueryEngine implements IQueryEngine {
                 orderByStep = (OrderBy) current;
                 break;
             }
-        }while((current = current.getFirstPrevious ()) != null);
+            current = current.getFirstPrevious ();
+        }while(current != null);
 
 
         if (orderByStep != null) {

@@ -25,7 +25,10 @@ import org.apache.log4j.Logger;
 
 public class MetadataListener implements IMetadataListener {
 
+
     private static final Logger LOG = Logger.getLogger(MetadataListener.class);
+    private static final long serialVersionUID = -3053782853995677803L;
+
     @Override
     public void updateMetadata(UpdatableMetadata uMetadata) {
         LOG.info("RECEIVED UPDATE METADATA: "

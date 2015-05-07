@@ -151,8 +151,6 @@ public class Validator {
                 break;
             }
         }
-
-
         if (parsedQuery instanceof MetadataParsedQuery) {
             validatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) parsedQuery);
         } else if (parsedQuery instanceof StorageParsedQuery) {
@@ -161,7 +159,6 @@ public class Validator {
         } else if (parsedQuery instanceof SelectParsedQuery) {
             validatedQuery = createValidatedQuery(normalizator, ((SelectParsedQuery) parsedQuery));
         }
-
         return validatedQuery;
     }
 

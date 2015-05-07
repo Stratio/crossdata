@@ -23,6 +23,12 @@ import java.util.Set;
 public class FunctionTypeHelper {
 
     /**
+     * Class constructor.
+     */
+    private FunctionTypeHelper() {
+    }
+
+    /**
      * Check the input signature compatibility given a registered input signature.
      * @param storedSignature The string with the registered input signature.
      * @param querySignature The string with the input signature inferred from the function selector.

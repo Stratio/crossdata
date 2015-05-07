@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.loadWatcher;
+package com.stratio.crossdata.core.loadwatcher;
 
 import java.io.Serializable;
 import java.util.Map;

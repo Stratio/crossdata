@@ -781,7 +781,7 @@ public class Planner {
 
                                 //Check function signature and its result
                                 if (!checkFunctionsConsistency(connector, sFunctions, cols2, svq, previousInitialProjects)
-                                        || (!checkFunctionsResultConsistency(connector, cols2, svq))) {
+                                        || (!checkFunctionsResultConsistency(connector, cols2))) {
                                     toRemove.add(connector);
                                     unregisteredFunction = true;
                                     unregisteredFunctionMsg= "Connector " + connector.getName() + " can't validate the " +
@@ -861,8 +861,8 @@ public class Planner {
         return areFunctionsConsistent;
     }
 
-    private boolean checkFunctionsResultConsistency(ConnectorMetadata connectorMetadata, Set<Selector> selectors,
-            SelectValidatedQuery svq ) throws PlanningException {
+    private boolean checkFunctionsResultConsistency(ConnectorMetadata connectorMetadata, Set<Selector> selectors
+         ) throws PlanningException {
         boolean areFunctionsConsistent = true;
         FunctionSelector fSelector=null;
         Selector retSelector=null;
