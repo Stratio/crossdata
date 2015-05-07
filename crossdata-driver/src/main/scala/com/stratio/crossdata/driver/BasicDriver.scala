@@ -29,6 +29,7 @@ import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionEx
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication.Disconnect
+import com.stratio.crossdata.driver.BasicDriver._
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
@@ -46,6 +47,7 @@ object BasicDriver extends DriverConfig {
   val auth: Boolean= config.getBoolean("config.authentication")
   val serverPathName:String = config.getString("config.serverPathName")
   val crossdataServerClusterName:String= config.getString("config.crossdataServerClusterName")
+  val localAffinity:Boolean=config.getBoolean("config.localAffinity")
 
   def getBasicDriverConfigFromFile:BasicDriverConfig = {
     logger.debug("RetryTimes    --> " + retryTimes)
@@ -79,6 +81,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   val serverPathName:String = BasicDriver.serverPathName
   val crossdataServerClusterName=BasicDriver.crossdataServerClusterName
   val cpuLoadPingTimeInMillis:Long = 5000
+  val localAffinity:Boolean=BasicDriver.localAffinity
   
   lazy val logger = BasicDriver.logger
   lazy val queries: java.util.Map[String, QueryData] = new java.util.HashMap[String, QueryData]

@@ -75,7 +75,7 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
   var CPUUsages = new scala.collection.immutable.TreeMap[Long,(String,Double)]()
 
   implicit val timeout = Timeout(5 seconds)
-
+  val localAffinity=driver.localAffinity
   logger.info("Up!")
 
   def chooseServerNode():String={
@@ -104,19 +104,19 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
 
     /* The driver sends the connect message. */
     case c: Connect => {
-      clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = false)
+      clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity)
     }
 
     case c: Disconnect => {
       logger.debug("Send connect " + c)
-      clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity = false)
+      clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), c, localAffinity)
     }
 
     /* API Command */
     case cmd: Command => {
       val dest=chooseServerNode()
       if(dest.length<1)
-        clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), cmd, localAffinity = false)
+        clusterClientActor forward ClusterClient.Send(ProxyActor.remotePath(remoteActor), cmd, localAffinity)
       else 
         context.actorSelection(dest) forward cmd
     }
@@ -135,7 +135,7 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
     case message: Query => {
       val dest=chooseServerNode()
       if(dest.length<1)
-        clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor), message, localAffinity = false)
+        clusterClientActor ! ClusterClient.Send(ProxyActor.remotePath(remoteActor), message, localAffinity)
       else
         context.actorSelection(dest) forward message
     }
