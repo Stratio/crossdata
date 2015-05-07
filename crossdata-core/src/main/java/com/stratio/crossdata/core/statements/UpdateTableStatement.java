@@ -26,7 +26,6 @@ import java.util.Map;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ParsingException;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.utils.StringUtils;

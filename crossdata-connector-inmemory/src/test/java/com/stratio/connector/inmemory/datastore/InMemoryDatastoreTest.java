@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
+import com.stratio.connector.inmemory.datastore.structures.InMemoryFunctionSelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemoryLiteralSelector;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
-import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryLiteralSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 
 /**
  * Datastore tests.

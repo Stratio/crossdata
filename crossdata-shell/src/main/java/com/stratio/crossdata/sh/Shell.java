@@ -419,7 +419,9 @@ public class Shell {
      * Execute the sentences found in a script. The file may contain empty lines and comment lines
      * using the prefix #.
      *
+     *
      * @param scriptPath The script path.
+     * @return false if the script has a command to exit; true otherwise.
      */
     public boolean executeScript(String scriptPath) {
         boolean enterLoop = true;

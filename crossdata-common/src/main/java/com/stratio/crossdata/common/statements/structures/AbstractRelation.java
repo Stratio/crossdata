@@ -21,8 +21,6 @@ package com.stratio.crossdata.common.statements.structures;
 import com.stratio.crossdata.common.data.TableName;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 

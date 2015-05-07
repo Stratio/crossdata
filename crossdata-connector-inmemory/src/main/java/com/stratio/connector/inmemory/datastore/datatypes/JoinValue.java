@@ -17,7 +17,7 @@
  */
 package com.stratio.connector.inmemory.datastore.datatypes;
 
-import com.stratio.connector.inmemory.datastore.selector.InMemoryJoinSelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemoryJoinSelector;
 
 
 public class JoinValue extends SimpleValue{

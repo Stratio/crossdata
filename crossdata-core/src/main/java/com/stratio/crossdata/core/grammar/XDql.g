@@ -41,8 +41,6 @@ options {
     import java.util.LinkedList;
     import java.util.LinkedHashSet;
     import java.util.Map;
-    import java.util.Set;
-    import java.util.HashSet;
     import org.apache.commons.lang3.tuple.MutablePair;
     import com.stratio.crossdata.common.exceptions.*;
     import com.stratio.crossdata.common.utils.Constants;

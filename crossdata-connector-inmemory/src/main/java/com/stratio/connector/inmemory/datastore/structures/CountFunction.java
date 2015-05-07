@@ -16,19 +16,29 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.selector;
+package com.stratio.connector.inmemory.datastore.structures;
+
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
- * In-memory column selector.
+ * Count the number of elements in a list of rows.
  */
-public class InMemoryColumnSelector extends InMemorySelector{
+public class CountFunction extends AbstractInMemoryFunction {
 
-    /**
-     * Class constructor.
-     *
-     * @param name The selector name.
-     */
-    public InMemoryColumnSelector(String name) {
-        super(name);
+    public CountFunction(){
+        this.rowFunction = false;
+    }
+
+    @Override
+    public List<SimpleValue[]> apply(Map<String, Integer> columnIndex, List<SimpleValue[]> rows) throws Exception {
+
+        List<SimpleValue []> result = new ArrayList<>();
+        SimpleValue [] size = {new SimpleValue(rows.size())};
+        result.add(size);
+        return result;
     }
 }
