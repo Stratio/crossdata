@@ -29,7 +29,6 @@ import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionEx
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication.Disconnect
-import com.stratio.crossdata.driver.BasicDriver._
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
