@@ -104,7 +104,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
      */
     private static final Logger LOG = Logger.getLogger(PlannerExecutionWorkflowTest.class);
 
-    private PlannerWrapper plannerWrapper = new PlannerWrapper();
+    private PlannerWrapper plannerWrapper = new PlannerWrapper("127.0.0.1");
 
     private ConnectorMetadata connector1 = null;
     private ConnectorMetadata connector2 = null;
@@ -285,7 +285,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
-        assertExecutionWorkflow(executionWorkflow, 1, new String[] { connector1.getActorRef().toString() });
+        assertExecutionWorkflow(executionWorkflow, 1, new String[] { connector1.getActorRef("127.0.0.1").toString() });
     }
 
     @Test
@@ -327,7 +327,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         } catch (PlanningException e) {
             LOG.error("connectorChoice test failed", e);
         }
-        assertExecutionWorkflow(executionWorkflow, 1, new String[] { connector1.getActorRef().toString() });
+        assertExecutionWorkflow(executionWorkflow, 1, new String[] { connector1.getActorRef("127.0.0.1").toString() });
 
     }
 
@@ -439,7 +439,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         assertNotNull(executionWorkflow, "Null execution workflow received");
         assertExecutionWorkflow(executionWorkflow, 1,
-                new String[] { connector1.getActorRef().toString() });
+                new String[] { connector1.getActorRef("127.0.0.1").toString() });
 
     }
 
@@ -499,7 +499,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         assertNotNull(executionWorkflow, "Null execution workflow received");
         assertExecutionWorkflow(executionWorkflow, 1,
-                new String[] { connector1.getActorRef().toString() });
+                new String[] { connector1.getActorRef("127.0.0.1").toString() });
 
     }
 
@@ -680,7 +680,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         assertNotNull(executionWorkflow, "Null execution workflow received");
         assertExecutionWorkflow(executionWorkflow, 2,
-                new String[] { connector2.getActorRef().toString(), connector1.getActorRef().toString() });
+                new String[] { connector2.getActorRef("127.0.0.1").toString(), connector1.getActorRef("127.0.0.1").toString() });
 
     }
 
@@ -751,7 +751,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
 
         assertNotNull(executionWorkflow, "Null execution workflow received");
         assertExecutionWorkflow(executionWorkflow, 2,
-                new String[] { connector2.getActorRef().toString(), connector1.getActorRef().toString() });
+                new String[] { connector2.getActorRef("127.0.0.1").toString(), connector1.getActorRef("127.0.0.1").toString() });
 
     }
 
@@ -819,7 +819,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         StorageParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
         StorageValidatedQuery storageValidatedQuery = new StorageValidatedQuery(parsedQuery);
 
-        Planner planner = new Planner();
+        Planner planner = new Planner("127.0.0.1");
         try {
             ExecutionWorkflow storageWorkflow = planner.buildExecutionWorkflow(storageValidatedQuery);
             Assert.assertEquals(((StorageWorkflow) storageWorkflow).getClusterName().getName(), "cluster");
@@ -839,7 +839,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, dropCatalogStatement);
         MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-        Planner planner = new Planner();
+        Planner planner = new Planner("127.0.0.1");
         try {
             ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
             Assert.assertFalse(MetadataManager.MANAGER.exists(new CatalogName("demo2")));
@@ -858,7 +858,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, alterCatalogStatement);
         MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-        Planner planner = new Planner();
+        Planner planner = new Planner("127.0.0.1");
         try {
             ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
             Assert.assertTrue(MetadataManager.MANAGER.exists(new CatalogName("demo2")));
@@ -884,7 +884,7 @@ public class PlannerExecutionWorkflowTest extends PlannerBaseTest {
         MetadataParsedQuery metadataParsedQuery = new MetadataParsedQuery(baseQuery, alterTableStatement);
         MetadataValidatedQuery metadataValidatedQuery = new MetadataValidatedQuery(metadataParsedQuery);
 
-        Planner planner = new Planner();
+        Planner planner = new Planner("127.0.0.1");
         try {
             ExecutionWorkflow metadataWorkflow = planner.buildExecutionWorkflow(metadataValidatedQuery);
             Assert.assertTrue(MetadataManager.MANAGER.exists(new ColumnName("demo", "table3", "email")));

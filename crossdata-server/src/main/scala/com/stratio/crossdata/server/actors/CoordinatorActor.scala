@@ -54,6 +54,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
   log.info("Lifting coordinator actor")
 
+  val host = coordinator.getHost
+
 
   def receive: Receive = {
 
@@ -748,7 +750,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
     val listConnectorMetadata = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE, clusterInvolved)
     listConnectorMetadata.asScala.toList.flatMap(actorToBroadcast).foreach(actor => broadcastMetadata(actor, uMetadata))
 
-    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
+    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] =
+        StringUtils.getAkkaActorRefUri(cMetadata.getActorRef(host), false) match {
       case null => List()
       case strActorRefUri => List(context.actorSelection(strActorRefUri))
     }
@@ -769,7 +772,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
     setConnectorMetadata.flatMap(actorToBroadcast).foreach(actor => broadcastMetadata(actor, cMetadata))
 
-    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
+    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] =
+        StringUtils.getAkkaActorRefUri(cMetadata.getActorRef(host), false) match {
       case null => List()
       case strActorRefUri => List(context.actorSelection(strActorRefUri))
     }

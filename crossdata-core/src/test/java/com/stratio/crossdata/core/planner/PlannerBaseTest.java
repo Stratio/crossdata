@@ -80,7 +80,7 @@ public class PlannerBaseTest {
 
     ParsingTest helperPT = new ParsingTest();
 
-    Planner planner = new Planner();
+    Planner planner = new Planner("127.0.0.1");
 
 
     @BeforeClass

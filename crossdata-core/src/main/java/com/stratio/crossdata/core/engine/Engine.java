@@ -112,9 +112,9 @@ public class Engine {
 
         parser = new Parser();
         validator = new Validator();
-        planner = new Planner();
+        planner = new Planner(config.getGridListenAddress());
         manager = new APIManager(parser, validator, planner);
-        coordinator = new Coordinator();
+        coordinator = new Coordinator(config.getGridListenAddress());
     }
 
     /**
