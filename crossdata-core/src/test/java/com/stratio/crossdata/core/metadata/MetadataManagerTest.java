@@ -176,9 +176,9 @@ public class MetadataManagerTest {
         assertEquals(connectorMetadata.getName(), connectorName,
                 "Expected: " + connectorName + System.lineSeparator() +
                 "Found:    " + connectorMetadata.getName());
-        assertTrue(connectorMetadata.getActorRef().equalsIgnoreCase(actorRef),
+        assertTrue(connectorMetadata.getActorRef("127.0.0.1").equalsIgnoreCase(actorRef),
                 "Expected: " + actorRef + System.lineSeparator() +
-                        "Found:    " + connectorMetadata.getActorRef());
+                        "Found:    " + connectorMetadata.getActorRef("127.0.0.1"));
         DataStoreName found = connectorMetadata.getDataStoreRefs().iterator().next();
         assertEquals(found, dataStoreName,
                 "Expected: " + dataStoreName + System.lineSeparator() +
@@ -200,9 +200,9 @@ public class MetadataManagerTest {
             fail();
         }
 
-        assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef().equalsIgnoreCase(actorRef),
+        assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef("127.0.0.1").equalsIgnoreCase(actorRef),
                 "Expected: " + actorRef + System.lineSeparator() +
-                "Found:    " + MetadataManager.MANAGER.getConnector(connectorName).getActorRef());
+                "Found:    " + MetadataManager.MANAGER.getConnector(connectorName).getActorRef("127.0.0.1"));
     }
 
     @Test
@@ -216,9 +216,9 @@ public class MetadataManagerTest {
             fail();
         }
 
-        assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef().equalsIgnoreCase(actorRef),
+        assertTrue(MetadataManager.MANAGER.getConnector(connectorName).getActorRef("127.0.0.1").equalsIgnoreCase(actorRef),
                 "Expected: " + actorRef + System.lineSeparator() +
-                "Found:    " + MetadataManager.MANAGER.getConnector(connectorName).getActorRef());
+                "Found:    " + MetadataManager.MANAGER.getConnector(connectorName).getActorRef("127.0.0.1"));
     }
 
     @Test
@@ -248,9 +248,10 @@ public class MetadataManagerTest {
         String actorRef = "akkActorRefTest";
         MetadataManagerTestHelper.HELPER.createTestConnector(name, dataStoreName, actorRef);
 
-        assertTrue(MetadataManager.MANAGER.getConnectorRef(new ConnectorName(name)).equalsIgnoreCase(actorRef),
+        assertTrue(MetadataManager.MANAGER.getConnectorRef(
+                new ConnectorName(name), "127.0.0.1").equalsIgnoreCase(actorRef),
                 "Expected: " + actorRef + System.lineSeparator() +
-                "Found:    " + MetadataManager.MANAGER.getConnectorRef(new ConnectorName(name)));
+                "Found:    " + MetadataManager.MANAGER.getConnectorRef(new ConnectorName(name), "127.0.0.1"));
     }
 
     @Test

@@ -42,8 +42,10 @@ class ParserActorIT extends ServerActorTest{
   val mockPlannerRef_i= system.actorOf(MockPlannerActor.props(), "TestMockPlannerActor_i")
   val mockCoordinatorActor_i = system.actorOf(MockCoordinatorActor.props(),  "TestMockCoordinatorActor_i")
 
-  val plannerRef0= system.actorOf(PlannerActor.props(mockCoordinatorActor_i,new Planner()), "TestPlannerActor0_i")
-  val plannerRef1= system.actorOf(PlannerActor.props(coordinatorActor,new Planner()), "TestPlannerActor1_i")
+  val plannerRef0 = system.actorOf(
+    PlannerActor.props(mockCoordinatorActor_i,new Planner("127.0.0.1")), "TestPlannerActor0_i")
+  val plannerRef1 = system.actorOf(
+    PlannerActor.props(coordinatorActor,new Planner("127.0.0.1")), "TestPlannerActor1_i")
   val validatorRef0 = system.actorOf(ValidatorActor.props(mockPlannerRef_i,new Validator()), "TestValidatorActor0_i")
   val validatorRef1 = system.actorOf(ValidatorActor.props(plannerRef0,new Validator()), "TestValidatorActor1_i")
   val validatorRef2 = system.actorOf(ValidatorActor.props(plannerRef1,new Validator()), "TestValidatorActor2_i")

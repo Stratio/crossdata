@@ -131,6 +131,15 @@ public class Planner {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Planner.class);
+    private final String host;
+
+    public Planner(String host) {
+        this.host = host;
+    }
+
+    public String getHost() {
+        return host;
+    }
 
     /**
      * Define a logical workflow that represents the operations required for executing the {@code SELECT} query sent
@@ -304,7 +313,8 @@ public class Planner {
             workflow.setPagination(connectorMetadata.getPageSize());
         }
 
-        return new QueryWorkflow(queryId, connectorMetadata.getActorRef(), executionType, type, workflow, supportedOperations.contains(Operations.ASYNC_QUERY));
+        return new QueryWorkflow(queryId, connectorMetadata.getActorRef(host), executionType, type, workflow,
+                supportedOperations.contains(Operations.ASYNC_QUERY));
     }
 
 
@@ -324,9 +334,8 @@ public class Planner {
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
         for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry: candidatesConnectors.entrySet()) {
             for (ConnectorMetadata cm: tableEntry.getValue()) {
-                sb.append("\ttable: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName()).append
-                        (" ")
-                        .append(cm.getActorRef()).append(System.lineSeparator());
+                sb.append("\ttable: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName())
+                        .append(" ").append(cm.getActorRef(host)).append(System.lineSeparator());
             }
         }
         LOG.info(sb.toString());
@@ -530,7 +539,7 @@ public class Planner {
         //Select an actor
         ConnectorMetadata connectorMetadata = findBestConnector(connectors, involvedClusters);
 
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(host), false);
 
         updateFunctionsFromSelect(workflow, connectorMetadata.getName());
 
@@ -639,7 +648,7 @@ public class Planner {
 
         //Select an actor
         ConnectorMetadata connectorMetadata = findBestConnector(mergePath.getAvailableConnectors(), involvedClusters);
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(host), false);
 
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow,  connectorMetadata.getSupportedOperations().contains(Operations.ASYNC_QUERY));
     }
@@ -731,13 +740,9 @@ public class Planner {
                      * function is required support.
                      */
                         if (currentOperation.getOperationsStr().toLowerCase().contains("function")) {
-
                             Set<Project> previousInitialProjects = findPreviousInitialProjects(initial);
-
-
                             Set<String> sFunctions = MetadataManager.MANAGER.getSupportedFunctionNames(connector.getName(), previousInitialProjects);
                             switch (currentOperation) {
-
                             case SELECT_FUNCTIONS:
                                 Select select = (Select) current;
                                 Set<Selector> cols = select.getColumnMap().keySet();
@@ -747,7 +752,6 @@ public class Planner {
                                     unregisteredFunctionMsg= "Connector " + connector.getName() + " can't validate the " +
                                             "function: " + cols.toString();
                                     LOG.error(unregisteredFunctionMsg);
-
                                 }
                                 break;
                             case FILTER_FUNCTION_IN:
@@ -767,15 +771,11 @@ public class Planner {
                                 Set<Selector> cols2 = new HashSet<>();
                                 if(FunctionSelector.class.isInstance(filter.getRelation().getLeftTerm())){
                                     functionSelector= ((FunctionSelector) filter.getRelation().getLeftTerm());
-                                    //add the functionSelector
                                     cols2.add(functionSelector);
-                                    //add the result as a selector
                                     cols2.add(filter.getRelation().getRightTerm());
                                 }else{
                                     functionSelector= ((FunctionSelector) filter.getRelation().getRightTerm());
-                                    //add the functionSelector
                                     cols2.add(functionSelector);
-                                    //add the result as a Selector
                                     cols2.add(filter.getRelation().getLeftTerm());
                                 }
 
@@ -787,7 +787,6 @@ public class Planner {
                                     unregisteredFunctionMsg= "Connector " + connector.getName() + " can't validate the " +
                                             "function: " + cols2.toString();
                                     LOG.error(unregisteredFunctionMsg);
-
                                 }
                                 break;
                             default:
@@ -821,7 +820,6 @@ public class Planner {
                 }
             }
             toRemove.clear();
-
         }
         return new ExecutionPath(initial, last, availableConnectors);
     }
@@ -914,30 +912,10 @@ public class Planner {
         for (TableMetadata tm: query.getTableMetadata()) {
             tableMetadataMap.put(tm.getName().getQualifiedName(), tm);
         }
-        //Define the list of projects
-        Map<String, LogicalStep> processed = getProjects(query, tableMetadataMap);
-        addProjectedColumns(processed, query);
-
-        //Add filters
-        if (query.getBasicRelations() != null) {
-            processed = addFilter(processed, tableMetadataMap, query);
-        }
-
-        //Add window
         SelectStatement ss = SelectStatement.class.cast(query.getStatement());
-        if (ss.getWindow() != null) {
-            processed = addWindow(processed, ss);
-        }
 
-        //Add join
-        if (!query.getJoinList().isEmpty()) {
-            processed = addJoin((LinkedHashMap) processed, query);
-        }
-
-        //Add ComposeFilters
-        if(query.getComposeRelations() != null){
-            processed = addComposeFilters(processed, tableMetadataMap,  query);
-        }
+        //Define the list of projects
+        Map<String, LogicalStep> processed = getLogicalStepMap(query, tableMetadataMap, ss);
 
         //Initial steps.
         LogicalStep initial = null;
@@ -1024,8 +1002,34 @@ public class Planner {
         return workflow;
     }
 
+    private Map<String, LogicalStep> getLogicalStepMap(SelectValidatedQuery query,
+            Map<String, TableMetadata> tableMetadataMap, SelectStatement ss) throws PlanningException {
+        Map<String, LogicalStep> processed = getProjects(query, tableMetadataMap);
+        addProjectedColumns(processed, query);
 
-	//TODO refactor with addFilters
+        //Add filters
+        if (query.getBasicRelations() != null) {
+            processed = addFilter(processed, tableMetadataMap, query);
+        }
+
+        //Add window
+        if (ss.getWindow() != null) {
+            processed = addWindow(processed, ss);
+        }
+
+        //Add join
+        if (!query.getJoinList().isEmpty()) {
+            processed = addJoin((LinkedHashMap) processed, query);
+        }
+
+        //Add ComposeFilters
+        if(query.getComposeRelations() != null){
+            processed = addComposeFilters(processed, tableMetadataMap,  query);
+        }
+        return processed;
+    }
+
+    //TODO refactor with addFilters
     private Map<String,LogicalStep> addComposeFilters(Map<String, LogicalStep> lastSteps, Map<String, TableMetadata> tableMetadataMap, SelectValidatedQuery query) throws PlanningException {
 
         for(AbstractRelation ar: query.getComposeRelations()) {
@@ -1039,8 +1043,6 @@ public class Planner {
                     Filter f = new Filter(
                             Collections.singleton(op),
                             r);
-
-
                     //Get sourceIdentifiers from ...
                     Set<TableName> abstractRelationTables = r.getAbstractRelationTables();
                     List<String> sourceIdentifiersFromAbstractRelationTable = new ArrayList<>(abstractRelationTables.size());
@@ -1085,9 +1087,6 @@ public class Planner {
                 }
                 Disjunction d = new Disjunction(Collections.singleton(op), filters);
 
-
-
-
                 //Get sourceIdentifiers from ...
                 Set<TableName> abstractRelationTables = ar.getAbstractRelationTables();
                 List<String> sourceIdentifiersFromAbstractRelationTable = new ArrayList<>(abstractRelationTables.size());
@@ -1112,13 +1111,10 @@ public class Planner {
                         }
                     }
                 }
-
-
                 //TODO add last steps??
             }
         }
         return lastSteps;
-
     }
 
     private LogicalWorkflow rearrangeWorkflow(LogicalWorkflow workflow, LogicalWorkflow subqueryWorkflow) {
@@ -1693,14 +1689,7 @@ public class Planner {
                     selectLogicalWorkflow);
 
             // FIND CANDIDATES
-            List<ClusterName> involvedClusters = new ArrayList<>();
-            involvedClusters.add(clusterMetadata.getName());
-            for (TableName tableNameFromSelect: insertIntoStatement.getSelectStatement().getFromTables()) {
-                TableMetadata tableMetadataFromSelect = getTableMetadata(tableNameFromSelect);
-                if (!involvedClusters.contains(tableMetadataFromSelect.getClusterRef())) {
-                    involvedClusters.add(tableMetadataFromSelect.getClusterRef());
-                }
-            }
+            List<ClusterName> involvedClusters = getClusterNames(insertIntoStatement, clusterMetadata);
 
             Set<Operations> requiredOperations = new HashSet<>();
             requiredOperations.add(Operations.INSERT_FROM_SELECT);
@@ -1720,33 +1709,54 @@ public class Planner {
                                 Collections.singleton(Operations.INSERT)));
             }
 
-            if ((candidates != null) && (!candidates.isEmpty())) {
-                // Build a unique workflow
-                ConnectorMetadata bestConnector = findBestConnector(candidates, involvedClusters);
-
-                storageWorkflow = new StorageWorkflow(
-                        queryId,
-                        bestConnector.getActorRef(),
-                        ExecutionType.INSERT_FROM_SELECT,
-                        ResultType.RESULTS);
-                storageWorkflow.setClusterName(tableMetadata.getClusterRef());
-                storageWorkflow.setTableMetadata(tableMetadata);
-                storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
-                storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
-
-            } else {
-                // Build a workflow for select and insert
-                storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT_BATCH,
-                        ResultType.RESULTS);
-                storageWorkflow.setClusterName(tableMetadata.getClusterRef());
-                storageWorkflow.setTableMetadata(tableMetadata);
-                storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
-                storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
-            }
-
+            storageWorkflow = getStorageWorkflow(queryId, insertIntoStatement, tableMetadata, actorRef,
+                    selectExecutionWorkflow, involvedClusters,
+                    candidates);
         }
-
         return storageWorkflow;
+    }
+
+    private StorageWorkflow getStorageWorkflow(String queryId, InsertIntoStatement insertIntoStatement,
+            TableMetadata tableMetadata, String actorRef, ExecutionWorkflow selectExecutionWorkflow,
+            List<ClusterName> involvedClusters, List<ConnectorMetadata> candidates) {
+        StorageWorkflow storageWorkflow;
+        if ((candidates != null) && (!candidates.isEmpty())) {
+            // Build a unique workflow
+            ConnectorMetadata bestConnector = findBestConnector(candidates, involvedClusters);
+
+            storageWorkflow = new StorageWorkflow(
+                    queryId,
+                    bestConnector.getActorRef(host),
+                    ExecutionType.INSERT_FROM_SELECT,
+                    ResultType.RESULTS);
+            storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+            storageWorkflow.setTableMetadata(tableMetadata);
+            storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
+            storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
+
+        } else {
+            // Build a workflow for select and insert
+            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT_BATCH,
+                    ResultType.RESULTS);
+            storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+            storageWorkflow.setTableMetadata(tableMetadata);
+            storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
+            storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
+        }
+        return storageWorkflow;
+    }
+
+    private List<ClusterName> getClusterNames(InsertIntoStatement insertIntoStatement, ClusterMetadata clusterMetadata)
+            throws PlanningException {
+        List<ClusterName> involvedClusters = new ArrayList<>();
+        involvedClusters.add(clusterMetadata.getName());
+        for (TableName tableNameFromSelect: insertIntoStatement.getSelectStatement().getFromTables()) {
+            TableMetadata tableMetadataFromSelect = getTableMetadata(tableNameFromSelect);
+            if (!involvedClusters.contains(tableMetadataFromSelect.getClusterRef())) {
+                involvedClusters.add(tableMetadataFromSelect.getClusterRef());
+            }
+        }
+        return involvedClusters;
     }
 
     private LogicalWorkflow addAliasFromInsertToSelect(
@@ -2174,25 +2184,7 @@ public class Planner {
 
             if( join.getType() == JoinType.CROSS){
 
-                Iterator<TableName> tableNameIterator = queryJoin.getTableNames().iterator();
-                List<LogicalStep> logicalStepsList = new ArrayList<>();
-                while (tableNameIterator.hasNext()) {
-                    TableName tableName = tableNameIterator.next();
-                    join.addSourceIdentifier(tableName.getQualifiedName());
-                    logicalStepsList.add(stepMap.get(tableName.getQualifiedName()));
-                    if(tableNameIterator.hasNext()){
-                        sb.append("$");
-                    }
-                }
-                for (LogicalStep logicalStep : logicalStepsList) {
-                    while (logicalStep.getNextStep() != null) {
-                        logicalStep = logicalStep.getNextStep();
-                    }
-                    if (!logicalStep.equals(join)) {
-                        logicalStep.setNextStep(join);
-                    }
-                    join.addPreviousSteps(logicalStep);
-                }
+                getCrossJoin(stepMap, queryJoin, join, sb);
 
             }else {
                 for (AbstractRelation ab : queryJoin.getRelations()) {
@@ -2215,54 +2207,8 @@ public class Planner {
                         t2 = t2.getNextStep();
                     }
 
-                    if (Filter.class.isInstance(t1)) {
-                        String qualifiedTableName = ((Filter) t1).getRelation().getLeftTerm()
-                                .getTableName().getQualifiedName();
-                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
-                            join.addSourceIdentifier(qualifiedTableName);
-                        }
-                    } else if (Project.class.isInstance(t1)) {
-                        String qualifiedTableName = ((Project) t1).getTableName().getQualifiedName();
-                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
-                            join.addSourceIdentifier(qualifiedTableName);
-                        }
-                    } else if (com.stratio.crossdata.common.logicalplan.Join.class.isInstance(t1)) {
-                        List<String> si = ((com.stratio.crossdata.common.logicalplan.Join) t1).getSourceIdentifiers();
-                        for (String t : si) {
-                            if (!join.getSourceIdentifiers().contains(t)) {
-                                join.addSourceIdentifier(t);
-                            }
-                        }
-                    } else {
-                        String qualifiedTableName = rel.getLeftTerm().getTableName().getQualifiedName();
-                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
-                            join.addSourceIdentifier(qualifiedTableName);
-                        }
-                    }
-
-                    if (Filter.class.isInstance(t2)) {
-                        String qualifiedTableName = ((Filter) t2).getRelation().getLeftTerm().getTableName().getQualifiedName();
-                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
-                            join.addSourceIdentifier(qualifiedTableName);
-                        }
-                    } else if (Project.class.isInstance(t2)) {
-                        String qualifiedTableName = ((Project) t2).getTableName().getQualifiedName();
-                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
-                            join.addSourceIdentifier(qualifiedTableName);
-                        }
-                    } else if (com.stratio.crossdata.common.logicalplan.Join.class.isInstance(t2)) {
-                        List<String> si = ((com.stratio.crossdata.common.logicalplan.Join) t2).getSourceIdentifiers();
-                        for (String t : si) {
-                            if (!join.getSourceIdentifiers().contains(t)) {
-                                join.addSourceIdentifier(t);
-                            }
-                        }
-                    } else {
-                        String qualifiedTableName = rel.getRightTerm().getTableName().getQualifiedName();
-                        if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
-                            join.addSourceIdentifier(qualifiedTableName);
-                        }
-                    }
+                    addJoinSourceIdentifier(join, rel, t1);
+                    addJoinSourceIdentifier(join, rel, t2);
 
                     List<Relation> or = queryJoin.getOrderedRelations();
                     for (Relation r : or) {
@@ -2305,6 +2251,58 @@ public class Planner {
         return stepMap;
     }
 
+
+
+    private void addJoinSourceIdentifier(com.stratio.crossdata.common.logicalplan.Join join, Relation rel,
+            LogicalStep t1) {
+        if (Filter.class.isInstance(t1)) {
+            String qualifiedTableName = ((Filter) t1).getRelation().getLeftTerm()
+                    .getTableName().getQualifiedName();
+            if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
+                join.addSourceIdentifier(qualifiedTableName);
+            }
+        } else if (Project.class.isInstance(t1)) {
+            String qualifiedTableName = ((Project) t1).getTableName().getQualifiedName();
+            if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
+                join.addSourceIdentifier(qualifiedTableName);
+            }
+        } else if (com.stratio.crossdata.common.logicalplan.Join.class.isInstance(t1)) {
+            List<String> si = ((com.stratio.crossdata.common.logicalplan.Join) t1).getSourceIdentifiers();
+            for (String t : si) {
+                if (!join.getSourceIdentifiers().contains(t)) {
+                    join.addSourceIdentifier(t);
+                }
+            }
+        } else {
+            String qualifiedTableName = rel.getLeftTerm().getTableName().getQualifiedName();
+            if (!join.getSourceIdentifiers().contains(qualifiedTableName)) {
+                join.addSourceIdentifier(qualifiedTableName);
+            }
+        }
+    }
+
+    private void getCrossJoin(LinkedHashMap<String, LogicalStep> stepMap, Join queryJoin,
+            com.stratio.crossdata.common.logicalplan.Join join, StringBuilder sb) {
+        Iterator<TableName> tableNameIterator = queryJoin.getTableNames().iterator();
+        List<LogicalStep> logicalStepsList = new ArrayList<>();
+        while (tableNameIterator.hasNext()) {
+            TableName tableName = tableNameIterator.next();
+            join.addSourceIdentifier(tableName.getQualifiedName());
+            logicalStepsList.add(stepMap.get(tableName.getQualifiedName()));
+            if(tableNameIterator.hasNext()){
+                sb.append("$");
+            }
+        }
+        for (LogicalStep logicalStep : logicalStepsList) {
+            while (logicalStep.getNextStep() != null) {
+                logicalStep = logicalStep.getNextStep();
+            }
+            if (!logicalStep.equals(join)) {
+                logicalStep.setNextStep(join);
+            }
+            join.addPreviousSteps(logicalStep);
+        }
+    }
 
     private com.stratio.crossdata.common.logicalplan.Join getJoin(JoinType type, boolean isWindowInc){
         com.stratio.crossdata.common.logicalplan.Join join = null;
@@ -2540,7 +2538,7 @@ public class Planner {
     private String findAnyActorRef(ClusterMetadata clusterMetadata, Status status, Operations... requiredOperations)
             throws PlanningException {
         ConnectorMetadata connectorMetadata = findAnyConnector(clusterMetadata, status, requiredOperations);
-        return StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
+        return StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(host), false);
     }
 
 }

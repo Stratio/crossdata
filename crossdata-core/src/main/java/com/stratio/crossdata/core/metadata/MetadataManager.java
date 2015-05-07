@@ -789,8 +789,8 @@ public enum MetadataManager {
      * @param name Name for the selected connector.
      * @return Connector actor ref.
      */
-    public String getConnectorRef(ConnectorName name) {
-        return getConnector(name).getActorRef();
+    public String getConnectorRef(ConnectorName name, String host) {
+        return getConnector(name).getActorRef(host);
     }
 
     /**
