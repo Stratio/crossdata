@@ -647,6 +647,9 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
 
     private String getActorRef() {
         String actorRef;
+        if((actorRefs == null) || actorRefs.isEmpty()){
+            return null;
+        }
         int randomNum = (new Random()).nextInt(actorRefs.size());
         int count = 0;
         Iterator<String> iter = actorRefs.iterator();
