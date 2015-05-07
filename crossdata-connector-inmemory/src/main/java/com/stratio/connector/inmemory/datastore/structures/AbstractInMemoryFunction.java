@@ -16,14 +16,14 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.functions;
+package com.stratio.connector.inmemory.datastore.structures;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 
 /**
  * Definition of an abstract function for the in-memory datastore.

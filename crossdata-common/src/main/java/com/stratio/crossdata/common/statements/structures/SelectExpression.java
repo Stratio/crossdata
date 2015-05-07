@@ -30,7 +30,7 @@ import com.stratio.crossdata.common.data.ColumnName;
  * example, given the following statement: SELECT a, b as z, includes(c) FROM t this class contains
  * a list with a, b as z, includes(c).
  */
-public class SelectExpression implements Serializable {
+public class SelectExpression implements Serializable, ISqlExpression {
 
     private static final long serialVersionUID = -6978154423835994360L;
     /**
@@ -50,7 +50,10 @@ public class SelectExpression implements Serializable {
         return selectorList;
     }
 
-
+    /**
+     * Create a basic SelectExpression from a column list.
+     * @param columnList The list of columns.
+     */
     public static SelectExpression create(List<ColumnName> columnList) {
         List<Selector> selectors = new ArrayList<>();
         for(ColumnName cn: columnList){
@@ -96,8 +99,9 @@ public class SelectExpression implements Serializable {
         return sb.toString();
     }
 
+    @Override
+    public String toSQLString(boolean withAlias) {
 
-    public String toSQLString() {
         StringBuilder sb = new StringBuilder();
         Iterator<Selector> selectors = selectorList.iterator();
         while (selectors.hasNext()) {

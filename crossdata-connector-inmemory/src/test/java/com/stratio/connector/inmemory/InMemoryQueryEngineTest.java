@@ -19,8 +19,8 @@
 package com.stratio.connector.inmemory;
 
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemoryColumnSelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ConnectorException;

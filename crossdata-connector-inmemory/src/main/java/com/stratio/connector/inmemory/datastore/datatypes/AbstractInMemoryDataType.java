@@ -18,7 +18,6 @@
 
 package com.stratio.connector.inmemory.datastore.datatypes;
 
-import com.stratio.crossdata.common.metadata.DataType;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.exceptions.ExecutionException;

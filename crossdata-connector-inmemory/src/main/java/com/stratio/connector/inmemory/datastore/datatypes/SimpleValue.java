@@ -18,7 +18,7 @@
 
 package com.stratio.connector.inmemory.datastore.datatypes;
 
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 
 public class SimpleValue {
 

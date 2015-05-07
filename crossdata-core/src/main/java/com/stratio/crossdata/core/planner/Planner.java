@@ -877,8 +877,7 @@ public class Planner {
         }
         //check return signature
         if (!MetadataManager.MANAGER.checkFunctionReturnSignature(fSelector, retSelector,
-                connectorMetadata.getName(),
-                svq.getSubqueryValidatedQuery())) {
+                connectorMetadata.getName() )) {
             areFunctionsConsistent = false;
 
         }
@@ -1123,7 +1122,6 @@ public class Planner {
 
     }
 
-
     private LogicalWorkflow rearrangeWorkflow(LogicalWorkflow workflow, LogicalWorkflow subqueryWorkflow) {
         if (workflow.getInitialSteps().size() == 1) {
             ((Project) workflow.getInitialSteps().get(0)).setPrevious(subqueryWorkflow.getLastStep());
@@ -1268,12 +1266,7 @@ public class Planner {
 
             //REGISTER TABLE
             } else {
-                try {
-                    actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_CATALOG);
-                    executionType = ExecutionType.REGISTER_TABLE_CREATE_CATALOG;
-                } catch (PlanningException pe) {
-                    executionType = ExecutionType.REGISTER_TABLE_AND_CATALOG;
-                }
+                executionType = ExecutionType.REGISTER_TABLE_AND_CATALOG;
             }
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
