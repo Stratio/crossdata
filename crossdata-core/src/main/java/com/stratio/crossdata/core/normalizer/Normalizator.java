@@ -450,21 +450,6 @@ public class Normalizator {
         }
     }
 
-    private void checkFormatBySelectorIdentifierHaving(Selector selector, Set<ColumnName> columnNames)
-            throws ValidationException {
-        switch (selector.getType()) {
-        case FUNCTION:
-            break;
-        case COLUMN:
-            checkColumnSelector((ColumnSelector) selector);
-            if (!columnNames.add(((ColumnSelector) selector).getName())) {
-                throw new BadFormatException("COLUMN into group by is repeated");
-            }
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk include into Having is not valid");
-        }
-    }
 
     private void checkGroupByColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
         switch (selector.getType()) {
@@ -482,16 +467,6 @@ public class Normalizator {
         }
     }
 
-    private void checkHavingColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
-        switch (selector.getType()) {
-        case FUNCTION:
-            break;
-        case COLUMN:
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk is not valid with having statements");
-        }
-    }
 
     /**
      * Normalize an specific Having of a parsed query.
@@ -678,35 +653,6 @@ public class Normalizator {
             throw new BadFormatException("Relations can't be on the left side of other relations.");
         case FUNCTION:
             checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
-        }
-    }
-
-    private void checkHavingRelationFormatLeft(Relation relation) throws ValidationException {
-        switch (relation.getLeftTerm().getType()) {
-        case FUNCTION:
-            break;
-        case COLUMN:
-            checkColumnSelector((ColumnSelector) relation.getLeftTerm());
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk not supported in relations.");
-        case STRING:
-        case FLOATING_POINT:
-        case BOOLEAN:
-        case INTEGER:
-            if (relation.getOperator() == Operator.EQ) {
-                throw new YodaConditionException();
-            }
-            break;
-        case SELECT:
-            ExtendedSelectSelector extendedSelectSelector = (ExtendedSelectSelector) relation.getLeftTerm();
-            SelectValidatedQuery selectValidatedQuery = normalizeInnerSelect(
-                    extendedSelectSelector.getSelectParsedQuery(),
-                    new HashSet<>(fields.getTableNames()));
-            extendedSelectSelector.setSelectValidatedQuery(selectValidatedQuery);
-            break;
-        case RELATION:
-            throw new BadFormatException("Relations can't be on the left side of other relations.");
         }
     }
 
@@ -1334,9 +1280,7 @@ public class Normalizator {
             if (!indexFound) {
                 throw new BadFormatException("No index was found for the MATCH operator.");
             }
-        } else if ((operator != Operator.EQ) && (operator != Operator.GT) && (operator != Operator.GET) && (operator
-                != Operator.LT) && (operator != Operator.LET) && (operator != Operator.DISTINCT) &&
-                (operator != Operator.LIKE) && (operator != Operator.NOT_LIKE)) {
+        } else if ( !operator.isInGroup (Operator.Group.COMPARATOR)){
             throw new BadFormatException("String relations does not accept " + operator.toString() + " operator.");
         }
 

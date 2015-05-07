@@ -23,10 +23,6 @@ import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
 import com.stratio.connector.inmemory.datastore.InMemoryQuery;
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.connector.inmemory.datastore.structures.InMemoryColumnSelector;
-import com.stratio.connector.inmemory.datastore.structures.InMemoryFunctionSelector;
-import com.stratio.connector.inmemory.datastore.structures.InMemoryLiteralSelector;
-import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 import com.stratio.crossdata.common.connector.IQueryEngine;
 import com.stratio.crossdata.common.connector.IResultHandler;
 import com.stratio.crossdata.common.data.Cell;
@@ -46,7 +42,6 @@ import org.apache.log4j.Logger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
@@ -197,49 +192,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
         }
         return result;
     }
-
-
-
-
-
-    /**
-     * Transform a set of crossdata selectors into in-memory ones.
-     * @param selectors The set of crossdata selectors.
-     * @return A list of in-memory selectors.
-     */
-    private List<InMemorySelector> transformIntoSelectors(Set<Selector> selectors) {
-        List<InMemorySelector> result = new ArrayList<>();
-        for(Selector s: selectors){
-            result.add(transformCrossdataSelector(s));
-        }
-        return result;
-    }
-
-    /**
-     * Transform a Crossdata selector into an InMemory one.
-     * @param selector The Crossdata selector.
-     * @return The equivalent InMemory selector.
-     */
-    private InMemorySelector transformCrossdataSelector(Selector selector){
-        InMemorySelector result;
-        if(FunctionSelector.class.isInstance(selector)){
-            FunctionSelector xdFunction = FunctionSelector.class.cast(selector);
-            String name = xdFunction.getFunctionName();
-            List<InMemorySelector> arguments = new ArrayList<>();
-            for(Selector arg : xdFunction.getFunctionColumns()){
-                arguments.add(transformCrossdataSelector(arg));
-            }
-            result = new InMemoryFunctionSelector(name, arguments);
-        }else if(ColumnSelector.class.isInstance(selector)){
-            ColumnSelector cs = ColumnSelector.class.cast(selector);
-            result = new InMemoryColumnSelector(cs.getName().getName());
-        }else{
-            result = new InMemoryLiteralSelector(selector.getStringValue());
-        }
-        return result;
-    }
-
-
 
     protected int compareCells(SimpleValue toBeOrdered, SimpleValue alreadyOrdered, OrderDirection direction) {
         int result = -1;

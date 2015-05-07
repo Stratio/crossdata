@@ -47,15 +47,21 @@ public class ClientExample {
 
     static final Logger LOG = Logger.getLogger(ClientExample.class);
 
+    static final String CASSANDRA_DATASTORE_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-cassandra/master/src/main/resources/com/stratio/connector/cassandra/CassandraDataStore.xml";
+    static final String CASSANDRA_CONNECTOR_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-cassandra/master/src/main/resources/com/stratio/connector/cassandra/CassandraConnector.xml";
+    static final String DEEP_CONNECTOR_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-deep/maintenance/0.3/src/main/config/DeepConnector.xml";
+
+    static final String CASSANDRA_DATASTORE_FILE = CASSANDRA_DATASTORE_MANIFEST.substring(CASSANDRA_DATASTORE_MANIFEST.lastIndexOf('/')+1);
+    static final String CASSANDRA_CONNECTOR_FILE = CASSANDRA_CONNECTOR_MANIFEST.substring(CASSANDRA_CONNECTOR_MANIFEST.lastIndexOf('/')+1);
+    static final String DEEP_CONNECTOR_FILE = DEEP_CONNECTOR_MANIFEST.substring(DEEP_CONNECTOR_MANIFEST.lastIndexOf('/')+1);
+
+    static final int NUMBER_OF_ROWS = 1000;
+    static final String USER_NAME = "stratio";
+    static final String PASSWORD = "stratio";
+
     public static void main(String[] args) {
 
-        final String CASSANDRA_DATASTORE_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-cassandra/master/src/main/resources/com/stratio/connector/cassandra/CassandraDataStore.xml";
-        final String CASSANDRA_CONNECTOR_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-cassandra/master/src/main/resources/com/stratio/connector/cassandra/CassandraConnector.xml";
-        final String DEEP_CONNECTOR_MANIFEST = "https://raw.githubusercontent.com/Stratio/stratio-connector-deep/maintenance/0.3/src/main/config/DeepConnector.xml";
 
-        final String CASSANDRA_DATASTORE_FILE = CASSANDRA_DATASTORE_MANIFEST.substring(CASSANDRA_DATASTORE_MANIFEST.lastIndexOf("/")+1);
-        final String CASSANDRA_CONNECTOR_FILE = CASSANDRA_CONNECTOR_MANIFEST.substring(CASSANDRA_CONNECTOR_MANIFEST.lastIndexOf("/")+1);
-        final String DEEP_CONNECTOR_FILE = DEEP_CONNECTOR_MANIFEST.substring(DEEP_CONNECTOR_MANIFEST.lastIndexOf("/")+1);
 
         downloadManifest(
                 CASSANDRA_DATASTORE_MANIFEST,
@@ -67,9 +73,8 @@ public class ClientExample {
                 DEEP_CONNECTOR_MANIFEST,
                 DEEP_CONNECTOR_FILE);
 
-        final int NUMBER_OF_ROWS = 1000;
-        final String USER_NAME = "stratio";
-        final String PASSWORD = "stratio";
+
+
 
         BasicDriver basicDriver = new BasicDriver();
 

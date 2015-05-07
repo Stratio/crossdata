@@ -193,7 +193,7 @@ public final class StringUtils implements Serializable {
                     result = result.replace("%2F", "/");
                 }
                 if(result.contains("%")) {
-                    result = result.substring(0, result.lastIndexOf("%"));
+                    result = result.substring(0, result.lastIndexOf('%'));
                 }
             }
             return result;

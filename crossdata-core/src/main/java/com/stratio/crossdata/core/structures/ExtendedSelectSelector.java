@@ -73,7 +73,7 @@ public class ExtendedSelectSelector extends SelectSelector {
      public String toString() {
         String result = selectParsedQuery.toString();
         if(selectValidatedQuery != null){
-            result = selectValidatedQuery.getStatement().toSQLString();
+            result = selectValidatedQuery.getStatement().toString();
         }
         return "("+ result +")";
     }

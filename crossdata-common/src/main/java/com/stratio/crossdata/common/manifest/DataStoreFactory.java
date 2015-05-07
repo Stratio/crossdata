@@ -43,7 +43,7 @@ import javax.xml.namespace.QName;
 @XmlRegistry
 public class DataStoreFactory implements Serializable {
 
-    private final static QName _DataStore_QNAME = new QName("", "DataStore");
+    private final static QName DATASTORE_QNAME = new QName("", "DataStore");
     private static final long serialVersionUID = -1800454505250424666L;
 
     /**
@@ -108,7 +108,7 @@ public class DataStoreFactory implements Serializable {
      */
     @XmlElementDecl(namespace = "", name = "DataStore")
     public JAXBElement<DataStoreType> createDataStore(DataStoreType value) {
-        return new JAXBElement<>(_DataStore_QNAME, DataStoreType.class, null, value);
+        return new JAXBElement<>(DATASTORE_QNAME, DataStoreType.class, null, value);
     }
 
 }
