@@ -48,8 +48,9 @@ public class LogicalWorkflow implements Serializable {
     /**
      * Workflow constructor.
      *
-     * @param initialSteps
-     *            The list of initial steps.
+     * @param initialSteps The list of initial steps.
+     * @param lastStep The last logical step.
+     * @param pagination The size of the pagination.
      */
     public LogicalWorkflow(List<LogicalStep> initialSteps, LogicalStep lastStep, int pagination) {
         this.initialSteps = initialSteps;

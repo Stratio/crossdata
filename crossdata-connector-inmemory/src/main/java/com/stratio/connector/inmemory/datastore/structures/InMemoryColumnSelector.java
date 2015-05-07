@@ -16,19 +16,19 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.functions;
-
-import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-
-import java.util.Date;
-import java.util.Map;
+package com.stratio.connector.inmemory.datastore.structures;
 
 /**
- * Return the current time stamp.
+ * In-memory column selector.
  */
-public class NowFunction extends AbstractInMemoryFunction{
+public class InMemoryColumnSelector extends InMemorySelector {
 
-    @Override public Object apply(Map<String, Integer> columnIndex, SimpleValue[] row) throws Exception {
-        return new Date();
+    /**
+     * Class constructor.
+     *
+     * @param name The selector name.
+     */
+    public InMemoryColumnSelector(String name) {
+        super(name);
     }
 }

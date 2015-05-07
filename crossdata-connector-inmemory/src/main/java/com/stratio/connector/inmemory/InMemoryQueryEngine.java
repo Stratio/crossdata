@@ -22,12 +22,11 @@ import com.codahale.metrics.Timer;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
 import com.stratio.connector.inmemory.datastore.InMemoryQuery;
-import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryLiteralSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemoryColumnSelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemoryFunctionSelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemoryLiteralSelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 import com.stratio.crossdata.common.connector.IQueryEngine;
 import com.stratio.crossdata.common.connector.IResultHandler;
 import com.stratio.crossdata.common.data.Cell;
@@ -288,7 +287,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
         final List<String> columnAlias = new ArrayList<>();
         final List<ColumnMetadata> columnMetadataList = new ArrayList<>();
         for(Selector outputSelector : selectStep.getOutputSelectorOrder()){
-            //ColumnSelector selector = new ColumnSelector(outputSelector.getColumnName());
             ColumnName columnName = outputSelector.getColumnName();
             String alias = selectStep.getColumnMap().get(outputSelector);
             if(alias == null){
@@ -349,7 +347,12 @@ public class InMemoryQueryEngine implements IQueryEngine {
     @Override
     public void asyncExecute(String queryId, LogicalWorkflow workflow, IResultHandler resultHandler)
             throws ConnectorException {
-        throw new UnsupportedException("Async query execution is not supported");
+
+        QueryResult queryResult = execute(workflow);
+        queryResult.setLastResultSet();
+        queryResult.setQueryId(queryId);
+        resultHandler.processResult(queryResult);
+
     }
 
     @Override public void pagedExecute(

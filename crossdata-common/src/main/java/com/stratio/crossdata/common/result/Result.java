@@ -89,6 +89,12 @@ public abstract class Result implements Serializable {
         return new ErrorResult(e);
     }
 
+    /**
+     * Create a validation error result passing a {@link com.stratio.crossdata.common.exceptions.ValidationException}.
+     * @param e Any ValidationException.
+     * @param queryId The query identifier.
+     * @return
+     */
     public static ErrorResult createValidationErrorResult(ValidationException e, String queryId) {
         return new ErrorResult(e);
     }

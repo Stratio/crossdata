@@ -67,5 +67,7 @@
         <operation>FILTER_NON_INDEXED_LET</operation>
         <operation>IMPORT_METADATA</operation>
         <operation>PAGINATION</operation>
+
+        <operation>ASYNC_QUERY</operation>
     </SupportedOperations>
 </Connector>

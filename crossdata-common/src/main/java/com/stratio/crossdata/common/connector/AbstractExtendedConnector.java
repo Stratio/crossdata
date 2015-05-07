@@ -18,16 +18,11 @@
 
 package com.stratio.crossdata.common.connector;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import com.codahale.metrics.Metric;
-import com.stratio.crossdata.common.annotation.Experimental;
-import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectionStatus;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import scala.Option;
 
@@ -94,6 +89,12 @@ public abstract class AbstractExtendedConnector implements IConnector{
         return connectorApp.getConnectionStatus();
     }
 
+    /**
+     * Set a connector metric.
+     * @param name The name of the metric.
+     * @param metric The metric.
+     * @return A {@link com.codahale.metrics.Metric}
+     */
     public Metric registerMetric(String name, Metric metric){
         if(connectorApp == null){
             return null;

@@ -84,6 +84,13 @@ public class ManagementWorkflow extends ExecutionWorkflow {
         super(queryId, actorRef, executionType, type);
     }
 
+    /**
+     * Class constructor.
+     * @param queryId Query identifier.
+     * @param actorRefs The actor reference.
+     * @param executionType Type of execution.
+     * @param type Type of results.
+     */
     public ManagementWorkflow(String queryId, Set<String> actorRefs,
             ExecutionType executionType, ResultType type) {
         super(queryId, null, executionType, type);

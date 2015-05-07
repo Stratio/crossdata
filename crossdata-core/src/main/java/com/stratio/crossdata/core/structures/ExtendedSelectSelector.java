@@ -28,12 +28,20 @@ import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 
+/**
+ * Extended Select Selector Class that allow Crossdata execute sub queries.
+ */
 public class ExtendedSelectSelector extends SelectSelector {
 
     private SelectParsedQuery selectParsedQuery;
 
     private SelectValidatedQuery selectValidatedQuery;
 
+    /**
+     * Class Constructor.
+     * @param selectStatement The {@link com.stratio.crossdata.core.statements.SelectStatement}.
+     * @param sessionCatalog The catalog affected.
+     */
     public ExtendedSelectSelector(SelectStatement selectStatement, String sessionCatalog) {
         super(selectStatement.getTableName(), selectStatement.toSQL92String());
         this.selectParsedQuery = new SelectParsedQuery(
@@ -70,7 +78,10 @@ public class ExtendedSelectSelector extends SelectSelector {
         return "("+ result +")";
     }
 
-
+    /**
+     * Get the sub query in SQL 92 syntax.
+     * @return A String with the query in sql 92 syntax.
+     */
     public String toSQLString() {
         return "("+ selectValidatedQuery.getStatement().toSQL92String()+")";
     }

@@ -25,11 +25,11 @@ import java.util.Map;
 
 import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
+import com.stratio.connector.inmemory.datastore.structures.InMemoryFunctionSelector;
 import org.apache.log4j.Logger;
 
-import com.stratio.connector.inmemory.datastore.functions.AbstractInMemoryFunction;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+import com.stratio.connector.inmemory.datastore.structures.AbstractInMemoryFunction;
+
 
 /**
  * This class provides a proof-of-concept implementation of an in-memory datastore for

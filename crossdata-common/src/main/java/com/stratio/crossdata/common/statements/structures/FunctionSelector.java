@@ -89,10 +89,18 @@ public class FunctionSelector extends Selector {
         return functionSelectors;
     }
 
+    /**
+     * Whether an Asterisk is in the selector.
+     * @return Whether an Asterisk is in the selector.
+     */
     public boolean hadAsteriskSelector() {
         return hadAsteriskSelector;
     }
 
+    /**
+     * Set if an asterisk is in the selector.
+     * @param hadAsteriskSelector True if an asterisk is in the selector.
+     */
     public void setHadAsteriskSelector(boolean hadAsteriskSelector) {
         this.hadAsteriskSelector = hadAsteriskSelector;
     }

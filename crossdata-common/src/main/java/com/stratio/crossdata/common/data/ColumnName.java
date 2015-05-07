@@ -188,6 +188,10 @@ public class ColumnName extends Name {
         return alias;
     }
 
+    /**
+     * Get the sql syntax of the table name
+     * @return The String with the sql.
+     */
     public String toSQLString() {
         if(tableName == null){
             return name;

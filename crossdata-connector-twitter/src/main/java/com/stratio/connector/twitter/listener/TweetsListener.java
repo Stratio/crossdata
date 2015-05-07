@@ -116,10 +116,7 @@ public class TweetsListener implements StatusListener {
                     if((resultSet.getColumnMetadata() == null) || resultSet.getColumnMetadata().isEmpty()){
                         ColumnName columnName = new ColumnName(selector.getTableName(), alias);
                         Object[] parameters = new Object[]{};
-                        /*
-                        Class<?> clazz = method.getReturnType();
-                        ColumnType ct = StringUtils.convertJavaTypeToXdType(clazz.getSimpleName());
-                        */
+
                         ColumnType ct = column.getColumnType();
                         ColumnMetadata columnMetadata = new ColumnMetadata(
                                 columnName,

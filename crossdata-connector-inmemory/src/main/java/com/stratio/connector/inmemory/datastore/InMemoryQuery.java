@@ -18,7 +18,7 @@
 
 package com.stratio.connector.inmemory.datastore;
 
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 
 import java.util.ArrayList;
 import java.util.List;

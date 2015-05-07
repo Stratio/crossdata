@@ -15,23 +15,27 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.stratio.crossdata.common.metadata;
 
-import java.io.Serializable;
+package com.stratio.connector.inmemory.datastore.structures;
 
-/**
- * DataType Enum defines the different type of the columns of a table.
- */
-public enum DataType implements Serializable {
-    BIGINT,
-    BOOLEAN,
-    DOUBLE,
-    FLOAT,
-    INT,
-    TEXT,
-    VARCHAR,
-    NATIVE,
-    SET,
-    LIST,
-    MAP;
+import com.stratio.crossdata.common.statements.structures.Selector;
+
+public class InMemoryJoinSelector extends InMemorySelector {
+
+    private Selector myTerm;
+    private Selector otherTerm;
+
+    public InMemoryJoinSelector(String name, Selector myTerm, Selector otherTerm) {
+        super(name);
+        this.myTerm = myTerm;
+        this.otherTerm = otherTerm;
+    }
+
+    public Selector getOtherTerm() {
+        return otherTerm;
+    }
+
+    public Selector getMyTerm() {
+        return myTerm;
+    }
 }

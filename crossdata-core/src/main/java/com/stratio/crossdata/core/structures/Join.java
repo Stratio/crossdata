@@ -76,7 +76,11 @@ public class Join implements Serializable {
         this.type=type;
     }
 
-   public Join(List<TableName> tableNames){
+    /**
+     * Class constructor.
+     * @param tableNames The table names of the join.
+     */
+    public Join(List<TableName> tableNames){
         this(tableNames, true);
     }
 
@@ -88,10 +92,18 @@ public class Join implements Serializable {
         return relations;
     }
 
+    /**
+     * Add a list of relations to the join.
+     * @param joinRelations The list of relations of the join.
+     */
     public void addRelations(List<AbstractRelation> joinRelations){
         relations.addAll(joinRelations);
     }
 
+    /**
+     * Add a relation to a join.
+     * @param joinRelations The relation.
+     */
     public void addRelation(AbstractRelation joinRelations){
         relations.add(joinRelations);
     }
@@ -211,6 +223,10 @@ public class Join implements Serializable {
         return sb.toString();
     }
 
+    /**
+     * Get the sql string with the sintax of the join.
+     * @return A String with the sql sintax of the join.
+     */
     public String toSQLString() {
         StringBuilder sb = new StringBuilder(type.toSQLString());
         sb.append(" JOIN ");

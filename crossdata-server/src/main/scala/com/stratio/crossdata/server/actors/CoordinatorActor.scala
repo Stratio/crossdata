@@ -244,8 +244,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             }
 
-          } else if (metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE_CREATE_CATALOG
-            || metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE_REGISTER_CATALOG) {
+          } else if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE_REGISTER_CATALOG) {
             //Connector is able to create the catalog of the registered table
             if (metadataWorkflow.getActorRef != null && metadataWorkflow.getActorRef.length() > 0) {
               val actorRef = context.actorSelection(metadataWorkflow.getActorRef)
@@ -607,7 +606,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                   updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
                 }
 
-                case ExecutionType.CREATE_TABLE_AND_CATALOG | ExecutionType.CREATE_TABLE_REGISTER_CATALOG | ExecutionType.REGISTER_TABLE_CREATE_CATALOG => {
+                case ExecutionType.CREATE_TABLE_AND_CATALOG | ExecutionType.CREATE_TABLE_REGISTER_CATALOG => {
                   val tableMetadata = mw.getTableMetadata
                   //TODO updateMetadata(mw.getCatalogMetadata, ...)?
                   updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)

@@ -25,17 +25,29 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 
 import twitter4j.TwitterStream;
 
+/**
+ * Twitter cluster class for twitter connector.
+ */
 public class TwitterCluster {
 
     private final String clusterName;
     private TwitterStream session;
     private final Map<String, TableMetadata> tables = new HashMap<>();
 
+    /**
+     * Class constructor.
+     * @param clusterName The cluster name.
+     * @param session The session.
+     */
     public TwitterCluster(String clusterName, TwitterStream session) {
         this.clusterName = clusterName;
         this.session = session;
     }
 
+    /**
+     * Class constructor.
+     * @param clusterName The cluster name.
+     */
     public TwitterCluster(String clusterName) {
         this(clusterName, null);
     }
@@ -56,10 +68,19 @@ public class TwitterCluster {
         return tables;
     }
 
+    /**
+     * Add a table metadata to the twitter connector tables.
+     * @param tableMetadata The table metadata.
+     */
     public void addTableMetadata(TableMetadata tableMetadata) {
         tables.put(tableMetadata.getName().getName(), tableMetadata);
     }
 
+    /**
+     * Get a table metadata of the twitter connector tables given a table name.
+     * @param tableName The table name.
+     * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata}.
+     */
     public TableMetadata getTableMetadata(String tableName) {
         return tables.get(tableName);
     }

@@ -32,6 +32,10 @@ public class ForceDetachQuery implements IPlannedQuery{
 
     private ExecutionWorkflow executionWorkflow;
 
+    /**
+     * Class constructor;
+     * @param executionWorkflow The execution workflow with the detach info.
+     */
     public ForceDetachQuery(ExecutionWorkflow executionWorkflow){
         this.executionWorkflow = executionWorkflow;
     }

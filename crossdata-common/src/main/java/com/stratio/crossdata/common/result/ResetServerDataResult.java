@@ -19,9 +19,7 @@
 package com.stratio.crossdata.common.result;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class that encapsulate the Reset ServerData execution result. If there are a Cluster attached to a Connection, then
@@ -29,11 +27,14 @@ import java.util.Set;
  */
 public class ResetServerDataResult extends Result {
 
-
     private CommandResult result;
 
     private List<Object> resetCommands = new ArrayList<>();
 
+    /**
+     * Class constructor.
+     * @param result The result of the ResetServerData command.
+     */
     public ResetServerDataResult(CommandResult result) {
         this.result = result;
     }
