@@ -20,10 +20,21 @@ package com.stratio.crossdata.common.connector;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
+/**
+ * Metadata Listener interface.
+ */
 public interface IMetadataListener {
 
+    /**
+     * Update the metadata information in a connector context.
+     * @param uMetadata The metadata.
+     */
     public void updateMetadata(UpdatableMetadata uMetadata);
 
+    /**
+     * Delete any metadata.
+     * @param uName The name of the metadata to delete.
+     */
     public void deleteMetadata(Name uName);
 
 }

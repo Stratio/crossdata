@@ -288,7 +288,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
         final List<String> columnAlias = new ArrayList<>();
         final List<ColumnMetadata> columnMetadataList = new ArrayList<>();
         for(Selector outputSelector : selectStep.getOutputSelectorOrder()){
-            //ColumnSelector selector = new ColumnSelector(outputSelector.getColumnName());
             ColumnName columnName = outputSelector.getColumnName();
             String alias = selectStep.getColumnMap().get(outputSelector);
             if(alias == null){

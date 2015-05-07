@@ -23,6 +23,9 @@ import java.util.List;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.utils.StringUtils;
 
+/**
+ * List Selector class.
+ */
 public class ListSelector extends Selector {
 
     private static final long serialVersionUID = 6144378661087640561L;
@@ -33,11 +36,13 @@ public class ListSelector extends Selector {
      * Class constructor.
      *
      * @param tableName The associated {@link com.stratio.crossdata.common.data.TableName}.
+     * @param selectorsList The list of selectors that create the ListSelector.
      */
     public ListSelector(TableName tableName, List<Selector> selectorsList) {
         super(tableName);
         this.selectorsList = selectorsList;
     }
+
 
     public List<Selector> getSelectorsList() {
         return selectorsList;

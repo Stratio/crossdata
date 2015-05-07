@@ -62,6 +62,7 @@ public class AttachConnectorStatement extends MetadataStatement {
      * @param clusterName   The cluster where the connector will be attached.
      * @param json          A json with the options of the attach connector sentence.
      * @param priority      The connector's priority for the associated cluster.
+     * @param pagination    The size of the pagination.
      */
     public AttachConnectorStatement(ConnectorName connectorName, ClusterName clusterName, String json,
             int priority, int pagination) {

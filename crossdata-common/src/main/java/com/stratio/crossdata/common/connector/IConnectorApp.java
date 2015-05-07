@@ -18,16 +18,12 @@
 
 package com.stratio.crossdata.common.connector;
 
-import java.util.List;
-
 import com.codahale.metrics.Metric;
-import com.stratio.crossdata.common.annotation.Experimental;
-import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectionStatus;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+
 import scala.Option;
 
 /**
@@ -37,9 +33,10 @@ public interface IConnectorApp {
 
     /**
      * Get the table metadata.
-     * @param cluster target cluster.
+     *
+     * @param cluster   target cluster.
      * @param tableName target tablename.
-     * @param timeout the timeout in ms.
+     * @param timeout   the timeout in ms.
      * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata} or null if the table metadata is not ready after waiting the specified time.
      */
     Option<TableMetadata> getTableMetadata(ClusterName cluster, TableName tableName, int timeout);
@@ -64,6 +61,7 @@ public interface IConnectorApp {
 
     /**
      * Get the connection status with the Crossdata server.
+     *
      * @return A {@link com.stratio.crossdata.common.data.ConnectionStatus}.
      */
     ConnectionStatus getConnectionStatus();

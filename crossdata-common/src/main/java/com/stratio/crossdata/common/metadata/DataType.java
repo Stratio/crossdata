@@ -19,6 +19,9 @@ package com.stratio.crossdata.common.metadata;
 
 import java.io.Serializable;
 
+/**
+ * DataType Enum defines the different type of the columns of a table.
+ */
 public enum DataType implements Serializable {
     BIGINT,
     BOOLEAN,

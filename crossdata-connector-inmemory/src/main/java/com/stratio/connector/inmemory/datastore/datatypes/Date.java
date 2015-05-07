@@ -23,6 +23,9 @@ import java.text.SimpleDateFormat;
 
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 
+/**
+ * Date type Class for In Memory Connector.
+ */
 public class Date extends AbstractInMemoryDataType {
 
     private Class<?> clazz = Date.class;
@@ -40,6 +43,12 @@ public class Date extends AbstractInMemoryDataType {
         formatter = new SimpleDateFormat(String.class.cast(parameters[0]));
     }
 
+    /**
+     * Convert a String type to Date type.
+     * @param input The String with the date.
+     * @return A Date.
+     * @throws ExecutionException .
+     */
     public Object convertStringToInMemoryDataType(String input) throws ExecutionException {
         java.util.Date output;
         try {
@@ -50,6 +59,11 @@ public class Date extends AbstractInMemoryDataType {
         return output;
     }
 
+    /**
+     * Convert a Date type of in memory connector to String.
+     * @param input The date.
+     * @return A String with the date.
+     */
     public String convertInMemoryDataTypeToString(Object input){
         java.util.Date date = java.util.Date.class.cast(input);
         return formatter.format(date);

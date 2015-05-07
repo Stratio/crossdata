@@ -96,6 +96,10 @@ public class Join extends UnionStep {
         sourceIdentifiers.add(id);
     }
 
+    /**
+     * Add a list of identifiers (name of the tables implied) of the join.
+     * @param ids List of identifiers.
+     */
     public void addSourceIdentifier(List<String> ids) {
         sourceIdentifiers.addAll(ids);
     }

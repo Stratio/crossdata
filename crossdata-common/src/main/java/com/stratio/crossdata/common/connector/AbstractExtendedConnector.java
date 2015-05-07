@@ -94,6 +94,12 @@ public abstract class AbstractExtendedConnector implements IConnector{
         return connectorApp.getConnectionStatus();
     }
 
+    /**
+     * Set a connector metric.
+     * @param name The name of the metric.
+     * @param metric The metric.
+     * @return A {@link com.codahale.metrics.Metric}
+     */
     public Metric registerMetric(String name, Metric metric){
         if(connectorApp == null){
             return null;

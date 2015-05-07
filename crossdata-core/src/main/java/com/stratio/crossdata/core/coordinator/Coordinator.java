@@ -362,6 +362,7 @@ public class Coordinator implements Serializable {
      * @param connectorName The connector name.
      * @param options       The map of connector options.
      * @param priority      The priority of the connector for the associated cluster.
+     * @param pageSize      The pagination size.
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistAttachConnector(ClusterName clusterName, ConnectorName connectorName,
