@@ -196,9 +196,7 @@ public class Planner {
 
         if((connectedConnectors == null) || (connectedConnectors.isEmpty())){
             throw new PlanningException("There are no connectors online");
-        } /*else if(connectedConnectors.size() == 1){
-            return buildSimpleExecutionWorkflow(query, workflow, connectedConnectors.get(0));
-        }*/
+        }
 
         //Get the list of tables accessed in this query
         List<TableName> tables = getInitialSteps(workflow.getInitialSteps());
@@ -231,22 +229,7 @@ public class Planner {
                     }
                     paths.add(ep);
                 }
-                /*
-                if (UnionStep.class.isInstance(ep.getLast())) {
-                    LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast());
-                    if (paths == null) {
-                        paths = new LinkedHashSet<>();
-                        unionSteps.put((UnionStep) ep.getLast(), paths);
-                    }
-                    paths.add(ep);
-                } else if (ep.getLast().getNextStep() != null && UnionStep.class.isInstance(ep.getLast().getNextStep())) {
-                    LinkedHashSet<ExecutionPath> paths = unionSteps.get(ep.getLast().getNextStep());
-                    if (paths == null) {
-                        paths = new LinkedHashSet<>();
-                        unionSteps.put((UnionStep) (ep.getLast().getNextStep()), paths);
-                    }
-                    paths.add(ep);
-                }*/
+
                 executionPaths.add(ep);
                 if(ep.getLast().getNextStep() == null){
                     break;
@@ -255,7 +238,7 @@ public class Planner {
                         ep.getLast().getNextStep(),
                         ep.getLast().getNextStep(),
                         new ArrayList<ConnectorMetadata>());
-                //ep = defineExecutionPath(ep.getLast().getNextStep(), candidatesConnectors.get(targetTable), query);
+
             }
         }
         // Add ExecutionPath from last union step, if present; otherwise, add the whole path
@@ -384,9 +367,7 @@ public class Planner {
         for(UnionStep mergeStep: mergeSteps) {
             Set<ConnectorMetadata> toRemove = new LinkedHashSet<>();
             Set<ConnectorMetadata> mergeConnectors = new LinkedHashSet<>();
-
             Set<ExecutionWorkflow> workflows = new LinkedHashSet<>();
-
             Set<ExecutionPath> toMerge = new LinkedHashSet<>();
             boolean[] intermediateResults = new boolean[2];
             //Check whether the list of connectors found in the Execution paths being merged can execute the join
@@ -1088,9 +1069,6 @@ public class Planner {
                         }
                     }
 
-                    //LogicalStep previous = lastSteps.get(s.getSelectorTablesAsString());
-
-                    //lastSteps.put(s.getSelectorTablesAsString(), f);
                 } else {
                     LOG.error("Cannot determine Filter for relation " + r.toString() +
                             " on table " + s.getSelectorTablesAsString());
@@ -1137,12 +1115,7 @@ public class Planner {
                     }
                 }
 
-                /*
-                LogicalStep previous = lastSteps.get(rd.getFirstSelectorTablesAsString());
-                previous.setNextStep(d);
-                d.setPrevious(previous);
-                lastSteps.put(rd.getFirstSelectorTablesAsString(), d);
-                */
+
                 //TODO add last steps??
             }
         }
@@ -1150,113 +1123,6 @@ public class Planner {
 
     }
 
-    /**
-     * Generate {@link com.stratio.crossdata.common.logicalplan.Select} steps after and before the union steps.
-     *
-     * @param initialSteps Project steps;
-     * @param tableMetadataMap Metadata of the tables in the initial steps.
-     * @throws PlanningException
-     */
-    private void generateSelectsForUnionSteps(
-            List<LogicalStep> initialSteps,
-            Map<String, TableMetadata> tableMetadataMap) throws PlanningException {
-        for(LogicalStep step: initialSteps){
-            Project project = (Project) step;
-            List<ColumnName> columnList = project.getColumnList();
-            LogicalStep previousStepToUnion = project;
-            while(step != null){
-                if(step instanceof UnionStep){
-                    // Generate previous select
-                    SelectStatement previousSS = new SelectStatement(SelectExpression.create(columnList));
-                    Select generatedPreviousSelect = generateSelect(previousSS, tableMetadataMap);
-
-                    // Add select before union step
-                    if(previousStepToUnion instanceof Select){
-                        // Add columns to the existing select
-                        Select existingSelect = (Select) previousStepToUnion;
-                        mergeSelectSteps(existingSelect, generatedPreviousSelect);
-                    } else {
-                        // Link generated select
-                        previousStepToUnion.setNextStep(generatedPreviousSelect);
-                        generatedPreviousSelect.setNextStep(step);
-                        generatedPreviousSelect.setPrevious(previousStepToUnion);
-                        step.getPreviousSteps().remove(previousStepToUnion);
-                        step.getPreviousSteps().add(generatedPreviousSelect);
-                    }
-
-                    // Generate later select
-                    SelectStatement laterSS = new SelectStatement(SelectExpression.create(columnList));
-                    Select generatedLaterSelect = generateSelect(laterSS, tableMetadataMap);
-
-                    // Add select after union step
-                    if(step.getNextStep() instanceof Select){
-                        // Add columns to the existing select
-                        Select existingSelect = (Select) step.getNextStep();
-                        mergeSelectSteps(existingSelect, generatedLaterSelect);
-                    } else {
-                        // Link generated select
-                        if(step.getNextStep() != null){
-                            generatedLaterSelect.setNextStep(step.getNextStep());
-                            step.getNextStep().getPreviousSteps().remove(step);
-                            step.getNextStep().getPreviousSteps().add(generatedLaterSelect);
-                        }
-                        generatedLaterSelect.setPrevious(step);
-                        step.setNextStep(generatedLaterSelect);
-                    }
-                }
-                previousStepToUnion = step;
-                step = step.getNextStep();
-            }
-        }
-    }
-
-    private void mergeSelectSteps(Select existingSelect, Select generatedSelect) {
-        existingSelect.getColumnMap().putAll(generatedSelect.getColumnMap());
-        existingSelect.getTypeMap().putAll(generatedSelect.getTypeMap());
-        existingSelect.getTypeMapFromColumnName().putAll(generatedSelect.getTypeMapFromColumnName());
-    }
-
-    private List<LogicalStep> removeProjects(List<LogicalStep> previousSteps) {
-        List<LogicalStep> newList=new ArrayList<>();
-        for (LogicalStep ls:previousSteps){
-            if(!Project.class.isInstance(ls)){
-                newList.add(ls);
-            }
-        }
-        return newList;
-    }
-
-    private List<LogicalStep> removeDuplicateLS(List<LogicalStep> previousSteps) {
-        for(LogicalStep ls1:previousSteps){
-            for(LogicalStep ls2:previousSteps){
-                if(ls1!=ls2){
-                    if (ls1.toString().equals(ls2.toString())){
-                        previousSteps.remove(ls2);
-                        break;
-                    }
-                }
-            }
-        }
-        return previousSteps;
-    }
-
-    private List<SelectStatement> removeDuplicateSelects(List<SelectStatement> partialSelectList) {
-        List<SelectStatement> result = new ArrayList<>();
-
-        for(SelectStatement ss1: partialSelectList){
-            boolean alreadyAdded = false;
-            for(SelectStatement ss2: result){
-                if(ss1.toString().equals(ss2.toString())){
-                    alreadyAdded = true;
-                }
-            }
-            if(!alreadyAdded){
-                result.add(ss1);
-            }
-        }
-
-        return result;
-    }
 
     private LogicalWorkflow rearrangeWorkflow(LogicalWorkflow workflow, LogicalWorkflow subqueryWorkflow) {
         if (workflow.getInitialSteps().size() == 1) {

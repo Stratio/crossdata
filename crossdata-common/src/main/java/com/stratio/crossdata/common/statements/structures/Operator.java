@@ -244,6 +244,10 @@ public enum Operator {
         return this.group == group;
     }
 
+    /**
+     * Get a string with SQL92 syntax of the operator.
+     * @return A SQL92 syntax of the operator.
+     */
     public String toSQLString() {
         return toString();
     }

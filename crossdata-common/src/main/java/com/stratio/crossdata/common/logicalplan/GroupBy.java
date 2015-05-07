@@ -63,6 +63,7 @@ public class GroupBy extends TransformationStep {
      *
      * @param operations The operations to be applied.
      * @param ids Identifiers.
+     * @param havingIds A list of relations of a having clause.
      */
     public GroupBy(Set<Operations> operations, List<Selector> ids, List<AbstractRelation> havingIds) {
         super(operations);

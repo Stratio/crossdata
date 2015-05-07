@@ -139,8 +139,8 @@ public class Normalizator {
 
     /**
      * Execute the normalization of a parsed query.
-     *
-     * @throws ValidationException
+     * @param parentsTableNames A set of {@link com.stratio.crossdata.common.data.TableName}.
+     * @throws ValidationException .
      */
     public void execute(Set<TableName> parentsTableNames) throws ValidationException {
 
@@ -501,7 +501,6 @@ public class Normalizator {
      */
     public void normalizeHaving(List<AbstractRelation> havingClause) throws ValidationException {
         for (AbstractRelation relation : havingClause) {
-            //checkHavingRelation(relation);
             checkRelation(relation);
         }
     }
@@ -550,6 +549,11 @@ public class Normalizator {
         }
     }
 
+    /**
+     * Check if the join relation is correct.
+     * @param abstractRelation The relation of the join.
+     * @throws ValidationException .
+     */
     public void checkJoinRelation(AbstractRelation abstractRelation) throws ValidationException {
         if (abstractRelation instanceof Relation) {
             Relation relation = (Relation) abstractRelation;
@@ -611,6 +615,7 @@ public class Normalizator {
      *
      * @param abstractRelation The relation of the query.
      * @throws ValidationException
+     * @return Whether the relation implies that is a implicit join.
      */
     public boolean checkRelation(AbstractRelation abstractRelation) throws ValidationException {
         boolean implicit = false;
@@ -645,23 +650,7 @@ public class Normalizator {
         return implicit;
     }
 
-    public void checkHavingRelation(AbstractRelation abstractRelation) throws ValidationException {
-        if (abstractRelation instanceof Relation) {
-            Relation relationConjunction = (Relation) abstractRelation;
-            if (relationConjunction.getOperator().isInGroup(Operator.Group.ARITHMETIC)) {
-                throw new BadFormatException("Comparing operations are the only valid ones");
-            }
-            checkHavingRelationFormatLeft(relationConjunction);
-            checkRelationFormatRight(relationConjunction);
-        } else if (abstractRelation instanceof RelationDisjunction) {
-            RelationDisjunction rd = (RelationDisjunction) abstractRelation;
-            for (RelationTerm rt : rd.getTerms()) {
-                for (AbstractRelation ar : rt.getRelations()) {
-                    checkRelation(ar);
-                }
-            }
-        }
-    }
+
 
     private void checkRelationFormatLeft(Relation relation) throws ValidationException {
         switch (relation.getLeftTerm().getType()) {
@@ -847,41 +836,6 @@ public class Normalizator {
         }
 
         return columnFromVirtualTableFound;
-
-
-        /*boolean columnFromVirtualTableFound = false;
-        TableName tableName;
-
-        if (columnName.getTableName() != null) {
-            tableName = fields.getTableName(columnName.getTableName().getName());
-            if(tableName == null){
-                throw new NotValidTableException(columnName.getTableName());
-            }
-            columnName.setTableName(tableName);
-            selector.setTableName(tableName);
-            columnFromVirtualTableFound = true;
-            //TODO validate with the subquery, reuse the code below
-        } else {
-
-            for (Selector subquerySelector : subqueryNormalizator.getFields().getSelectors()) {
-                if(subquerySelector.getAlias() != null){
-                    columnFromVirtualTableFound = selector.getName().getName().equals(subquerySelector.getAlias());
-                }else if(subquerySelector instanceof ColumnSelector){
-                    columnFromVirtualTableFound = selector.getColumnName().getName().equals(subquerySelector.getColumnName().getName());
-                }
-
-                if (columnFromVirtualTableFound) {
-                    tableName = new TableName(Constants.VIRTUAL_NAME,parsedQuery.getStatement().getSubqueryAlias());
-                    columnName.setTableName(tableName);
-                    selector.setTableName(tableName);
-                    columnFromVirtualTableFound = true;
-                    break;
-                }
-
-            }
-
-        }
-        return columnFromVirtualTableFound;*/
     }
 
     private ColumnName applyAlias(ColumnName columnName) {
@@ -1049,8 +1003,6 @@ public class Normalizator {
                 ColumnSelector columnSelector = (ColumnSelector) selector;
                 checkColumnSelector(columnSelector);
 
-                //check with selectFromTables to add the secondTableName
-                //Iterator<TableName> tableNameIterator = fields.getTableNames().iterator();
                 Iterator<TableName> tableNameIterator = fields.getPreferredTableNames().iterator();
 
                 TableName currentTableName = null;
@@ -1121,7 +1073,6 @@ public class Normalizator {
                         // Check columns
                         List<Selector> normalizeSelector = checkListSelector(Arrays.asList(lastSelector));
                         lastSelector = normalizeSelector.get(0);
-                        //checkColumnSelector((ColumnSelector)lastSelector);
 
                         //TODO getRealDatatype from subquery
                         if (!lastSelector.getTableName().isVirtual()) {
@@ -1136,7 +1087,6 @@ public class Normalizator {
                         List<Selector> normalizeSelector = checkListSelector(
                                 Arrays.asList(caseWhenSelector.getDefaultValue()));
                         caseWhenSelector.setDefaultValue(normalizeSelector.get(0));
-                        //checkColumnSelector((ColumnSelector)caseWhenSelector.getDefaultValue());
 
                         //TODO getRealDatatype from subquery
                         if (!lastSelector.getTableName().isVirtual()) {
