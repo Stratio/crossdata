@@ -465,7 +465,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     public String toSQL92String(){
         StringBuilder sb = new StringBuilder("SELECT ");
         if (selectExpression != null) {
-            sb.append(selectExpression.toSQLString());
+            sb.append(selectExpression.toSQLString(true));
         }
         sb.append(" FROM ");
 

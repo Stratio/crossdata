@@ -398,6 +398,7 @@ public class APIManager {
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_CATALOG);
             ((MetadataResult) result).setCatalogMetadataList(Arrays.asList(catalogMetadata));
         }catch(MetadataManagerException e){
+            LOG.info(e.getMessage());
             result=MetadataResult.createExecutionErrorResult(e.getMessage());
         }
 
@@ -434,6 +435,7 @@ public class APIManager {
             result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_TABLE);
             ((MetadataResult) result).setTableList(Arrays.asList(tableMetadata));
         }catch(MetadataManagerException e){
+            LOG.info(e.getMessage());
             result=MetadataResult.createExecutionErrorResult(e.getMessage());
         }
 

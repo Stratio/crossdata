@@ -23,8 +23,7 @@ import java.util.*;
 import com.stratio.connector.inmemory.datastore.datatypes.AbstractInMemoryDataType;
 import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.connector.inmemory.datastore.functions.AbstractInMemoryFunction;
-import com.stratio.connector.inmemory.datastore.selector.*;
+import com.stratio.connector.inmemory.datastore.structures.*;
 
 /**
  * This class provides a basic abstraction of a database-like table stored in memory.

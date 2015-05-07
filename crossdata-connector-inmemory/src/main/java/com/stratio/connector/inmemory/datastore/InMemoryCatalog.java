@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 
 /**
  * Catalog abstraction containing a set of tables.

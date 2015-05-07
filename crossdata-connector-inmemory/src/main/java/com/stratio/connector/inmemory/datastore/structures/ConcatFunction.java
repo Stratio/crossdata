@@ -16,20 +16,16 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.functions;
-
-import java.util.Map;
+package com.stratio.connector.inmemory.datastore.structures;
 
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryColumnSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryFunctionSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemoryLiteralSelector;
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
+
+import java.util.Map;
 
 /**
  * Concatenation function.
  */
-public class ConcatFunction extends AbstractInMemoryFunction{
+public class ConcatFunction extends AbstractInMemoryFunction {
 
     @Override public String apply(Map<String, Integer> columnIndex, SimpleValue[] row) throws Exception {
         StringBuilder sb = new StringBuilder();

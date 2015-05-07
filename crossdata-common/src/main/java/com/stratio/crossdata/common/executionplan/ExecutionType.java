@@ -41,7 +41,6 @@ public enum ExecutionType {
     UNREGISTER_TABLE,
     REGISTER_TABLE,
     REGISTER_TABLE_AND_CATALOG,
-    REGISTER_TABLE_CREATE_CATALOG,
 
     //IStorage
     INSERT,

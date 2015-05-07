@@ -19,9 +19,7 @@
 package com.stratio.crossdata.common.result;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Class that encapsulate the Reset ServerData execution result. If there are a Cluster attached to a Connection, then
