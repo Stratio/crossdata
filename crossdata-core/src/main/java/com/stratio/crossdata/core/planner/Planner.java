@@ -1727,7 +1727,7 @@ public class Planner {
 
             storageWorkflow = new StorageWorkflow(
                     queryId,
-                    bestConnector.getActorRef(),
+                    bestConnector.getActorRef(host),
                     ExecutionType.INSERT_FROM_SELECT,
                     ResultType.RESULTS);
             storageWorkflow.setClusterName(tableMetadata.getClusterRef());
