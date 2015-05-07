@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.stratio.crossdata.common.statements.structures.*;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
@@ -39,6 +38,12 @@ import org.codehaus.jackson.map.SerializationConfig;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.DataType;
+import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.ISqlExpression;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 
 import difflib.DiffUtils;
 import difflib.Patch;
@@ -376,5 +381,9 @@ public final class StringUtils implements Serializable {
             obj = jsonNode.getTextValue();
         }
         return obj;
+    }
+
+    public static String extractHost(String ar) {
+        return ar.substring(ar.indexOf("@")+1, ar.indexOf(":", ar.indexOf(":")+1));
     }
 }

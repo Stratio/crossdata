@@ -23,7 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.stratio.crossdata.communication.*;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.AlterOptions;
@@ -49,6 +48,13 @@ import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.communication.AlterCluster;
+import com.stratio.crossdata.communication.AttachCluster;
+import com.stratio.crossdata.communication.AttachConnector;
+import com.stratio.crossdata.communication.DetachCluster;
+import com.stratio.crossdata.communication.DetachConnector;
+import com.stratio.crossdata.communication.ForceDetachConnector;
+import com.stratio.crossdata.communication.ManagementOperation;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 
 /**
@@ -56,6 +62,16 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
  * defines a set of methods to persists data after the successful execution of a query.
  */
 public class Coordinator implements Serializable {
+
+    private final String host;
+
+    public Coordinator(String host) {
+        this.host = host;
+    }
+
+    public String getHost() {
+        return host;
+    }
 
     /**
      * Class logger.

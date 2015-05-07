@@ -31,6 +31,10 @@ import com.stratio.crossdata.core.query.SelectValidatedQuery;
  */
 public class PlannerWrapper extends Planner {
 
+    public PlannerWrapper(String host) {
+        super(host);
+    }
+
     @Override
     public ExecutionPath defineExecutionPath(LogicalStep initial,
             List<ConnectorMetadata> availableConnectors, SelectValidatedQuery svq) throws PlanningException {

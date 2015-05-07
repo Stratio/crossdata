@@ -18,7 +18,18 @@
 
 package com.stratio.crossdata.core.api;
 
-import java.util.*;
+import static com.stratio.crossdata.common.statements.structures.SelectorHelper.convertSelectorMapToStringMap;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import javax.transaction.HeuristicMixedException;
 import javax.transaction.HeuristicRollbackException;
@@ -26,16 +37,11 @@ import javax.transaction.NotSupportedException;
 import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 
-import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
-import com.stratio.crossdata.common.executionplan.ExecutionType;
-import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
-import com.stratio.crossdata.common.executionplan.ResultType;
-import com.stratio.crossdata.common.result.*;
-import com.stratio.crossdata.core.query.*;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
+import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectorName;
@@ -49,6 +55,9 @@ import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.ParsingException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
+import com.stratio.crossdata.common.executionplan.ExecutionType;
+import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
+import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.manifest.BehaviorsType;
 import com.stratio.crossdata.common.manifest.ConnectorFunctionsType;
 import com.stratio.crossdata.common.manifest.ConnectorType;
@@ -70,15 +79,28 @@ import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 import com.stratio.crossdata.common.metadata.DataStoreMetadata;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.result.CommandResult;
+import com.stratio.crossdata.common.result.ErrorResult;
+import com.stratio.crossdata.common.result.MetadataResult;
+import com.stratio.crossdata.common.result.ResetServerDataResult;
+import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerException;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
+import com.stratio.crossdata.core.query.BaseQuery;
+import com.stratio.crossdata.core.query.ForceDetachQuery;
+import com.stratio.crossdata.core.query.IParsedQuery;
+import com.stratio.crossdata.core.query.IValidatedQuery;
+import com.stratio.crossdata.core.query.MetadataPlannedQuery;
+import com.stratio.crossdata.core.query.MetadataValidatedQuery;
+import com.stratio.crossdata.core.query.SelectPlannedQuery;
+import com.stratio.crossdata.core.query.SelectValidatedQuery;
+import com.stratio.crossdata.core.query.StoragePlannedQuery;
+import com.stratio.crossdata.core.query.StorageValidatedQuery;
 import com.stratio.crossdata.core.validator.Validator;
-
-import static com.stratio.crossdata.common.statements.structures.SelectorHelper.*;
 
 /**
  * Class that manages the Crossdata API requests.
@@ -116,6 +138,10 @@ public class APIManager {
         this.parser = parser;
         this.validator = validator;
         this.planner = planner;
+    }
+
+    public String getHost(){
+        return planner.getHost();
     }
 
     private Result processRequestListCatalogs(){
@@ -589,7 +615,7 @@ public class APIManager {
 
     private ForceDetachQuery createForceDetachQuery(ClusterMetadata cluster, ConnectorName connector) {
         ClusterName clusterName = cluster.getName();
-        Set<String> actorRefs = Collections.singleton(MetadataManager.MANAGER.getConnectorRef(connector));
+        Set<String> actorRefs = Collections.singleton(MetadataManager.MANAGER.getConnectorRef(connector, planner.getHost()));
 
         Map<String, String> clusterProperties = convertSelectorMapToStringMap(MetadataManager.MANAGER.getConnector(connector).getClusterProperties().get(clusterName));
         Map<String, String> clusterOptions = convertSelectorMapToStringMap(MetadataManager.MANAGER.getCluster(clusterName).getOptions());
@@ -791,7 +817,7 @@ public class APIManager {
             ConnectorMetadata cm = MetadataManager.MANAGER.getConnector(connectorName);
             MetadataManager.MANAGER.deleteConnector(connectorName);
             if(cm.getStatus() == Status.ONLINE){
-                String actorRef = cm.getActorRef();
+                String actorRef = cm.getActorRef(planner.getHost());
                 MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
                 MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE);
             }

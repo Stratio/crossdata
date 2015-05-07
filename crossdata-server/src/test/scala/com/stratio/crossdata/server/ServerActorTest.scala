@@ -78,7 +78,7 @@ ImplicitSender with BeforeAndAfterAll{
 
   //Actors in this tests
   val connectorManagerActor = system.actorOf(ConnectorManagerActor.props(Cluster(system)), "ConnectorManagerActor")
-  val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator()),
+  val coordinatorActor = system.actorOf(CoordinatorActor.props(connectorManagerActor, new Coordinator("127.0.0.1")),
     "CoordinatorActor")
   val connectorActor = system.actorOf(MockConnectorActor.props(), "ConnectorActor")
 

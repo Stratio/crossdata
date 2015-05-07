@@ -105,7 +105,7 @@ public class CoordinatorTest {
         workflow.setClusterName(new ClusterName("clusterTest"));
         workflow.setConnectorName(new ConnectorName("myConnector"));
         workflow.setDatastoreName(new DataStoreName("dataStoreTest"));
-        Coordinator coordinator = new Coordinator();
+        Coordinator coordinator = new Coordinator("127.0.0.1");
         ManagementOperation op = workflow.createManagementOperationMessage();
         coordinator.executeManagementOperation(op);
         // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
@@ -139,7 +139,7 @@ public class CoordinatorTest {
         workflow.setClusterName(new ClusterName("clusterTest"));
         workflow.setConnectorName(new ConnectorName("myConnector"));
         workflow.setDatastoreName(new DataStoreName("dataStoreTest"));
-        Coordinator coordinator = new Coordinator();
+        Coordinator coordinator = new Coordinator("127.0.0.1");
         ManagementOperation op = workflow.createManagementOperationMessage();
         coordinator.executeManagementOperation(op);
         // Check that changes persisted in the MetadataManager ("datastoreTest" datastore)
@@ -211,7 +211,7 @@ public class CoordinatorTest {
         managementWorkflow.setOptions(options);
         managementWorkflow.setPriority(Constants.DEFAULT_PRIORITY);
 
-        Coordinator coordinator = new Coordinator();
+        Coordinator coordinator = new Coordinator("127.0.0.1");
 
         coordinator.executeManagementOperation(managementWorkflow.createManagementOperationMessage());
 
@@ -253,7 +253,7 @@ public class CoordinatorTest {
         metadataWorkflow.setCatalogMetadata(catalogMetadata);
         MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_CATALOG);
 
-        Coordinator coordinator = new Coordinator();
+        Coordinator coordinator = new Coordinator("127.0.0.1");
         coordinator.persist(metadataWorkflow, result);
 
         assertEquals(MetadataManager.MANAGER.getCatalog(catalogMetadata.getName()).getName(),
@@ -296,7 +296,7 @@ public class CoordinatorTest {
         metadataWorkflow.setTableMetadata(tableMetadata);
 
         MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_TABLE);
-        Coordinator coordinator = new Coordinator();
+        Coordinator coordinator = new Coordinator("127.0.0.1");
         coordinator.persist(metadataWorkflow, result);
 
         assertEquals(MetadataManager.MANAGER.getTable(tableName).getName(), tableMetadata.getName(),
@@ -346,7 +346,7 @@ public class CoordinatorTest {
         metadataWorkflow.setIndexMetadata(indexMetadata);
 
         MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_CREATE_INDEX);
-        Coordinator coordinator = new Coordinator();
+        Coordinator coordinator = new Coordinator("127.0.0.1");
         coordinator.persist(metadataWorkflow, result);
 
         String storedIndexName =
@@ -373,7 +373,7 @@ public class CoordinatorTest {
         metadataWorkflow.setCatalogMetadata(catalogMetadata);
         MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_CATALOG);
 
-        Coordinator coordinator = new Coordinator();
+        Coordinator coordinator = new Coordinator("127.0.0.1");
         coordinator.persist(metadataWorkflow, result);
 
         assertEquals(MetadataManager.MANAGER.getCatalog(catalogMetadata.getName()).getName(),
@@ -416,7 +416,7 @@ public class CoordinatorTest {
         metadataWorkflow.setAlterOptions(alterOptions);
 
         MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_ALTER_TABLE);
-        Coordinator coordinator = new Coordinator();
+        Coordinator coordinator = new Coordinator("127.0.0.1");
         coordinator.persist(metadataWorkflow, result);
 
         assertEquals(MetadataManager.MANAGER.getTable(tableName).getName(), tableMetadata.getName(),

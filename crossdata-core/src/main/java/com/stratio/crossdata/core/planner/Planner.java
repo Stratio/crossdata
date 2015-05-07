@@ -131,6 +131,15 @@ public class Planner {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Planner.class);
+    private final String host;
+
+    public Planner(String host) {
+        this.host = host;
+    }
+
+    public String getHost() {
+        return host;
+    }
 
     /**
      * Define a logical workflow that represents the operations required for executing the {@code SELECT} query sent
@@ -321,7 +330,8 @@ public class Planner {
             workflow.setPagination(connectorMetadata.getPageSize());
         }
 
-        return new QueryWorkflow(queryId, connectorMetadata.getActorRef(), executionType, type, workflow, supportedOperations.contains(Operations.ASYNC_QUERY));
+        return new QueryWorkflow(queryId, connectorMetadata.getActorRef(host), executionType, type, workflow,
+                supportedOperations.contains(Operations.ASYNC_QUERY));
     }
 
 
@@ -341,9 +351,8 @@ public class Planner {
         StringBuilder sb = new StringBuilder("Candidate connectors: ").append(System.lineSeparator());
         for (Map.Entry<TableName, List<ConnectorMetadata>> tableEntry: candidatesConnectors.entrySet()) {
             for (ConnectorMetadata cm: tableEntry.getValue()) {
-                sb.append("\ttable: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName()).append
-                        (" ")
-                        .append(cm.getActorRef()).append(System.lineSeparator());
+                sb.append("\ttable: ").append(tableEntry.getKey().toString()).append(" ").append(cm.getName())
+                        .append(" ").append(cm.getActorRef(host)).append(System.lineSeparator());
             }
         }
         LOG.info(sb.toString());
@@ -549,7 +558,7 @@ public class Planner {
         //Select an actor
         ConnectorMetadata connectorMetadata = findBestConnector(connectors, involvedClusters);
 
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(host), false);
 
         updateFunctionsFromSelect(workflow, connectorMetadata.getName());
 
@@ -658,7 +667,7 @@ public class Planner {
 
         //Select an actor
         ConnectorMetadata connectorMetadata = findBestConnector(mergePath.getAvailableConnectors(), involvedClusters);
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
+        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(host), false);
 
         return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow,  connectorMetadata.getSupportedOperations().contains(Operations.ASYNC_QUERY));
     }
@@ -1868,7 +1877,7 @@ public class Planner {
 
                 storageWorkflow = new StorageWorkflow(
                         queryId,
-                        bestConnector.getActorRef(),
+                        bestConnector.getActorRef(host),
                         ExecutionType.INSERT_FROM_SELECT,
                         ResultType.RESULTS);
                 storageWorkflow.setClusterName(tableMetadata.getClusterRef());
@@ -2682,7 +2691,7 @@ public class Planner {
     private String findAnyActorRef(ClusterMetadata clusterMetadata, Status status, Operations... requiredOperations)
             throws PlanningException {
         ConnectorMetadata connectorMetadata = findAnyConnector(clusterMetadata, status, requiredOperations);
-        return StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(), false);
+        return StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(host), false);
     }
 
 }
