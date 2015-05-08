@@ -26,9 +26,7 @@ import org.testng.annotations.Test;
 
 import static org.mockito.Mockito.mock;
 
-/**
- * Created by lcisneros on 5/05/15.
- */
+
 public class SelectSelectorTest {
 
 
@@ -63,4 +61,7 @@ public class SelectSelectorTest {
         //Expectations
         Assert.assertTrue(result);
     }
+
+    
+
 }

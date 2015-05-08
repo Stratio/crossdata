@@ -28,10 +28,12 @@ import java.util.Map;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.IndexName;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.DataType;
@@ -108,6 +110,20 @@ public class MetadataResultTest {
         result.setCatalogList(catalogList);
         Assert.assertEquals(result.toString(), "[catalogTest]");
     }
+
+    @Test
+    public void testMetadataResultDescribeCatalog() throws Exception {
+        MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DESCRIBE_CATALOG);
+        List<String> catalogList = new ArrayList<>();
+        catalogList.add("catalogTest");
+        result.setCatalogList(catalogList);
+        CatalogMetadata catalogMetadata=new CatalogMetadata(new CatalogName("catalogTest"),new HashMap(),new HashMap());
+        List<CatalogMetadata> catalogMetadataList = new ArrayList<>();
+        catalogMetadataList.add(catalogMetadata);
+        result.setCatalogMetadataList(catalogMetadataList);
+        Assert.assertTrue(result.toString().contains("catalogTest"));
+    }
+
 
     @Test
     public void testMetadataResultListTables() throws Exception {
@@ -187,5 +203,7 @@ public class MetadataResultTest {
 
         return table;
     }
+
+
 
 }
