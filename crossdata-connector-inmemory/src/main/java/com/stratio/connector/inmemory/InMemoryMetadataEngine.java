@@ -201,8 +201,7 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
             TableMetadata tableMetadata = convertToXdTable(clusterName, inMemoryCatalog.getName(), inMemoryTable);
             tables.put(tableName, tableMetadata);
         }
-        CatalogMetadata catalogMetadata = new CatalogMetadata(catalogName, options, tables);
-        return catalogMetadata;
+        return new CatalogMetadata(catalogName, options, tables);
     }
 
     private TableMetadata convertToXdTable(ClusterName clusterName, String catalogName, InMemoryTable inMemoryTable) {
@@ -226,16 +225,14 @@ public class InMemoryMetadataEngine implements IMetadataEngine {
 
         List<ColumnName> clusterKey = new ArrayList<>();
 
-        TableMetadata tableMetadata = new TableMetadata(name, options, columns, indexes, clusterName, partitionKey, clusterKey);
-        return tableMetadata;
+        return new TableMetadata(name, options, columns, indexes, clusterName, partitionKey, clusterKey);
     }
 
     private ColumnMetadata convertToXdColumn(TableName tableName, String columnName, Class columnType) {
         ColumnName name = new ColumnName(tableName, columnName);
         Object[] parameters = new Object[]{};
         ColumnType columnXdType = convertToXdColumnType(columnType);
-        ColumnMetadata columnMetadata = new ColumnMetadata(name, parameters, columnXdType);
-        return columnMetadata;
+        return new ColumnMetadata(name, parameters, columnXdType);
     }
 
     private ColumnType convertToXdColumnType(Class columnType) {

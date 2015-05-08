@@ -59,8 +59,7 @@ public class SelectExpression implements Serializable, ISqlExpression {
         for(ColumnName cn: columnList){
             selectors.add(new ColumnSelector(cn));
         }
-        SelectExpression ss = new SelectExpression(selectors);
-        return ss;
+        return new SelectExpression(selectors);
     }
 
     @Override

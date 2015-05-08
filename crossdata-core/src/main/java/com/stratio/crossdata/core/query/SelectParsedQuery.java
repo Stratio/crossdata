@@ -66,7 +66,7 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
         return (SelectStatement) statement;
     }
 
-    @Override public String getSessionId() {
+    public String getSessionId() {
        return super.getSessionId();
     }
 

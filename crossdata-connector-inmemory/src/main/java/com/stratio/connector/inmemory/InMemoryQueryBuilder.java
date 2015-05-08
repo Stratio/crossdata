@@ -46,7 +46,7 @@ public class InMemoryQueryBuilder {
     /**
      * Singleton instance.
      */
-    private final static InMemoryQueryBuilder instance = new InMemoryQueryBuilder();
+    private final static InMemoryQueryBuilder INSTANCE = new InMemoryQueryBuilder();
 
     static {
         OPERATIONS_TRANFORMATIONS.put(Operator.EQ, InMemoryOperations.EQ);
@@ -58,7 +58,7 @@ public class InMemoryQueryBuilder {
     }
 
     public static InMemoryQueryBuilder instance() {
-        return instance;
+        return INSTANCE;
     }
 
     public InMemoryQuery build(Project project) throws ExecutionException {

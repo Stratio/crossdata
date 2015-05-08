@@ -74,17 +74,21 @@ public class AliasSelector extends Selector {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
+        if (this == o) {
             return true;
-        if (!(o instanceof AliasSelector))
+        }
+
+        if (!(o instanceof AliasSelector)){
             return false;
+        }
 
         AliasSelector that = (AliasSelector) o;
 
         if (referencedSelector != null ?
                         !referencedSelector.equals(that.referencedSelector) :
-                        that.referencedSelector != null)
+                        that.referencedSelector != null) {
             return false;
+        }
 
         return true;
     }

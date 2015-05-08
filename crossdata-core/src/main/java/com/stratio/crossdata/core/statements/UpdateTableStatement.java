@@ -60,7 +60,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
      */
     public UpdateTableStatement(TableName tableName,
             List<Relation> assignations, List<Relation> whereClauses,
-            String properties) throws ParsingException {
+            String properties) {
         this.command = false;
 
         if (tableName.getName().isEmpty()) {

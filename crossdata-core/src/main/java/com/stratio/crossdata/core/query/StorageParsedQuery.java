@@ -63,7 +63,7 @@ public class StorageParsedQuery extends BaseQuery implements IParsedQuery {
         return (StorageStatement) statement;
     }
 
-    @Override public String getSessionId() {
+    public String getSessionId() {
         return super.getSessionId();
     }
 

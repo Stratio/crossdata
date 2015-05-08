@@ -52,9 +52,8 @@ public class Parser {
      *
      * @param baseQuery Required information for parsing statement.
      * @return Parsed Query.
-     * @throws ParsingException Couldn't be parsed.
      */
-    public IParsedQuery parse(BaseQuery baseQuery) throws ParsingException {
+    public IParsedQuery parse(BaseQuery baseQuery) {
         IParsedQuery result = null;
         CrossdataStatement crossdataStatement = parseStatement(
                 baseQuery.getDefaultCatalog().toString(),
@@ -76,7 +75,7 @@ public class Parser {
      * @param query          The input text.
      * @return An Antlr Result object with the parsed Statement (if any) and the found errors (if any).
      */
-    public CrossdataStatement parseStatement(String sessionCatalog, String query) throws ParsingException {
+    public CrossdataStatement parseStatement(String sessionCatalog, String query){
         String modifiedQuery = "[" + sessionCatalog + "], " + query;
         ANTLRStringStream input = new ANTLRStringStream("[" + sessionCatalog + "], " + query);
         if (sessionCatalog == null || sessionCatalog.isEmpty()) {
