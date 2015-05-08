@@ -20,11 +20,20 @@ package com.stratio.connector.inmemory.datastore.structures;
 
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+/**
+ * Represents a Join
+ */
 public class InMemoryJoinSelector extends InMemorySelector {
 
     private Selector myTerm;
     private Selector otherTerm;
 
+    /**
+     * Builds a Join Selector
+     * @param name the join Name
+     * @param myTerm This side Join Term
+     * @param otherTerm The other Side join Term
+     */
     public InMemoryJoinSelector(String name, Selector myTerm, Selector otherTerm) {
         super(name);
         this.myTerm = myTerm;

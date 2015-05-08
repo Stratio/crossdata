@@ -178,7 +178,12 @@ public class InMemoryDatastore {
         return result;
     }
 
-
+    /**
+     * Joins the results of N queries.
+     * @param joinTables the list of resuls of each table query.
+     *
+     * @return The join Result
+     */
     public List<SimpleValue[]> joinResults(List<List<SimpleValue[]>> joinTables) {
 
         List<SimpleValue[]> finalResult = new ArrayList<SimpleValue[]>();
