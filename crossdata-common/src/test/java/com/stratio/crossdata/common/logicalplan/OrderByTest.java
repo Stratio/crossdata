@@ -32,9 +32,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Created by lcisneros on 5/05/15.
- */
+
 public class OrderByTest {
 
 
