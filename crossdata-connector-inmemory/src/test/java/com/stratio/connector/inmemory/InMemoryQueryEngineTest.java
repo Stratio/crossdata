@@ -18,31 +18,57 @@
 
 package com.stratio.connector.inmemory;
 
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.testng.annotations.Test;
+
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.connector.inmemory.datastore.structures.InMemoryColumnSelector;
 import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
+import com.stratio.crossdata.common.data.Cell;
+import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
-import com.stratio.crossdata.common.logicalplan.*;
+import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
+import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
+import com.stratio.crossdata.common.logicalplan.OrderBy;
+import com.stratio.crossdata.common.logicalplan.Project;
+import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.QueryResult;
-import com.stratio.crossdata.common.statements.structures.*;
-import org.testng.annotations.Test;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
-import static org.testng.Assert.*;
+import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.OrderDirection;
+import com.stratio.crossdata.common.statements.structures.Relation;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 
 /**
  * Query engine test.
@@ -128,6 +154,87 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         assertEquals(results.size(), 1, "Invalid number of results returned");
         checkResultMetadata(results, usersColumnNames, usersTypes);
+    }
+
+    @Test
+    public void selectWithFunctionAndAlias(){
+        TableMetadata usersTable = buildUsersTable();
+
+        // Build last step
+        Set<Operations> requiredOperations = new HashSet<>();
+        requiredOperations.add(Operations.SELECT_FUNCTIONS);
+        requiredOperations.add(Operations.SELECT_OPERATOR);
+        Map<Selector, String> columnMap = new HashMap<>();
+        String functionName = "concat";
+        String catalog = "test_catalog";
+        String table = "users";
+        TableName tableName = new TableName(catalog, table);
+        List<Selector> functionSelectors = new ArrayList<>();
+        ColumnSelector firstColInFunction = new ColumnSelector(new ColumnName(catalog, table, "id"));
+        functionSelectors.add(firstColInFunction);
+        ColumnSelector secondColInFunction = new ColumnSelector(new ColumnName(catalog, table, "name"));
+        functionSelectors.add(secondColInFunction);
+        FunctionSelector fs = new FunctionSelector(tableName, functionName, functionSelectors);
+        columnMap.put(fs, functionName);
+        ColumnSelector aliasedCol = new ColumnSelector(new ColumnName(catalog, table, "boss"));
+        String alias = "manager";
+        aliasedCol.setAlias(alias);
+        columnMap.put(aliasedCol, alias);
+        Map<String, ColumnType> typeMap = new HashMap<>();
+        ColumnType functionColType = new ColumnType(DataType.TEXT);
+        typeMap.put(functionName, functionColType);
+        ColumnType aliasedColType = new ColumnType(DataType.FLOAT);
+        typeMap.put(alias, aliasedColType);
+        Map<Selector, ColumnType> typeMapFromColumnName = new HashMap<>();
+        typeMapFromColumnName.put(fs, functionColType);
+        typeMapFromColumnName.put(aliasedCol, aliasedColType);
+        LogicalStep lastStep = new Select(requiredOperations, columnMap, typeMap, typeMapFromColumnName);
+
+        // Build first step
+        List<LogicalStep> initialSteps = new ArrayList<>();
+        Set<Operations> operations = new HashSet<>();
+        operations.add(Operations.PROJECT);
+        ClusterName clusterName = new ClusterName("test_cluster");
+        List<ColumnName> columnList = new ArrayList<>();
+        columnList.add(firstColInFunction.getColumnName());
+        columnList.add(secondColInFunction.getColumnName());
+        columnList.add(aliasedCol.getColumnName());
+        Project firstStep = new Project(operations, tableName, clusterName, columnList);
+        initialSteps.add(firstStep);
+
+        // Connect first step with last step
+        firstStep.setNextStep(lastStep);
+        lastStep.getPreviousSteps().add(firstStep);
+
+        int pagination = 10;
+        LogicalWorkflow lw = new LogicalWorkflow(initialSteps, lastStep, pagination);
+        lw.setSqlDirectQuery("SELECT concat(test_catalog.users.id, test_catalog.users.name) AS concat, test_catalog.users.boss AS manager FROM test_catalog.users");
+        QueryResult result = null;
+        try {
+            result = connector.getQueryEngine().execute(lw);
+        } catch (ConnectorException e) {
+            fail("Test selectWithFunctionAndAlias failed", e);
+        }
+
+        assertNotNull(result, "Execution returned a null QueryResult");
+        assertEquals(result.getResultPage(), 0, "First page should have the number 0");
+        assertTrue(result.isLastResultSet(), "First page should be the last result set");
+        assertNotNull(result.getResultSet(), "Result set is null");
+        assertFalse(result.getResultSet().isEmpty(), "Result set shouldn't be empty");
+        assertEquals(result.getResultSet().size(), pagination, pagination + " rows expected");
+        assertEquals(result.getResultSet().getColumnMetadata().size(), 2, "2 columns expected");
+        assertEquals(result.getResultSet().getColumnMetadata().get(0).getName().getAlias(),
+                "concat",
+                "Wrong alias for firstColumn");
+        assertEquals(result.getResultSet().getColumnMetadata().get(1).getName().getAlias(),
+                "manager",
+                "Wrong alias for secondColumn");
+        for(int i=0; i<pagination; i++){
+            Iterator<Cell> iter = result.getResultSet().getRows().get(i).getCellList().iterator();
+            while(iter.hasNext()){
+                assertNotNull(iter.next().getValue(), "Content of the cell is null");
+            }
+        }
     }
 
     @Test
@@ -425,8 +532,6 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
 
     }
-
-
 
     @Test
     public void testBugCROSSDATA_516(){

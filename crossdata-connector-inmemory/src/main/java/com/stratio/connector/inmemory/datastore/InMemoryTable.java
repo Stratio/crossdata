@@ -249,7 +249,7 @@ public class InMemoryTable {
 
         int i = 0;
         for (Object field:row){
-            result[i]=new SimpleValue(selector, field);
+            result[i++]=new SimpleValue(selector, field);
         }
         return result;
     }
