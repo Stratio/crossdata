@@ -18,6 +18,15 @@
 
 package com.stratio.connector.inmemory;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.log4j.Logger;
+
 import com.codahale.metrics.Timer;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
@@ -36,19 +45,20 @@ import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
-import com.stratio.crossdata.common.logicalplan.*;
+import com.stratio.crossdata.common.logicalplan.Limit;
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
+import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
+import com.stratio.crossdata.common.logicalplan.OrderBy;
+import com.stratio.crossdata.common.logicalplan.Project;
+import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.result.QueryResult;
-import com.stratio.crossdata.common.statements.structures.*;
-import org.apache.log4j.Logger;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import static com.codahale.metrics.MetricRegistry.name;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FunctionSelector;
+import com.stratio.crossdata.common.statements.structures.OrderByClause;
+import com.stratio.crossdata.common.statements.structures.OrderDirection;
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * Class that implements the  {@link com.stratio.crossdata.common.connector.IQueryEngine}.
@@ -93,17 +103,20 @@ public class InMemoryQueryEngine implements IQueryEngine {
         List<List<SimpleValue[]>> tableResults = new ArrayList<>();
 
         for (LogicalStep project:workflow.getInitialSteps()){
-            InMemoryQuery query = null;
+            InMemoryQuery inMemoryQuery;
 
             if (tableResults.size()<1){
-                query = InMemoryQueryBuilder.instance().build((Project) project);
+                inMemoryQuery = InMemoryQueryBuilder.instance().build((Project) project);
             }else{
-                query = InMemoryQueryBuilder.instance().build((Project)project, tableResults.get(0));
+                inMemoryQuery = InMemoryQueryBuilder.instance().build((Project)project, tableResults.get(0));
             }
 
-            List<SimpleValue[]> results = null;
+            List<SimpleValue[]> results;
             try {
-                results = datastore.search(query.getCatalogName(), query);
+                Select selectStep = Select.class.cast(workflow.getLastStep());
+                List<InMemorySelector> outputColumns = transformIntoSelectors(selectStep.getColumnMap().keySet());
+                inMemoryQuery.setOutputColumns(outputColumns);
+                results = datastore.search(inMemoryQuery.getCatalogName(), inMemoryQuery);
             } catch (Exception e) {
                 throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
             }
@@ -129,7 +142,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
     }
 
     /**
-     * Orthers the results using the orderStep.
+     * Order the results using the orderStep.
      * @param results
      * @return
      * @throws ExecutionException
@@ -174,9 +187,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
             return orderedResult;
         }
-
         return results;
-
     }
 
     private boolean compareRows(
@@ -185,8 +196,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
             OrderBy orderByStep,
             List<String> columnNames) {
         boolean result = false;
-
-
 
         for(OrderByClause clause: orderByStep.getIds()){
             int index = columnNames.indexOf(clause.getSelector().getColumnName().getName());
@@ -198,10 +207,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
         }
         return result;
     }
-
-
-
-
 
     /**
      * Transform a set of crossdata selectors into in-memory ones.
@@ -240,11 +245,8 @@ public class InMemoryQueryEngine implements IQueryEngine {
         return result;
     }
 
-
-
     protected int compareCells(SimpleValue toBeOrdered, SimpleValue alreadyOrdered, OrderDirection direction) {
         int result = -1;
-
         InMemoryOperations.GT.compare(toBeOrdered.getValue(), alreadyOrdered.getValue());
 
         if(InMemoryOperations.EQ.compare(toBeOrdered.getValue(), alreadyOrdered.getValue())){
@@ -262,18 +264,11 @@ public class InMemoryQueryEngine implements IQueryEngine {
     }
 
     private Integer getFinalLimit(LogicalWorkflow workflow){
-
         if (workflow.getLastStep().getFirstPrevious() instanceof Limit){
             return  Limit.class.cast(workflow.getLastStep().getFirstPrevious()).getLimit();
         }
-
         return -1;
     }
-
-
-
-
-
 
     /**
      * Transform a set of results into a Crossdata query result.
@@ -341,7 +336,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
                 }
             }
         }
-
         return result;
     }
 
@@ -353,7 +347,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
         queryResult.setLastResultSet();
         queryResult.setQueryId(queryId);
         resultHandler.processResult(queryResult);
-
     }
 
     @Override public void pagedExecute(
@@ -406,8 +399,5 @@ public class InMemoryQueryEngine implements IQueryEngine {
     public void stop(String queryId) throws ConnectorException {
         throw new UnsupportedException("Stopping running queries is not supported");
     }
-
-
-
 
 }
