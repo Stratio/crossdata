@@ -44,6 +44,11 @@ import com.stratio.crossdata.driver.BasicDriver;
 import com.stratio.crossdata.driver.utils.ManifestUtils;
 
 public class ClientExample {
+    /**
+     * Class constructor.
+     */
+    private ClientExample() {
+    }
 
     static final Logger LOG = Logger.getLogger(ClientExample.class);
 

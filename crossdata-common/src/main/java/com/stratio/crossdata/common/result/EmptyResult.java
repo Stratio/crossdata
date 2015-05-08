@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.result;
 /**
  * Empty Result Class.
  */
-public class EmptyResult extends Result {
+public final class EmptyResult extends Result {
 
     private EmptyResult() {
     }

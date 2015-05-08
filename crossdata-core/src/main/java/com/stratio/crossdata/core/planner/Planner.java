@@ -98,7 +98,6 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
 import com.stratio.crossdata.common.statements.structures.RelationSelector;
 import com.stratio.crossdata.common.statements.structures.RelationTerm;
-import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.SelectSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
@@ -861,7 +860,9 @@ public class Planner {
         return areFunctionsConsistent;
     }
 
+    
     private boolean checkFunctionsResultConsistency(ConnectorMetadata connectorMetadata, Set<Selector> selectors) throws PlanningException {
+
         boolean areFunctionsConsistent = true;
         FunctionSelector fSelector=null;
         Selector retSelector=null;

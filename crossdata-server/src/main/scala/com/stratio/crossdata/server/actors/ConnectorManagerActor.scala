@@ -30,7 +30,7 @@ import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication.{replyConnectorName, getConnectorName,Connect}
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
-import com.stratio.crossdata.core.loadWatcher.LoadWatcherManager
+import com.stratio.crossdata.core.loadwatcher.LoadWatcherManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger
 

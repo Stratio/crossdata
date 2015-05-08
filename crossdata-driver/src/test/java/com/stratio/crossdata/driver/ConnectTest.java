@@ -23,6 +23,7 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import org.apache.log4j.Logger;
+import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.result.ConnectResult;
@@ -32,7 +33,7 @@ public class ConnectTest extends DriverParentTest {
 
     private final static Logger logger = Logger.getLogger(ConnectTest.class);
 
-    //@Test
+    @Test
     public void connect() {
 
         Result crossDataResult = null;

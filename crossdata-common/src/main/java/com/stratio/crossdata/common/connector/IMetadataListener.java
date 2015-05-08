@@ -17,13 +17,15 @@
  */
 package com.stratio.crossdata.common.connector;
 
+import java.io.Serializable;
+
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
 /**
  * Metadata Listener interface.
  */
-public interface IMetadataListener {
+public interface IMetadataListener extends Serializable{
 
     /**
      * Update the metadata information in a connector context.

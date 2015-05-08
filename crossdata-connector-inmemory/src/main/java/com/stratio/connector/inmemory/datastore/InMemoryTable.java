@@ -96,7 +96,7 @@ public class InMemoryTable {
      * @return An array of Java classes.
      */
     public Class[] getColumnTypes() {
-        return columnTypes;
+        return columnTypes.clone();
     }
 
     /**
@@ -104,7 +104,7 @@ public class InMemoryTable {
      * @return An array of column names.
      */
     public String[] getColumnNames() {
-        return columnNames;
+        return columnNames.clone();
     }
 
     /**

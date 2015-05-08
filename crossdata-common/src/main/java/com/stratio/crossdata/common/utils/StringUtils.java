@@ -396,6 +396,10 @@ public final class StringUtils implements Serializable {
     }
 
     public static String extractHost(String ar) {
-        return ar.substring(ar.indexOf("@")+1, ar.indexOf(":", ar.indexOf(":")+1));
+        String host = ar;
+        if(ar.matches("akka\\.tcp://(.+)@(.+):(.+)")){
+            host = ar.substring(ar.indexOf("@")+1, ar.indexOf(":", ar.indexOf(":")+1));
+        }
+        return host;
     }
 }
