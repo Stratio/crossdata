@@ -40,7 +40,7 @@ public class InMemoryDatastore {
     /**
      * Maximum number of rows per table.
      */
-    private final int TABLE_ROW_LIMIT;
+    private final int tableRowLimit;
 
     /**
      * Map of catalogs in the datastore.
@@ -57,8 +57,8 @@ public class InMemoryDatastore {
      * @param tableRowLimit The maximum number of rows per table.
      */
     public InMemoryDatastore(int tableRowLimit){
-        TABLE_ROW_LIMIT = tableRowLimit;
-        LOG.info("InMemoryDatastore created with row limit: " + TABLE_ROW_LIMIT);
+        this.tableRowLimit = tableRowLimit;
+        LOG.info("InMemoryDatastore created with row limit: " + this.tableRowLimit);
     }
 
     public Map<String, InMemoryCatalog> getCatalogs() {
@@ -99,7 +99,7 @@ public class InMemoryDatastore {
     public void createTable(String catalogName, String tableName, String[] columnNames, Class[] columnTypes,
             List<String> primaryKey) throws Exception{
         catalogShouldExist(catalogName);
-        catalogs.get(catalogName).createTable(tableName, columnNames, columnTypes, primaryKey, TABLE_ROW_LIMIT);
+        catalogs.get(catalogName).createTable(tableName, columnNames, columnTypes, primaryKey, tableRowLimit);
     }
 
     /**

@@ -32,10 +32,9 @@ import com.stratio.crossdata.common.statements.structures.Relation;
 
 public class TwitterStorageEngine implements IStorageEngine {
 
-    private final TwitterConnector connector;
 
-    public TwitterStorageEngine(TwitterConnector connector) {
-        this.connector = connector;
+    public TwitterStorageEngine() {
+
     }
 
     /**

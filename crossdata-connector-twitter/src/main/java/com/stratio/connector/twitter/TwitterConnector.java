@@ -236,7 +236,7 @@ public class TwitterConnector extends AbstractExtendedConnector {
     @Override
     public IStorageEngine getStorageEngine() throws UnsupportedException {
         if(storageEngine == null){
-            storageEngine = new TwitterStorageEngine(this);
+            storageEngine = new TwitterStorageEngine();
         }
         return storageEngine;
     }

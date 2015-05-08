@@ -222,7 +222,7 @@ public class TableMetadata implements Serializable, UpdatableMetadata {
         sb.append("Cluster: ").append(getClusterRef()).append(System.lineSeparator());
 
         sb.append("Columns: ").append(System.lineSeparator());
-        Map<ColumnName, ColumnMetadata> columns = getColumns();
+
         for (Map.Entry<ColumnName, ColumnMetadata> entry : columns.entrySet()) {
             sb.append("\t").append(entry.getKey()).append(": ").append(entry.getValue().getColumnType())
                     .append(System.lineSeparator());
@@ -233,7 +233,6 @@ public class TableMetadata implements Serializable, UpdatableMetadata {
         sb.append("Cluster key: ").append(getClusterKey()).append(System.lineSeparator());
 
         sb.append("Indexes: ").append(System.lineSeparator());
-        Map<IndexName, IndexMetadata> indexes = getIndexes();
         for (Map.Entry<IndexName, IndexMetadata> idx : indexes.entrySet()) {
             sb.append("\t").append(idx.getKey()).append("(").append(idx.getValue().getType()).append(")");
             sb.append(": ").append(idx.getValue().getColumns().keySet());
@@ -241,7 +240,6 @@ public class TableMetadata implements Serializable, UpdatableMetadata {
         }
 
         sb.append("Options: ").append(System.lineSeparator());
-        Map<Selector, Selector> options = getOptions();
         for (Map.Entry<Selector, Selector> opt : options.entrySet()) {
             sb.append("\t").append(opt.getKey()).append(": ").append(opt.getValue())
                     .append(System.lineSeparator());

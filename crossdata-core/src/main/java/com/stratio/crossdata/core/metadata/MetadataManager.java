@@ -120,7 +120,7 @@ public enum MetadataManager {
      * @param name It is the object to check.
      * @return True if it exists.
      */
-    public boolean exists(Name name) throws MetadataManagerException {
+    public boolean exists(Name name){
         boolean result = false;
         if (name == null) {
             throw new MetadataManagerException("Name is null");
@@ -1090,11 +1090,10 @@ public enum MetadataManager {
      * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
      * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
      * @throws RollbackException          If the transaction is marked as rollback only.
-     * @throws MetadataManagerException   If the connector does not exists.
      */
     public void deleteConnector(ConnectorName connectorName)
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
-            RollbackException, MetadataManagerException {
+            RollbackException {
         shouldBeInit();
         exists(connectorName);
         try {
@@ -1131,11 +1130,10 @@ public enum MetadataManager {
      * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
      * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
      * @throws RollbackException          If the transaction is marked as rollback only.
-     * @throws MetadataManagerException   If the datastore does not exists.
      */
     public void deleteDatastore(DataStoreName dataStoreName)
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
-            RollbackException, MetadataManagerException {
+            RollbackException{
         shouldBeInit();
         exists(dataStoreName);
         try {

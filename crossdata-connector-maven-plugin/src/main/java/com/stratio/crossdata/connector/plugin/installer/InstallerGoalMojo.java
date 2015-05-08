@@ -53,7 +53,7 @@ import org.apache.maven.project.MavenProject;
 )
 public class InstallerGoalMojo extends AbstractMojo {
 
-    private final String UNIX_SCRIPT_REFERENCE = "/UnixScriptTemplate.st";
+    private static final String UNIX_SCRIPT_REFERENCE = "/UnixScriptTemplate.st";
 
     @Parameter(defaultValue = "${project}")
     private MavenProject project;
