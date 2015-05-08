@@ -30,6 +30,9 @@ import java.util.Map;
  */
 public class CountFunction extends AbstractInMemoryFunction {
 
+    /**
+     * Build a CountFunction Object
+     */
     public CountFunction(){
         this.rowFunction = false;
     }

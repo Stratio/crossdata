@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by lcisneros on 15/04/15.
+ * This class holds all the data needed to make a query ina single table.
  */
 public class InMemoryQuery {
 
@@ -33,12 +33,22 @@ public class InMemoryQuery {
     private List<InMemorySelector> outputColumns = new ArrayList<>();
     private String catalogName;
 
+    /**
+     * Build a InMemoryQuery
+     *
+     * @param tableName the name of the Table to query
+     * @param relations a list of InMemoryRelation to filter the query
+     * @param outputColumns a list of InMemorySelector with the columns to return
+     */
     public InMemoryQuery(String tableName, List<InMemoryRelation> relations, List<InMemorySelector> outputColumns) {
         this.tableName = tableName;
         this.relations = relations;
         this.outputColumns = outputColumns;
     }
 
+    /**
+     * Default constructor
+     */
     public InMemoryQuery() {
     }
 

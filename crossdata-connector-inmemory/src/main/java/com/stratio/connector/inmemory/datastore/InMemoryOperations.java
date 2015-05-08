@@ -129,6 +129,12 @@ public enum InMemoryOperations {
         }
     };
 
+    /**
+     * Compare two objects using the corresponding Enum logic.
+     * @param o1 First Object to compare
+     * @param o2 Second Object to compare
+     * @return depends on each implementation.
+     */
     public abstract boolean compare(Object o1, Object o2);
 
     /**

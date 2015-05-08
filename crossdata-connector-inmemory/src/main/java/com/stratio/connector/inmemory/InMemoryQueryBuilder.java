@@ -59,6 +59,12 @@ public class InMemoryQueryBuilder {
         return instance;
     }
 
+    /**
+     * Buils a InMemoryQuery from a crossdata Project
+     * @param project
+     * @return
+     * @throws ExecutionException
+     */
     public InMemoryQuery build(Project project) throws ExecutionException {
         InMemoryQuery result = new InMemoryQuery();
 

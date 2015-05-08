@@ -38,14 +38,35 @@ public class AbstractInMemoryFunction {
         this.arguments.addAll(arguments);
     }
 
+    /**
+     *
+     * Applies the function to this row.
+     *
+     * @param columnIndex a Map with the columns involved in the functions
+     * @param row the values.
+     * @return the result of the function
+     * @throws Exception Is the function does not apply to a single row
+     */
     public Object apply(Map<String, Integer> columnIndex, SimpleValue [] row) throws Exception{
         throw new Exception("Function cannot be applied to a row");
     }
 
+    /**
+     * * Applies the function to this list of rows.
+     *
+     * @param columnIndex a Map with the columns involved in the functions
+     * @param rows tha list of row with the values.
+     * @return the  results of apply the function
+     * @throws Exception Is the function does not apply to a list of row
+     */
     public List<SimpleValue []> apply(Map<String, Integer> columnIndex, List<SimpleValue []> rows) throws Exception{
         throw new Exception("Function cannot be applied to a list of rows");
     }
 
+    /**
+     *
+     * @return true is this function applies to a Row, false if applies to many rows.
+     */
     public boolean isRowFunction() {
         return rowFunction;
     }

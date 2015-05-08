@@ -20,7 +20,7 @@ package com.stratio.connector.inmemory.datastore.datatypes;
 import com.stratio.connector.inmemory.datastore.selector.InMemoryJoinSelector;
 
 /**
- * Created by lcisneros on 9/04/15.
+ * Represents a Join Value that holds the basic data needes to make a Join between tables.
  */
 public class JoinValue extends SimpleValue{
 
@@ -50,6 +50,11 @@ public class JoinValue extends SimpleValue{
         this.otherColumnName = otherColumnName;
     }
 
+    /**
+     *
+     * @param otherJoin
+     * @return return true of the otherJoin parameter match with the value holded in this class.
+     */
     public boolean joinMatch(JoinValue otherJoin){
         return getOtherColumnName().equals(otherJoin.getColumnName())
                 && getValue().equals(otherJoin.getValue());

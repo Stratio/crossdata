@@ -129,13 +129,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
         return finalResult;
     }
 
-    /**
-     * Orthers the results using the orderStep
-     * @param results
-     * @return
-     * @throws ExecutionException
-     */
-    public List<SimpleValue[]> orderResult(List<SimpleValue[]> results, LogicalWorkflow workflow) throws ExecutionException {
+    private List<SimpleValue[]> orderResult(List<SimpleValue[]> results, LogicalWorkflow workflow) throws ExecutionException {
 
         OrderBy orderByStep = null;
         LogicalStep current = workflow.getLastStep();

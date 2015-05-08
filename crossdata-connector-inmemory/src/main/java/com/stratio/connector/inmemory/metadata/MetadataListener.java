@@ -22,6 +22,9 @@ import com.stratio.crossdata.common.connector.IMetadataListener;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
+/**
+ * Logs the update and delete calls.
+ */
 public class MetadataListener implements IMetadataListener {
 
     @Override
