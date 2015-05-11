@@ -29,7 +29,8 @@ import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.connector.inmemory.datastore.structures.AbstractInMemoryFunction;
 import com.stratio.connector.inmemory.datastore.structures.InMemoryFunctionSelector;
-
+import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
+import com.stratio.crossdata.common.exceptions.ConnectionException;
 
 /**
  * This class provides a proof-of-concept implementation of an in-memory datastore for
@@ -157,36 +158,18 @@ public class InMemoryDatastore {
      */
     public List<SimpleValue[]> search(String catalogName, InMemoryQuery inMemoryQuery) throws Exception {
         catalogShouldExist(catalogName);
-        List<SimpleValue[]> result;
-
-        result = catalogs.get(catalogName).search(inMemoryQuery.getTableName(),inMemoryQuery.getRelations(), inMemoryQuery.getOutputColumns());
-
-        //Execute the required aggregation functions.
-
-        for(int index = 0; index < inMemoryQuery.getOutputColumns().size(); index++){
-            if(InMemoryFunctionSelector.class.isInstance(inMemoryQuery.getOutputColumns().get(index))){
-                AbstractInMemoryFunction f = InMemoryFunctionSelector.class
-                        .cast(inMemoryQuery.getOutputColumns().get(index))
-                        .getFunction();
-                if(!f.isRowFunction()){
-                    InMemoryTable table = catalogs.get(catalogName).getTable(inMemoryQuery.getTableName());
-                    result = f.apply(table.getColumnIndex(), result);
-                }
-            }
-        }
-
-        return result;
+        return catalogs.get(catalogName).search(inMemoryQuery.getTableName(),inMemoryQuery.getRelations(), inMemoryQuery.getOutputColumns());
     }
 
     /**
      * Joins the results of N queries.
-     * @param joinTables the list of resuls of each table query.
+     * @param joinTables the list of results of each table query.
      *
      * @return The join Result
      */
     public List<SimpleValue[]> joinResults(List<List<SimpleValue[]>> joinTables) {
 
-        List<SimpleValue[]> finalResult = new ArrayList<SimpleValue[]>();
+        List<SimpleValue[]> finalResult = new ArrayList<>();
         if (joinTables.size() > 1) {
             for (SimpleValue[] row : joinTables.get(0)){
                 SimpleValue[] joinedRow = joinRow(row, joinTables.subList(1, joinTables.size()));
@@ -220,7 +203,7 @@ public class InMemoryDatastore {
         //Search JoinRows
         for(SimpleValue field:mainRow){
             if(field instanceof JoinValue){
-                List<SimpleValue> joinResult = calculeJoin((JoinValue) field, otherTables);
+                List<SimpleValue> joinResult = calculateJoin((JoinValue) field, otherTables);
                 if (joinResult != null && joinResult.size()>0){
                     finalJoinRow.addAll(joinResult);
                 }else{
@@ -234,7 +217,7 @@ public class InMemoryDatastore {
         return finalJoinRow.toArray(new SimpleValue[]{});
     }
 
-    private List<SimpleValue> calculeJoin(JoinValue join, List<List<SimpleValue[]>> otherTables){
+    private List<SimpleValue> calculateJoin(JoinValue join, List<List<SimpleValue[]>> otherTables){
         List<SimpleValue> joinResult = new ArrayList<>();
         boolean matched = false;
 
@@ -252,7 +235,6 @@ public class InMemoryDatastore {
                 }
             }
         }
-
         if (matched){
             return joinResult;
         }else{
@@ -267,5 +249,74 @@ public class InMemoryDatastore {
      */
     public boolean existsCatalog(String catalogName) {
         return catalogs.containsKey(catalogName);
+    }
+
+    public void applyFunctions(
+            List<SimpleValue[]> partialResult,
+            List<InMemorySelector> outputColumns)
+            throws ConnectionException {
+        Map<String, Integer> columnIndex = new HashMap<>();
+        if((partialResult != null) && (!partialResult.isEmpty())){
+            SimpleValue[] row = partialResult.get(0);
+            int pos = 0;
+            for(SimpleValue sv: row){
+                columnIndex.put(sv.getColumn().getName(), pos);
+                pos++;
+            }
+        } else {
+            return;
+        }
+        List<SimpleValue[]> finalRows = new ArrayList<>();
+        //////////////////////////////////////////////////
+        for(InMemorySelector selector: outputColumns){
+            if(InMemoryFunctionSelector.class.isInstance(selector)){
+                try {
+                    AbstractInMemoryFunction f = InMemoryFunctionSelector.class.cast(selector).getFunction();
+                    if(!f.isRowFunction()){
+                        finalRows = f.apply(columnIndex, partialResult);
+                    }
+                } catch (Exception e) {
+                    throw new ConnectionException(e.getMessage());
+                }
+            }
+        }
+        if(!finalRows.isEmpty()){
+            partialResult.clear();
+            partialResult.addAll(finalRows);
+            return;
+        }
+        //////////////////////////////////////////////////
+        for(int i=0; i < partialResult.size(); i++){
+            SimpleValue [] result = new SimpleValue[outputColumns.size()];
+            int indexFromTable = 0;
+            int indexForResult = 0;
+            for(InMemorySelector selector: outputColumns){
+                if(InMemoryFunctionSelector.class.isInstance(selector)){
+                    //Process function.
+                    AbstractInMemoryFunction f;
+                    try {
+                        f = InMemoryFunctionSelector.class.cast(selector).getFunction();
+                        if(f.isRowFunction()) {
+                            result[indexFromTable] = new SimpleValue(
+                                    selector,
+                                    f.apply(columnIndex,
+                                            partialResult.get(i)));
+                        }
+                        indexForResult+=f.getArguments().size();
+                    } catch (Exception e) {
+                        throw new ConnectionException(e.getMessage());
+                    }
+                } else {
+                    result[indexFromTable] = new SimpleValue(
+                            selector,
+                            partialResult.get(i)[indexForResult].getValue());
+                    indexForResult++;
+                }
+                indexFromTable++;
+            }
+            finalRows.add(result);
+        }
+        partialResult.clear();
+        partialResult.addAll(finalRows);
     }
 }

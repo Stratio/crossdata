@@ -129,6 +129,10 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
         joinResult = orderResult(joinResult, workflow);
 
+        Select selectStep = (Select) workflow.getLastStep();
+        List<InMemorySelector> outputColumns = transformIntoSelectors(selectStep.getColumnMap().keySet());
+        datastore.applyFunctions(joinResult, outputColumns);
+
         QueryResult finalResult = toCrossdataResults((Select) workflow.getLastStep(), getFinalLimit(workflow), joinResult);
 
         //End Metric
@@ -322,16 +326,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
      */
     private Row toCrossdataRow(SimpleValue[] row, List<String> columnAlias) {
         Row result = new Row();
-        /*
-        for (String alias:columnAlias){
-            for(SimpleValue field: row){
-                if (alias.contains(field.getColumn().getName())){
-                    result.addCell(alias, new Cell(field.getValue()));
-                    break;
-                }
-            }
-        }
-        */
         for(int index = 0; index < columnAlias.size(); index++){
             result.addCell(columnAlias.get(index), new Cell(row[index].getValue()));
         }

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 
 /**
  * Definition of an abstract function for the in-memory datastore.
@@ -64,10 +63,18 @@ public class AbstractInMemoryFunction {
     }
 
     /**
-     *
+     * Whether is a function to be applied to only one row or not.
      * @return true is this function applies to a Row, false if applies to many rows.
      */
     public boolean isRowFunction() {
         return rowFunction;
+    }
+
+    /**
+     * Get the arguments of the function.
+     * @return Arguments of the function.
+     */
+    public List<InMemorySelector> getArguments() {
+        return arguments;
     }
 }

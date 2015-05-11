@@ -182,24 +182,20 @@ public class InMemoryTable {
             List<InMemoryRelation> relations,
             List<InMemorySelector> outputColumns)
     throws Exception{
-
         List<SimpleValue[]> results = new ArrayList<>();
         boolean toAdd;
-        for(Object [] row : rows.values()){
+        for(Object [] row: rows.values()){
             toAdd = true;
             for(InMemoryRelation relation : relations){
                 Object o = row[columnIndex.get(relation.getColumnName())];
                 toAdd &= relation.getRelation().compare(o, relation.getRightPart());
             }
-
             if(toAdd){
                 results.add(projectColumns(row, outputColumns));
             }
         }
         return results;
     }
-
-
 
     /**
      * Project a set of columns given a complete row.
@@ -243,8 +239,7 @@ public class InMemoryTable {
         return rows.size();
     }
 
-
-    private SimpleValue[] convertToSimpleValueRow(InMemorySelector selector, Object[] row){
+    public static SimpleValue[] convertToSimpleValueRow(InMemorySelector selector, Object[] row){
         SimpleValue[] result = new SimpleValue[row.length];
 
         int i = 0;

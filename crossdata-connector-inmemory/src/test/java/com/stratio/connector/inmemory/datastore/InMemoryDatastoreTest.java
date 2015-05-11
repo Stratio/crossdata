@@ -18,22 +18,14 @@
 
 package com.stratio.connector.inmemory.datastore;
 
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.connector.inmemory.datastore.structures.InMemoryFunctionSelector;
-import com.stratio.connector.inmemory.datastore.structures.InMemoryLiteralSelector;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 
 /**
  * Datastore tests.
@@ -60,7 +52,7 @@ public class InMemoryDatastoreTest {
 
         //Add test data
         try {
-            Map<String, Object> row = new HashMap<>();
+            Map<String, Object> row;
             for (int index = 0; index < InMemoryTableTest.INSERT_TEST_SIZE; index++) {
                 row = new HashMap<>();
                 row.put(columnNames[0], columnNames[0] + index);
@@ -71,25 +63,6 @@ public class InMemoryDatastoreTest {
         } catch (Exception e) {
             fail("Insert should work", e);
         }
-    }
-
-    @Test
-    public void selectCount(){
-        InMemorySelector literalColumn = new InMemoryLiteralSelector("1");
-        InMemorySelector count = new InMemoryFunctionSelector("count", Arrays.asList(literalColumn));
-        List<InMemoryRelation> relations = new ArrayList<>();
-        List<SimpleValue[]> result = null;
-        InMemoryQuery query = new InMemoryQuery(TEST_TABLE1,relations,Arrays.asList(count) );
-        
-        try {
-            result = db.search(CATALOG_NAME, query);
-        } catch (Exception e) {
-            fail("Cannot perform count(1)", e);
-        }
-        assertEquals(result.size(), 1, "Expecting a single row result");
-        SimpleValue [] row = result.get(0);
-        assertEquals(row.length, 1, "Expecting a single column result");
-        assertEquals(row[0].getValue(), InMemoryTableTest.INSERT_TEST_SIZE, "Invalid count");
     }
 
 }

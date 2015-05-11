@@ -233,10 +233,91 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
             Row row = result.getResultSet().getRows().get(i);
             assertEquals(row.size(), 2, "2 columns expected");
             Iterator<Cell> iter = row.getCellList().iterator();
+            int nCol = 0;
             while(iter.hasNext()){
-                assertNotNull(iter.next().getValue(), "Content of the cell is null");
+                Object value = iter.next().getValue();
+                assertNotNull(value, "Content of the cell is null");
+                if(nCol == 0){
+                    assertEquals(value, i + "User-" + i, "Content of the cell is wrong");
+                } else {
+                    assertEquals(value.getClass(), Boolean.class, "Boolean object expected");
+                }
+                nCol++;
             }
         }
+    }
+
+    @Test
+    public void selectWithAggregationFunction(){
+        TableMetadata usersTable = buildUsersTable();
+
+        // Build last step
+        Set<Operations> requiredOperations = new HashSet<>();
+        requiredOperations.add(Operations.SELECT_FUNCTIONS);
+        requiredOperations.add(Operations.SELECT_OPERATOR);
+        Map<Selector, String> columnMap = new HashMap<>();
+        String functionName = "count";
+        String catalog = usersTable.getName().getCatalogName().getName();
+        String table = usersTable.getName().getName();
+        TableName tableName = new TableName(catalog, table);
+        List<Selector> functionSelectors = new ArrayList<>();
+        ColumnSelector firstColInFunction = new ColumnSelector(new ColumnName(catalog, table, "id"));
+        functionSelectors.add(firstColInFunction);
+        ColumnSelector secondColInFunction = new ColumnSelector(new ColumnName(catalog, table, "name"));
+        functionSelectors.add(secondColInFunction);
+        ColumnSelector thirdColInFunction = new ColumnSelector(new ColumnName(catalog, table, "boss"));
+        functionSelectors.add(thirdColInFunction);
+        FunctionSelector fs = new FunctionSelector(tableName, functionName, functionSelectors);
+        columnMap.put(fs, functionName);
+
+        Map<String, ColumnType> typeMap = new HashMap<>();
+        ColumnType functionColType = new ColumnType(DataType.BIGINT);
+        typeMap.put(functionName, functionColType);
+        Map<Selector, ColumnType> typeMapFromColumnName = new HashMap<>();
+        typeMapFromColumnName.put(fs, functionColType);
+        LogicalStep lastStep = new Select(requiredOperations, columnMap, typeMap, typeMapFromColumnName);
+
+        // Build first step
+        List<LogicalStep> initialSteps = new ArrayList<>();
+        Set<Operations> operations = new HashSet<>();
+        operations.add(Operations.PROJECT);
+        ClusterName clusterName = new ClusterName("test_cluster");
+        List<ColumnName> columnList = new ArrayList<>();
+        columnList.add(firstColInFunction.getColumnName());
+        columnList.add(secondColInFunction.getColumnName());
+        columnList.add(thirdColInFunction.getColumnName());
+        Project firstStep = new Project(operations, tableName, clusterName, columnList);
+        initialSteps.add(firstStep);
+
+        // Connect first step with last step
+        firstStep.setNextStep(lastStep);
+        lastStep.getPreviousSteps().add(firstStep);
+
+        int pagination = 10;
+        LogicalWorkflow lw = new LogicalWorkflow(initialSteps, lastStep, pagination);
+        lw.setSqlDirectQuery("SELECT count(*) AS count FROM test_catalog.users");
+        QueryResult result = null;
+        try {
+            result = connector.getQueryEngine().execute(lw);
+        } catch (ConnectorException e) {
+            fail("Test selectWithAggregationFunction failed", e);
+        }
+
+        assertNotNull(result, "Execution returned a null QueryResult");
+        assertEquals(result.getResultPage(), 0, "First page should have the number 0");
+        assertTrue(result.isLastResultSet(), "First page should be the last result set");
+        assertNotNull(result.getResultSet(), "Result set is null");
+        assertFalse(result.getResultSet().isEmpty(), "Result set shouldn't be empty");
+        assertEquals(result.getResultSet().size(), 1, "1 row expected");
+        assertEquals(result.getResultSet().getColumnMetadata().size(), 1, "1 column expected");
+        assertEquals(result.getResultSet().getColumnMetadata().get(0).getName().getAlias(),
+                "count",
+                "Wrong alias for firstColumn");
+        assertEquals(result.getResultSet().getRows().size(), 1, "Only 1 row expected");
+        assertEquals(result.getResultSet().getRows().get(0).getCellList().size(), 1, "Only 1 column expected");
+        assertEquals(result.getResultSet().getRows().get(0).getCellList().iterator().next().getValue(),
+                10,
+                "Wrong result");
     }
 
     @Test
