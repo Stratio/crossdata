@@ -66,4 +66,10 @@ public class ExecutionManagerTest {
         Assert.assertEquals(ExecutionManager.MANAGER.getValue("key2"), "testKey");
     }
 
+    @Test
+    public void testGetValue2() throws Exception {
+        ExecutionManager.MANAGER.createEntry("key3", "testKey",true);
+        Assert.assertEquals(ExecutionManager.MANAGER.getValue("key3"), "testKey");
+    }
+
 }
