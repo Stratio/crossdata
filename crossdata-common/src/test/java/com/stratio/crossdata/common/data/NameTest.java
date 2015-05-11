@@ -40,8 +40,6 @@ public class NameTest {
         Assert.assertFalse(name1.equals(name3));
     }
 
-
-
     @Test
     public void columnNameEqualsTest() {
         Name name1 = new ColumnName("catalog", "table", "column");
@@ -55,8 +53,6 @@ public class NameTest {
         Assert.assertFalse(name1.equals(name5));
     }
 
-
-
     @Test
     public void clusterNameTest() {
         Name name1 = new ClusterName("cluster");
@@ -67,7 +63,7 @@ public class NameTest {
     }
 
     @Test
-    public void connectorNameTest(){
+    public void connectorNameTest() {
         Name name1 = new ConnectorName("connector");
         Name name2 = new ConnectorName("connector");
         Name name3 = new ConnectorName("connector3");
@@ -76,7 +72,7 @@ public class NameTest {
     }
 
     @Test
-    public void datastoreNameTest(){
+    public void datastoreNameTest() {
         Name name1 = new DataStoreName("ds");
         Name name2 = new DataStoreName("ds");
         Name name3 = new DataStoreName("ds3");
@@ -85,33 +81,29 @@ public class NameTest {
     }
 
     @Test
-    public void indexNameTest(){
-        Name name1 = new IndexName(new ColumnName("catalog","table","column"));
-        Name name2 = new IndexName(new ColumnName("catalog","table","column"));
-        Name name3 = new IndexName(new ColumnName("catalog","table","column2"));
+    public void indexNameTest() {
+        Name name1 = new IndexName(new ColumnName("catalog", "table", "column"));
+        Name name2 = new IndexName(new ColumnName("catalog", "table", "column"));
+        Name name3 = new IndexName(new ColumnName("catalog", "table", "column2"));
         Assert.assertTrue(name1.equals(name2));
         Assert.assertFalse(name1.equals(name3));
     }
 
     @Test
-    public void indexName2Test(){
-        Name name1 = new IndexName(new TableName("catalog","table"),"column");
-        Name name2 = new IndexName(new ColumnName("catalog","table","column"));
+    public void indexName2Test() {
+        Name name1 = new IndexName(new TableName("catalog", "table"), "column");
+        Name name2 = new IndexName(new ColumnName("catalog", "table", "column"));
         Assert.assertTrue(name1.equals(name2));
 
     }
 
-
-
     @Test
-    public void nodeNameTest(){
+    public void nodeNameTest() {
         Name name1 = new NodeName("n1");
         Name name2 = new NodeName("n1");
         Name name3 = new NodeName("n3");
         Assert.assertTrue(name1.equals(name2));
         Assert.assertFalse(name1.equals(name3));
     }
-
-    
 
 }

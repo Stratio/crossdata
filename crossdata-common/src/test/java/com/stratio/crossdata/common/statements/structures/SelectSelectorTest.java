@@ -18,20 +18,18 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
-import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
-import org.mockito.Mockito;
+import static org.mockito.Mockito.mock;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import static org.mockito.Mockito.mock;
-
+import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 
 public class SelectSelectorTest {
 
-
     @Test
-    public void testToSQLString(){
+    public void testToSQLString() {
 
         String selectQuery = "SELECT SELECT";
         SelectSelector selectorType = new SelectSelector(selectQuery);
@@ -43,9 +41,8 @@ public class SelectSelectorTest {
         Assert.assertEquals(result, "(SELECT SELECT)");
     }
 
-
     @Test
-    public void testEquals(){
+    public void testEquals() {
 
         LogicalWorkflow logicalWorkflow = mock(LogicalWorkflow.class);
         SelectSelector selectorType = new SelectSelector("SELECT SELECT");
@@ -62,6 +59,5 @@ public class SelectSelectorTest {
         Assert.assertTrue(result);
     }
 
-    
 
 }

@@ -15,21 +15,26 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.stratio.crossdata.common.data;
+
+package com.stratio.crossdata.common.statements.structures;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.stratio.crossdata.common.utils.Constants;
-
-public class TableNameTest {
-
+public class AsteriskSelectorTest {
     @Test
-    public void isVirtualTest() {
-
-        Assert.assertFalse((new TableName("virtual", "virtual").isVirtual()));
-        Assert.assertFalse((new TableName("virtual", Constants.VIRTUAL_NAME).isVirtual()));
-        Assert.assertTrue((new TableName(Constants.VIRTUAL_NAME, "").isVirtual()));
+    public void equalsTest(){
+        AsteriskSelector as=new AsteriskSelector();
+        AsteriskSelector as2=new AsteriskSelector();
+        Assert.assertTrue(as.equals(as2),"This selectors must be equals");
+        Assert.assertTrue(as.hashCode()==as2.hashCode(),"This selector must have the same hashcode");
     }
 
+    @Test
+    public void nonEqualsTest(){
+        AsteriskSelector as=new AsteriskSelector();
+        AsteriskSelector as2=null;
+        Assert.assertFalse(as.equals(as2),"This selectors mustn't be equals");
+
+    }
 }

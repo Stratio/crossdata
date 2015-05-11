@@ -205,5 +205,18 @@ public class MetadataResultTest {
     }
 
 
+    @Test
+    public void showCatalogsTest(){
+        MetadataResult result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_IMPORT_CATALOG);
+        List<String> catalogList = new ArrayList<>();
+        catalogList.add("catalogTest");
+        result.setCatalogList(catalogList);
+        CatalogMetadata catalogMetadata=new CatalogMetadata(new CatalogName("catalogTest"),new HashMap(),new HashMap());
+        List<CatalogMetadata> catalogMetadataList = new ArrayList<>();
+        catalogMetadataList.add(catalogMetadata);
+        result.setCatalogMetadataList(catalogMetadataList);
+
+        Assert.assertTrue(result.toString().contains("catalogTest"));
+    }
 
 }
