@@ -108,14 +108,11 @@ public class InMemoryQueryEngine implements IQueryEngine {
             if (tableResults.size()<1){
                 inMemoryQuery = InMemoryQueryBuilder.instance().build((Project) project);
             }else{
-                inMemoryQuery = InMemoryQueryBuilder.instance().build((Project)project, tableResults.get(0));
+                inMemoryQuery = InMemoryQueryBuilder.instance().build((Project) project, tableResults.get(0));
             }
 
             List<SimpleValue[]> results;
             try {
-                Select selectStep = Select.class.cast(workflow.getLastStep());
-                List<InMemorySelector> outputColumns = transformIntoSelectors(selectStep.getColumnMap().keySet());
-                inMemoryQuery.setOutputColumns(outputColumns);
                 results = datastore.search(inMemoryQuery.getCatalogName(), inMemoryQuery);
             } catch (Exception e) {
                 throw new ExecutionException("Cannot perform execute operation: " + e.getMessage(), e);
@@ -143,8 +140,8 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
     /**
      * Order the results using the orderStep.
-     * @param results
-     * @return
+     * @param results Partial results.
+     * @return Ordered results;
      * @throws ExecutionException
      */
     public List<SimpleValue[]> orderResult(List<SimpleValue[]> results, LogicalWorkflow workflow) throws ExecutionException {
@@ -183,7 +180,6 @@ public class InMemoryQueryEngine implements IQueryEngine {
                     }
                 }
             }
-
             return orderedResult;
         }
         return results;
@@ -326,7 +322,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
      */
     private Row toCrossdataRow(SimpleValue[] row, List<String> columnAlias) {
         Row result = new Row();
-
+        /*
         for (String alias:columnAlias){
             for(SimpleValue field: row){
                 if (alias.contains(field.getColumn().getName())){
@@ -334,6 +330,10 @@ public class InMemoryQueryEngine implements IQueryEngine {
                     break;
                 }
             }
+        }
+        */
+        for(int index = 0; index < columnAlias.size(); index++){
+            result.addCell(columnAlias.get(index), new Cell(row[index].getValue()));
         }
         return result;
     }

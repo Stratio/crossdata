@@ -23,12 +23,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
-import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
-import com.stratio.connector.inmemory.datastore.structures.InMemoryFunctionSelector;
 import org.apache.log4j.Logger;
 
+import com.stratio.connector.inmemory.datastore.datatypes.JoinValue;
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 import com.stratio.connector.inmemory.datastore.structures.AbstractInMemoryFunction;
+import com.stratio.connector.inmemory.datastore.structures.InMemoryFunctionSelector;
 
 
 /**
@@ -205,7 +205,7 @@ public class InMemoryDatastore {
     }
 
     private List<SimpleValue> getRowValues(SimpleValue[] row) {
-        List<SimpleValue> finalRow = new ArrayList();
+        List<SimpleValue> finalRow = new ArrayList<>();
         for(SimpleValue field:row){
             if (!(field instanceof JoinValue)){
                 finalRow.add(field);
