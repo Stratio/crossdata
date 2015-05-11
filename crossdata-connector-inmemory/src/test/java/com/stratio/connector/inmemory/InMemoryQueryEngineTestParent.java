@@ -226,9 +226,8 @@ public abstract class InMemoryQueryEngineTestParent {
         }
     }
 
-
-    protected OrderBy generateOrderByClausule  (TableName tableName, String columnName, OrderDirection orderDirection){
-        Set<Operations> operations = new HashSet();
+    protected OrderBy generateOrderByClause(TableName tableName, String columnName, OrderDirection orderDirection){
+        Set<Operations> operations = new HashSet<>();
         operations.add(Operations.SELECT_ORDER_BY);
         List<OrderByClause> field = new ArrayList<>();
         ColumnSelector selector  = new ColumnSelector(new ColumnName(tableName, columnName));

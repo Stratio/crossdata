@@ -166,8 +166,8 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         requiredOperations.add(Operations.SELECT_OPERATOR);
         Map<Selector, String> columnMap = new HashMap<>();
         String functionName = "concat";
-        String catalog = "test_catalog";
-        String table = "users";
+        String catalog = usersTable.getName().getCatalogName().getName();
+        String table = usersTable.getName().getName();
         TableName tableName = new TableName(catalog, table);
         List<Selector> functionSelectors = new ArrayList<>();
         ColumnSelector firstColInFunction = new ColumnSelector(new ColumnName(catalog, table, "id"));
@@ -183,7 +183,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         Map<String, ColumnType> typeMap = new HashMap<>();
         ColumnType functionColType = new ColumnType(DataType.TEXT);
         typeMap.put(functionName, functionColType);
-        ColumnType aliasedColType = new ColumnType(DataType.FLOAT);
+        ColumnType aliasedColType = new ColumnType(DataType.BOOLEAN);
         typeMap.put(alias, aliasedColType);
         Map<Selector, ColumnType> typeMapFromColumnName = new HashMap<>();
         typeMapFromColumnName.put(fs, functionColType);
@@ -230,7 +230,9 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
                 "manager",
                 "Wrong alias for secondColumn");
         for(int i=0; i<pagination; i++){
-            Iterator<Cell> iter = result.getResultSet().getRows().get(i).getCellList().iterator();
+            Row row = result.getResultSet().getRows().get(i);
+            assertEquals(row.size(), 2, "2 columns expected");
+            Iterator<Cell> iter = row.getCellList().iterator();
             while(iter.hasNext()){
                 assertNotNull(iter.next().getValue(), "Content of the cell is null");
             }
@@ -381,7 +383,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         String [] usersColumnNames = {"boss"};
         ColumnType[] usersTypes = {new ColumnType(DataType.BOOLEAN)};
 
-        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "boss", OrderDirection.DESC);
+        OrderBy orderBy = generateOrderByClause(usersTable.getName(), "boss", OrderDirection.DESC);
         Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
         LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
 
@@ -420,7 +422,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         String [] usersColumnNames = {"id"};
         ColumnType[] usersTypes = {new ColumnType(DataType.INT)};
 
-        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "id", direction);
+        OrderBy orderBy = generateOrderByClause(usersTable.getName(), "id", direction);
         Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
         LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
 
@@ -434,7 +436,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         //Experimentation
         List<SimpleValue[]> result = ((InMemoryQueryEngine)connector.getQueryEngine()).orderResult(results, workflow);
 
-        //Espectations
+        //Expectations
         int i =direction.equals(OrderDirection.DESC) ? result.size():1;
         for (SimpleValue[] value: result){
             assertEquals(value[0].getValue(), direction.equals(OrderDirection.DESC) ? i-- : i++, "Invalid Order");
@@ -456,7 +458,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         String [] usersColumnNames = {"id","boss"};
         ColumnType[] usersTypes = {new ColumnType(DataType.INT), new ColumnType(DataType.BOOLEAN)};
 
-        OrderBy orderBy = generateOrderByClausule(usersTable.getName(), "boss", direction);
+        OrderBy orderBy = generateOrderByClause(usersTable.getName(), "boss", direction);
         Project projectUsers = generateProjectAndSelect(usersColumnNames, usersTypes, usersTable.getName(), orderBy);
         LogicalWorkflow workflow = new LogicalWorkflow(singletonList((LogicalStep) projectUsers));
 
@@ -468,22 +470,20 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         results.add(new SimpleValue[]{new SimpleValue(columnId, 3),new SimpleValue(columnBoss, false)});
         results.add(new SimpleValue[]{new SimpleValue(columnId, 4),new SimpleValue(columnBoss, true)});
 
-
         //Experimentation
-        List<SimpleValue[]> result = ((InMemoryQueryEngine)connector.getQueryEngine()).orderResult(results, workflow);
+        List<SimpleValue[]> result = ((InMemoryQueryEngine) connector.getQueryEngine()).orderResult(results, workflow);
 
-        //Espectations
+        //Expectations
         int i = 0;
         for (SimpleValue[] value: result){
             if (direction.equals(OrderDirection.ASC)){
-                assertTrue((Boolean) value[1].getValue().equals(i >= result.size()/2) , "Bad Order");
+                assertTrue(value[1].getValue().equals(i >= result.size()/2), "Bad Order");
             }else{
-                assertTrue((Boolean) value[1].getValue().equals(i < result.size()/2) , "Bad Order");
+                assertTrue(value[1].getValue().equals(i < result.size()/2), "Bad Order");
             }
             i++;
         }
     }
-
 
     @Test
     public void testCompareCellsASC() throws UnsupportedException {
@@ -522,20 +522,14 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
     }
 
     public int compareCell(OrderDirection direction, Object value1, Object value2) throws UnsupportedException {
-
         buildUsersTable();
-
         SimpleValue toBeOrdered = new SimpleValue(null, value1);
         SimpleValue alreadyOrdered =  new SimpleValue(null, value2);
-
         return ((InMemoryQueryEngine)connector.getQueryEngine()).compareCells(toBeOrdered, alreadyOrdered, direction);
-
-
     }
 
     @Test
     public void testBugCROSSDATA_516(){
-
         TableMetadata incomeTable = buildIncomeTable();
 
         Map<String, Object> values = new HashMap<>();
