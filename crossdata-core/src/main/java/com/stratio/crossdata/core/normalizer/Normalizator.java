@@ -101,6 +101,8 @@ public class Normalizator {
 
     private Set<TableName> joinTableSet = new HashSet<>();
 
+    private Set<String> aliasSet =new HashSet<>();
+
     /**
      * Class Constructor.
      *
@@ -953,6 +955,14 @@ public class Normalizator {
                 break;
             case COLUMN:
                 ColumnSelector columnSelector = getColumnSelector((ColumnSelector) selector);
+                if(columnSelector.getAlias()!=null){
+                    if(aliasSet.contains(columnSelector.getAlias())){
+                        throw new BadFormatException("Duplicate Alias in select expression: " + columnSelector
+                                .getAlias());
+                    }else{
+                        aliasSet.add(columnSelector.getAlias());
+                    }
+                }
                 result.add(columnSelector);
                 break;
             case RELATION:
@@ -1104,6 +1114,8 @@ public class Normalizator {
         }
         return functionSelector;
     }
+
+
 
     /**
      * Validate the Functions Selectors of a parsed query.
