@@ -130,7 +130,7 @@ public class OrderByClause implements Serializable, ISqlExpression{
     /**
      * Get the sql string of the order by clause.
      * @param withAlias Whether the expression must use alias or qualified names.
-     * @return
+     * @return SQL representation.
      */
     public String toSQLString(boolean withAlias) {
         StringBuilder sb = new StringBuilder();

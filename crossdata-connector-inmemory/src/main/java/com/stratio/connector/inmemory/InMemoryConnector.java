@@ -18,23 +18,30 @@
 
 package com.stratio.connector.inmemory;
 
+import static com.codahale.metrics.MetricRegistry.name;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
+
 import com.codahale.metrics.Timer;
 import com.stratio.connector.inmemory.datastore.InMemoryDatastore;
 import com.stratio.connector.inmemory.metadata.MetadataListener;
-import com.stratio.crossdata.common.connector.*;
+import com.stratio.crossdata.common.connector.AbstractExtendedConnector;
+import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
+import com.stratio.crossdata.common.connector.IConfiguration;
+import com.stratio.crossdata.common.connector.IConnectorApp;
+import com.stratio.crossdata.common.connector.IMetadataEngine;
+import com.stratio.crossdata.common.connector.IQueryEngine;
+import com.stratio.crossdata.common.connector.IStorageEngine;
 import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.exceptions.*;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
-import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.exceptions.ConnectionException;
+import com.stratio.crossdata.common.exceptions.ExecutionException;
+import com.stratio.crossdata.common.exceptions.InitializationException;
+import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.security.ICredentials;
 import com.stratio.crossdata.connectors.ConnectorApp;
-import org.apache.log4j.Logger;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.codahale.metrics.MetricRegistry.name;
 
 /**
  * InMemory connector that demonstrates the internals of a crossdata connector.
@@ -180,8 +187,6 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         }
         return metadataEngine;
     }
-
-
 
     /**
      * Get the datastore associated to a given cluster.

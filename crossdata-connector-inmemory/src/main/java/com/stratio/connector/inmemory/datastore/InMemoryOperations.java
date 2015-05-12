@@ -112,23 +112,27 @@ public enum InMemoryOperations {
     /**
      * IN operator.
      */
-    IN{
+    IN {
         @Override
         public boolean compare(Object o1, Object o2) {
-
-            List<Object> listOfObjects = (List<Object>) o2;
-            for (Object inEntry : listOfObjects) {
+            List listOfObjects = List.class.cast(o2);
+            for (Object inEntry: listOfObjects) {
                 if (Number.class.isInstance(o1) && Number.class.isInstance(inEntry) && compareNumbers(Number.class.cast(o1), Number.class.cast(inEntry)) == 0) {
                     return true;
                 }else if (o1.equals(inEntry)){
                     return true;
                 }
             }
-
             return false;
         }
     };
 
+    /**
+     * Compare two objects using the corresponding Enum logic.
+     * @param o1 First Object to compare
+     * @param o2 Second Object to compare
+     * @return depends on each implementation.
+     */
     public abstract boolean compare(Object o1, Object o2);
 
     /**

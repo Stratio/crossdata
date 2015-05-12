@@ -17,6 +17,11 @@
  */
 package com.stratio.connector.inmemory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import com.stratio.connector.inmemory.datastore.InMemoryOperations;
 import com.stratio.connector.inmemory.datastore.InMemoryQuery;
 import com.stratio.connector.inmemory.datastore.InMemoryRelation;
@@ -28,10 +33,18 @@ import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
-import com.stratio.crossdata.common.logicalplan.*;
-import com.stratio.crossdata.common.statements.structures.*;
-
-import java.util.*;
+import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.logicalplan.Join;
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
+import com.stratio.crossdata.common.logicalplan.Project;
+import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+import com.stratio.crossdata.common.statements.structures.ColumnSelector;
+import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Operator;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.SelectorType;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 
 /**
  * Class that encapsulate the {@link com.stratio.crossdata.common.logicalplan.Project} parse.
@@ -61,6 +74,12 @@ public class InMemoryQueryBuilder {
         return INSTANCE;
     }
 
+    /**
+     * Builds a InMemoryQuery from a crossdata Project
+     * @param project
+     * @return A query that can be recognized by the In-Memory connector.
+     * @throws ExecutionException
+     */
     public InMemoryQuery build(Project project) throws ExecutionException {
         InMemoryQuery result = new InMemoryQuery();
 
@@ -78,16 +97,15 @@ public class InMemoryQueryBuilder {
     /**
      *
      * Build a InMemoryQuery using a {@link com.stratio.crossdata.common.logicalplan.Project} and a
-     * result of the others parts of the query, to by added as filters in this part.
+     * result of the others parts of the query, to be added as filters in this part.
      *
-     * @param project
-     * @param results
-     * @return
+     * @param project Project object from Crossdata.
+     * @param results Partial results.
+     * @return A query that can be recognized by the In-Memory connector.
      */
-    public InMemoryQuery build(Project project,List<SimpleValue[]> results) throws ExecutionException {
+    public InMemoryQuery build(Project project, List<SimpleValue[]> results) throws ExecutionException {
         InMemoryQuery query = build(project);
         query.getRelations().addAll(getJoinFilters(project, results));
-
         return query;
     }
 
@@ -95,9 +113,9 @@ public class InMemoryQueryBuilder {
     /**
      * Return the JoinTerm of the project.
      *
-     * @param joinStep
-     * @param project
-     * @return
+     * @param joinStep Join step.
+     * @param project Project of the query.
+     * @return Resulting Selector.
      */
     private Selector getMyJoinTerm(Join joinStep, Project project) {
 

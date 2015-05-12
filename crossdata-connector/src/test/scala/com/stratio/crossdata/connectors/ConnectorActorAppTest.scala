@@ -27,9 +27,9 @@ import akka.util.Timeout
 import com.stratio.crossdata.common.connector.{IQueryEngine, IMetadataEngine, IConnector, IStorageEngine}
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.logicalplan.{TransformationStep, LogicalStep, LogicalWorkflow}
-import com.stratio.crossdata.common.metadata.{Operations, ColumnMetadata, IndexMetadata, TableMetadata}
-import com.stratio.crossdata.common.result.{MetadataResult, QueryResult, StorageResult}
-import com.stratio.crossdata.common.statements.structures.Selector
+import com.stratio.crossdata.common.metadata._
+import com.stratio.crossdata.common.result.{ErrorResult, MetadataResult, QueryResult, StorageResult}
+import com.stratio.crossdata.common.statements.structures.{StringSelector, Selector}
 import com.typesafe.config.ConfigFactory
 import org.apache.log4j.Logger
 import org.scalamock.scalatest.MockFactory
@@ -40,10 +40,8 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import java.util.Collections
 import java.util.UUID
-import com.stratio.crossdata.communication.Execute
+import com.stratio.crossdata.communication._
 import scala.Some
-import com.stratio.crossdata.communication.CreateTable
-import com.stratio.crossdata.communication.Insert
 
 //class ConnectorActorAppTest extends FunSuite with MockFactory {
 class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with MockFactory with ImplicitSender {
@@ -166,6 +164,103 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
   }
 
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE
+
+  test("Create catalog Message") {
+
+    val catalog_options=new util.HashMap[Selector,Selector]()
+    catalog_options.put(new StringSelector("Description"), new StringSelector("Example"))
+    val tableMetadata=new TableMetadata(new TableName("catalog","mytable"), options.get, columns.get,indexes.get,clusterRef.get,partitionKey.get,partitionKey.get)
+    val tables=new util.HashMap[TableName,TableMetadata]()
+    tables.put(new TableName("catalog","mytable"),tableMetadata)
+    val catalogMetadata=new CatalogMetadata(new CatalogName("catalog"),catalog_options,tables);
+
+    val message= CreateCatalog("query",new ClusterName("cluster"),catalogMetadata)
+    assert(message.catalogMetadata.getName.getName=="catalog")
+
+    logger.info("\n\nsending create catalog message  \n\n")
+
+  }
+
+  test("Alter catalog Message") {
+
+    val catalog_options=new util.HashMap[Selector,Selector]()
+    catalog_options.put(new StringSelector("Description"), new StringSelector("Example"))
+    val tableMetadata=new TableMetadata(new TableName("catalog","mytable"), options.get, columns.get,indexes.get,clusterRef.get,partitionKey.get,partitionKey.get)
+    val tables=new util.HashMap[TableName,TableMetadata]()
+    tables.put(new TableName("catalog","mytable2"),tableMetadata)
+    val catalogMetadata=new CatalogMetadata(new CatalogName("catalog"),catalog_options,tables);
+
+    val message= AlterCatalog("query",new ClusterName("cluster"),catalogMetadata)
+
+    assert(message.catalogMetadata.getName.getName=="catalog")
+
+    logger.info("\n\nsending alter catalog message  \n\n")
+
+  }
+
+  test("create index message") {
+    val columns=new util.HashMap[ColumnName, ColumnMetadata]
+    val columnMetadata=new ColumnMetadata(new ColumnName("catalog","table","column"),null,new ColumnType(DataType.INT))
+    columns.put(new ColumnName("catalog","table","column"),columnMetadata)
+    val indexMetadata=new IndexMetadata(new IndexName("catalog","table","myIndex"),columns,IndexType.DEFAULT,
+      new util.HashMap[Selector,Selector]())
+    val message= CreateIndex("query",new ClusterName("cluster"),indexMetadata)
+
+    assert(message.indexMetadata.getName.getName.equals("myIndex"))
+
+  }
+
+  test("drop catalog") {
+    val message= DropCatalog("query",new ClusterName("cluster"),new CatalogName("catalog"))
+    assert(message.catalogName.getName.equals("catalog"))
+  }
+
+  test("drop table") {
+    val message= DropTable("query",new ClusterName("cluster"),new TableName("catalog","table"))
+    assert(message.tableName.getName.equals("table"))
+  }
+
+  test("alter table") {
+    val alterOptionsProps=new util.HashMap[Selector,Selector]()
+    alterOptionsProps.put(new StringSelector("Description"), new StringSelector("Example"))
+    val alterOptions=new AlterOptions(AlterOperation.ALTER_OPTIONS,alterOptionsProps,null)
+    val message= AlterTable("query",new ClusterName("cluster"),new TableName("catalog","table"),alterOptions)
+    assert(message.alterOptions.getProperties.containsKey(new StringSelector("Description")))
+  }
+
+  test("create table and catalog") {
+    val catalog_options=new util.HashMap[Selector,Selector]()
+    catalog_options.put(new StringSelector("Description"), new StringSelector("Example"))
+    val tableMetadata=new TableMetadata(new TableName("catalog","mytable"), options.get, columns.get,indexes.get,clusterRef.get,partitionKey.get,partitionKey.get)
+    val tables=new util.HashMap[TableName,TableMetadata]()
+    tables.put(new TableName("catalog","mytable"),tableMetadata)
+    val catalogMetadata=new CatalogMetadata(new CatalogName("catalog"),catalog_options,tables);
+
+    val message= CreateTableAndCatalog("query",new ClusterName("cluster"),catalogMetadata,tableMetadata)
+    assert(message.catalogMetadata.getName.getName.equals("catalog"))
+    assert(message.tableMetadata.getName.getName.equals("mytable"))
+  }
+
+
+  test("provide metadata") {
+    val message= ProvideMetadata("query",new ClusterName("cluster"))
+    assert(message.targetCluster.getName.equals("cluster"))
+  }
+
+  test("provides catalogs metadata") {
+    val message= ProvideCatalogsMetadata("query",new ClusterName("cluster"))
+    assert(message.targetCluster.getName.equals("cluster"))
+  }
+
+  test("provides catalog metadata") {
+    val message= ProvideCatalogMetadata("query",new ClusterName("cluster"), new CatalogName("catalog"))
+    assert(message.catalogName.getName.equals("catalog"))
+  }
+
+  test("provides table metadata") {
+    val message= ProvideTableMetadata("query",new ClusterName("cluster"), new TableName("catalog","table"))
+    assert(message.tableName.getName.equals("table"))
+  }
 
 }
 

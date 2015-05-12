@@ -23,6 +23,9 @@ import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 import org.apache.log4j.Logger;
 
+/**
+ * Logs the update and delete calls.
+ */
 public class MetadataListener implements IMetadataListener {
 
 
