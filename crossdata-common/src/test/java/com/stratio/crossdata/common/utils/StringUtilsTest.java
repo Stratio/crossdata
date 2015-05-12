@@ -115,4 +115,9 @@ public class StringUtilsTest {
 
     }
 
+    @Test
+    public void getAkkaActorRefUriTest(){
+        Assert.assertEquals("akka.tcp://app@otherhost/1234/user/serviceB", StringUtils.getAkkaActorRefUri("akka.tcp%3A%2F%2Fapp%40otherhost%2F1234%2Fuser%2FserviceB$#sdf"));
+    }
+
 }

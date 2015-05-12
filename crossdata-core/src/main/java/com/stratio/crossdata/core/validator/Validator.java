@@ -705,9 +705,6 @@ public class Validator {
         BadFormatException badFormatException = null;
         Selector resultingSelector = querySelector;
         switch (querySelector.getType()) {
-        case FUNCTION:
-            LOG.info("Functions are not supported yet for this statement.");
-            break;
         case COLUMN:
             ColumnName queryColumnName = ((ColumnSelector) querySelector).getName();
             ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(queryColumnName);
