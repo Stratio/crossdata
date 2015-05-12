@@ -49,6 +49,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
      */
     private static final Logger LOG = Logger.getLogger(InMemoryConnector.class);
     private static final int DEFAULT_TIMEOUT_IN_MS = 5000;
+    public static final int MILLIS_IN_NANOSECONDS = 1000000;
 
     /**
      * Map associating the {@link com.stratio.crossdata.common.data.ClusterName}s with
@@ -108,7 +109,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
             InMemoryDatastore datastore = new InMemoryDatastore(Integer.valueOf(options.get(DATASTORE_PROPERTY)));
             clusters.put(targetCluster, datastore);
         } else {
-            long millis = connectTimerContext.stop() / 1000000;
+            long millis = connectTimerContext.stop() / MILLIS_IN_NANOSECONDS;
             LOG.info("Connection took " + millis + " milliseconds");
             throw new ConnectionException("Invalid options, expecting TableRowLimit");
         }
@@ -131,9 +132,10 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         */
 
         //End Metric
-        long millis = connectTimerContext.stop() / 1000000;
+        long millis = connectTimerContext.stop() / MILLIS_IN_NANOSECONDS;
         LOG.info("Connection took " + millis + " milliseconds");
     }
+
 
     @Override
     public void close(ClusterName name) throws ConnectionException {

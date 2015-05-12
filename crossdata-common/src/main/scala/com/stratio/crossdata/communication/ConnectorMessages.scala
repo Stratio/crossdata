@@ -19,7 +19,7 @@
 package com.stratio.crossdata.communication
 
 import com.stratio.crossdata.common.data.Name
-import com.stratio.crossdata.common.metadata.{UpdatableMetadata, IMetadata}
+import com.stratio.crossdata.common.metadata.UpdatableMetadata
 import difflib.Patch
 
 //CONNECTOR messages
@@ -36,5 +36,7 @@ case class Stop()
 case class UpdateMetadata(metadata: UpdatableMetadata, remove: java.lang.Boolean)
 
 case class PatchMetadata(diffs:Patch,metadataClass:java.lang.Class[_],name:Name)
+
+case class ConnectorUp(memberAddress: String)
 
 

@@ -26,5 +26,5 @@ public interface Virtualizable {
      * Return whether operates with virtual tables or not.
      * @return true when operates with virtual {@link com.stratio.crossdata.common.data.TableName}.
      */
-    public boolean isVirtual();
+    boolean isVirtual();
 }
