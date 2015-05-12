@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.stratio.crossdata.core.structures.Join;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -59,6 +58,7 @@ import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.structures.Join;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -1605,8 +1605,8 @@ public class SelectStatementTest extends BasicValidatorTest {
     public void multipleFunctionsAlias4(){
         String inputText = "SELECT getYear(users.age), getYear(users.average), getYear(users.other) FROM demo.users";
         String expectedText = "SELECT getYear(demo.users.age) AS getYear, " +
-                "getYear(demo.users.average) AS getYear1 " +
-                "getYear(demo.users.other) AS getYear2" +
+                "getYear(demo.users.average) AS getYear1, " +
+                "getYear(demo.users.other) AS getYear2 " +
                 "FROM demo.users";
 
         ColumnName col1 = new ColumnName(null, "users", "age");
@@ -1621,7 +1621,7 @@ public class SelectStatementTest extends BasicValidatorTest {
         List<Selector> selectorList = new ArrayList<>();
         selectorList.add(selector1);
         selectorList.add(selector2);
-        selectorList.add(selector2);
+        selectorList.add(selector3);
         SelectExpression selectExpression = new SelectExpression(selectorList);
 
         TableName tablename = new TableName("demo", "users");

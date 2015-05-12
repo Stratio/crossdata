@@ -244,6 +244,8 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
     }
 
     private void convertJoinsToCrossJoins() {
+        ArrayList<Join> toBeRemoved = new ArrayList<>();
+        ArrayList<Join> toBeAdded = new ArrayList<>();
         for(Join join: joinList) {
             List<AbstractRelation> joinRelations = join.getRelations();
             Join crossJoin = null;
@@ -256,10 +258,12 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
             if(crossJoin != null){
                 this.getStatement().removeJoin(join);
                 this.getStatement().addJoin(crossJoin);
-                this.joinList.remove(join);
-                this.joinList.add(crossJoin);
+                toBeRemoved.add(join);
+                toBeAdded.add(crossJoin);
             }
         }
+        this.joinList.removeAll(toBeRemoved);
+        this.joinList.addAll(toBeAdded);
     }
 
     private Join createCrossJoin(Join join) {
