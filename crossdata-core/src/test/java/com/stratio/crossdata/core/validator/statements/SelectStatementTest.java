@@ -1493,6 +1493,43 @@ public class SelectStatementTest extends BasicValidatorTest {
     }
 
     @Test
+    public void multipleColumnAlias(){
+        String inputText = "SELECT age, age, age FROM demo.users";
+        String expectedText = "SELECT demo.users.age, demo.users.age, demo.users.age FROM demo.users";
+
+
+        ColumnName col1 = new ColumnName(null, "users", "age");
+        ColumnName col2 = new ColumnName(null, "users", "age");
+        ColumnName col3 = new ColumnName(null, "users", "age");
+        Selector selector1 = new ColumnSelector(col1);
+        Selector selector2 = new ColumnSelector(col2);
+        Selector selector3 = new ColumnSelector(col3);
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        selectorList.add(selector3);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        TableName tablename = new TableName("demo", "users");
+
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+    }
+
+
+    @Test
     public void multipleFunctionsAlias(){
         String inputText = "SELECT getYear(users.age) as year, getYear(users.average) as average FROM demo.users";
         String expectedText = "SELECT getYear(demo.users.age) AS year, getYear(demo.users.average) AS average " +

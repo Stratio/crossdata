@@ -33,6 +33,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.AlterOperation;
@@ -2380,6 +2382,7 @@ public class Planner {
     protected Select generateSelect(SelectStatement selectStatement, Map<String, TableMetadata> tableMetadataMap)
             throws PlanningException {
         LinkedHashMap<Selector, String> aliasMap = new LinkedHashMap<>();
+        Map<String,Integer> aliases=new HashMap<>();
         LinkedHashMap<String, ColumnType> typeMap = new LinkedHashMap<>();
         LinkedHashMap<Selector, ColumnType> typeMapFromColumnName = new LinkedHashMap<>();
 
@@ -2391,24 +2394,26 @@ public class Planner {
 
                 String alias;
                 if (cs.getAlias() != null) {
-
                     alias = cs.getAlias();
-                    if (aliasMap.containsValue(alias)) {
-                        alias = cs.getColumnName().getTableName().getName() + "_" + cs.getAlias();
-                    }
-
-                    aliasMap.put(cs, alias);
-
                 } else {
-
                     alias = cs.getName().getName();
-                    if (aliasMap.containsValue(alias)) {
-                        alias = cs.getColumnName().getTableName().getName() + "_" + cs.getName().getName();
-                    }
-
-                    aliasMap.put(cs, alias);
-
                 }
+
+                if (aliasMap.containsValue(alias)) {
+                    if(!aliasMap.containsKey(cs)) {
+                        alias = cs.getColumnName().getTableName().getName() + "_" + alias;
+                        if (aliases.containsKey(alias)) {
+                            aliases.put(alias, aliases.get(alias) + 1);
+                            alias = alias + Integer.toString(aliases.get(alias) + 1);
+                        } else {
+                            aliases.put(alias, 0);
+                        }
+                    }
+                }else{
+                    aliases.put(alias,0);
+                }
+                aliasMap.put(cs, alias);
+
 
                 ColumnType colType = null;
                 //TODO avoid null types
