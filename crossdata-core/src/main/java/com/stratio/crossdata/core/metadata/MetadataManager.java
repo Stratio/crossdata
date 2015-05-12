@@ -1609,11 +1609,33 @@ public enum MetadataManager {
      * @param nodeName The {@link com.stratio.crossdata.common.data.NodeName}.
      * @return Whether the name should be asked.
      */
-    public boolean checkGetConnectorName(NodeName nodeName) {
+    public boolean notIsNodeOnline(NodeName nodeName) {
         boolean result = false;
         try {
             writeLock.lock();
             if ((!exists(nodeName)) || (getNode(nodeName).getStatus() == Status.OFFLINE)) {
+                setNodeStatus(nodeName, Status.INITIALIZING);
+                result = true;
+            }
+        } catch (Exception e) {
+            result = false;
+        } finally {
+            writeLock.unlock();
+        }
+        return result;
+    }
+
+    /**
+     * Check if a connector has already been associated with a name offline.
+     *
+     * @param nodeName The {@link com.stratio.crossdata.common.data.NodeName}.
+     * @return Whether the node is offline.
+     */
+    public boolean isNodeOffline(NodeName nodeName) {
+        boolean result = false;
+        try {
+            writeLock.lock();
+            if (exists(nodeName) && (getNode(nodeName).getStatus() == Status.OFFLINE)) {
                 setNodeStatus(nodeName, Status.INITIALIZING);
                 result = true;
             }

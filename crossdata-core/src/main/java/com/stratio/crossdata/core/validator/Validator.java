@@ -43,6 +43,8 @@ public class Validator {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Validator.class);
+    static final int MAX_PRIORITY = 1;
+    static final int MIN_PRIORITY = 9;
     private Normalizator normalizator = null;
 
     public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
@@ -224,7 +226,7 @@ public class Validator {
         if (statement instanceof AttachConnectorStatement) {
             Integer priority = ((AttachConnectorStatement) statement).getPriority();
 
-            if (priority < 1 || priority > 9) {
+            if (priority < MAX_PRIORITY || priority > MIN_PRIORITY) {
                 throw new BadFormatException("The priority is out of range: Must be [1-9]");
 
             }

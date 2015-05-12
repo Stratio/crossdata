@@ -1097,8 +1097,8 @@ public class Normalizator {
     private FunctionSelector getNormalizedFunctionAlias(FunctionSelector functionSelector) {
         if (aliasFunctionMap.containsKey(functionSelector.getAlias())) {
             int index = aliasFunctionMap.get(functionSelector.getAlias());
-            functionSelector.setAlias(functionSelector.getAlias() + Integer.toString(index + 1));
             aliasFunctionMap.put(functionSelector.getAlias(), index + 1);
+            functionSelector.setAlias(functionSelector.getAlias() + Integer.toString(index + 1));
         } else {
             aliasFunctionMap.put(functionSelector.getAlias(), 0);
         }
