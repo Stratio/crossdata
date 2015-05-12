@@ -419,8 +419,10 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             val actorRefs = managementWorkflow.getActorRefs
             for(actorRef <- actorRefs){
-              val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(actorRef, false))
-              connectorSelection ! new DisconnectFromCluster(queryId, managementWorkflow.getConnectorClusterConfig.getName.getName)
+              if(actorRef != null){
+                val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(actorRef, false))
+                connectorSelection ! new DisconnectFromCluster(queryId, managementWorkflow.getConnectorClusterConfig.getName.getName)
+              }
             }
 
             createExecutionInfoForDetach(managementWorkflow, queryId)
