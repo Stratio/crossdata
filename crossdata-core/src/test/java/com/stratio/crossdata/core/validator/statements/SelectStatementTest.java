@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.stratio.crossdata.core.structures.Join;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -59,6 +58,7 @@ import com.stratio.crossdata.core.query.IValidatedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
+import com.stratio.crossdata.core.structures.Join;
 import com.stratio.crossdata.core.validator.BasicValidatorTest;
 import com.stratio.crossdata.core.validator.Validator;
 
@@ -1600,6 +1600,48 @@ public class SelectStatementTest extends BasicValidatorTest {
         assertNotNull(validatedQuery, "Expecting validated query");
         assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
     }
+
+    @Test
+    public void multipleFunctionsAlias4(){
+        String inputText = "SELECT getYear(users.age), getYear(users.average), getYear(users.other) FROM demo.users";
+        String expectedText = "SELECT getYear(demo.users.age) AS getYear, " +
+                "getYear(demo.users.average) AS getYear1, " +
+                "getYear(demo.users.other) AS getYear2 " +
+                "FROM demo.users";
+
+        ColumnName col1 = new ColumnName(null, "users", "age");
+        ColumnName col2 = new ColumnName(null, "users", "average");
+        ColumnName col3 = new ColumnName(null, "users", "other");
+        Selector selector1 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
+                Collections.singleton(new ColumnSelector(col1))));
+        Selector selector2 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
+                Collections.singleton(new ColumnSelector(col2))));
+        Selector selector3 = new FunctionSelector(new TableName("demo", "users"), "getYear", new LinkedList<Selector>(
+                Collections.singleton(new ColumnSelector(col3))));
+        List<Selector> selectorList = new ArrayList<>();
+        selectorList.add(selector1);
+        selectorList.add(selector2);
+        selectorList.add(selector3);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+
+        TableName tablename = new TableName("demo", "users");
+
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+        Validator validator = new Validator();
+        BaseQuery baseQuery = new BaseQuery("SelectId", inputText, new CatalogName("demo"),"sessionTest");
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        IValidatedQuery validatedQuery = null;
+        try {
+            validatedQuery = validator.validate(parsedQuery);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Cannot validate valid statement", e);
+        }
+
+        assertNotNull(validatedQuery, "Expecting validated query");
+        assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
+    }
+
 
     @Test
     public void functionsInWhereWithAlias() {

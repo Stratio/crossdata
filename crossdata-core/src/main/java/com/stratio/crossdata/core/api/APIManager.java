@@ -591,12 +591,12 @@ public class APIManager {
     }
 
     /**
-     * If there are Connectors atteched to Clusters, return a ResetServerDataResult with a Set of
+     * If there are Connectors attached to Clusters, return a ResetServerDataResult with a Set of
      * ForceDetachQuery used to send a detach order to each connector.
      *
      * If there aren't connectors, return a simple CommandResult.
      *
-     * @return
+     * @return The result after resetting the Metadata Manager.
      */
     private Result createResetServerDataCommand(){
         Collection<IParsedQuery> commands = new ArrayList<>();
