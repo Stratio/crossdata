@@ -43,6 +43,7 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.ConnectorName;
 import com.stratio.crossdata.common.data.DataStoreName;
 import com.stratio.crossdata.common.data.IndexName;
+import com.stratio.crossdata.common.data.JoinType;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ManifestException;
@@ -55,6 +56,7 @@ import com.stratio.crossdata.common.executionplan.ResultType;
 import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Disjunction;
 import com.stratio.crossdata.common.logicalplan.Filter;
+import com.stratio.crossdata.common.logicalplan.Join;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.manifest.FunctionType;
@@ -140,6 +142,7 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC2.add(Operations.FILTER_PK_EQ);
         operationsC2.add(Operations.SELECT_INNER_JOIN);
         operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
+        operationsC2.add(Operations.SELECT_CROSS_JOIN);
         operationsC2.add(Operations.INSERT);
         operationsC2.add(Operations.FILTER_DISJUNCTION);
         operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
@@ -883,6 +886,31 @@ public class PlannerTest extends PlannerBaseTest {
         assertEquals(filter.getRelation().getRightTerm().getClass(),
                 ListSelector.class,
                 "Right term of the relation should be a list.");
+    }
+
+    @Test
+    public void selectJoinWithSameColumnAsCondition() throws ManifestException {
+
+        init();
+
+        String inputText = "SELECT demo.table1.id, demo.table1.user, demo.table3.id_aux, demo.table3.address"
+                + " FROM demo.table1"
+                + " INNER JOIN demo.table3 ON demo.table1.id = demo.table1.id;";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "selectJoinWithSameColumnAsCondition", false, table1, table3);
+        assertNotNull(queryWorkflow, "Null workflow received.");
+        assertEquals(queryWorkflow.getResultType(), ResultType.RESULTS, "Invalid result type");
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Invalid execution type");
+        assertEquals(queryWorkflow.getActorRef(), connector2.getActorRef("127.0.0.1"), "Wrong target actor");
+        assertEquals(
+                queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getClass(),
+                Join.class,
+                "Second step should be a Join");
+        Join join = Join.class.cast(queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep());
+        assertEquals(
+                join.getType(),
+                JoinType.CROSS,
+                "Join should have been transformed to a Cross Join");
     }
 
 }

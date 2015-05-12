@@ -237,13 +237,49 @@ public class SelectValidatedQuery extends SelectParsedQuery implements IValidate
 
     private void optimizeJoins() {
         if(tables.size() == 1){
-            for(Join join :joinList) {
-                relations.addAll(join.getRelations());
-                this.getStatement().setWhere(relations);
-                this.getStatement().removeJoin(join);
-            }
-            joinList.clear();
+            convertJoinConditionsToRelations();
+        } else if(tables.size() > 1) {
+            convertJoinsToCrossJoins();
         }
+    }
+
+    private void convertJoinsToCrossJoins() {
+        ArrayList<Join> toBeRemoved = new ArrayList<>();
+        ArrayList<Join> toBeAdded = new ArrayList<>();
+        for(Join join: joinList) {
+            List<AbstractRelation> joinRelations = join.getRelations();
+            Join crossJoin = null;
+            for(AbstractRelation ar: joinRelations){
+                if(ar.getAbstractRelationTables().size() == 1){
+                    crossJoin = createCrossJoin(join);
+                    break;
+                }
+            }
+            if(crossJoin != null){
+                this.getStatement().removeJoin(join);
+                this.getStatement().addJoin(crossJoin);
+                toBeRemoved.add(join);
+                toBeAdded.add(crossJoin);
+            }
+        }
+        this.joinList.removeAll(toBeRemoved);
+        this.joinList.addAll(toBeAdded);
+    }
+
+    private Join createCrossJoin(Join join) {
+        List<TableName> tableNames = new ArrayList<>();
+        tableNames.addAll(join.getTableNames());
+        Join crossJoin = new Join(tableNames);
+        return crossJoin;
+    }
+
+    private void convertJoinConditionsToRelations() {
+        for(Join join: joinList) {
+            relations.addAll(join.getRelations());
+            this.getStatement().setWhere(relations);
+            this.getStatement().removeJoin(join);
+        }
+        joinList.clear();
     }
 
 }
