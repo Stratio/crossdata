@@ -28,6 +28,11 @@ import scala.Option;
 
 /**
  * Connector app interface to provided extended connector information.
+ *
+ * TODO Restore:
+ * Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout);
+ * Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout);
+ *
  */
 public interface IConnectorApp {
 
@@ -40,24 +45,6 @@ public interface IConnectorApp {
      * @return A {@link com.stratio.crossdata.common.metadata.TableMetadata} or null if the table metadata is not ready after waiting the specified time.
      */
     Option<TableMetadata> getTableMetadata(ClusterName cluster, TableName tableName, int timeout);
-
-    /**
-     * Get the catalog metadata.
-     * @param catalogName target catalog.
-     * @param timeout the timeout in ms.
-     * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata} or null if the catalog metadata is not ready after waiting the specified time.
-     */
-    //Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout);
-
-    /**
-     * Get the list of existing catalogs in a cluster.
-     * @param cluster target cluster.
-     * @param timeout the timeout in ms.
-     * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata} or null if the table metadata is not ready after waiting the specified time..
-     */
-    /*@Experimental
-    Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout);
-    */
 
     /**
      * Get the connection status with the Crossdata server.
