@@ -47,6 +47,13 @@ public class Validator {
     static final int MIN_PRIORITY = 9;
     private Normalizator normalizator = null;
 
+    /**
+     * validate a parsed query.
+     * @param parsedQuery The parsed query
+     * @return com.stratio.crossdata.core.query.IValidatedQuery;
+     * @throws ValidationException
+     * @throws IgnoreQueryException
+     */
     public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
         return validate(parsedQuery, new HashSet<TableName>());
     }
