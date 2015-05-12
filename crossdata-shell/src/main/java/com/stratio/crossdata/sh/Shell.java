@@ -55,6 +55,7 @@ public class Shell {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Shell.class);
+    static final int WAIT_TIME_FOR_ASYNC = 1000;
 
     /**
      * Help content to be shown when the internal command {@code help} is used.
@@ -449,7 +450,7 @@ public class Shell {
                     } else {
                         if(useAsync){
                             result = crossdataDriver.executeAsyncRawQuery(query, resultHandler, sessionId);
-                            Thread.sleep(1000);
+                            Thread.sleep(WAIT_TIME_FOR_ASYNC);
                         } else {
                             result = crossdataDriver.executeRawQuery(query,sessionId);
                         }

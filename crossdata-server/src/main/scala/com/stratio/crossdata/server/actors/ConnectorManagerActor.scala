@@ -19,7 +19,7 @@
 package com.stratio.crossdata.server.actors
 
 import akka.actor.{ReceiveTimeout, RootActorPath, ActorLogging, Actor, Props, Address}
-import akka.cluster.Cluster
+import akka.cluster.{MemberStatus, Cluster}
 import akka.cluster.ClusterEvent.{ClusterMetricsChanged, MemberEvent, MemberExited,
 MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEvent}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
@@ -28,7 +28,7 @@ import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
 import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionType, ManagementWorkflow, ExecutionWorkflow}
 import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{replyConnectorName, getConnectorName,Connect}
+import com.stratio.crossdata.communication.{ConnectorUp, replyConnectorName, getConnectorName, Connect}
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.crossdata.core.loadwatcher.LoadWatcherManager
 import com.stratio.crossdata.core.metadata.MetadataManager
@@ -48,8 +48,6 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
   val coordinatorActorRef = context.actorSelection("../../CoordinatorActor")//context.actorSelection("../CoordinatorActor")
-  var connectorsAlreadyReset = false
-
   log.info("Lifting connector manager actor")
 
   override def preStart(): Unit = {
@@ -60,29 +58,37 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
     cluster.unsubscribe(self)
   }
 
+
+
   def receive : Receive= {
+
+
+    case ConnectorUp(memberAddress: String) => {
+      log.info("connectorUp "+memberAddress)
+      lazy val connectorActorRef = context.actorSelection(memberAddress +"/user/ConnectorActor")
+      val nodeName = new NodeName(memberAddress)
+      //if the node is offline
+      if (MetadataManager.MANAGER.notIsNodeOnline(nodeName)) {
+        logger.debug("Asking its name to the connector " + memberAddress)
+        connectorActorRef ! getConnectorName()
+      }
+    }
 
     /**
      * A new actor connects to the cluster. If the new actor is a connector, we requests its name.
      */
     //TODO Check that new actors are recognized and their information stored in the MetadataManager
-    case mu: MemberUp => {
-      logger.info("Member is Up: " + mu.toString + mu.member.getRoles)
-      val it = mu.member.getRoles.iterator()
+    case MemberUp(member) => {
+      logger.info("Member is Up: " + member.toString + member.getRoles)
+      val it = member.getRoles.iterator()
       while (it.hasNext()) {
         val role = it.next()
         role match {
           case "connector" => {
-
-            val connectorActorRef = context.actorSelection(RootActorPath(mu.member.address) / "user" / "ConnectorActor")
-            val nodeName = new NodeName(mu.member.address.toString)
-            if(MetadataManager.MANAGER.checkGetConnectorName(nodeName)){
-              logger.debug("Asking its name to the connector " + mu.member.address)
-              connectorActorRef ! getConnectorName()
-            }
+            self ! ConnectorUp(member.address.toString)
           }
           case _ => {
-            logger.debug(mu.member.address + " has the role: " + role)
+            logger.debug(member.address + " has the role: " + role)
           }
         }
       }
@@ -110,7 +116,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
           for(clusterProp <- clusterProps.entrySet()){
             val clusterName = clusterProp.getKey
             val clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName)
-            val optsCluster = MetadataManager.MANAGER.getCluster(clusterName).getOptions;
+            val optsCluster = MetadataManager.MANAGER.getCluster(clusterName).getOptions
 
             val optsConnector = clusterMetadata.getConnectorAttachedRefs.get(connectorName).getProperties
 
@@ -151,27 +157,41 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
 
     //Pass the message to the connectorActor to extract the member in the cluster
     case state: CurrentClusterState => {
+
       logger.info("Current members: " + state.members.mkString(", "))
-      if(!connectorsAlreadyReset){
-        var foundServers = mutable.HashSet[Address]()
-        val members = state.getMembers
-        for(member <- members){
-          logger.info("Address: " + member.address + ", roles: " + member.getRoles )
-          if(member.getRoles.contains("server")){
-            foundServers += member.address
-            logger.info("New server added. Size: " + foundServers.size)
-          }
-        }
-        if(foundServers.size == 1){
-          logger.info("Resetting Connectors status")
-          val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
-          MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
-          val nodes = MetadataManager.MANAGER.getNodeNames(data.Status.ONLINE)
-          MetadataManager.MANAGER.setNodeStatus(nodes, data.Status.OFFLINE)
-          connectorsAlreadyReset = true
+      val members = state.getMembers
+
+      var foundServers = mutable.HashSet[Address]()
+      for(member <- members){
+        logger.info("Address: " + member.address + ", roles: " + member.getRoles )
+        if(member.getRoles.contains("server")){
+          foundServers += member.address
+          logger.info("New server added. Size: " + foundServers.size)
         }
       }
+      if(foundServers.size == 1){
+
+        logger.info("Resetting Connectors status")
+        val connectors = MetadataManager.MANAGER.getConnectorNames(data.Status.ONLINE)
+        MetadataManager.MANAGER.setConnectorStatus(connectors, data.Status.OFFLINE)
+        val nodes = MetadataManager.MANAGER.getNodeNames(data.Status.ONLINE)
+        MetadataManager.MANAGER.setNodeStatus(nodes, data.Status.OFFLINE)
+
+        for(member <- members){
+          logger.info("Address: " + member.address + ", roles: " + member.getRoles )
+          if(member.getRoles.contains("connector") && member.status == MemberStatus.Up){
+            if(MetadataManager.MANAGER.isNodeOffline(new NodeName(sender.path.address.toString))){
+              // TODO log.info(s"checking if the connector $member.address is actually online")
+            }else{
+		logger.debug("New connector joined to the cluster")
+              self ! ConnectorUp(member.address.toString)
+            }
+          }
+        }
+
+      }
     }
+
 
     case member: UnreachableMember => {
       logger.info("Member detected as unreachable: " + member)

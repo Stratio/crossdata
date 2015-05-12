@@ -55,6 +55,7 @@ public class TwitterConnector extends AbstractExtendedConnector {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(TwitterConnector.class);
+    public static final int MILLIS_IN_NANOSECONDS = 1000000;
 
     private final Timer connectTimer;
 
@@ -178,13 +179,13 @@ public class TwitterConnector extends AbstractExtendedConnector {
             TwitterStream twitterStream = tf.getInstance();
             clusters.put(targetCluster.getName(), new TwitterCluster(targetCluster.getName(), twitterStream));
         } else {
-            long millis = connectTimerContext.stop() / 1000000;
+            long millis = connectTimerContext.stop() / MILLIS_IN_NANOSECONDS;
             LOG.info("Connection took " + millis + " milliseconds");
             throw new ConnectionException("Invalid options, cannot login twitter");
         }
 
         //End Metric
-        long millis = connectTimerContext.stop() / 1000000;
+        long millis = connectTimerContext.stop() / MILLIS_IN_NANOSECONDS;
         LOG.info("Connection took " + millis + " milliseconds");
     }
 
