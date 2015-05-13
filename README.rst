@@ -102,7 +102,7 @@ to a Cassandra datastore.
 Crossdata in a distributed environment
 ======================================
 
-In this link `link <doc/src/site/sphinx/DistributedCrossdata.rst>`_ you can read how to configure crossdata in a
+In this `link <doc/src/site/sphinx/DistributedCrossdata.rst>`_ you can read how to configure crossdata in a
 distributed environment.
 
 

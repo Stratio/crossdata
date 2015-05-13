@@ -27,7 +27,8 @@ instance, and set the following params:
 
  - crossdata-server.config.grid.persistence-path: This parameter is the local path where crossdata store all needed metadata.
 
- This is an example of the server parameters configuration::
+
+This is an example of the server parameters configuration::
 
     crossdata-server.akka.remote.netty.tcp.hostname = "10.90.0.101"
     crossdata-server.akka.remote.netty.tcp.port = 13420
@@ -53,7 +54,7 @@ This file contains:
 
  - crossdata-driver.config.cluster.actor: Name of the cluster actor.
 
- This is an example of driver-application file::
+This is an example of driver-application file::
 
     crossdata-driver.config.cluster.name = "CrossdataServerCluster"
     crossdata-driver.config.cluster.actor = "crossdata-server"
@@ -76,7 +77,7 @@ The params of this file are:
 
  - crossdata-connector.config.akka.number.connector-actor: Number of threads receiving incoming queries.
 
-  This is an example of connector-application file::
+This is an example of connector-application file::
 
     crossdata-connector.akka.cluster.seed-nodes = ["akka.tcp://CrossdataServerCluster@10.90.0.101:13420",
     "akka.tcp://CrossdataServerCluster@10.90.0.102:13420","akka.tcp://CrossdataServerCluster@10.90.0.103:13420"]
