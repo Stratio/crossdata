@@ -156,6 +156,13 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         this.selectExpression = selectExpression;
     }
 
+    /**
+     * Class constructor.
+     *
+     * @param selectExpression The
+     *                         {@link com.stratio.crossdata.common.statements.structures.SelectExpression} of the
+     *                         Select statement.
+     */
     public SelectStatement(SelectExpression selectExpression) {
         this(selectExpression.getSelectorList().get(0).getTableName());
         this.selectExpression = selectExpression;

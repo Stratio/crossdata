@@ -375,6 +375,11 @@ public final class StringUtils implements Serializable {
         return obj;
     }
 
+    /**
+     * Extrat the identification of the Host from a akka URL
+     * @param ar a akka URL
+     * @return the Host Address
+     */
     public static String extractHost(String ar) {
         String host = ar;
         if(ar.matches("akka\\.tcp://(.+)@(.+):(.+)")){

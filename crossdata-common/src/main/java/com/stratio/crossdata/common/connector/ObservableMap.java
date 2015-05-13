@@ -31,7 +31,12 @@ import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
 
 /**
- * An implementation of Map where multiple listeners can be registered in order to send them automatically any change in the metadata.
+ * An implementation of Map where multiple listeners can be registered in order to send them automatically any change
+ * in the metadata.
+ *
+ *  @param <K> The Name used as Key
+ *  @param <V> The UpdatableMetadata used as value
+ *
  */
 public class ObservableMap<K extends Name, V extends UpdatableMetadata>
         implements Map<K, V>, Serializable {

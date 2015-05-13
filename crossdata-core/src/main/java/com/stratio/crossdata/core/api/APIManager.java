@@ -599,6 +599,7 @@ public class APIManager {
      * @return The result after resetting the Metadata Manager.
      */
     private Result createResetServerDataCommand(){
+
         Collection<IParsedQuery> commands = new ArrayList<>();
         for (ClusterMetadata cluster: MetadataManager.MANAGER.getClusters()){
             for (ConnectorName connector : cluster.getConnectorAttachedRefs().keySet()){
@@ -617,7 +618,7 @@ public class APIManager {
 
     private ForceDetachQuery createForceDetachQuery(ClusterMetadata cluster, ConnectorName connector) {
         ClusterName clusterName = cluster.getName();
-        Set<String> actorRefs = Collections.singleton(MetadataManager.MANAGER.getConnectorRef(connector, planner.getHost()));
+        Set<String> actorRefs = MetadataManager.MANAGER.getConnectorRefs(connector);
 
         Map<String, String> clusterProperties = convertSelectorMapToStringMap(MetadataManager.MANAGER.getConnector(connector).getClusterProperties().get(clusterName));
         Map<String, String> clusterOptions = convertSelectorMapToStringMap(MetadataManager.MANAGER.getCluster(clusterName).getOptions());

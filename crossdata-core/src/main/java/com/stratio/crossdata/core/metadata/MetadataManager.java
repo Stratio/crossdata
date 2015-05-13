@@ -787,10 +787,20 @@ public enum MetadataManager {
      * Return a connector actor ref in the metadata store.
      *
      * @param name Name for the selected connector.
+     * @param host host to be used for local affinity.
      * @return Connector actor ref.
      */
     public String getConnectorRef(ConnectorName name, String host) {
         return getConnector(name).getActorRef(host);
+    }
+
+    /**
+     * Returns all connectors actor ref in the metadata store.
+     * @param name Name for the selected connector
+     * @return
+     */
+    public Set<String> getConnectorRefs(ConnectorName name){
+        return getConnector(name).getActorRefs();
     }
 
     /**
