@@ -15,17 +15,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.stratio.connector.inmemory.datastore.datatypes;
 
-import com.stratio.connector.inmemory.datastore.selector.InMemorySelector;
-
+import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
+/**
+ * Represents a Simple Key-Value pair.
+ */
 public class SimpleValue {
 
     private InMemorySelector column;
     private Object value;
 
 
+    /**
+     * Build a Simple Value with the Column and the value.
+     * @param column
+     * @param value
+     */
     public SimpleValue(InMemorySelector column, Object value){
         this.column = column;
         this.value = value;

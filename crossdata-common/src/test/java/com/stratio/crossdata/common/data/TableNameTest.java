@@ -19,6 +19,7 @@ package com.stratio.crossdata.common.data;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
+
 import com.stratio.crossdata.common.utils.Constants;
 
 public class TableNameTest {
@@ -26,8 +27,9 @@ public class TableNameTest {
     @Test
     public void isVirtualTest() {
 
-        Assert.assertFalse((new TableName("virtual","virtual").isVirtual()));
+        Assert.assertFalse((new TableName("virtual", "virtual").isVirtual()));
         Assert.assertFalse((new TableName("virtual", Constants.VIRTUAL_NAME).isVirtual()));
         Assert.assertTrue((new TableName(Constants.VIRTUAL_NAME, "").isVirtual()));
     }
+
 }

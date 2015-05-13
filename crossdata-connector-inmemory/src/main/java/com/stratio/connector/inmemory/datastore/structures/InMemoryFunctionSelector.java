@@ -16,22 +16,16 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.selector;
+package com.stratio.connector.inmemory.datastore.structures;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.stratio.connector.inmemory.datastore.functions.AbstractInMemoryFunction;
-import com.stratio.connector.inmemory.datastore.functions.ConcatFunction;
-import com.stratio.connector.inmemory.datastore.functions.CountFunction;
-import com.stratio.connector.inmemory.datastore.functions.NowFunction;
-import com.stratio.connector.inmemory.datastore.functions.ToUpperFunction;
-
 /**
  * In-memory function selector.
  */
-public class InMemoryFunctionSelector extends InMemorySelector{
+public class InMemoryFunctionSelector extends InMemorySelector {
 
     /**
      * List of arguments.
@@ -41,15 +35,15 @@ public class InMemoryFunctionSelector extends InMemorySelector{
     /**
      * Map of functions associating function name and implementing class.
      */
-    private static final Map<String, Class> functions = new HashMap<>();
+    private static final Map<String, Class> FUNCTIONS = new HashMap<>();
 
     static {
         //Aggregations
-        functions.put("count", CountFunction.class);
+        FUNCTIONS.put("count", CountFunction.class);
         //Simple functions
-        functions.put("now", NowFunction.class);
-        functions.put("toUpper", ToUpperFunction.class);
-        functions.put("concat", ConcatFunction.class);
+        FUNCTIONS.put("now", NowFunction.class);
+        FUNCTIONS.put("toUpper", ToUpperFunction.class);
+        FUNCTIONS.put("concat", ConcatFunction.class);
     }
 
     /**
@@ -65,11 +59,11 @@ public class InMemoryFunctionSelector extends InMemorySelector{
 
     /**
      * Get the implementing function.
-     * @return A {@link com.stratio.connector.inmemory.datastore.functions.AbstractInMemoryFunction}.
+     * @return A {@link AbstractInMemoryFunction}.
      * @throws Exception If the function cannot be defined.
      */
     public AbstractInMemoryFunction getFunction() throws Exception{
-        AbstractInMemoryFunction f = ((AbstractInMemoryFunction) functions.get(this.getName()).newInstance());
+        AbstractInMemoryFunction f = ((AbstractInMemoryFunction) FUNCTIONS.get(this.getName()).newInstance());
         f.setArguments(this.arguments);
         return f;
     }

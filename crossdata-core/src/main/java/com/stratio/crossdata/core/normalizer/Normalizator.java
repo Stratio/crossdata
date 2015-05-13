@@ -101,6 +101,8 @@ public class Normalizator {
 
     private Set<TableName> joinTableSet = new HashSet<>();
 
+    private Set<String> aliasSet =new HashSet<>();
+
     /**
      * Class Constructor.
      *
@@ -450,21 +452,6 @@ public class Normalizator {
         }
     }
 
-    private void checkFormatBySelectorIdentifierHaving(Selector selector, Set<ColumnName> columnNames)
-            throws ValidationException {
-        switch (selector.getType()) {
-        case FUNCTION:
-            break;
-        case COLUMN:
-            checkColumnSelector((ColumnSelector) selector);
-            if (!columnNames.add(((ColumnSelector) selector).getName())) {
-                throw new BadFormatException("COLUMN into group by is repeated");
-            }
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk include into Having is not valid");
-        }
-    }
 
     private void checkGroupByColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
         switch (selector.getType()) {
@@ -482,16 +469,6 @@ public class Normalizator {
         }
     }
 
-    private void checkHavingColumns(Selector selector, Set<ColumnName> columnNames) throws BadFormatException {
-        switch (selector.getType()) {
-        case FUNCTION:
-            break;
-        case COLUMN:
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk is not valid with having statements");
-        }
-    }
 
     /**
      * Normalize an specific Having of a parsed query.
@@ -678,35 +655,10 @@ public class Normalizator {
             throw new BadFormatException("Relations can't be on the left side of other relations.");
         case FUNCTION:
             checkFunctionSelector((FunctionSelector) relation.getLeftTerm());
-        }
-    }
-
-    private void checkHavingRelationFormatLeft(Relation relation) throws ValidationException {
-        switch (relation.getLeftTerm().getType()) {
-        case FUNCTION:
             break;
-        case COLUMN:
-            checkColumnSelector((ColumnSelector) relation.getLeftTerm());
-            break;
-        case ASTERISK:
-            throw new BadFormatException("Asterisk not supported in relations.");
-        case STRING:
-        case FLOATING_POINT:
-        case BOOLEAN:
-        case INTEGER:
-            if (relation.getOperator() == Operator.EQ) {
-                throw new YodaConditionException();
-            }
-            break;
-        case SELECT:
-            ExtendedSelectSelector extendedSelectSelector = (ExtendedSelectSelector) relation.getLeftTerm();
-            SelectValidatedQuery selectValidatedQuery = normalizeInnerSelect(
-                    extendedSelectSelector.getSelectParsedQuery(),
-                    new HashSet<>(fields.getTableNames()));
-            extendedSelectSelector.setSelectValidatedQuery(selectValidatedQuery);
-            break;
-        case RELATION:
-            throw new BadFormatException("Relations can't be on the left side of other relations.");
+        default:
+            throw new BadFormatException("Relations can't support this selector type: "+ relation.getLeftTerm()
+                    .getType().toString());
         }
     }
 
@@ -751,6 +703,11 @@ public class Normalizator {
         case GROUP:
             checkGroupSelector(relation.getLeftTerm(), relation.getOperator(), (GroupSelector) relation.getRightTerm());
             break;
+        case LIST:
+            break;
+        default:
+            throw new BadFormatException("Relations can't support this selector type: "+ relation.getRightTerm()
+                    .getType().toString());
         }
 
     }
@@ -993,120 +950,30 @@ public class Normalizator {
         for (Selector selector : selectors) {
             switch (selector.getType()) {
             case FUNCTION:
-                FunctionSelector functionSelector = (FunctionSelector) selector;
-                getNormalizedFunctionAlias(functionSelector);
-                checkFunctionSelector(functionSelector);
-                functionSelector.setTableName(firstTableName);
+                FunctionSelector functionSelector = getFunctionSelector(firstTableName, (FunctionSelector) selector);
                 result.add(functionSelector);
                 break;
             case COLUMN:
-                ColumnSelector columnSelector = (ColumnSelector) selector;
-                checkColumnSelector(columnSelector);
-
-                Iterator<TableName> tableNameIterator = fields.getPreferredTableNames().iterator();
-
-                TableName currentTableName = null;
-                boolean tableFound = false;
-                while (tableNameIterator.hasNext() && !tableFound) {
-                    currentTableName = tableNameIterator.next();
-                    //TODO Tablename should be always distinct from null
-                    if (columnSelector.getTableName() != null) {
-                        if (!columnSelector.getName().getTableName().getName().equals(currentTableName.getName())) {
-                            if (!tableNameIterator.hasNext()) {
-                                throw new NotValidTableException(columnSelector.getName().getTableName());
-                            }
-                        } else {
-
-                            tableFound = !(columnSelector.getName().getTableName().getCatalogName() != null
-                                    && !columnSelector.getName().getTableName().getCatalogName().getName()
-                                    .equals(currentTableName.getCatalogName().getName()));
-                            if (!tableFound && !tableNameIterator.hasNext()) {
-                                throw new NotValidCatalogException(columnSelector.getTableName().getCatalogName());
-                            }
-                        }
+                ColumnSelector columnSelector = getColumnSelector((ColumnSelector) selector);
+                if(columnSelector.getAlias()!=null){
+                    if(aliasSet.contains(columnSelector.getAlias())){
+                        throw new BadFormatException("Duplicate Alias in select expression: " + columnSelector
+                                .getAlias());
+                    }else{
+                        aliasSet.add(columnSelector.getAlias());
                     }
                 }
-                columnSelector.setTableName(currentTableName);
-
                 result.add(columnSelector);
                 break;
             case RELATION:
-                RelationSelector rs = (RelationSelector) selector;
-                List<Selector> leftTerm = checkListSelector(
-                        Collections.singletonList(rs.getRelation().getLeftTerm()));
-                List<Selector> rightTerm = checkListSelector(
-                        Collections.singletonList(rs.getRelation().getRightTerm()));
-                rs.getRelation().setLeftTerm(leftTerm.get(0));
-                if ((rightTerm != null) && (!rightTerm.isEmpty())) {
-                    rs.getRelation().setRightTerm(rightTerm.get(0));
-                }
+                RelationSelector rs = getRelationSelector((RelationSelector) selector);
                 result.add(rs);
                 break;
             case ASTERISK:
                 result.addAll(checkAsteriskSelector());
                 break;
             case CASE_WHEN:
-                CaseWhenSelector caseWhenSelector = (CaseWhenSelector) selector;
-                List<Pair<List<AbstractRelation>, Selector>> restrictions = caseWhenSelector.getRestrictions();
-                Selector lastSelector = restrictions.get(0).getRight();
-                SelectorType lastType = lastSelector.getType();
-                if (lastType == SelectorType.RELATION) {
-                    RelationSelector rSel = (RelationSelector) lastSelector;
-                    lastType = rSel.getReturningType();
-                }
-                for (Pair<List<AbstractRelation>, Selector> pair : restrictions) {
-                    List<AbstractRelation> relations = pair.getLeft();
-                    for (AbstractRelation relation : relations) {
-                        checkRelation(relation);
-                    }
-                    //TODO Check column compatibility
-                    if (lastSelector.getType() != pair.getRight().getType()) {
-                        throw new BadFormatException(
-                                "All 'THEN' clauses in a CASE-WHEN select query must be of the same type");
-                    }
-                    lastSelector = pair.getRight();
-                }
-                SelectorType defaultType = caseWhenSelector.getDefaultValue().getType();
-                if (defaultType != lastType) {
-                    if (COLUMN.equals(lastType) && !COLUMN.equals(defaultType)) {
-
-                        // Check columns
-                        List<Selector> normalizeSelector = checkListSelector(Arrays.asList(lastSelector));
-                        lastSelector = normalizeSelector.get(0);
-
-                        //TODO getRealDatatype from subquery
-                        if (!lastSelector.getTableName().isVirtual()) {
-                            ColumnMetadata columnMetadata = MetadataManager.MANAGER
-                                    .getColumn(((ColumnSelector) lastSelector).getName());
-                            //TODO delete the EQ operator workaround
-                            checkCompatibility(columnMetadata, Operator.EQ, defaultType);
-                        }
-                    } else if (COLUMN.equals(defaultType) && !COLUMN.equals(lastType)) {
-
-                        // Check columns
-                        List<Selector> normalizeSelector = checkListSelector(
-                                Arrays.asList(caseWhenSelector.getDefaultValue()));
-                        caseWhenSelector.setDefaultValue(normalizeSelector.get(0));
-
-                        //TODO getRealDatatype from subquery
-                        if (!lastSelector.getTableName().isVirtual()) {
-                            ColumnMetadata columnMetadata = MetadataManager.MANAGER
-                                    .getColumn(((ColumnSelector) caseWhenSelector.getDefaultValue()).getName());
-                            //TODO delete the EQ operator workaround
-                            checkCompatibility(columnMetadata, Operator.EQ, lastType);
-                        }
-                    } else if (lastType.isNumeric() && defaultType.isNumeric()) {
-                        if (lastSelector.getType() == SelectorType.RELATION) {
-                            checkListSelector(Arrays.asList(lastSelector));
-                        }
-                        if (defaultType == SelectorType.RELATION) {
-                            checkListSelector(Arrays.asList(caseWhenSelector.getDefaultValue()));
-                        }
-                    } else {
-                        throw new BadFormatException(
-                                "ELSE clause in a CASE-WHEN select query must be of the same type of when clauses");
-                    }
-                }
+                CaseWhenSelector caseWhenSelector = getCaseWhenSelector((CaseWhenSelector) selector);
                 result.add(caseWhenSelector);
                 break;
             default:
@@ -1119,16 +986,136 @@ public class Normalizator {
         return result;
     }
 
+    private FunctionSelector getFunctionSelector(TableName firstTableName, FunctionSelector selector)
+            throws ValidationException {
+        FunctionSelector functionSelector = (FunctionSelector) selector;
+        getNormalizedFunctionAlias(functionSelector);
+        checkFunctionSelector(functionSelector);
+        functionSelector.setTableName(firstTableName);
+        return functionSelector;
+    }
+
+    private CaseWhenSelector getCaseWhenSelector(CaseWhenSelector selector) throws ValidationException {
+        CaseWhenSelector caseWhenSelector = (CaseWhenSelector) selector;
+        List<Pair<List<AbstractRelation>, Selector>> restrictions = caseWhenSelector.getRestrictions();
+        Selector lastSelector = restrictions.get(0).getRight();
+        SelectorType lastType = lastSelector.getType();
+        if (lastType == SelectorType.RELATION) {
+            RelationSelector rSel = (RelationSelector) lastSelector;
+            lastType = rSel.getReturningType();
+        }
+        for (Pair<List<AbstractRelation>, Selector> pair : restrictions) {
+            List<AbstractRelation> relations = pair.getLeft();
+            for (AbstractRelation relation : relations) {
+                checkRelation(relation);
+            }
+            //TODO Check column compatibility
+            if (lastSelector.getType() != pair.getRight().getType()) {
+                throw new BadFormatException(
+                        "All 'THEN' clauses in a CASE-WHEN select query must be of the same type");
+            }
+            lastSelector = pair.getRight();
+        }
+        SelectorType defaultType = caseWhenSelector.getDefaultValue().getType();
+        if (defaultType != lastType) {
+            if (COLUMN.equals(lastType) && !COLUMN.equals(defaultType)) {
+
+                // Check columns
+                List<Selector> normalizeSelector = checkListSelector(Arrays.asList(lastSelector));
+                lastSelector = normalizeSelector.get(0);
+
+                //TODO getRealDatatype from subquery
+                if (!lastSelector.getTableName().isVirtual()) {
+                    ColumnMetadata columnMetadata = MetadataManager.MANAGER
+                            .getColumn(((ColumnSelector) lastSelector).getName());
+                    //TODO delete the EQ operator workaround
+                    checkCompatibility(columnMetadata, Operator.EQ, defaultType);
+                }
+            } else if (COLUMN.equals(defaultType) && !COLUMN.equals(lastType)) {
+
+                // Check columns
+                List<Selector> normalizeSelector = checkListSelector(
+                        Arrays.asList(caseWhenSelector.getDefaultValue()));
+                caseWhenSelector.setDefaultValue(normalizeSelector.get(0));
+
+                //TODO getRealDatatype from subquery
+                if (!lastSelector.getTableName().isVirtual()) {
+                    ColumnMetadata columnMetadata = MetadataManager.MANAGER
+                            .getColumn(((ColumnSelector) caseWhenSelector.getDefaultValue()).getName());
+                    //TODO delete the EQ operator workaround
+                    checkCompatibility(columnMetadata, Operator.EQ, lastType);
+                }
+            } else if (lastType.isNumeric() && defaultType.isNumeric()) {
+                if (lastSelector.getType() == SelectorType.RELATION) {
+                    checkListSelector(Arrays.asList(lastSelector));
+                }
+                if (defaultType == SelectorType.RELATION) {
+                    checkListSelector(Arrays.asList(caseWhenSelector.getDefaultValue()));
+                }
+            } else {
+                throw new BadFormatException(
+                        "ELSE clause in a CASE-WHEN select query must be of the same type of when clauses");
+            }
+        }
+        return caseWhenSelector;
+    }
+
+    private RelationSelector getRelationSelector(RelationSelector selector) throws ValidationException {
+        RelationSelector rs = (RelationSelector) selector;
+        List<Selector> leftTerm = checkListSelector(
+                Collections.singletonList(rs.getRelation().getLeftTerm()));
+        List<Selector> rightTerm = checkListSelector(
+                Collections.singletonList(rs.getRelation().getRightTerm()));
+        rs.getRelation().setLeftTerm(leftTerm.get(0));
+        if ((rightTerm != null) && (!rightTerm.isEmpty())) {
+            rs.getRelation().setRightTerm(rightTerm.get(0));
+        }
+        return rs;
+    }
+
+    private ColumnSelector getColumnSelector(ColumnSelector selector) throws ValidationException {
+        ColumnSelector columnSelector = (ColumnSelector) selector;
+        checkColumnSelector(columnSelector);
+
+        Iterator<TableName> tableNameIterator = fields.getPreferredTableNames().iterator();
+
+        TableName currentTableName = null;
+        boolean tableFound = false;
+        while (tableNameIterator.hasNext() && !tableFound) {
+            currentTableName = tableNameIterator.next();
+            //TODO Tablename should be always distinct from null
+            if (columnSelector.getTableName() != null) {
+                if (!columnSelector.getName().getTableName().getName().equals(currentTableName.getName())) {
+                    if (!tableNameIterator.hasNext()) {
+                        throw new NotValidTableException(columnSelector.getName().getTableName());
+                    }
+                } else {
+
+                    tableFound = !(columnSelector.getName().getTableName().getCatalogName() != null
+                            && !columnSelector.getName().getTableName().getCatalogName().getName()
+                            .equals(currentTableName.getCatalogName().getName()));
+                    if (!tableFound && !tableNameIterator.hasNext()) {
+                        throw new NotValidCatalogException(columnSelector.getTableName().getCatalogName());
+                    }
+                }
+            }
+        }
+        columnSelector.setTableName(currentTableName);
+        return columnSelector;
+    }
+
     private FunctionSelector getNormalizedFunctionAlias(FunctionSelector functionSelector) {
         if (aliasFunctionMap.containsKey(functionSelector.getAlias())) {
             int index = aliasFunctionMap.get(functionSelector.getAlias());
-            functionSelector.setAlias(functionSelector.getAlias() + Integer.toString(index + 1));
             aliasFunctionMap.put(functionSelector.getAlias(), index + 1);
+            functionSelector.setAlias(functionSelector.getAlias() + Integer.toString(index + 1));
         } else {
             aliasFunctionMap.put(functionSelector.getAlias(), 0);
         }
         return functionSelector;
     }
+
+
 
     /**
      * Validate the Functions Selectors of a parsed query.
@@ -1180,24 +1167,15 @@ public class Normalizator {
                 ColumnName name = ((ColumnSelector) leftTerm).getName();
                 ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(name);
                 String leftType = "";
+
                 switch (columnMetadata.getColumnType().getCrossdataType().toUpperCase()) {
                 case "BIGINT":
-                    leftType = "INTEGER";
-                    break;
                 case "FLOAT":
-                    leftType = "FLOAT";
-                    break;
                 case "INT":
-                    leftType = "INTEGER";
-                    break;
                 case "TEXT":
-                    leftType = "STRING";
-                    break;
                 case "VARCHAR":
-                    leftType = "STRING";
-                    break;
                 case "NATIVE":
-                    leftType = "STRING";
+                case "LIST":
                     break;
                 default:
                     throw new NotMatchDataTypeException(leftTerm.getColumnName());
@@ -1334,9 +1312,7 @@ public class Normalizator {
             if (!indexFound) {
                 throw new BadFormatException("No index was found for the MATCH operator.");
             }
-        } else if ((operator != Operator.EQ) && (operator != Operator.GT) && (operator != Operator.GET) && (operator
-                != Operator.LT) && (operator != Operator.LET) && (operator != Operator.DISTINCT) &&
-                (operator != Operator.LIKE) && (operator != Operator.NOT_LIKE)) {
+        } else if ( !operator.isInGroup (Operator.Group.COMPARATOR)){
             throw new BadFormatException("String relations does not accept " + operator.toString() + " operator.");
         }
 

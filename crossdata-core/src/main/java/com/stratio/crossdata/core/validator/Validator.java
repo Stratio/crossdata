@@ -43,6 +43,8 @@ public class Validator {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Validator.class);
+    static final int MAX_PRIORITY = 1;
+    static final int MIN_PRIORITY = 9;
     private Normalizator normalizator = null;
 
     public IValidatedQuery validate(IParsedQuery parsedQuery) throws ValidationException, IgnoreQueryException {
@@ -151,8 +153,6 @@ public class Validator {
                 break;
             }
         }
-
-
         if (parsedQuery instanceof MetadataParsedQuery) {
             validatedQuery = new MetadataValidatedQuery((MetadataParsedQuery) parsedQuery);
         } else if (parsedQuery instanceof StorageParsedQuery) {
@@ -161,7 +161,6 @@ public class Validator {
         } else if (parsedQuery instanceof SelectParsedQuery) {
             validatedQuery = createValidatedQuery(normalizator, ((SelectParsedQuery) parsedQuery));
         }
-
         return validatedQuery;
     }
 
@@ -227,7 +226,7 @@ public class Validator {
         if (statement instanceof AttachConnectorStatement) {
             Integer priority = ((AttachConnectorStatement) statement).getPriority();
 
-            if (priority < 1 || priority > 9) {
+            if (priority < MAX_PRIORITY || priority > MIN_PRIORITY) {
                 throw new BadFormatException("The priority is out of range: Must be [1-9]");
 
             }
@@ -706,9 +705,6 @@ public class Validator {
         BadFormatException badFormatException = null;
         Selector resultingSelector = querySelector;
         switch (querySelector.getType()) {
-        case FUNCTION:
-            LOG.info("Functions are not supported yet for this statement.");
-            break;
         case COLUMN:
             ColumnName queryColumnName = ((ColumnSelector) querySelector).getName();
             ColumnMetadata rightColumnMetadata = MetadataManager.MANAGER.getColumn(queryColumnName);

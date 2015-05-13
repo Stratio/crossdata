@@ -26,7 +26,6 @@ import java.util.Map;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ParsingException;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.utils.StringUtils;
@@ -61,7 +60,7 @@ public class UpdateTableStatement extends StorageStatement implements ITableStat
      */
     public UpdateTableStatement(TableName tableName,
             List<Relation> assignations, List<Relation> whereClauses,
-            String properties) throws ParsingException {
+            String properties) {
         this.command = false;
 
         if (tableName.getName().isEmpty()) {

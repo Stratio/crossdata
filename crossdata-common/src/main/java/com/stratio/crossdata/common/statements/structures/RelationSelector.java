@@ -121,7 +121,6 @@ public class RelationSelector extends Selector {
     }
 
     public SelectorType getReturningType() {
-        SelectorType returningType = SelectorType.FLOATING_POINT;
-        return returningType;
+        return SelectorType.FLOATING_POINT;
     }
 }

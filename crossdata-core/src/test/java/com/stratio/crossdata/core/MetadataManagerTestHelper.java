@@ -85,7 +85,7 @@ public enum MetadataManagerTestHelper {
 
     private final Parser parser = new Parser();
     private final Validator validator = new Validator();
-    private final Planner planner = new Planner();
+    private final Planner planner = new Planner("127.0.0.1");
     private final APIManager apiManager = new APIManager(parser, validator, planner);
     private boolean initialized = false;
     private static final String VERSION = "0.3.0";

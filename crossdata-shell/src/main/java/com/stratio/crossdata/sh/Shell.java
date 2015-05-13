@@ -55,6 +55,7 @@ public class Shell {
      * Class logger.
      */
     private static final Logger LOG = Logger.getLogger(Shell.class);
+    static final int WAIT_TIME_FOR_ASYNC = 1000;
 
     /**
      * Help content to be shown when the internal command {@code help} is used.
@@ -345,9 +346,9 @@ public class Shell {
             StringBuilder sb = new StringBuilder(cmd);
             String toExecute;
             String currentPrompt = "";
+            cmd = console.readLine();
             while (!cmd.trim().toLowerCase().startsWith("exit")
                     && !cmd.trim().toLowerCase().startsWith("quit")) {
-                cmd = console.readLine();
                 sb.append(cmd).append(" ");
                 toExecute = sb.toString().replaceAll("\\s+", " ").trim();
                 if (toExecute.startsWith("//") || toExecute.startsWith("#")) {
@@ -372,13 +373,7 @@ public class Shell {
                     if (toExecute.toLowerCase().startsWith("help")) {
                         showHelp(sb.toString());
                     } else {
-                        try {
-                            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler,sessionId);
-                            LOG.info(ConsoleUtils.stringResult(result));
-                            updatePrompt(result);
-                        } catch (Exception ex) {
-                            LOG.error("Execution failed: " + ex.getMessage());
-                        }
+                        executeAsyncRawQuery(toExecute);
                     }
                     sb = new StringBuilder();
                     if(!console.getPrompt().startsWith(DEFAULT_PROMPT)){
@@ -407,6 +402,7 @@ public class Shell {
                         console.setPrompt(tempPrompt);
                     }
                 }
+                cmd = console.readLine();
             }
         } catch (IOException ex) {
             LOG.error("Cannot read from console.", ex);
@@ -415,11 +411,23 @@ public class Shell {
         }
     }
 
+    private void executeAsyncRawQuery(String toExecute) {
+        try {
+            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler,sessionId);
+            LOG.info(ConsoleUtils.stringResult(result));
+            updatePrompt(result);
+        } catch (Exception ex) {
+            LOG.error("Execution failed: " + ex.getMessage());
+        }
+    }
+
     /**
      * Execute the sentences found in a script. The file may contain empty lines and comment lines
      * using the prefix #.
      *
+     *
      * @param scriptPath The script path.
+     * @return false if the script has a command to exit; true otherwise.
      */
     public boolean executeScript(String scriptPath) {
         boolean enterLoop = true;
@@ -443,7 +451,7 @@ public class Shell {
                     } else {
                         if(useAsync){
                             result = crossdataDriver.executeAsyncRawQuery(query, resultHandler, sessionId);
-                            Thread.sleep(1000);
+                            Thread.sleep(WAIT_TIME_FOR_ASYNC);
                         } else {
                             result = crossdataDriver.executeRawQuery(query,sessionId);
                         }

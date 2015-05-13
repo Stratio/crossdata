@@ -18,13 +18,12 @@
 
 package com.stratio.connector.inmemory.datastore.datatypes;
 
-import com.stratio.crossdata.common.metadata.DataType;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.exceptions.ExecutionException;
-
-import java.util.HashSet;
-import java.util.Set;
 
 public abstract class AbstractInMemoryDataType {
 
@@ -33,7 +32,7 @@ public abstract class AbstractInMemoryDataType {
      */
     protected static final Logger LOG = Logger.getLogger(AbstractInMemoryDataType.class);
 
-    private static final Set<String> SUPPORTED_TYPES = new HashSet();
+    private static final Set<String> SUPPORTED_TYPES = new HashSet<>();
     static{
         SUPPORTED_TYPES.add(Boolean.class.getSimpleName());
         SUPPORTED_TYPES.add(String.class.getSimpleName());

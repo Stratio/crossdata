@@ -29,5 +29,5 @@ public interface ISqlExpression extends Serializable{
      * @param withAlias Whether the expression must use alias or qualified names.
      * @return          The sql string.
      */
-    public String toSQLString(boolean withAlias);
+    String toSQLString(boolean withAlias);
 }

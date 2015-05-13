@@ -19,8 +19,10 @@
 package com.stratio.crossdata.core.validator.statements;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.stratio.crossdata.common.statements.structures.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -29,12 +31,6 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.statements.structures.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.SelectExpression;
-import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.StorageParsedQuery;
@@ -69,6 +65,41 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         values.add(new StringSelector(tableName, "'mail@mail.com'"));
 
         StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("demo", "users"), columns,
+                null, values, false, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"),"sessionTest");
+
+        IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+    @Test
+    public void validateTypesOK() {
+        String query = "Insert into test.table2(name,surname,rating,member) values (substring(name),'surname',23.5,true;";
+        List<ColumnName> columns = new ArrayList<>();
+        List<Selector> values = new ArrayList<>();
+
+        TableName tableName = new TableName("test", "table2");
+
+        columns.add(new ColumnName(tableName, "name"));
+        columns.add(new ColumnName(tableName, "surname"));
+        columns.add(new ColumnName(tableName, "rating"));
+        columns.add(new ColumnName(tableName, "member"));
+
+        values.add(new FunctionSelector(tableName, "substring", Arrays.asList( (Selector) new ColumnSelector(new ColumnName(tableName,"name")))));
+        values.add(new StringSelector(tableName,"surname"));
+        values.add(new FloatingPointSelector(tableName, 23.5));
+        values.add(new BooleanSelector(tableName, true));
+
+        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("test", "table2"), columns,
                 null, values, false, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
         Validator validator = new Validator();
 
@@ -292,5 +323,45 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
             Assert.fail(e.getMessage());
         }
     }
+
+    @Test
+    public void insertIntoFromSelectWrongType() {
+        String query = "Insert into test.table2(name,surname,rating,member) values (substring(name),'surname',23.5, fake = fake;";
+        List<ColumnName> columns = new ArrayList<>();
+        List<Selector> values = new ArrayList<>();
+
+        TableName tableName = new TableName("test", "table2");
+
+        columns.add(new ColumnName(tableName, "name"));
+        columns.add(new ColumnName(tableName, "surname"));
+        columns.add(new ColumnName(tableName, "rating"));
+        columns.add(new ColumnName(tableName, "member"));
+
+        values.add(new FunctionSelector(tableName, "substring", Arrays.asList( (Selector) new ColumnSelector(new ColumnName(tableName,"name")))));
+        values.add(new StringSelector(tableName,"surname"));
+        values.add(new FloatingPointSelector(tableName, 23.5));
+        values.add(new RelationSelector(tableName, new Relation(new StringSelector("fake"), Operator.EQ, new StringSelector("fake"))));
+
+        StorageStatement insertIntoStatement = new InsertIntoStatement(new TableName("test", "table2"), columns,
+                null, values, false, null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("system"),"sessionTest");
+
+        IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.fail("insertIntoFromSelectWrongTypes: Validation should have failed");
+        } catch (ValidationException e) {
+            Assert.assertTrue(true, "ValidationException expected");
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
+
+
+
+
+
 
 }

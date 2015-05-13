@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
@@ -72,7 +73,7 @@ public class TweetsListener implements StatusListener {
         this.resultHandler = resultHandler;
         this.tableMetadata = tableMetadata;
         this.outputSelectorOrder = outputSelectorOrder;
-        this.durationInSeconds = (durationInMilliseconds / 1000);
+        this.durationInSeconds = TimeUnit.MILLISECONDS.toSeconds(durationInMilliseconds);
         lastDelivery = new DateTime();
     }
 

@@ -105,7 +105,10 @@ public class Relation extends AbstractRelation {
      * @return A set of {@link com.stratio.crossdata.common.data.TableName}.
      */
     public Set<TableName> getSelectorTables() {
-        return leftTerm.getSelectorTables();
+        Set<TableName> tableNames = new HashSet<>();
+        tableNames.addAll(leftTerm.getSelectorTables());
+        tableNames.addAll(rightTerm.getSelectorTables());
+        return tableNames;
     }
 
     /**

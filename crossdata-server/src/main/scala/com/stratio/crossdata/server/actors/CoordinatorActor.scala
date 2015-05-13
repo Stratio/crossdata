@@ -54,6 +54,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
   log.info("Lifting coordinator actor")
 
+  val host = coordinator.getHost
+
 
   def receive: Receive = {
 
@@ -242,8 +244,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             }
 
-          } else if (metadataWorkflow.getExecutionType == ExecutionType.REGISTER_TABLE_CREATE_CATALOG
-            || metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE_REGISTER_CATALOG) {
+          } else if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_TABLE_REGISTER_CATALOG) {
             //Connector is able to create the catalog of the registered table
             if (metadataWorkflow.getActorRef != null && metadataWorkflow.getActorRef.length() > 0) {
               val actorRef = context.actorSelection(metadataWorkflow.getActorRef)
@@ -418,8 +419,10 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
             val actorRefs = managementWorkflow.getActorRefs
             for(actorRef <- actorRefs){
-              val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(actorRef, false))
-              connectorSelection ! new DisconnectFromCluster(queryId, managementWorkflow.getConnectorClusterConfig.getName.getName)
+              if(actorRef != null){
+                val connectorSelection = context.actorSelection(StringUtils.getAkkaActorRefUri(actorRef, false))
+                connectorSelection ! new DisconnectFromCluster(queryId, managementWorkflow.getConnectorClusterConfig.getName.getName)
+              }
             }
 
             createExecutionInfoForDetach(managementWorkflow, queryId)
@@ -605,7 +608,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
                   updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
                 }
 
-                case ExecutionType.CREATE_TABLE_AND_CATALOG | ExecutionType.CREATE_TABLE_REGISTER_CATALOG | ExecutionType.REGISTER_TABLE_CREATE_CATALOG => {
+                case ExecutionType.CREATE_TABLE_AND_CATALOG | ExecutionType.CREATE_TABLE_REGISTER_CATALOG => {
                   val tableMetadata = mw.getTableMetadata
                   //TODO updateMetadata(mw.getCatalogMetadata, ...)?
                   updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
@@ -749,7 +752,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
     val listConnectorMetadata = MetadataManager.MANAGER.getAttachedConnectors(Status.ONLINE, clusterInvolved)
     listConnectorMetadata.asScala.toList.flatMap(actorToBroadcast).foreach(actor => broadcastMetadata(actor, uMetadata))
 
-    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
+    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] =
+        StringUtils.getAkkaActorRefUri(cMetadata.getActorRef(host), false) match {
       case null => List()
       case strActorRefUri => List(context.actorSelection(strActorRefUri))
     }
@@ -770,7 +774,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
     setConnectorMetadata.flatMap(actorToBroadcast).foreach(actor => broadcastMetadata(actor, cMetadata))
 
-    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] = StringUtils.getAkkaActorRefUri(cMetadata.getActorRef, false) match {
+    def actorToBroadcast(cMetadata: ConnectorMetadata): List[ActorSelection] =
+        StringUtils.getAkkaActorRefUri(cMetadata.getActorRef(host), false) match {
       case null => List()
       case strActorRefUri => List(context.actorSelection(strActorRefUri))
     }

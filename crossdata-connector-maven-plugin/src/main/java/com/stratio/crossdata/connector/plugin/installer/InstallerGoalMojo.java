@@ -53,7 +53,7 @@ import org.apache.maven.project.MavenProject;
 )
 public class InstallerGoalMojo extends AbstractMojo {
 
-    private final String UNIX_SCRIPT_REFERENCE = "/UnixScriptTemplate.st";
+    private static final String UNIX_SCRIPT_REFERENCE = "/UnixScriptTemplate.st";
 
     @Parameter(defaultValue = "${project}")
     private MavenProject project;
@@ -152,7 +152,7 @@ public class InstallerGoalMojo extends AbstractMojo {
         try {
             InstallerGoalLauncher.launchInstallerGoal(config,getLog());
         } catch (IOException e) {
-            throw  new MojoExecutionException("Problem with Launcher: " + e.getMessage(),e.getCause());
+            throw new MojoExecutionException("Problem with Launcher: " + e.getMessage(),e);
         }
     }
 
@@ -177,7 +177,7 @@ public class InstallerGoalMojo extends AbstractMojo {
             getLog().debug(new StringBuilder().append("Resolve: ").append(projectArtifact.getArtifactId())
                     .append("PATH: ").append(projectArtifact.getFile()));
         } catch (ArtifactResolutionException | ArtifactNotFoundException e) {
-            throw new MojoFailureException("Not resolver main project JAR", e.getCause());
+            throw new MojoFailureException("Not resolver main project JAR", e);
         }
         return projectArtifact.getFile();
     }

@@ -16,29 +16,28 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.functions;
+package com.stratio.connector.inmemory.datastore.structures;
 
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
- * Count the number of elements in a list of rows.
+ * Function to transform a string into upper case.
  */
-public class CountFunction extends AbstractInMemoryFunction {
+public class ToUpperFunction extends AbstractInMemoryFunction {
 
-    public CountFunction(){
-        this.rowFunction = false;
-    }
+    @Override public Object apply(Map<String, Integer> columnIndex, SimpleValue[] row) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        for(InMemorySelector selector : arguments){
+            if(InMemoryFunctionSelector.class.isInstance(selector)){
+                AbstractInMemoryFunction f = InMemoryFunctionSelector.class.cast(selector).getFunction();
+                sb.append(f.apply(columnIndex, row).toString());
+            }else{
+                sb.append(row[columnIndex.get(selector.getName())].getValue());
+            }
+        }
 
-    @Override public List<SimpleValue[]> apply(Map<String, Integer> columnIndex, List<SimpleValue[]> rows) throws Exception {
-
-        List<SimpleValue []> result = new ArrayList<>();
-        SimpleValue [] size = {new SimpleValue(rows.size())};
-        result.add(size);
-        return result;
+        return sb.toString().toUpperCase();
     }
 }

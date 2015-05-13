@@ -385,21 +385,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      */
     @Override
     public String toString() {
-        return toString(false);
-    }
 
-
-    /**
-     * Creates a String representing the Statement with SQL_92 syntax.
-     *
-     * @return String
-     */
-    @Deprecated
-    public String toSQLString() {
-      return toString(true);
-    }
-
-    private String toString(boolean withSQLSyntax){
         StringBuilder sb = new StringBuilder("SELECT ");
         if (selectExpression != null) {
             sb.append(selectExpression.toString());
@@ -407,7 +393,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         sb.append(" FROM ");
 
         if(subqueryInc){
-            sb.append("( ").append(subquery.toString(withSQLSyntax)).append(" ) AS " ).append(subqueryAlias);
+            sb.append("( ").append(subquery.toString()).append(" ) AS " ).append(subqueryAlias);
         }else{
             if (catalogInc) {
                 sb.append(catalog).append(".");
@@ -415,7 +401,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(tableName);
         }
 
-        if (!withSQLSyntax && windowInc) {
+        if ( windowInc) {
             sb.append(" WITH WINDOW ").append(window.toString());
         }
 
@@ -428,11 +414,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
         if ((where != null) && (!where.isEmpty())) {
             sb.append(" WHERE ");
-            if(withSQLSyntax) {
-                sb.append(StringUtils.stringList(where, " AND ").replaceAll(Operator.MATCH.toString(),"LIKE"));
-            } else{
-                sb.append(StringUtils.stringList(where, " AND "));
-            }
+            sb.append(StringUtils.stringList(where, " AND "));
         }
 
         if (groupInc) {
@@ -441,11 +423,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
         if ((havingInc)&& (havingClause!=null)) {
             sb.append(" HAVING ");
-            if(withSQLSyntax) {
-                sb.append(StringUtils.stringList(havingClause, " AND ").replaceAll(Operator.MATCH.toString(),"LIKE"));
-            } else{
-                sb.append(StringUtils.stringList(havingClause, " AND "));
-            }
+            sb.append(StringUtils.stringList(havingClause, " AND "));
         }
 
         if (orderInc) {
@@ -456,16 +434,19 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
             sb.append(" LIMIT ").append(limit);
         }
 
-        String strSelectStatement = sb.toString().replaceAll("  ", " ");
+        return sb.toString().replaceAll("  ", " ");
 
-        return (withSQLSyntax) ? strSelectStatement.replaceAll(Constants.VIRTUAL_NAME +"\\.", "") : strSelectStatement;
     }
 
-
+    /**
+     * Creates a String representing the Statement with SQL_92 syntax.
+     *
+     * @return String
+     */
     public String toSQL92String(){
         StringBuilder sb = new StringBuilder("SELECT ");
         if (selectExpression != null) {
-            sb.append(selectExpression.toSQLString());
+            sb.append(selectExpression.toSQLString(true));
         }
         sb.append(" FROM ");
 

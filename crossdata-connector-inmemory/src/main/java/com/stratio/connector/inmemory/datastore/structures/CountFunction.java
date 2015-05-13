@@ -16,19 +16,32 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.functions;
+package com.stratio.connector.inmemory.datastore.structures;
 
 import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Return the current time stamp.
+ * Count the number of elements in a list of rows.
  */
-public class NowFunction extends AbstractInMemoryFunction{
+public class CountFunction extends AbstractInMemoryFunction {
 
-    @Override public Object apply(Map<String, Integer> columnIndex, SimpleValue[] row) throws Exception {
-        return new Date();
+    /**
+     * Build a CountFunction Object
+     */
+    public CountFunction(){
+        this.rowFunction = false;
+    }
+
+    @Override
+    public List<SimpleValue[]> apply(Map<String, Integer> columnIndex, List<SimpleValue[]> rows) throws Exception {
+
+        List<SimpleValue []> result = new ArrayList<>();
+        SimpleValue [] size = {new SimpleValue(rows.size())};
+        result.add(size);
+        return result;
     }
 }

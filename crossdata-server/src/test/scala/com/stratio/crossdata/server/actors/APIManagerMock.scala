@@ -25,7 +25,7 @@ import com.stratio.crossdata.core.planner.Planner
 import com.stratio.crossdata.core.validator.Validator
 import com.stratio.crossdata.core.parser.Parser
 
-class APIManagerMock extends APIManager(new Parser(), new Validator(), new Planner()) {
+class APIManagerMock extends APIManager(new Parser(), new Validator(), new Planner("127.0.0.1")) {
   override def processRequest(cmd:Command):Result={
     CommandResult.createCommandResult("OK META DATA")
   }
