@@ -379,7 +379,23 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
     case MemberUp(member) => {
       logger.info("Member up")
-      logger.debug("Member is Up: " + member.toString + member.getRoles + "!")
+      logger.info("Member is Up: " + member.toString + member.getRoles + "!")
+
+      val roleIterator = member.getRoles.iterator()
+
+      while (roleIterator.hasNext()) {
+        val role = roleIterator.next()
+        role match {
+          case "server" => {
+            val connectorActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "crossdata-server" / "ConnectorManagerActor")
+              connectorActorRef ! ConnectorUp(self.path.address.toString)
+            }
+          case _ => {
+            logger.debug(member.address + " has the role: " + role)
+          }
+
+        }
+      }
     }
     case state: CurrentClusterState => {
       logger.info("Current members: " + state.members.mkString(", "))

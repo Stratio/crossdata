@@ -29,16 +29,34 @@ import java.util.Set;
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
+
+/**
+ * An implementation of Map where multiple listeners can be registered in order to send them automatically any change
+ * in the metadata.
+ *
+ *  @param <K> The Name used as Key
+ *  @param <V> The UpdatableMetadata used as value
+ *
+ */
 public class ObservableMap<K extends Name, V extends UpdatableMetadata>
         implements Map<K, V>, Serializable {
 
     private static final long serialVersionUID = -5379923681871577907L;
     private Map<Name, UpdatableMetadata> innerMap = new LinkedHashMap<>();
     private List<IMetadataListener> listeners = new ArrayList<>();
+
+    /**
+     * Add a new {@link com.stratio.crossdata.common.connector.IMetadataListener}.
+     * @param listener A @link com.stratio.crossdata.common.connector.IMetadataListener}.
+     */
     public void addListener(IMetadataListener listener){
         listeners.add(listener);
     }
 
+    /**
+     * Remove the {@link com.stratio.crossdata.common.connector.IMetadataListener} if exists.
+     * @param listener A @link com.stratio.crossdata.common.connector.IMetadataListener}.
+     */
     public void removeListener( IMetadataListener listener) {
         listeners.remove(listener);
     }

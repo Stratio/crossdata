@@ -42,6 +42,7 @@ object APIActor {
 
 class APIActor(apiManager: APIManager, coordinatorActor: ActorRef) extends Actor with TimeTracker {
   override lazy val timerName = this.getClass.getName
+  val host = apiManager.getHost
   val log = Logger.getLogger(classOf[APIActor])
 
   def receive:Receive = {
@@ -111,7 +112,8 @@ class APIActor(apiManager: APIManager, coordinatorActor: ActorRef) extends Actor
   private def forwardCleanMetadata: Unit = {
     val connectorMetadataIterator = MetadataManager.MANAGER.getConnectors(Status.ONLINE).iterator()
     while (connectorMetadataIterator.hasNext) {
-      context.actorSelection(connectorMetadataIterator.next().getActorRef) ! Request(APICommand.CLEAN_METADATA.toString)
+      context.actorSelection(connectorMetadataIterator.next().getActorRef(host)) ! Request(
+        APICommand.CLEAN_METADATA.toString)
     }
   }
 

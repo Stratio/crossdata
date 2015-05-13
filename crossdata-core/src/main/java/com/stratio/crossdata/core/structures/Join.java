@@ -212,7 +212,9 @@ public class Join implements Serializable {
                 sb.append(", ");
             }
         }
-        sb.append(" ON ");
+        if(!relations.isEmpty()){
+            sb.append(" ON ");
+        }
         Iterator<AbstractRelation> it = relations.iterator();
         while (it.hasNext()) {
             sb.append(it.next());

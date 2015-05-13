@@ -20,11 +20,20 @@ package com.stratio.crossdata.core.planner;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.fail;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.DataStoreName;
@@ -47,10 +56,8 @@ import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.MetadataManagerTestHelper;
-import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
-import com.stratio.crossdata.core.query.SelectValidatedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
 
 /**
@@ -63,7 +70,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
      */
     private static final Logger LOG = Logger.getLogger(PlannerExecutionWorkflowTest.class);
 
-    private PlannerWrapper plannerWrapper = new PlannerWrapper();
+    private PlannerWrapper plannerWrapper = new PlannerWrapper("127.0.0.1");
 
     private ConnectorMetadata connector1 = null;
     private ConnectorMetadata connector2 = null;
@@ -220,7 +227,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
         }
 
         assertEquals(path.getAvailableConnectors().size(), 2, "Invalid size");
-        assertEquals(executionWorkflow.getActorRef(), connector3.getActorRef(), "Invalid connector selected");
+        assertEquals(executionWorkflow.getActorRef(), connector3.getActorRef("127.0.0.1"), "Invalid connector selected");
     }
 
 }

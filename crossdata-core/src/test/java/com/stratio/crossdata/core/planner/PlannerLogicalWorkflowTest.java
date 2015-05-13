@@ -192,6 +192,30 @@ public class PlannerLogicalWorkflowTest extends PlannerBaseTest {
     }
 
     @Test
+    public void selectSameColumnsWithoutAlias() {
+        String inputText = "SELECT demo.t1.a, demo.t1.a FROM demo.t1;";
+        String[] expectedColumns = { "demo.t1.a"};
+
+        String[] columnsT1 = { "a", "a" };
+        ColumnType[] columnTypes1 = {
+                new ColumnType(DataType.INT),
+                new ColumnType(DataType.INT) };
+        String[] partitionKeys1 = { "a" };
+        String[] clusteringKeys1 = { };
+        TableMetadata t1 = MetadataManagerTestHelper.HELPER.defineTable(new ClusterName("c"), "demo", "t1", columnsT1, columnTypes1,
+                partitionKeys1, clusteringKeys1);
+
+        LogicalWorkflow workflow = null;
+        try {
+            workflow = getWorkflow(inputText, "selectSameColumnsWithoutAlias", t1);
+        } catch (PlanningException e) {
+            fail("LogicalWorkflow couldn't be calculated");
+        }
+        assertColumnsInProject(workflow, "demo.t1", expectedColumns);
+        assertSelect(workflow);
+    }
+
+    @Test
     public void selectJoinMultipleColumns() {
         //TODO update on clause when fullyqualifed names are supported in the JOIN.
         String inputText = "SELECT demo.t1.a, demo.t1.b, demo.t2.c, demo.t2.d FROM demo.t1" +

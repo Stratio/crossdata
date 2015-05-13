@@ -20,7 +20,16 @@ package com.stratio.crossdata.common.manifest;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ *
+ */
 public class FunctionTypeHelper {
+
+    /**
+     * Class constructor.
+     */
+    private FunctionTypeHelper() {
+    }
 
     /**
      * Check the input signature compatibility given a registered input signature.

@@ -48,7 +48,6 @@ import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
-import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.manifest.FunctionType;
@@ -121,7 +120,7 @@ public enum MetadataManager {
      * @param name It is the object to check.
      * @return True if it exists.
      */
-    public boolean exists(Name name) throws MetadataManagerException {
+    public boolean exists(Name name){
         boolean result = false;
         if (name == null) {
             throw new MetadataManagerException("Name is null");
@@ -419,7 +418,6 @@ public enum MetadataManager {
             shouldExist(tableName);
             shouldExist(tableName.getCatalogName());
             beginTransaction();
-            metadata.remove(tableName);
             CatalogMetadata catalogMetadata = getCatalog(tableName.getCatalogName());
             catalogMetadata.getTables().remove(tableName);
             metadata.put(catalogMetadata.getName(), catalogMetadata);
@@ -761,6 +759,12 @@ public enum MetadataManager {
         createConnector(connectorMetadata, false);
     }
 
+    /**
+     * Delete an actor reference from the connector.
+     *
+     * @param name      The connector name.
+     * @param actorRef  The actor reference.
+     */
     public void removeActorRefFromConnector(ConnectorName name, String actorRef){
         ConnectorMetadata connectorMetadata = getConnector(name);
         connectorMetadata.removeActorRef(actorRef);
@@ -783,10 +787,11 @@ public enum MetadataManager {
      * Return a connector actor ref in the metadata store.
      *
      * @param name Name for the selected connector.
+     * @param host host to be used for local affinity.
      * @return Connector actor ref.
      */
-    public String getConnectorRef(ConnectorName name) {
-        return getConnector(name).getActorRef();
+    public String getConnectorRef(ConnectorName name, String host) {
+        return getConnector(name).getActorRef(host);
     }
 
     /**
@@ -1086,11 +1091,10 @@ public enum MetadataManager {
      * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
      * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
      * @throws RollbackException          If the transaction is marked as rollback only.
-     * @throws MetadataManagerException   If the connector does not exists.
      */
     public void deleteConnector(ConnectorName connectorName)
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
-            RollbackException, MetadataManagerException {
+            RollbackException {
         shouldBeInit();
         exists(connectorName);
         try {
@@ -1127,11 +1131,10 @@ public enum MetadataManager {
      * @throws HeuristicRollbackException If the transaction manager decides to rollback the transaction.
      * @throws HeuristicMixedException    If the transaction has been partially commited due to the use of a heuristic.
      * @throws RollbackException          If the transaction is marked as rollback only.
-     * @throws MetadataManagerException   If the datastore does not exists.
      */
     public void deleteDatastore(DataStoreName dataStoreName)
             throws NotSupportedException, SystemException, HeuristicRollbackException, HeuristicMixedException,
-            RollbackException, MetadataManagerException {
+            RollbackException{
         shouldBeInit();
         exists(dataStoreName);
         try {
@@ -1286,8 +1289,10 @@ public enum MetadataManager {
 
     /**
      * Check if the connector has associated the input signature of the function.
-     * @param fSelector The function Selector with the signature.
+     * @param fSelector     The function Selector with the signature.
      * @param connectorName The name of the connector.
+     * @param subQuery      The subquery.
+     * @param initialProjects The initial projects.
      * @return A boolean with the check result.
      */
     public boolean checkInputSignature(FunctionSelector fSelector, ConnectorName connectorName, SelectValidatedQuery subQuery, Set<Project> initialProjects)
@@ -1306,12 +1311,12 @@ public enum MetadataManager {
 
     /**
      * Check if the connector has associated the input signature of the function and its result signature.
-     * @param fSelector The function Selector with the signature.
+     * @param fSelector   The function Selector with the signature.
+     * @param retSelector The returned Selector.
      * @param connectorName The name of the connector.
      * @return A boolean with the check result.
      */
-    public boolean checkFunctionReturnSignature(FunctionSelector fSelector, Selector selector, ConnectorName
-            connectorName, SelectValidatedQuery subQuery) throws PlanningException {
+    public boolean checkFunctionReturnSignature(FunctionSelector fSelector, Selector retSelector, ConnectorName connectorName) throws PlanningException {
         boolean result = false;
         FunctionType ft = getFunction(connectorName, fSelector.getFunctionName());
         if(ft != null){
@@ -1319,7 +1324,7 @@ public enum MetadataManager {
             String resultStoredSignature = storedSignature.substring(storedSignature.lastIndexOf(":Tuple["),
                     storedSignature.length());
             String querySignature="";
-            switch(selector.getType()){
+            switch(retSelector.getType()){
 
             case FUNCTION:
             case RELATION:
@@ -1332,7 +1337,7 @@ public enum MetadataManager {
             case ASTERISK:
                 return true;
             case COLUMN:
-                ColumnSelector columnSelector=(ColumnSelector)selector;
+                ColumnSelector columnSelector=(ColumnSelector)retSelector;
                 querySignature="Tuple[" + columnSelector.getType().name() + "]";
                 break;
             case BOOLEAN:
@@ -1605,11 +1610,33 @@ public enum MetadataManager {
      * @param nodeName The {@link com.stratio.crossdata.common.data.NodeName}.
      * @return Whether the name should be asked.
      */
-    public boolean checkGetConnectorName(NodeName nodeName) {
+    public boolean notIsNodeOnline(NodeName nodeName) {
         boolean result = false;
         try {
             writeLock.lock();
             if ((!exists(nodeName)) || (getNode(nodeName).getStatus() == Status.OFFLINE)) {
+                setNodeStatus(nodeName, Status.INITIALIZING);
+                result = true;
+            }
+        } catch (Exception e) {
+            result = false;
+        } finally {
+            writeLock.unlock();
+        }
+        return result;
+    }
+
+    /**
+     * Check if a connector has already been associated with a name offline.
+     *
+     * @param nodeName The {@link com.stratio.crossdata.common.data.NodeName}.
+     * @return Whether the node is offline.
+     */
+    public boolean isNodeOffline(NodeName nodeName) {
+        boolean result = false;
+        try {
+            writeLock.lock();
+            if (exists(nodeName) && (getNode(nodeName).getStatus() == Status.OFFLINE)) {
                 setNodeStatus(nodeName, Status.INITIALIZING);
                 result = true;
             }

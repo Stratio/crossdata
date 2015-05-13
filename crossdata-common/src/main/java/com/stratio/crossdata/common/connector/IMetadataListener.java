@@ -17,24 +17,26 @@
  */
 package com.stratio.crossdata.common.connector;
 
+import java.io.Serializable;
+
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.metadata.UpdatableMetadata;
 
 /**
  * Metadata Listener interface.
  */
-public interface IMetadataListener {
+public interface IMetadataListener extends Serializable{
 
     /**
      * Update the metadata information in a connector context.
      * @param uMetadata The metadata.
      */
-    public void updateMetadata(UpdatableMetadata uMetadata);
+    void updateMetadata(UpdatableMetadata uMetadata);
 
     /**
      * Delete any metadata.
      * @param uName The name of the metadata to delete.
      */
-    public void deleteMetadata(Name uName);
+    void deleteMetadata(Name uName);
 
 }

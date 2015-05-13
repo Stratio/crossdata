@@ -16,19 +16,19 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.selector;
+package com.stratio.connector.inmemory.datastore.structures;
 
 /**
- * In-memory literal selectors.
+ * In-memory column selector.
  */
-public class InMemoryLiteralSelector extends InMemorySelector{
+public class InMemoryColumnSelector extends InMemorySelector {
 
     /**
      * Class constructor.
      *
      * @param name The selector name.
      */
-    public InMemoryLiteralSelector(String name) {
+    public InMemoryColumnSelector(String name) {
         super(name);
     }
 }

@@ -56,6 +56,11 @@ public class RelationDisjunction extends AbstractRelation {
         }
     }
 
+    /**
+     * Gets the inner relations.
+     *
+     * @return  The list of inner relations.
+     */
     public List<RelationTerm> getTerms() {
         return terms;
     }
@@ -173,18 +178,10 @@ public class RelationDisjunction extends AbstractRelation {
     public Set<TableName> getAbstractRelationTables() {
         Set<TableName> allTables = new LinkedHashSet<>();
         for(RelationTerm rt: terms){
-            allTables.addAll(getAbstractRelationTables(rt));
+            allTables.addAll( rt.getSelectorTables());
         }
         return allTables;
     }
-
-    public Set<TableName> getAbstractRelationTables(RelationTerm relationTerm) {
-        Set<TableName> allTables = new HashSet<>();
-        allTables.addAll(relationTerm.getSelectorTables());
-        return allTables;
-    }
-
-
 
 
     @Override

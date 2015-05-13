@@ -38,6 +38,7 @@ import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.ManifestHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.utils.StringUtils;
 
 /**
  * Metadata information associated with a Connector.
@@ -623,21 +624,39 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
     }
 
     /**
-     * Obtain an actor reference (randomly if more than one exists) of the connector.
+     * Obtain an actor reference, with local affinity if possible, of the connector.
+     * @param host host to be used for local affinity.
      * @return A String with the actor reference.
      */
-    public String getActorRef(){
-        // Random election (Kind of load balancing?)
+    public String getActorRef(String host){
         String actorRef = null;
         if(actorRefs != null && !actorRefs.isEmpty()){
-            int randomNum = (new Random()).nextInt(actorRefs.size());
-            int count = 0;
-            Iterator<String> iter = actorRefs.iterator();
-            actorRef = iter.next();
-            while(count < randomNum){
-                actorRef = iter.next();
-                count++;
+            for(String ar: actorRefs){
+                String arHost = StringUtils.extractHost(ar);
+                if(arHost.equals(host)){
+                    actorRef = ar;
+                    break;
+                }
             }
+        }
+        if (actorRef == null){
+            actorRef = getActorRef();
+        }
+        return actorRef;
+    }
+
+    private String getActorRef() {
+        String actorRef;
+        if((actorRefs == null) || actorRefs.isEmpty()){
+            return null;
+        }
+        int randomNum = (new Random()).nextInt(actorRefs.size());
+        int count = 0;
+        Iterator<String> iter = actorRefs.iterator();
+        actorRef = iter.next();
+        while(count < randomNum){
+            actorRef = iter.next();
+            count++;
         }
         return actorRef;
     }

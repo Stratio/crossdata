@@ -21,7 +21,7 @@ package com.stratio.crossdata.common.result;
 /**
  * InProgressResult class.
  */
-public class InProgressResult extends Result {
+public final class InProgressResult extends Result {
 
     private static final long serialVersionUID = -8835406950326992822L;
 

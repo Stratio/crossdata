@@ -16,19 +16,27 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.selector;
+package com.stratio.crossdata.communication
 
-/**
- * In-memory column selector.
- */
-public class InMemoryColumnSelector extends InMemorySelector{
+import com.stratio.crossdata.common.data.Name
+import com.stratio.crossdata.common.metadata.UpdatableMetadata
+import difflib.Patch
 
-    /**
-     * Class constructor.
-     *
-     * @param name The selector name.
-     */
-    public InMemoryColumnSelector(String name) {
-        super(name);
-    }
-}
+//CONNECTOR messages
+case class Start()
+
+case class Shutdown()
+
+case class HeartbeatSig()
+
+case class IAmAlive(queryId:String)
+
+case class Stop()
+
+case class UpdateMetadata(metadata: UpdatableMetadata, remove: java.lang.Boolean)
+
+case class PatchMetadata(diffs:Patch,metadataClass:java.lang.Class[_],name:Name)
+
+case class ConnectorUp(memberAddress: String)
+
+

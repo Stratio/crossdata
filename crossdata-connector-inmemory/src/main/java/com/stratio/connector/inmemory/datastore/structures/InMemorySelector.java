@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.selector;
+package com.stratio.connector.inmemory.datastore.structures;
 
 /**
  * Class definition of a generic selector for the in-memory datastore.

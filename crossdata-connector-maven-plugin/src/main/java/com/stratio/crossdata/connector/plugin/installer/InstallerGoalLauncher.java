@@ -26,8 +26,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.maven.plugin.logging.Log;
 
 public class InstallerGoalLauncher {
-
-
+    /**
+     * Class constructor.
+     */
+    private InstallerGoalLauncher() {
+    }
 
     public static void launchInstallerGoal(InstallerGoalConfig config, Log log) throws IOException {
 

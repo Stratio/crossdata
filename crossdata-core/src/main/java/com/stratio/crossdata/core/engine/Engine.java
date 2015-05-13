@@ -34,7 +34,7 @@ import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.grid.Grid;
 import com.stratio.crossdata.core.grid.GridException;
 import com.stratio.crossdata.core.grid.GridInitializer;
-import com.stratio.crossdata.core.loadWatcher.LoadWatcherManager;
+import com.stratio.crossdata.core.loadwatcher.LoadWatcherManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
@@ -112,9 +112,9 @@ public class Engine {
 
         parser = new Parser();
         validator = new Validator();
-        planner = new Planner();
+        planner = new Planner(config.getGridListenAddress());
         manager = new APIManager(parser, validator, planner);
-        coordinator = new Coordinator();
+        coordinator = new Coordinator(config.getGridListenAddress());
     }
 
     /**

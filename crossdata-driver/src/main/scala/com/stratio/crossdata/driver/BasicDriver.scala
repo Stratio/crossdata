@@ -46,6 +46,7 @@ object BasicDriver extends DriverConfig {
   val auth: Boolean= config.getBoolean("config.authentication")
   val serverPathName:String = config.getString("config.serverPathName")
   val crossdataServerClusterName:String= config.getString("config.crossdataServerClusterName")
+  val localAffinity:Boolean=config.getBoolean("config.localAffinity")
 
   def getBasicDriverConfigFromFile:BasicDriverConfig = {
     logger.debug("RetryTimes    --> " + retryTimes)
@@ -79,6 +80,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   val serverPathName:String = BasicDriver.serverPathName
   val crossdataServerClusterName=BasicDriver.crossdataServerClusterName
   val cpuLoadPingTimeInMillis:Long = 5000
+  val localAffinity:Boolean=BasicDriver.localAffinity
   
   lazy val logger = BasicDriver.logger
   lazy val queries: java.util.Map[String, QueryData] = new java.util.HashMap[String, QueryData]

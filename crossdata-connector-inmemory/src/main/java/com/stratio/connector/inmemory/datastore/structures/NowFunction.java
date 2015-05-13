@@ -16,26 +16,19 @@
  * under the License.
  */
 
-package com.stratio.connector.inmemory.datastore.selector;
+package com.stratio.connector.inmemory.datastore.structures;
 
-import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.connector.inmemory.datastore.datatypes.SimpleValue;
 
-public class InMemoryJoinSelector extends InMemorySelector {
+import java.util.Date;
+import java.util.Map;
 
-    private Selector myTerm;
-    private Selector otherTerm;
+/**
+ * Return the current time stamp.
+ */
+public class NowFunction extends AbstractInMemoryFunction {
 
-    public InMemoryJoinSelector(String name, Selector myTerm, Selector otherTerm) {
-        super(name);
-        this.myTerm = myTerm;
-        this.otherTerm = otherTerm;
-    }
-
-    public Selector getOtherTerm() {
-        return otherTerm;
-    }
-
-    public Selector getMyTerm() {
-        return myTerm;
+    @Override public Object apply(Map<String, Integer> columnIndex, SimpleValue[] row) throws Exception {
+        return new Date();
     }
 }

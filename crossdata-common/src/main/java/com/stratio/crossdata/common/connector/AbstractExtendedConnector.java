@@ -18,16 +18,11 @@
 
 package com.stratio.crossdata.common.connector;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import com.codahale.metrics.Metric;
-import com.stratio.crossdata.common.annotation.Experimental;
-import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.data.ConnectionStatus;
 import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import scala.Option;
 
@@ -37,6 +32,11 @@ import scala.Option;
  */
 public abstract class AbstractExtendedConnector implements IConnector{
 
+    /*
+    TODO RESTORE:
+    public Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout)
+    public Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout)
+     */
     /**
      * Parent connector application.
      */
@@ -60,31 +60,6 @@ public abstract class AbstractExtendedConnector implements IConnector{
     public Option<TableMetadata> getTableMetadata(ClusterName cluster, TableName tableName, int timeout){
         return connectorApp.getTableMetadata(cluster, tableName, timeout);
     }
-
-    /**
-     * Get the catalog metadata.
-     * @param catalogName target catalog.
-     * @param timeout the timeout in ms.
-     * @return A {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
-     */
-   /* public Option<CatalogMetadata> getCatalogMetadata(CatalogName catalogName, int timeout){
-        return connectorApp.getCatalogMetadata(catalogName, timeout);
-    }
-    */
-
-    /**
-     * Get the list of existing catalogs in a cluster.
-     * @param cluster target cluster.
-     * @param timeout the timeout in ms.
-     * @return A list of {@link com.stratio.crossdata.common.metadata.CatalogMetadata}.
-     */
-    /*@Experimental
-    public Option<List<CatalogMetadata>> getCatalogs(ClusterName cluster, int timeout){
-        if((connectorApp == null) || (cluster == null)){
-            return Option.empty();
-        }
-        return connectorApp.getCatalogs(cluster,timeout);
-    }*/
 
     /**
      * Get the connection status with the Crossdata server.

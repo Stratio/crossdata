@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.stratio.crossdata.common.statements.structures.*;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonNode;
@@ -39,6 +38,12 @@ import org.codehaus.jackson.map.SerializationConfig;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.ColumnType;
 import com.stratio.crossdata.common.metadata.DataType;
+import com.stratio.crossdata.common.statements.structures.BooleanSelector;
+import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
+import com.stratio.crossdata.common.statements.structures.ISqlExpression;
+import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.common.statements.structures.StringSelector;
 
 import difflib.DiffUtils;
 import difflib.Patch;
@@ -193,7 +198,7 @@ public final class StringUtils implements Serializable {
                     result = result.replace("%2F", "/");
                 }
                 if(result.contains("%")) {
-                    result = result.substring(0, result.lastIndexOf("%"));
+                    result = result.substring(0, result.lastIndexOf('%'));
                 }
             }
             return result;
@@ -388,5 +393,18 @@ public final class StringUtils implements Serializable {
             obj = jsonNode.getTextValue();
         }
         return obj;
+    }
+
+    /**
+     * Extrat the identification of the Host from a akka URL
+     * @param ar a akka URL
+     * @return the Host Address
+     */
+    public static String extractHost(String ar) {
+        String host = ar;
+        if(ar.matches("akka\\.tcp://(.+)@(.+):(.+)")){
+            host = ar.substring(ar.indexOf("@")+1, ar.indexOf(":", ar.indexOf(":")+1));
+        }
+        return host;
     }
 }
