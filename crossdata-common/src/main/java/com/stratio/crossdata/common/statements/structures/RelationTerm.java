@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.statements.structures;
 
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.utils.SqlStringUtils;
 import com.stratio.crossdata.common.utils.StringUtils;
 
 import java.io.Serializable;
@@ -167,7 +168,7 @@ public class RelationTerm implements Serializable, ISqlExpression {
         if(withParentheses){
             sb.append("(");
         }
-        sb.append(StringUtils.sqlStringList(relations, " AND ", withAlias));
+        sb.append(SqlStringUtils.sqlStringList(relations, " AND ", withAlias));
         if(withParentheses){
             sb.append(")");
         }

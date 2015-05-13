@@ -15,47 +15,23 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.annotation.Experimental;
 import com.stratio.crossdata.common.data.TableName;
-
-import java.io.Serializable;
-import java.util.Set;
 
 
 /**
- * Class that models the different types of relationships that can be found on a WHERE clause.
+ * It allows exclude information related to some tables.
  */
-public abstract class AbstractRelation implements ExtendedSqlExpression {
-
-    private static final long serialVersionUID = 4458788192163528306L;
-
-    protected boolean parenthesis = false;
-
-
-    public boolean isParenthesis() {
-        return parenthesis;
-    }
-
-    public void setParenthesis(boolean parenthesis) {
-        this.parenthesis = parenthesis;
-    }
-
+@Deprecated
+public interface ExtendedSqlExpression extends ISqlExpression{
 
     /**
-    /* Return whether the relation is basic.
-     * @return {@link com.stratio.crossdata.common.statements.structures.Relation}.
+     * Returns the string representation in sql syntax.
+     * @param withAlias Whether the expression must use alias or qualified names.
+     * @return          The sql string.
      */
-    public abstract boolean isBasicRelation();
-
-    /**
-     * Get the tables associated with the current selector.
-     *
-     * @return A set of {@link com.stratio.crossdata.common.data.TableName}.
-     */
-    public abstract Set<TableName> getAbstractRelationTables();
-
-
-
+    @Experimental
+    String toSQLString(boolean withAlias, TableName toExcludeTable);
 }

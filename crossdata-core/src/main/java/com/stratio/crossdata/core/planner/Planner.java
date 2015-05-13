@@ -156,11 +156,8 @@ public class Planner {
         ExecutionWorkflow executionWorkflow = buildExecutionWorkflow(query, workflow);
         //Return the planned query.
         SelectPlannedQuery plannedQuery = new SelectPlannedQuery(query, executionWorkflow);
-        //Add the sql direct query to the logical workflow.
-        ((QueryWorkflow)plannedQuery
-                .getExecutionWorkflow())
-                .getWorkflow()
-                .setSqlDirectQuery(query.getStatement().toSQL92String());
+        //Add the sql direct query to the logical workflow of the last executionWorkflow.
+        plannedQuery.getLastLogicalWorkflow().setSqlDirectQuery(query.getStatement().toSQL92String());
         LOG.info("SQL Direct: " + ((QueryWorkflow) plannedQuery.getExecutionWorkflow()).getWorkflow().getSqlDirectQuery());
         return plannedQuery;
     }

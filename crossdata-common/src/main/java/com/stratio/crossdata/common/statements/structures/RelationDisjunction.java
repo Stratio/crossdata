@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.utils.SqlStringUtils;
 import com.stratio.crossdata.common.utils.StringUtils;
 
 /**
@@ -98,7 +99,7 @@ public class RelationDisjunction extends AbstractRelation {
         if(isParenthesis()){
             sb.append("(");
         }
-        sb.append(StringUtils.sqlStringList(terms, " OR ", withAlias));
+        sb.append(SqlStringUtils.sqlStringList(terms, " OR ", withAlias));
         if(isParenthesis()){
             sb.append(")");
         }
@@ -194,5 +195,14 @@ public class RelationDisjunction extends AbstractRelation {
             }
         }
         return tableNameSet.size() <= 1;
+    }
+
+    @Override
+    public String toSQLString(boolean withAlias, TableName toExcludeTable) {
+        if(isBasicRelation() && getAbstractRelationTables().iterator().next().equals(toExcludeTable)){
+            return "";
+        }else {
+            return toSQLString(withAlias);
+        }
     }
 }
