@@ -39,7 +39,7 @@ public class DropTableStatement extends MetadataStatement {
     private boolean ifExists;
 
     /**
-     *Whether the drop is an unregister
+     * Whether the drop is an unregister.
      */
     private boolean isExternal=false;
 
