@@ -18,18 +18,10 @@
 
 package com.stratio.crossdata.core.statements;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
-import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -40,6 +32,9 @@ import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.Join;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Class that models a {@code SELECT} statement from the CROSSDATA language.

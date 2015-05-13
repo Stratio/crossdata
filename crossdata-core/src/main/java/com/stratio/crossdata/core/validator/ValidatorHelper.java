@@ -27,7 +27,6 @@ import com.stratio.crossdata.common.metadata.*;
 import com.stratio.crossdata.common.statements.structures.*;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
-import com.stratio.crossdata.core.normalizer.NormalizedFields;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
