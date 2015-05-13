@@ -18,5 +18,8 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
+/**
+ *Represnets a Term in a SQL query.
+ */
 public interface ITerm {
 }

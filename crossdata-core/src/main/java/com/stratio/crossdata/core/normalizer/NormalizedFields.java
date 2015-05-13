@@ -192,6 +192,10 @@ public class NormalizedFields {
         return implicitWhere;
     }
 
+    /**
+     * Adds a Relation yo the implicitWhere List
+     * @param relation
+     */
     public void addImplicitWhere(Relation relation) {
         implicitWhere.add(relation);
     }
