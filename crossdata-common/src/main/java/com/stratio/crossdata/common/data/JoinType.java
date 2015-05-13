@@ -27,6 +27,10 @@ public enum JoinType {
     FULL_OUTER,
     RIGHT_OUTER;
 
+    /**
+     *
+     * @return the String JoinType representation
+     */
     public String toSQLString(){
         return toString().replace("_"," ");
     }

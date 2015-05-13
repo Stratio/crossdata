@@ -65,6 +65,10 @@ public class Coordinator implements Serializable {
 
     private final String host;
 
+    /**
+     * Constructor class based in the Host.
+     * @param host the host used to get the AKKA actor reference.
+     */
     public Coordinator(String host) {
         this.host = host;
     }
