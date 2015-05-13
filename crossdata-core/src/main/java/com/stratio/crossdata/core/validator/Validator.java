@@ -44,6 +44,7 @@ public class Validator {
      */
     private static final Logger LOG = Logger.getLogger(Validator.class);
 
+
     /**
      * validate a parsed query.
      * @param parsedQuery The parsed query

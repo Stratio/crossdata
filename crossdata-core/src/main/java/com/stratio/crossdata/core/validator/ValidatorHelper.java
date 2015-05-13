@@ -123,7 +123,9 @@ public class ValidatorHelper {
         if (statement instanceof AttachConnectorStatement) {
             Integer priority = ((AttachConnectorStatement) statement).getPriority();
 
+
             if (priority < MAX_PRIORITY || priority > MIN_PRIORITY) {
+
                 throw new BadFormatException("The priority is out of range: Must be [1-9]");
 
             }
