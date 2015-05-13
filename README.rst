@@ -99,6 +99,13 @@ In this `link <GettingStarted.rst>`_ you can follow an example of Crossdata with
 to a Cassandra datastore.
 
 
+Crossdata in a distributed environment
+======================================
+
+In this link `link <doc/src/site/sphinx/DistributedCrossdata.rst>`_ you can read how to configure crossdata in a
+distributed environment.
+
+
 Connectors
 ==========
 
