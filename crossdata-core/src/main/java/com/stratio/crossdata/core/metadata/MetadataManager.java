@@ -795,6 +795,15 @@ public enum MetadataManager {
     }
 
     /**
+     * Returns all connectors actor ref in the metadata store.
+     * @param name Name for the selected connector
+     * @return
+     */
+    public Set<String> getConnectorRefs(ConnectorName name){
+        return getConnector(name).getActorRefs();
+    }
+
+    /**
      * Get the connectors that are attached to the clusters that store the requested tables.
      *
      * @param connectorStatus The status of the connector.
