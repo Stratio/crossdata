@@ -675,21 +675,35 @@ public class PlannerTest extends PlannerBaseTest {
                 "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id " +
                 "WHERE table1.user LIKE '*z';";
         QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
-                inputText, "testMultipleJoinAndPartiallyQualifiedFilter", false, table1, table2, table3);
+                inputText, "testMultipleJoinAndPartiallyQualifiedFilter", false, false, table1, table2, table3);
         assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
         assertNotNull(queryWorkflow, "Planner failed");
         assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 3, "Expecting 3 initial steps");
-        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep(),
-                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep(),
+        List<LogicalStep> initalSteps = queryWorkflow.getWorkflow().getInitialSteps();
+        Project projectWithFilter = null;
+        Project projectNoFilter1 = null;
+        Project projectNoFilter2 = null;
+        for(LogicalStep ls: initalSteps){
+            Project project = (Project) ls;
+            if(project.getTableName().equals(new TableName("demo", "table1"))){
+                projectWithFilter = project;
+            } else if(projectNoFilter1 == null) {
+                projectNoFilter1 = project;
+            } else {
+                projectNoFilter2 = project;
+            }
+        }
+
+        assertEquals(projectNoFilter1.getNextStep(),
+                projectWithFilter.getNextStep().getNextStep(),
                 "Expecting 2 first initial steps to converge to the same union step");
-        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().get(0).getNextStep().getNextStep(),
-                queryWorkflow.getWorkflow().getInitialSteps().get(2).getNextStep(),
+        assertEquals(projectNoFilter1.getNextStep().getNextStep(),
+                projectNoFilter2.getNextStep(),
                 "Expecting first and third initial steps to converge to the same union step");
         assertEquals(
-                queryWorkflow.getWorkflow().getInitialSteps().get(1).getNextStep().getNextStep().getNextStep().getClass(),
+                projectNoFilter2.getNextStep().getNextStep().getClass(),
                 Select.class,
                 "Last step should be a Select");
-
     }
 
     @Test
