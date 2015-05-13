@@ -25,10 +25,18 @@ import java.util.Set;
 
 import com.stratio.crossdata.common.metadata.Operations;
 
+/**
+ * Used to combine two conditions with the OR operator
+ */
 public class Disjunction extends TransformationStep implements ITerm {
 
     private final List<List<ITerm>> terms = new ArrayList<>();
 
+    /**
+     * Build a Disjunction using parametters.
+     * @param operations a java.util.Set of Operations
+     * @param terms a java.util.List<java.util.List<ITerm>>
+     */
     public Disjunction(Set<Operations> operations, List<List<ITerm>> terms) {
         super(operations);
         this.terms.addAll(terms);
@@ -38,6 +46,10 @@ public class Disjunction extends TransformationStep implements ITerm {
         return terms;
     }
 
+    /**
+     *
+     * @return The string representations os the Disjunction
+     */
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("DISJUNCTION - ");

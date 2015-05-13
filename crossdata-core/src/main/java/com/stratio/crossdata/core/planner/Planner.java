@@ -134,6 +134,10 @@ public class Planner {
     private static final Logger LOG = Logger.getLogger(Planner.class);
     private final String host;
 
+    /**
+     * Constructor class based in the Host.
+     * @param host the host used to get the AKKA actor reference.
+     */
     public Planner(String host) {
         this.host = host;
     }
