@@ -39,7 +39,7 @@ public interface IQueryEngine {
      *                            supported by the connector or ExecutionException if the execution of the required
      *                            steps fails.
      */
-    QueryResult execute(LogicalWorkflow workflow)
+    QueryResult execute(String queryId, LogicalWorkflow workflow)
             throws ConnectorException;
 
     /**

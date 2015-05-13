@@ -477,7 +477,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   private def methodExecute(ex:Execute, s:ActorRef): Unit ={
     try {
       runningJobs.send{runningJobs => runningJobs.put(ex.queryId, s); runningJobs}
-      val result = connector.getQueryEngine().execute(ex.workflow)
+      val result = connector.getQueryEngine().execute(ex.queryId, ex.workflow)
       result.setQueryId(ex.queryId)
       s ! result
       sendACK(s, ex.queryId)

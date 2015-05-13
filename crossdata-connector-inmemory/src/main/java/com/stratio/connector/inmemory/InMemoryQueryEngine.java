@@ -89,7 +89,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
     }
 
     @Override
-    public QueryResult execute(LogicalWorkflow workflow) throws ConnectorException {
+    public QueryResult execute(String queryId, LogicalWorkflow workflow) throws ConnectorException {
         //Init Metric
         Timer.Context executeTimerContext = executeTimer.time();
 
@@ -336,7 +336,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
     public void asyncExecute(String queryId, LogicalWorkflow workflow, IResultHandler resultHandler)
             throws ConnectorException {
 
-        QueryResult queryResult = execute(workflow);
+        QueryResult queryResult = execute(queryId, workflow);
         queryResult.setLastResultSet();
         queryResult.setQueryId(queryId);
         resultHandler.processResult(queryResult);
@@ -347,7 +347,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
             LogicalWorkflow workflow,
             IResultHandler resultHandler,
             int pageSize) throws ConnectorException {
-        QueryResult queryResult = execute(workflow);
+        QueryResult queryResult = execute(queryId, workflow);
         ResultSet resultSet = queryResult.getResultSet();
         List<Row> rows = resultSet.getRows();
         int counter = 0;

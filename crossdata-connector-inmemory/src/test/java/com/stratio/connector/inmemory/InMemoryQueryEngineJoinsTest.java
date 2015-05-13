@@ -89,7 +89,7 @@ public class InMemoryQueryEngineJoinsTest extends InMemoryQueryEngineTestParent 
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);
@@ -144,7 +144,7 @@ public class InMemoryQueryEngineJoinsTest extends InMemoryQueryEngineTestParent 
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);

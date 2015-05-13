@@ -88,7 +88,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);
@@ -112,7 +112,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);
@@ -146,7 +146,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);
@@ -211,7 +211,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         lw.setSqlDirectQuery("SELECT concat(test_catalog.users.id, test_catalog.users.name) AS concat, test_catalog.users.boss AS manager FROM test_catalog.users");
         QueryResult result = null;
         try {
-            result = connector.getQueryEngine().execute(lw);
+            result = connector.getQueryEngine().execute("qId", lw);
         } catch (ConnectorException e) {
             fail("Test selectWithFunctionAndAlias failed", e);
         }
@@ -298,7 +298,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         lw.setSqlDirectQuery("SELECT count(*) AS count FROM test_catalog.users");
         QueryResult result = null;
         try {
-            result = connector.getQueryEngine().execute(lw);
+            result = connector.getQueryEngine().execute("qId", lw);
         } catch (ConnectorException e) {
             fail("Test selectWithAggregationFunction failed", e);
         }
@@ -344,7 +344,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);
@@ -378,7 +378,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);
@@ -412,7 +412,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);
@@ -446,7 +446,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);
@@ -470,7 +470,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);
@@ -637,7 +637,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
 
         ResultSet results = null;
         try {
-            QueryResult result = connector.getQueryEngine().execute(workflow);
+            QueryResult result = connector.getQueryEngine().execute("qId", workflow);
             results = result.getResultSet();
         } catch (ConnectorException e) {
             fail("Cannot retrieve data", e);

@@ -57,7 +57,7 @@ public class TwitterQueryEngine implements IQueryEngine {
 
     /**
      * Execute a workflow to retrieve a subset of data.
-     *
+     * @param queryId Query identifier.
      * @param workflow The {@link com.stratio.crossdata.common.logicalplan.LogicalWorkflow} that
      *                 contains the {@link com.stratio.crossdata.common.logicalplan.LogicalStep} to be
      *                 executed.
@@ -67,7 +67,7 @@ public class TwitterQueryEngine implements IQueryEngine {
      *                                                                    steps fails.
      */
     @Override
-    public QueryResult execute(LogicalWorkflow workflow) throws ConnectorException {
+    public QueryResult execute(String queryId, LogicalWorkflow workflow) throws ConnectorException {
         throw new UnsupportedException("Operation not supported");
     }
 
