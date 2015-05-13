@@ -481,7 +481,7 @@ public class Shell {
     }
 
     /**
-     * Generate a Cool Welcome Screen
+     * Generate a Cool Welcome Screen.
      *
      * @return java.lang.String with the welcome Text.
      */

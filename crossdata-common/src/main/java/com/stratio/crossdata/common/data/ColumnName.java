@@ -189,7 +189,7 @@ public class ColumnName extends Name {
     }
 
     /**
-     * Get the sql syntax of the table name
+     * Get the sql syntax of the table name.
      * @return The String with the sql.
      */
     public String toSQLString() {
