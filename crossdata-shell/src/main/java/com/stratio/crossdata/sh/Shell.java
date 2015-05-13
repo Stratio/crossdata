@@ -346,9 +346,9 @@ public class Shell {
             StringBuilder sb = new StringBuilder(cmd);
             String toExecute;
             String currentPrompt = "";
+            cmd = console.readLine();
             while (!cmd.trim().toLowerCase().startsWith("exit")
                     && !cmd.trim().toLowerCase().startsWith("quit")) {
-                cmd = console.readLine();
                 sb.append(cmd).append(" ");
                 toExecute = sb.toString().replaceAll("\\s+", " ").trim();
                 if (toExecute.startsWith("//") || toExecute.startsWith("#")) {
@@ -402,6 +402,7 @@ public class Shell {
                         console.setPrompt(tempPrompt);
                     }
                 }
+                cmd = console.readLine();
             }
         } catch (IOException ex) {
             LOG.error("Cannot read from console.", ex);
