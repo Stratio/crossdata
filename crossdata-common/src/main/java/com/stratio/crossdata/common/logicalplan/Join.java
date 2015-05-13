@@ -138,9 +138,12 @@ public class Join extends UnionStep {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("JOIN (");
+        StringBuilder sb = new StringBuilder(type.toString());
+        sb.append(" JOIN (");
         sb.append(sourceIdentifiers.toString());
-        sb.append(") ON ").append(joinRelations.toString());
+        if(type != JoinType.CROSS){
+            sb.append(") ON ").append(joinRelations.toString());
+        }
         return sb.toString();
     }
 }
