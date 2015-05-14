@@ -18,10 +18,13 @@
 
 package com.stratio.crossdata.core.structures;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.Name;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.SelectSelector;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
@@ -120,5 +123,10 @@ public class ExtendedSelectSelector extends SelectSelector {
         result = 31 * result + (selectParsedQuery != null ? selectParsedQuery.hashCode() : 0);
         result = 31 * result + (selectValidatedQuery != null ? selectValidatedQuery.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return new HashSet<>(selectValidatedQuery.getTables());
     }
 }

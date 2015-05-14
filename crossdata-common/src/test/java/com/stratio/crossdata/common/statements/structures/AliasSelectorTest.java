@@ -18,10 +18,21 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.TableName;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class AliasSelectorTest {
+
+    @Test
+    public void getSelectorTables() {
+        StringSelector stringSelector = new StringSelector("str");
+        AliasSelector aliasSelector = new AliasSelector(stringSelector);
+        Assert.assertEquals(aliasSelector.getSelectorTables(), stringSelector.getSelectorTables() ,  "The tables should be the same as referenced selector tables");
+    }
 
     @Test
     public void equalsTest(){

@@ -20,6 +20,9 @@ package com.stratio.crossdata.common.statements.structures;
 
 import com.stratio.crossdata.common.data.TableName;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Integer value selector.
  */
@@ -119,5 +122,13 @@ public class GroupSelector extends Selector {
         }
         result+=firstValue.hashCode() + lastValue.hashCode();
         return result;
+    }
+
+    @Override
+    public Set<TableName> getSelectorTables() {
+        Set<TableName> tables =  new HashSet<>();
+        tables.addAll(firstValue.getSelectorTables());
+        tables.addAll(lastValue.getSelectorTables());
+        return tables;
     }
 }

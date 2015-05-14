@@ -19,7 +19,9 @@
 package com.stratio.crossdata.common.statements.structures;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -170,5 +172,17 @@ public class CaseWhenSelector extends Selector {
         return sb.toString();
     }
 
+    @Override
+    public Set<TableName> getSelectorTables() {
+        Set<TableName> tables =  new HashSet<>();
+        tables.addAll(defaultValue.getSelectorTables());
+        for (Pair<List<AbstractRelation>, Selector> restriction : restrictions) {
+            for (AbstractRelation abstractRelation : restriction.getLeft()) {
+                tables.addAll(abstractRelation.getAbstractRelationTables());
+            }
+            tables.addAll(restriction.getRight().getSelectorTables());
 
+        }
+        return tables;
+    }
 }
