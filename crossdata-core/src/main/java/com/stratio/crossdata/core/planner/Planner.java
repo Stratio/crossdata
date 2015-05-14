@@ -18,107 +18,27 @@
 
 package com.stratio.crossdata.core.planner;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Logger;
-
-import com.stratio.crossdata.common.data.AlterOperation;
-import com.stratio.crossdata.common.data.AlterOptions;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.Cell;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.IndexName;
-import com.stratio.crossdata.common.data.JoinType;
-import com.stratio.crossdata.common.data.Row;
-import com.stratio.crossdata.common.data.Status;
-import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.data.*;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.executionplan.ExecutionPath;
-import com.stratio.crossdata.common.executionplan.ExecutionType;
-import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
-import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
-import com.stratio.crossdata.common.executionplan.MetadataWorkflow;
-import com.stratio.crossdata.common.executionplan.QueryWorkflow;
-import com.stratio.crossdata.common.executionplan.ResultType;
-import com.stratio.crossdata.common.executionplan.StorageWorkflow;
-import com.stratio.crossdata.common.logicalplan.Disjunction;
-import com.stratio.crossdata.common.logicalplan.Filter;
-import com.stratio.crossdata.common.logicalplan.GroupBy;
-import com.stratio.crossdata.common.logicalplan.ITerm;
-import com.stratio.crossdata.common.logicalplan.Limit;
-import com.stratio.crossdata.common.logicalplan.LogicalStep;
-import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
-import com.stratio.crossdata.common.logicalplan.OrderBy;
-import com.stratio.crossdata.common.logicalplan.PartialResults;
-import com.stratio.crossdata.common.logicalplan.Project;
-import com.stratio.crossdata.common.logicalplan.Select;
-import com.stratio.crossdata.common.logicalplan.TransformationStep;
-import com.stratio.crossdata.common.logicalplan.UnionStep;
-import com.stratio.crossdata.common.logicalplan.Virtualizable;
-import com.stratio.crossdata.common.logicalplan.Window;
+import com.stratio.crossdata.common.executionplan.*;
+import com.stratio.crossdata.common.logicalplan.*;
 import com.stratio.crossdata.common.manifest.FunctionType;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
-import com.stratio.crossdata.common.metadata.ClusterMetadata;
-import com.stratio.crossdata.common.metadata.ColumnMetadata;
-import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
-import com.stratio.crossdata.common.metadata.ConnectorMetadata;
-import com.stratio.crossdata.common.metadata.DataType;
-import com.stratio.crossdata.common.metadata.IndexMetadata;
-import com.stratio.crossdata.common.metadata.IndexType;
-import com.stratio.crossdata.common.metadata.Operations;
-import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.AbstractRelation;
-import com.stratio.crossdata.common.statements.structures.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
-import com.stratio.crossdata.common.statements.structures.FunctionSelector;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.NullSelector;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
-import com.stratio.crossdata.common.statements.structures.RelationSelector;
-import com.stratio.crossdata.common.statements.structures.RelationTerm;
-import com.stratio.crossdata.common.statements.structures.SelectSelector;
-import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
+import com.stratio.crossdata.common.metadata.*;
+import com.stratio.crossdata.common.statements.structures.*;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
-import com.stratio.crossdata.core.query.BaseQuery;
-import com.stratio.crossdata.core.query.MetadataPlannedQuery;
-import com.stratio.crossdata.core.query.MetadataValidatedQuery;
-import com.stratio.crossdata.core.query.SelectParsedQuery;
-import com.stratio.crossdata.core.query.SelectPlannedQuery;
-import com.stratio.crossdata.core.query.SelectValidatedQuery;
-import com.stratio.crossdata.core.query.StoragePlannedQuery;
-import com.stratio.crossdata.core.query.StorageValidatedQuery;
+import com.stratio.crossdata.core.query.*;
 import com.stratio.crossdata.core.statements.*;
 import com.stratio.crossdata.core.structures.ExtendedSelectSelector;
 import com.stratio.crossdata.core.structures.Join;
 import com.stratio.crossdata.core.utils.CoreUtils;
 import com.stratio.crossdata.core.validator.Validator;
+import org.apache.log4j.Logger;
+
+import java.util.*;
 
 /**
  * Class in charge of defining the set of {@link com.stratio.crossdata.common.logicalplan.LogicalStep}
@@ -369,11 +289,8 @@ public class Planner {
         QueryWorkflow first = null;
         Map<PartialResults, ExecutionWorkflow> triggerResults = new LinkedHashMap<>();
         Map<UnionStep, ExecutionWorkflow> triggerWorkflow = new LinkedHashMap<>();
-        for (Map.Entry<UnionStep, LinkedHashSet<ExecutionPath>> entry: unionSteps.entrySet()) {
-            paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
-            pathsMap.put(entry.getKey(), paths);
-            mergeSteps.add(entry.getKey());
-        }
+
+        addPathsAndMergeSteps(unionSteps, mergeSteps, pathsMap);
 
         for(UnionStep mergeStep: mergeSteps) {
             Set<ConnectorMetadata> toRemove = new LinkedHashSet<>();
@@ -390,13 +307,8 @@ public class Planner {
             for (int index = 0; index < mergePaths.length; index++) {
                 toRemove.clear();
 
-                for (ConnectorMetadata connector: mergePaths[index].getAvailableConnectors()) {
-                    LOG.info("op: " + mergeStep.getOperations() + " -> " +
-                            connector.supports(mergeStep.getOperations()));
-                    if (!connector.supports(mergeStep.getOperations())) {
-                        toRemove.add(connector);
-                    }
-                }
+                getToRemove(mergeStep, toRemove, mergePaths[index]);
+
                 if (mergePaths[index].getAvailableConnectors().size() == toRemove.size()) {
                     //Add intermediate result node
                     PartialResults partialResults = new PartialResults(
@@ -466,6 +378,25 @@ public class Planner {
             }
         }
         return buildExecutionTree(first, triggerResults, triggerWorkflow);
+    }
+
+    private void getToRemove(UnionStep mergeStep, Set<ConnectorMetadata> toRemove, ExecutionPath mergePath) {
+        for (ConnectorMetadata connector: mergePath.getAvailableConnectors()) {
+            LOG.info("op: " + mergeStep.getOperations() + " -> " +
+                    connector.supports(mergeStep.getOperations()));
+            if (!connector.supports(mergeStep.getOperations())) {
+                toRemove.add(connector);
+            }
+        }
+    }
+
+    private void addPathsAndMergeSteps(Map<UnionStep, LinkedHashSet<ExecutionPath>> unionSteps, Set<UnionStep> mergeSteps, Map<UnionStep, ExecutionPath[]> pathsMap) {
+        ExecutionPath[] paths;
+        for (Map.Entry<UnionStep, LinkedHashSet<ExecutionPath>> entry: unionSteps.entrySet()) {
+            paths = entry.getValue().toArray(new ExecutionPath[entry.getValue().size()]);
+            pathsMap.put(entry.getKey(), paths);
+            mergeSteps.add(entry.getKey());
+        }
     }
 
     private Select generateSelectFromProject(Project project) {

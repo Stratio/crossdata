@@ -66,10 +66,6 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
         return statement;
     }
 
-    public String getSessionId() {
-       return super.getSessionId();
-    }
-
     /**
      * Get the inner parsed query.
      * @return The parsed query of the subquery.

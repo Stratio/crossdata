@@ -308,6 +308,7 @@ public class MetadataManagerTest {
                 connectorName + " should have the status : " + status);
     }
 
+
     @Test(dependsOnMethods = { "testCreateCatalog" } )
     public void testGetCatalogs() {
         // TODO We should avoid dependencies between tests.
@@ -466,6 +467,7 @@ public class MetadataManagerTest {
                 "Found:    " + connectors.size());
     }
 
+    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
     @Test(expectedExceptions = MetadataManagerException.class)
     public void testShouldBeUniqueException() {
         DataStoreName name = MetadataManagerTestHelper.HELPER.createTestDatastore();

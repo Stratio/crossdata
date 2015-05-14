@@ -608,7 +608,7 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatementSession("myCatalog", inputText, expectedText, "implicitJoin");
     }*/
 
-
+    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
     @Test
     public void testJoinAndStreaming() {
         String inputText = "SELECT id, name, amount FROM demo.table1 WITH WINDOW 5 Mins " +

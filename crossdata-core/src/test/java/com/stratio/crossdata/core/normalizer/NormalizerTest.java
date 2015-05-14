@@ -421,6 +421,7 @@ public class NormalizerTest {
 
 
 
+    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
     @Test(expectedExceptions = BadFormatException.class)
     public void testNormalizeWrongInnerJoin() throws Exception {
 
@@ -464,6 +465,7 @@ public class NormalizerTest {
 
     }
 
+    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
     @Test(expectedExceptions = ValidationException.class)
     public void testNormalizeWrongBasicSelect() throws Exception {
 

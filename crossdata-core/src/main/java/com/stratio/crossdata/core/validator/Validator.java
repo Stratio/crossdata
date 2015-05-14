@@ -18,22 +18,17 @@
 
 package com.stratio.crossdata.core.validator;
 
-import com.stratio.crossdata.common.data.*;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.exceptions.validation.*;
-import com.stratio.crossdata.common.manifest.PropertyType;
-import com.stratio.crossdata.common.metadata.*;
-import com.stratio.crossdata.common.statements.structures.*;
-import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.normalizer.Normalizator;
 import com.stratio.crossdata.core.normalizer.NormalizedFields;
 import com.stratio.crossdata.core.query.*;
-import com.stratio.crossdata.core.statements.*;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
 import org.apache.log4j.Logger;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Validator Class.
