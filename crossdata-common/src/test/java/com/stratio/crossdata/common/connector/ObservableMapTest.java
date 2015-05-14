@@ -34,6 +34,7 @@ import static org.mockito.Mockito.mock;
 /**
  * Created by lcisneros on 4/05/15.
  */
+@SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
 public class ObservableMapTest {
 
     @Test
@@ -76,7 +77,7 @@ public class ObservableMapTest {
     }
 
 
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
+
     @Test(expectedExceptions = ClassCastException.class)
     public void shouldThrowsAnExceñtionWhenRemoveAValueWithInvalidKey(){
         ObservableMap observableMap = new ObservableMap();
@@ -85,7 +86,6 @@ public class ObservableMapTest {
         observableMap.remove("Bad parameter");
     }
 
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
     @Test
     public void mustPutALotOfNewValues(){
         ObservableMap observableMap = new ObservableMap();
@@ -108,7 +108,6 @@ public class ObservableMapTest {
         Mockito.verify(listener).updateMetadata(values.get(name2));
     }
 
-    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
     @Test
     public void shouldClearTheMap(){
         ObservableMap observableMap = new ObservableMap();
