@@ -39,9 +39,9 @@ public class LogicalWorkflow implements Serializable {
     /**
      * Last logical step.
      */
-    private LogicalStep lastStep = null;
+    private LogicalStep lastStep;
 
-    private int pagination = 0;
+    private int pagination;
 
     private String sqlDirectQuery;
 
@@ -65,8 +65,22 @@ public class LogicalWorkflow implements Serializable {
      *            The list of initial steps.
      */
     public LogicalWorkflow(List<LogicalStep> initialSteps) {
-        this.initialSteps = initialSteps;
+        this(initialSteps, null, 0);
     }
+
+    /**
+     * Workflow constructor.
+     *
+     * @param logicalWorkflow
+     *            The list of initial steps.
+     */
+    public LogicalWorkflow(LogicalWorkflow logicalWorkflow) {
+        this(logicalWorkflow.getInitialSteps(), logicalWorkflow.getLastStep(), logicalWorkflow.getPagination());
+        this.sqlDirectQuery = logicalWorkflow.getSqlDirectQuery();
+    }
+
+
+
 
     /**
      * Get the list of initial steps.

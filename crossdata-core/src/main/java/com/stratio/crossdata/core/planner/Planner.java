@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.stratio.crossdata.common.metadata.*;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
@@ -76,17 +77,6 @@ import com.stratio.crossdata.common.logicalplan.UnionStep;
 import com.stratio.crossdata.common.logicalplan.Virtualizable;
 import com.stratio.crossdata.common.logicalplan.Window;
 import com.stratio.crossdata.common.manifest.FunctionType;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
-import com.stratio.crossdata.common.metadata.ClusterMetadata;
-import com.stratio.crossdata.common.metadata.ColumnMetadata;
-import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
-import com.stratio.crossdata.common.metadata.ConnectorMetadata;
-import com.stratio.crossdata.common.metadata.DataType;
-import com.stratio.crossdata.common.metadata.IndexMetadata;
-import com.stratio.crossdata.common.metadata.IndexType;
-import com.stratio.crossdata.common.metadata.Operations;
-import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
@@ -542,24 +532,53 @@ public class Planner {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         //Select an actor
-        ConnectorMetadata connectorMetadata = findBestConnector(connectors, involvedClusters);
+        Iterator<ConnectorMetadata> connectorMetadata = findBestConnector(connectors, involvedClusters).iterator();
+
+        QueryWorkflow choicedWorkflow = buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow);
+        QueryWorkflow tempWorkflow = choicedWorkflow;
+        while(connectorMetadata.hasNext()){
+            tempWorkflow.setLowPriorityExecutionWorkflow(buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow));
+        }
+
+        return choicedWorkflow;
+    }
+
+    private QueryWorkflow buildQueryWorkflowFromConnector(String queryId, ConnectorMetadata connectorMetadata, ExecutionType exType, ResultType resType, LogicalWorkflow workflow) throws PlanningException {
 
         String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(host), false);
-
-        updateFunctionsFromSelect(workflow, connectorMetadata.getName());
+        LogicalWorkflow logicalWorkflow = new LogicalWorkflow(workflow);
+        updateFunctionsFromSelect(logicalWorkflow, connectorMetadata.getName());
 
         if ((connectorMetadata.getSupportedOperations().contains(Operations.PAGINATION)) && (
                 connectorMetadata.getPageSize() > 0)) {
-            workflow.setPagination(connectorMetadata.getPageSize());
+            logicalWorkflow.setPagination(connectorMetadata.getPageSize());
         }
-
-        return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow,  connectorMetadata.getSupportedOperations().contains(Operations.ASYNC_QUERY));
+        return new QueryWorkflow(queryId, selectedActorUri, exType, resType, workflow, connectorMetadata.getSupportedOperations().contains(Operations.ASYNC_QUERY));
     }
 
-    private ConnectorMetadata findBestConnector(List<ConnectorMetadata> connectors, List<ClusterName> clusters) {
+
+
+
+    private List<ConnectorMetadata> findBestConnector(List<ConnectorMetadata> connectors, List<ClusterName> clusters) {
         //TODO: Add logic to this method according to native or not
         //TODO: Add logic to this method according to statistics
-        ConnectorMetadata highestPriorityConnector = connectors.get(0);
+
+        if ( connectors.size() > 1){
+            Collections.sort(connectors, new ConnectorPriorityComparator(clusters));
+            if(LOG.isDebugEnabled()){
+                List<ConnectorName> connectorNames = new ArrayList();
+                for (ConnectorMetadata connector : connectors) {
+                    connectorNames.add(connector.getName());
+                }
+                LOG.debug("ConnectorList sorted by priority " + StringUtils.stringList(connectorNames, " , "));
+            }
+
+        }
+
+        return connectors;
+
+
+        /*ConnectorMetadata highestPriorityConnector = connectors.get(0);
         int minPriority = Integer.MAX_VALUE;
 
         for (ConnectorMetadata connector: connectors) {
@@ -571,6 +590,7 @@ public class Planner {
         }
 
         return highestPriorityConnector;
+        */
     }
 
     private void updateFunctionsFromSelect(LogicalWorkflow workflow, ConnectorName connectorName)
@@ -633,7 +653,7 @@ public class Planner {
      * @return A {@link com.stratio.crossdata.common.executionplan.QueryWorkflow}.
      */
     protected QueryWorkflow extendExecutionWorkflow(String queryId, List<ExecutionPath> executionPaths,
-            ExecutionPath mergePath, ResultType type) {
+            ExecutionPath mergePath, ResultType type) throws PlanningException {
 
         //Define the list of initial steps.
         List<LogicalStep> initialSteps = new ArrayList<>(executionPaths.size());
@@ -652,10 +672,15 @@ public class Planner {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         //Select an actor
-        ConnectorMetadata connectorMetadata = findBestConnector(mergePath.getAvailableConnectors(), involvedClusters);
-        String selectedActorUri = StringUtils.getAkkaActorRefUri(connectorMetadata.getActorRef(host), false);
+        Iterator<ConnectorMetadata> connectorMetadata = findBestConnector(mergePath.getAvailableConnectors(), involvedClusters).iterator();
 
-        return new QueryWorkflow(queryId, selectedActorUri, ExecutionType.SELECT, type, workflow,  connectorMetadata.getSupportedOperations().contains(Operations.ASYNC_QUERY));
+        QueryWorkflow choicedWorkflow = buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow);
+        QueryWorkflow tempWorkflow = choicedWorkflow;
+        while(connectorMetadata.hasNext()){
+            tempWorkflow.setLowPriorityExecutionWorkflow(buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow));
+        }
+
+        return choicedWorkflow;
     }
 
 
@@ -1729,29 +1754,36 @@ public class Planner {
         StorageWorkflow storageWorkflow;
         if ((candidates != null) && (!candidates.isEmpty())) {
             // Build a unique workflow
-            ConnectorMetadata bestConnector = findBestConnector(candidates, involvedClusters);
 
-            storageWorkflow = new StorageWorkflow(
-                    queryId,
-                    bestConnector.getActorRef(host),
-                    ExecutionType.INSERT_FROM_SELECT,
-                    ResultType.RESULTS);
-            storageWorkflow.setClusterName(tableMetadata.getClusterRef());
-            storageWorkflow.setTableMetadata(tableMetadata);
-            storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
-            storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
+            //ConnectorMetadata bestConnector = findBestConnector(candidates, involvedClusters);
+            //TODO INSERT FROM SELECT
+            Iterator<ConnectorMetadata> connectorMetadata = findBestConnector(candidates, involvedClusters).iterator();
+
+            storageWorkflow = buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, StringUtils.getAkkaActorRefUri(connectorMetadata.next().getActorRef(host), false), selectExecutionWorkflow);
+            StorageWorkflow tempWorkflow = storageWorkflow;
+            while(connectorMetadata.hasNext()){
+                tempWorkflow.setLowPriorityExecutionWorkflow(buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, StringUtils.getAkkaActorRefUri(connectorMetadata.next().getActorRef(host), false), selectExecutionWorkflow));
+            }
+
 
         } else {
             // Build a workflow for select and insert
-            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT_BATCH,
-                    ResultType.RESULTS);
-            storageWorkflow.setClusterName(tableMetadata.getClusterRef());
-            storageWorkflow.setTableMetadata(tableMetadata);
-            storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
-            storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
+            storageWorkflow = buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, actorRef, selectExecutionWorkflow);
         }
         return storageWorkflow;
     }
+
+    private StorageWorkflow buildInsertFromSelectTriggeredStorageWorkflow(String queryId, InsertIntoStatement insertIntoStatement, TableMetadata tableMetadata, String actorRef, ExecutionWorkflow selectExecutionWorkflow) {
+        StorageWorkflow storageWorkflow;
+        storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT_BATCH,
+                ResultType.RESULTS);
+        storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+        storageWorkflow.setTableMetadata(tableMetadata);
+        storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
+        storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
+        return storageWorkflow;
+    }
+
 
     private List<ClusterName> getClusterNames(InsertIntoStatement insertIntoStatement, ClusterMetadata clusterMetadata)
             throws PlanningException {
