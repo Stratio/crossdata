@@ -124,7 +124,7 @@ function startServiceProcess {
 	#sudo -u $serviceUser $SHELL -c "$cmd" || return 1
 	echo "Launching service process: ${NAME}"
 	echo ""
-	su - $serviceUser -c "$cmd" || return 1
+	su $serviceUser -c "$cmd" || return 1
 	sleep 0.1
 	servicePid="$(<$pidFile)"
 	echo "PID: ${pidFile} servicePid: ${servicePid}"
