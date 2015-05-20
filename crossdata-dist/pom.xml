@@ -234,7 +234,7 @@
                     <!-- DEB specific properties -->
                     <deb>
                         <!-- package dependencies, coma separated -->
-                        <depends>htop</depends>
+                        <depends>jsvc</depends>
 
                         <!-- defines how the packaged software should be grouped with other packages -->
                         <section>devel</section>
