@@ -42,6 +42,7 @@ import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
+import twitter4j.Place;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
@@ -106,14 +107,150 @@ public class TweetsListener implements StatusListener {
                 try {
                     Method method;
                     ColumnMetadata column = tableMetadata.getColumns().get(selector.getColumnName());
+                    Object result=null;
+                    switch(column.getName().getName().toLowerCase()) {
+                    case "contribuors":
+                        result = tweet.getContributors();
+                        break;
+                    case "createdate":
+                        result = tweet.getCreatedAt();
+                        break;
+                    case "currentuserretweetid":
+                        result = tweet.getCurrentUserRetweetId();
+                        break;
+                    case "favoritecount":
+                        result = tweet.getFavoriteCount();
+                        break;
+                    case "geolocationlatitude":
+                        if (tweet.getGeoLocation()!=null) {
+                            result = tweet.getGeoLocation().getLatitude();
+                        }
+                        break;
+                    case "geolocationlongitude":
+                        if (tweet.getGeoLocation()!=null) {
+                            result = tweet.getGeoLocation().getLongitude();
+                        }
+                        break;
+                    case "id":
+                        result = tweet.getId();
+                        break;
+                    case "inreplytoscreenname":
+                        result = tweet.getInReplyToScreenName();
+                        break;
+                    case "inreplytostatusid":
+                        result = tweet.getInReplyToStatusId();
+                        break;
+                    case "inreplytouserid":
+                        result = tweet.getInReplyToUserId();
+                        break;
+                    case "lang":
+                        result = tweet.getLang();
+                        break;
+                    case "placecountry":
+                        if (tweet.getPlace()!=null) {
+                            result = tweet.getPlace().getCountry();
+                        }
+                        break;
+                    case "placestreet":
+                        if (tweet.getPlace()!=null) {
+                            result = tweet.getPlace().getStreetAddress();
+                        }
+                        break;
+                    case "retweetcount":
+                        result = tweet.getRetweetCount();
+                        break;
+                    case "retweetedstatus":
+                        result = tweet.getRetweetedStatus();
+                        break;
+                    case "scopes":
+                        if (tweet.getScopes()!=null) {
+                            result = tweet.getScopes().getPlaceIds();
+                        }
+                        break;
+                    case "source":
+                        result = tweet.getSource();
+                        break;
+                    case "text":
+                        result = tweet.getText();
+                        break;
+                    case "userfollowers":
+                        if (tweet.getUser()!=null) {
+                            result = tweet.getUser().getFollowersCount();
+                        }
+                        break;
+                    case "userfriends":
+                        if (tweet.getUser()!=null) {
+                            result = tweet.getUser().getFriendsCount();
+                        }
+                        break;
+                    case "userfavourites":
+                        if (tweet.getUser()!=null) {
+                            result = tweet.getUser().getFavouritesCount();
+                        }
+                        break;
+                    case "userlang":
+                        if (tweet.getUser()!=null) {
+                            result = tweet.getUser().getLang();
+                        }
+                        break;
+                    case "userlocation":
+                        if (tweet.getUser()!=null) {
+                            result = tweet.getUser().getLocation();
+                        }
+                        break;
+                    case "username":
+                        if (tweet.getUser()!=null) {
+                            result = tweet.getUser().getName();
+                        }
+                        break;
+                    case "favorited":
+                        result = tweet.isFavorited();
+                        break;
+                    case "possiblysensitive":
+                        result = tweet.isPossiblySensitive();
+                        break;
+                    case "retweet":
+                        result = tweet.isRetweet();
+                        break;
+                    case "retweeted":
+                        result = tweet.isRetweeted();
+                        break;
+                    case "retweetedbyme":
+                        result = tweet.isRetweetedByMe();
+                        break;
+                    case "truncated":
+                        result = tweet.isTruncated();
+                        break;
+                    default:
+                        result="";
+                    }
+                    if (result==null){
+                        result="";
+                    }
+                    cell= new Cell(result);
+
+
+/*
                     if(column.getColumnType().getDataType() == DataType.BOOLEAN){
                         method = tweet.getClass().getDeclaredMethod("is" + WordUtils.capitalize(alias));
+                        Object result = method.invoke(tweet);
+                        cell = new Cell(result);
                     } else {
-                        method = tweet.getClass().getDeclaredMethod("get" + WordUtils.capitalize(alias));
+                        if (column.getName().getName().equalsIgnoreCase("Country")) {
+                            Object result;
+                            try {
+                                result = tweet.getPlace().getCountry();
+                            }catch (Exception e){
+                                result=tweet.getUser().getLocation();
+                            }
+                            cell= new Cell(result);
+                        } else {
+                            method = tweet.getClass().getDeclaredMethod("get" + WordUtils.capitalize(alias));
+                            Object result = method.invoke(tweet);
+                            cell = new Cell(result);
+                        }
                     }
-                    method.setAccessible(true);
-                    Object result = method.invoke(tweet);
-                    cell = new Cell(result);
+*/
                     if((resultSet.getColumnMetadata() == null) || resultSet.getColumnMetadata().isEmpty()){
                         ColumnName columnName = new ColumnName(selector.getTableName(), alias);
                         Object[] parameters = new Object[]{};
@@ -125,8 +262,8 @@ public class TweetsListener implements StatusListener {
                                 ct);
                         cm.add(columnMetadata);
                     }
-                } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-                    LOG.error(e);
+                } catch (Exception e) {
+                    LOG.error(e.getMessage());
                     resultHandler.processException(queryId, new ExecutionException(e.getMessage()));
                 }
                 row.addCell(alias, cell);
