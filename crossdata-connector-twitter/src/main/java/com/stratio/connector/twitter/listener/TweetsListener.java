@@ -18,13 +18,11 @@
 
 package com.stratio.connector.twitter.listener;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.text.WordUtils;
 import org.apache.log4j.Logger;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
@@ -37,12 +35,10 @@ import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.statements.structures.Selector;
 
-import twitter4j.Place;
 import twitter4j.StallWarning;
 import twitter4j.Status;
 import twitter4j.StatusDeletionNotice;
@@ -82,7 +78,7 @@ public class TweetsListener implements StatusListener {
     public void onStatus(Status status) {
         tweets.add(status);
         DateTime now = new DateTime();
-        if(Seconds.secondsBetween(lastDelivery, now).getSeconds() > durationInSeconds){
+        if (Seconds.secondsBetween(lastDelivery, now).getSeconds() > durationInSeconds) {
             createResult();
             lastDelivery = now;
             pageCount++;
@@ -93,22 +89,22 @@ public class TweetsListener implements StatusListener {
     private void createResult() {
         ResultSet resultSet = new ResultSet();
         List<ColumnMetadata> cm = new ArrayList<>();
-        for(Status tweet: tweets){
+        for (Status tweet : tweets) {
             Row row = new Row();
-            for(Selector selector: outputSelectorOrder){
+            for (Selector selector : outputSelectorOrder) {
                 String alias = selector.getAlias();
-                if((alias == null) || (alias.isEmpty())){
+                if ((alias == null) || (alias.isEmpty())) {
                     alias = selector.getColumnName().getAlias();
                 }
-                if((alias == null) || (alias.isEmpty())){
+                if ((alias == null) || (alias.isEmpty())) {
                     alias = selector.getColumnName().getName();
                 }
                 Cell cell = new Cell(null);
                 try {
                     Method method;
                     ColumnMetadata column = tableMetadata.getColumns().get(selector.getColumnName());
-                    Object result=null;
-                    switch(column.getName().getName().toLowerCase()) {
+                    Object result = null;
+                    switch (column.getName().getName().toLowerCase()) {
                     case "contribuors":
                         result = tweet.getContributors();
                         break;
@@ -122,12 +118,12 @@ public class TweetsListener implements StatusListener {
                         result = tweet.getFavoriteCount();
                         break;
                     case "geolocationlatitude":
-                        if (tweet.getGeoLocation()!=null) {
+                        if (tweet.getGeoLocation() != null) {
                             result = tweet.getGeoLocation().getLatitude();
                         }
                         break;
                     case "geolocationlongitude":
-                        if (tweet.getGeoLocation()!=null) {
+                        if (tweet.getGeoLocation() != null) {
                             result = tweet.getGeoLocation().getLongitude();
                         }
                         break;
@@ -147,12 +143,12 @@ public class TweetsListener implements StatusListener {
                         result = tweet.getLang();
                         break;
                     case "placecountry":
-                        if (tweet.getPlace()!=null) {
+                        if (tweet.getPlace() != null) {
                             result = tweet.getPlace().getCountry();
                         }
                         break;
                     case "placestreet":
-                        if (tweet.getPlace()!=null) {
+                        if (tweet.getPlace() != null) {
                             result = tweet.getPlace().getStreetAddress();
                         }
                         break;
@@ -163,7 +159,7 @@ public class TweetsListener implements StatusListener {
                         result = tweet.getRetweetedStatus();
                         break;
                     case "scopes":
-                        if (tweet.getScopes()!=null) {
+                        if (tweet.getScopes() != null) {
                             result = tweet.getScopes().getPlaceIds();
                         }
                         break;
@@ -174,32 +170,32 @@ public class TweetsListener implements StatusListener {
                         result = tweet.getText();
                         break;
                     case "userfollowers":
-                        if (tweet.getUser()!=null) {
+                        if (tweet.getUser() != null) {
                             result = tweet.getUser().getFollowersCount();
                         }
                         break;
                     case "userfriends":
-                        if (tweet.getUser()!=null) {
+                        if (tweet.getUser() != null) {
                             result = tweet.getUser().getFriendsCount();
                         }
                         break;
                     case "userfavourites":
-                        if (tweet.getUser()!=null) {
+                        if (tweet.getUser() != null) {
                             result = tweet.getUser().getFavouritesCount();
                         }
                         break;
                     case "userlang":
-                        if (tweet.getUser()!=null) {
+                        if (tweet.getUser() != null) {
                             result = tweet.getUser().getLang();
                         }
                         break;
                     case "userlocation":
-                        if (tweet.getUser()!=null) {
+                        if (tweet.getUser() != null) {
                             result = tweet.getUser().getLocation();
                         }
                         break;
                     case "username":
-                        if (tweet.getUser()!=null) {
+                        if (tweet.getUser() != null) {
                             result = tweet.getUser().getName();
                         }
                         break;
@@ -222,12 +218,12 @@ public class TweetsListener implements StatusListener {
                         result = tweet.isTruncated();
                         break;
                     default:
-                        result="";
+                        result = "";
                     }
-                    if (result==null){
-                        result="";
+                    if (result == null) {
+                        result = "";
                     }
-                    cell= new Cell(result);
+                    cell = new Cell(result);
 
 
 /*
@@ -251,9 +247,9 @@ public class TweetsListener implements StatusListener {
                         }
                     }
 */
-                    if((resultSet.getColumnMetadata() == null) || resultSet.getColumnMetadata().isEmpty()){
+                    if ((resultSet.getColumnMetadata() == null) || resultSet.getColumnMetadata().isEmpty()) {
                         ColumnName columnName = new ColumnName(selector.getTableName(), alias);
-                        Object[] parameters = new Object[]{};
+                        Object[] parameters = new Object[] { };
 
                         ColumnType ct = column.getColumnType();
                         ColumnMetadata columnMetadata = new ColumnMetadata(
@@ -269,7 +265,7 @@ public class TweetsListener implements StatusListener {
                 row.addCell(alias, cell);
             }
             resultSet.add(row);
-            if((resultSet.getColumnMetadata() == null) || resultSet.getColumnMetadata().isEmpty()){
+            if ((resultSet.getColumnMetadata() == null) || resultSet.getColumnMetadata().isEmpty()) {
                 resultSet.setColumnMetadata(cm);
             }
         }
