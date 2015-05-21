@@ -76,7 +76,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     assertNotNull(myReference, "Null reference returned")
     c.stop()
   }
-
+/*
   test("Send SelectInProgressQuery to Connector") {
     val m = mock[IConnector]
     val qe = mock[IQueryEngine]
@@ -110,7 +110,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
       c.stop()
     }
   }
-
+*/
   test("Send MetadataInProgressQuery to Connector") {
     val port = "2560"
     val m = mock[IConnector]
