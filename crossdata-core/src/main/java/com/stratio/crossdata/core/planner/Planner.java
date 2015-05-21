@@ -1623,26 +1623,31 @@ public class Planner {
                     selectValidatedQuery,
                     selectLogicalWorkflow);
 
+
             // FIND CANDIDATES
             List<ClusterName> involvedClusters = getClusterNames(insertIntoStatement, clusterMetadata);
 
-            Set<Operations> requiredOperations = new HashSet<>();
-            requiredOperations.add(Operations.INSERT_FROM_SELECT);
-
-            List<ConnectorMetadata> candidates = findCandidates(
-                    involvedClusters,
-                    requiredOperations);
-
             selectExecutionWorkflow.setResultType(ResultType.TRIGGER_EXECUTION);
-            if (insertIntoStatement.isIfNotExists()) {
+            Set<Operations> requiredOperations = new HashSet<>();
+            if (insertIntoStatement.isIfNotExists()){
+                requiredOperations.add(Operations.INSERT_FROM_SELECT);
+                requiredOperations.add(Operations.INSERT_IF_NOT_EXISTS);
                 selectExecutionWorkflow.setTriggerStep(
                         new PartialResults(
                                 Collections.singleton(Operations.INSERT_IF_NOT_EXISTS)));
-            } else {
+
+            }else{
+                requiredOperations.add(Operations.INSERT);
+                requiredOperations.add(Operations.INSERT_FROM_SELECT);
                 selectExecutionWorkflow.setTriggerStep(
                         new PartialResults(
                                 Collections.singleton(Operations.INSERT)));
             }
+
+
+            List<ConnectorMetadata> candidates = findCandidates(
+                    involvedClusters,
+                    requiredOperations);
 
             storageWorkflow = getStorageWorkflow(queryId, insertIntoStatement, tableMetadata, actorRef,
                     selectExecutionWorkflow, involvedClusters,
