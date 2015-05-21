@@ -81,34 +81,7 @@ public class TwitterConnector extends AbstractExtendedConnector {
         connectTimer = new Timer();
         String timerName = name(TwitterConnector.class, "connect");
         registerMetric(timerName, connectTimer);
-        allowedColumns.put("Contributors", ColumnType.valueOf("NATIVE"));
-        allowedColumns.put("CreatedAt", ColumnType.valueOf("NATIVE"));
-        allowedColumns.put("CurrentUserRetweetId", ColumnType.valueOf("BIGINT"));
-        allowedColumns.put("FavoriteCount", ColumnType.valueOf("INT"));
-        allowedColumns.put("GeoLocationLongitude", ColumnType.valueOf("DOUBLE"));
-        allowedColumns.put("GeoLocationLatitude", ColumnType.valueOf("DOUBLE"));
-        allowedColumns.put("Id", ColumnType.valueOf("BIGINT"));
-        allowedColumns.put("InReplyToScreenName", ColumnType.valueOf("TEXT"));
-        allowedColumns.put("InReplyToStatusId", ColumnType.valueOf("BIGINT"));
-        allowedColumns.put("InReplyToUserId", ColumnType.valueOf("BIGINT"));
-        allowedColumns.put("Lang", ColumnType.valueOf("TEXT"));
-        allowedColumns.put("PlaceCountry", ColumnType.valueOf("TEXT"));
-        allowedColumns.put("PlaceStreet", ColumnType.valueOf("TEXT"));
-        allowedColumns.put("RetweetCount", ColumnType.valueOf("INT"));
-        allowedColumns.put("RetweetedStatus", ColumnType.valueOf("NATIVE"));
-        allowedColumns.put("Scopes", ColumnType.valueOf("NATIVE"));
-        allowedColumns.put("Source", ColumnType.valueOf("TEXT"));
-        allowedColumns.put("Text", ColumnType.valueOf("TEXT"));
-        allowedColumns.put("UserFollowers", ColumnType.valueOf("INT"));
-        allowedColumns.put("UserLang", ColumnType.valueOf("TEXT"));
-        allowedColumns.put("UserLocation", ColumnType.valueOf("TEXT"));
-        allowedColumns.put("UserName", ColumnType.valueOf("TEXT"));
-        allowedColumns.put("Favorited", ColumnType.valueOf("BOOLEAN"));
-        allowedColumns.put("PossiblySensitive", ColumnType.valueOf("BOOLEAN"));
-        allowedColumns.put("Retweet", ColumnType.valueOf("BOOLEAN"));
-        allowedColumns.put("Retweeted", ColumnType.valueOf("BOOLEAN"));
-        allowedColumns.put("RetweetedByMe", ColumnType.valueOf("BOOLEAN"));
-        allowedColumns.put("Truncated", ColumnType.valueOf("BOOLEAN"));
+
 
     }
 
