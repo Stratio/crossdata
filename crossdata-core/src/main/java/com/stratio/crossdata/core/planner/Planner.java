@@ -553,7 +553,7 @@ public class Planner {
                 connectorMetadata.getPageSize() > 0)) {
             logicalWorkflow.setPagination(connectorMetadata.getPageSize());
         }
-        return new QueryWorkflow(queryId, selectedActorUri, exType, resType, workflow, connectorMetadata.getSupportedOperations().contains(Operations.ASYNC_QUERY));
+        return new QueryWorkflow(queryId, selectedActorUri, exType, resType, logicalWorkflow, connectorMetadata.getSupportedOperations().contains(Operations.ASYNC_QUERY));
     }
 
 
@@ -1751,6 +1751,36 @@ public class Planner {
     private StorageWorkflow getStorageWorkflow(String queryId, InsertIntoStatement insertIntoStatement,
             TableMetadata tableMetadata, String actorRef, ExecutionWorkflow selectExecutionWorkflow,
             List<ClusterName> involvedClusters, List<ConnectorMetadata> candidates) {
+
+
+
+        /*
+        if ((candidates != null) && (!candidates.isEmpty())) {
+            // Build a unique workflow
+            ConnectorMetadata bestConnector = findBestConnector(candidates, involvedClusters);
+
+            storageWorkflow = new StorageWorkflow(
+                    queryId,
+                    bestConnector.getActorRef(host),
+                    ExecutionType.INSERT_FROM_SELECT,
+                    ResultType.RESULTS);
+            storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+            storageWorkflow.setTableMetadata(tableMetadata);
+            storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
+            storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
+
+        } else {
+            // Build a workflow for select and insert
+            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT_BATCH,
+                    ResultType.RESULTS);
+            storageWorkflow.setClusterName(tableMetadata.getClusterRef());
+            storageWorkflow.setTableMetadata(tableMetadata);
+            storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
+            storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
+        }
+        */
+
+
         StorageWorkflow storageWorkflow;
         if ((candidates != null) && (!candidates.isEmpty())) {
             // Build a unique workflow
@@ -1759,24 +1789,22 @@ public class Planner {
             //TODO INSERT FROM SELECT
             Iterator<ConnectorMetadata> connectorMetadata = findBestConnector(candidates, involvedClusters).iterator();
 
-            storageWorkflow = buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, StringUtils.getAkkaActorRefUri(connectorMetadata.next().getActorRef(host), false), selectExecutionWorkflow);
+            storageWorkflow = buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, StringUtils.getAkkaActorRefUri(connectorMetadata.next().getActorRef(host), false), selectExecutionWorkflow, ExecutionType.INSERT_FROM_SELECT);
             StorageWorkflow tempWorkflow = storageWorkflow;
             while(connectorMetadata.hasNext()){
-                tempWorkflow.setLowPriorityExecutionWorkflow(buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, StringUtils.getAkkaActorRefUri(connectorMetadata.next().getActorRef(host), false), selectExecutionWorkflow));
+                tempWorkflow.setLowPriorityExecutionWorkflow(buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, StringUtils.getAkkaActorRefUri(connectorMetadata.next().getActorRef(host), false), selectExecutionWorkflow, ExecutionType.INSERT_FROM_SELECT));
             }
-
 
         } else {
             // Build a workflow for select and insert
-            storageWorkflow = buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, actorRef, selectExecutionWorkflow);
+            storageWorkflow = buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, actorRef, selectExecutionWorkflow, ExecutionType.INSERT_BATCH);
         }
         return storageWorkflow;
     }
 
-    private StorageWorkflow buildInsertFromSelectTriggeredStorageWorkflow(String queryId, InsertIntoStatement insertIntoStatement, TableMetadata tableMetadata, String actorRef, ExecutionWorkflow selectExecutionWorkflow) {
+    private StorageWorkflow buildInsertFromSelectTriggeredStorageWorkflow(String queryId, InsertIntoStatement insertIntoStatement, TableMetadata tableMetadata, String actorRef, ExecutionWorkflow selectExecutionWorkflow, ExecutionType exType) {
         StorageWorkflow storageWorkflow;
-        storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT_BATCH,
-                ResultType.RESULTS);
+        storageWorkflow = new StorageWorkflow(queryId, actorRef, exType, ResultType.RESULTS);
         storageWorkflow.setClusterName(tableMetadata.getClusterRef());
         storageWorkflow.setTableMetadata(tableMetadata);
         storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
