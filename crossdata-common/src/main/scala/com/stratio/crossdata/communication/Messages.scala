@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.communication
 
+import java.io.InputStream
 import java.util
 
 import com.stratio.crossdata.common.ask.{Command, Query}
@@ -90,6 +91,18 @@ case class replyConnectorName(name: String)
 
 @SerialVersionUID(-665564236789475259L)
 case class getConnectorName()
+
+@SerialVersionUID(-665564236789475255L)
+case class GetConnectorManifest()
+
+@SerialVersionUID(-665564236789475254L)
+case class GetDatastoreManifest()
+
+@SerialVersionUID(-665564236789475253L)
+case class ReplyDatastoreManifest(datastoreManifest:InputStream)
+
+@SerialVersionUID(-665564236789475252L)
+case class ReplyConnectorManifest(connectorManifest:InputStream)
 
 @SerialVersionUID(-665564236789475258L)
 case class GetCatalogs(clusterName: ClusterName)

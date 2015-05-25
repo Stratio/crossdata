@@ -18,6 +18,8 @@
 
 package com.stratio.crossdata.common.connector;
 
+import java.io.InputStream;
+
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
@@ -45,6 +47,19 @@ public interface IConnector {
      * @return The names.
      */
     String[] getDatastoreName();
+
+    /**
+     * Get the connector manifest from the connector.
+     * @return An InputStream with the manifest
+     */
+    InputStream getConnectorManifest();
+
+
+    /**
+     * Get the datastore manifest from the connector.
+     * @return An InputStream with the manifest
+     */
+    InputStream getDatastoreManifest();
 
     /**
      * Initialize the connector service.

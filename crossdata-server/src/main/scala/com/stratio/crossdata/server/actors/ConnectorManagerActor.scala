@@ -18,20 +18,26 @@
 
 package com.stratio.crossdata.server.actors
 
+import java.util
+
 import akka.actor.{ReceiveTimeout, RootActorPath, ActorLogging, Actor, Props, Address}
 import akka.cluster.{MemberStatus, Cluster}
 import akka.cluster.ClusterEvent.{ClusterMetricsChanged, MemberEvent, MemberExited,
 MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEvent}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
-import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
+import com.stratio.crossdata.common.data.{DataStoreName, NodeName, ConnectorName, Status}
+import com.stratio.crossdata.common.exceptions.{ExecutionException, ManifestException}
 import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionType, ManagementWorkflow, ExecutionWorkflow}
+import com.stratio.crossdata.common.manifest._
+import com.stratio.crossdata.common.metadata.{ConnectorMetadata, DataStoreMetadata}
 import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{ConnectorUp, replyConnectorName, getConnectorName, Connect}
+import com.stratio.crossdata.communication._
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.crossdata.core.loadwatcher.LoadWatcherManager
 import com.stratio.crossdata.core.metadata.MetadataManager
+import com.stratio.crossdata.server.utils.ManifestUtils
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
@@ -71,6 +77,8 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
       if (MetadataManager.MANAGER.notIsNodeOnline(nodeName)) {
         logger.debug("Asking its name to the connector " + memberAddress)
         connectorActorRef ! getConnectorName()
+        connectorActorRef ! GetConnectorManifest()
+        connectorActorRef ! GetDatastoreManifest()
       }
     }
 
@@ -144,6 +152,15 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
         logger.error("Actor reference of the sender can't be null")
       }
 
+    }
+    case ReplyConnectorManifest(connectorManifest)=>{
+      persistConnectorManifest(ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_CONNECTOR,
+        connectorManifest))
+    }
+
+    case ReplyDatastoreManifest(datastoreManifest)=>{
+      persistDatastoreManifest(ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_DATASTORE,
+        datastoreManifest))
     }
 
     case c: ConnectResult => {
@@ -249,6 +266,74 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")
       logger.error("Unknown event: " + unknown)
     }
+  }
+
+  def persistDatastoreManifest(dataStoreManifest: CrossdataManifest) {
+    dataStoreManifest match {
+      case dataStoreType: DataStoreType => {
+        val name: DataStoreName = new DataStoreName(dataStoreType.getName)
+        if (MetadataManager.MANAGER.exists(name)) {
+          throw new ManifestException(new ExecutionException(name + " already exists"))
+        }
+        val version: String = dataStoreType.getVersion
+        val requiredProperties: PropertiesType = dataStoreType.getRequiredProperties
+        val optionalProperties: PropertiesType = dataStoreType.getOptionalProperties
+        val behaviorsType: BehaviorsType = dataStoreType.getBehaviors
+        val datastoreFunctions: DataStoreFunctionsType = dataStoreType.getFunctions
+        val dataStoreMetadata: DataStoreMetadata = new DataStoreMetadata(name, version, if ((requiredProperties == null)) null else requiredProperties.getProperty, if ((optionalProperties == null)) null else optionalProperties.getProperty, if ((behaviorsType == null)) null else behaviorsType.getBehavior, if ((datastoreFunctions == null)) null else datastoreFunctions.getFunction)
+        MetadataManager.MANAGER.createDataStore(dataStoreMetadata)
+        logger.debug("DataStore added: " + MetadataManager.MANAGER.getDataStore(name).toString)
+      }
+      case _ => throw new ClassCastException
+    }
+  }
+
+  def persistConnectorManifest(connectorManifest: CrossdataManifest) {
+    connectorManifest match {
+      case connectorType: ConnectorType => {
+        val name: ConnectorName = new ConnectorName(connectorType.getConnectorName)
+        val dataStoreRefs: DataStoreRefsType = connectorType.getDataStores
+        val version: String = connectorType.getVersion
+        val requiredProperties: PropertiesType = connectorType.getRequiredProperties
+        val optionalProperties: PropertiesType = connectorType.getOptionalProperties
+        val supportedOperations: SupportedOperationsType = connectorType.getSupportedOperations
+        val connectorFunctions: ConnectorFunctionsType = connectorType.getFunctions
+        val excludedFunctions: java.util.List[String] = new java.util.ArrayList[String]
+        if (connectorFunctions != null) {
+          val convertedExcludes: java.util.Set[String] = ManifestHelper
+            .convertManifestExcludedFunctionsToMetadataExcludedFunctions(connectorFunctions.getExclude)
+          excludedFunctions.addAll(convertedExcludes)
+        }
+        var connectorMetadata: ConnectorMetadata = null
+        if (MetadataManager.MANAGER.exists(name)) {
+          connectorMetadata = MetadataManager.MANAGER.getConnector(name)
+          if (connectorMetadata.isManifestAdded) {
+            throw new ManifestException(new ExecutionException("Connector " + name + " was already added"))
+          }
+          connectorMetadata.setVersion(version)
+          connectorMetadata.setDataStoreRefs(ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs.getDataStoreName))
+          connectorMetadata.setRequiredProperties(if ((requiredProperties == null)) new util.HashSet[PropertyType] else ManifestHelper.convertManifestPropertiesToMetadataProperties(requiredProperties.getProperty))
+          connectorMetadata.setOptionalProperties(if ((optionalProperties == null)) new util.HashSet[PropertyType] else ManifestHelper.convertManifestPropertiesToMetadataProperties(optionalProperties.getProperty))
+          connectorMetadata.setSupportedOperations(supportedOperations.getOperation)
+          connectorMetadata.setConnectorFunctions(if ((connectorFunctions == null)) new util.HashSet[FunctionType] else ManifestHelper.convertManifestFunctionsToMetadataFunctions(connectorFunctions.getFunction))
+          connectorMetadata.setExcludedFunctions(new util.HashSet[String](excludedFunctions))
+        }
+        else {
+          connectorMetadata = new ConnectorMetadata(name, version, if ((dataStoreRefs == null)) new util
+          .ArrayList[String]
+          else dataStoreRefs.getDataStoreName, if ((requiredProperties == null)) new
+              java.util.ArrayList[PropertyType]
+          else requiredProperties.getProperty, if ((optionalProperties == null))
+            new java.util.ArrayList[PropertyType]
+          else optionalProperties.getProperty,
+            if ((supportedOperations == null)) new java.util.ArrayList[String] else supportedOperations.getOperation, if ((connectorFunctions == null)) new java.util.ArrayList[FunctionType] else connectorFunctions.getFunction, excludedFunctions)
+        }
+        connectorMetadata.setManifestAdded(true)
+        MetadataManager.MANAGER.createConnector(connectorMetadata, false)
+      }
+      case _ => throw new ClassCastException
+    }
+
   }
 
 }

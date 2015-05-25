@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.connectors
 
+import java.io.InputStream
 import java.util
 
 import akka.actor._
@@ -76,8 +77,13 @@ object State extends Enumeration {
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]],runningJobs: Agent[ListMap[String, ActorRef]]):
-      Props = Props(new ConnectorActor(connectorName, connector, connectedServers, mapAgent, runningJobs))
+  def props(connectorName: String, connectorManifest: InputStream, datastoreManifest:InputStream,
+            connector: IConnector, connectedServers: Set[String],
+            mapAgent: Agent[ObservableMap[Name, UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]]):
+  Props = Props(new ConnectorActor(connectorName, connectorManifest, datastoreManifest, connector, connectedServers,
+    mapAgent,
+    runningJobs))
+
 }
 
 object ClassExtractor{
@@ -85,7 +91,8 @@ object ClassExtractor{
 }
 
 
-class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]])
+class ConnectorActor(connectorName: String, connectorManifest: InputStream, datastoreManifest:InputStream,
+                     conn: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]])
   extends Actor with ActorLogging with IResultHandler {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorActor])
@@ -376,6 +383,18 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       connectedServers += sender.path.address.toString
       logger.info("Connected to Servers: " + connectedServers)
       sender ! replyConnectorName(connectorName)
+    }
+    case GetConnectorManifest => {
+      logger.info(sender + " asked for my connector manifest ")
+      connectedServers += sender.path.address.toString
+      logger.info("Connected to Servers: " + connectedServers)
+      sender ! ReplyConnectorManifest(connectorManifest)
+    }
+    case GetDatastoreManifest => {
+      logger.info(sender + " asked for my datastore manifest")
+      connectedServers += sender.path.address.toString
+      logger.info("Connected to Servers: " + connectedServers)
+      sender ! ReplyDatastoreManifest(datastoreManifest)
     }
     case MemberUp(member) => {
       logger.info("Member up")

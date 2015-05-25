@@ -22,6 +22,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.InputStream;
 import java.util.List;
 
 import org.testng.Assert;
@@ -155,6 +156,14 @@ public class AbstractExtendedConnectorTest {
             return new String[0];
         }
 
+        @Override public InputStream getConnectorManifest() {
+            return null;
+        }
+
+        @Override public InputStream getDatastoreManifest() {
+            return null;
+        }
+
         @Override
         public void init(IConfiguration configuration) throws InitializationException {
 
@@ -194,6 +203,7 @@ public class AbstractExtendedConnectorTest {
         public IMetadataEngine getMetadataEngine() throws UnsupportedException {
             return null;
         }
+
     }
 }
 
