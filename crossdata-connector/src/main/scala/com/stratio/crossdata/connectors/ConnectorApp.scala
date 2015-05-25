@@ -18,33 +18,28 @@
 
 package com.stratio.crossdata.connectors
 
-import java.util
-
-import com.codahale.metrics._
-import akka.agent.Agent
 import akka.actor._
+import akka.agent.Agent
 import akka.pattern.ask
-import akka.routing.DefaultResizer
-import com.stratio.crossdata.common.annotation.Experimental
-import com.stratio.crossdata.common.data._
-import com.stratio.crossdata.common.metadata.{UpdatableMetadata, CatalogMetadata, TableMetadata}
-import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
-import com.stratio.crossdata.connectors.config.ConnectConfig
+import akka.routing.{DefaultResizer, RoundRobinPool}
+import com.codahale.metrics._
 import com.stratio.crossdata.common.connector._
+import com.stratio.crossdata.common.data._
+import com.stratio.crossdata.common.metadata.{TableMetadata, UpdatableMetadata}
+import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
+import com.stratio.crossdata.communication.{GetTableMetadata, Shutdown}
+import com.stratio.crossdata.connectors.config.ConnectConfig
 import org.apache.log4j.Logger
+
+import scala.collection.JavaConversions._
 import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.util.Try
-import scala.collection.JavaConversions._
-import com.stratio.crossdata.communication.GetCatalogs
-import akka.routing.RoundRobinPool
-import com.stratio.crossdata.communication.GetTableMetadata
-import com.stratio.crossdata.communication.Shutdown
 
 
 object ConnectorApp extends App {
-  args.length==2
+  args.length == 2
 }
 
 class ConnectorApp extends ConnectConfig with IConnectorApp {
@@ -58,11 +53,11 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   var metricName: String = "connector"
 
   val metadataMapAgent = Agent(new ObservableMap[Name, UpdatableMetadata])(system.dispatcher)
-  val runningJobsAgent =   Agent(new ListMap[String, ActorRef]())(system.dispatcher)
+  val runningJobsAgent = Agent(new ListMap[String, ActorRef]())(system.dispatcher)
 
   logger.info("Connector Name: " + connectorName)
 
-  if((connectorName.isEmpty) || (connectorName.equalsIgnoreCase("XconnectorX"))){
+  if ((connectorName.isEmpty) || (connectorName.equalsIgnoreCase("XconnectorX"))) {
     logger.error("##########################################################################################");
     logger.error("# ERROR ##################################################################################");
     logger.error("##########################################################################################");
@@ -71,7 +66,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     logger.error("##########################################################################################");
   }
 
-  def stop():Unit = {
+  def stop(): Unit = {
     actorClusterNode.get ! Shutdown()
     system.shutdown()
     Metrics.getRegistry.getNames.foreach(Metrics.getRegistry.remove(_))
@@ -83,7 +78,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
     val connectorManagerActorRef = system.actorOf(
       RoundRobinPool(num_connector_actor, Some(resizer))
-        .props(Props(classOf[ConnectorActor], connector.getConnectorName,connector.getConnectorManifest,
+        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector.getConnectorManifest,
         connector.getDatastoreManifest, connector, connectedServers,
         metadataMapAgent, runningJobsAgent)),
       "ConnectorActor")
@@ -117,9 +112,11 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
         response.getOrElse(throw new IllegalStateException("Actor cluster node is not initialized"))
       }}}
     */
-    val future = actorClusterNode.get.?(GetTableMetadata(clusterName,tableName ))(timeout)
-    Try(Await.result(future.mapTo[TableMetadata],Duration.fromNanos(timeout*1000000L))).map{ Some (_)}.recover{
-      case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: "+e.getMessage); None
+    val future = actorClusterNode.get.?(GetTableMetadata(clusterName, tableName))(timeout)
+    Try(Await.result(future.mapTo[TableMetadata], Duration.fromNanos(timeout * 1000000L))).map {
+      Some(_)
+    }.recover {
+      case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: " + e.getMessage); None
     }.get
 
   }
@@ -153,13 +150,13 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   override def getConnectionStatus(): ConnectionStatus = {
     var status: ConnectionStatus = ConnectionStatus.CONNECTED
-    if (connectedServers.isEmpty){
+    if (connectedServers.isEmpty) {
       status = ConnectionStatus.DISCONNECTED
     }
     status
   }
 
-  override def subscribeToMetadataUpdate(mapListener: IMetadataListener) ={
+  override def subscribeToMetadataUpdate(mapListener: IMetadataListener) = {
     //actorClusterNode.get.asInstanceOf[ConnectorActor].subscribeToMetadataUpdate(mapListener)
     actorClusterNode.get ! mapListener
   }

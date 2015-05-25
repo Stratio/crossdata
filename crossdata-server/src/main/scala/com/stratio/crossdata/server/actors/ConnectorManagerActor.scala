@@ -155,12 +155,12 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
     }
     case ReplyConnectorManifest(connectorManifest)=>{
       persistConnectorManifest(ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_CONNECTOR,
-        connectorManifest))
+        connectorManifest,true))
     }
 
     case ReplyDatastoreManifest(datastoreManifest)=>{
       persistDatastoreManifest(ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_DATASTORE,
-        datastoreManifest))
+        datastoreManifest,true))
     }
 
     case c: ConnectResult => {

@@ -39,7 +39,7 @@ class DummyIConnector extends IConnector{
   val c:Option[IStorageEngine]=None
   override def getStorageEngine: IStorageEngine = c.get
 
-  override def getConnectorManifest: InputStream = ???
+  override def getConnectorManifest: String = ???
 
-  override def getDatastoreManifest: InputStream = ???
+  override def getDatastoreManifest: String = ???
 }

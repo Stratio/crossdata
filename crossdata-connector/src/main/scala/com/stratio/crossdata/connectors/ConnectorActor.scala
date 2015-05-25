@@ -77,7 +77,7 @@ object State extends Enumeration {
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connectorManifest: InputStream, datastoreManifest:InputStream,
+  def props(connectorName: String, connectorManifest: String, datastoreManifest:String,
             connector: IConnector, connectedServers: Set[String],
             mapAgent: Agent[ObservableMap[Name, UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]]):
   Props = Props(new ConnectorActor(connectorName, connectorManifest, datastoreManifest, connector, connectedServers,
@@ -91,7 +91,7 @@ object ClassExtractor{
 }
 
 
-class ConnectorActor(connectorName: String, connectorManifest: InputStream, datastoreManifest:InputStream,
+class ConnectorActor(connectorName: String, connectorManifest: String, datastoreManifest:String,
                      conn: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]])
   extends Actor with ActorLogging with IResultHandler {
 
@@ -384,16 +384,12 @@ class ConnectorActor(connectorName: String, connectorManifest: InputStream, data
       logger.info("Connected to Servers: " + connectedServers)
       sender ! replyConnectorName(connectorName)
     }
-    case GetConnectorManifest => {
+    case connManifest:GetConnectorManifest => {
       logger.info(sender + " asked for my connector manifest ")
-      connectedServers += sender.path.address.toString
-      logger.info("Connected to Servers: " + connectedServers)
       sender ! ReplyConnectorManifest(connectorManifest)
     }
-    case GetDatastoreManifest => {
+    case datManifest:GetDatastoreManifest => {
       logger.info(sender + " asked for my datastore manifest")
-      connectedServers += sender.path.address.toString
-      logger.info("Connected to Servers: " + connectedServers)
       sender ! ReplyDatastoreManifest(datastoreManifest)
     }
     case MemberUp(member) => {

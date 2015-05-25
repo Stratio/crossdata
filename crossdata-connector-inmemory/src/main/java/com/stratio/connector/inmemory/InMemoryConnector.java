@@ -94,6 +94,14 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         return new String[]{"InMemoryDatastore"};
     }
 
+    @Override public String getConnectorManifest() {
+        return null;
+    }
+
+    @Override public String getDatastoreManifest() {
+        return null;
+    }
+
     @Override
     public void init(IConfiguration configuration) throws InitializationException {
         //The initialization method is called when the connector is launched, currently an

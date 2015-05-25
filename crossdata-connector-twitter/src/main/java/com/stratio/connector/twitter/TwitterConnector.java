@@ -128,6 +128,14 @@ public class TwitterConnector extends AbstractExtendedConnector {
         return new String[]{"TwitterDatastore"};
     }
 
+    @Override public String getConnectorManifest() {
+        return null;
+    }
+
+    @Override public String getDatastoreManifest() {
+        return null;
+    }
+
     public Map<String, ColumnType> getAllowedColumns() {
         return allowedColumns;
     }

@@ -99,10 +99,10 @@ case class GetConnectorManifest()
 case class GetDatastoreManifest()
 
 @SerialVersionUID(-665564236789475253L)
-case class ReplyDatastoreManifest(datastoreManifest:InputStream)
+case class ReplyDatastoreManifest(datastoreManifest:String)
 
 @SerialVersionUID(-665564236789475252L)
-case class ReplyConnectorManifest(connectorManifest:InputStream)
+case class ReplyConnectorManifest(connectorManifest:String)
 
 @SerialVersionUID(-665564236789475258L)
 case class GetCatalogs(clusterName: ClusterName)

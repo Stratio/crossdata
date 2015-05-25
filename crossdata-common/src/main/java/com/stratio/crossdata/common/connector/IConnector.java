@@ -50,16 +50,16 @@ public interface IConnector {
 
     /**
      * Get the connector manifest from the connector.
-     * @return An InputStream with the manifest
+     * @return A String with the manifest
      */
-    InputStream getConnectorManifest();
+    String getConnectorManifest();
 
 
     /**
      * Get the datastore manifest from the connector.
-     * @return An InputStream with the manifest
+     * @return A String with the manifest
      */
-    InputStream getDatastoreManifest();
+    String getDatastoreManifest();
 
     /**
      * Initialize the connector service.

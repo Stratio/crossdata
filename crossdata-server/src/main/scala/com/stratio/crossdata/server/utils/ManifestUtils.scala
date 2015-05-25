@@ -19,8 +19,7 @@
 package com.stratio.crossdata.server.utils
 
 import com.stratio.crossdata.common.manifest._
-import java.io.FileInputStream
-import java.io.InputStream
+import java.io.{StringReader, FileInputStream, InputStream}
 import javax.xml.validation.{Schema, SchemaFactory}
 import javax.xml.XMLConstants
 import javax.xml.bind.{JAXBElement, Unmarshaller, JAXBContext}
@@ -64,6 +63,59 @@ object ManifestUtils {
     }
     else {
       return parseFromXmlToConnectorManifest(path)
+    }
+  }
+
+  @throws(classOf[ManifestException])
+  def parseFromXmlToManifest(manifestType: Int, manifest: String, isString:Boolean): CrossdataManifest = {
+    if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
+      return parseFromXmlToDataStoreManifest(manifest)
+    }
+    else {
+      return parseFromXmlToConnectorManifest(manifest)
+    }
+  }
+
+
+  @throws(classOf[ManifestException])
+  private def parseFromXmlToDataStoreManifest(manifest: String): DataStoreType = {
+    try {
+      val sf: SchemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+      val schema: Schema = sf.newSchema(getClass.getResource(DATASTORE_SCHEMA_PATH))
+      val jaxbContext: JAXBContext = JAXBContext.newInstance(classOf[DataStoreFactory])
+      val unmarshaller: Unmarshaller = jaxbContext.createUnmarshaller
+      unmarshaller.setSchema(schema)
+
+      val reader = new StringReader(manifest);
+
+      val unmarshalledDataStore: JAXBElement[DataStoreType] = unmarshaller.unmarshal(reader)
+        .asInstanceOf[JAXBElement[DataStoreType]]
+      return unmarshalledDataStore.getValue
+    }
+    catch {
+      case e: Any => {
+        throw new ManifestException(e)
+      }
+    }
+  }
+
+  @throws(classOf[ManifestException])
+  private def parseFromXmlToConnectorManifest(manifest: String): CrossdataManifest = {
+    try {
+      val sf: SchemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+      val schema: Schema = sf.newSchema(getClass.getResource(CONNECTOR_SCHEMA_PATH))
+      val jaxbContext: JAXBContext = JAXBContext.newInstance(classOf[ConnectorFactory])
+      val unmarshaller: Unmarshaller = jaxbContext.createUnmarshaller
+      unmarshaller.setSchema(schema)
+      val reader = new StringReader(manifest);
+      val unmarshalledDataStore: JAXBElement[ConnectorType] = unmarshaller.unmarshal(reader)
+        .asInstanceOf[JAXBElement[ConnectorType]]
+      return unmarshalledDataStore.getValue
+    }
+    catch {
+      case e: Any => {
+        throw new ManifestException(e)
+      }
     }
   }
 

@@ -156,11 +156,11 @@ public class AbstractExtendedConnectorTest {
             return new String[0];
         }
 
-        @Override public InputStream getConnectorManifest() {
+        @Override public String getConnectorManifest() {
             return null;
         }
 
-        @Override public InputStream getDatastoreManifest() {
+        @Override public String getDatastoreManifest() {
             return null;
         }
 
