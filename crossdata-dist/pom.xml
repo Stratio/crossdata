@@ -230,7 +230,7 @@
                             <contactEmail>crossdata@stratio.com</contactEmail>
 
                             <!-- Optional, final package name -->
-                            <outputFileName>crossdata</outputFileName>
+                            <outputFileName>stratio-crossdata</outputFileName>
 
                             <!-- RPM specific properties -->
                             <rpm>
