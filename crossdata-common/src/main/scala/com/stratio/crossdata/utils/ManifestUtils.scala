@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package com.stratio.crossdata.server.utils
+package com.stratio.crossdata.utils
 
 import com.stratio.crossdata.common.manifest._
 import java.io.{StringReader, FileInputStream, InputStream}
@@ -63,16 +63,6 @@ object ManifestUtils {
     }
     else {
       return parseFromXmlToConnectorManifest(path)
-    }
-  }
-
-  @throws(classOf[ManifestException])
-  def parseFromXmlToManifest(manifestType: Int, manifest: String, isString:Boolean): CrossdataManifest = {
-    if (manifestType == CrossdataManifest.TYPE_DATASTORE) {
-      return parseFromXmlToDataStoreManifest(manifest)
-    }
-    else {
-      return parseFromXmlToConnectorManifest(manifest)
     }
   }
 

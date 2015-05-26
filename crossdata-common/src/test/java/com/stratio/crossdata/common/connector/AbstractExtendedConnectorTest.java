@@ -146,21 +146,13 @@ public class AbstractExtendedConnectorTest {
         }
 
 
-        @Override
-        public String getConnectorName() {
+
+
+        @Override public String getConnectorManifestPath() {
             return null;
         }
 
-        @Override
-        public String[] getDatastoreName() {
-            return new String[0];
-        }
-
-        @Override public String getConnectorManifest() {
-            return null;
-        }
-
-        @Override public String getDatastoreManifest() {
+        @Override public String[] getDatastoreManifestPath() {
             return null;
         }
 

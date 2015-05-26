@@ -78,8 +78,8 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
     val connectorManagerActorRef = system.actorOf(
       RoundRobinPool(num_connector_actor, Some(resizer))
-        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector.getConnectorManifest,
-        connector.getDatastoreManifest, connector, connectedServers,
+        .props(Props(classOf[ConnectorActor], connector.getConnectorManifestPath,
+        connector.getDatastoreManifestPath, connector, connectedServers,
         metadataMapAgent, runningJobsAgent)),
       "ConnectorActor")
 
@@ -88,7 +88,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val actorSelection: ActorSelection = system.actorSelection(
       StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString(), false))
 
-    metricName = MetricRegistry.name(connector.getConnectorName, "connection", "status")
+    metricName = MetricRegistry.name("connection", "status")
     Metrics.getRegistry.register(metricName,
       new Gauge[Boolean] {
         override def getValue: Boolean = {

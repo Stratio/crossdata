@@ -18,8 +18,6 @@
 
 package com.stratio.crossdata.common.connector;
 
-import java.io.InputStream;
-
 import com.stratio.crossdata.common.data.ClusterName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
@@ -34,32 +32,18 @@ import com.stratio.crossdata.common.security.ICredentials;
 public interface IConnector {
 
     /**
-     * Get the name of the connector.
-     *
-     * @return A name.
-     */
-    String getConnectorName();
-
-    /**
-     * Get the names of the datastores supported by the connector.
-     * Several connectors may declare the same datastore name.
-     *
-     * @return The names.
-     */
-    String[] getDatastoreName();
-
-    /**
      * Get the connector manifest from the connector.
-     * @return A String with the manifest
+     *
+     * @return A String with the path of the manifest
      */
-    String getConnectorManifest();
-
+    String getConnectorManifestPath();
 
     /**
-     * Get the datastore manifest from the connector.
-     * @return A String with the manifest
+     * Get the list of datastore manifests from the connector.
+     *
+     * @return An Array of String with the path of the manifest
      */
-    String getDatastoreManifest();
+    String[] getDatastoreManifestPath();
 
     /**
      * Initialize the connector service.
@@ -125,7 +109,5 @@ public interface IConnector {
      * @throws UnsupportedException If the connector does not provide this functionality.
      */
     IMetadataEngine getMetadataEngine() throws UnsupportedException;
-
-
 
 }
