@@ -220,12 +220,24 @@
                     <plugin>
                         <groupId>com.stratio.mojo.unix</groupId>
                         <artifactId>unix-maven-plugin</artifactId>
-                        <version>1.1.3</version>
+                        <version>1.1.5</version>
                         <extensions>true</extensions>
                         <inherited>false</inherited>
 
 
                         <configuration>
+
+                            <excludeDirectoryAttributes>
+                                <dir>/etc</dir>
+                                <dir>/etc/init.d</dir>
+                                <dir>/etc/default</dir>
+                                <dir>/var</dir>
+                                <dir>/opt</dir>
+                                <dir>/usr</dir>
+                                <dir>/bin</dir>
+                            </excludeDirectoryAttributes>
+
+
                             <!--The name and email address of the contact person for the package. -->
                             <contact><![CDATA[Stratio <crossdata@stratio.com>]]></contact>
                             <contactEmail>crossdata@stratio.com</contactEmail>
