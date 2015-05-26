@@ -16,26 +16,38 @@
  * under the License.
  */
 
-package com.stratio.crossdata.common.metadata;
+package com.stratio.crossdata.core.planner.utils;
 
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.metadata.ConnectorMetadata;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+
 
 /**
- * commons-core??.
+ * This class provides a comparator to compare one connector with another based on the clusters affected by the query.
+ * In order to carry out this work, the priority assigned to each pair connector-cluster is used.
+ * Soon, this will use some metrics and information about whether the connector is native or not.
  */
 public class ConnectorPriorityComparator implements Comparator<ConnectorMetadata> {
 
     private final List<ClusterName> clusterNames;
 
-
+    /**
+     * Connector comparator constructor.
+     * @param clusterNames Clusters where the connector must retrieve data.
+     */
     public ConnectorPriorityComparator(List<ClusterName> clusterNames) {
         this.clusterNames = clusterNames;
     }
 
 
     @Override
+    /**
+     * Overrides the compare method.
+     * @returns -1, 0, 1 if the first connector is preferable to the second one, equal or is not preferable.
+     */
     public int compare(ConnectorMetadata leftCM, ConnectorMetadata rightCM) {
         int leftPriority = leftCM.getPriorityFromClusterNames(clusterNames);
         int rightPriority = rightCM.getPriorityFromClusterNames(clusterNames);

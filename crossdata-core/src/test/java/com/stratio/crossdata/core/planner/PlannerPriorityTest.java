@@ -18,9 +18,6 @@
 
 package com.stratio.crossdata.core.planner;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -59,6 +56,8 @@ import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.query.IParsedQuery;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
 import com.stratio.crossdata.core.statements.SelectStatement;
+
+import static org.testng.Assert.*;
 
 /**
  * Planner test concerning priority.
@@ -228,6 +227,47 @@ public class PlannerPriorityTest extends PlannerBaseTest {
 
         assertEquals(path.getAvailableConnectors().size(), 2, "Invalid size");
         assertEquals(executionWorkflow.getActorRef(), connector3.getActorRef("127.0.0.1"), "Invalid connector selected");
+    }
+
+
+    @Test
+    public void testMultipleExecutionWorkflowBasicSelect() {
+        List<LogicalStep> initialSteps = new LinkedList<>();
+        Project project = getProject("table1");
+
+        ColumnName[] columns = { new ColumnName(table1.getName(), "id"), new ColumnName(table1.getName(), "user") };
+        ColumnType[] types = { new ColumnType(DataType.INT), new ColumnType(DataType.TEXT) };
+        Select select = getSelect(columns, types);
+
+        //Link the elements
+        project.setNextStep(select);
+        initialSteps.add(project);
+
+        List<ConnectorMetadata> availableConnectors = new ArrayList<>();
+        availableConnectors.add(connector1);
+        availableConnectors.add(connector3);
+
+        ExecutionPath path = null;
+        ExecutionWorkflow executionWorkflow = null;
+        try {
+
+            IParsedQuery stmt = helperPT.testRegularStatement("select catalog.table.a from catalog.table;",
+                    "mergeExecutionPathsJoinException");
+            SelectParsedQuery spq = SelectParsedQuery.class.cast(stmt);
+            SelectStatement ss = spq.getStatement();
+
+            SelectValidatedQueryWrapper svqw = new SelectValidatedQueryWrapper(ss, spq);
+            path = plannerWrapper.defineExecutionPath(project, availableConnectors, svqw);
+            executionWorkflow = plannerWrapper.buildExecutionWorkflow(svqw, new LogicalWorkflow(initialSteps));
+        } catch (PlanningException e) {
+            fail("Not expecting Planning Exception", e);
+        }
+
+        assertEquals(path.getAvailableConnectors().size(), 2, "Invalid size");
+        assertEquals(executionWorkflow.getActorRef(), connector3.getActorRef("127.0.0.1"), "Invalid connector selected");
+
+        assertTrue(executionWorkflow.getLowPriorityExecutionWorkflow().isPresent(), "There should be an alternative execution");
+        assertEquals(executionWorkflow.getLowPriorityExecutionWorkflow().get().getActorRef(), connector1.getActorRef("127.0.0.1"), "Invalid secondary connector selected");
     }
 
 }

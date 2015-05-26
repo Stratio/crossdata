@@ -74,10 +74,8 @@ public class ExecutionWorkflow implements Serializable {
      */
     private ExecutionWorkflow nextExecutionWorkflow;
 
-
-
     /**
-     * Low priority ExecutionWorkflow which must be executed if the current execution fails.
+     * Low priority {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow} which must be executed if the current execution fails.
      */
     private Optional<ExecutionWorkflow> lowPriorityExecutionWorkflow;
 
@@ -130,6 +128,10 @@ public class ExecutionWorkflow implements Serializable {
         return sender;
     }
 
+    /**
+     * Returns an equivalent workflow with lower priority if exists.
+     * @return A {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow}.
+     */
     public Optional<ExecutionWorkflow> getLowPriorityExecutionWorkflow() {
         return lowPriorityExecutionWorkflow;
     }
@@ -166,6 +168,10 @@ public class ExecutionWorkflow implements Serializable {
         this.resultType = resultType;
     }
 
+    /**
+     * Set an equivalent workflow with lower priority.
+     * @param lowPriorityExecutionWorkflow The lower priority {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow}.
+     */
     public void setLowPriorityExecutionWorkflow(ExecutionWorkflow lowPriorityExecutionWorkflow) {
         this.lowPriorityExecutionWorkflow = Optional.of(lowPriorityExecutionWorkflow);
     }

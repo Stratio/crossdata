@@ -81,7 +81,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val m = mock[IConnector]
     val qe = mock[IQueryEngine]
     (m.getQueryEngine _).expects().returning(qe)
-    (qe.execute("qId", _:LogicalWorkflow)).expects(*).returning(QueryResult.createQueryResult(UUID.randomUUID()
+    (qe.execute(_: String, _:LogicalWorkflow)).expects(*,*).returning(QueryResult.createQueryResult(UUID.randomUUID()
       .toString, new ResultSet(), 0, true))
     (m.getConnectorName _).expects().returning(connector)
     (m.init _).expects(*).returning(None)

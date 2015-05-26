@@ -34,8 +34,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.stratio.crossdata.common.metadata.*;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import com.stratio.crossdata.core.planner.utils.ConnectorPriorityComparator;
 import org.apache.log4j.Logger;
 
 import com.stratio.crossdata.common.data.AlterOperation;
@@ -532,7 +531,7 @@ public class Planner {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         //Select an actor
-        Iterator<ConnectorMetadata> connectorMetadata = findBestConnector(connectors, involvedClusters).iterator();
+        Iterator<ConnectorMetadata> connectorMetadata = getConnectorsSortedByPriority(connectors, involvedClusters).iterator();
 
         QueryWorkflow choicedWorkflow = buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow);
         QueryWorkflow tempWorkflow = choicedWorkflow;
@@ -559,7 +558,7 @@ public class Planner {
 
 
 
-    private List<ConnectorMetadata> findBestConnector(List<ConnectorMetadata> connectors, List<ClusterName> clusters) {
+    private List<ConnectorMetadata> getConnectorsSortedByPriority(List<ConnectorMetadata> connectors, List<ClusterName> clusters) {
         //TODO: Add logic to this method according to native or not
         //TODO: Add logic to this method according to statistics
 
@@ -572,25 +571,9 @@ public class Planner {
                 }
                 LOG.debug("ConnectorList sorted by priority " + StringUtils.stringList(connectorNames, " , "));
             }
-
         }
 
         return connectors;
-
-
-        /*ConnectorMetadata highestPriorityConnector = connectors.get(0);
-        int minPriority = Integer.MAX_VALUE;
-
-        for (ConnectorMetadata connector: connectors) {
-            if (connector.getPriorityFromClusterNames(clusters) < minPriority) {
-                minPriority = connector.getPriorityFromClusterNames(clusters);
-                highestPriorityConnector = connector;
-                LOG.debug("New top priority connector found: " + connector.getName());
-            }
-        }
-
-        return highestPriorityConnector;
-        */
     }
 
     private void updateFunctionsFromSelect(LogicalWorkflow workflow, ConnectorName connectorName)
@@ -672,7 +655,7 @@ public class Planner {
         LogicalWorkflow workflow = new LogicalWorkflow(initialSteps);
 
         //Select an actor
-        Iterator<ConnectorMetadata> connectorMetadata = findBestConnector(mergePath.getAvailableConnectors(), involvedClusters).iterator();
+        Iterator<ConnectorMetadata> connectorMetadata = getConnectorsSortedByPriority(mergePath.getAvailableConnectors(), involvedClusters).iterator();
 
         QueryWorkflow choicedWorkflow = buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow);
         QueryWorkflow tempWorkflow = choicedWorkflow;
@@ -1752,42 +1735,12 @@ public class Planner {
             TableMetadata tableMetadata, String actorRef, ExecutionWorkflow selectExecutionWorkflow,
             List<ClusterName> involvedClusters, List<ConnectorMetadata> candidates) {
 
-
-
-        /*
-        if ((candidates != null) && (!candidates.isEmpty())) {
-            // Build a unique workflow
-            ConnectorMetadata bestConnector = findBestConnector(candidates, involvedClusters);
-
-            storageWorkflow = new StorageWorkflow(
-                    queryId,
-                    bestConnector.getActorRef(host),
-                    ExecutionType.INSERT_FROM_SELECT,
-                    ResultType.RESULTS);
-            storageWorkflow.setClusterName(tableMetadata.getClusterRef());
-            storageWorkflow.setTableMetadata(tableMetadata);
-            storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
-            storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
-
-        } else {
-            // Build a workflow for select and insert
-            storageWorkflow = new StorageWorkflow(queryId, actorRef, ExecutionType.INSERT_BATCH,
-                    ResultType.RESULTS);
-            storageWorkflow.setClusterName(tableMetadata.getClusterRef());
-            storageWorkflow.setTableMetadata(tableMetadata);
-            storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
-            storageWorkflow.setPreviousExecutionWorkflow(selectExecutionWorkflow);
-        }
-        */
-
-
         StorageWorkflow storageWorkflow;
         if ((candidates != null) && (!candidates.isEmpty())) {
             // Build a unique workflow
 
-            //ConnectorMetadata bestConnector = findBestConnector(candidates, involvedClusters);
             //TODO INSERT FROM SELECT
-            Iterator<ConnectorMetadata> connectorMetadata = findBestConnector(candidates, involvedClusters).iterator();
+            Iterator<ConnectorMetadata> connectorMetadata = getConnectorsSortedByPriority(candidates, involvedClusters).iterator();
 
             storageWorkflow = buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, StringUtils.getAkkaActorRefUri(connectorMetadata.next().getActorRef(host), false), selectExecutionWorkflow, ExecutionType.INSERT_FROM_SELECT);
             StorageWorkflow tempWorkflow = storageWorkflow;
@@ -1803,8 +1756,7 @@ public class Planner {
     }
 
     private StorageWorkflow buildInsertFromSelectTriggeredStorageWorkflow(String queryId, InsertIntoStatement insertIntoStatement, TableMetadata tableMetadata, String actorRef, ExecutionWorkflow selectExecutionWorkflow, ExecutionType exType) {
-        StorageWorkflow storageWorkflow;
-        storageWorkflow = new StorageWorkflow(queryId, actorRef, exType, ResultType.RESULTS);
+        StorageWorkflow storageWorkflow = new StorageWorkflow(queryId, actorRef, exType, ResultType.RESULTS);
         storageWorkflow.setClusterName(tableMetadata.getClusterRef());
         storageWorkflow.setTableMetadata(tableMetadata);
         storageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());

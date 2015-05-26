@@ -48,9 +48,9 @@ public class LogicalWorkflow implements Serializable {
     /**
      * Workflow constructor.
      *
-     * @param initialSteps The list of initial steps.
-     * @param lastStep The last logical step.
-     * @param pagination The size of the pagination.
+     * @param initialSteps  The list of initial steps.
+     * @param lastStep      The last logical step.
+     * @param pagination    The size of the pagination.
      */
     public LogicalWorkflow(List<LogicalStep> initialSteps, LogicalStep lastStep, int pagination) {
         this.initialSteps = initialSteps;
@@ -61,25 +61,21 @@ public class LogicalWorkflow implements Serializable {
     /**
      * Workflow constructor.
      * 
-     * @param initialSteps
-     *            The list of initial steps.
+     * @param initialSteps  The list of initial steps.
      */
     public LogicalWorkflow(List<LogicalStep> initialSteps) {
         this(initialSteps, null, 0);
     }
 
     /**
-     * Workflow constructor.
+     * Creates a new LogicalWorflow which is a copy of the argument logicalWorflow.
      *
-     * @param logicalWorkflow
-     *            The list of initial steps.
+     * @param logicalWorkflow   The original LogicalWorkflow.
      */
     public LogicalWorkflow(LogicalWorkflow logicalWorkflow) {
         this(logicalWorkflow.getInitialSteps(), logicalWorkflow.getLastStep(), logicalWorkflow.getPagination());
         this.sqlDirectQuery = logicalWorkflow.getSqlDirectQuery();
     }
-
-
 
 
     /**
