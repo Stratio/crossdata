@@ -576,7 +576,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       } else if ((storageWorkflow.getPreviousExecutionWorkflow != null)
         && (ResultType.TRIGGER_EXECUTION.equals(storageWorkflow.getPreviousExecutionWorkflow.getResultType))) {
 
-        val actorRef = StringUtils.getAkkaActorRefUri(storageWorkflow.getActorRef(), false)
+        val actorRef = StringUtils.getAkkaActorRefUri(storageWorkflow.getPreviousExecutionWorkflow.getActorRef, false)
         val actorSelection = context.actorSelection(actorRef)
 
         //Register the top level workflow

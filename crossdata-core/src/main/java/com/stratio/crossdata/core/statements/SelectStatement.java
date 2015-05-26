@@ -18,18 +18,10 @@
 
 package com.stratio.crossdata.core.statements;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.stratio.crossdata.common.data.CatalogName;
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.statements.structures.AbstractRelation;
-import com.stratio.crossdata.common.statements.structures.Operator;
 import com.stratio.crossdata.common.statements.structures.OrderByClause;
 import com.stratio.crossdata.common.statements.structures.SelectExpression;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -38,8 +30,12 @@ import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.structures.GroupByClause;
 import com.stratio.crossdata.core.structures.Join;
+import com.stratio.crossdata.common.utils.SqlStringUtils;
 import com.stratio.crossdata.core.validator.requirements.ValidationRequirements;
 import com.stratio.crossdata.core.validator.requirements.ValidationTypes;
+
+import java.io.Serializable;
+import java.util.*;
 
 /**
  * Class that models a {@code SELECT} statement from the CROSSDATA language.
@@ -450,6 +446,7 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
      *
      * @return String
      */
+    @Deprecated
     public String toSQL92String(){
         StringBuilder sb = new StringBuilder("SELECT ");
         if (selectExpression != null) {
@@ -473,19 +470,26 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
         }
 
         if ((where != null) && (!where.isEmpty())) {
-            sb.append(" WHERE ").append(StringUtils.sqlStringList(where," AND ", false));
+            if(windowInc){
+                String sqlString = SqlStringUtils.sqlStringList(where, " AND ", false, tableName);
+                if(!sqlString.isEmpty()){
+                   sb.append(" WHERE ").append(sqlString);
+                }
+            }else {
+                sb.append(" WHERE ").append(SqlStringUtils.sqlStringList(where, " AND ", false));
+            }
         }
 
         if (groupInc) {
-            sb.append(" GROUP BY ").append(StringUtils.sqlStringList(groupByClause.getSelectorIdentifier(), ", ", false));
+            sb.append(" GROUP BY ").append(SqlStringUtils.sqlStringList(groupByClause.getSelectorIdentifier(), ", ", false));
         }
 
         if ((havingInc)&& (havingClause!=null)) {
-            sb.append(" HAVING ").append(StringUtils.sqlStringList(havingClause, " AND ", false));
+            sb.append(" HAVING ").append(SqlStringUtils.sqlStringList(havingClause, " AND ", false));
         }
 
         if (orderInc) {
-            sb.append(" ORDER BY ").append(StringUtils.sqlStringList(orderByClauses, ", ", false));
+            sb.append(" ORDER BY ").append(SqlStringUtils.sqlStringList(orderByClauses, ", ", false));
         }
 
         if (limitInc) {

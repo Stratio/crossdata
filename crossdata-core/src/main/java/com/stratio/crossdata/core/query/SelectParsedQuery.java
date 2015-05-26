@@ -63,11 +63,7 @@ public class SelectParsedQuery extends BaseQuery implements IParsedQuery {
 
     @Override
     public SelectStatement getStatement() {
-        return (SelectStatement) statement;
-    }
-
-    public String getSessionId() {
-       return super.getSessionId();
+        return statement;
     }
 
     /**

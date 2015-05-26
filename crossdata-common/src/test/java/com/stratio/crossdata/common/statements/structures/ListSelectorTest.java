@@ -19,14 +19,32 @@
 package com.stratio.crossdata.common.statements.structures;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.stratio.crossdata.common.data.ColumnName;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.TableName;
 
 public class ListSelectorTest {
+
+    @Test
+    public void getSelectorTablesIntegerList() {
+        List<Selector> selectors= Arrays.asList((Selector) new IntegerSelector(1), (Selector)new IntegerSelector(5));
+        ListSelector listSelector=new ListSelector(new TableName("catalog","table"),selectors);
+        Assert.assertEquals(listSelector.getSelectorTables().size(), 0 ,  "The table size should be 0");
+    }
+
+    @Test
+    public void getSelectorTablesColumnList() {
+        List<Selector> selectors= Arrays.asList((Selector) new ColumnSelector(new ColumnName("c", "t1", "c")), (Selector)new ColumnSelector(new ColumnName("c", "t2", "c")));
+        ListSelector listSelector=new ListSelector(new TableName("catalog","table"),selectors);
+        Assert.assertEquals(listSelector.getSelectorTables().size(), 2 ,  "The table size should be 2");
+    }
+
+
     @Test
     public void equalsTest() {
         List<Selector> selectors= new ArrayList<>();

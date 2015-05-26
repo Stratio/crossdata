@@ -20,7 +20,12 @@ package com.stratio.crossdata.common.statements.structures;
 
 import com.stratio.crossdata.common.data.Name;
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
+import com.stratio.crossdata.common.logicalplan.Project;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Select selector class for sub-queries.
@@ -112,5 +117,14 @@ public class SelectSelector extends Selector {
         int result = selectQuery != null ? selectQuery.hashCode() : 0;
         result = 31 * result + (logicalWorkflow != null ? logicalWorkflow.hashCode() : 0);
         return result;
+    }
+
+    @Override
+    public Set<TableName> getSelectorTables() {
+        Set<TableName> tables =  new HashSet<>();
+        for (LogicalStep logicalStep : logicalWorkflow.getInitialSteps()) {
+            tables.add(Project.class.cast(logicalStep).getTableName());
+        }
+        return tables;
     }
 }

@@ -30,6 +30,7 @@ import com.stratio.crossdata.common.statements.structures.AbstractRelation;
 import com.stratio.crossdata.common.statements.structures.Relation;
 import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
 import com.stratio.crossdata.common.statements.structures.RelationTerm;
+import com.stratio.crossdata.common.utils.SqlStringUtils;
 import com.stratio.crossdata.common.utils.StringUtils;
 
 
@@ -248,7 +249,7 @@ public class Join implements Serializable {
 
         if(JoinType.CROSS != type){
             sb.append(" ON ");
-            sb.append(StringUtils.sqlStringList(relations, " AND ", false));
+            sb.append(SqlStringUtils.sqlStringList(relations, " AND ", false));
         }
 
         return sb.toString();

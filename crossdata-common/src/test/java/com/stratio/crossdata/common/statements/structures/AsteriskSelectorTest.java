@@ -18,10 +18,23 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.TableName;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class AsteriskSelectorTest {
+
+    @Test
+    public void getSelectorTablesColumnList() {
+        AsteriskSelector as=new AsteriskSelector(new TableName("c","t1"));
+        as.addTables(Arrays.asList(new TableName("c","t2")));
+        Assert.assertEquals(as.getSelectorTables().size(), 2 ,  "The table size should be 2");
+    }
+
     @Test
     public void equalsTest(){
         AsteriskSelector as=new AsteriskSelector();

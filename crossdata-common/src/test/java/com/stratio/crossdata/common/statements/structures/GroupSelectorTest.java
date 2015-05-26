@@ -18,10 +18,27 @@
 
 package com.stratio.crossdata.common.statements.structures;
 
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.TableName;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.Arrays;
+
 public class GroupSelectorTest {
+
+    @Test
+    public void getSelectorTables() {
+        GroupSelector gs=new GroupSelector(null, new ColumnSelector(new ColumnName("c", "t1", "c")), new ColumnSelector(new ColumnName("c", "t2", "c")));
+        Assert.assertEquals(gs.getSelectorTables().size(), 2 ,  "The table size should be 2");
+    }
+
+    @Test
+    public void getSelectorTablesSameTable() {
+        GroupSelector gs=new GroupSelector(null, new ColumnSelector(new ColumnName("c", "t1", "c")), new ColumnSelector(new ColumnName("c", "t1", "c")));
+        Assert.assertEquals(gs.getSelectorTables().size(), 1 ,  "The table size should be 1");
+    }
+
     @Test
     public void toSQLStringTest() {
         StringSelector is1=new StringSelector("hola");

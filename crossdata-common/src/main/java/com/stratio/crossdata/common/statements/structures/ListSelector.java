@@ -17,10 +17,13 @@
  */
 package com.stratio.crossdata.common.statements.structures;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.utils.SqlStringUtils;
 import com.stratio.crossdata.common.utils.StringUtils;
 
 /**
@@ -59,6 +62,15 @@ public class ListSelector extends Selector {
     }
 
     @Override
+    public Set<TableName> getSelectorTables() {
+        Set<TableName> tables = new HashSet<>();
+        for (Selector selector : selectorsList) {
+            tables.addAll(selector.getSelectorTables());
+        }
+        return tables;
+    }
+
+    @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("(");
         Iterator<Selector> iter = selectorsList.iterator();
@@ -76,7 +88,7 @@ public class ListSelector extends Selector {
     @Override
     public String toSQLString(boolean withAlias) {
         StringBuilder sb = new StringBuilder("(");
-        sb.append(StringUtils.sqlStringList(selectorsList, ", ", withAlias));
+        sb.append(SqlStringUtils.sqlStringList(selectorsList, ", ", withAlias));
         sb.append(")");
         return sb.toString();
     }

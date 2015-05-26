@@ -20,13 +20,30 @@ package com.stratio.crossdata.common.statements.structures;
 
 import static org.mockito.Mockito.mock;
 
+import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
+import com.stratio.crossdata.common.logicalplan.Project;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SelectSelectorTest {
+
+    @Test
+    public void getSelectorTables() {
+        List<LogicalStep> projects = new ArrayList<>();
+        projects.add(new Project(null,new TableName("c","t1"),null));
+        projects.add(new Project(null,new TableName("c","t2"),null));
+        SelectSelector selectSelector = new SelectSelector("SELECT * FROM t1,t2");
+        selectSelector.setQueryWorkflow(new LogicalWorkflow(projects));
+        Assert.assertEquals(selectSelector.getSelectorTables().size(), 2 ,  "The table size should be 2");
+    }
+
 
     @Test
     public void testToSQLString() {

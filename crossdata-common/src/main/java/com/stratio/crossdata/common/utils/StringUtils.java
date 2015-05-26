@@ -87,26 +87,6 @@ public final class StringUtils implements Serializable {
     }
 
     /**
-     * Create a string from a list of ISqlExpression using a separator between objects.
-     *
-     * @param ids       The list of objects.
-     * @param separator The separator.
-     * @param withAlias Whether alias is included.
-     * @return A String.
-     */
-    public static <T extends ISqlExpression> String sqlStringList ( List<T> ids, String separator, boolean withAlias) {
-        StringBuilder sb = new StringBuilder();
-        for (ISqlExpression value: ids) {
-            sb.append(value.toSQLString(withAlias)).append(separator);
-        }
-        if (sb.length() > separator.length()) {
-            return sb.substring(0, sb.length() - separator.length());
-        } else {
-            return "";
-        }
-    }
-
-    /**
      * Transform a JSON into a map of selectors.
      *
      * @param tableName The associated {@link com.stratio.crossdata.common.data.TableName}.

@@ -19,6 +19,10 @@
 package com.stratio.crossdata.common.statements.structures;
 
 
+import com.stratio.crossdata.common.data.TableName;
+
+import java.util.Set;
+
 /**
  * Selector aliases appearing in GroupBy and OrderBy clauses which refer to any alias selectors in {@link com.stratio.crossdata.common.statements.structures.SelectExpression}
  * except for {@link com.stratio.crossdata.common.statements.structures.ColumnSelector}.
@@ -60,6 +64,11 @@ public class AliasSelector extends Selector {
     @Override
     public SelectorType getType() {
         return SelectorType.ALIAS;
+    }
+
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return referencedSelector.getSelectorTables();
     }
 
     @Override

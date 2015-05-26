@@ -25,7 +25,7 @@ import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.data.TableName;
 
 /**
- * Models OR relationships that can be found on a WHERE clause.
+ * Models AND relationships that can be found on a WHERE clause.
  */
 public class Relation extends AbstractRelation {
 
@@ -182,6 +182,18 @@ public class Relation extends AbstractRelation {
     }
 
 
+
+
+    @Override
+    public boolean isBasicRelation(){
+        return getSelectorTables().size() <= 1;
+    }
+
+    @Override
+    public Set<TableName> getAbstractRelationTables() {
+        return getSelectorTables();
+    }
+
     @Override
     public String toSQLString(boolean withAlias) {
         StringBuilder sb = new StringBuilder();
@@ -198,12 +210,11 @@ public class Relation extends AbstractRelation {
     }
 
     @Override
-    public boolean isBasicRelation(){
-        return getSelectorTables().size() <= 1;
-    }
-
-    @Override
-    public Set<TableName> getAbstractRelationTables() {
-        return getSelectorTables();
+    public String toSQLString(boolean withAlias, TableName toExcludeTable) {
+        if(isBasicRelation() && getSelectorTables().iterator().next().equals(toExcludeTable)){
+            return "";
+        }else {
+            return toSQLString(withAlias);
+        }
     }
 }

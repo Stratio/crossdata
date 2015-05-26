@@ -57,6 +57,7 @@ import com.stratio.crossdata.common.executionplan.StorageWorkflow;
 import com.stratio.crossdata.common.logicalplan.Disjunction;
 import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.logicalplan.Join;
+import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.manifest.FunctionType;
@@ -145,7 +146,8 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_CROSS_JOIN);
         operationsC2.add(Operations.INSERT);
         operationsC2.add(Operations.FILTER_DISJUNCTION);
-        operationsC1.add(Operations.FILTER_NON_INDEXED_IN);
+        operationsC2.add(Operations.FILTER_NON_INDEXED_IN);
+        operationsC2.add(Operations.FILTER_NON_INDEXED_LIKE);
 
         String strClusterName = "TestCluster1";
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
@@ -619,6 +621,89 @@ public class PlannerTest extends PlannerBaseTest {
                 Select.class,
                 "Last step should be a Select");
 
+    }
+
+    @Test
+    public void testMultipleJoinAndFullyQualifiedFilter() throws ManifestException {
+
+        init();
+
+        String inputText = "SELECT * FROM demo.table1 " +
+                "INNER JOIN demo.table2 ON demo.table1.id = demo.table2.id " +
+                "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id " +
+                "WHERE demo.table1.user LIKE '*z';";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testMultipleJoinAndFullyQualifiedFilter", false, table1, table2, table3);
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
+        assertNotNull(queryWorkflow, "Planner failed");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 3, "Expecting 3 initial steps");
+        List<LogicalStep> initalSteps = queryWorkflow.getWorkflow().getInitialSteps();
+        Project projectWithFilter = null;
+        Project projectNoFilter1 = null;
+        Project projectNoFilter2 = null;
+        for(LogicalStep ls: initalSteps){
+            Project project = (Project) ls;
+            if(project.getTableName().equals(new TableName("demo", "table1"))){
+                projectWithFilter = project;
+            } else if(projectNoFilter1 == null) {
+                projectNoFilter1 = project;
+            } else {
+                projectNoFilter2 = project;
+            }
+        }
+
+        assertEquals(projectNoFilter1.getNextStep(),
+                projectWithFilter.getNextStep().getNextStep(),
+                "Expecting 2 first initial steps to converge to the same union step");
+        assertEquals(projectNoFilter1.getNextStep().getNextStep(),
+                projectNoFilter2.getNextStep(),
+                "Expecting first and third initial steps to converge to the same union step");
+        assertEquals(
+                projectNoFilter2.getNextStep().getNextStep().getClass(),
+                Select.class,
+                "Last step should be a Select");
+
+    }
+
+    @Test
+    public void testMultipleJoinAndPartiallyQualifiedFilter() throws ManifestException {
+
+        init();
+
+        String inputText = "SELECT * FROM demo.table1 " +
+                "INNER JOIN demo.table2 ON demo.table1.id = demo.table2.id " +
+                "INNER JOIN demo.table3 ON demo.table3.id_aux = demo.table1.id " +
+                "WHERE table1.user LIKE '*z';";
+        QueryWorkflow queryWorkflow = (QueryWorkflow) getPlannedQuery(
+                inputText, "testMultipleJoinAndPartiallyQualifiedFilter", false, false, table1, table2, table3);
+        assertEquals(queryWorkflow.getExecutionType(), ExecutionType.SELECT, "Planner failed.");
+        assertNotNull(queryWorkflow, "Planner failed");
+        assertEquals(queryWorkflow.getWorkflow().getInitialSteps().size(), 3, "Expecting 3 initial steps");
+        List<LogicalStep> initalSteps = queryWorkflow.getWorkflow().getInitialSteps();
+        Project projectWithFilter = null;
+        Project projectNoFilter1 = null;
+        Project projectNoFilter2 = null;
+        for(LogicalStep ls: initalSteps){
+            Project project = (Project) ls;
+            if(project.getTableName().equals(new TableName("demo", "table1"))){
+                projectWithFilter = project;
+            } else if(projectNoFilter1 == null) {
+                projectNoFilter1 = project;
+            } else {
+                projectNoFilter2 = project;
+            }
+        }
+
+        assertEquals(projectNoFilter1.getNextStep(),
+                projectWithFilter.getNextStep().getNextStep(),
+                "Expecting 2 first initial steps to converge to the same union step");
+        assertEquals(projectNoFilter1.getNextStep().getNextStep(),
+                projectNoFilter2.getNextStep(),
+                "Expecting first and third initial steps to converge to the same union step");
+        assertEquals(
+                projectNoFilter2.getNextStep().getNextStep().getClass(),
+                Select.class,
+                "Last step should be a Select");
     }
 
     @Test

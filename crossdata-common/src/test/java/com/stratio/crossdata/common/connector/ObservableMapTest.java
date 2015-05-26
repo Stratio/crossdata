@@ -34,6 +34,7 @@ import static org.mockito.Mockito.mock;
 /**
  * Created by lcisneros on 4/05/15.
  */
+@SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
 public class ObservableMapTest {
 
     @Test
@@ -74,6 +75,7 @@ public class ObservableMapTest {
         Mockito.verify(listener).deleteMetadata(key);
         Assert.assertEquals(value, oldValue);
     }
+
 
 
     @Test(expectedExceptions = ClassCastException.class)
