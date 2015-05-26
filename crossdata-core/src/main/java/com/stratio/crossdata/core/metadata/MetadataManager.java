@@ -708,7 +708,7 @@ public enum MetadataManager {
             Set<PropertyType> requiredProperties = new HashSet<>();
             Set<PropertyType> optionalProperties = new HashSet<>();
             Set<Operations> supportedOperations = new HashSet<>();
-            ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
+            ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, Boolean.FALSE, dataStoreRefs,
                     clusterProperties, clusterPriorities, requiredProperties, optionalProperties, supportedOperations, null);
             connectorMetadata.addActorRef(actorRef);
             try {

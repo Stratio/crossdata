@@ -43,11 +43,14 @@ public class ConnectorPriorityComparator implements Comparator<ConnectorMetadata
     }
 
 
-    @Override
+
     /**
      * Overrides the compare method.
-     * @returns -1, 0, 1 if the first connector is preferable to the second one, equal or is not preferable.
+     * @param leftCM   The first connector metadata.
+     * @param rightCM  The second connector metadata.
+     * @returns -1, 0, 1 if the first connector is, preferable respectively to the second one, equal or is not preferable .
      */
+    @Override
     public int compare(ConnectorMetadata leftCM, ConnectorMetadata rightCM) {
         int leftPriority = leftCM.getPriorityFromClusterNames(clusterNames);
         int rightPriority = rightCM.getPriorityFromClusterNames(clusterNames);
@@ -57,6 +60,22 @@ public class ConnectorPriorityComparator implements Comparator<ConnectorMetadata
         } else if (leftPriority > rightPriority) {
             return 1;
         } else {
+            return compareSamePriorityConnectors(leftCM, rightCM);
+        }
+    }
+
+    /**
+     * Compare connectors with the same priority using the native property.
+     * @param leftCM   The first connector metadata.
+     * @param rightCM  The second connector metadata.
+     * @returns -1, 0, 1 if the first connector is preferable respectively to the second one, equal or is not preferable .
+     */
+    private int compareSamePriorityConnectors(ConnectorMetadata leftCM, ConnectorMetadata rightCM) {
+        if(leftCM.isNative() && !rightCM.isNative()){
+            return -1;
+        }else if (!leftCM.isNative() && rightCM.isNative()){
+            return 1;
+        }else{
             return 0;
         }
     }

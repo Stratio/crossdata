@@ -657,6 +657,9 @@ public class APIManager {
         // VERSION
         String version = connectorType.getVersion();
 
+        // NATIVE
+        Boolean isNative = connectorType.isNative();
+
         // REQUIRED PROPERTIES
         PropertiesType requiredProperties = connectorType.getRequiredProperties();
 
@@ -714,6 +717,7 @@ public class APIManager {
             connectorMetadata = new ConnectorMetadata(
                     name,
                     version,
+                    isNative,
                     (dataStoreRefs == null) ? new ArrayList<String>() :  dataStoreRefs.getDataStoreName(),
                     (requiredProperties == null) ? new ArrayList<PropertyType>() : requiredProperties.getProperty(),
                     (optionalProperties == null) ? new ArrayList<PropertyType>() : optionalProperties.getProperty(),

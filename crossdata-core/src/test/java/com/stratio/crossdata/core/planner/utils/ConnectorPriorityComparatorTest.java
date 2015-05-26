@@ -104,12 +104,50 @@ public class ConnectorPriorityComparatorTest {
 
     }
 
+    @Test
+    public void compareLeftNativeConnectorSamePriority() throws ManifestException{
+
+        ConnectorMetadata connector = createConnectorMetadata(CONNECTOR_1, Boolean.TRUE, Pair.of(CLUSTER_MONGO, 2) );
+        ConnectorMetadata otherConnector = createConnectorMetadata(CONNECTOR_2, Boolean.FALSE, Pair.of(CLUSTER_MONGO,2));
+
+        ConnectorPriorityComparator comparator = new ConnectorPriorityComparator(Arrays.asList(CLUSTER_MONGO));
+        Assert.assertEquals(comparator.compare(connector, otherConnector), -1, "If the priority is the same the native connector should be chosed");
+
+    }
+
+    @Test
+    public void compareRightNativeConnectorSamePriority() throws ManifestException{
+
+        ConnectorMetadata connector = createConnectorMetadata(CONNECTOR_1, Boolean.FALSE, Pair.of(CLUSTER_MONGO, 2) );
+        ConnectorMetadata otherConnector = createConnectorMetadata(CONNECTOR_2, Boolean.TRUE, Pair.of(CLUSTER_MONGO,2));
+
+        ConnectorPriorityComparator comparator = new ConnectorPriorityComparator(Arrays.asList(CLUSTER_MONGO));
+        Assert.assertEquals(comparator.compare(connector, otherConnector), 1, "If the priority is the same the native connector should be chosed");
+
+    }
+
+    @Test
+    public void compareNativeConnectorSamePriority() throws ManifestException{
+
+        ConnectorMetadata connector = createConnectorMetadata(CONNECTOR_1, Pair.of(CLUSTER_MONGO, 2), Pair.of(CLUSTER_CASSANDRA, 2) );
+        ConnectorMetadata otherConnector = createConnectorMetadata(CONNECTOR_2, Pair.of(CLUSTER_MONGO,2), Pair.of(CLUSTER_CASSANDRA, 2) , Pair.of(CLUSTER_HDFS,2));
+
+        ConnectorPriorityComparator comparator = new ConnectorPriorityComparator(Arrays.asList(CLUSTER_MONGO, CLUSTER_CASSANDRA));
+        Assert.assertEquals(comparator.compare(connector, otherConnector), 0, CLUSTER_HDFS +" must not be taken into account");
+
+    }
+
+
     private ConnectorMetadata createConnectorMetadata(String name, Pair<ClusterName, Integer>... clusterWithPriorities) throws ManifestException {
+        return createConnectorMetadata(name, Boolean.FALSE, clusterWithPriorities);
+    }
+
+    private ConnectorMetadata createConnectorMetadata(String name, Boolean isNative, Pair<ClusterName, Integer>... clusterWithPriorities ) throws ManifestException {
         Map<ClusterName, Integer> clusterWP = new HashMap<>(clusterWithPriorities.length);
         for (Pair<ClusterName, Integer> clusterPriority : clusterWithPriorities) {
             clusterWP.put(clusterPriority.getLeft(), clusterPriority.getRight());
         }
         ConnectorName connectorName = new ConnectorName(name);
-        return new ConnectorMetadata(connectorName, "", null, null, clusterWP, null, null, null, null);
+        return new ConnectorMetadata(connectorName, "", isNative, null, null, clusterWP, null, null, null, null);
     }
 }

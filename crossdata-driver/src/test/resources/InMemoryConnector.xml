@@ -28,6 +28,9 @@
     <!-- Connector version -->
     <Version>0.0.1</Version>
 
+    <!-- Wheter the connector is native or not -->
+    <Native>true</Native>
+
     <!-- Define the set of required operations the user will be asked to input
     when attaching the connector -->
 

@@ -25,6 +25,7 @@
             <xs:element type="xs:string" name="ConnectorName"/>
             <xs:element type="DataStoreRefsType" name="DataStores"/>
             <xs:element type="xs:string" name="Version"/>
+            <xs:element type="xs:boolean" name="Native" maxOccurs="1" minOccurs="0"/>
             <xs:element type="PropertiesType" name="RequiredProperties" maxOccurs="1" minOccurs="0"/>
             <xs:element type="PropertiesType" name="OptionalProperties" maxOccurs="1" minOccurs="0"/>
             <xs:element type="SupportedOperationsType" name="SupportedOperations" maxOccurs="1" minOccurs="0"/>

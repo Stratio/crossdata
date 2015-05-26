@@ -74,6 +74,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
     private ConnectorMetadata connector1 = null;
     private ConnectorMetadata connector2 = null;
     private ConnectorMetadata connector3 = null;
+    private ConnectorMetadata connector4 = null;
 
     private ClusterName clusterName = null;
 
@@ -101,6 +102,8 @@ public class PlannerPriorityTest extends PlannerBaseTest {
 
         String strClusterName = "TestCluster1";
 
+        Boolean isNative = Boolean.TRUE;
+
         Map<ClusterName, Integer> clusterWithDefaultPriority = new LinkedHashMap<>();
         clusterWithDefaultPriority.put(new ClusterName(strClusterName), Constants.DEFAULT_PRIORITY);
 
@@ -117,8 +120,12 @@ public class PlannerPriorityTest extends PlannerBaseTest {
                         .createTestConnector("TestConnector3", dataStoreName, clusterWithTopPriority, operationsC1,
                                         "actorRef3", new ArrayList<FunctionType>());
 
+        connector4 = MetadataManagerTestHelper.HELPER
+                        .createTestConnector("TestConnector4", isNative, dataStoreName, clusterWithTopPriority, operationsC1,
+                                        "actorRef4", new ArrayList<FunctionType>());
+
         clusterName = MetadataManagerTestHelper.HELPER
-                        .createTestCluster(strClusterName, dataStoreName, connector1.getName(), connector3.getName());
+                        .createTestCluster(strClusterName, dataStoreName, connector1.getName(), connector3.getName(), connector4.getName());
         MetadataManagerTestHelper.HELPER.createTestCatalog("demo");
         MetadataManagerTestHelper.HELPER.createTestCatalog("demo2");
         createTestTables();
@@ -193,7 +200,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
     //
 
     @Test
-    public void testBestConnectorBasicSelect() {
+    public void testNativeConnectorBasicSelect() {
         List<LogicalStep> initialSteps = new LinkedList<>();
         Project project = getProject("table1");
 
@@ -208,6 +215,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
         List<ConnectorMetadata> availableConnectors = new ArrayList<>();
         availableConnectors.add(connector1);
         availableConnectors.add(connector3);
+        availableConnectors.add(connector4);
 
         ExecutionPath path = null;
         ExecutionWorkflow executionWorkflow = null;
@@ -225,8 +233,8 @@ public class PlannerPriorityTest extends PlannerBaseTest {
             fail("Not expecting Planning Exception", e);
         }
 
-        assertEquals(path.getAvailableConnectors().size(), 2, "Invalid size");
-        assertEquals(executionWorkflow.getActorRef(), connector3.getActorRef("127.0.0.1"), "Invalid connector selected");
+        assertEquals(path.getAvailableConnectors().size(), 3, "Invalid size");
+        assertEquals(executionWorkflow.getActorRef(), connector4.getActorRef("127.0.0.1"), "The native connector should be selected");
     }
 
 
@@ -246,6 +254,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
         List<ConnectorMetadata> availableConnectors = new ArrayList<>();
         availableConnectors.add(connector1);
         availableConnectors.add(connector3);
+        availableConnectors.add(connector4);
 
         ExecutionPath path = null;
         ExecutionWorkflow executionWorkflow = null;
@@ -263,11 +272,17 @@ public class PlannerPriorityTest extends PlannerBaseTest {
             fail("Not expecting Planning Exception", e);
         }
 
-        assertEquals(path.getAvailableConnectors().size(), 2, "Invalid size");
-        assertEquals(executionWorkflow.getActorRef(), connector3.getActorRef("127.0.0.1"), "Invalid connector selected");
+        assertEquals(path.getAvailableConnectors().size(), 3, "Invalid size");
+        assertEquals(executionWorkflow.getActorRef(), connector4.getActorRef("127.0.0.1"), "The native connector should be selected");
+
 
         assertTrue(executionWorkflow.getLowPriorityExecutionWorkflow().isPresent(), "There should be an alternative execution");
-        assertEquals(executionWorkflow.getLowPriorityExecutionWorkflow().get().getActorRef(), connector1.getActorRef("127.0.0.1"), "Invalid secondary connector selected");
+        assertEquals(executionWorkflow.getLowPriorityExecutionWorkflow().get().getActorRef(), connector3.getActorRef("127.0.0.1"), "Invalid connector selected: "+connector3 +" is more prioritary than "+connector1);
+
+        ExecutionWorkflow secondOptionEW = executionWorkflow.getLowPriorityExecutionWorkflow().get();
+
+        assertTrue(secondOptionEW.getLowPriorityExecutionWorkflow().isPresent(), "There should be an alternative execution");
+        assertEquals(secondOptionEW.getLowPriorityExecutionWorkflow().get().getActorRef(), connector1.getActorRef("127.0.0.1"), "Invalid connector selected");
     }
 
 }

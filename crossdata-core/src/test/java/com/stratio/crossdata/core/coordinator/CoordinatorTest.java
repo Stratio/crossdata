@@ -180,6 +180,7 @@ public class CoordinatorTest {
         // Create and add a test connector metadata to the metadataManager
         ConnectorName connectorName = new ConnectorName("connectorTest");
         String connectorVersion = VERSION;
+        boolean isNative = false;
         List<String> dataStoreRefs = new ArrayList<>();
         List<PropertyType> requiredProperties = new ArrayList<>();
         List<PropertyType> optionalProperties = new ArrayList<>();
@@ -190,6 +191,7 @@ public class CoordinatorTest {
         ConnectorMetadata connectorTest = new ConnectorMetadata(
                 connectorName,
                 connectorVersion,
+                isNative,
                 dataStoreRefs,
                 requiredProperties,
                 optionalProperties,

@@ -570,8 +570,10 @@ public class MetadataManagerTest {
         List<PropertyType> optionalProperties = new ArrayList<>();
         List<String> supportedOperations = new ArrayList<>();
         ConnectorMetadata connectorMetadata = null;
+        boolean isNative = false;
+
         try {
-            connectorMetadata = new ConnectorMetadata(new ConnectorName(name), version, dataStoreRefs,
+            connectorMetadata = new ConnectorMetadata(new ConnectorName(name), version, isNative, dataStoreRefs,
                     requiredProperties, optionalProperties, supportedOperations,null,null);
         } catch (ManifestException e) {
             fail(e.getMessage());

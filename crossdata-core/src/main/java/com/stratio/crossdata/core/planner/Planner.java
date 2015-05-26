@@ -520,7 +520,10 @@ public class Planner {
         QueryWorkflow choicedWorkflow = buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow);
         QueryWorkflow tempWorkflow = choicedWorkflow;
         while(connectorMetadata.hasNext()){
-            tempWorkflow.setLowPriorityExecutionWorkflow(buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow));
+            QueryWorkflow auxWorkflow = buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(),
+                            ExecutionType.SELECT, type, workflow);
+            tempWorkflow.setLowPriorityExecutionWorkflow(auxWorkflow);
+            tempWorkflow = auxWorkflow;
         }
 
         return choicedWorkflow;
@@ -643,8 +646,13 @@ public class Planner {
 
         QueryWorkflow choicedWorkflow = buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow);
         QueryWorkflow tempWorkflow = choicedWorkflow;
-        while(connectorMetadata.hasNext()){
-            tempWorkflow.setLowPriorityExecutionWorkflow(buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(), ExecutionType.SELECT, type, workflow));
+        while (connectorMetadata.hasNext()) {
+
+            QueryWorkflow auxWorkflow = buildQueryWorkflowFromConnector(queryId, connectorMetadata.next(),
+                            ExecutionType.SELECT, type, workflow);
+            tempWorkflow.setLowPriorityExecutionWorkflow(auxWorkflow);
+            tempWorkflow = auxWorkflow;
+
         }
 
         return choicedWorkflow;
@@ -1734,7 +1742,9 @@ public class Planner {
             storageWorkflow = buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, StringUtils.getAkkaActorRefUri(connectorMetadata.next().getActorRef(host), false), selectExecutionWorkflow, ExecutionType.INSERT_FROM_SELECT);
             StorageWorkflow tempWorkflow = storageWorkflow;
             while(connectorMetadata.hasNext()){
-                tempWorkflow.setLowPriorityExecutionWorkflow(buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, StringUtils.getAkkaActorRefUri(connectorMetadata.next().getActorRef(host), false), selectExecutionWorkflow, ExecutionType.INSERT_FROM_SELECT));
+                StorageWorkflow auxWorkflow = buildInsertFromSelectTriggeredStorageWorkflow(queryId, insertIntoStatement, tableMetadata, StringUtils.getAkkaActorRefUri(connectorMetadata.next().getActorRef(host), false), selectExecutionWorkflow, ExecutionType.INSERT_FROM_SELECT);
+                tempWorkflow.setLowPriorityExecutionWorkflow(auxWorkflow);
+                tempWorkflow = auxWorkflow;
             }
 
         } else {
