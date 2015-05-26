@@ -33,7 +33,6 @@ import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionEx
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata, _}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication._
-import difflib.Patch
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
@@ -66,7 +65,6 @@ import com.stratio.crossdata.communication.UpdateMetadata
 import akka.cluster.ClusterEvent.CurrentClusterState
 import com.stratio.crossdata.communication.DeleteRows
 import com.stratio.crossdata.communication.DropCatalog
-import com.stratio.crossdata.communication.PatchMetadata
 import com.stratio.crossdata.communication.DropTable
 import com.stratio.crossdata.communication.Insert
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -76,7 +74,7 @@ object State extends Enumeration {
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]],runningJobs: Agent[ListMap[String, ActorRef]]):
+  def props(connectorName: String, connector: IConnector, connectedServers: Agent[Set[String]], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]],runningJobs: Agent[ListMap[String, ActorRef]]):
       Props = Props(new ConnectorActor(connectorName, connector, connectedServers, mapAgent, runningJobs))
 }
 
@@ -85,7 +83,7 @@ object ClassExtractor{
 }
 
 
-class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]])
+class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Agent[Set[String]], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]])
   extends Actor with ActorLogging with IResultHandler {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorActor])
@@ -98,21 +96,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   val connector = conn
   var state = State.Stopped
 
-  /*
-  override def handleHeartbeat(heartbeat: HeartbeatSig): Unit = {
-    logger.info(s"heartbeat (no of simultaneous running jobs = ${runningJobs.size}")
-    runningJobs.foreach {
-      keyVal: (String, ActorRef) => {
-        logger.info("sending iamalive to "+StringUtils.getAkkaActorRefUri(keyVal._2) )
-        context.actorSelection(StringUtils.getAkkaActorRefUri(keyVal._2)) ! IAmAlive(keyVal._1)
-      }
-    }
-  }
-  */
-
   override def preStart():Unit = {
     Cluster(context.system).subscribe(self,classOf[ClusterDomainEvent])
-    //context.system.eventStream.subscribe(this.self, classOf[Logging.Error])
   }
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
@@ -157,106 +142,12 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     mapAgent.send(oMap => {oMap.addListener(listener); oMap})
   }
 
-  def class2String(clazz:Class[_]):String=clazz.getName
-  val patchFunctionHash=new java.util.HashMap[String,(Patch,Name)=>Boolean]()
-  //TODO: could it be more generic?
-  /*patchFunctionHash.put(class2String(classOf[CatalogMetadata]),(diff:Patch, catalogName:Name)=>{
-    val name = catalogName.asInstanceOf[CatalogName]
-    val catalog = metadata.get(catalogName).asInstanceOf[CatalogMetadata]
-    val jsonResult = StringUtils.patchObject(catalog, diff); // patch object
-    val result = //deserialize
-      StringUtils.deserializeObjectFromString(jsonResult,classOf[CatalogMetadata])
-    metadata.put(name,result.asInstanceOf[CatalogMetadata])
-   true
-  })
-  patchFunctionHash.put(class2String(classOf[ClusterMetadata]),(diff:Patch, clusterName:Name)=>{
-    val name = clusterName.asInstanceOf[ClusterName]
-    val cluster = metadata.get(clusterName).asInstanceOf[ClusterMetadata]
-    val jsonResult = StringUtils.patchObject(cluster, diff); // patch object
-    val result = //deserialize
-      StringUtils.deserializeObjectFromString(jsonResult,classOf[ClusterMetadata])
-    metadata.put(name,result.asInstanceOf[ClusterMetadata])
-   true
-  })
-  patchFunctionHash.put(class2String(classOf[DataStoreMetadata]),(diff:Patch, datastoreName:Name)=>{
-    val name = datastoreName.asInstanceOf[DataStoreName]
-    val datastore = metadata.get(datastoreName).asInstanceOf[DataStoreMetadata]
-    val jsonResult = StringUtils.patchObject(datastore, diff); // patch object
-    val result = //deserialize
-      StringUtils.deserializeObjectFromString(jsonResult,classOf[DataStoreMetadata])
-    metadata.put(name,result.asInstanceOf[DataStoreMetadata])
-   true
-  })
-  patchFunctionHash.put(class2String(classOf[TableMetadata]),(diff:Patch, tableName:Name)=>{
-    val name = tableName.asInstanceOf[TableName]
-    val catalogName = name.getCatalogName
-    val table = metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(name)
-    val jsonResult = StringUtils.patchObject(table, diff); // patch object
-    val result = //deserialize
-      StringUtils.deserializeObjectFromString(jsonResult,classOf[TableMetadata])
-    metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.put(
-      name,result.asInstanceOf[TableMetadata]
-    )
-    true
-  })
-  patchFunctionHash.put(class2String(classOf[ColumnMetadata]),(diff:Patch,columnName:Name)=>{
-    val name = columnName.asInstanceOf[ColumnName]
-    val tableName = name.getTableName
-    val catalogName = tableName.getCatalogName
-    val table = metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName)
-    val column = table.getColumns.get(name)
-    val jsonResult = StringUtils.patchObject(column, diff); // patch object
-    val result = //deserialize
-      StringUtils.deserializeObjectFromString(jsonResult,classOf[TableMetadata])
-    metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getColumns
-      .put( name,result.asInstanceOf[ColumnMetadata] )
-    true
-  })
-  patchFunctionHash.put(class2String(classOf[IndexMetadata]),(diff:Patch,indexName:Name)=>{
-    val name = indexName.asInstanceOf[IndexName]
-    val tableName = name.getTableName
-    val catalogName = tableName.getCatalogName
-    val table = metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName)
-    val index = table.getIndexes.get(name)
-    val jsonResult = StringUtils.patchObject(index, diff); // patch object
-    val result = //deserialize
-      StringUtils.deserializeObjectFromString(jsonResult,classOf[TableMetadata])
-    metadata.get(catalogName).asInstanceOf[CatalogMetadata].getTables.get(tableName).getIndexes
-      .put( name,result.asInstanceOf[IndexMetadata] )
-    true
-  })
-*/
 
   def extractSender(m: String): String = {
     m.substring(m.indexOf("[")+1, m.indexOf("$")).trim
   }
 
   override def receive: Receive = {
-
-    /*
-    case le: Logging.Error => {
-      logger.info(" >>> CROSSDATA >>> Logging.Error >>> " +
-        System.lineSeparator() + le +
-        System.lineSeparator() + le.logClass +
-        System.lineSeparator() + le.logSource +
-        System.lineSeparator() + le.message +
-        System.lineSeparator() + le.timestamp +
-        System.lineSeparator() + le.thread)
-      if(le.toString.contains("OversizedPayloadException")){
-        sendOversizedError(le.toString)
-      }
-    }
-    */
-
-    case u: PatchMetadata=> {
-      //TODO: continue
-      val r=try{
-        patchFunctionHash(class2String(u.metadataClass))(u.diffs,u.name)
-      }catch{
-        case _=>false
-      }
-      //println("result="+r)
-    }
 
     //TODO iface UpdatableMetadata with getName, getMetadata
     case UpdateMetadata(umetadata, java.lang.Boolean.FALSE) => {
@@ -373,10 +264,10 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
     case msg: getConnectorName => {
       logger.info(sender + " asked for my name: " + connectorName)
-      connectedServers += sender.path.address.toString
-      logger.info("Connected to Servers: " + connectedServers)
+      logger.info("Connected to Servers: " + connectedServers.get)
       sender ! replyConnectorName(connectorName)
     }
+
     case MemberUp(member) => {
       logger.info("Member up")
       logger.info("Member is Up: " + member.toString + member.getRoles + "!")
@@ -387,8 +278,9 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         val role = roleIterator.next()
         role match {
           case "server" => {
-            val connectorActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "crossdata-server" / "ConnectorManagerActor")
-              connectorActorRef ! ConnectorUp(self.path.address.toString)
+            connectedServers.send( connServers => connServers + member.address.toString )
+            val connectorManagerActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "crossdata-server" / "ConnectorManagerActor")
+            connectorManagerActorRef ! ConnectorUp(self.path.address.toString)
             }
           case _ => {
             logger.debug(member.address + " has the role: " + role)
@@ -397,19 +289,33 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         }
       }
     }
+
     case state: CurrentClusterState => {
       logger.info("Current members: " + state.members.mkString(", "))
-    }
-    case UnreachableMember(member) => {
-      if(member.hasRole("server")){
-        connectedServers -= member.address.toString
-        logger.info("Connected to Servers: " + connectedServers)
+      state.getMembers.foreach{ member =>
+        val roleIterator = member.getRoles.iterator()
+        while (roleIterator.hasNext()) {
+          val role = roleIterator.next()
+          role match {
+            case "server" => {
+              connectedServers.send( connServers => connServers + member.address.toString )
+              logger.debug(s"added server ${member.address}")
+            }
+            case _ => {
+              logger.debug(member.address + " has the role: " + role)
+            }
+          }
+        }
       }
+    }
+      
+    case UnreachableMember(member) => {
       logger.info("Member detected as unreachable: " + member)
     }
+
     case MemberRemoved(member, previousStatus) => {
       if(member.hasRole("server")){
-        connectedServers -= member.address.toString
+        connectedServers.send( connServers => connServers - member.address.toString )
       }
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
     }
@@ -420,6 +326,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       logger.info("Adding new metadata listener")
       subscribeToMetadataUpdate(listener)
     }
+
     case Request(message) if (message.equals(APICommand.CLEAN_METADATA.toString)) =>
       mapAgent.send{ observableMap => observableMap.clear(); observableMap }
 

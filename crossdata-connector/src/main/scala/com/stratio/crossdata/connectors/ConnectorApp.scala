@@ -50,13 +50,13 @@ object ConnectorApp extends App {
 class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   lazy val system = ActorSystem(clusterName, config)
-  val connectedServers: Set[String] = Set()
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
 
   var actorClusterNode: Option[ActorRef] = None
 
   var metricName: String = "connector"
 
+  val connectedServersAgent: Agent[Set[String]] = Agent(Set.empty[String])(system.dispatcher)
   val metadataMapAgent = Agent(new ObservableMap[Name, UpdatableMetadata])(system.dispatcher)
   val runningJobsAgent =   Agent(new ListMap[String, ActorRef]())(system.dispatcher)
 
@@ -83,7 +83,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
     val connectorManagerActorRef = system.actorOf(
       RoundRobinPool(num_connector_actor, Some(resizer))
-        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServers, metadataMapAgent, runningJobsAgent)),
+        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServersAgent, metadataMapAgent, runningJobsAgent)),
       "ConnectorActor")
 
     actorClusterNode = Some(connectorManagerActorRef)
@@ -96,7 +96,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       new Gauge[Boolean] {
         override def getValue: Boolean = {
           var status: Boolean = true
-          if (connectedServers.isEmpty) {
+          if (connectedServersAgent.get.isEmpty) {
             status = false
           }
           status
@@ -151,7 +151,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   override def getConnectionStatus(): ConnectionStatus = {
     var status: ConnectionStatus = ConnectionStatus.CONNECTED
-    if (connectedServers.isEmpty){
+    if (connectedServersAgent.get.isEmpty){
       status = ConnectionStatus.DISCONNECTED
     }
     status

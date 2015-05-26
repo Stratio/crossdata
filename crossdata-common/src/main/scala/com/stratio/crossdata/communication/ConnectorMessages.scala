@@ -35,8 +35,6 @@ case class Stop()
 
 case class UpdateMetadata(metadata: UpdatableMetadata, remove: java.lang.Boolean)
 
-case class PatchMetadata(diffs:Patch,metadataClass:java.lang.Class[_],name:Name)
-
 case class ConnectorUp(memberAddress: String)
 
 
