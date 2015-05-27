@@ -23,69 +23,49 @@ import java.util
 import akka.actor._
 import akka.agent.Agent
 import akka.cluster.Cluster
-import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
+import akka.cluster.ClusterEvent.{ClusterDomainEvent, CurrentClusterState, MemberEvent, MemberRemoved, MemberUp, UnreachableMember}
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.ask.APICommand
 import com.stratio.crossdata.common.connector._
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
+import com.stratio.crossdata.common.manifest.{ConnectorType, CrossdataManifest}
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata, _}
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.communication._
+import com.stratio.crossdata.communication.{ACK, AlterCatalog, AlterTable, AsyncExecute, CreateCatalog, CreateIndex, CreateTable, CreateTableAndCatalog, DeleteRows, DropCatalog, DropIndex, DropTable, Execute, Insert, InsertBatch, PagedExecute, PatchMetadata, ProvideCatalogMetadata, ProvideCatalogsMetadata, ProvideMetadata, ProvideTableMetadata, Truncate, Update, UpdateMetadata, getConnectorName, replyConnectorName, _}
+import com.stratio.crossdata.utils.ManifestUtils
 import difflib.Patch
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.{ListMap, Set}
-import scala.concurrent.duration.DurationInt
-import com.stratio.crossdata.communication.CreateIndex
-import com.stratio.crossdata.communication.Update
-import akka.cluster.ClusterEvent.MemberRemoved
-import com.stratio.crossdata.communication.ACK
-import com.stratio.crossdata.communication.CreateTableAndCatalog
-import com.stratio.crossdata.communication.AlterTable
-import com.stratio.crossdata.communication.Truncate
-import com.stratio.crossdata.communication.CreateTable
-import com.stratio.crossdata.communication.AlterCatalog
-import com.stratio.crossdata.communication.InsertBatch
-import com.stratio.crossdata.communication.AsyncExecute
-import akka.cluster.ClusterEvent.UnreachableMember
-import com.stratio.crossdata.communication.ProvideCatalogMetadata
-import com.stratio.crossdata.communication.ProvideCatalogsMetadata
-import com.stratio.crossdata.communication.CreateCatalog
-import com.stratio.crossdata.communication.ProvideTableMetadata
-import com.stratio.crossdata.communication.PagedExecute
-import com.stratio.crossdata.communication.replyConnectorName
-import com.stratio.crossdata.communication.Execute
-import akka.cluster.ClusterEvent.MemberUp
-import com.stratio.crossdata.communication.getConnectorName
-import com.stratio.crossdata.communication.ProvideMetadata
-import com.stratio.crossdata.communication.DropIndex
-import com.stratio.crossdata.communication.UpdateMetadata
-import akka.cluster.ClusterEvent.CurrentClusterState
-import com.stratio.crossdata.communication.DeleteRows
-import com.stratio.crossdata.communication.DropCatalog
-import com.stratio.crossdata.communication.PatchMetadata
-import com.stratio.crossdata.communication.DropTable
-import com.stratio.crossdata.communication.Insert
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
 
 object State extends Enumeration {
   type state = Value
   val Started, Stopping, Stopped = Value
 }
+
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]],runningJobs: Agent[ListMap[String, ActorRef]]):
-      Props = Props(new ConnectorActor(connectorName, connector, connectedServers, mapAgent, runningJobs))
+  def props(connectorManifestPath: String, datastoreManifestPath: Array[String],
+            connector: IConnector, connectedServers: Set[String],
+            mapAgent: Agent[ObservableMap[Name, UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]]):
+  Props = Props(new ConnectorActor(connectorManifestPath, datastoreManifestPath, connector,
+    connectedServers,
+    mapAgent,
+    runningJobs))
+
 }
 
-object ClassExtractor{
- def unapply(myClass:Class[_]):Option[String]=Option(myClass.toString)
+object ClassExtractor {
+  def unapply(myClass: Class[_]): Option[String] = Option(myClass.toString)
 }
 
 
-class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]])
+class ConnectorActor(connectorManifestPath: String, datastoreManifestPath: Array[String],
+                     conn: IConnector, connectedServers: Set[String], mapAgent: Agent[ObservableMap[Name, UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]])
   extends Actor with ActorLogging with IResultHandler {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorActor])
@@ -93,6 +73,21 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   logger.info("Lifting connector actor")
 
   implicit val timeout = Timeout(20 seconds)
+
+  val connectorManifest = ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_CONNECTOR, connectorManifestPath)
+  val datastoreManifest = Array.ofDim[CrossdataManifest](datastoreManifestPath.length)
+
+  for (i <- 0 to datastoreManifestPath.length-1) {
+    datastoreManifest(i) = (ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_DATASTORE,
+      datastoreManifestPath(i)))
+  }
+
+
+  val connectorName = connectorManifest match {
+    case connMan: ConnectorType => connMan.getConnectorName
+    case _ => throw new ClassCastException
+  }
+
 
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
@@ -110,40 +105,40 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   }
   */
 
-  override def preStart():Unit = {
-    Cluster(context.system).subscribe(self,classOf[ClusterDomainEvent])
+  override def preStart(): Unit = {
+    Cluster(context.system).subscribe(self, classOf[ClusterDomainEvent])
     //context.system.eventStream.subscribe(this.self, classOf[Logging.Error])
   }
 
   def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
     mapAgent.get.get(tableName).asInstanceOf[TableMetadata]
-      /*TODO 0.4.0 using FirstLevelName
-      val catalogName = tableName.getCatalogName
-      val catalogMetadata = mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
-      val tableMetadata = catalogMetadata.getTables.get(tableName)
-      if(tableMetadata.getClusterRef==clusterName)
-        return tableMetadata
-      else
-        return null
+    /*TODO 0.4.0 using FirstLevelName
+    val catalogName = tableName.getCatalogName
+    val catalogMetadata = mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
+    val tableMetadata = catalogMetadata.getTables.get(tableName)
+    if(tableMetadata.getClusterRef==clusterName)
+      return tableMetadata
+    else
+      return null
 
-        */
+      */
   }
 
-  def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata={
+  def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata = {
     return mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
   }
 
   def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
-    val r = new util.HashMap[CatalogName,CatalogMetadata]()
+    val r = new util.HashMap[CatalogName, CatalogMetadata]()
     //for(entry:java.util.Map.Entry[FirstLevelName,IMetadata] <- metadata.entrySet()){
-    for((k,v) <- mapAgent.get){
-       k match {
-        case name:CatalogName=>{
+    for ((k, v) <- mapAgent.get) {
+      k match {
+        case name: CatalogName => {
           val catalogMetadata = mapAgent.get.get(k).asInstanceOf[CatalogMetadata]
           val tables = catalogMetadata.getTables
-          for((tableName, tableMetadata) <- tables){
-            if(tables.get(tableName).getClusterRef==cluster){
-              r.put(name,catalogMetadata)
+          for ((tableName, tableMetadata) <- tables) {
+            if (tables.get(tableName).getClusterRef == cluster) {
+              r.put(name, catalogMetadata)
             }
           }
         }
@@ -154,11 +149,15 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 
   def subscribeToMetadataUpdate(listener: IMetadataListener) = {
     logger.debug()
-    mapAgent.send(oMap => {oMap.addListener(listener); oMap})
+    mapAgent.send(oMap => {
+      oMap.addListener(listener);
+      oMap
+    })
   }
 
-  def class2String(clazz:Class[_]):String=clazz.getName
-  val patchFunctionHash=new java.util.HashMap[String,(Patch,Name)=>Boolean]()
+  def class2String(clazz: Class[_]): String = clazz.getName
+
+  val patchFunctionHash = new java.util.HashMap[String, (Patch, Name) => Boolean]()
   //TODO: could it be more generic?
   /*patchFunctionHash.put(class2String(classOf[CatalogMetadata]),(diff:Patch, catalogName:Name)=>{
     val name = catalogName.asInstanceOf[CatalogName]
@@ -228,7 +227,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
 */
 
   def extractSender(m: String): String = {
-    m.substring(m.indexOf("[")+1, m.indexOf("$")).trim
+    m.substring(m.indexOf("[") + 1, m.indexOf("$")).trim
   }
 
   override def receive: Receive = {
@@ -248,36 +247,48 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
     */
 
-    case u: PatchMetadata=> {
+    case u: PatchMetadata => {
       //TODO: continue
-      val r=try{
-        patchFunctionHash(class2String(u.metadataClass))(u.diffs,u.name)
-      }catch{
-        case _=>false
+      val r = try {
+        patchFunctionHash(class2String(u.metadataClass))(u.diffs, u.name)
+      } catch {
+        case _ => false
       }
       //println("result="+r)
     }
 
     //TODO iface UpdatableMetadata with getName, getMetadata
     case UpdateMetadata(umetadata, java.lang.Boolean.FALSE) => {
-      umetadata match{
-        case cMetadata:CatalogMetadata => {
-          mapAgent.get.put(cMetadata.getName,cMetadata)
+      umetadata match {
+        case cMetadata: CatalogMetadata => {
+          mapAgent.get.put(cMetadata.getName, cMetadata)
         }
-          //TODO remove asInstanceOf
-        case uMetadata:ClusterMetadata => {
-          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
+        //TODO remove asInstanceOf
+        case uMetadata: ClusterMetadata => {
+          mapAgent.send(oMap => {
+            oMap.put(uMetadata.getName, umetadata);
+            oMap
+          })
 
         }
-        case uMetadata:ConnectorMetadata => {
-          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
+        case uMetadata: ConnectorMetadata => {
+          mapAgent.send(oMap => {
+            oMap.put(uMetadata.getName, umetadata);
+            oMap
+          })
         }
-        case uMetadata:DataStoreMetadata =>{
-          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
+        case uMetadata: DataStoreMetadata => {
+          mapAgent.send(oMap => {
+            oMap.put(uMetadata.getName, umetadata);
+            oMap
+          })
         }
 
-        case uMetadata:TableMetadata => {
-          mapAgent.send(oMap => {oMap.put(uMetadata.getName,umetadata); oMap })
+        case uMetadata: TableMetadata => {
+          mapAgent.send(oMap => {
+            oMap.put(uMetadata.getName, umetadata);
+            oMap
+          })
         }
 
       }
@@ -286,21 +297,36 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
 
     case UpdateMetadata(umetadata, java.lang.Boolean.TRUE) => {
-       umetadata match{
-        case umetadata:CatalogMetadata => {
-          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
+      umetadata match {
+        case umetadata: CatalogMetadata => {
+          mapAgent.send(oMap => {
+            oMap.remove(umetadata.getName);
+            oMap
+          })
         }
-        case umetadata:ClusterMetadata => {
-          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
+        case umetadata: ClusterMetadata => {
+          mapAgent.send(oMap => {
+            oMap.remove(umetadata.getName);
+            oMap
+          })
         }
-        case umetadata:ConnectorMetadata => {
-          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
+        case umetadata: ConnectorMetadata => {
+          mapAgent.send(oMap => {
+            oMap.remove(umetadata.getName);
+            oMap
+          })
         }
-        case umetadata:DataStoreMetadata =>{
-          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
+        case umetadata: DataStoreMetadata => {
+          mapAgent.send(oMap => {
+            oMap.remove(umetadata.getName);
+            oMap
+          })
         }
-        case umetadata:TableMetadata => {
-          mapAgent.send(oMap => {oMap.remove(umetadata.getName); oMap })
+        case umetadata: TableMetadata => {
+          mapAgent.send(oMap => {
+            oMap.remove(umetadata.getName);
+            oMap
+          })
         }
 
       }
@@ -357,7 +383,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       logger.info("Processing asynchronous query: " + aex)
       methodAsyncExecute(aex, sender)
     }
-    case StopProcess(queryId, targetQueryId) =>  {
+    case StopProcess(queryId, targetQueryId) => {
       logger.debug("Processing stop process: " + queryId)
       methodStopProcess(queryId, targetQueryId, sender)
     }
@@ -377,6 +403,16 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       logger.info("Connected to Servers: " + connectedServers)
       sender ! replyConnectorName(connectorName)
     }
+    case connManifest: GetConnectorManifest => {
+      logger.info(sender + " asked for my connector manifest ")
+      sender ! ReplyConnectorManifest(connectorManifest)
+    }
+    case datManifest: GetDatastoreManifest => {
+      logger.info(sender + " asked for my datastore manifest")
+      for (i <- 0 to datastoreManifest.length-1) {
+        sender ! ReplyDatastoreManifest(datastoreManifest(i))
+      }
+    }
     case MemberUp(member) => {
       logger.info("Member up")
       logger.info("Member is Up: " + member.toString + member.getRoles + "!")
@@ -388,8 +424,8 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         role match {
           case "server" => {
             val connectorActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "crossdata-server" / "ConnectorManagerActor")
-              connectorActorRef ! ConnectorUp(self.path.address.toString)
-            }
+            connectorActorRef ! ConnectorUp(self.path.address.toString)
+          }
           case _ => {
             logger.debug(member.address + " has the role: " + role)
           }
@@ -401,14 +437,14 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       logger.info("Current members: " + state.members.mkString(", "))
     }
     case UnreachableMember(member) => {
-      if(member.hasRole("server")){
+      if (member.hasRole("server")) {
         connectedServers -= member.address.toString
         logger.info("Connected to Servers: " + connectedServers)
       }
       logger.info("Member detected as unreachable: " + member)
     }
     case MemberRemoved(member, previousStatus) => {
-      if(member.hasRole("server")){
+      if (member.hasRole("server")) {
         connectedServers -= member.address.toString
       }
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
@@ -421,15 +457,15 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       subscribeToMetadataUpdate(listener)
     }
     case Request(message) if (message.equals(APICommand.CLEAN_METADATA.toString)) =>
-      mapAgent.send{ observableMap => observableMap.clear(); observableMap }
+      mapAgent.send { observableMap => observableMap.clear(); observableMap}
 
     case GetCatalogs(clusterName) =>
       sender ! getCatalogs(clusterName)
 
     case GetTableMetadata(clusterName, tableName) =>
-      sender ! getTableMetadata(clusterName,tableName)
+      sender ! getTableMetadata(clusterName, tableName)
 
-    case  GetCatalogMetadata(catalogName) =>
+    case GetCatalogMetadata(catalogName) =>
       sender ! getCatalogMetadata(catalogName)
   }
 
@@ -443,40 +479,40 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   override def processException(queryId: String, exception: ExecutionException): Unit = {
     logger.info("Processing exception for async query: " + queryId)
     val source = runningJobs.get.get(queryId).get
-    if(source != None) {
+    if (source != None) {
       val res = Result.createErrorResult(exception)
       res.setQueryId(queryId)
       source ! res
-    }else{
+    } else {
       logger.error("Exception for query " + queryId + " cannot be sent", exception)
     }
-    runningJobs.send{runningJobs => runningJobs.remove(queryId); runningJobs}
+    runningJobs.send { runningJobs => runningJobs.remove(queryId); runningJobs}
   }
 
   override def processResult(result: QueryResult): Unit = {
     logger.info("Processing results for async query: " + result.getQueryId)
     val source = runningJobs.get.get(result.getQueryId).get
-    if(source != None) {
+    if (source != None) {
       source ! result
-    }else{
+    } else {
       logger.error("Results for query " + result.getQueryId + " cannot be sent")
     }
-    if(result.isLastResultSet){
+    if (result.isLastResultSet) {
       sendACK(source, result.getQueryId)
-      runningJobs.send{runningJobs => runningJobs.remove(result.getQueryId); runningJobs}
+      runningJobs.send { runningJobs => runningJobs.remove(result.getQueryId); runningJobs}
     }
   }
 
-  private def sendACK(actorRef: ActorRef, qId: String): Unit ={
-    context.system.scheduler.scheduleOnce(4 seconds){
+  private def sendACK(actorRef: ActorRef, qId: String): Unit = {
+    context.system.scheduler.scheduleOnce(4 seconds) {
       logger.debug("Sending second ACK to: " + actorRef);
       actorRef ! new ACK(qId, QueryStatus.EXECUTED)
     }
   }
 
-  private def methodExecute(ex:Execute, s:ActorRef): Unit ={
+  private def methodExecute(ex: Execute, s: ActorRef): Unit = {
     try {
-      runningJobs.send{runningJobs => runningJobs.put(ex.queryId, s); runningJobs}
+      runningJobs.send { runningJobs => runningJobs.put(ex.queryId, s); runningJobs}
       val result = connector.getQueryEngine().execute(ex.queryId, ex.workflow)
       result.setQueryId(ex.queryId)
       s ! result
@@ -493,15 +529,15 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
         result.setQueryId(ex.queryId)
         s ! result
     } finally {
-      runningJobs.send{runningJobs => runningJobs.remove(ex.queryId); runningJobs}
+      runningJobs.send { runningJobs => runningJobs.remove(ex.queryId); runningJobs}
 
     }
   }
 
-  private def methodAsyncExecute(aex: AsyncExecute, sender: ActorRef) : Unit = {
+  private def methodAsyncExecute(aex: AsyncExecute, sender: ActorRef): Unit = {
     val asyncSender = sender
     try {
-      runningJobs.send{runningJobs => runningJobs.put(aex.queryId, asyncSender); runningJobs}
+      runningJobs.send { runningJobs => runningJobs.put(aex.queryId, asyncSender); runningJobs}
       connector.getQueryEngine().asyncExecute(aex.queryId, aex.workflow, this)
       asyncSender ! ACK(aex.queryId, QueryStatus.IN_PROGRESS)
     } catch {
@@ -515,13 +551,13 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     }
   }
 
-  private def methodStopProcess(queryId: String, targetQueryId: String, sender: ActorRef) : Unit = {
+  private def methodStopProcess(queryId: String, targetQueryId: String, sender: ActorRef): Unit = {
     try {
-      if (!runningJobs.get.contains(targetQueryId)){
-        logger.debug("Received stop process for non-existing queryId "+targetQueryId)
-        sender ! Result.createExecutionErrorResult("Received stop process for non-existing queryId "+targetQueryId)
-      }else {
-        runningJobs.sendOff{runningJobs => runningJobs.remove(targetQueryId); runningJobs}(context.dispatcher)
+      if (!runningJobs.get.contains(targetQueryId)) {
+        logger.debug("Received stop process for non-existing queryId " + targetQueryId)
+        sender ! Result.createExecutionErrorResult("Received stop process for non-existing queryId " + targetQueryId)
+      } else {
+        runningJobs.sendOff { runningJobs => runningJobs.remove(targetQueryId); runningJobs}(context.dispatcher)
         connector.getQueryEngine.stop(targetQueryId)
         sender ! ACK(queryId, QueryStatus.EXECUTED)
       }
@@ -541,10 +577,10 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   private def methodPagedExecute(pex: PagedExecute, sender: ActorRef): Unit = {
     val pagedSender = sender
     try {
-      logger.info("new running job: "+pex.queryId)
-      runningJobs.send{runningJobs => runningJobs.put(pex.queryId, pagedSender); runningJobs}
-      if(logger.isDebugEnabled){
-        logger.debug("concurrent running Jobs = "+runningJobs.get.size)
+      logger.info("new running job: " + pex.queryId)
+      runningJobs.send { runningJobs => runningJobs.put(pex.queryId, pagedSender); runningJobs}
+      if (logger.isDebugEnabled) {
+        logger.debug("concurrent running Jobs = " + runningJobs.get.size)
       }
       connector.getQueryEngine().pagedExecute(pex.queryId, pex.workflow, this, pex.pageSize)
       pagedSender ! ACK(pex.queryId, QueryStatus.IN_PROGRESS)
@@ -571,16 +607,16 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       qId = answer._1
       metadataOperation = answer._2
       result = MetadataResult.createSuccessMetadataResult(metadataOperation)
-      if(answer._3!=null){
-        if(metadataOperation == MetadataResult.OPERATION_DISCOVER_METADATA
-           || metadataOperation == MetadataResult.OPERATION_IMPORT_CATALOGS) {
+      if (answer._3 != null) {
+        if (metadataOperation == MetadataResult.OPERATION_DISCOVER_METADATA
+          || metadataOperation == MetadataResult.OPERATION_IMPORT_CATALOGS) {
           result.asInstanceOf[MetadataResult].setCatalogMetadataList(
             answer._3.asInstanceOf[java.util.List[CatalogMetadata]])
-        } else if(metadataOperation == MetadataResult.OPERATION_IMPORT_CATALOG){
+        } else if (metadataOperation == MetadataResult.OPERATION_IMPORT_CATALOG) {
           val catalogList: util.ArrayList[CatalogMetadata] = new util.ArrayList[CatalogMetadata]()
           catalogList.add(answer._3.asInstanceOf[CatalogMetadata])
           result.asInstanceOf[MetadataResult].setCatalogMetadataList(catalogList)
-        } else if (metadataOperation == MetadataResult.OPERATION_IMPORT_TABLE){
+        } else if (metadataOperation == MetadataResult.OPERATION_IMPORT_TABLE) {
           val tableList: util.ArrayList[TableMetadata] = new util.ArrayList[TableMetadata]()
           tableList.add(answer._3.asInstanceOf[TableMetadata])
           result.asInstanceOf[MetadataResult].setTableList(tableList)
@@ -642,71 +678,71 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   }
 
   private def methodOpMetadata(metadataOp: MetadataOperation, eng: IMetadataEngine):
-  (String,  Int, Object) = {
+  (String, Int, Object) = {
     metadataOp match {
-      case _:CreateTable => {
+      case _: CreateTable => {
         eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
           metadataOp.asInstanceOf[CreateTable].tableMetadata)
-        (metadataOp.asInstanceOf[CreateTable].queryId, MetadataResult.OPERATION_CREATE_TABLE,null)
+        (metadataOp.asInstanceOf[CreateTable].queryId, MetadataResult.OPERATION_CREATE_TABLE, null)
       }
-      case _:CreateCatalog => {
+      case _: CreateCatalog => {
         eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-        (metadataOp.asInstanceOf[CreateCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG,null)
+        (metadataOp.asInstanceOf[CreateCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG, null)
       }
-      case _:AlterCatalog => {
+      case _: AlterCatalog => {
         eng.alterCatalog(metadataOp.asInstanceOf[AlterCatalog].targetCluster,
           metadataOp.asInstanceOf[AlterCatalog].catalogMetadata.getName,
           metadataOp.asInstanceOf[AlterCatalog].catalogMetadata.getOptions)
-        (metadataOp.asInstanceOf[AlterCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG,null)
+        (metadataOp.asInstanceOf[AlterCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG, null)
       }
-      case _:CreateIndex => {
+      case _: CreateIndex => {
         eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
           metadataOp.asInstanceOf[CreateIndex].indexMetadata)
-        (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX,null)
+        (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX, null)
       }
-      case _:DropCatalog => {
+      case _: DropCatalog => {
         eng.dropCatalog(metadataOp.asInstanceOf[DropCatalog].targetCluster,
           metadataOp.asInstanceOf[DropCatalog].catalogName)
-        (metadataOp.asInstanceOf[DropCatalog].queryId, MetadataResult.OPERATION_DROP_CATALOG,null)
+        (metadataOp.asInstanceOf[DropCatalog].queryId, MetadataResult.OPERATION_DROP_CATALOG, null)
       }
-      case _:DropIndex => {
+      case _: DropIndex => {
         eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
-        (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX,null)
+        (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX, null)
       }
-      case _:DropTable => {
+      case _: DropTable => {
         eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
-        (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE,null)
+        (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE, null)
       }
-      case _:AlterTable => {
+      case _: AlterTable => {
         eng.alterTable(metadataOp.asInstanceOf[AlterTable].targetCluster, metadataOp.asInstanceOf[AlterTable]
           .tableName, metadataOp.asInstanceOf[AlterTable].alterOptions)
-        (metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_ALTER_TABLE,null)
+        (metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_ALTER_TABLE, null)
       }
-      case _:CreateTableAndCatalog => {
+      case _: CreateTableAndCatalog => {
         eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
         eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
-        (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE,null)
+        (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE, null)
       }
-      case _:ProvideMetadata => {
+      case _: ProvideMetadata => {
         val listMetadata = eng.provideMetadata(metadataOp.asInstanceOf[ProvideMetadata].targetCluster)
-        (metadataOp.asInstanceOf[ProvideMetadata].queryId, MetadataResult.OPERATION_DISCOVER_METADATA,listMetadata)
+        (metadataOp.asInstanceOf[ProvideMetadata].queryId, MetadataResult.OPERATION_DISCOVER_METADATA, listMetadata)
 
       }
-      case _:ProvideCatalogsMetadata => {
+      case _: ProvideCatalogsMetadata => {
         val listMetadata = eng.provideMetadata(metadataOp.asInstanceOf[ProvideCatalogsMetadata].targetCluster)
         (metadataOp.asInstanceOf[ProvideCatalogsMetadata].queryId, MetadataResult.OPERATION_IMPORT_CATALOGS,
           listMetadata)
       }
-      case _:ProvideCatalogMetadata => {
+      case _: ProvideCatalogMetadata => {
         val listMetadata = eng.provideCatalogMetadata(metadataOp.asInstanceOf[ProvideCatalogMetadata].targetCluster,
           metadataOp.asInstanceOf[ProvideCatalogMetadata].catalogName)
         (metadataOp.asInstanceOf[ProvideCatalogMetadata].queryId, MetadataResult.OPERATION_IMPORT_CATALOG,
           listMetadata)
       }
-      case _:ProvideTableMetadata => {
+      case _: ProvideTableMetadata => {
         val listMetadata = eng.provideTableMetadata(metadataOp.asInstanceOf[ProvideTableMetadata].targetCluster,
           metadataOp.asInstanceOf[ProvideTableMetadata].tableName)
         (metadataOp.asInstanceOf[ProvideTableMetadata].queryId, MetadataResult.OPERATION_IMPORT_TABLE,
@@ -715,5 +751,6 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       case _ => ???
     }
   }
+
 
 }

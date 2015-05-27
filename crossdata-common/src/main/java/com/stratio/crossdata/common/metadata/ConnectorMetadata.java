@@ -304,6 +304,14 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
     }
 
     /**
+     * Set Native attribute.
+     * @param isNative A boolean.
+     */
+    public void setNative(boolean isNative) {
+        this.isNative = isNative;
+    }
+
+    /**
      * Whether the connector is native or not.
      *
      * @return A Boolean.
