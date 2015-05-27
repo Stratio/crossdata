@@ -1218,7 +1218,7 @@ public enum MetadataManager {
         ConnectorMetadata connector = getConnector(cn);
 
         for (FunctionType ft : connector.getConnectorFunctions()) {
-            functions.add(ft.getFunctionName());
+            functions.add(ft.getFunctionName().toUpperCase());
         }
 
         Set<DataStoreName> dataStoreNames = new HashSet<>();
@@ -1233,7 +1233,7 @@ public enum MetadataManager {
                 DataStoreMetadata datastore = getDataStore(dsn);
 
                 for(FunctionType ft: datastore.getFunctions()){
-                    functions.add(ft.getFunctionName());
+                    functions.add(ft.getFunctionName().toUpperCase());
                 }
             }
 
@@ -1397,7 +1397,7 @@ public enum MetadataManager {
         FunctionType result = null;
         Set<FunctionType> candidateFunctions = getSupportedFunctions(connectorName, projects);
         for(FunctionType ft: candidateFunctions){
-            if(ft.getFunctionName().equals(functionName)){
+            if(ft.getFunctionName().equalsIgnoreCase(functionName)){
                 result = ft;
                 break;
             }

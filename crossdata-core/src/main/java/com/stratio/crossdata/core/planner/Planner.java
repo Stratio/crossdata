@@ -776,7 +776,7 @@ public class Planner {
             Selector selector = selectorIterator.next();
             if (selector instanceof FunctionSelector) {
                 fSelector = (FunctionSelector) selector;
-                if (!supportedFunctions.contains(fSelector.getFunctionName())) {
+                if (!supportedFunctions.contains(fSelector.getFunctionName().toUpperCase())) {
                     areFunctionsConsistent = false;
                     break;
                 } else {
