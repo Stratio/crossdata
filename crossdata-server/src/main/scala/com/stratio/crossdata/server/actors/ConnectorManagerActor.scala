@@ -47,7 +47,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
-  val coordinatorActorRef = context.actorSelection("../../CoordinatorActor")//context.actorSelection("../CoordinatorActor")
+  val coordinatorActorRef = context.actorSelection("../../CoordinatorActor")
   log.info("Lifting connector manager actor")
 
   override def preStart(): Unit = {
@@ -59,9 +59,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
   }
 
 
-
   def receive : Receive= {
-
 
     case ConnectorUp(memberAddress: String) => {
       log.info("connectorUp "+memberAddress)
@@ -183,7 +181,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
             if(MetadataManager.MANAGER.isNodeOffline(new NodeName(sender.path.address.toString))){
               // TODO log.info(s"checking if the connector $member.address is actually online")
             }else{
-		logger.debug("New connector joined to the cluster")
+		          logger.debug("New connector joined to the cluster")
               self ! ConnectorUp(member.address.toString)
             }
           }

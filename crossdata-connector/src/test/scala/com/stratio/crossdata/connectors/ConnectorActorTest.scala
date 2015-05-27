@@ -133,7 +133,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
     val connectedServers = Agent(Set.empty[String])(system1.dispatcher)
     val m=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, connectedServers, agent, runningJobsAgent))
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, connectedServers,agent, runningJobsAgent))
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
     val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
     catalog.getTables.put(table.getName,table)

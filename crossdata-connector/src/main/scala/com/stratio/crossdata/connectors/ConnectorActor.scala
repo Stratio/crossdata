@@ -24,6 +24,7 @@ import akka.actor._
 import akka.agent.Agent
 import akka.cluster.Cluster
 import akka.cluster.ClusterEvent.{ClusterDomainEvent, MemberEvent}
+import akka.remote.QuarantinedEvent
 import akka.util.Timeout
 import com.stratio.crossdata
 import com.stratio.crossdata.common.ask.APICommand
@@ -91,64 +92,112 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
   logger.info("Lifting connector actor")
 
   implicit val timeout = Timeout(20 seconds)
+  val cluster = Cluster(context.system)
 
   //TODO: test if it works with one thread and multiple threads
   val connector = conn
   var state = State.Stopped
 
   override def preStart():Unit = {
-    Cluster(context.system).subscribe(self,classOf[ClusterDomainEvent])
+    cluster.subscribe(self,classOf[ClusterDomainEvent])
+    context.system.eventStream.subscribe(self, classOf[QuarantinedEvent])
   }
 
-  def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
-    mapAgent.get.get(tableName).asInstanceOf[TableMetadata]
-      /*TODO 0.4.0 using FirstLevelName
-      val catalogName = tableName.getCatalogName
-      val catalogMetadata = mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
-      val tableMetadata = catalogMetadata.getTables.get(tableName)
-      if(tableMetadata.getClusterRef==clusterName)
-        return tableMetadata
-      else
-        return null
-
-        */
+  override def postStop() {
+    cluster.unsubscribe(self)
+    context.system.eventStream.unsubscribe(self)
   }
 
-  def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata={
-    return mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
+  override def preRestart(reason: Throwable, message: Option[Any]): Unit ={
+    //unsubscribe to restore updatable metadata?? or leave
+    //super.preRestart(reason, message)
   }
 
-  def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
-    val r = new util.HashMap[CatalogName,CatalogMetadata]()
-    //for(entry:java.util.Map.Entry[FirstLevelName,IMetadata] <- metadata.entrySet()){
-    for((k,v) <- mapAgent.get){
-       k match {
-        case name:CatalogName=>{
-          val catalogMetadata = mapAgent.get.get(k).asInstanceOf[CatalogMetadata]
-          val tables = catalogMetadata.getTables
-          for((tableName, tableMetadata) <- tables){
-            if(tables.get(tableName).getClusterRef==cluster){
-              r.put(name,catalogMetadata)
+  override def postRestart(reason: Throwable): Unit = {
+    //subscribe // or join
+    //super.postRestart(reason)
+  }
+
+
+
+  override def receive: Receive = {
+
+    case QuarantinedEvent(remoteAddress, uid) => {
+      log.info(s"Quarentined event received from $remoteAddress with uid: '$uid'")
+      log.info("Connected Servers"+connectedServers.get)
+      if( (connectedServers.get - remoteAddress.toString).isEmpty){
+        System.exit(0)
+      }
+
+    }
+
+    /** ClusterEvents */
+    case MemberUp(member) => {
+      logger.info("Member up")
+      logger.info("Member is Up: " + member.toString + member.getRoles + "!")
+
+      val roleIterator = member.getRoles.iterator()
+
+      while (roleIterator.hasNext()) {
+        val role = roleIterator.next()
+        role match {
+          case "server" => {
+            log.info("added new server "+member.address.toString)
+            connectedServers.send( connServers => connServers + member.address.toString )
+            val connectorManagerActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "crossdata-server" / "ConnectorManagerActor")
+            connectorManagerActorRef ! ConnectorUp(self.path.address.toString)
+          }
+          case _ => {
+            logger.debug(member.address + " has the role: " + role)
+          }
+
+        }
+      }
+    }
+
+    case state: CurrentClusterState => {
+      logger.info("Current members: " + state.members.mkString(", "))
+      state.getMembers.foreach{ member =>
+        val roleIterator = member.getRoles.iterator()
+        while (roleIterator.hasNext()) {
+          val role = roleIterator.next()
+          role match {
+            case "server" => {
+              connectedServers.send( connServers => connServers + member.address.toString )
+              logger.info(s"added server ${member.address}")
+            }
+            case _ => {
+              logger.debug(member.address + " has the role: " + role)
             }
           }
         }
       }
     }
-    return new util.ArrayList(r.values())
-  }
 
-  def subscribeToMetadataUpdate(listener: IMetadataListener) = {
-    logger.debug()
-    mapAgent.send(oMap => {oMap.addListener(listener); oMap})
-  }
+    case UnreachableMember(member) => {
+      logger.info("Member detected as unreachable: " + member)
+    }
+
+    case MemberRemoved(member, previousStatus) => {
+      if(member.hasRole("server")){
+        connectedServers.sendOff{ connServers =>connServers - member.address.toString}
+        log.info("Member removed -> remaining servers"+connectedServers.get)
+        /*if((connectedServers.get - member.address.toString ).isEmpty) {
+          log.info("There is no server in the cluster. The connector must be restarted")
+          System.exit(0)
+        }*/
+      }
+      logger.info("Member is Removed: " + member.address + " after " + previousStatus)
+    }
+    case memberEvent: MemberEvent => {
+      logger.info("MemberEvent received: " + memberEvent.toString)
+    }
 
 
-  def extractSender(m: String): String = {
-    m.substring(m.indexOf("[")+1, m.indexOf("$")).trim
-  }
 
-  override def receive: Receive = {
 
+
+    /** MessageEvents */
     //TODO iface UpdatableMetadata with getName, getMetadata
     case UpdateMetadata(umetadata, java.lang.Boolean.FALSE) => {
       umetadata match{
@@ -268,60 +317,7 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       sender ! replyConnectorName(connectorName)
     }
 
-    case MemberUp(member) => {
-      logger.info("Member up")
-      logger.info("Member is Up: " + member.toString + member.getRoles + "!")
 
-      val roleIterator = member.getRoles.iterator()
-
-      while (roleIterator.hasNext()) {
-        val role = roleIterator.next()
-        role match {
-          case "server" => {
-            connectedServers.send( connServers => connServers + member.address.toString )
-            val connectorManagerActorRef = context.actorSelection(RootActorPath(member.address) / "user" / "crossdata-server" / "ConnectorManagerActor")
-            connectorManagerActorRef ! ConnectorUp(self.path.address.toString)
-            }
-          case _ => {
-            logger.debug(member.address + " has the role: " + role)
-          }
-
-        }
-      }
-    }
-
-    case state: CurrentClusterState => {
-      logger.info("Current members: " + state.members.mkString(", "))
-      state.getMembers.foreach{ member =>
-        val roleIterator = member.getRoles.iterator()
-        while (roleIterator.hasNext()) {
-          val role = roleIterator.next()
-          role match {
-            case "server" => {
-              connectedServers.send( connServers => connServers + member.address.toString )
-              logger.debug(s"added server ${member.address}")
-            }
-            case _ => {
-              logger.debug(member.address + " has the role: " + role)
-            }
-          }
-        }
-      }
-    }
-      
-    case UnreachableMember(member) => {
-      logger.info("Member detected as unreachable: " + member)
-    }
-
-    case MemberRemoved(member, previousStatus) => {
-      if(member.hasRole("server")){
-        connectedServers.send( connServers => connServers - member.address.toString )
-      }
-      logger.info("Member is Removed: " + member.address + " after " + previousStatus)
-    }
-    case memberEvent: MemberEvent => {
-      logger.info("MemberEvent received: " + memberEvent.toString)
-    }
     case listener: IMetadataListener => {
       logger.info("Adding new metadata listener")
       subscribeToMetadataUpdate(listener)
@@ -346,6 +342,54 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
     connector.shutdown()
     this.state = State.Stopped
   }
+
+  def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+    mapAgent.get.get(tableName).asInstanceOf[TableMetadata]
+    /*TODO 0.4.0 using FirstLevelName
+    val catalogName = tableName.getCatalogName
+    val catalogMetadata = mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
+    val tableMetadata = catalogMetadata.getTables.get(tableName)
+    if(tableMetadata.getClusterRef==clusterName)
+      return tableMetadata
+    else
+      return null
+
+      */
+  }
+
+  def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata={
+    return mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
+  }
+
+  def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
+    val r = new util.HashMap[CatalogName,CatalogMetadata]()
+    //for(entry:java.util.Map.Entry[FirstLevelName,IMetadata] <- metadata.entrySet()){
+    for((k,v) <- mapAgent.get){
+      k match {
+        case name:CatalogName=>{
+          val catalogMetadata = mapAgent.get.get(k).asInstanceOf[CatalogMetadata]
+          val tables = catalogMetadata.getTables
+          for((tableName, tableMetadata) <- tables){
+            if(tables.get(tableName).getClusterRef==cluster){
+              r.put(name,catalogMetadata)
+            }
+          }
+        }
+      }
+    }
+    return new util.ArrayList(r.values())
+  }
+
+  def subscribeToMetadataUpdate(listener: IMetadataListener) = {
+    logger.debug()
+    mapAgent.send(oMap => {oMap.addListener(listener); oMap})
+  }
+
+
+  def extractSender(m: String): String = {
+    m.substring(m.indexOf("[")+1, m.indexOf("$")).trim
+  }
+
 
   override def processException(queryId: String, exception: ExecutionException): Unit = {
     logger.info("Processing exception for async query: " + queryId)
