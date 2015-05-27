@@ -37,6 +37,7 @@ import org.scalatest.{FunSuite, Suite}
 import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import scala.io.Source
 
 object ConnectorActorTest
 
@@ -66,8 +67,13 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
 
-    val ca1 = system1.actorOf(ConnectorActor.props(null,null, m, Set(), agent, runningJobsAgent))
-    val ca2 = system1.actorOf(ConnectorActor.props( null,null,m2, Set(),agent, runningJobsAgent))
+    val ca1 = system1.actorOf(ConnectorActor.props(getClass().getResource("/com.stratio.crossdata" +
+      ".connectors/DummyConnector.xml").getPath,
+    Array(getClass().getResource("/com.stratio.crossdata.connectors/DummyDataStore.xml").getPath), m, Set(), agent,
+      runningJobsAgent))
+    val ca2 = system1.actorOf(ConnectorActor.props(getClass().getResource("/com.stratio.crossdata.connectors/DummyConnector.xml").getPath,
+      Array(getClass().getResource("/com.stratio.crossdata.connectors/DummyDataStore.xml").getPath),m2, Set(),agent,
+      runningJobsAgent))
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))
@@ -95,8 +101,13 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val m2=new DummyIConnector()
     val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
-    val ca1 = system1.actorOf(ConnectorActor.props(null,null, m, Set(), agent, runningJobsAgent))
-    val ca2 = system1.actorOf(ConnectorActor.props(null,null, m2, Set(), agent, runningJobsAgent))
+    val ca1 = system1.actorOf(ConnectorActor.props(getClass().getResource("/com.stratio.crossdata" +
+      ".connectors/DummyConnector.xml").getPath,
+      Array(getClass().getResource("/com.stratio.crossdata.connectors/DummyDataStore.xml").getPath), m, Set(), agent,
+      runningJobsAgent))
+    val ca2 = system1.actorOf(ConnectorActor.props(getClass().getResource("/com.stratio.crossdata.connectors/DummyConnector.xml").getPath,
+      Array(getClass().getResource("/com.stratio.crossdata.connectors/DummyDataStore.xml").getPath),m2, Set(),agent,
+      runningJobsAgent))
     val routees = Vector[ActorRef](ca1, ca2)
 
     val connectorActor = system1.actorOf(ConnectorActor.props(null,null, m, Set(),agent, runningJobsAgent).withRouter(RoundRobinRouter(routees = routees)))
@@ -130,7 +141,11 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
     val m=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(null,null, m, Set(),agent, runningJobsAgent))
+    val ca1 = system1.actorOf(ConnectorActor.props(getClass().getResource("/com.stratio.crossdata" +
+      ".connectors/DummyConnector.xml").getPath,
+      Array(getClass().getResource("/com.stratio.crossdata.connectors/DummyDataStore.xml").getPath), m, Set(), agent,
+      runningJobsAgent))
+
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
     val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
     catalog.getTables.put(table.getName,table)

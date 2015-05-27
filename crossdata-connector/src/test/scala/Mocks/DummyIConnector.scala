@@ -36,7 +36,7 @@ class DummyIConnector extends IConnector{
   val c:Option[IStorageEngine]=None
   override def getStorageEngine: IStorageEngine = c.get
 
-  override def getConnectorManifestPath: String = ???
+  override def getConnectorManifestPath: String = "connectorPath"
 
-  override def getDatastoreManifestPath: Array[String] = ???
+  override def getDatastoreManifestPath: Array[String] = Array("datastorePath")
 }
