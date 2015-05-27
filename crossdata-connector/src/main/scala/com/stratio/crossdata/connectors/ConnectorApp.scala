@@ -65,7 +65,6 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     actorClusterNode.get ! Shutdown()
     system.shutdown()
     Metrics.getRegistry.getNames.foreach(Metrics.getRegistry.remove(_))
-
   }
 
   def oldStart(): Unit ={
@@ -97,7 +96,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
     val connectorManagerActorRef = system.actorOf(
       RoundRobinPool(num_connector_actor, Some(resizer))
-        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServersAgent, metadataMapAgent, runningJobsAgent, this)),
+        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServersAgent, metadataMapAgent, runningJobsAgent, connectorRestart)),
       "ConnectorActor")
 
     actorClusterNode = Some(connectorManagerActorRef)

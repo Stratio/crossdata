@@ -34,6 +34,7 @@ import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionEx
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata, _}
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication._
+import com.stratio.crossdata.connectors.ConnectorRestartActor.RestartConnector
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
@@ -75,7 +76,7 @@ object State extends Enumeration {
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector, connectedServers: Agent[Set[String]], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]],runningJobs: Agent[ListMap[String, ActorRef]], connectorApp: ConnectorApp):
+  def props(connectorName: String, connector: IConnector, connectedServers: Agent[Set[String]], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]],runningJobs: Agent[ListMap[String, ActorRef]], connectorApp: ActorRef):
       Props = Props(new ConnectorActor(connectorName, connector, connectedServers, mapAgent, runningJobs, connectorApp))
 }
 
@@ -84,7 +85,7 @@ object ClassExtractor{
 }
 
 
-class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Agent[Set[String]], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]], connectorApp: ConnectorApp)
+class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Agent[Set[String]], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]], connectorApp: ActorRef)
   extends Actor with ActorLogging with IResultHandler {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorActor])
@@ -127,10 +128,9 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       log.info("Connected Servers"+connectedServers.get)
       if( (connectedServers.get - remoteAddress.toString).isEmpty){
         //It should be a new Connector instance??
-        connectorApp.stop()
-        connectorApp.startup(connector)
-        //Exit option
-        //System.exit(0)
+        connectorApp ! RestartConnector
+        //context.become(zombie)
+        context.stop(self)
       }
 
     }
