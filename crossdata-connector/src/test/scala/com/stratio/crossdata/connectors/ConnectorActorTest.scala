@@ -67,8 +67,8 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
 
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, connectedServers, agent, runningJobsAgent))
-    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, connectedServers ,agent, runningJobsAgent))
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, connectedServers, agent, runningJobsAgent, null))
+    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, connectedServers ,agent, runningJobsAgent, null))
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))
@@ -97,11 +97,11 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val connectedServers = Agent(Set.empty[String])(system1.dispatcher)
     val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, connectedServers, agent, runningJobsAgent))
-    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, connectedServers, agent, runningJobsAgent))
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, connectedServers, agent, runningJobsAgent, null))
+    val ca2 = system1.actorOf(ConnectorActor.props(myconnector, m2, connectedServers, agent, runningJobsAgent, null))
     val routees = Vector[ActorRef](ca1, ca2)
 
-    val connectorActor = system1.actorOf(ConnectorActor.props(myconnector, m, connectedServers,agent, runningJobsAgent).withRouter(RoundRobinRouter(routees = routees)))
+    val connectorActor = system1.actorOf(ConnectorActor.props(myconnector, m, connectedServers,agent, runningJobsAgent, null).withRouter(RoundRobinRouter(routees = routees)))
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))
@@ -133,7 +133,7 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
     val connectedServers = Agent(Set.empty[String])(system1.dispatcher)
     val m=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, connectedServers,agent, runningJobsAgent))
+    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m, connectedServers,agent, runningJobsAgent, null))
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
     val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
     catalog.getTables.put(table.getName,table)

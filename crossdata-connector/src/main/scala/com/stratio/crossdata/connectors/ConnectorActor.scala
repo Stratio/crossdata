@@ -75,8 +75,8 @@ object State extends Enumeration {
   val Started, Stopping, Stopped = Value
 }
 object ConnectorActor {
-  def props(connectorName: String, connector: IConnector, connectedServers: Agent[Set[String]], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]],runningJobs: Agent[ListMap[String, ActorRef]]):
-      Props = Props(new ConnectorActor(connectorName, connector, connectedServers, mapAgent, runningJobs))
+  def props(connectorName: String, connector: IConnector, connectedServers: Agent[Set[String]], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]],runningJobs: Agent[ListMap[String, ActorRef]], connectorApp: ConnectorApp):
+      Props = Props(new ConnectorActor(connectorName, connector, connectedServers, mapAgent, runningJobs, connectorApp))
 }
 
 object ClassExtractor{
@@ -84,7 +84,7 @@ object ClassExtractor{
 }
 
 
-class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Agent[Set[String]], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]])
+class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: Agent[Set[String]], mapAgent: Agent[ObservableMap[Name,UpdatableMetadata]], runningJobs: Agent[ListMap[String, ActorRef]], connectorApp: ConnectorApp)
   extends Actor with ActorLogging with IResultHandler {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorActor])
@@ -126,7 +126,11 @@ class ConnectorActor(connectorName: String, conn: IConnector, connectedServers: 
       log.info(s"Quarentined event received from $remoteAddress with uid: '$uid'")
       log.info("Connected Servers"+connectedServers.get)
       if( (connectedServers.get - remoteAddress.toString).isEmpty){
-        System.exit(0)
+        //It should be a new Connector instance??
+        connectorApp.stop()
+        connectorApp.startup(connector)
+        //Exit option
+        //System.exit(0)
       }
 
     }

@@ -49,27 +49,17 @@ object ConnectorApp extends App {
 
 class ConnectorApp extends ConnectConfig with IConnectorApp {
 
-  lazy val system = ActorSystem(clusterName, config)
+  var system: ActorSystem = null
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
-
   var actorClusterNode: Option[ActorRef] = None
-
   var metricName: String = "connector"
 
-  val connectedServersAgent: Agent[Set[String]] = Agent(Set.empty[String])(system.dispatcher)
-  val metadataMapAgent = Agent(new ObservableMap[Name, UpdatableMetadata])(system.dispatcher)
-  val runningJobsAgent =   Agent(new ListMap[String, ActorRef]())(system.dispatcher)
+  var connectedServersAgent: Agent[Set[String]] = null
+  var metadataMapAgent :Agent[ObservableMap[Name, UpdatableMetadata]] = null
+  var runningJobsAgent :   Agent[ListMap[String, ActorRef]] = null
 
-  logger.info("Connector Name: " + connectorName)
 
-  if((connectorName.isEmpty) || (connectorName.equalsIgnoreCase("XconnectorX"))){
-    logger.error("##########################################################################################");
-    logger.error("# ERROR ##################################################################################");
-    logger.error("##########################################################################################");
-    logger.error("# USING DEFAULT CONNECTOR NAME: XconnectorX                                              #")
-    logger.error("# CHANGE PARAMETER crossdata-connector.config.connector.name FROM THE CONFIGURATION FILE #")
-    logger.error("##########################################################################################");
-  }
+
 
   def stop():Unit = {
     actorClusterNode.get ! Shutdown()
@@ -78,12 +68,36 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
   }
 
+  def oldStart(): Unit ={
+     system = ActorSystem(clusterName, config)
+
+     connectedServersAgent = Agent(Set.empty[String])(system.dispatcher)
+     metadataMapAgent = Agent(new ObservableMap[Name, UpdatableMetadata])(system.dispatcher)
+     runningJobsAgent =   Agent(new ListMap[String, ActorRef]())(system.dispatcher)
+
+    logger.info("Connector Name: " + connectorName)
+
+    if((connectorName.isEmpty) || (connectorName.equalsIgnoreCase("XconnectorX"))){
+      logger.error("##########################################################################################");
+      logger.error("# ERROR ##################################################################################");
+      logger.error("##########################################################################################");
+      logger.error("# USING DEFAULT CONNECTOR NAME: XconnectorX                                              #")
+      logger.error("# CHANGE PARAMETER crossdata-connector.config.connector.name FROM THE CONFIGURATION FILE #")
+      logger.error("##########################################################################################");
+    }
+  }
+
   def startup(connector: IConnector): ActorSelection = {
+
+    oldStart
+
+    val connectorRestart = system.actorOf(
+      Props(classOf[ConnectorRestartActor], this, connector))
 
     val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
     val connectorManagerActorRef = system.actorOf(
       RoundRobinPool(num_connector_actor, Some(resizer))
-        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServersAgent, metadataMapAgent, runningJobsAgent)),
+        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServersAgent, metadataMapAgent, runningJobsAgent, this)),
       "ConnectorActor")
 
     actorClusterNode = Some(connectorManagerActorRef)
