@@ -180,7 +180,7 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
 
         this.version = version;
 
-        this.isNative = isNative;
+        this.isNative = (isNative == null) ? false : isNative;
 
         if(dataStoreRefs == null){
             this.dataStoreRefs = new HashSet<>();
@@ -301,6 +301,14 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
      */
     public String getVersion() {
         return version;
+    }
+
+    /**
+     * Set Native attribute.
+     * @param isNative A boolean.
+     */
+    public void setNative(boolean isNative) {
+        this.isNative = isNative;
     }
 
     /**
