@@ -52,7 +52,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   lazy val system = ActorSystem(clusterName, config)
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
 
-  var actorClusterNode: Option[ActorRef] = None
+  var connectorRef: Option[ActorRef] = None
 
   var metricName: String = "connector"
 
@@ -72,7 +72,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   }
 
   def stop():Unit = {
-    actorClusterNode.get ! Shutdown()
+    connectorRef.get ! Shutdown()
     system.shutdown()
     Metrics.getRegistry.getNames.foreach(Metrics.getRegistry.remove(_))
 
@@ -81,15 +81,16 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   def startup(connector: IConnector): ActorSelection = {
 
     val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
-    val connectorManagerActorRef = system.actorOf(
-      RoundRobinPool(num_connector_actor, Some(resizer))
-        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServersAgent, metadataMapAgent, runningJobsAgent)),
-      "ConnectorActor")
 
-    actorClusterNode = Some(connectorManagerActorRef)
+    connectorRef = Some(
+      system.actorOf(RoundRobinPool(num_connector_actor, Some(resizer))
+        .props(Props(classOf[ConnectorActor], connector.getConnectorName, connector, connectedServersAgent, metadataMapAgent, runningJobsAgent)),
+      "ConnectorActor"))
+
     connector.init(new IConfiguration {})
+
     val actorSelection: ActorSelection = system.actorSelection(
-      StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString(), false))
+      StringUtils.getAkkaActorRefUri(connectorRef.get.toString(), false))
 
     metricName = MetricRegistry.name(connector.getConnectorName, "connection", "status")
     Metrics.getRegistry.register(metricName,
@@ -115,7 +116,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
         response.getOrElse(throw new IllegalStateException("Actor cluster node is not initialized"))
       }}}
     */
-    val future = actorClusterNode.get.?(GetTableMetadata(clusterName,tableName ))(timeout)
+    val future = connectorRef.get.?(GetTableMetadata(clusterName,tableName ))(timeout)
     Try(Await.result(future.mapTo[TableMetadata],Duration.fromNanos(timeout*1000000L))).map{ Some (_)}.recover{
       case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: "+e.getMessage); None
     }.get
@@ -158,8 +159,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   }
 
   override def subscribeToMetadataUpdate(mapListener: IMetadataListener) ={
-    //actorClusterNode.get.asInstanceOf[ConnectorActor].subscribeToMetadataUpdate(mapListener)
-    actorClusterNode.get ! mapListener
+    connectorRef.get ! mapListener
   }
 
   override def registerMetric(name: String, metric: Metric): Metric = {
