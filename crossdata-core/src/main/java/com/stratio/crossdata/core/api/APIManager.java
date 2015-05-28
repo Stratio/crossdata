@@ -24,6 +24,8 @@ import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.data.*;
 import com.stratio.crossdata.common.data.Status;
 import com.stratio.crossdata.common.exceptions.*;
+import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
+import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
@@ -611,7 +613,7 @@ public class APIManager {
         DataStoreName name = new DataStoreName(dataStoreType.getName());
 
         if (MetadataManager.MANAGER.exists(name)) {
-            throw new ManifestException(new ExecutionException(name + " already exists"));
+            throw new ManifestException(new ExistNameException(name));
         }
 
         // VERSION
@@ -685,7 +687,7 @@ public class APIManager {
             connectorMetadata = MetadataManager.MANAGER.getConnector(name);
 
             if (connectorMetadata.isManifestAdded()) {
-                throw new ManifestException(new ExecutionException("Connector " + name + " was already added"));
+                throw new ManifestException(new ExistNameException(name));
             }
 
             connectorMetadata.setVersion(version);
@@ -746,7 +748,7 @@ public class APIManager {
     private void dropDataStore(DataStoreName dataStoreName) throws ApiException {
         try {
             if (!MetadataManager.MANAGER.exists(dataStoreName)) {
-                throw new ApiException(new ExecutionException(dataStoreName + " doesn't exist"));
+                throw new ApiException(new NotExistNameException(dataStoreName));
             }
             MetadataManager.MANAGER.deleteDatastore(dataStoreName);
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
@@ -758,7 +760,7 @@ public class APIManager {
     private void dropConnector(ConnectorName connectorName) throws ApiException {
         try {
             if (!MetadataManager.MANAGER.exists(connectorName)) {
-                throw new ApiException(new ExecutionException(connectorName + " doesn't exist"));
+                throw new ApiException(new NotExistNameException(connectorName));
             }
             ConnectorMetadata cm = MetadataManager.MANAGER.getConnector(connectorName);
             MetadataManager.MANAGER.deleteConnector(connectorName);

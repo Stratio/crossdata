@@ -24,7 +24,7 @@ import akka.actor.{ActorSelection, ActorSystem}
 import akka.contrib.pattern.ClusterClient
 import com.stratio.crossdata.common.ask.{APICommand, Command, Connect, Query}
 import com.stratio.crossdata.common.data.{ConnectorName, DataStoreName, _}
-import com.stratio.crossdata.common.exceptions.validation.NotExistNameException
+import com.stratio.crossdata.common.exceptions.validation.{ExistNameException, NotExistNameException}
 import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException, ManifestException, ParsingException, UnsupportedException, ValidationException}
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 import com.stratio.crossdata.common.result._
@@ -532,6 +532,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   @throws(classOf[ManifestException])
+  @throws(classOf[ExistNameException])
   def addManifest(manifestType: Int, path: String, sessionId: String): Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
@@ -559,6 +560,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return A CommandResult with a string.
    */
   @throws(classOf[ManifestException])
+  @throws(classOf[NotExistNameException])
   def dropManifest(manifestType: Int, manifestName: String, sessionId: String): Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
