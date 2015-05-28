@@ -44,6 +44,13 @@ public class SelectStatementTest extends ParsingTest {
     }
 
     @Test
+    public void basicSelectUnderscoredId() {
+        String inputText = "SELECT _id FROM test.table1;";
+        String expectedText = "SELECT <UNKNOWN_NAME>.<UNKNOWN_NAME>._id FROM test.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectUnderscoredId");
+    }
+
+    @Test
     public void basicSelectWithNull() {
         String inputText = "SELECT test.table1.id, NULL FROM test.table1;";
         String expectedText = "SELECT test.table1.id, NULL FROM test.table1;";
