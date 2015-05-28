@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.metadata;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,7 @@ import java.util.Set;
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.ListSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 
@@ -336,6 +338,7 @@ public class ColumnType implements Serializable {
         case SET:
             break;
         case LIST:
+            selector = new ListSelector(new ArrayList<Selector>());
             break;
         case MAP:
             break;
