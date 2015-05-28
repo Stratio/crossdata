@@ -362,6 +362,15 @@ Example:
 
     SELECT * FROM demo.clients, demo.sales ON clients.identifier = sales.codeID;
 
+STOP PROCESS
+------
+Stop a streaming query specifying its query id.
+
+STOP PROCESS  \<queryId\> ';'
+
+Example:
+
+    STOP PROCESS 9dc2bb6d-38b2-4a48-89ce-4ee45c5956a5;
 
 EXPLAIN PLAN
 ------------
