@@ -18,14 +18,13 @@
 
 package Mocks
 
+import java.io.InputStream
+
 import com.stratio.crossdata.common.connector._
 import com.stratio.crossdata.common.data.ClusterName
 import com.stratio.crossdata.common.security.ICredentials
 
 class DummyIConnector extends IConnector{
-  override def getConnectorName: String = "myDummyConnector"
-  val a:Option[Array[String]]=None
-  override def getDatastoreName: Array[String] = a.get
   override def shutdown: Unit = {}
   override def init(configuration: IConfiguration):Unit ={}
   override def getMetadataEngine: IMetadataEngine = new DummyIMetadataEngine()
@@ -37,5 +36,7 @@ class DummyIConnector extends IConnector{
   val c:Option[IStorageEngine]=None
   override def getStorageEngine: IStorageEngine = c.get
 
+  override def getConnectorManifestPath: String = "connectorPath"
 
+  override def getDatastoreManifestPath: Array[String] = Array("datastorePath")
 }

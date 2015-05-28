@@ -226,6 +226,16 @@
 
                         <configuration>
 
+                            <excludeDirectoryAttributes>
+                                <dir>/etc</dir>
+                                <dir>/etc/init.d</dir>
+                                <dir>/etc/default</dir>
+                                <dir>/var</dir>
+                                <dir>/opt</dir>
+                                <dir>/usr</dir>
+                                <dir>/bin</dir>
+                            </excludeDirectoryAttributes>
+
 
                             <!--The name and email address of the contact person for the package. -->
                             <contact><![CDATA[Stratio <crossdata@stratio.com>]]></contact>
