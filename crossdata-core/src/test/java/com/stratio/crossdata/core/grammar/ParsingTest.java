@@ -18,11 +18,6 @@
 
 package com.stratio.crossdata.core.grammar;
 
-import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
-import static org.testng.Assert.fail;
-
 import java.util.UUID;
 
 import org.testng.annotations.AfterClass;
@@ -35,6 +30,8 @@ import com.stratio.crossdata.core.MetadataManagerTestHelper;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
 import com.stratio.crossdata.core.query.IParsedQuery;
+
+import static org.testng.Assert.*;
 
 /**
  * XDqlParser tests that recognize the different options of each Statement.
@@ -108,7 +105,7 @@ public class ParsingTest {
             fail(sb.toString(), e);
         }
 
-        assertTrue(expectedQuery.equalsIgnoreCase(st.toString() + ";"),
+        assertEquals(st.toString().toLowerCase() + ";", expectedQuery.toLowerCase(),
                 "Cannot parse " + methodName
                         + ": expecting " + System.lineSeparator() + "'" + expectedQuery
                         + "' from " + System.lineSeparator() + "'" + st.toString() + ";");

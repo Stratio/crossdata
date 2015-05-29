@@ -216,20 +216,51 @@
                     <plugin>
                         <groupId>com.stratio.mojo.unix</groupId>
                         <artifactId>unix-maven-plugin</artifactId>
-			<version>1.1.2</version>
-                        <!--<version>1.0-alpha-9</version>-->
+						<version>1.1.5</version>
                         <extensions>true</extensions>
-			<inherited>false</inherited>
+						<inherited>false</inherited>
                         <configuration>
                             <contact><![CDATA[Stratio <meta@stratio.com>]]></contact>
                             <contactEmail>meta@stratio.com</contactEmail>
-                            <size>2048</size>
+
+                            <!--The name and email address of the contact person for the package. -->
+                            <contact><![CDATA[Stratio <crossdata@stratio.com>]]></contact>
+                            <contactEmail>crossdata@stratio.com</contactEmail>
+
+
+                            <outputFileName>stratio-crossdata</outputFileName>
+                            <rpm>
+                                <group>stratio</group>                                
+                                <requires>apache-commons-daemon-jsvc</requires>
+                            </rpm>
+
                             <deb>
                                 <section>devel</section>
                             </deb>
-                            <rpm>
-                                <group>stratio</group>
-                            </rpm>
+                            
+ 							<defaults>
+                                <directoryAttributes>
+                                    <user>stratio</user>
+                                    <group>stratio</group>
+                                    <mode>0744</mode>
+                                </directoryAttributes>
+                                <fileAttributes>
+                                    <user>stratio</user>
+                                    <group>stratio</group>
+                                    <mode>0644</mode>
+                                </fileAttributes>
+                            </defaults>
+
+                            <excludeDirectoryAttributes>
+                                <dir>/etc</dir>
+                                <dir>/etc/init.d</dir>
+                                <dir>/etc/default</dir>
+                                <dir>/var</dir>
+                                <dir>/opt</dir>
+                                <dir>/usr</dir>
+                                <dir>/bin</dir>
+                            </excludeDirectoryAttributes>
+                            
                             <assembly>
                                 <mkdirs>
                                     <paths>
@@ -280,16 +311,30 @@
                                 </copyFile>
                             </assembly>
                         </configuration>
-			<executions>
-			<execution>
-                        	<id>create-installers</id>
-				<phase>package</phase>
-				<goals>
-			            <goal>package-deb</goal>
-			            <goal>package-rpm</goal>
-			        </goals>
-			</execution>
-			</executions>
+ 						<executions>
+                            <execution>
+                                <id>create-rpm</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>package-rpm</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- The architecture the package is valid for. -->
+                                    <architecture>noarch</architecture>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>create-deb</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>package-deb</goal>
+                                </goals>
+                                <configuration>
+                                    <!-- The architecture the package is valid for. -->
+                                    <architecture>all</architecture>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
