@@ -20,12 +20,18 @@ package com.stratio.crossdata.common.statements.structures;
 
 import com.stratio.crossdata.common.data.TableName;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Asterisk selector.
  */
 public class AsteriskSelector extends Selector {
 
     private static final long serialVersionUID = 3370725707713353255L;
+
+    private Set<TableName> joinedTables;
 
     /**
      * Basic Constructor class.
@@ -40,6 +46,24 @@ public class AsteriskSelector extends Selector {
      */
     public AsteriskSelector(TableName tableName) {
         super(tableName);
+        joinedTables = new HashSet<>();
+    }
+
+    /**
+     * Adds joined tables affected by the asterisk selector.
+     * @param tableNames tables affected by the asterisk selector.
+     */
+    public void addTables(Collection<? extends TableName> tableNames){
+        joinedTables.addAll(tableNames);
+
+    }
+
+    @Override
+    public Set<TableName> getSelectorTables() {
+        Set<TableName> tables =  new HashSet<>(joinedTables.size()+1);
+        tables.addAll(joinedTables);
+        tables.add(tableName);
+        return tables;
     }
 
     @Override

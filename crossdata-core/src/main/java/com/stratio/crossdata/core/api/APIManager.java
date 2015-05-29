@@ -18,89 +18,34 @@
 
 package com.stratio.crossdata.core.api;
 
-import static com.stratio.crossdata.common.statements.structures.SelectorHelper.convertSelectorMapToStringMap;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
-import javax.transaction.SystemException;
-
-import org.apache.log4j.Logger;
-
 import com.stratio.crossdata.common.ask.APICommand;
 import com.stratio.crossdata.common.ask.Command;
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.DataStoreName;
+import com.stratio.crossdata.common.data.*;
 import com.stratio.crossdata.common.data.Status;
-import com.stratio.crossdata.common.data.TableName;
-import com.stratio.crossdata.common.exceptions.ApiException;
-import com.stratio.crossdata.common.exceptions.ExecutionException;
-import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
-import com.stratio.crossdata.common.exceptions.ManifestException;
-import com.stratio.crossdata.common.exceptions.ParsingException;
-import com.stratio.crossdata.common.exceptions.PlanningException;
-import com.stratio.crossdata.common.exceptions.ValidationException;
+import com.stratio.crossdata.common.exceptions.*;
+import com.stratio.crossdata.common.exceptions.validation.ExistNameException;
+import com.stratio.crossdata.common.exceptions.validation.NotExistNameException;
 import com.stratio.crossdata.common.executionplan.ExecutionType;
 import com.stratio.crossdata.common.executionplan.ManagementWorkflow;
 import com.stratio.crossdata.common.executionplan.ResultType;
-import com.stratio.crossdata.common.manifest.BehaviorsType;
-import com.stratio.crossdata.common.manifest.ConnectorFunctionsType;
-import com.stratio.crossdata.common.manifest.ConnectorType;
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
-import com.stratio.crossdata.common.manifest.DataStoreFunctionsType;
-import com.stratio.crossdata.common.manifest.DataStoreRefsType;
-import com.stratio.crossdata.common.manifest.DataStoreType;
-import com.stratio.crossdata.common.manifest.FunctionType;
-import com.stratio.crossdata.common.manifest.ManifestHelper;
-import com.stratio.crossdata.common.manifest.PropertiesType;
-import com.stratio.crossdata.common.manifest.PropertyType;
-import com.stratio.crossdata.common.manifest.SupportedOperationsType;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
-import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
-import com.stratio.crossdata.common.metadata.ClusterMetadata;
-import com.stratio.crossdata.common.metadata.ColumnMetadata;
-import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
-import com.stratio.crossdata.common.metadata.ConnectorMetadata;
-import com.stratio.crossdata.common.metadata.DataStoreMetadata;
-import com.stratio.crossdata.common.metadata.Operations;
-import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.result.CommandResult;
-import com.stratio.crossdata.common.result.ErrorResult;
-import com.stratio.crossdata.common.result.MetadataResult;
-import com.stratio.crossdata.common.result.ResetServerDataResult;
-import com.stratio.crossdata.common.result.Result;
+import com.stratio.crossdata.common.manifest.*;
+import com.stratio.crossdata.common.metadata.*;
+import com.stratio.crossdata.common.result.*;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.core.execution.ExecutionManager;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.metadata.MetadataManagerException;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.planner.Planner;
-import com.stratio.crossdata.core.query.BaseQuery;
-import com.stratio.crossdata.core.query.ForceDetachQuery;
-import com.stratio.crossdata.core.query.IParsedQuery;
-import com.stratio.crossdata.core.query.IValidatedQuery;
-import com.stratio.crossdata.core.query.MetadataPlannedQuery;
-import com.stratio.crossdata.core.query.MetadataValidatedQuery;
-import com.stratio.crossdata.core.query.SelectPlannedQuery;
-import com.stratio.crossdata.core.query.SelectValidatedQuery;
-import com.stratio.crossdata.core.query.StoragePlannedQuery;
-import com.stratio.crossdata.core.query.StorageValidatedQuery;
+import com.stratio.crossdata.core.query.*;
 import com.stratio.crossdata.core.validator.Validator;
+import org.apache.log4j.Logger;
+
+import javax.transaction.*;
+import java.util.*;
+
+import static com.stratio.crossdata.common.statements.structures.SelectorHelper.convertSelectorMapToStringMap;
 
 /**
  * Class that manages the Crossdata API requests.
@@ -599,6 +544,7 @@ public class APIManager {
      * @return The result after resetting the Metadata Manager.
      */
     private Result createResetServerDataCommand(){
+
         Collection<IParsedQuery> commands = new ArrayList<>();
         for (ClusterMetadata cluster: MetadataManager.MANAGER.getClusters()){
             for (ConnectorName connector : cluster.getConnectorAttachedRefs().keySet()){
@@ -617,7 +563,7 @@ public class APIManager {
 
     private ForceDetachQuery createForceDetachQuery(ClusterMetadata cluster, ConnectorName connector) {
         ClusterName clusterName = cluster.getName();
-        Set<String> actorRefs = Collections.singleton(MetadataManager.MANAGER.getConnectorRef(connector, planner.getHost()));
+        Set<String> actorRefs = MetadataManager.MANAGER.getConnectorRefs(connector);
 
         Map<String, String> clusterProperties = convertSelectorMapToStringMap(MetadataManager.MANAGER.getConnector(connector).getClusterProperties().get(clusterName));
         Map<String, String> clusterOptions = convertSelectorMapToStringMap(MetadataManager.MANAGER.getCluster(clusterName).getOptions());
@@ -667,7 +613,7 @@ public class APIManager {
         DataStoreName name = new DataStoreName(dataStoreType.getName());
 
         if (MetadataManager.MANAGER.exists(name)) {
-            throw new ManifestException(new ExecutionException(name + " already exists"));
+            throw new ManifestException(new ExistNameException(name));
         }
 
         // VERSION
@@ -713,6 +659,9 @@ public class APIManager {
         // VERSION
         String version = connectorType.getVersion();
 
+        // NATIVE
+        Boolean isNative = connectorType.isNative();
+
         // REQUIRED PROPERTIES
         PropertiesType requiredProperties = connectorType.getRequiredProperties();
 
@@ -741,7 +690,7 @@ public class APIManager {
             connectorMetadata = MetadataManager.MANAGER.getConnector(name);
 
             if (connectorMetadata.isManifestAdded()) {
-                throw new ManifestException(new ExecutionException("Connector " + name + " was already added"));
+                throw new ManifestException(new ExistNameException(name));
             }
 
             connectorMetadata.setVersion(version);
@@ -770,6 +719,7 @@ public class APIManager {
             connectorMetadata = new ConnectorMetadata(
                     name,
                     version,
+                    isNative,
                     (dataStoreRefs == null) ? new ArrayList<String>() :  dataStoreRefs.getDataStoreName(),
                     (requiredProperties == null) ? new ArrayList<PropertyType>() : requiredProperties.getProperty(),
                     (optionalProperties == null) ? new ArrayList<PropertyType>() : optionalProperties.getProperty(),
@@ -802,7 +752,7 @@ public class APIManager {
     private void dropDataStore(DataStoreName dataStoreName) throws ApiException {
         try {
             if (!MetadataManager.MANAGER.exists(dataStoreName)) {
-                throw new ApiException(new ExecutionException(dataStoreName + " doesn't exist"));
+                throw new ApiException(new NotExistNameException(dataStoreName));
             }
             MetadataManager.MANAGER.deleteDatastore(dataStoreName);
         } catch (NotSupportedException | SystemException | HeuristicRollbackException | HeuristicMixedException |
@@ -814,7 +764,7 @@ public class APIManager {
     private void dropConnector(ConnectorName connectorName) throws ApiException {
         try {
             if (!MetadataManager.MANAGER.exists(connectorName)) {
-                throw new ApiException(new ExecutionException(connectorName + " doesn't exist"));
+                throw new ApiException(new NotExistNameException(connectorName));
             }
             ConnectorMetadata cm = MetadataManager.MANAGER.getConnector(connectorName);
             MetadataManager.MANAGER.deleteConnector(connectorName);

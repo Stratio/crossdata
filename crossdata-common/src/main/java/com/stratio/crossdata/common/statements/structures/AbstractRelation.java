@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * Class that models the different types of relationships that can be found on a WHERE clause.
  */
-public abstract class AbstractRelation implements Serializable, ISqlExpression {
+public abstract class AbstractRelation implements ExtendedSqlExpression {
 
     private static final long serialVersionUID = 4458788192163528306L;
 

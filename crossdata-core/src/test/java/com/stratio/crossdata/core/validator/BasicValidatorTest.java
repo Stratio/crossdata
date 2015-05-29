@@ -215,7 +215,7 @@ public class BasicValidatorTest {
 
         ConnectorMetadata connectorMetadata = null;
         try {
-            connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0",
+            connectorMetadata = new ConnectorMetadata(new ConnectorName("CassandraConnector"), "1.0", false,
                     dataStoreRefs, null, null, supportedOperations, null, null);
         } catch (ManifestException e) {
             fail(e.getMessage());

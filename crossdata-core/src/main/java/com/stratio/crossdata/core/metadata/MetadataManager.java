@@ -708,7 +708,7 @@ public enum MetadataManager {
             Set<PropertyType> requiredProperties = new HashSet<>();
             Set<PropertyType> optionalProperties = new HashSet<>();
             Set<Operations> supportedOperations = new HashSet<>();
-            ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, dataStoreRefs,
+            ConnectorMetadata connectorMetadata = new ConnectorMetadata(name, version, Boolean.FALSE, dataStoreRefs,
                     clusterProperties, clusterPriorities, requiredProperties, optionalProperties, supportedOperations, null);
             connectorMetadata.addActorRef(actorRef);
             try {
@@ -792,6 +792,15 @@ public enum MetadataManager {
      */
     public String getConnectorRef(ConnectorName name, String host) {
         return getConnector(name).getActorRef(host);
+    }
+
+    /**
+     * Returns all connectors actor ref in the metadata store.
+     * @param name Name for the selected connector
+     * @return
+     */
+    public Set<String> getConnectorRefs(ConnectorName name){
+        return getConnector(name).getActorRefs();
     }
 
     /**
@@ -1209,7 +1218,7 @@ public enum MetadataManager {
         ConnectorMetadata connector = getConnector(cn);
 
         for (FunctionType ft : connector.getConnectorFunctions()) {
-            functions.add(ft.getFunctionName());
+            functions.add(ft.getFunctionName().toUpperCase());
         }
 
         Set<DataStoreName> dataStoreNames = new HashSet<>();
@@ -1224,7 +1233,7 @@ public enum MetadataManager {
                 DataStoreMetadata datastore = getDataStore(dsn);
 
                 for(FunctionType ft: datastore.getFunctions()){
-                    functions.add(ft.getFunctionName());
+                    functions.add(ft.getFunctionName().toUpperCase());
                 }
             }
 
@@ -1388,7 +1397,7 @@ public enum MetadataManager {
         FunctionType result = null;
         Set<FunctionType> candidateFunctions = getSupportedFunctions(connectorName, projects);
         for(FunctionType ft: candidateFunctions){
-            if(ft.getFunctionName().equals(functionName)){
+            if(ft.getFunctionName().equalsIgnoreCase(functionName)){
                 result = ft;
                 break;
             }

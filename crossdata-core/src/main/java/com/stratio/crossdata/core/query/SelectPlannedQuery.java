@@ -18,7 +18,10 @@
 
 package com.stratio.crossdata.core.query;
 
+import com.stratio.crossdata.common.annotation.Experimental;
 import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
+import com.stratio.crossdata.common.executionplan.QueryWorkflow;
+import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.result.QueryStatus;
 
 /**
@@ -52,5 +55,14 @@ public class SelectPlannedQuery extends SelectValidatedQuery implements IPlanned
     @Override
     public ExecutionWorkflow getExecutionWorkflow() {
         return executionWorkflow;
+    }
+
+    @Experimental
+    public LogicalWorkflow getLastLogicalWorkflow(){
+        ExecutionWorkflow lastExecutionWorkflow = executionWorkflow;
+        while(lastExecutionWorkflow.getNextExecutionWorkflow() != null){
+            lastExecutionWorkflow = lastExecutionWorkflow.getNextExecutionWorkflow();
+        }
+        return ((QueryWorkflow) lastExecutionWorkflow).getWorkflow();
     }
 }

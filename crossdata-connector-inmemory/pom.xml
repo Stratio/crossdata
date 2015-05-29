@@ -85,7 +85,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <crossdata.version>${project.version}</crossdata.version>
         <scala.version>2.10.4</scala.version>
         <scala.dep.version>2.10</scala.dep.version>
         <slf4j.version>1.7.7</slf4j.version>
@@ -95,7 +94,7 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-connector</artifactId>
-            <version>${crossdata.version}</version>
+            <version>${project.parent.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -113,7 +112,7 @@
         <dependency>
             <groupId>com.stratio.crossdata</groupId>
             <artifactId>crossdata-common</artifactId>
-            <version>${crossdata.version}</version>
+            <version>${project.parent.version}</version>
         </dependency>
         <!-- SCALA AND AKKA -->
         <dependency>
@@ -231,7 +230,7 @@
             <plugin>
                 <artifactId>crossdata-connector-maven-plugin</artifactId>
                 <groupId>com.stratio.crossdata</groupId>
-                <version>${crossdata.version}</version>
+                <version>${project.parent.version}</version>
                 <configuration>
                     <mainClass>com.stratio.connector.inmemory.InMemoryConnector</mainClass>
                     <jmxPort>7180</jmxPort>

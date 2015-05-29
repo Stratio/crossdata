@@ -8,7 +8,7 @@ Definition of LogicalWorkflow
 
 The use of *LogicalWorkflow* is associated with *SELECT* statements. This type of statements is decomposed in a set 
 of *LogicalStep* and those steps are organized in a directed graph that contain all the information required to 
-perform a query. This approch is similar to the classical *Logical plan* found in databases. The difference is that 
+perform a query. This approach is similar to the classical *Logical plan* found in databases. The difference is that
 in Crossdata we first characterize and define the *LogicalSteps* involved, and then we plan the execution of portions
  of this graph using the available connectors producing the final *ExecutionWorkflows*. Notice that a Crossdata 
  *LogicalWorkflow* is a similar concept to the classical database *LogicalPlan*.
@@ -57,6 +57,13 @@ The *Filter* operator specifies a filtering operation that should be applied to 
 filtering element. In a *SELECT* statement *Filter* operator are associated with the relations found in the where
  clause. A *Filter* includes the left and right parts of the relationship as well as the *Operator* to be applied.
 
+Disjunction
+-----------
+
+The *Disjunction* operator specifies a set of Filters related by the operator OR. Therefore,
+a disjunction contains 2 or more filters that are involved in a disjunction operation. One example would be: *SELECT
+... WHERE age < 18 OR age > 65*, where we can find one disjuncion with two filters.
+
 Select
 ------
 
@@ -92,7 +99,7 @@ imagine a user trying to perform a *Join* between two datastore: d1 and d2; each
 c1 and c2 respectively. If non of the connectors (c1 and c2) is able to directly perform a *Join* between tables in 
 d1 and d2, but one of them supports joins with partial results the query will be solved in the following steps. 
 Crossdata will define a LogicalWorkflow and based on the available connector it decides that requires two of them. 
-Asuming c2 is the one with joins on partial results, Crossdata will send first a query to c1 to retrieve data from c1
+Assuming c2 is the one with joins on partial results, Crossdata will send first a query to c1 to retrieve data from c1
 . The resulting data will be injected in a *PartialResult* logical step, and that step linked as the input for the 
 join operation. Then Crossdata will send the query to c2 in order to make the join.
 

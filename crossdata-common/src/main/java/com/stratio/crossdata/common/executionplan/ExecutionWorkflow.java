@@ -19,7 +19,9 @@
 package com.stratio.crossdata.common.executionplan;
 
 import java.io.Serializable;
+import java.util.List;
 
+import com.google.common.base.Optional;
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
 
 /**
@@ -73,6 +75,11 @@ public class ExecutionWorkflow implements Serializable {
     private ExecutionWorkflow nextExecutionWorkflow;
 
     /**
+     * Low priority {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow} which must be executed if the current execution fails.
+     */
+    private Optional<ExecutionWorkflow> lowPriorityExecutionWorkflow;
+
+    /**
      * Class constructor.
      *
      * @param queryId       Query identifier.
@@ -86,6 +93,7 @@ public class ExecutionWorkflow implements Serializable {
         this.actorRef = actorRef;
         this.executionType = executionType;
         this.resultType = type;
+        lowPriorityExecutionWorkflow = Optional.absent();
     }
 
     /**
@@ -120,6 +128,14 @@ public class ExecutionWorkflow implements Serializable {
         return sender;
     }
 
+    /**
+     * Returns an equivalent workflow with lower priority if exists.
+     * @return A {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow}.
+     */
+    public Optional<ExecutionWorkflow> getLowPriorityExecutionWorkflow() {
+        return lowPriorityExecutionWorkflow;
+    }
+
     public boolean isPersistOnSuccess() {
         return persistOnSuccess;
     }
@@ -152,6 +168,14 @@ public class ExecutionWorkflow implements Serializable {
         this.resultType = resultType;
     }
 
+    /**
+     * Set an equivalent workflow with lower priority.
+     * @param lowPriorityExecutionWorkflow The lower priority {@link com.stratio.crossdata.common.executionplan.ExecutionWorkflow}.
+     */
+    public void setLowPriorityExecutionWorkflow(ExecutionWorkflow lowPriorityExecutionWorkflow) {
+        this.lowPriorityExecutionWorkflow = Optional.of(lowPriorityExecutionWorkflow);
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Execution Workflow on " + actorRef + " from ");
@@ -159,6 +183,11 @@ public class ExecutionWorkflow implements Serializable {
         if (ResultType.TRIGGER_EXECUTION.equals(resultType)) {
             sb.append(System.lineSeparator()).append(" trigger step ").append(triggerStep);
         }
+        if(lowPriorityExecutionWorkflow.isPresent()){
+            sb.append(System.lineSeparator()).append(" with low priority execution workflow ").append(lowPriorityExecutionWorkflow);
+        }
         return sb.toString();
     }
+
+
 }

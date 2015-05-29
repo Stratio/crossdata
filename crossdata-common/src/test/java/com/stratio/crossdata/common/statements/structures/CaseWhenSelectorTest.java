@@ -29,6 +29,44 @@ import org.testng.annotations.Test;
 import com.stratio.crossdata.common.data.ColumnName;
 
 public class CaseWhenSelectorTest {
+
+    @Test
+    public void getSelectorTables() {
+        ColumnSelector columnSelector=new ColumnSelector(new ColumnName("c","t1","c"));
+        StringSelector stringSelector=new StringSelector("columnValue");
+        StringSelector caseValue = new StringSelector("caseValue");
+        StringSelector defaultValue = new StringSelector("elseValue");
+
+        CaseWhenSelector cws = createBasicCaseWhenSelector(columnSelector,Operator.EQ,stringSelector, caseValue, defaultValue);
+        Assert.assertEquals(cws.getSelectorTables().size(), 1 ,  "The table size should be 1");
+    }
+
+    @Test
+    public void getSelectorTablesMultipleTables() {
+        ColumnSelector columnSelectorT1=new ColumnSelector(new ColumnName("c","t1","c"));
+        ColumnSelector columnSelectorT2=new ColumnSelector(new ColumnName("c","t2","c"));
+        StringSelector caseValue = new StringSelector("caseValue");
+        ColumnSelector columnSelectorT3=new ColumnSelector(new ColumnName("c","t3","c"));
+
+        CaseWhenSelector cws = createBasicCaseWhenSelector(columnSelectorT1,Operator.EQ,columnSelectorT2, caseValue, columnSelectorT3);
+        Assert.assertEquals(cws.getSelectorTables().size(), 3 ,  "The table size should be 3");
+    }
+
+
+    private CaseWhenSelector createBasicCaseWhenSelector( Selector leftTerm, Operator op, Selector rightTerm, Selector value, Selector defaultValue ){
+        List<Pair<List<AbstractRelation>, Selector>> restrictions=new ArrayList<>();
+        AbstractRelation ar=new Relation(leftTerm,op,rightTerm);
+        ArrayList list=new ArrayList();
+        list.add(ar);
+        Pair pair=new ImmutablePair(list,value);
+
+        restrictions.add(pair);
+        CaseWhenSelector cws=new CaseWhenSelector(restrictions);
+        cws.setDefaultValue(defaultValue);
+        return cws;
+    }
+
+
     @Test
     public void toSqlStringTest(){
 

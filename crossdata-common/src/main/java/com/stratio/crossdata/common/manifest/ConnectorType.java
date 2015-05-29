@@ -38,6 +38,7 @@ import javax.xml.bind.annotation.XmlType;
  *         &lt;element name="ConnectorName" type="{http://www.w3.org/2001/XMLSchema}string"/>
  *         &lt;element name="DataStores" type="{}DataStoreRefsType"/>
  *         &lt;element name="Version" type="{http://www.w3.org/2001/XMLSchema}string"/>
+ *         &lt;element name="Native" type="{http://www.w3.org/2001/XMLSchema}boolean" minOccurs="0"/>
  *         &lt;element name="RequiredProperties" type="{}PropertiesType" minOccurs="0"/>
  *         &lt;element name="OptionalProperties" type="{}PropertiesType" minOccurs="0"/>
  *         &lt;element name="SupportedOperations" type="{}SupportedOperationsType" minOccurs="0"/>
@@ -52,13 +53,14 @@ import javax.xml.bind.annotation.XmlType;
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "ConnectorType", propOrder = {
-    "connectorName",
-    "dataStores",
-    "version",
-    "requiredProperties",
-    "optionalProperties",
-    "supportedOperations",
-    "functions"
+                "connectorName",
+                "dataStores",
+                "version",
+                "_native",
+                "requiredProperties",
+                "optionalProperties",
+                "supportedOperations",
+                "functions"
 })
 public class ConnectorType extends CrossdataManifest {
 
@@ -69,6 +71,8 @@ public class ConnectorType extends CrossdataManifest {
     protected DataStoreRefsType dataStores;
     @XmlElement(name = "Version", required = true)
     protected String version;
+    @XmlElement(name = "Native", defaultValue = "false")
+    protected Boolean _native;
     @XmlElement(name = "RequiredProperties")
     protected PropertiesType requiredProperties;
     @XmlElement(name = "OptionalProperties")
@@ -155,6 +159,30 @@ public class ConnectorType extends CrossdataManifest {
      */
     public void setVersion(String value) {
         this.version = value;
+    }
+
+    /**
+     * Gets the value of the native property.
+     *
+     * @return
+     *     possible object is
+     *     {@link Boolean }
+     *
+     */
+    public Boolean isNative() {
+        return _native;
+    }
+
+    /**
+     * Sets the value of the native property.
+     *
+     * @param value
+     *     allowed object is
+     *     {@link Boolean }
+     *
+     */
+    public void setNative(Boolean value) {
+        this._native = value;
     }
 
     /**

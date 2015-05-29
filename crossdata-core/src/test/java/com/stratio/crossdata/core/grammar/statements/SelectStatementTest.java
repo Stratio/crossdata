@@ -44,6 +44,13 @@ public class SelectStatementTest extends ParsingTest {
     }
 
     @Test
+    public void basicSelectUnderscoredId() {
+        String inputText = "SELECT _id FROM test.table1;";
+        String expectedText = "SELECT <UNKNOWN_NAME>.<UNKNOWN_NAME>._id FROM test.table1;";
+        testRegularStatement(inputText, expectedText, "basicSelectUnderscoredId");
+    }
+
+    @Test
     public void basicSelectWithNull() {
         String inputText = "SELECT test.table1.id, NULL FROM test.table1;";
         String expectedText = "SELECT test.table1.id, NULL FROM test.table1;";
@@ -608,7 +615,7 @@ public class SelectStatementTest extends ParsingTest {
         testRegularStatementSession("myCatalog", inputText, expectedText, "implicitJoin");
     }*/
 
-
+    @SuppressWarnings("PMD.JUnitTestShouldIncludeAssert")
     @Test
     public void testJoinAndStreaming() {
         String inputText = "SELECT id, name, amount FROM demo.table1 WITH WINDOW 5 Mins " +

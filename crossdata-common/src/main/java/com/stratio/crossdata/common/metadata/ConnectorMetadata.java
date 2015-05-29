@@ -46,16 +46,23 @@ import com.stratio.crossdata.common.utils.StringUtils;
 public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
 
     private static final long serialVersionUID = -7255054732193616017L;
+
     /**
      * Connector name.
      */
     private final ConnectorName name;
 
-
     /**
      * Connector version.
      */
     private String version;
+
+
+
+    /**
+     * Whether the connector is native or not.
+     */
+    private boolean isNative;
 
     /**
      * Set of {@link com.stratio.crossdata.common.data.DataStoreName} that the connector may access.
@@ -77,7 +84,6 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
      * A map of cluster names with their priorities.
      */
     private Map<ClusterName, Integer> clusterPriorities;
-
 
     /**
      * The connector status.
@@ -119,6 +125,7 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
      *
      * @param name                The connector name.
      * @param version             The connector version.
+     * @param isNative            Whether the connector is native or not.
      * @param dataStoreRefs       The set of datastores the connector may access.
      * @param clusterProperties   The map of clusters associated with this connector and their associated properties.
      * @param clusterPriorities   The map of clusters associated with this connector and their associated priority.
@@ -127,11 +134,11 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
      * @param supportedOperations The set of supported operations.
      * @param functions           The set of supported functions.
      */
-    public ConnectorMetadata(ConnectorName name, String version, Set<DataStoreName> dataStoreRefs,
+    public ConnectorMetadata(ConnectorName name, String version, Boolean isNative, Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties, Map<ClusterName, Integer> clusterPriorities,
             Set<PropertyType> requiredProperties, Set<PropertyType> optionalProperties,
             Set<Operations> supportedOperations, ConnectorFunctionsType functions) throws ManifestException {
-        this(name, version, dataStoreRefs, clusterProperties, clusterPriorities,Status.OFFLINE,
+        this(name, version, isNative, dataStoreRefs, clusterProperties, clusterPriorities,Status.OFFLINE,
                 new HashSet<String>(), requiredProperties, optionalProperties, supportedOperations, functions);
     }
 
@@ -140,6 +147,7 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
      *
      * @param name                The connector name.
      * @param version             The connector version.
+     * @param isNative            Whether the connector is native or not.
      * @param dataStoreRefs       The set of datastores the connector may access.
      * @param clusterProperties   The map of clusters associated with this connector and their associated properties.
      * @param clusterPriorities   The map of clusters associated with this connector and their associated priority.
@@ -153,6 +161,7 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
     public ConnectorMetadata(
             ConnectorName name,
             String version,
+            Boolean isNative,
             Set<DataStoreName> dataStoreRefs,
             Map<ClusterName, Map<Selector, Selector>> clusterProperties,
             Map<ClusterName, Integer> clusterPriorities,
@@ -170,6 +179,8 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
         }
 
         this.version = version;
+
+        this.isNative = (isNative == null) ? false : isNative;
 
         if(dataStoreRefs == null){
             this.dataStoreRefs = new HashSet<>();
@@ -212,6 +223,7 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
      *
      * @param name                The connector name.
      * @param version             The connector version.
+     * @param isNative            Whether the connector is native or not.
      * @param dataStoreRefs       The set of datastores the connector may access.
      * @param requiredProperties  The set of required properties.
      * @param optionalProperties  The set of optional properties.
@@ -219,7 +231,7 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
      * @param connectorFunctions  The set of functions allow by the connector.
      * @param excludedFunctions   The set of functions of manifest excluded by the connector.
      */
-    public ConnectorMetadata(ConnectorName name, String version, List<String> dataStoreRefs,
+    public ConnectorMetadata(ConnectorName name, String version, Boolean isNative, List<String> dataStoreRefs,
             List<PropertyType> requiredProperties, List<PropertyType> optionalProperties,
             List<String> supportedOperations, List<FunctionType> connectorFunctions,
             List<String> excludedFunctions) throws ManifestException {
@@ -235,6 +247,8 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
         } else {
             this.version = version;
         }
+
+        this.isNative = (isNative==null) ? false : isNative;
 
         this.dataStoreRefs = ManifestHelper.convertManifestDataStoreNamesToMetadataDataStoreNames(dataStoreRefs);
 
@@ -287,6 +301,23 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
      */
     public String getVersion() {
         return version;
+    }
+
+    /**
+     * Set Native attribute.
+     * @param isNative A boolean.
+     */
+    public void setNative(boolean isNative) {
+        this.isNative = isNative;
+    }
+
+    /**
+     * Whether the connector is native or not.
+     *
+     * @return A Boolean.
+     */
+    public boolean isNative() {
+        return isNative;
     }
 
     /**
@@ -703,5 +734,6 @@ public class ConnectorMetadata implements IMetadata, UpdatableMetadata {
         }
         return sb.toString();
     }
+
 
 }

@@ -237,6 +237,8 @@ public final class MetadataResult extends Result {
         if(noOperation){
             return "None operation was necessary";
         }
+
+
         switch (this.operation) {
 
         case MetadataResult.OPERATION_CREATE_CATALOG:

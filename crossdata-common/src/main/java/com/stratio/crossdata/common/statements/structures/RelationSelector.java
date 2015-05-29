@@ -20,6 +20,8 @@ package com.stratio.crossdata.common.statements.structures;
 
 import com.stratio.crossdata.common.data.TableName;
 
+import java.util.Set;
+
 /**
  * Relation selector.
  */
@@ -64,6 +66,11 @@ public class RelationSelector extends Selector {
     @Override
     public SelectorType getType() {
         return SelectorType.RELATION;
+    }
+
+    @Override
+    public Set<TableName> getSelectorTables() {
+        return relation.getSelectorTables();
     }
 
     @Override
