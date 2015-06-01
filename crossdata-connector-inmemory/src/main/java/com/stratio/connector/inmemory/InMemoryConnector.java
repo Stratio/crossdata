@@ -72,6 +72,8 @@ public class InMemoryConnector extends AbstractExtendedConnector {
 
     private final Timer connectTimer;
 
+    private MetadataListener defaultListener;
+
     /**
      * Constant defining the required datastore property.
      */
@@ -82,6 +84,7 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         connectTimer = new Timer();
         String timerName = name(InMemoryConnector.class, "connect");
         registerMetric(timerName, connectTimer);
+        defaultListener = new MetadataListener();
     }
 
     @Override
@@ -99,6 +102,18 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         //The initialization method is called when the connector is launched, currently an
         //empty implementation is passed as it will be a future feature of Crossdata.
         LOG.info("InMemoryConnector launched");
+        connectorApp.subscribeToMetadataUpdate(defaultListener);
+    }
+
+    @Override
+    public void shutdown() throws ExecutionException {
+        LOG.info("Shutting down InMemoryConnector");
+    }
+
+    @Override
+    public void restart() throws ExecutionException {
+        connectorApp.subscribeToMetadataUpdate(defaultListener);
+
     }
 
     @Override
@@ -154,10 +169,6 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         }
     }
 
-    @Override
-    public void shutdown() throws ExecutionException {
-        LOG.info("Shutting down InMemoryConnector");
-    }
 
     @Override
     public boolean isConnected(ClusterName name) {
@@ -223,8 +234,6 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         ConnectorApp connectorApp = new ConnectorApp();
         InMemoryConnector inMemoryConnector = new InMemoryConnector(connectorApp);
         connectorApp.startup(inMemoryConnector);
-        MetadataListener metadataListener = new MetadataListener();
-        connectorApp.subscribeToMetadataUpdate(metadataListener);
 
     }
 }

@@ -175,6 +175,10 @@ public class AbstractExtendedConnectorTest {
 
         }
 
+        @Override public void restart() throws ExecutionException {
+
+        }
+
         @Override
         public boolean isConnected(ClusterName name) {
             return false;

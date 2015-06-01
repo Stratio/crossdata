@@ -315,7 +315,7 @@ public class Shell {
             LOG.info(ConsoleUtils.stringResult(connectionResult));
         } catch (ConnectionException ce) {
             result = false;
-            LOG.error(ce.getMessage(),ce);
+            LOG.error("Connect exception "+ce.getMessage(),ce);
         }
         return result;
     }
@@ -468,13 +468,13 @@ public class Shell {
         } catch (IOException e) {
             LOG.error("Cannot read script: " + scriptPath, e);
         } catch (InterruptedException e) {
-            LOG.error(e);
+            LOG.error("Interrupted exception: " +e);
         } finally {
             if (input != null) {
                 try {
                     input.close();
                 } catch (IOException e) {
-                    LOG.error(e);
+                    LOG.error("IO Exception: "+e);
                 }
             }
         }

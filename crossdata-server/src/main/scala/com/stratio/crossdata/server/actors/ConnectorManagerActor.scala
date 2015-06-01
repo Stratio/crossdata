@@ -28,7 +28,7 @@ import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
 import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionType, ManagementWorkflow, ExecutionWorkflow}
 import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
-import com.stratio.crossdata.communication.{ConnectorUp, replyConnectorName, getConnectorName, Connect}
+import com.stratio.crossdata.communication._
 import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
 import com.stratio.crossdata.core.loadwatcher.LoadWatcherManager
 import com.stratio.crossdata.core.metadata.MetadataManager
@@ -47,8 +47,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
 
   lazy val logger = Logger.getLogger(classOf[ConnectorManagerActor])
   logger.info("Lifting connector manager actor")
-  val coordinatorActorRef = context.actorSelection("../../CoordinatorActor")
-  log.info("Lifting connector manager actor")
+  val coordinatorActorRef = context.actorSelection("../CoordinatorActor")
 
   override def preStart(): Unit = {
     cluster.subscribe(self, classOf[ClusterDomainEvent])
@@ -68,7 +67,8 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
       //if the node is offline
       if (MetadataManager.MANAGER.notIsNodeOnline(nodeName)) {
         logger.debug("Asking its name to the connector " + memberAddress)
-        connectorActorRef ! getConnectorName()
+        logger.debug("ActorRef is "+ connectorActorRef)
+        connectorActorRef ! GetConnectorName
       }
     }
 
@@ -95,7 +95,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
     /**
      * CONNECTOR answers its name.
      */
-    case msg: replyConnectorName => {
+    case msg: ReplyConnectorName => {
       logger.info("Connector Name " + msg.name + " received from " + sender)
       val actorRefUri = StringUtils.getAkkaActorRefUri(sender, false)
       logger.info("Registering connector from: " + actorRefUri)
@@ -145,7 +145,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
     }
 
     case c: ConnectResult => {
-      logger.info("Connect result from " + sender + " => " + c.getSessionId)
+      logger.info("Connect result from " + sender + " => " + c.getSessionId + " forwarding to "+coordinatorActorRef)
       coordinatorActorRef forward c
     }
 
@@ -199,7 +199,7 @@ class ConnectorManagerActor(cluster:Cluster) extends Actor with ActorLogging {
     case member: MemberRemoved => {
       logger.info("Member is Removed: " + member.member.address)
       logger.info("Member info: " + member.toString)
-      val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address, false)+"/user/ConnectorActor/"
+      val actorRefUri = StringUtils.getAkkaActorRefUri(member.member.address, false)+"/user/ConnectorActor"
       if(ExecutionManager.MANAGER.exists(actorRefUri)){
         val connectorName = ExecutionManager.MANAGER.getValue(actorRefUri)
         logger.info("Removing Connector: " + connectorName)

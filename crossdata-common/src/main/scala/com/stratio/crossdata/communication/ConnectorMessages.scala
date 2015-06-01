@@ -33,7 +33,11 @@ case class IAmAlive(queryId:String)
 
 case class Stop()
 
-case class UpdateMetadata(metadata: UpdatableMetadata, remove: java.lang.Boolean)
+sealed trait MetadataMessage
+
+case class UpdateMetadata(metadata: UpdatableMetadata, remove: java.lang.Boolean) extends MetadataMessage
+
+case class UpdateRunningJob(queryId: String, remove: java.lang.Boolean) extends MetadataMessage
 
 case class ConnectorUp(memberAddress: String)
 

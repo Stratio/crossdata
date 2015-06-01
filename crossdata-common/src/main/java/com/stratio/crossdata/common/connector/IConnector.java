@@ -80,6 +80,13 @@ public interface IConnector {
     void shutdown() throws ExecutionException;
 
     /**
+     * It is called when restarting the connector service. If the connector uses listener to receive metadata updates, it must subscribe here again.
+     *
+     * @throws InitializationException If the connector initialization fails.
+     */
+    void restart() throws ExecutionException;
+
+    /**
      * Retrieve the connectivity status with the datastore.
      *
      * @param name The Cluster name.

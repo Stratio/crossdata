@@ -44,10 +44,10 @@ import com.stratio.crossdata.communication._
 import scala.Some
 
 //class ConnectorActorAppTest extends FunSuite with MockFactory {
-class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with MockFactory with ImplicitSender {
+class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite with MockFactory with ImplicitSender {
   this:Suite =>
 
-  lazy val logger = Logger.getLogger(classOf[ConnectorActorAppTest])
+  lazy val logger = Logger.getLogger(classOf[ConnectorWorkerActorAppTest])
   implicit val timeout = Timeout(3 seconds)
 
   val connector:String="MyConnector"
@@ -134,7 +134,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
         partitionKey.get,
         partitionKey.get)
       )
-      val future = ask(myReference, message)
+      val future = ask(myReference.get, message)
       val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
       logger.debug("receive->" + result + " after sending Metadata query")
     }
@@ -158,7 +158,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
       options.get, columns.get,indexes.get,clusterRef.get,partitionKey.get,partitionKey.get),new Row(), false)
     //val future=myReference ? message
     logger.info("\n\nsending insert message to" + myReference + " \n\n")
-    val future=myReference ? message
+    val future=myReference.get ? message
     val result = Await.result(future, 6 seconds).asInstanceOf[StorageResult]
     logger.info("receiving->" + result + " after sending insert query")
     c.stop()

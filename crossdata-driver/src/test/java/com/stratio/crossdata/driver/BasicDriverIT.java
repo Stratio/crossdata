@@ -42,6 +42,7 @@ import com.stratio.crossdata.common.result.StorageResult;
 import com.stratio.crossdata.connectors.ConnectorApp;
 import com.stratio.crossdata.server.CrossdataServer;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 
 public class BasicDriverIT {
@@ -63,7 +64,7 @@ public class BasicDriverIT {
         Thread.sleep(4000);
         connector = new ConnectorApp();
         InMemoryConnector inMemoryConnector = new InMemoryConnector(connector);
-        ActorSelection actorSelection = connector.startup(inMemoryConnector);
+        ActorRef actorSelection = connector.startup(inMemoryConnector).get();
         Thread.sleep(4000);
     }
 

@@ -23,7 +23,7 @@ import akka.actor.{Actor, ActorLogging, Props}
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow
 import com.stratio.crossdata.common.result.{QueryResult,StorageResult,MetadataResult,ErrorResult}
 import com.stratio.crossdata.communication.{Execute,StorageOperation, MetadataOperation,CreateTable, CreateCatalog,
-CreateTableAndCatalog, CreateIndex, DropCatalog, DropIndex, DropTable, getConnectorName, replyConnectorName}
+CreateTableAndCatalog, CreateIndex, DropCatalog, DropIndex, DropTable, GetConnectorName, ReplyConnectorName}
 import org.apache.log4j.Logger
 import java.util.UUID
 import com.stratio.crossdata.common.data.ResultSet
@@ -115,10 +115,10 @@ class MockConnectorActor() extends Actor with ActorLogging {
       }
     }
 
-    case msg: getConnectorName => {
+    case msg: GetConnectorName => {
       logger.debug(">>>>>>>>>>>>>>>>>>>>>>> connectorName")
       logger.debug("getconnectorname")
-       sender ! replyConnectorName("myConnector")
+       sender ! ReplyConnectorName("myConnector")
      }
 
     case msg:Object=> {

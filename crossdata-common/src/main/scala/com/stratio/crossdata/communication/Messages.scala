@@ -86,10 +86,10 @@ case class StorageQueryStruct(clusterName: String, connectorName: String, storag
 case class WorkflowStruct(clusterName: String, connectorName: String, workFlow: LogicalWorkflow)
 
 @SerialVersionUID(-415564236794755559L)
-case class replyConnectorName(name: String)
+case class ReplyConnectorName(name: String)
 
 @SerialVersionUID(-665564236789475259L)
-case class getConnectorName()
+case class GetConnectorName()
 
 @SerialVersionUID(-665564236789475258L)
 case class GetCatalogs(clusterName: ClusterName)
