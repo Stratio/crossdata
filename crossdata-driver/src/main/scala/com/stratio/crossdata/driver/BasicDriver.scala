@@ -803,7 +803,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return The result handler.
    */
   def getResultHandler(queryId: String): IDriverResultHandler = {
-    queries.get(queryId).resultHandler
+    val queryData = queries.get(queryId)
+    if(queryData != null){
+      queryData.resultHandler
+    } else {
+      logger.debug("Unknown query identifier: " + queryId)
+      null
+    }
   }
 
   /**

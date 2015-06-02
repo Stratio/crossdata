@@ -62,7 +62,7 @@ public class APIManagerTest {
     private final Parser parser = new Parser();
     private final Validator validator = new Validator();
     private final Planner planner = new Planner("127.0.0.1");
-    private static final String VERSION = "0.3.0";
+    private static final String VERSION = "0.3.3";
 
     @BeforeClass
     public void setUp() throws ManifestException {

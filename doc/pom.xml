@@ -17,7 +17,7 @@
     <parent>
         <groupId>com.stratio.crossdata</groupId>
         <artifactId>crossdata-parent</artifactId>
-        <version>0.3.0</version>
+        <version>0.3.3</version>
     </parent>
 
     <groupId>com.stratio.crossdata.doc</groupId>

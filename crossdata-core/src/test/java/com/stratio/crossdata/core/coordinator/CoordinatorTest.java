@@ -73,7 +73,7 @@ import com.stratio.crossdata.core.metadata.MetadataManager;
 
 public class CoordinatorTest {
 
-    private static final String VERSION = "0.3.0";
+    private static final String VERSION = "0.3.3";
 
     @BeforeClass
     public void setUp() throws ManifestException {

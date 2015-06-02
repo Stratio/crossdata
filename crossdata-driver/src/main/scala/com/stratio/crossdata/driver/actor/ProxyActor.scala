@@ -150,9 +150,8 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
           handler.processError(result)
         }
       } else {
-        logger.info("Result not expected received for QID: " + result.getQueryId)
+        logger.debug("Result not expected received for QID: " + result.getQueryId)
       }
-
     }
     case "test"=> {
       logger.error("Unknown message: test" )
