@@ -26,13 +26,22 @@ import java.util.Map;
 
 import org.testng.annotations.Test;
 
+import com.codahale.metrics.Metric;
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig;
 import com.stratio.crossdata.common.connector.IConfiguration;
 import com.stratio.crossdata.common.connector.IConnector;
+import com.stratio.crossdata.common.connector.IConnectorApp;
+import com.stratio.crossdata.common.connector.IMetadataListener;
 import com.stratio.crossdata.common.data.ClusterName;
+import com.stratio.crossdata.common.data.ConnectionStatus;
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.InitializationException;
+import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.security.ICredentials;
+
+import scala.Option;
+import scala.Some;
 
 /**
  * Main connector class tests.
@@ -41,7 +50,7 @@ public class InMemoryConnectorTest {
 
     @Test
     public void createConnector(){
-        IConnector connector = new InMemoryConnector(null);
+        IConnector connector = new InMemoryConnector( dummyIConnectorApp());
         assertEquals(connector.getConnectorName(), "InMemoryConnector", "Invalid connector name");
         assertEquals(connector.getDatastoreName()[0], "InMemoryDatastore", "Invalid datastore name");
         try {
@@ -69,5 +78,26 @@ public class InMemoryConnectorTest {
         } catch (ConnectionException e) {
             fail("Cannot connect to inmemory cluster", e);
         }
+    }
+
+    private IConnectorApp dummyIConnectorApp(){
+        return new IConnectorApp() {
+            @Override public Option<TableMetadata> getTableMetadata(ClusterName cluster, TableName tableName,
+                            int timeout) {
+                return new Some<>(null);
+            }
+
+            @Override public ConnectionStatus getConnectionStatus() {
+                return null;
+            }
+
+            @Override public void subscribeToMetadataUpdate(IMetadataListener metadataListener) {
+            }
+
+            @Override public Metric registerMetric(String name, Metric metric) {
+                return null;
+            }
+        };
+
     }
 }

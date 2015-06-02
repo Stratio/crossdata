@@ -26,16 +26,15 @@ import akka.agent.Agent
 import akka.cluster.ClusterEvent._
 import akka.remote.QuarantinedEvent
 import akka.routing.{RoundRobinPool, DefaultResizer}
-import akka.util.Timeout
 import akka.cluster.Cluster
 import com.codahale.metrics.{Gauge, MetricRegistry}
-import com.stratio.crossdata.common.connector.{IMetadataListener, ObservableMap, IConfiguration, IConnector}
+import com.stratio.crossdata.common.connector.{IMetadataListener, ObservableMap, IConnector}
 import com.stratio.crossdata.common.data.{ClusterName, Name}
 import com.stratio.crossdata.common.exceptions.ConnectionException
 import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.result.{DisconnectResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.Metrics
-import com.stratio.crossdata.communication.{Shutdown, ReplyConnectorName, GetConnectorName, ConnectorUp}
+import com.stratio.crossdata.communication.{Shutdown, ReplyConnectorName, GetConnectorName, ConnectorUp, GetConnectorStatus, ConnectorStatus}
 import com.stratio.crossdata.connectors.ConnectorActor.RestartConnector
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import org.apache.log4j.Logger
@@ -43,7 +42,7 @@ import org.apache.log4j.Logger
 import scala.collection.mutable
 import scala.collection.mutable.Set
 import scala.concurrent.{Future, Await}
-import scala.concurrent.duration.{FiniteDuration, DurationInt}
+import scala.concurrent.duration.FiniteDuration
 
 import scala.collection.JavaConversions._
 import scala.util.{Failure, Success, Try}
@@ -54,7 +53,6 @@ object ConnectorActor {
   Props = Props(new ConnectorActor(connectorApp, connector))
 
   case class RestartConnector()
-
 }
 
 /**
@@ -74,13 +72,9 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
   val runningJobsAgent = Agent(new mutable.ListMap[String, ActorRef])
 
   val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
-
   val connectorWorkerRef = context.system.actorOf(
     RoundRobinPool(num_connector_actor, Some(resizer))
-      .props(Props(classOf[ConnectorWorkerActor], connector, metadataMapAgent, runningJobsAgent)), "ConnectorWorkers")
-
-
-  connector.init(new IConfiguration {})
+      .props(Props(classOf[ConnectorWorkerActor], connector, metadataMapAgent, runningJobsAgent)), "ConnectorWorker")
 
   var metricName: Option[String] = Some(MetricRegistry.name(connector.getConnectorName, "connection", "status"))
   Metrics.getRegistry.register(metricName.get,
@@ -94,12 +88,10 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       }
     })
 
-  implicit val timeout = Timeout(10 seconds)
   val cluster = Cluster(context.system)
 
   //TODO: test if it works with one thread and multiple threads
   var stateActor = State.Stopped
-
 
   override def preStart(): Unit = {
     cluster.subscribe(self, classOf[ClusterDomainEvent])
@@ -131,10 +123,10 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
   def normalState: Receive = {
 
     case GetConnectorName => {
-      logger.info(sender + " asked for my name: " + connectorName)
+      logger.info(sender + " asked for my name: " + connector.getConnectorName)
       connectedServers += sender.path.address.toString
       logger.info("Connected to Servers: " + connectedServers)
-      sender ! ReplyConnectorName(connectorName)
+      sender ! ReplyConnectorName(connector.getConnectorName)
     }
 
     case connectRequest: com.stratio.crossdata.communication.Connect => {
@@ -237,7 +229,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
         connectedServers = connectedServers - member.address.toString
         log.info("Member removed -> remaining servers" + connectedServers)
         if(connectedServers.isEmpty) {
-          context.become(expectingKill)
+          context.become(restarting)
           self ! RestartConnector
           log.info("There is no server in the cluster. The connector must be restarted")
         }
@@ -254,7 +246,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
         connectedServers = connectedServers - member.address.toString
         log.info("Member removed -> remaining servers" + connectedServers)
         if(connectedServers.isEmpty) {
-          context.become(expectingKill)
+          context.become(restarting)
           self ! RestartConnector
           log.info("There is no server in the cluster. The connector must be restarted")
         }
@@ -267,6 +259,8 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       logger.info("MemberEvent received: " + memberEvent.toString)
     }
 
+
+    //Messages exchanged with ConnectorApp
     case Shutdown => {
       logger.debug("->" + "Receiving Shutdown")
       Metrics.getRegistry.getNames.foreach(Metrics.getRegistry.remove(_))
@@ -279,7 +273,12 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       metadataMapAgent.send(oMap => {oMap.addListener(listener); oMap})
     }
 
+    case GetConnectorStatus => {
+      sender ! ConnectorStatus(!connectedServers.isEmpty)
+    }
 
+
+    //ConnectorWorkerMessages
     case otherMsg => {
       connectorWorkerRef forward  otherMsg
     }
@@ -294,11 +293,12 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
   }
 
 
-  def expectingKill: Receive = {
+  //Used to manage queued messages which are dismissed currently.
+  def restarting: Receive = {
 
     case RestartConnector => {
-      //TODO is it recommended do things after a system shutdown
-      logger.info("Clean restart")
+
+      logger.info("Restarting the connector actor system")
 
      //TODO move to connectorApp.stop()
      Try(Await.result( Future(connector.shutdown()), FiniteDuration(8, TimeUnit.SECONDS) )) match {
@@ -309,15 +309,12 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
        }
      }
 
-      connectorApp.stop()
-      connectorApp.startup(connector)
-      connector.restart()
-
-      context.stop(self) //self ! PoisonPill
+      connectorApp.restart(connector)
+      context.stop(self)
     }
 
-    case unexpectedMessage => {
-      log.info("Unexpected message -> "+unexpectedMessage)
+    case dismissedMessage => {
+      log.debug(s"Discarded message -> $dismissedMessage")
     }
   }
 

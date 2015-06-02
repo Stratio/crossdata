@@ -76,21 +76,13 @@ object ConnectorWorkerActor {
 
 class ConnectorWorkerActor(connector: IConnector, metadataMapAgent: Agent[ObservableMap[Name, UpdatableMetadata]], runningJobs:  Agent[mutable.ListMap[String, ActorRef]]) extends Actor with ActorLogging with IResultHandler {
 
- // var actorClusterNode = Some(connectorManagerActorRef)
-
- // val actorSelection: ActorSelection = system.actorSelection(
- //   StringUtils.getAkkaActorRefUri(actorClusterNode.get.toString(), false))
-
   lazy val logger = Logger.getLogger(classOf[ConnectorWorkerActor])
 
   logger.info("Lifting connector worker actor")
 
-
-
   override def receive: Receive = {
 
     /** MessageEvents */
-
     case ex: Execute => {
       logger.info("Processing query: " + ex)
       methodExecute(ex, sender)
@@ -166,7 +158,6 @@ class ConnectorWorkerActor(connector: IConnector, metadataMapAgent: Agent[Observ
       }
 
     }
-
 
   }
 

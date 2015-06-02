@@ -129,33 +129,28 @@ class ConnectorWorkerActorTest extends FunSuite with ConnectConfig with MockFact
   }
 
   test("Send updateMetadata to Connector") {
-    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
+    //It's not possible mock because the remove is ambiguous for scalamock
+    class ObservableMapMock extends ObservableMap[Name, UpdatableMetadata] {
+      var testVals = List.empty[String]
+      override def put(key: Name, value: UpdatableMetadata): UpdatableMetadata = {
+        testVals = key.toString+value.toString :: testVals
+        null
+        }
+    }
+    val observableMapMock = new ObservableMapMock() .asInstanceOf[ObservableMap[Name, UpdatableMetadata]]
+
+    val agent = Agent(observableMapMock)(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
-    val connectedServers = Agent(Set.empty[String])(system1.dispatcher)
     val m=new DummyIConnector()
     val ca1 = system1.actorOf(ConnectorWorkerActor.props( m,agent, runningJobsAgent))
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
-    val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
-    catalog.getTables.put(table.getName,table)
-    val future1 = ask(ca1, UpdateMetadata(catalog, true))
-    val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
-    assert(result == true)
-  }
+    //Expectations(observableMock.put _).expects(table.getName, table)
+    ca1 ! UpdateMetadata(table, false)
+    Thread.sleep(200)
+    assert( observableMapMock.asInstanceOf[ObservableMapMock].testVals.size == 1, "The table metadata has not been updated")
+    expectResult(table.getName.toString+table.toString)( observableMapMock.asInstanceOf[ObservableMapMock].testVals.head)
 
-  /*
-  test("Send patched updateMetadata to Connector") {
-    //TODO: this test is not complete (still a Proof Of Concept)
-    val m=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m,null))
-    val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
-    val classTableMetadata=table.getClass
-    val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
-    catalog.getTables.put(table.getName,table)
-    val future1 = ask(ca1, PatchMetadata(null, metadataClass = classTableMetadata,table.getName))
-    val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
-    assert(result == true)
   }
-  */
 
 }
 

@@ -68,13 +68,12 @@ class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite w
 
   test("Basic Connector App listening on a given port does not break") {
     val m = mock[IConnector]
-    (m.getConnectorName _).expects().returning(connector)
+
     (m.init _).expects(*).returning(None)
-    (m.getConnectorName _).expects().returning(connector)
     val c = new ConnectorApp()
     val myReference = c.startup(m)
     assertNotNull(myReference, "Null reference returned")
-    c.stop()
+    c.stop
   }
 /*
   test("Send SelectInProgressQuery to Connector") {
@@ -119,7 +118,6 @@ class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite w
     (m.getMetadataEngine _).expects().returning(me)
     (m.getConnectorName _).expects().returning("My New Connector")
     (m.init _).expects(*).returning(None)
-    (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
     val myReference = c.startup(m)
@@ -138,7 +136,7 @@ class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite w
       val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
       logger.debug("receive->" + result + " after sending Metadata query")
     }
-    c.stop()
+    c.stop
   }
 
   test("Send StorageInProgressQuery to Connector") {
@@ -149,7 +147,6 @@ class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite w
     (m.getConnectorName _).expects().returning("My New Connector")
     (m.init _).expects(*).returning(None)
     (m.getStorageEngine _).expects().returning(ie)
-    (m.getConnectorName _).expects().returning("My New Connector")
     val config = ConfigFactory.parseString("akka.remote.netty.tcp.port=" + port).withFallback(ConfigFactory.load())
     val c = new ConnectorApp()
     val myReference = c.startup(m)
@@ -161,7 +158,7 @@ class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite w
     val future=myReference.get ? message
     val result = Await.result(future, 6 seconds).asInstanceOf[StorageResult]
     logger.info("receiving->" + result + " after sending insert query")
-    c.stop()
+    c.stop
   }
 
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE

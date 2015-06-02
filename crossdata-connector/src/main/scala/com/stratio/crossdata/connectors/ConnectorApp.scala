@@ -24,6 +24,7 @@ import akka.util.Timeout
 import com.codahale.metrics._
 import akka.actor._
 import akka.pattern.ask
+import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.metadata.{UpdatableMetadata, CatalogMetadata, TableMetadata}
 import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
@@ -33,21 +34,17 @@ import org.apache.log4j.Logger
 import scala.concurrent.Await
 import scala.concurrent.duration.FiniteDuration
 import scala.util.{Failure, Success, Try}
-import com.stratio.crossdata.communication.GetTableMetadata
-import com.stratio.crossdata.communication.Shutdown
-
+import com.stratio.crossdata.communication.{GetConnectorStatus, Request, GetTableMetadata, Shutdown}
 
 
 class ConnectorApp extends ConnectConfig with IConnectorApp {
 
-  var system: Option[ActorSystem] = null
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
+
+  var system: Option[ActorSystem] = null
   var connectorActor: Option[ActorRef] = None
-  implicit val timeout = Timeout(FiniteDuration(10,TimeUnit.SECONDS))
 
   def startup(connector: IConnector): Option[ActorRef] = {
-
-    system = Some(ActorSystem(clusterName, config))
 
     logger.info("Connector Name: " + connectorName)
 
@@ -59,17 +56,27 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       logger.error("# CHANGE PARAMETER crossdata-connector.config.connector.name FROM THE CONFIGURATION FILE #")
       logger.error("##########################################################################################")
     }
-
-    connectorActor = system.map( _.actorOf(Props(classOf[ConnectorActor], this, connector), "ConnectorActor"))
+    startSystem(connector)
+    connector.init(new IConfiguration {})
     connectorActor
   }
 
-  def stop():Unit = {
+  def stop = {
     logger.info(s"Stopping the connector app")
-
     system.foreach(_.shutdown())
   }
 
+  def restart( connector: IConnector): Option[ActorRef] = {
+    stop
+    startSystem(connector)
+    connector.restart()
+    connectorActor
+  }
+
+  private def startSystem(connector: IConnector) = {
+    system = Some(ActorSystem(clusterName, config))
+    connectorActor = system.map( _.actorOf(Props(classOf[ConnectorActor], this, connector), "ConnectorActor"))
+  }
 
   override def getTableMetadata(clusterName: ClusterName, tableName: TableName, timeout: Int): Option[TableMetadata] = {
     /*TODO: for querying actor internal state, only messages should be used.
@@ -118,15 +125,16 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
  */
 
 
-  override def getConnectionStatus(): ConnectionStatus = {
-  var status: ConnectionStatus = ConnectionStatus.CONNECTED
-    /*connectorActor.foreach(_ ! getStatus)
-
-    if (connectedServersAgent.get.isEmpty){
-      status = ConnectionStatus.DISCONNECTED
-    }
-    status
-  */status
+  override def getConnectionStatus: ConnectionStatus = {
+  implicit val stTimeout = Timeout(FiniteDuration(2,TimeUnit.SECONDS))
+    connectorActor.map[ConnectionStatus]{ cActor =>
+      val future = (cActor ? GetConnectorStatus).mapTo[Boolean]
+      Try(Await.result(future,FiniteDuration.apply(4, TimeUnit.SECONDS))).map{ isConnected =>
+          if (isConnected) ConnectionStatus.CONNECTED else ConnectionStatus.DISCONNECTED
+      }.recover{
+        case e: Exception => logger.debug("Error asking for the connector status: "+e.getMessage); ConnectionStatus.DISCONNECTED
+      }.get
+    }.getOrElse(ConnectionStatus.DISCONNECTED)
   }
 
   override def subscribeToMetadataUpdate(mapListener: IMetadataListener) ={

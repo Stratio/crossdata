@@ -18,9 +18,7 @@
 
 package com.stratio.crossdata.communication
 
-import com.stratio.crossdata.common.data.Name
 import com.stratio.crossdata.common.metadata.UpdatableMetadata
-import difflib.Patch
 
 //CONNECTOR messages
 case class Start()
@@ -33,12 +31,10 @@ case class IAmAlive(queryId:String)
 
 case class Stop()
 
-sealed trait MetadataMessage
-
-case class UpdateMetadata(metadata: UpdatableMetadata, remove: java.lang.Boolean) extends MetadataMessage
-
-case class UpdateRunningJob(queryId: String, remove: java.lang.Boolean) extends MetadataMessage
+case class UpdateMetadata(metadata: UpdatableMetadata, remove: java.lang.Boolean)
 
 case class ConnectorUp(memberAddress: String)
 
+case class GetConnectorStatus()
 
+case class ConnectorStatus(isConnected: Boolean)
