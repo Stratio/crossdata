@@ -18,14 +18,14 @@
 
 package com.stratio.crossdata.server.actors
 
-import akka.actor.{ReceiveTimeout, RootActorPath, ActorLogging, Actor, Props, Address}
+import akka.actor.{ReceiveTimeout, ActorLogging, Actor, Props, Address}
 import akka.cluster.{MemberStatus, Cluster}
 import akka.cluster.ClusterEvent.{ClusterMetricsChanged, MemberEvent, MemberExited,
 MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEvent}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
-import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionType, ManagementWorkflow, ExecutionWorkflow}
+import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionType, ManagementWorkflow}
 import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._

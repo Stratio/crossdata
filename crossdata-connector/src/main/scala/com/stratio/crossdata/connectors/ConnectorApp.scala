@@ -24,18 +24,20 @@ import akka.util.Timeout
 import com.codahale.metrics._
 import akka.actor._
 import akka.pattern.ask
-import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data._
-import com.stratio.crossdata.common.metadata.{UpdatableMetadata, CatalogMetadata, TableMetadata}
-import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
+import com.stratio.crossdata.common.metadata.TableMetadata
+import com.stratio.crossdata.common.utils.Metrics
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.common.connector._
 import org.apache.log4j.Logger
 import scala.concurrent.Await
 import scala.concurrent.duration.FiniteDuration
-import scala.util.{Failure, Success, Try}
-import com.stratio.crossdata.communication.{GetConnectorStatus, Request, GetTableMetadata, Shutdown}
+import scala.util.Try
+import com.stratio.crossdata.communication.{GetConnectorStatus, GetTableMetadata}
 
+object ConnectorApp {
+  val GetMetadataTimeout = 5
+}
 
 class ConnectorApp extends ConnectConfig with IConnectorApp {
 
@@ -88,10 +90,10 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
         response.getOrElse(throw new IllegalStateException("Actor cluster node is not initialized"))
       }}}
     */
-    implicit val timeout: Timeout = new Timeout(FiniteDuration.apply(2, TimeUnit.SECONDS))
+    implicit val timeout: Timeout = new Timeout(FiniteDuration.apply(ConnectorApp.GetMetadataTimeout, TimeUnit.SECONDS))
     val future = connectorActor.get ? GetTableMetadata(clusterName,tableName)
 
-    Try(Await.result(future.mapTo[TableMetadata],FiniteDuration.apply(2, TimeUnit.SECONDS))).map{ Some (_)}.recover{
+    Try(Await.result(future.mapTo[TableMetadata],FiniteDuration.apply(ConnectorApp.GetMetadataTimeout, TimeUnit.SECONDS))).map{ Some (_)}.recover{
       case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: "+e.getMessage); None
     }.get
 
@@ -126,10 +128,10 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
 
   override def getConnectionStatus: ConnectionStatus = {
-  implicit val stTimeout = Timeout(FiniteDuration(2,TimeUnit.SECONDS))
+  implicit val stTimeout = Timeout(FiniteDuration(ConnectorApp.GetMetadataTimeout,TimeUnit.SECONDS))
     connectorActor.map[ConnectionStatus]{ cActor =>
       val future = (cActor ? GetConnectorStatus).mapTo[Boolean]
-      Try(Await.result(future,FiniteDuration.apply(4, TimeUnit.SECONDS))).map{ isConnected =>
+      Try(Await.result(future,FiniteDuration.apply(ConnectorApp.GetMetadataTimeout, TimeUnit.SECONDS))).map{ isConnected =>
           if (isConnected) ConnectionStatus.CONNECTED else ConnectionStatus.DISCONNECTED
       }.recover{
         case e: Exception => logger.debug("Error asking for the connector status: "+e.getMessage); ConnectionStatus.DISCONNECTED

@@ -23,22 +23,20 @@ import java.util
 import akka.actor._
 import akka.agent.Agent
 import com.stratio.crossdata
+import com.stratio.crossdata.common.ask.APICommand
 import com.stratio.crossdata.common.connector._
 import com.stratio.crossdata.common.data._
-import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException}
+import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.metadata.{CatalogMetadata, TableMetadata, _}
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
 import com.stratio.crossdata.communication._
 import org.apache.log4j.Logger
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
-import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.duration.DurationInt
 import com.stratio.crossdata.communication.CreateIndex
 import com.stratio.crossdata.communication.Update
-import akka.cluster.ClusterEvent.MemberRemoved
 import com.stratio.crossdata.communication.ACK
 import com.stratio.crossdata.communication.CreateTableAndCatalog
 import com.stratio.crossdata.communication.AlterTable
@@ -47,18 +45,15 @@ import com.stratio.crossdata.communication.CreateTable
 import com.stratio.crossdata.communication.AlterCatalog
 import com.stratio.crossdata.communication.InsertBatch
 import com.stratio.crossdata.communication.AsyncExecute
-import akka.cluster.ClusterEvent.UnreachableMember
 import com.stratio.crossdata.communication.ProvideCatalogMetadata
 import com.stratio.crossdata.communication.ProvideCatalogsMetadata
 import com.stratio.crossdata.communication.CreateCatalog
 import com.stratio.crossdata.communication.ProvideTableMetadata
 import com.stratio.crossdata.communication.PagedExecute
 import com.stratio.crossdata.communication.Execute
-import akka.cluster.ClusterEvent.MemberUp
 import com.stratio.crossdata.communication.ProvideMetadata
 import com.stratio.crossdata.communication.DropIndex
 import com.stratio.crossdata.communication.UpdateMetadata
-import akka.cluster.ClusterEvent.CurrentClusterState
 import com.stratio.crossdata.communication.DeleteRows
 import com.stratio.crossdata.communication.DropCatalog
 import com.stratio.crossdata.communication.DropTable
@@ -111,6 +106,9 @@ class ConnectorWorkerActor(connector: IConnector, metadataMapAgent: Agent[Observ
       methodStorageOp(storageOp, sender)
     }
 
+
+
+
     //TODO iface UpdatableMetadata with getName, getMetadata
     case UpdateMetadata(umetadata, java.lang.Boolean.FALSE) => {
       umetadata match{
@@ -156,11 +154,28 @@ class ConnectorWorkerActor(connector: IConnector, metadataMapAgent: Agent[Observ
         }
 
       }
-
     }
 
-  }
+    case Request(message) if (message.equals(APICommand.CLEAN_METADATA.toString)) => {
+      metadataMapAgent.send{ observableMap => observableMap.clear(); observableMap }
+    }
 
+
+    case GetCatalogs(clusterName) =>{
+      sender ! getCatalogs(clusterName)
+    }
+
+    case GetTableMetadata(clusterName, tableName) =>{
+      sender ! getTableMetadata(clusterName,tableName)
+    }
+
+
+    case  GetCatalogMetadata(catalogName) => {
+      sender ! getCatalogMetadata(catalogName)
+    }
+
+
+  }
 
   def extractSender(m: String): String = {
     m.substring(m.indexOf("[")+1, m.indexOf("$")).trim
@@ -371,69 +386,69 @@ class ConnectorWorkerActor(connector: IConnector, metadataMapAgent: Agent[Observ
   private def methodOpMetadata(metadataOp: MetadataOperation, eng: IMetadataEngine):
   (String,  Int, Object) = {
     metadataOp match {
-      case _:CreateTable => {
+      case _: CreateTable => {
         eng.createTable(metadataOp.asInstanceOf[CreateTable].targetCluster,
           metadataOp.asInstanceOf[CreateTable].tableMetadata)
-        (metadataOp.asInstanceOf[CreateTable].queryId, MetadataResult.OPERATION_CREATE_TABLE,null)
+        (metadataOp.asInstanceOf[CreateTable].queryId, MetadataResult.OPERATION_CREATE_TABLE, null)
       }
-      case _:CreateCatalog => {
+      case _: CreateCatalog => {
         eng.createCatalog(metadataOp.asInstanceOf[CreateCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateCatalog].catalogMetadata)
-        (metadataOp.asInstanceOf[CreateCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG,null)
+        (metadataOp.asInstanceOf[CreateCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG, null)
       }
-      case _:AlterCatalog => {
+      case _: AlterCatalog => {
         eng.alterCatalog(metadataOp.asInstanceOf[AlterCatalog].targetCluster,
           metadataOp.asInstanceOf[AlterCatalog].catalogMetadata.getName,
           metadataOp.asInstanceOf[AlterCatalog].catalogMetadata.getOptions)
-        (metadataOp.asInstanceOf[AlterCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG,null)
+        (metadataOp.asInstanceOf[AlterCatalog].queryId, MetadataResult.OPERATION_CREATE_CATALOG, null)
       }
-      case _:CreateIndex => {
+      case _: CreateIndex => {
         eng.createIndex(metadataOp.asInstanceOf[CreateIndex].targetCluster,
           metadataOp.asInstanceOf[CreateIndex].indexMetadata)
-        (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX,null)
+        (metadataOp.asInstanceOf[CreateIndex].queryId, MetadataResult.OPERATION_CREATE_INDEX, null)
       }
-      case _:DropCatalog => {
+      case _: DropCatalog => {
         eng.dropCatalog(metadataOp.asInstanceOf[DropCatalog].targetCluster,
           metadataOp.asInstanceOf[DropCatalog].catalogName)
-        (metadataOp.asInstanceOf[DropCatalog].queryId, MetadataResult.OPERATION_DROP_CATALOG,null)
+        (metadataOp.asInstanceOf[DropCatalog].queryId, MetadataResult.OPERATION_DROP_CATALOG, null)
       }
-      case _:DropIndex => {
+      case _: DropIndex => {
         eng.dropIndex(metadataOp.asInstanceOf[DropIndex].targetCluster, metadataOp.asInstanceOf[DropIndex].indexMetadata)
-        (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX,null)
+        (metadataOp.asInstanceOf[DropIndex].queryId, MetadataResult.OPERATION_DROP_INDEX, null)
       }
-      case _:DropTable => {
+      case _: DropTable => {
         eng.dropTable(metadataOp.asInstanceOf[DropTable].targetCluster, metadataOp.asInstanceOf[DropTable].tableName)
-        (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE,null)
+        (metadataOp.asInstanceOf[DropTable].queryId, MetadataResult.OPERATION_DROP_TABLE, null)
       }
-      case _:AlterTable => {
+      case _: AlterTable => {
         eng.alterTable(metadataOp.asInstanceOf[AlterTable].targetCluster, metadataOp.asInstanceOf[AlterTable]
           .tableName, metadataOp.asInstanceOf[AlterTable].alterOptions)
-        (metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_ALTER_TABLE,null)
+        (metadataOp.asInstanceOf[AlterTable].queryId, MetadataResult.OPERATION_ALTER_TABLE, null)
       }
-      case _:CreateTableAndCatalog => {
+      case _: CreateTableAndCatalog => {
         eng.createCatalog(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateTableAndCatalog].catalogMetadata)
         eng.createTable(metadataOp.asInstanceOf[CreateTableAndCatalog].targetCluster,
           metadataOp.asInstanceOf[CreateTableAndCatalog].tableMetadata)
-        (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE,null)
+        (metadataOp.asInstanceOf[CreateTableAndCatalog].queryId, MetadataResult.OPERATION_CREATE_TABLE, null)
       }
-      case _:ProvideMetadata => {
+      case _: ProvideMetadata => {
         val listMetadata = eng.provideMetadata(metadataOp.asInstanceOf[ProvideMetadata].targetCluster)
-        (metadataOp.asInstanceOf[ProvideMetadata].queryId, MetadataResult.OPERATION_DISCOVER_METADATA,listMetadata)
+        (metadataOp.asInstanceOf[ProvideMetadata].queryId, MetadataResult.OPERATION_DISCOVER_METADATA, listMetadata)
 
       }
-      case _:ProvideCatalogsMetadata => {
+      case _: ProvideCatalogsMetadata => {
         val listMetadata = eng.provideMetadata(metadataOp.asInstanceOf[ProvideCatalogsMetadata].targetCluster)
         (metadataOp.asInstanceOf[ProvideCatalogsMetadata].queryId, MetadataResult.OPERATION_IMPORT_CATALOGS,
           listMetadata)
       }
-      case _:ProvideCatalogMetadata => {
+      case _: ProvideCatalogMetadata => {
         val listMetadata = eng.provideCatalogMetadata(metadataOp.asInstanceOf[ProvideCatalogMetadata].targetCluster,
           metadataOp.asInstanceOf[ProvideCatalogMetadata].catalogName)
         (metadataOp.asInstanceOf[ProvideCatalogMetadata].queryId, MetadataResult.OPERATION_IMPORT_CATALOG,
           listMetadata)
       }
-      case _:ProvideTableMetadata => {
+      case _: ProvideTableMetadata => {
         val listMetadata = eng.provideTableMetadata(metadataOp.asInstanceOf[ProvideTableMetadata].targetCluster,
           metadataOp.asInstanceOf[ProvideTableMetadata].tableName)
         (metadataOp.asInstanceOf[ProvideTableMetadata].queryId, MetadataResult.OPERATION_IMPORT_TABLE,
@@ -442,5 +457,43 @@ class ConnectorWorkerActor(connector: IConnector, metadataMapAgent: Agent[Observ
       case _ => ???
     }
   }
+
+
+    //TODO 0.4.0 using FirstLevelName
+    private def getTableMetadata(clusterName: ClusterName, tableName: TableName): TableMetadata = {
+      metadataMapAgent.get.get(tableName).asInstanceOf[TableMetadata]
+      /*
+      val catalogName = tableName.getCatalogName
+      val catalogMetadata = mapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
+      val tableMetadata = catalogMetadata.getTables.get(tableName)
+      if(tableMetadata.getClusterRef==clusterName)
+        return tableMetadata
+      else
+        return null
+        */
+    }
+
+    private def getCatalogMetadata(catalogName: CatalogName): CatalogMetadata={
+      return metadataMapAgent.get.get(catalogName).asInstanceOf[CatalogMetadata]
+    }
+
+    private def getCatalogs(cluster: ClusterName): util.List[CatalogMetadata] = {
+      val r = new util.HashMap[CatalogName,CatalogMetadata]()
+      //for(entry:java.util.Map.Entry[FirstLevelName,IMetadata] <- metadata.entrySet()){
+      for((k,v) <- metadataMapAgent.get){
+        k match {
+          case name:CatalogName=>{
+            val catalogMetadata = metadataMapAgent.get.get(k).asInstanceOf[CatalogMetadata]
+            val tables = catalogMetadata.getTables
+            for((tableName, tableMetadata) <- tables){
+              if(tables.get(tableName).getClusterRef==cluster){
+                r.put(name,catalogMetadata)
+              }
+            }
+          }
+        }
+      }
+      return new util.ArrayList(r.values())
+    }
 
 }

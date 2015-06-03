@@ -53,6 +53,8 @@ object ConnectorActor {
   Props = Props(new ConnectorActor(connectorApp, connector))
 
   case class RestartConnector()
+
+  val ConnectorRestartTimeout = 8
 }
 
 /**
@@ -90,8 +92,6 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
 
   val cluster = Cluster(context.system)
 
-  //TODO: test if it works with one thread and multiple threads
-  var stateActor = State.Stopped
 
   override def preStart(): Unit = {
     cluster.subscribe(self, classOf[ClusterDomainEvent])
@@ -287,9 +287,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
 
   def shutdown(): Unit = {
     logger.debug("ConnectorActor is shutting down")
-    this.stateActor = State.Stopping
     connector.shutdown()
-    this.stateActor = State.Stopped
   }
 
 
@@ -301,7 +299,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       logger.info("Restarting the connector actor system")
 
      //TODO move to connectorApp.stop()
-     Try(Await.result( Future(connector.shutdown()), FiniteDuration(8, TimeUnit.SECONDS) )) match {
+     Try(Await.result( Future(connector.shutdown()), FiniteDuration( ConnectorActor.ConnectorRestartTimeout, TimeUnit.SECONDS) )) match {
        case Success(_) => logger.info(s"Connector successfully stopped")
        case Failure(exc) => exc match{
          case _: TimeoutException => logger.warn("Cannot stop connector within the timeout. Anyway, the actor system is going to be restarted.")

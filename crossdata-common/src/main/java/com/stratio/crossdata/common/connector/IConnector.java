@@ -80,9 +80,9 @@ public interface IConnector {
     void shutdown() throws ExecutionException;
 
     /**
-     * It is called when restarting the connector service. If the connector uses listener to receive metadata updates, it must subscribe here again.
+     * It is called when restarting the connector service. If the connector has a listener to receive metadata updates, it must be resubscribed here.
      *
-     * @throws InitializationException If the connector initialization fails.
+     * @throws ExecutionException If the connector restart fails.
      */
     void restart() throws ExecutionException;
 
