@@ -69,6 +69,13 @@ object ProxyActor {
  * @param remoteActor Remote actor's name.
  */
 class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: BasicDriver) extends Actor {
+
+  override val supervisorStrategy =
+    OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
+      case _: StashOverflowException => Stop
+      case _: Any => Resume
+    }
+
   import context.dispatcher
   if(driver.balancing)context.system.scheduler.schedule(
     driver.cpuLoadPingTimeInMillis seconds,

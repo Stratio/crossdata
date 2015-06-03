@@ -29,7 +29,7 @@ import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import akka.actor.SupervisorStrategy.Stop
+import akka.actor.SupervisorStrategy.{Resume, Stop}
 import scala.concurrent.duration._
 
 object ServerActor {
@@ -63,7 +63,7 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
 
   override val supervisorStrategy =
     OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
-      case _: Any => Stop
+      case _: Any => Resume
     }
 
   def receive : Receive= {

@@ -79,6 +79,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
     val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
 
+
     connectorRef = Some(
       system.actorOf(RoundRobinPool(num_connector_actor, Some(resizer))
         .props(Props(classOf[ConnectorActor], connector.getConnectorManifestPath, connector.getDatastoreManifestPath, connector, connectedServersAgent, metadataMapAgent, runningJobsAgent)),

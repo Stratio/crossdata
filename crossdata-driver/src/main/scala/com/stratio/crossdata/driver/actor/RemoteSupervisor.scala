@@ -21,7 +21,7 @@ package com.stratio.crossdata.driver.actor
 import akka.actor._
 import akka.contrib.pattern.ClusterClient
 import akka.actor.OneForOneStrategy
-import akka.actor.SupervisorStrategy.Stop
+import akka.actor.SupervisorStrategy.{Resume, Stop}
 import scala.concurrent.duration._
 
 object RemoteSupervisor {
@@ -33,19 +33,12 @@ class RemoteSupervisor(initialContacts: Set[ActorSelection]) extends Actor {
 
   override val supervisorStrategy =
     OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
-      //case _: StashOverflowException => Stop
-      case _: Any => Stop
+      case _: StashOverflowException => Stop
+      case _: Any => Resume
     }
 
   override def receive: Actor.Receive = {
-
-    case "GiveMeClusterClient" => {
-      sender ! clusterClient
-    }
-
-    case message: Any => {
-      clusterClient forward message
-    }
+    case message: Any => clusterClient forward message
   }
 
 }
