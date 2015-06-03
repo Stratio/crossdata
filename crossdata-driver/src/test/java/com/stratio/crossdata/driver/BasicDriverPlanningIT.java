@@ -160,10 +160,10 @@ public class BasicDriverPlanningIT {
             LOG.error(((ErrorResult) result).getErrorMessage());
         }
         assertFalse(result.hasError(), "Server returned an error");
-        assertEquals(result.getClass(), ConnectResult.class, "CommandResult was expected");
-        ConnectResult connectResult = (ConnectResult) result;
-        assertNotNull(connectResult.getSessionId(), "Server returned a null session identifier");
-        LOG.info(connectResult.getSessionId());
+        assertEquals(result.getClass(), ConnectToConnectorResult.class, "CommandResult was expected");
+        ConnectToConnectorResult connectResult = (ConnectToConnectorResult) result;
+        assertNotNull(connectResult.getQueryId(), "Server returned a null session identifier");
+        LOG.info(connectResult.getQueryId());
     }
 
     @Test(timeOut = 8000, dependsOnMethods = {"testAttachConnector"})
@@ -272,10 +272,10 @@ public class BasicDriverPlanningIT {
             LOG.error(((ErrorResult) result).getErrorMessage());
         }
         assertFalse(result.hasError(), "Server returned an error");
-        assertEquals(result.getClass(), ConnectResult.class, "CommandResult was expected");
-        ConnectResult connectResult = (ConnectResult) result;
-        assertNotNull(connectResult.getSessionId(), "Server returned a null session identifier");
-        LOG.info(connectResult.getSessionId());
+        assertEquals(result.getClass(), ConnectToConnectorResult.class, "CommandResult was expected");
+        ConnectToConnectorResult connectResult = (ConnectToConnectorResult) result;
+        assertNotNull(connectResult.getQueryId(), "Server returned a null session identifier");
+        LOG.info(connectResult.getQueryId());
     }
 
     /**

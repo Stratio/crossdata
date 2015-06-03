@@ -37,6 +37,7 @@ import org.scalatest.{FunSuite, Suite}
 import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
+import scala.io.Source
 
 object ConnectorWorkerActorTest
 
@@ -70,6 +71,7 @@ class ConnectorWorkerActorTest extends FunSuite with ConnectConfig with MockFact
     val ca1 = system1.actorOf(ConnectorWorkerActor.props( m, agent, runningJobsAgent))
     val ca2 = system1.actorOf(ConnectorWorkerActor.props( m2, agent, runningJobsAgent))
 
+
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))
     val message2 = CreateTable(queryId + sm2, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
@@ -97,6 +99,7 @@ class ConnectorWorkerActorTest extends FunSuite with ConnectConfig with MockFact
     val connectedServers = Agent(Set.empty[String])(system1.dispatcher)
     val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
+
     val ca1 = system1.actorOf(ConnectorWorkerActor.props( m,  agent, runningJobsAgent))
     val ca2 = system1.actorOf(ConnectorWorkerActor.props(m2,  agent, runningJobsAgent))
     val routees = Vector[ActorRef](ca1, ca2)
@@ -143,6 +146,7 @@ class ConnectorWorkerActorTest extends FunSuite with ConnectConfig with MockFact
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
     val m=new DummyIConnector()
     val ca1 = system1.actorOf(ConnectorWorkerActor.props( m,agent, runningJobsAgent))
+
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
     //Expectations(observableMock.put _).expects(table.getName, table)
     ca1 ! UpdateMetadata(table, false)

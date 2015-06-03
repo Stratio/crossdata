@@ -71,7 +71,7 @@ public class ConnectorType extends CrossdataManifest {
     protected DataStoreRefsType dataStores;
     @XmlElement(name = "Version", required = true)
     protected String version;
-    @XmlElement(name = "Native")
+    @XmlElement(name = "Native", defaultValue = "false")
     protected Boolean _native;
     @XmlElement(name = "RequiredProperties")
     protected PropertiesType requiredProperties;

@@ -46,6 +46,14 @@ public class ListSelector extends Selector {
         this.selectorsList = selectorsList;
     }
 
+    /**
+     * Class constructor.
+     * @param selectorsList The list of values.
+     */
+    public ListSelector(List<Selector> selectorsList) {
+        this(null, selectorsList);
+    }
+
 
     public List<Selector> getSelectorsList() {
         return selectorsList;

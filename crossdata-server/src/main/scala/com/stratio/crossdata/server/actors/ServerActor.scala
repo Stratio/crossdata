@@ -20,15 +20,17 @@ package com.stratio.crossdata.server.actors
 
 import java.util.{Random, UUID}
 
-import akka.actor.{Actor, Props, ReceiveTimeout}
+import akka.actor.{OneForOneStrategy, Actor, Props, ReceiveTimeout}
 import akka.cluster.Cluster
-import akka.routing.{RoundRobinPool, DefaultResizer, RoundRobinRouter}
+import akka.routing.{RoundRobinPool, DefaultResizer}
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
 import com.stratio.crossdata.common.result.{ConnectResult, DisconnectResult, Result}
 import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
+import akka.actor.SupervisorStrategy.{Resume, Stop}
+import scala.concurrent.duration._
 
 object ServerActor {
   def props(engine: Engine,cluster: Cluster): Props = Props(new ServerActor(engine,cluster))
@@ -57,6 +59,11 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
 
   val APIActorRef = context.actorOf( RoundRobinPool(num_api_actor, Some(resizer))
      .props(Props(classOf[APIActor], engine.getAPIManager, coordinatorActorRef )), "APIActor")
+
+  override val supervisorStrategy =
+    OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
+      case _: Any => Resume
+    }
 
   def receive : Receive= {
     case "watchload"=>

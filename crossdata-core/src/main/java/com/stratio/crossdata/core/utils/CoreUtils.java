@@ -25,6 +25,7 @@ import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.IntegerSelector;
+import com.stratio.crossdata.common.statements.structures.ListSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.core.metadata.MetadataManager;
@@ -81,6 +82,8 @@ public final class CoreUtils {
             result = convertSelectorToObject(selector);
             break;
         case LIST:
+            result = convertSelectorToList(selector);
+            break;
         case MAP:
         case SET:
             throw new PlanningException("ColumnType: " + columnMetadata.getColumnType() + " not supported yet");
@@ -110,6 +113,21 @@ public final class CoreUtils {
             }
         } catch (ClassCastException cce) {
             throw new PlanningException(selector + " cannot be converted to String", cce);
+        }
+        return result;
+    }
+
+    private static Object convertSelectorToList(Selector selector) throws PlanningException {
+        String result;
+        try {
+            if (FunctionSelector.class.isInstance(selector)){
+                result = selector.getStringValue();
+            }else {
+                ListSelector listSelector = (ListSelector) selector;
+                result = listSelector.toString();
+            }
+        } catch (ClassCastException cce) {
+            throw new PlanningException(selector + "Problem with the list of the selector.", cce);
         }
         return result;
     }

@@ -21,15 +21,29 @@ package com.stratio.crossdata.connectors
 import java.util.concurrent.{TimeoutException, TimeUnit}
 
 import akka.util.Timeout
-import com.codahale.metrics._
+
+
 import akka.actor._
 import akka.pattern.ask
-import com.stratio.crossdata.common.data._
-import com.stratio.crossdata.common.metadata.TableMetadata
-import com.stratio.crossdata.common.utils.Metrics
-import com.stratio.crossdata.connectors.config.ConnectConfig
+
+
+import akka.routing.{DefaultResizer, RoundRobinPool}
+import com.codahale.metrics._
 import com.stratio.crossdata.common.connector._
+import com.stratio.crossdata.common.data._
+import com.stratio.crossdata.common.manifest.{ConnectorType, CrossdataManifest}
+import com.stratio.crossdata.common.metadata.{TableMetadata, UpdatableMetadata}
+import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
+import com.stratio.crossdata.communication.{GetTableMetadata, Shutdown}
+
+import com.stratio.crossdata.connectors.config.ConnectConfig
+import com.stratio.crossdata.utils.ManifestUtils
 import org.apache.log4j.Logger
+
+
+import scala.collection.JavaConversions._
+import scala.collection.mutable.{ListMap, Set}
+
 import scala.concurrent.Await
 import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
@@ -46,18 +60,16 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   var system: Option[ActorSystem] = null
   var connectorActor: Option[ActorRef] = None
 
+  var connectorManifest: Option[CrossdataManifest] = None
+  var datastoreManifest: Option[Array[CrossdataManifest]] = None
+
   def startup(connector: IConnector): Option[ActorRef] = {
 
-    logger.info("Connector Name: " + connectorName)
+    logger.info("Connector started: " + connector.getClass().getName)
 
-    if((connectorName.isEmpty) || (connectorName.equalsIgnoreCase("XconnectorX"))){
-      logger.error("##########################################################################################")
-      logger.error("# ERROR ##################################################################################")
-      logger.error("##########################################################################################")
-      logger.error("# USING DEFAULT CONNECTOR NAME: XconnectorX                                              #")
-      logger.error("# CHANGE PARAMETER crossdata-connector.config.connector.name FROM THE CONFIGURATION FILE #")
-      logger.error("##########################################################################################")
-    }
+    connectorManifest = Some(ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_CONNECTOR, connector.getConnectorManifestPath))
+    datastoreManifest = Some(connector.getDatastoreManifestPath.map(ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_DATASTORE, _)))
+
     startSystem(connector)
     connector.init(new IConfiguration {})
     connectorActor
@@ -85,7 +97,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       i.e.{{{
         import scala.concurrent.duration._
         val timeout: akka.util.Timeout = 2.seconds
-        val response: Option[TableMetadata] = 
+        val response: Option[TableMetadata] =
           actorClusterNode.map(actor => Await.result((actor ? GetTableMetadata).mapTo[TableMetadata],timeout))
         response.getOrElse(throw new IllegalStateException("Actor cluster node is not initialized"))
       }}}
@@ -126,6 +138,20 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   }
  */
 
+  def getConnectorName: String = {
+    connectorManifest.get  match {
+        case connMan: ConnectorType => connMan.getConnectorName
+        case _ => throw new ClassCastException
+    }
+  }
+
+  def getConnectorManifest = {
+    connectorManifest.get
+  }
+
+  def getDatastoreManifest = {
+    datastoreManifest.get
+  }
 
   override def getConnectionStatus: ConnectionStatus = {
   implicit val stTimeout = Timeout(FiniteDuration(ConnectorApp.GetStatusTimeout,TimeUnit.SECONDS))
@@ -138,6 +164,7 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       }.get
     }.getOrElse(ConnectionStatus.DISCONNECTED)
   }
+
 
   override def subscribeToMetadataUpdate(mapListener: IMetadataListener) ={
     connectorActor.foreach(_ ! mapListener)

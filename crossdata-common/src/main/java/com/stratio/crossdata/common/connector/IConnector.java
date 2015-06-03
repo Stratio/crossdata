@@ -32,19 +32,18 @@ import com.stratio.crossdata.common.security.ICredentials;
 public interface IConnector {
 
     /**
-     * Get the name of the connector.
+     * Get the connector manifest from the connector.
      *
-     * @return A name.
+     * @return A String with the path of the manifest
      */
-    String getConnectorName();
+    String getConnectorManifestPath();
 
     /**
-     * Get the names of the datastores supported by the connector.
-     * Several connectors may declare the same datastore name.
+     * Get the list of datastore manifests from the connector.
      *
-     * @return The names.
+     * @return An Array of String with the path of the manifest
      */
-    String[] getDatastoreName();
+    String[] getDatastoreManifestPath();
 
     /**
      * Initialize the connector service.
@@ -117,7 +116,5 @@ public interface IConnector {
      * @throws UnsupportedException If the connector does not provide this functionality.
      */
     IMetadataEngine getMetadataEngine() throws UnsupportedException;
-
-
 
 }

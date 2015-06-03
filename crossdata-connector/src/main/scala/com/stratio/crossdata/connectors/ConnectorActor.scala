@@ -24,28 +24,35 @@ import java.util.concurrent.{TimeoutException, TimeUnit}
 import akka.actor._
 import akka.agent.Agent
 import akka.cluster.ClusterEvent._
-import akka.remote.QuarantinedEvent
 import akka.routing.{RoundRobinPool, DefaultResizer}
 import akka.cluster.Cluster
 import com.codahale.metrics.{Gauge, MetricRegistry}
 import com.stratio.crossdata.common.connector.{IMetadataListener, ObservableMap, IConnector}
 import com.stratio.crossdata.common.data.{ClusterName, Name}
 import com.stratio.crossdata.common.exceptions.ConnectionException
+import com.stratio.crossdata.common.manifest.{ConnectorType, CrossdataManifest}
 import com.stratio.crossdata.common.metadata._
-import com.stratio.crossdata.common.result.{DisconnectResult, Result, ConnectResult}
+import com.stratio.crossdata.common.result.{ConnectToConnectorResult, DisconnectResult, Result}
 import com.stratio.crossdata.common.utils.Metrics
-import com.stratio.crossdata.communication.{Shutdown, ReplyConnectorName, GetConnectorName, ConnectorUp, GetConnectorStatus, ConnectorStatus}
+import com.stratio.crossdata.communication._
 import com.stratio.crossdata.connectors.ConnectorActor.RestartConnector
 import com.stratio.crossdata.connectors.config.ConnectConfig
+import com.stratio.crossdata.utils.ManifestUtils
 import org.apache.log4j.Logger
 
 import scala.collection.mutable
-import scala.collection.mutable.Set
 import scala.concurrent.{Future, Await}
 import scala.concurrent.duration.FiniteDuration
 
 import scala.collection.JavaConversions._
 import scala.util.{Failure, Success, Try}
+
+import scala.collection.mutable.{ListMap, Set}
+import akka.cluster.ClusterEvent.MemberRemoved
+import akka.cluster.ClusterEvent.UnreachableMember
+import akka.cluster.ClusterEvent.MemberUp
+import akka.cluster.ClusterEvent.CurrentClusterState
+
 
 
 object ConnectorActor {
@@ -53,7 +60,6 @@ object ConnectorActor {
   Props = Props(new ConnectorActor(connectorApp, connector))
 
   case class RestartConnector()
-
   val ConnectorRestartTimeout = 8
 }
 
@@ -78,7 +84,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
     RoundRobinPool(num_connector_actor, Some(resizer))
       .props(Props(classOf[ConnectorWorkerActor], connector, metadataMapAgent, runningJobsAgent)), "ConnectorWorker")
 
-  var metricName: Option[String] = Some(MetricRegistry.name(connector.getConnectorName, "connection", "status"))
+  var metricName: Option[String] = Some(MetricRegistry.name(connectorApp.getConnectorName, "connection", "status"))
   Metrics.getRegistry.register(metricName.get,
     new Gauge[Boolean] {
       override def getValue: Boolean = {
@@ -95,54 +101,39 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
 
   override def preStart(): Unit = {
     cluster.subscribe(self, classOf[ClusterDomainEvent])
-    context.system.eventStream.subscribe(self, classOf[QuarantinedEvent])
   }
 
   override def postStop() {
     cluster.unsubscribe(self)
-    context.system.eventStream.unsubscribe(self)
     Metrics.getRegistry.getNames.foreach(Metrics.getRegistry.remove(_))
-    super.postStop
-    log.info("ConnectorRestart actor postStop")
-  }
-
-  override def preRestart(reason: Throwable, message: Option[Any]): Unit = {
-    //unsubscribe to restore updatable metadata?? or leave
-    //super.preRestart(reason, message)
   }
 
   override def postRestart(reason: Throwable): Unit = {
-    log.info("removing metrics")
     Metrics.getRegistry.getNames.foreach(Metrics.getRegistry.remove(_))
-    //subscribe // or join
-    //super.postRestart(reason)
   }
 
   override def receive: Receive = normalState
 
   def normalState: Receive = {
 
-    case GetConnectorName => {
-      logger.info(sender + " asked for my name: " + connector.getConnectorName)
+    case gcn: GetConnectorName => {
+      logger.info(sender + " asked for my name: " + connectorApp.getConnectorName)
       connectedServers += sender.path.address.toString
       logger.info("Connected to Servers: " + connectedServers)
-      sender ! ReplyConnectorName(connector.getConnectorName)
+      sender ! ReplyConnectorName(connectorApp.getConnectorName)
     }
 
-    case connectRequest: com.stratio.crossdata.communication.Connect => {
+    case Connect(queryId, credentials, connectorClusterConfig) => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received connect command")
       try {
-        connector.connect(connectRequest.credentials, connectRequest.connectorClusterConfig)
-        //this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
-        val result = ConnectResult.createConnectResult("Connected successfully")
-        result.setQueryId(connectRequest.queryId)
+        connector.connect(credentials, connectorClusterConfig)
+        val result = ConnectToConnectorResult.createSuccessConnectResult(queryId)
         sender ! result //TODO once persisted sessionId,
       } catch {
         case e: ConnectionException => {
           logger.error(e.getMessage)
-          val result = Result.createConnectionErrorResult(e.getMessage)
-          result.setQueryId(connectRequest.queryId)
+          val result = ConnectToConnectorResult.createFailureConnectResult(queryId,e)
           sender ! result
         }
       }
@@ -166,19 +157,17 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       sender ! result //TODO once persisted sessionId,
     }
 
-    case QuarantinedEvent(remoteAddress, uid) => {
-      logger.info(s"Quarentined event received from $remoteAddress with uid: '$uid'")
-      logger.info("Connected Servers" + connectedServers)
-      if ((connectedServers - remoteAddress.toString).isEmpty) {
-        //It should be a new Connector instance??
-        /*context.become(expectingKill)
-        self ! RestartConnector
-        */
+    case connManifest: GetConnectorManifest => {
+      logger.info(sender + " asked for my connector manifest ")
+      sender ! ReplyConnectorManifest(connectorApp.getConnectorManifest)
+    }
+    case datManifest: GetDatastoreManifest => {
+      logger.info(sender + " asked for my datastore manifest")
+      for (datastore <- connectorApp.getDatastoreManifest){
+        sender ! ReplyDatastoreManifest(datastore)
       }
-
     }
 
-    /** ClusterEvents */
     case MemberUp(member) => {
       logger.info("Member up")
       logger.info("Member is Up: " + member.toString + member.getRoles + "!")
@@ -250,7 +239,6 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
           self ! RestartConnector
           log.info("There is no server in the cluster. The connector must be restarted")
         }
-
       }
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
     }
@@ -270,13 +258,14 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
 
     case listener: IMetadataListener => {
       logger.info("Adding new metadata listener")
-      metadataMapAgent.send(oMap => {oMap.addListener(listener); oMap})
+      metadataMapAgent.send(oMap => {
+        oMap.addListener(listener); oMap
+      })
     }
 
     case GetConnectorStatus => {
       sender ! ConnectorStatus(!connectedServers.isEmpty)
     }
-
 
     //ConnectorWorkerMessages
     case otherMsg => {
@@ -289,7 +278,6 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
     logger.debug("ConnectorActor is shutting down")
     connector.shutdown()
   }
-
 
   //Used to manage queued messages which are dismissed currently.
   def restarting: Receive = {
@@ -311,9 +299,11 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       context.stop(self)
     }
 
+
     case dismissedMessage => {
       log.debug(s"Discarded message -> $dismissedMessage")
     }
   }
+
 
 }

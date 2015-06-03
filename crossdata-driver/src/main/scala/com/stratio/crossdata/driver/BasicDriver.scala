@@ -20,22 +20,25 @@ package com.stratio.crossdata.driver
 
 import java.util.UUID
 
-import akka.actor.{ActorSelection, ActorSystem}
+import akka.actor.{ActorRef, ActorSelection, ActorSystem}
 import akka.contrib.pattern.ClusterClient
+import akka.pattern.ask
 import com.stratio.crossdata.common.ask.{APICommand, Command, Connect, Query}
 import com.stratio.crossdata.common.data.{ConnectorName, DataStoreName, _}
-import com.stratio.crossdata.common.exceptions.validation.NotExistNameException
-import com.stratio.crossdata.common.exceptions.{ConnectionException, ExecutionException, ManifestException, ParsingException, UnsupportedException, ValidationException}
+import com.stratio.crossdata.common.exceptions.validation.{ExistNameException, NotExistNameException}
+import com.stratio.crossdata.common.exceptions._
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.communication.Disconnect
-import com.stratio.crossdata.driver.actor.ProxyActor
+import com.stratio.crossdata.driver.actor.{RemoteSupervisor, ProxyActor}
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
 import com.stratio.crossdata.driver.utils.{QueryData, ManifestUtils, RetryPolitics}
 import org.apache.log4j.Logger
 
 import scala.concurrent.duration._
+import scala.concurrent.{Await, Future}
+import akka.util.Timeout
 
 object BasicDriver extends DriverConfig {
   /**
@@ -86,6 +89,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   lazy val queries: java.util.Map[String, QueryData] = new java.util.HashMap[String, QueryData]
   lazy val system = ActorSystem("CrossdataDriverSystem", BasicDriver.config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
+
   lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
   lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, basicDriverConfig.serverSection.clusterActor, this), "proxy-actor")
 
@@ -532,6 +536,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   @throws(classOf[ManifestException])
+  @throws(classOf[ExistNameException])
+  @throws(classOf[ApiException])
   def addManifest(manifestType: Int, path: String, sessionId: String): Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
@@ -559,6 +565,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return A CommandResult with a string.
    */
   @throws(classOf[ManifestException])
+  @throws(classOf[NotExistNameException])
+  @throws(classOf[ApiException])
   def dropManifest(manifestType: Int, manifestName: String, sessionId: String): Result = {
     if (userId.isEmpty) {
       throw new ConnectionException("You must connect to cluster")
@@ -799,7 +807,13 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
    * @return The result handler.
    */
   def getResultHandler(queryId: String): IDriverResultHandler = {
-    queries.get(queryId).resultHandler
+    val queryData = queries.get(queryId)
+    if(queryData != null){
+      queryData.resultHandler
+    } else {
+      logger.warn("Query " + queryId + " not found.")
+      return null
+    }
   }
 
   /**

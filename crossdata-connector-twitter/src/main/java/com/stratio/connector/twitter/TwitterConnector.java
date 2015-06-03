@@ -112,25 +112,16 @@ public class TwitterConnector extends AbstractExtendedConnector {
 
     }
 
-    /**
-     * Get the name of the connector.
-     *
-     * @return A name.
-     */
-    @Override
-    public String getConnectorName() {
-        return "TwitterConnector";
+
+
+    @Override public String getConnectorManifestPath() {
+        return getClass().getResource("TwitterConnector.xml").getPath();
     }
 
-    /**
-     * Get the names of the datastores supported by the connector.
-     * Several connectors may declare the same datastore name.
-     *
-     * @return The names.
-     */
-    @Override
-    public String[] getDatastoreName() {
-        return new String[] { "TwitterDatastore" };
+    @Override public String[] getDatastoreManifestPath() {
+        String datastore[]=new String[1];
+        datastore[0]= getClass().getResource("TwitterDataStore.xml").getPath();
+        return datastore;
     }
 
     public Map<String, ColumnType> getAllowedColumns() {

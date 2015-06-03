@@ -51,8 +51,7 @@ public class InMemoryConnectorTest {
     @Test
     public void createConnector(){
         IConnector connector = new InMemoryConnector( dummyIConnectorApp());
-        assertEquals(connector.getConnectorName(), "InMemoryConnector", "Invalid connector name");
-        assertEquals(connector.getDatastoreName()[0], "InMemoryDatastore", "Invalid datastore name");
+
         try {
             connector.init(new IConfiguration() {
                 @Override public int hashCode() {

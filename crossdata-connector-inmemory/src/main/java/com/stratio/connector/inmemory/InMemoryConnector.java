@@ -88,13 +88,15 @@ public class InMemoryConnector extends AbstractExtendedConnector {
     }
 
     @Override
-    public String getConnectorName() {
-        return "InMemoryConnector";
+    public String getConnectorManifestPath() {
+        return getClass().getResource("/InMemoryConnector.xml").getPath();
     }
 
     @Override
-    public String[] getDatastoreName() {
-        return new String[]{"InMemoryDatastore"};
+    public String[] getDatastoreManifestPath() {
+        String datastore[]=new String[1];
+        datastore[0]=getClass().getResource("/InMemoryDataStore.xml").getPath();
+        return datastore;
     }
 
     @Override
