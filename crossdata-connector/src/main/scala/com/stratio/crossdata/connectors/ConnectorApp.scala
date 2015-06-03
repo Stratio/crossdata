@@ -36,7 +36,7 @@ import scala.util.Try
 import com.stratio.crossdata.communication.{GetConnectorStatus, GetTableMetadata}
 
 object ConnectorApp {
-  val GetMetadataTimeout = 5
+  val GetStatusTimeout = 5
 }
 
 class ConnectorApp extends ConnectConfig with IConnectorApp {
@@ -90,10 +90,10 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
         response.getOrElse(throw new IllegalStateException("Actor cluster node is not initialized"))
       }}}
     */
-    implicit val timeout: Timeout = new Timeout(FiniteDuration.apply(ConnectorApp.GetMetadataTimeout, TimeUnit.SECONDS))
+    implicit val timeoutR: Timeout = new Timeout(FiniteDuration(timeout, TimeUnit.SECONDS))
     val future = connectorActor.get ? GetTableMetadata(clusterName,tableName)
 
-    Try(Await.result(future.mapTo[TableMetadata],FiniteDuration.apply(ConnectorApp.GetMetadataTimeout, TimeUnit.SECONDS))).map{ Some (_)}.recover{
+    Try(Await.result(future.mapTo[TableMetadata],FiniteDuration(timeout, TimeUnit.SECONDS))).map{ Some (_)}.recover{
       case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: "+e.getMessage); None
     }.get
 
@@ -128,10 +128,10 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
 
 
   override def getConnectionStatus: ConnectionStatus = {
-  implicit val stTimeout = Timeout(FiniteDuration(ConnectorApp.GetMetadataTimeout,TimeUnit.SECONDS))
+  implicit val stTimeout = Timeout(FiniteDuration(ConnectorApp.GetStatusTimeout,TimeUnit.SECONDS))
     connectorActor.map[ConnectionStatus]{ cActor =>
       val future = (cActor ? GetConnectorStatus).mapTo[Boolean]
-      Try(Await.result(future,FiniteDuration.apply(ConnectorApp.GetMetadataTimeout, TimeUnit.SECONDS))).map{ isConnected =>
+      Try(Await.result(future,FiniteDuration.apply(ConnectorApp.GetStatusTimeout, TimeUnit.SECONDS))).map{ isConnected =>
           if (isConnected) ConnectionStatus.CONNECTED else ConnectionStatus.DISCONNECTED
       }.recover{
         case e: Exception => logger.debug("Error asking for the connector status: "+e.getMessage); ConnectionStatus.DISCONNECTED
