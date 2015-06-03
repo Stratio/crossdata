@@ -90,8 +90,8 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
      * @param isExternal   Whether the table has been created previously or not.
      */
     public CreateTableStatement(TableType tableType, TableName tableName, ClusterName clusterName,
-            LinkedHashMap<ColumnName, ColumnType> columns,
-            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey, boolean isExternal) {
+                                LinkedHashMap<ColumnName, ColumnType> columns,
+                                LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey, boolean isExternal) {
         this.command = false;
         this.tableType = tableType;
         this.tableStatement.setTableName(tableName);
@@ -120,8 +120,8 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
      * @param isExternal   Whether the table has been created previously or not.
      */
     public CreateTableStatement(TableName tableName, ClusterName clusterName,
-            LinkedHashMap<ColumnName, ColumnType> columns,
-            LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey, boolean isExternal) {
+                                LinkedHashMap<ColumnName, ColumnType> columns,
+                                LinkedHashSet<ColumnName> partitionKey, LinkedHashSet<ColumnName> clusterKey, boolean isExternal) {
         this(TableType.DATABASE, tableName, clusterName, columns, partitionKey, clusterKey, isExternal);
     }
 
@@ -198,7 +198,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder( (isExternal) ? "REGISTER " :"CREATE ");
+        StringBuilder sb = new StringBuilder((isExternal) ? "REGISTER " : "CREATE ");
         if (tableType != TableType.DATABASE) {
             sb.append(tableType);
         }
@@ -269,6 +269,7 @@ public class CreateTableStatement extends AbstractMetadataTableStatement impleme
 
     /**
      * Get the list of columns that are part of the primary key.
+     *
      * @return
      */
     public Set<ColumnName> getPrimaryKey() {

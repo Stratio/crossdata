@@ -19,10 +19,7 @@
 package com.stratio.crossdata.common.metadata;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import com.stratio.crossdata.common.statements.structures.BooleanSelector;
 import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
@@ -78,6 +75,11 @@ public class ColumnType implements Serializable {
             break;
         }
     }
+    public ColumnType(DataType dataType, Map<String, List<String>>  columnProperties) {
+        this(dataType);
+        this.columnProperties = columnProperties;
+    }
+
 
     private DataType dataType;
 
@@ -101,6 +103,12 @@ public class ColumnType implements Serializable {
      */
     private ColumnType dbInnerType;
 
+
+    /**
+     * Database specific options for columns/fields.
+     */
+    private Map<String, List<String>>  columnProperties = new HashMap();
+
     /**
      * The underlying database value type for map-like collections.
      */
@@ -120,6 +128,16 @@ public class ColumnType implements Serializable {
 
     public ColumnType getDbInnerValueType() {
         return dbInnerValueType;
+    }
+
+    public void addColumnProperty(String propertyName, String propertyValue){
+
+       List properties = columnProperties.get(propertyName);
+        if (properties == null){
+            properties = new ArrayList();
+            columnProperties.put(propertyName, properties);
+        }
+        properties.add(propertyValue);
     }
 
     /**
@@ -214,6 +232,23 @@ public class ColumnType implements Serializable {
      */
     public void setDbType(String dbType) {
         this.dbType = dbType;
+    }
+
+    /**
+     * Get the columnProperties.
+     * @return a {@link java.util.Map<String, java.util.List<String>>} where the key is the
+     * property name, and the value is a List of values of this property.
+     */
+    public Map<String, List<String>> getColumnProperties() {
+        return columnProperties;
+    }
+
+    /**
+     * Set the columnProperties map.
+     * @param columnProperties
+     */
+    public void setColumnProperties(Map<String, List<String>> columnProperties) {
+        this.columnProperties = columnProperties;
     }
 
     /**
@@ -375,6 +410,18 @@ public class ColumnType implements Serializable {
         case MAP:
             sb.append("<").append(getDBInnerType()).append(", ").append(getDBInnerValueType()).append(">");
             break;
+        }
+
+        if (columnProperties != null && !columnProperties.isEmpty()){
+            sb.append("(");
+            String comma = "";
+            for(String propertieName:columnProperties.keySet()){
+                for(String propertyValue:columnProperties.get(propertieName)){
+                    sb.append(comma).append(propertieName).append(":").append(propertyValue);
+                    comma = ", ";
+                }
+            }
+            sb.append(")");
         }
         return sb.toString();
     }

@@ -231,4 +231,42 @@ public class CreateTableStatementTest extends ParsingTest {
         testRegularStatementSession("shop", inputText, expectedText, "createTableWithListType");
     }
 
+
+
+    @Test
+    public void createTableWithColumnOptions() {
+        String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
+                "something2 int(analyzer:basic), something3 boolean);";
+        String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
+                ".something=text, mycatalog.myTable.something2=int(analyzer:basic), mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+        testRegularStatement(inputText, expectedText, "createTableBasic");
+    }
+
+    @Test
+    public void createTableWithCuplicatedColumnOptions() {
+        String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
+                "something2 int(analyzer:basic, analyzer:english), something3 boolean);";
+        String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
+                ".something=text, mycatalog.myTable.something2=int(analyzer:basic, analyzer:english), mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+        testRegularStatement(inputText, expectedText, "createTableBasic");
+    }
+
+    @Test
+    public void createTableWithMultipleColumnOptionsInTheSameColumn() {
+        String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
+                "something2 int(analyzer:basic, format:bbbb), something3 boolean);";
+        String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
+                ".something=text, mycatalog.myTable.something2=int(analyzer:basic, format:bbbb), mycatalog.myTable.something3=boolean, PRIMARY KEY((mycatalog.myTable.something)));";
+        testRegularStatement(inputText, expectedText, "createTableBasic");
+    }
+
+    @Test
+    public void createTableWithMultipleColumnOptions() {
+        String inputText = "[myCatalog], CREATE TABLE myTable ON CLUSTER siliconValley (something text PRIMARY KEY, " +
+                "something2 int(analyzer:basic), something3 boolean(format:b));";
+        String expectedText = "CREATE TABLE mycatalog.myTable ON CLUSTER cluster.siliconvalley(mycatalog.myTable" +
+                ".something=text, mycatalog.myTable.something2=int(analyzer:basic), mycatalog.myTable.something3=boolean(format:b), PRIMARY KEY((mycatalog.myTable.something)));";
+        testRegularStatement(inputText, expectedText, "createTableBasic");
+    }
+
 }

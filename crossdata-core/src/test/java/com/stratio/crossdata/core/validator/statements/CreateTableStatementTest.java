@@ -227,4 +227,5 @@ public class CreateTableStatementTest extends BasicValidatorTest {
         columns.put(new ColumnName(new TableName("demo", "users2"), "age"), new ColumnType(DataType.INT));
         return columns;
     }
+
 }
