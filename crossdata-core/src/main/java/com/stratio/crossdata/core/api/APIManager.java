@@ -523,23 +523,26 @@ public class APIManager {
 
         Result result = null;
         try {
+            //Save the connector and datastore manifest data
+            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
+            List<DataStoreMetadata> datastores = MetadataManager.MANAGER.getDatastores();
+
             result = createResetServerDataCommand();
 
-            List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
+            //List<ConnectorMetadata> connectors = MetadataManager.MANAGER.getConnectors();
             MetadataManager.MANAGER.clear();
             for (ConnectorMetadata cm : connectors) {
                 if (cm.getStatus() == Status.ONLINE) {
-                    ConnectorName connectorName = cm.getName();
-                    Set<String> actorRefs = cm.getActorRefs();
-                    for(String actorRef: actorRefs){
-                        MetadataManager.MANAGER.addConnectorRef(connectorName, actorRef);
-                    }
-
-                    MetadataManager.MANAGER.setConnectorStatus(connectorName, Status.ONLINE);
+                    MetadataManager.MANAGER.createConnector(cm,true);
                 }
             }
-        } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException | RollbackException
-                | ManifestException ex) {
+
+            for (DataStoreMetadata datastore:datastores){
+                MetadataManager.MANAGER.createDataStore(datastore);
+            }
+
+        } catch (SystemException | NotSupportedException | HeuristicRollbackException | HeuristicMixedException |
+                RollbackException ex ) {
             result = CommandResult.createErrorResult(ex);
             LOG.error(ex.getMessage());
         }
