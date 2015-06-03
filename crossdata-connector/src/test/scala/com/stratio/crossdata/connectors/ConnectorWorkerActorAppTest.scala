@@ -41,10 +41,10 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 
 //class ConnectorActorAppTest extends FunSuite with MockFactory {
-class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with MockFactory with ImplicitSender {
-  this: Suite =>
+class ConnectorWorkerActorAppTest extends TestKit(ActorSystem()) with FunSuite with MockFactory with ImplicitSender {
+  this:Suite =>
 
-  lazy val logger = Logger.getLogger(classOf[ConnectorActorAppTest])
+  lazy val logger = Logger.getLogger(classOf[ConnectorWorkerActorAppTest])
   implicit val timeout = Timeout(3 seconds)
 
   val connector: String = "MyConnector"
@@ -64,7 +64,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     //assert(m.getConnectorName().equals(connector))
   }
 
-  test("Basic Connector App listening on a given port does not break") {
+  /*test("Basic Connector App listening on a given port does not break") {
     val m = mock[IConnector]
     (m.getConnectorManifestPath _).expects()
     (m.init _).expects(*).returning(None)
@@ -72,9 +72,8 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
     val c = new ConnectorApp()
     val myReference = c.startup(m)
     assertNotNull(myReference, "Null reference returned")
-    c.stop()
+    c.stop
   }
-/*
   test("Send SelectInProgressQuery to Connector") {
     val m = mock[IConnector]
     val qe = mock[IQueryEngine]
@@ -116,6 +115,7 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
 
     (m.getConnectorManifestPath _).expects().returning("*")
     (m.init _).expects(*).returning(None)
+
     val datastores=Array.ofDim[String](1)
     (m.getDatastoreManifestPath _).expects().returning(datastores)
     (me.createTable _).expects(*, *).returning(QueryResult.createQueryResult(UUID.randomUUID().toString, new ResultSet(), 0, true))
@@ -135,11 +135,11 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
           partitionKey.get,
           partitionKey.get)
       )
-      val future = ask(myReference, message)
+      val future = ask(myReference.get, message)
       val result = Await.result(future, 3 seconds).asInstanceOf[MetadataResult]
       logger.debug("receive->" + result + " after sending Metadata query")
     }
-    c.stop()
+    c.stop
   }
 
   test("Send StorageInProgressQuery to Connector") {
@@ -160,10 +160,12 @@ class ConnectorActorAppTest extends TestKit(ActorSystem()) with FunSuite with Mo
       options.get, columns.get, indexes.get, clusterRef.get, partitionKey.get, partitionKey.get), new Row(), false)
     //val future=myReference ? message
     logger.info("\n\nsending insert message to" + myReference + " \n\n")
+
     val future = myReference ? message
+
     val result = Await.result(future, 6 seconds).asInstanceOf[StorageResult]
     logger.info("receiving->" + result + " after sending insert query")
-    c.stop()
+    c.stop
   }
 */
   //TODO: CREATE ONE TEST FOR EACH KIND OF MESSAGE

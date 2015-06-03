@@ -24,7 +24,6 @@ import com.typesafe.config.Config
 object NumberActorConfig {
 
   val API_ACTOR_NUM = "config.akka.number.api-actor "
-  val CONNECTOR_MANAG_ACTOR_NUM = "config.akka.number.connector-manager-actor"
   val COORDINATOR_ACTOR_NUM = "config.akka.number.coordinator-actor"
   val EXECUTOR_ACTOR_NUM = "config.akka.number.executor-actor"
   val NORMALIZER_ACTOR_NUM = "config.akka.number.normalizer-actor"
@@ -39,7 +38,6 @@ object NumberActorConfig {
 trait NumberActorConfig {
 
   lazy val num_api_actor: Int = config.getString(NumberActorConfig.API_ACTOR_NUM).toInt
-  lazy val num_connector_manag_actor: Int = config.getString(NumberActorConfig.CONNECTOR_MANAG_ACTOR_NUM).toInt
   lazy val num_coordinator_actor: Int = config.getString(NumberActorConfig.COORDINATOR_ACTOR_NUM).toInt
   lazy val num_executor_actor: Int = config.getString(NumberActorConfig.EXECUTOR_ACTOR_NUM).toInt
   lazy val num_normalizer_actor: Int = config.getString(NumberActorConfig.NORMALIZER_ACTOR_NUM).toInt

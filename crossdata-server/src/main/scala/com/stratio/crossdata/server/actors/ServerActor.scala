@@ -40,11 +40,10 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
   val random=new Random
   val hostname=config.getString("akka.remote.netty.tcp.hostname")
-  val resizer = DefaultResizer(lowerBound = 1, upperBound = 15)
+  val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
   val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(hostname), "loadWatcherActor")
-  val connectorManagerActorRef = context.actorOf( RoundRobinPool(num_connector_manag_actor, Some(resizer))
-     .props(Props(classOf[ConnectorManagerActor], cluster)), "ConnectorManagerActor")
+  val connectorManagerActorRef = context.actorOf(Props(classOf[ConnectorManagerActor], cluster), "ConnectorManagerActor")
 
   val coordinatorActorRef = context.actorOf( RoundRobinPool(num_coordinator_actor, Some(resizer))
      .props(Props(classOf[CoordinatorActor], connectorManagerActorRef, engine.getCoordinator)), "CoordinatorActor")

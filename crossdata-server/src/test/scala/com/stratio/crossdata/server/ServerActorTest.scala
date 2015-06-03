@@ -34,7 +34,7 @@ import com.stratio.crossdata.common.metadata._
 import com.stratio.crossdata.common.metadata.structures.TableType
 import com.stratio.crossdata.common.statements.structures.Selector
 import com.stratio.crossdata.common.utils.{Constants, StringUtils}
-import com.stratio.crossdata.communication.{getConnectorName, replyConnectorName}
+import com.stratio.crossdata.communication.{ReplyConnectorName, GetConnectorName}
 import com.stratio.crossdata.core.MetadataManagerTestHelper
 import com.stratio.crossdata.core.coordinator.Coordinator
 import com.stratio.crossdata.core.execution.ExecutionManager
@@ -217,8 +217,8 @@ ImplicitSender with BeforeAndAfterAll{
     val clusterwithPriorities=new java.util.LinkedHashMap[ClusterName, Integer]()
     clusterwithPriorities.put(testcluster, Constants.DEFAULT_PRIORITY)
 
-    val future = connectorActor ? getConnectorName()
-    val connectorName = Await.result(future, 3 seconds).asInstanceOf[replyConnectorName]
+    val future = connectorActor ? GetConnectorName()
+    val connectorName = Await.result(future, 3 seconds).asInstanceOf[ReplyConnectorName]
     logger.debug("creating connector " + connectorName.name)
 
 

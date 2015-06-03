@@ -213,6 +213,11 @@ public class TwitterConnector extends AbstractExtendedConnector {
         LOG.info("Shutting down TwitterConnector");
     }
 
+    @Override
+    public void restart() throws ExecutionException {
+
+    }
+
     /**
      * Retrieve the connectivity status with the datastore.
      *

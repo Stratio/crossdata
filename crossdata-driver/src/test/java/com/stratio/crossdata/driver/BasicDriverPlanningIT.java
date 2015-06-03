@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.driver;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import com.stratio.connector.inmemory.InMemoryConnector;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
@@ -55,8 +56,8 @@ public class BasicDriverPlanningIT {
         connectorFake = new ConnectorApp();
         InMemoryConnector inMemoryConnector = new InMemoryConnector(connector);
         InMemoryConnectorFake inMemoryConnectorFake = new InMemoryConnectorFake(connectorFake);
-        ActorSelection actorSelection = connector.startup(inMemoryConnector);
-        ActorSelection actorSelectionFake = connectorFake.startup(inMemoryConnectorFake);
+        ActorRef actorSelection = connector.startup(inMemoryConnector).get();
+        ActorRef actorSelectionFake = connectorFake.startup(inMemoryConnectorFake).get();
         Thread.sleep(4000);
     }
 

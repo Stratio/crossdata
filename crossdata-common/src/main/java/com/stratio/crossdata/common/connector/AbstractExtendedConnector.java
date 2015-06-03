@@ -40,7 +40,7 @@ public abstract class AbstractExtendedConnector implements IConnector{
     /**
      * Parent connector application.
      */
-    private final IConnectorApp connectorApp;
+    protected final IConnectorApp connectorApp;
 
     /**
      * Class constructor.

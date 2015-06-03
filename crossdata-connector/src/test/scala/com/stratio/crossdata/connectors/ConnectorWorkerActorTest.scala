@@ -39,12 +39,12 @@ import scala.concurrent.Await
 import scala.concurrent.duration.DurationInt
 import scala.io.Source
 
-object ConnectorActorTest
+object ConnectorWorkerActorTest
 
-class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
+class ConnectorWorkerActorTest extends FunSuite with ConnectConfig with MockFactory {
   this: Suite =>
 
-  override lazy val logger = Logger.getLogger(classOf[ConnectorActorTest])
+  override lazy val logger = Logger.getLogger(classOf[ConnectorWorkerActorTest])
   lazy val system1 = ActorSystem(clusterName, config)
   implicit val timeout = Timeout(10 seconds)
   val myconnector: String="myConnector"
@@ -68,14 +68,9 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
 
+    val ca1 = system1.actorOf(ConnectorWorkerActor.props( m, agent, runningJobsAgent))
+    val ca2 = system1.actorOf(ConnectorWorkerActor.props( m2, agent, runningJobsAgent))
 
-    val ca1 = system1.actorOf(ConnectorActor.props(getClass().getResource("/com.stratio.crossdata" +
-      ".connectors/DummyConnector.xml").getPath,
-    Array(getClass().getResource("/com.stratio.crossdata.connectors/DummyDataStore.xml").getPath), m, connectedServers, agent,
-      runningJobsAgent))
-    val ca2 = system1.actorOf(ConnectorActor.props(getClass().getResource("/com.stratio.crossdata.connectors/DummyConnector.xml").getPath,
-      Array(getClass().getResource("/com.stratio.crossdata.connectors/DummyDataStore.xml").getPath),m2, connectedServers,agent,
-      runningJobsAgent))
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))
@@ -105,17 +100,11 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
     val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
 
-    val ca1 = system1.actorOf(ConnectorActor.props(getClass().getResource("/com.stratio.crossdata" +
-      ".connectors/DummyConnector.xml").getPath,
-      Array(getClass().getResource("/com.stratio.crossdata.connectors/DummyDataStore.xml").getPath), m, connectedServers, agent,
-      runningJobsAgent))
-    val ca2 = system1.actorOf(ConnectorActor.props(getClass().getResource("/com.stratio.crossdata.connectors/DummyConnector.xml").getPath,
-      Array(getClass().getResource("/com.stratio.crossdata.connectors/DummyDataStore.xml").getPath),m2, connectedServers,agent,
-      runningJobsAgent))
+    val ca1 = system1.actorOf(ConnectorWorkerActor.props( m,  agent, runningJobsAgent))
+    val ca2 = system1.actorOf(ConnectorWorkerActor.props(m2,  agent, runningJobsAgent))
     val routees = Vector[ActorRef](ca1, ca2)
 
-    val connectorActor = system1.actorOf(ConnectorActor.props(null,null, m,connectedServers,agent, runningJobsAgent).withRouter(RoundRobinRouter(routees = routees)))
-
+    val connectorActor = system1.actorOf(ConnectorWorkerActor.props( m, agent, runningJobsAgent).withRouter(RoundRobinRouter(routees = routees)))
 
     val message = CreateTable(queryId, new ClusterName(myluster), new TableMetadata(new TableName(mycatalog, mytable),
       a.get, b.get, c.get, d.get, e.get, e.get))
@@ -143,38 +132,29 @@ class ConnectorActorTest extends FunSuite with ConnectConfig with MockFactory {
   }
 
   test("Send updateMetadata to Connector") {
-    val agent = Agent(new ObservableMap[Name, UpdatableMetadata])(system1.dispatcher)
+    //It's not possible mock because the remove is ambiguous for scalamock
+    class ObservableMapMock extends ObservableMap[Name, UpdatableMetadata] {
+      var testVals = List.empty[String]
+      override def put(key: Name, value: UpdatableMetadata): UpdatableMetadata = {
+        testVals = key.toString+value.toString :: testVals
+        null
+        }
+    }
+    val observableMapMock = new ObservableMapMock() .asInstanceOf[ObservableMap[Name, UpdatableMetadata]]
+
+    val agent = Agent(observableMapMock)(system1.dispatcher)
     val runningJobsAgent = Agent(new ListMap[String, ActorRef])(system1.dispatcher)
-    val connectedServers = Agent(Set.empty[String])(system1.dispatcher)
     val m=new DummyIConnector()
-
-    val ca1 = system1.actorOf(ConnectorActor.props(getClass().getResource("/com.stratio.crossdata" +
-      ".connectors/DummyConnector.xml").getPath,
-      Array(getClass().getResource("/com.stratio.crossdata.connectors/DummyDataStore.xml").getPath), m, connectedServers, agent,
-      runningJobsAgent))
+    val ca1 = system1.actorOf(ConnectorWorkerActor.props( m,agent, runningJobsAgent))
 
     val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
-    val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
-    catalog.getTables.put(table.getName,table)
-    val future1 = ask(ca1, UpdateMetadata(catalog, true))
-    val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
-    assert(result == true)
-  }
+    //Expectations(observableMock.put _).expects(table.getName, table)
+    ca1 ! UpdateMetadata(table, false)
+    Thread.sleep(200)
+    assert( observableMapMock.asInstanceOf[ObservableMapMock].testVals.size == 1, "The table metadata has not been updated")
+    expectResult(table.getName.toString+table.toString)( observableMapMock.asInstanceOf[ObservableMapMock].testVals.head)
 
-  /*
-  test("Send patched updateMetadata to Connector") {
-    //TODO: this test is not complete (still a Proof Of Concept)
-    val m=new DummyIConnector()
-    val ca1 = system1.actorOf(ConnectorActor.props(myconnector, m,null))
-    val table=new TableMetadata(new TableName("catalog","name"),null,null,null,null,null,null)
-    val classTableMetadata=table.getClass
-    val catalog = new CatalogMetadata(new CatalogName("catalog"),null,null)
-    catalog.getTables.put(table.getName,table)
-    val future1 = ask(ca1, PatchMetadata(null, metadataClass = classTableMetadata,table.getName))
-    val result = Await.result(future1, 12 seconds).asInstanceOf[Boolean]
-    assert(result == true)
   }
-  */
 
 }
 
