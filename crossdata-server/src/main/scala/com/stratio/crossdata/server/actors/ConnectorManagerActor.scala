@@ -31,7 +31,7 @@ import com.stratio.crossdata.common.exceptions.{ExecutionException, ManifestExce
 import com.stratio.crossdata.common.executionplan.{ExecutionType, ManagementWorkflow, ResultType}
 import com.stratio.crossdata.common.manifest._
 import com.stratio.crossdata.common.metadata.{ConnectorMetadata, DataStoreMetadata}
-import com.stratio.crossdata.common.result.{ConnectResult, ErrorResult, Result}
+import com.stratio.crossdata.common.result.{ConnectToConnectorResult, ConnectResult, ErrorResult, Result}
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
@@ -55,7 +55,7 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
   log.info("Lifting connector manager actor")
 
   override def preStart(): Unit = {
-    cluster.subscribe(self, classOf[ClusterDomainEvent])
+    cluster.subscribe(self, classOf[MemberUp],classOf[CurrentClusterState],classOf[UnreachableMember], classOf[MemberRemoved], classOf[MemberExited])
   }
 
   override def postStop(): Unit = {
@@ -158,12 +158,14 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
       persistDatastoreManifest(datastoreManifest)
     }
 
-    case c: ConnectResult => {
-      logger.info("Connect result from " + sender + " => " + c.getSessionId)
+    case c: ConnectToConnectorResult => {
+      logger.info("Connect result from " + sender)
       coordinatorActorRef forward c
     }
 
+      //TODO delete?
     case er: ErrorResult => {
+      logger.info("Error result from " + sender)
       coordinatorActorRef ! er
     }
 
@@ -238,24 +240,6 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
       MetadataManager.MANAGER.setNodeStatus(new NodeName(member.member.address.toString), Status.OFFLINE)
     }
 
-    case _: MemberEvent => {
-      logger.info("Receiving anything else")
-      //TODO Process MemberEvent
-    }
-
-    case clusterMetricsChanged: ClusterMetricsChanged => {
-
-    }
-
-    case clusterDomainEvent: ClusterDomainEvent => {
-      logger.debug("ClusterDomainEvent: " + clusterDomainEvent)
-      //TODO Process ClusterDomainEvent
-    }
-
-    case ReceiveTimeout => {
-      logger.info("ReceiveTimeout")
-      //TODO Process ReceiveTimeout
-    }
 
     case unknown: Any => {
       sender ! Result.createUnsupportedOperationErrorResult("Not recognized object")

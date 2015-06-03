@@ -255,20 +255,18 @@ class ConnectorActor(connectorManifestPath: String, datastoreManifestPath: Array
 
     }
 
-    case connectRequest: com.stratio.crossdata.communication.Connect => {
+    case Connect(queryId, credentials, connectorClusterConfig) => {
       logger.debug("->" + "Receiving MetadataRequest")
       logger.info("Received connect command")
       try {
-        connector.connect(connectRequest.credentials, connectRequest.connectorClusterConfig)
+        connector.connect(credentials, connectorClusterConfig)
         this.state = State.Started //if it doesn't connect, an exception will be thrown and we won't get here
-        val result = ConnectResult.createConnectResult("Connected successfully")
-        result.setQueryId(connectRequest.queryId)
+        val result = ConnectToConnectorResult.createSuccessConnectResult(queryId)
         sender ! result //TODO once persisted sessionId,
       } catch {
         case e: ConnectionException => {
           logger.error(e.getMessage)
-          val result = Result.createConnectionErrorResult(e.getMessage)
-          result.setQueryId(connectRequest.queryId)
+          val result = ConnectToConnectorResult.createFailureConnectResult(queryId,e)
           sender ! result
         }
       }

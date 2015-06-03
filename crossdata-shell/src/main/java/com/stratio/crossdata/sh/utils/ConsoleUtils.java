@@ -46,6 +46,7 @@ import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
+import com.stratio.crossdata.common.result.ConnectToConnectorResult;
 import com.stratio.crossdata.common.result.DisconnectResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.InProgressResult;
@@ -114,7 +115,14 @@ public final class ConsoleUtils {
         } else if (result instanceof InProgressResult) {
             InProgressResult inProgressResult = (InProgressResult) result;
             return "Query " + inProgressResult.getQueryId() + " in progress";
-        } else {
+        } else if (result instanceof ConnectToConnectorResult){
+            ConnectToConnectorResult connectResult = (ConnectToConnectorResult) result;
+            if (connectResult.hasError()){
+                return String.valueOf("ERROR: Couldn't connect to cluster: "+connectResult.getException().getMessage());
+            }else{
+                return String.valueOf("Connected to cluster successfully");
+            }
+        }else {
             return "Unknown result";
         }
     }
