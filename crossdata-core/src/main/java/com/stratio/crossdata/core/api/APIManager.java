@@ -289,7 +289,8 @@ public class APIManager {
             sb.append("\t").append("Functions: ").append(System.lineSeparator());
             Set<FunctionType> functions=datastore.getFunctions();
             for (FunctionType function:functions){
-                sb.append("\t\t").append(function.getFunctionName()).append(System.lineSeparator());
+                sb.append("\t\t").append(function.getFunctionName()).append(": ").append(function.getDescription()).
+                        append(System.lineSeparator());
             }
 
             sb.append("\t").append("Behaviours: ").append(System.getProperty("line.separator")).append("\t\t").append
@@ -318,12 +319,16 @@ public class APIManager {
             Set<ClusterName> clusters = connector.getClusterRefs();
             Map<ClusterName, Map<Selector, Selector>> properties = connector.getClusterProperties();
             Set<Operations> supportedOperations=connector.getSupportedOperations();
+            Set<FunctionType> functions=connector.getConnectorFunctions();
 
             stringBuilder = stringBuilder.append("Connector: ").append(connector.getName())
                     .append("\t").append(System.getProperty("line.separator"));
 
             stringBuilder.append("\t").append("Status: ").append(connector.getStatus()).append(System.getProperty(
                     "line.separator"));
+
+            stringBuilder.append("\t").append("Native: ").append(connector.isNative()).append(System.getProperty("line" +
+                    ".separator"));
 
             stringBuilder.append("\t").append("Properties: ").append(System.getProperty("line.separator"));
 
@@ -352,6 +357,13 @@ public class APIManager {
                 stringBuilder.append("\t\t").append(operation.getOperationsStr())
                         .append(System.getProperty("line.separator"));
             }
+
+            stringBuilder.append("\t").append("Functions: ").append(System.getProperty("line.separator"));
+            for (FunctionType function : functions) {
+                stringBuilder.append("\t\t").append(function.getFunctionName()).append(": ").append(function.getDescription())
+                        .append(System.getProperty("line.separator"));
+            }
+
 
             stringBuilder = stringBuilder.append(System.getProperty("line.separator"));
             result = CommandResult.createCommandResult(stringBuilder.toString());
