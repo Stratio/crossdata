@@ -84,13 +84,13 @@ public class InMemoryConnector extends AbstractExtendedConnector {
         registerMetric(timerName, connectTimer);
     }
 
-
-
-    @Override public String getConnectorManifestPath() {
+    @Override
+    public String getConnectorManifestPath() {
         return getClass().getResource("/InMemoryConnector.xml").getPath();
     }
 
-    @Override public String[] getDatastoreManifestPath() {
+    @Override
+    public String[] getDatastoreManifestPath() {
         String datastore[]=new String[1];
         datastore[0]=getClass().getResource("/InMemoryDataStore.xml").getPath();
         return datastore;
