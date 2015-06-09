@@ -106,7 +106,7 @@ chkconfig --add connector_sparksql
 chkconfig crossdata off
 chkconfig cassandra on
 chkconfig connector_cassandra off
-chkconfig connector_sparkSQL off
+chkconfig connector_sparksql off
 echo "Starting services..."
 service cassandra start
 
