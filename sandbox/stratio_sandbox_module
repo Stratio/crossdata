@@ -86,10 +86,6 @@ sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\
 sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/cassandra/connector-application.conf
 
 
-#H2 for metastore
-
-#Config H2
-
 
 #SPARKSQL Connector
 echo "Installing SparkSQL connector..."
