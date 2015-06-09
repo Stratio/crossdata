@@ -93,7 +93,7 @@ rpm --quiet -q stratio-connector-sparksql || yum -y -q --nogpgcheck install stra
 
 #config
 echo "Configuring SparkSQL connector..."
-sed -i "s/^#\(spark.home=\)/\1/ /opt/sds/spark/" /etc/sds/connectors/sparksql/connector-application.conf
+sed -i "s/^\(spark.home             =\).*$/\1\"\/opt\/sds\/spark\"/" /etc/sds/connectors/sparksql/connector-application.conf
 sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/sparksql/connector-application.conf
 sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/sparksql/connector-application.conf
 
