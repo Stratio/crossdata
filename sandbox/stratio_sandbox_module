@@ -89,20 +89,20 @@ sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipa
 
 #SPARKSQL Connector
 echo "Installing SparkSQL connector..."
-rpm --quiet -q stratio-connector-sparkSQL || yum -y -q --nogpgcheck install stratio-connector-sparkSQL
+rpm --quiet -q stratio-connector-sparksql || yum -y -q --nogpgcheck install stratio-connector-sparksql
 
 #config
 echo "Configuring SparkSQL connector..."
-sed -i "s/^#\(spark.home=\)/\1/ /opt/sds/spark/" /etc/sds/connectors/sparkSQL/connector-application.conf
-sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/sparkSQL/connector-application.conf
-sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/sparkSQL/connector-application.conf
+sed -i "s/^#\(spark.home=\)/\1/ /opt/sds/spark/" /etc/sds/connectors/sparksql/connector-application.conf
+sed -i "s/^\(crossdata-connector.akka.cluster.seed-nodes =\).*$/\1 \[\"akka.tcp\:\/\/CrossdataServerCluster\@$ipaddress\:13420\"\]/" /etc/sds/connectors/sparksql/connector-application.conf
+sed -i "s/^\(crossdata-connector.akka.remote.netty.tcp.hostname =\).*$/\1 \"$ipaddress\"/" /etc/sds/connectors/sparksql/connector-application.conf
 
 
 
 chkconfig --add crossdata
 chkconfig --add cassandra
 chkconfig --add connector_cassandra
-chkconfig --add connector_sparkSQL
+chkconfig --add connector_sparksql
 chkconfig crossdata off
 chkconfig cassandra on
 chkconfig connector_cassandra off
