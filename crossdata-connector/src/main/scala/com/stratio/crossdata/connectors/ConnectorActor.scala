@@ -81,6 +81,8 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
     RoundRobinPool(num_connector_actor, Some(resizer))
       .props(Props(classOf[ConnectorWorkerActor], connector, metadataMapAgent, runningJobsAgent)), "ConnectorWorker")
 
+  lazy val coordinatorActorRef = context.system.actorOf(ConnectorCoordinatorActor.props(connectorWorkerRef))
+
   var metricName: Option[String] = Some(MetricRegistry.name(connectorApp.getConnectorName, "connection", "status"))
   Metrics.getRegistry.register(metricName.get,
     new Gauge[Boolean] {
@@ -113,6 +115,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
 
   def normalState: Receive = {
 
+    //ConnectorManagerMessages
     case GetConnectorName() => {
       logger.info(sender + " asked for my name: " + connectorApp.getConnectorName)
       connectedServers += sender.path.address.toString
@@ -165,6 +168,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       }
     }
 
+    //Cluster events
     case MemberUp(member) => {
       logger.info("Member up")
       logger.info("Member is Up: " + member.toString + member.getRoles + "!")
@@ -244,6 +248,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       logger.info("MemberEvent received: " + memberEvent.toString)
     }
 
+    //ConnectorApp messages
     case listener: IMetadataListener => {
       logger.info("Adding new metadata listener")
       metadataMapAgent.send(oMap => {
@@ -255,7 +260,11 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       sender ! ConnectorStatus(!connectedServers.isEmpty)
     }
 
-    //ConnectorWorkerMessages
+    //Coordinator messages
+    case top: TriggerOperation => {
+      coordinatorActorRef forward top
+    }
+
     case otherMsg => {
       connectorWorkerRef forward otherMsg
     }

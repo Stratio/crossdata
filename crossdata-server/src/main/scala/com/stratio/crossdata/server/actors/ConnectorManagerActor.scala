@@ -26,7 +26,7 @@ MemberRemoved, UnreachableMember, CurrentClusterState, MemberUp, ClusterDomainEv
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.{NodeName, ConnectorName, Status}
-import com.stratio.crossdata.common.executionplan.{ResultType, ExecutionType, ManagementWorkflow}
+import com.stratio.crossdata.common.executionplan.{ExecutionInfo, ResultType, ExecutionType, ManagementWorkflow}
 import com.stratio.crossdata.common.result.{ErrorResult, Result, ConnectResult}
 import java.util
 import java.util.{Collections, UUID}
@@ -38,14 +38,13 @@ import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.{ConnectorName, DataStoreName, NodeName, Status}
 import com.stratio.crossdata.common.exceptions.{ExecutionException, ManifestException}
-import com.stratio.crossdata.common.executionplan.{ExecutionType, ManagementWorkflow, ResultType}
 import com.stratio.crossdata.common.manifest._
 import com.stratio.crossdata.common.metadata.{ConnectorMetadata, DataStoreMetadata}
 import com.stratio.crossdata.common.result.{ConnectToConnectorResult, ConnectResult, ErrorResult, Result}
 import com.stratio.crossdata.common.statements.structures.SelectorHelper
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
-import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
+import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.loadwatcher.LoadWatcherManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import org.apache.log4j.Logger

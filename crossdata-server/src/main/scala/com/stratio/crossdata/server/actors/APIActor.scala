@@ -22,11 +22,12 @@ import akka.actor.{ActorSelection, Actor, Props}
 import akka.routing.Broadcast
 import com.stratio.crossdata.common.data.Status
 import com.stratio.crossdata.common.ask.{APICommand, Command}
+import com.stratio.crossdata.common.executionplan.ExecutionInfo
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.utils.{StringUtils, Constants}
 import com.stratio.crossdata.communication.{ACK,StopProcess, Request}
 import com.stratio.crossdata.core.api.APIManager
-import com.stratio.crossdata.core.execution.{ExecutionInfo, ExecutionManager}
+import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.metadata.MetadataManager
 import com.stratio.crossdata.core.query.MetadataValidatedQuery
 import org.apache.log4j.Logger
