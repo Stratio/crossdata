@@ -55,9 +55,9 @@
         <operation>SELECT_FUNCTIONS</operation>
         <operation>SELECT_ORDER_BY</operation>
         <operation>SELECT_LIMIT</operation>
-
         <operation>SELECT_INNER_JOIN</operation>
-
+        <operation>SELECT_CROSS_JOIN_PARTIALS_RESULTS</operation>
+        <operation>PARTIAL_RESULTS</operation>
         <operation>FILTER_PK_EQ</operation>
         <operation>FILTER_PK_GT</operation>
         <operation>FILTER_PK_LT</operation>

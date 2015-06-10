@@ -16,11 +16,9 @@
  * under the License.
  */
 
-package com.stratio.crossdata.core.execution;
+package com.stratio.crossdata.common.executionplan;
 
 import java.io.Serializable;
-
-import com.stratio.crossdata.common.executionplan.ExecutionWorkflow;
 import com.stratio.crossdata.common.result.QueryStatus;
 
 /**
