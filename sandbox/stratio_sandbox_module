@@ -60,7 +60,9 @@ chmod 700 /opt/sds/spark/.ssh
 ssh-keygen -t rsa -b 2048 -f /opt/sds/spark/.ssh/id_rsa -N ""
 cp /opt/sds/spark/.ssh/id_rsa.pub /opt/sds/spark/.ssh/authorized_keys
 chown -R spark:spark /opt/sds/spark/.ssh/
+mkdir -p /users/hive/warehouse
 mkdir -p /users/warehouse
+chown -R stratio:stratio /users
 
 #Config Spark
 echo "Configuring Spark..."
@@ -110,6 +112,8 @@ chkconfig connector_cassandra off
 chkconfig connector_sparksql off
 echo "Starting services..."
 service cassandra start
+
+mv /etc/sds/connectors/sparksql/conf/hive-site.xml /etc/sds/connectors/sparksql/conf/hive-site.xml_bak
 
 cat >>/etc/rc.local <<EOF
 if [ ! -f $LOCK_FILE ]; then
