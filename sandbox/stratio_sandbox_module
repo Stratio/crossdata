@@ -60,6 +60,7 @@ chmod 700 /opt/sds/spark/.ssh
 ssh-keygen -t rsa -b 2048 -f /opt/sds/spark/.ssh/id_rsa -N ""
 cp /opt/sds/spark/.ssh/id_rsa.pub /opt/sds/spark/.ssh/authorized_keys
 chown -R spark:spark /opt/sds/spark/.ssh/
+mkdir -P /users/warehouse
 
 #Config Spark
 echo "Configuring Spark..."
