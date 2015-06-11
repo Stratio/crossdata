@@ -19,26 +19,24 @@
 package com.stratio.crossdata.server.actors
 
 import akka.actor.{ActorSelection, Actor, Props}
-import akka.routing.Broadcast
 import com.stratio.crossdata.common.data.Status
 import com.stratio.crossdata.common.ask.{APICommand, Command}
 import com.stratio.crossdata.common.executionplan.ExecutionInfo
 import com.stratio.crossdata.common.result._
-import com.stratio.crossdata.common.utils.{StringUtils, Constants}
 import com.stratio.crossdata.communication.{ACK,StopProcess, Request}
 import com.stratio.crossdata.core.api.APIManager
 import com.stratio.crossdata.core.execution.ExecutionManager
 import com.stratio.crossdata.core.metadata.MetadataManager
-import com.stratio.crossdata.core.query.MetadataValidatedQuery
 import org.apache.log4j.Logger
 import akka.actor._
 
-import scala.annotation.tailrec
+import scala.concurrent.duration._
 import scala.util.{Success, Try}
 
 object APIActor {
   def props(apiManager: APIManager, validatorActor: ActorRef): Props =
     Props(new APIActor(apiManager, validatorActor))
+  val StopProcessTimeout = 4 seconds
 }
 
 class APIActor(apiManager: APIManager, coordinatorActor: ActorRef) extends Actor with TimeTracker {
@@ -51,9 +49,10 @@ class APIActor(apiManager: APIManager, coordinatorActor: ActorRef) extends Actor
       log.debug("command received " + cmd.toString)
       val timer = initTimer()
       if (cmd.commandType == APICommand.STOP_PROCESS){
-        forwardStopProcess(cmd, sender) match {
-          case Some(result) => sender ! result
-          case None => log.debug("Sending stop process to the connectors")
+        forwardStopProcess(cmd, sender).fold{
+          log.debug("Sending stop process to connector")
+        } {
+          result => sender ! result
         }
       }else{
         if(cmd.commandType == APICommand.CLEAN_METADATA) {
@@ -69,9 +68,9 @@ class APIActor(apiManager: APIManager, coordinatorActor: ActorRef) extends Actor
               log.debug(forceDetachCommand)
               coordinatorActor forward forceDetachCommand
             }
-
             sender ! resetServerData.getResult;
-          } case result =>{
+          }
+          case result =>{
             sender ! result;
           }
         }
@@ -83,12 +82,9 @@ class APIActor(apiManager: APIManager, coordinatorActor: ActorRef) extends Actor
     case ACK( queryId , QueryStatus.EXECUTED) => {
       Try(ExecutionManager.MANAGER.getValue(queryId)) match {
         case Success((targetQueryId: String, originalSender: ActorRef)) => {
+          log.info("Stop process ACK received. Forwarding to "+originalSender)
           ExecutionManager.MANAGER.deleteEntry(targetQueryId)
-          if(!targetQueryId.endsWith(Constants.TRIGGER_TOKEN)){
-            ExecutionManager.MANAGER.deleteEntry(queryId)
-            log.info("Stop process ACK received. Forwarding to "+originalSender)
-            originalSender ! CommandResult.createCommandResult("The process ["+targetQueryId+"] was successfully stopped")
-          }
+          originalSender ! CommandResult.createCommandResult("The process ["+targetQueryId+"] was successfully stopped")
         }
         case _ => log.debug("Unexpected ack received with queryId: "+queryId)
       }
@@ -120,30 +116,32 @@ class APIActor(apiManager: APIManager, coordinatorActor: ActorRef) extends Actor
 
   private def forwardStopProcess(cmd: Command, proxyActor: ActorRef): Option[Result] = {
 
-    def stopTriggerQueries(baseQueryId: String): Unit = {
-      val topLevelQueryId = baseQueryId + Constants.TRIGGER_TOKEN
+    def stopProcessWithoutACK(stopProcessId: String, processQueryId: String) = {
 
-        Try(ExecutionManager.MANAGER.getValue(topLevelQueryId)) match {
-        case Success(exInfo:ExecutionInfo) => context.actorSelection(exInfo.getWorkflow.getActorRef) match {
-          case connectorActor: ActorSelection =>
-            log.info("Stopping top level queryId: "+topLevelQueryId)
-            stopTriggerQueries(topLevelQueryId)
-            connectorActor ! StopProcess(cmd.queryId, topLevelQueryId)
-          case _ =>
+      Try(ExecutionManager.MANAGER.getValue(stopProcessId)) match {
+        case Success((targetQueryId: String, originalSender: ActorRef)) => {
+          if (ExecutionManager.MANAGER.exists(processQueryId)){
+            log.warn(s"Stop process ACK not received. Removing the execution info")
+            ExecutionManager.MANAGER.deleteEntry(processQueryId)
+            originalSender ! CommandResult.createCommandResult(s"Timeout stopping the process [$targetQueryId]. Results with queryId $processQueryId will be discarded.")
+          }
         }
-        case _ =>
+        case _ => log.error(s"The stop process with query id: $stopProcessId should exists")
       }
+
+      ExecutionManager.MANAGER.deleteEntry(stopProcessId)
+
     }
 
     if (cmd.params != null && cmd.params.size == 1) {
-      stopTriggerQueries(cmd.params.get(0).toString)
       Try(ExecutionManager.MANAGER.getValue(cmd.params.get(0).toString)) match {
         case Success(exInfo:ExecutionInfo) => context.actorSelection(exInfo.getWorkflow.getActorRef) match {
           case connectorActor: ActorSelection =>
             ExecutionManager.MANAGER.createEntry(cmd.queryId, (cmd.params.get(0).toString, proxyActor) )
             connectorActor ! StopProcess(cmd.queryId, cmd.params.get(0).toString)
+            context.system.scheduler.scheduleOnce(APIActor.StopProcessTimeout)(stopProcessWithoutACK(cmd.queryId, cmd.params.get(0).toString))(context.system.dispatcher)
             None
-          case _ => Some(Result.createUnsupportedOperationErrorResult("There is no connector related to query "+cmd.params.get(0).toString).withQueryId(cmd.queryId))
+          case _ => Some(Result.createUnsupportedOperationErrorResult("There is no online connector related to query "+cmd.params.get(0).toString).withQueryId(cmd.queryId))
         }
         case _ => Some(Result.createUnsupportedOperationErrorResult("The process ["+ cmd.params.get(0).toString +"] doesn't exist").withQueryId(cmd.queryId))
       }

@@ -574,15 +574,20 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         && (ResultType.TRIGGER_EXECUTION.equals(storageWorkflow.getPreviousExecutionWorkflow.getResultType))) {
 
 
+        val storedExInfo = new ExecutionInfo
+        storedExInfo.setSender(StringUtils.getAkkaActorRefUri(explicitSender.getOrElse(sender), false))
+        storedExInfo.setWorkflow(storageWorkflow.getPreviousExecutionWorkflow)
+        storedExInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+        storedExInfo.setRemoveOnSuccess(storageWorkflow.getPreviousExecutionWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation("").isInstanceOf[Execute])
+        storedExInfo.setTriggeredByStreaming(true)
+
         val actorRef = StringUtils.getAkkaActorRefUri(storageWorkflow.getPreviousExecutionWorkflow.getActorRef, false)
         val firstConnectorRef = context.actorSelection(actorRef)
-        executionInfo.setRemoveOnSuccess(storageWorkflow.getPreviousExecutionWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation("").isInstanceOf[Execute])
+
         //TODO executionInfo => actorRef should be the streaming operation (first connector)
-        ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
+        ExecutionManager.MANAGER.createEntry(queryId, storedExInfo)
         log.info(s"Sending init trigger operation: ${queryId} to $firstConnectorRef")
-        val nextExecutionInfo = executionInfo
-        nextExecutionInfo.setSender(StringUtils.getAkkaActorRefUri(explicitSender.getOrElse(sender), false))
-        firstConnectorRef ! TriggerExecution(storageWorkflow.getPreviousExecutionWorkflow.asInstanceOf[QueryWorkflow], nextExecutionInfo)
+        firstConnectorRef ! TriggerExecution(storageWorkflow.getPreviousExecutionWorkflow.asInstanceOf[QueryWorkflow], executionInfo)
 
       }
     }
@@ -702,7 +707,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       if (ResultType.RESULTS.equals(queryWorkflow.getResultType)) {
 
         //TODO AkkaRefURI should be stored. Indeed, it is likely to be stored instead of toString.
-        val actorRef = StringUtils.getAkkaActorRefUri(queryWorkflow.getActorRef(), false)
+        val actorRef = StringUtils.getAkkaActorRefUri(queryWorkflow.getActorRef, false)
         val actorSelection = context.actorSelection(actorRef)
         val operation = queryWorkflow.getExecuteOperation(queryId)
         executionInfo.setRemoveOnSuccess(operation.isInstanceOf[Execute])
@@ -713,7 +718,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
       } else if (ResultType.TRIGGER_EXECUTION.equals(queryWorkflow.getResultType)) {
 
-        val actorRef = StringUtils.getAkkaActorRefUri(queryWorkflow.getActorRef(), false)
+        val actorRef = StringUtils.getAkkaActorRefUri(queryWorkflow.getActorRef, false)
         val firstConnectorActorSelection = context.actorSelection(actorRef)
         val isWindowFound = QueryWorkflow.checkStreaming(queryWorkflow.getWorkflow.getLastStep)
 
@@ -721,14 +726,18 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         nextExecutionInfo.setSender(StringUtils.getAkkaActorRefUri(explicitSender.getOrElse(sender), true))
         //TODO ** IMPROVE IN PLANNER
         queryWorkflow.getNextExecutionWorkflow.setTriggerStep(executionInfo.getWorkflow.getTriggerStep)
-        queryWorkflow.getNextExecutionWorkflow.setSender(executionInfo.getWorkflow.getSender)
         //*******
         nextExecutionInfo.setWorkflow(queryWorkflow.getNextExecutionWorkflow)
         nextExecutionInfo.setRemoveOnSuccess(!isWindowFound)
         nextExecutionInfo.setTriggeredByStreaming(isWindowFound)
-        ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo, true)
 
         firstConnectorActorSelection ! TriggerExecution(queryWorkflow, nextExecutionInfo)
+
+        /**TODO refactor*/
+        executionInfo.setTriggeredByStreaming(isWindowFound)
+        executionInfo.setRemoveOnSuccess(!isWindowFound)
+        //
+        ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
         log.info(s"Sending init trigger operation: ${queryId} to $firstConnectorActorSelection")
 
