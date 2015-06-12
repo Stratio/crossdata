@@ -751,7 +751,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       }
     }
 
-
     case _ => {
       log.error("Non recognized workflow")
     }

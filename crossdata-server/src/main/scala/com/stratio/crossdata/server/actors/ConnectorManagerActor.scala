@@ -90,26 +90,6 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
     }
 
     /**
-     * A new actor connects to the cluster. If the new actor is a connector, we requests its name.
-     */
-    //TODO Check that new actors are recognized and their information stored in the MetadataManager
-    case MemberUp(member) => {
-      logger.info("Member is Up: " + member.toString + member.getRoles)
-      val it = member.getRoles.iterator()
-      while (it.hasNext()) {
-        val role = it.next()
-        role match {
-          case "connector" => {
-            self ! ConnectorUp(member.address.toString)
-          }
-          case _ => {
-            logger.debug(member.address + " has the role: " + role)
-          }
-        }
-      }
-    }
-
-    /**
      * CONNECTOR answers its name.
      */
     case msg: ReplyConnectorName => {
@@ -178,6 +158,26 @@ class ConnectorManagerActor(cluster: Cluster) extends Actor with ActorLogging {
     case er: ErrorResult => {
       logger.info("Error result from " + sender)
       coordinatorActorRef ! er
+    }
+
+    /**
+     * A new actor connects to the cluster. If the new actor is a connector, we requests its name.
+     */
+    //TODO Check that new actors are recognized and their information stored in the MetadataManager
+    case MemberUp(member) => {
+      logger.info("Member is Up: " + member.toString + member.getRoles)
+      val it = member.getRoles.iterator()
+      while (it.hasNext()) {
+        val role = it.next()
+        role match {
+          case "connector" => {
+            self ! ConnectorUp(member.address.toString)
+          }
+          case _ => {
+            logger.debug(member.address + " has the role: " + role)
+          }
+        }
+      }
     }
 
     //Pass the message to the connectorActor to extract the member in the cluster

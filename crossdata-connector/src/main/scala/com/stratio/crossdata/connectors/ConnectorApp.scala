@@ -18,7 +18,7 @@
 
 package com.stratio.crossdata.connectors
 
-import java.util.concurrent.{TimeoutException, TimeUnit}
+import java.util.concurrent.TimeUnit
 
 import akka.util.Timeout
 
@@ -27,22 +27,16 @@ import akka.actor._
 import akka.pattern.ask
 
 
-import akka.routing.{DefaultResizer, RoundRobinPool}
 import com.codahale.metrics._
 import com.stratio.crossdata.common.connector._
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.manifest.{ConnectorType, CrossdataManifest}
-import com.stratio.crossdata.common.metadata.{TableMetadata, UpdatableMetadata}
-import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
-import com.stratio.crossdata.communication.{GetTableMetadata, Shutdown}
+import com.stratio.crossdata.common.metadata.TableMetadata
+import com.stratio.crossdata.common.utils.Metrics
 
 import com.stratio.crossdata.connectors.config.ConnectConfig
 import com.stratio.crossdata.utils.ManifestUtils
 import org.apache.log4j.Logger
-
-
-import scala.collection.JavaConversions._
-import scala.collection.mutable.{ListMap, Set}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.FiniteDuration
