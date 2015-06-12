@@ -163,7 +163,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
     }
 
     /**
-     * Add table from join with partial results.
+     * Gets a table from a partial result.
      * @param workflow Workflow.
      * @return the table translated to inMemoryTables.
      * @throws ExecutionException
@@ -187,7 +187,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
                         partialResultTable.add(simpleValueFromRow(resultSet.getColumnMetadata(), row));
                     }
                 }else {
-                    throw new ExecutionException("Unsupported join type with partial results: "+join.getType());
+                    throw new ExecutionException("Unsupported join type using partial results: "+join.getType());
                 }
             }
         }
