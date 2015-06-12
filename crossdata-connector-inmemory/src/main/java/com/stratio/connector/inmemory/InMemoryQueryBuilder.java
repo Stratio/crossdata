@@ -31,6 +31,7 @@ import com.stratio.connector.inmemory.datastore.structures.InMemoryColumnSelecto
 import com.stratio.connector.inmemory.datastore.structures.InMemoryJoinSelector;
 import com.stratio.connector.inmemory.datastore.structures.InMemorySelector;
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.JoinType;
 import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.logicalplan.Filter;
@@ -140,21 +141,23 @@ public class InMemoryQueryBuilder {
 
         Join joinStep = extractStep(project, Join.class);
         if (joinStep != null){
-            String name = joinStep.toString();
-            Selector myTerm = getMyJoinTerm(joinStep, project);
-            Selector otherTerm;
+            if(JoinType.INNER == joinStep.getType()){
+                String name = joinStep.toString();
+                Selector myTerm = getMyJoinTerm(joinStep, project);
+                Selector otherTerm;
 
-            TableName leftTable = joinStep.getJoinRelations().get(0).getLeftTerm().getTableName();
-            TableName thisTableName = project.getTableName();
+                TableName leftTable = joinStep.getJoinRelations().get(0).getLeftTerm().getTableName();
+                TableName thisTableName = project.getTableName();
 
-            if (leftTable.getQualifiedName().equals(thisTableName.getQualifiedName()) ||
-                    leftTable.getName().equals(thisTableName.getAlias())) {
-                otherTerm = joinStep.getJoinRelations().get(0).getRightTerm();
-            }else{
-                otherTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
+                if (leftTable.getQualifiedName().equals(thisTableName.getQualifiedName()) ||
+                                leftTable.getName().equals(thisTableName.getAlias())) {
+                    otherTerm = joinStep.getJoinRelations().get(0).getRightTerm();
+                }else{
+                    otherTerm =joinStep.getJoinRelations().get(0).getLeftTerm();
+                }
+
+                outputColumns.add(new InMemoryJoinSelector(name,myTerm,otherTerm));
             }
-
-            outputColumns.add(new InMemoryJoinSelector(name,myTerm,otherTerm));
         }
     }
 

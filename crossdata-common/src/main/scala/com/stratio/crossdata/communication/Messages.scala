@@ -23,6 +23,7 @@ import java.util
 
 import com.stratio.crossdata.common.ask.{Command, Query}
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
+import com.stratio.crossdata.common.executionplan.{ExecutionInfo, QueryWorkflow, ExecutionWorkflow}
 import com.stratio.crossdata.common.logicalplan.Filter
 import com.stratio.crossdata.common.data._
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow
@@ -52,6 +53,9 @@ case class ReroutedCommand(msg:Command)
 
 @SerialVersionUID(-415562236789472659L)
 case class ACK(queryId: String, status: QueryStatus)
+
+@SerialVersionUID(-515562236789472659L)
+case class ACKResult(queryId: String, status: QueryStatus)
 
 @SerialVersionUID(-422564236794752659L)
 case class Connect(queryId: String, credentials: ICredentials, connectorClusterConfig: ConnectorClusterConfig)
@@ -114,6 +118,14 @@ case class GetTableMetadata(clusterName: ClusterName, tableName: TableName)
 @SerialVersionUID(-665564236789475256L)
 case class GetCatalogMetadata(catalogName: CatalogName)
 
+// ============================================================================
+//                                TriggerExecution
+// ============================================================================
+
+sealed trait TriggerOperation
+
+@SerialVersionUID(-665564236789475256L)
+case class TriggerExecution(triggerWorkflow: QueryWorkflow, triggeredExecution: ExecutionInfo) extends TriggerOperation
 
 // ============================================================================
 //                                IStorageEngine

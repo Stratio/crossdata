@@ -58,7 +58,6 @@ import com.stratio.crossdata.communication.DeleteRows
 import com.stratio.crossdata.communication.DropCatalog
 import com.stratio.crossdata.communication.DropTable
 import com.stratio.crossdata.communication.Insert
-import scala.concurrent.ExecutionContext.Implicits.global
 
 object State extends Enumeration {
   type state = Value
@@ -210,6 +209,7 @@ class ConnectorWorkerActor(connector: IConnector, metadataMapAgent: Agent[Observ
   }
 
   private def sendACK(actorRef: ActorRef, qId: String): Unit ={
+    implicit val execContext = context.system.dispatcher
     context.system.scheduler.scheduleOnce(4 seconds){
       logger.debug("Sending second ACK to: " + actorRef);
       actorRef ! new ACK(qId, QueryStatus.EXECUTED)
@@ -263,6 +263,7 @@ class ConnectorWorkerActor(connector: IConnector, metadataMapAgent: Agent[Observ
         logger.debug("Received stop process for non-existing queryId "+targetQueryId)
         sender ! Result.createExecutionErrorResult("Received stop process for non-existing queryId "+targetQueryId)
       }else {
+        logger.debug("Processing stop process. Reply to "+sender)
         runningJobs.sendOff{runningJobs => runningJobs.remove(targetQueryId); runningJobs}(context.dispatcher)
         connector.getQueryEngine.stop(targetQueryId)
         sender ! ACK(queryId, QueryStatus.EXECUTED)
