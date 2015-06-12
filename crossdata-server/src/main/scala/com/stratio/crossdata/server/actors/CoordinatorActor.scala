@@ -212,33 +212,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
               (result.isInstanceOf[QueryResult] && result.asInstanceOf[QueryResult].isLastResultSet && !executionInfo.asInstanceOf[ExecutionInfo].isTriggeredByStreaming)) {
               ExecutionManager.MANAGER.deleteEntry(queryId)
             }
-
-            if (queryId.endsWith(CoordinatorActor.TriggerToken)) {
-              sendResultToClient = false
-              val triggerQueryId = queryId.substring(0, queryId.length - CoordinatorActor.TriggerToken.length)
-              log.info("Retrieving Triggering queryId: " + triggerQueryId);
-              val lastExecutionInfo = ExecutionManager.MANAGER.getValue(triggerQueryId).asInstanceOf[ExecutionInfo]
-              val partialResults = result.asInstanceOf[QueryResult].getResultSet
-              val actorRef = StringUtils.getAkkaActorRefUri(lastExecutionInfo.getWorkflow.getActorRef(), false)
-              val actorSelection = context.actorSelection(actorRef)
-
-              var operation: Operation = null
-
-              if(ExecutionType.INSERT_BATCH.equals(lastExecutionInfo.getWorkflow.getExecutionType)){
-                lastExecutionInfo.getWorkflow.asInstanceOf[StorageWorkflow].setRows(partialResults.getRows)
-                operation = lastExecutionInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
-              } else {
-                if (executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep==null) {
-                  log.error("The trigger step shouldn't be null.")
-                }else{
-                  executionInfo.asInstanceOf[ExecutionInfo].getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
-                }
-                operation = lastExecutionInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(triggerQueryId)
-
-              }
-              log.info("Sending operation: " + operation + " to: " + actorSelection)
-              actorSelection ! operation
-            }
           }
 
           if(sendResultToClient) {
@@ -576,18 +549,18 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         val storedExInfo = new ExecutionInfo
         storedExInfo.setSender(StringUtils.getAkkaActorRefUri(explicitSender.getOrElse(sender), false))
-        storedExInfo.setWorkflow(storageWorkflow.getPreviousExecutionWorkflow)
+        val previousExecutionWorkflow = storageWorkflow.getPreviousExecutionWorkflow.asInstanceOf[QueryWorkflow]
+        storedExInfo.setWorkflow(previousExecutionWorkflow)
         storedExInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
-        storedExInfo.setRemoveOnSuccess(storageWorkflow.getPreviousExecutionWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation("").isInstanceOf[Execute])
+        storedExInfo.setRemoveOnSuccess(Execute.getClass.isInstance(previousExecutionWorkflow.getExecuteOperation("")))
         storedExInfo.setTriggeredByStreaming(true)
+        ExecutionManager.MANAGER.createEntry(queryId, storedExInfo)
 
-        val actorRef = StringUtils.getAkkaActorRefUri(storageWorkflow.getPreviousExecutionWorkflow.getActorRef, false)
+        val actorRef = StringUtils.getAkkaActorRefUri(previousExecutionWorkflow.getActorRef, false)
         val firstConnectorRef = context.actorSelection(actorRef)
 
-        //TODO executionInfo => actorRef should be the streaming operation (first connector)
-        ExecutionManager.MANAGER.createEntry(queryId, storedExInfo)
         log.info(s"Sending init trigger operation: ${queryId} to $firstConnectorRef")
-        firstConnectorRef ! TriggerExecution(storageWorkflow.getPreviousExecutionWorkflow.asInstanceOf[QueryWorkflow], executionInfo)
+        firstConnectorRef ! TriggerExecution(previousExecutionWorkflow, executionInfo)
 
       }
     }
@@ -722,22 +695,19 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         val firstConnectorActorSelection = context.actorSelection(actorRef)
         val isWindowFound = QueryWorkflow.checkStreaming(queryWorkflow.getWorkflow.getLastStep)
 
+        executionInfo.setTriggeredByStreaming(isWindowFound)
+        executionInfo.setRemoveOnSuccess(!isWindowFound)
+        ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+
         val nextExecutionInfo = new ExecutionInfo
         nextExecutionInfo.setSender(StringUtils.getAkkaActorRefUri(explicitSender.getOrElse(sender), true))
-        //TODO ** IMPROVE IN PLANNER
-        queryWorkflow.getNextExecutionWorkflow.setTriggerStep(executionInfo.getWorkflow.getTriggerStep)
-        //*******
+
         nextExecutionInfo.setWorkflow(queryWorkflow.getNextExecutionWorkflow)
+        nextExecutionInfo.getWorkflow.setTriggerStep(executionInfo.getWorkflow.getTriggerStep)
         nextExecutionInfo.setRemoveOnSuccess(!isWindowFound)
         nextExecutionInfo.setTriggeredByStreaming(isWindowFound)
 
         firstConnectorActorSelection ! TriggerExecution(queryWorkflow, nextExecutionInfo)
-
-        /**TODO refactor*/
-        executionInfo.setTriggeredByStreaming(isWindowFound)
-        executionInfo.setRemoveOnSuccess(!isWindowFound)
-        //
-        ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
         log.info(s"Sending init trigger operation: ${queryId} to $firstConnectorActorSelection")
 
