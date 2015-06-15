@@ -19,6 +19,7 @@
 package com.stratio.crossdata.server.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
+import akka.routing.RoundRobinPool
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.{ClusterName, ConnectorName, Status}
@@ -720,6 +721,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         executionInfo.setRemoveOnSuccess(operation.isInstanceOf[Execute])
         ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
 
+        //Send to sender in which connector will be executed the query
+        sender ! InfoResult(executionInfo.getWorkflow.getActorRef, executionInfo.getWorkflow.getQueryId)
+
         actorSelection.asInstanceOf[ActorSelection] ! operation
         log.info("\nMessage sent to " + actorRef.toString())
 
@@ -744,6 +748,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         nextExecutionInfo.setTriggeredByStreaming(isWindowFound)
         ExecutionManager.MANAGER.createEntry(queryId, nextExecutionInfo, true)
 
+        //Send to sender in which connector will be executed the query
+        sender ! InfoResult(executionInfo.getWorkflow.getActorRef, executionInfo.getWorkflow.getQueryId)
         actorSelection.asInstanceOf[ActorSelection] ! operation
 
         log.info("\nMessage sent to " + actorRef.toString())

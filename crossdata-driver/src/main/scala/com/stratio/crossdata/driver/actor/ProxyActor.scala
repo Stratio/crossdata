@@ -23,18 +23,15 @@ import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
 import com.stratio.crossdata.common.result.{ErrorResult, Result}
-import com.stratio.crossdata.communication.{ACK, CPUUsage, Disconnect}
+import com.stratio.crossdata.communication._
 import com.stratio.crossdata.driver.BasicDriver
 import org.apache.log4j.Logger
 
 import scala.concurrent.duration._
 import akka.actor.SupervisorStrategy.{Stop, Escalate, Restart, Resume}
 import com.stratio.crossdata.common.ask.Connect
-import com.stratio.crossdata.communication.ACK
-import com.stratio.crossdata.communication.CPUUsage
 import akka.actor.OneForOneStrategy
 import com.stratio.crossdata.common.ask.Command
-import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.common.ask.Query
 
 /**
@@ -172,6 +169,11 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
     case "test"=> {
       logger.error("Unknown message: test" )
       sender ! "Message type not supported"
+    }
+
+    case InfoResult(ref:String, queryId:String) => {
+      logger.info("Query:" + queryId +" sended to " + ref)
+      driver.connectorOfQueries.put(queryId,ref)
     }
     case unknown: Any => {
       logger.error("Unknown message: " + unknown)

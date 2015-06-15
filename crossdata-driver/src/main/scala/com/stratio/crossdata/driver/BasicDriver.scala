@@ -35,6 +35,7 @@ import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, Dri
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
 import com.stratio.crossdata.driver.utils.{QueryData, ManifestUtils, RetryPolitics}
 import org.apache.log4j.Logger
+import scala.collection.JavaConversions._
 
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -87,6 +88,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   
   lazy val logger = BasicDriver.logger
   lazy val queries: java.util.Map[String, QueryData] = new java.util.HashMap[String, QueryData]
+  lazy val queriesWebUI: java.util.Map[String, QueryData] = new java.util.HashMap[String, QueryData]
+  lazy val connectorOfQueries: java.util.Map[String, String] = new java.util.HashMap[String, String]
   lazy val system = ActorSystem("CrossdataDriverSystem", BasicDriver.config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
 
@@ -197,6 +200,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     }
     val queryId = UUID.randomUUID()
     queries.put(queryId.toString, new QueryData(callback, query, sessionId))
+    queriesWebUI.put(queryId.toString, new QueryData(callback, query, sessionId))
     sendQuery(new Query(queryId.toString, currentCatalog, query, userId, sessionId))
     InProgressResult.createInProgressResult(queryId.toString)
   }
@@ -240,6 +244,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     val queryId = UUID.randomUUID().toString
     val callback = new SyncDriverResultHandler
     queries.put(queryId, new QueryData(callback, query, sessionId))
+    queriesWebUI.put(queryId, new QueryData(callback, query, sessionId))
     sendQuery(new Query(queryId, currentCatalog, query, userId, sessionId))
     val r = callback.waitForResult()
     logger.info("Query " + queryId + " finished. " + queries.get(queryId).getExecutionInfo())
@@ -305,6 +310,8 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       result = resetServerdata(sessionId)
     } else if (command.toLowerCase.startsWith("clean metadata")) {
       result = cleanMetadata(sessionId)
+    }else if (command.toLowerCase.startsWith("list queries")) {
+      result = listQueries(sessionId)
     } else if (command.toLowerCase.startsWith("drop datastore")) {
       //result = dropManifest(
       // CrossdataManifest.TYPE_DATASTORE, command.toLowerCase.replace("drop datastore ", "").replace(";", "").trim)
@@ -784,6 +791,29 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   }
 
   /**
+   * List of queries of the driver.
+   * @return A CommandResult with the query list.
+   */
+  def listQueries(sessionId: String):Result = {
+    if (userId.isEmpty) {
+      throw new ConnectionException("You must connect to cluster")
+    }
+
+    val sb : StringBuilder = new StringBuilder()
+    queriesWebUI.foreach(kv => sb.append(System.getProperty("line.separator"))
+        .append("QueryId: ")
+        .append(kv._1)
+        .append("Sended to Connector: ")
+        .append(connectorOfQueries.get(kv._1))
+        .append(kv._2.getExecutionInfo())
+        .append(System.getProperty("line.separator"))
+    )
+
+    val result = CommandResult.createCommandResult(sb.toString)
+    result
+  }
+
+  /**
    * Return the explained execution workflow for a given query.
    * @param query The user query.
    * @return A Result.
@@ -871,4 +901,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   def setCurrentCatalog(catalog: String) {
     this.currentCatalog = catalog
   }
+
+  def getQueryIDWebUI : java.util.Map[String, QueryData] = queriesWebUI
+  def getQueryConnectors:java.util.Map[String, String] = connectorOfQueries
 }

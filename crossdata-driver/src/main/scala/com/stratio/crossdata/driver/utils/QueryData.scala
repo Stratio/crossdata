@@ -10,13 +10,14 @@ class QueryData(val resultHandler: IDriverResultHandler, val query: String, val 
     (System.currentTimeMillis() - init) / 1000
   }
 
+
+
   def getExecutionInfo(): String = {
     val sb = new StringBuilder
     sb.append(System.lineSeparator())
     sb.append("Session Id: " + sessionId + System.lineSeparator())
     sb.append("Query: " + query + System.lineSeparator())
     sb.append("Execution time: " + getExecutionTime() + " seconds" + System.lineSeparator())
-    sb.append(System.lineSeparator())
     sb.toString
   }
 
