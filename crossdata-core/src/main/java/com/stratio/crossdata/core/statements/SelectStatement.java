@@ -103,18 +103,27 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     private List<AbstractRelation> havingClause = null;
 
     private List<OrderByClause> orderByClauses = new ArrayList<>();
+
     /**
      * Whether a LIMIT clause has been specified.
      */
     private boolean limitInc = false;
+
+    /**
+     * The list of {@link com.stratio.crossdata.core.structures.Property} of the query.
+     */
+    private Map<Selector, Selector> properties = new LinkedHashMap<>();
+
     /**
      * Whether a subquery clause has been specified.
      */
     private boolean subqueryInc = false;
+
     /**
      * The subquery.
      */
     private SelectStatement subquery= null;
+
     /**
      * The subquery alias.
      */
@@ -348,6 +357,22 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     public void setLimit(int limit) {
         this.limitInc = true;
         this.limit = limit;
+    }
+
+    /**
+     * The list of properties of the table.
+     */
+    public Map<Selector, Selector> getProperties() {
+        return properties;
+    }
+
+    /**
+     * Set the list of {@link com.stratio.crossdata.core.structures.Property}.
+     *
+     * @param properties The list.
+     */
+    public void setProperties(String properties) {
+        this.properties = StringUtils.convertJsonToOptions(tableName, properties);
     }
 
     public Window getWindow() {
