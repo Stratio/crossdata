@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.stratio.crossdata.common.statements.structures.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 
@@ -56,21 +57,6 @@ import com.stratio.crossdata.common.metadata.DataType;
 import com.stratio.crossdata.common.metadata.IndexMetadata;
 import com.stratio.crossdata.common.metadata.IndexType;
 import com.stratio.crossdata.common.metadata.TableMetadata;
-import com.stratio.crossdata.common.statements.structures.AbstractRelation;
-import com.stratio.crossdata.common.statements.structures.AliasSelector;
-import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.FunctionSelector;
-import com.stratio.crossdata.common.statements.structures.GroupSelector;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.OrderByClause;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
-import com.stratio.crossdata.common.statements.structures.RelationSelector;
-import com.stratio.crossdata.common.statements.structures.RelationTerm;
-import com.stratio.crossdata.common.statements.structures.SelectExpression;
-import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.SelectorType;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.core.query.SelectParsedQuery;
@@ -609,6 +595,38 @@ public class Normalizator {
             for (RelationTerm rt : rd.getTerms()) {
                 for (AbstractRelation ar : rt.getRelations()) {
                     checkRelation(ar);
+                }
+            }
+        } else if (abstractRelation instanceof FunctionRelation){
+            FunctionRelation functionRelation = (FunctionRelation) abstractRelation;
+
+            for (Selector selector: functionRelation.getFunctionSelectors()){
+                switch (selector.getType()) {
+                    case COLUMN:
+                        checkColumnSelector((ColumnSelector) selector);
+                        break;
+                    case ASTERISK:
+                        throw new BadFormatException("Asterisk not supported in relations.");
+                    case STRING:
+                    case FLOATING_POINT:
+                    case BOOLEAN:
+                    case INTEGER:
+                        break;
+                    case SELECT:
+                        ExtendedSelectSelector extendedSelectSelector = (ExtendedSelectSelector) selector;
+                        SelectValidatedQuery selectValidatedQuery = normalizeInnerSelect(
+                                extendedSelectSelector.getSelectParsedQuery(),
+                                fields.getTableNames());
+                        extendedSelectSelector.setSelectValidatedQuery(selectValidatedQuery);
+                        break;
+                    case RELATION:
+                        throw new BadFormatException("Relations can't be on the left side of other relations.");
+                    case FUNCTION:
+                        checkFunctionSelector((FunctionSelector) selector);
+                        break;
+                    default:
+                        throw new BadFormatException("FunctionRelation can't support this selector type: "+ selector
+                                .getType().toString());
                 }
             }
         }

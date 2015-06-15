@@ -173,8 +173,14 @@ public class Relation extends AbstractRelation {
             sb.append("(");
         }
         sb.append(leftTerm.toString());
-        sb.append(" ").append(operator).append(" ");
-        sb.append(rightTerm.toString());
+
+        if (operator != null){
+            sb.append(" ").append(operator).append(" ");
+        }
+        if (rightTerm != null){
+            sb.append(rightTerm.toString());
+        }
+
         if(isParenthesis()){
             sb.append(")");
         }
@@ -201,8 +207,12 @@ public class Relation extends AbstractRelation {
             sb.append("(");
         }
         sb.append(leftTerm.toSQLString(withAlias));
-        sb.append(" ").append(operator.toSQLString()).append(" ");
-        sb.append(rightTerm.toSQLString(withAlias));
+        if (operator != null) {
+            sb.append(" ").append(operator.toSQLString()).append(" ");
+        }
+        if (rightTerm != null) {
+            sb.append(rightTerm.toSQLString(withAlias));
+        }
         if(isParenthesis()){
             sb.append(")");
         }

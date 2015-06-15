@@ -22,11 +22,9 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.fail;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
+import com.stratio.crossdata.common.statements.structures.*;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -36,20 +34,6 @@ import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.exceptions.IgnoreQueryException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.exceptions.validation.AmbiguousNameException;
-import com.stratio.crossdata.common.statements.structures.AbstractRelation;
-import com.stratio.crossdata.common.statements.structures.AsteriskSelector;
-import com.stratio.crossdata.common.statements.structures.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.FunctionSelector;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.ListSelector;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.OrderByClause;
-import com.stratio.crossdata.common.statements.structures.OrderDirection;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.common.statements.structures.SelectExpression;
-import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.core.parser.Parser;
 import com.stratio.crossdata.core.query.BaseQuery;
@@ -2032,5 +2016,39 @@ public class SelectStatementTest extends BasicValidatorTest {
         assertEquals(validatedQuery.toString(), expectedText, "Invalid resolution");
     }
 
+
+    @Test
+    public void validateBasicWhereFunctionOk() throws ValidationException, IgnoreQueryException {
+        String query = "SELECT name FROM demo.users WHERE functionName(name,'name_5');";
+        List<Selector> selectorList = new ArrayList<>();
+
+        TableName tablename = new TableName("demo", "users");
+
+        Selector selector = new StringSelector(tablename, "name");
+        selectorList.add(selector);
+        SelectExpression selectExpression = new SelectExpression(selectorList);
+        SelectStatement selectStatement = new SelectStatement(selectExpression, tablename);
+
+        Selector column = new ColumnSelector(new ColumnName("demo", "users", "name"));
+        Selector value = new StringSelector(tablename, "name_5");
+        AbstractRelation relation = new FunctionRelation("functionName", new ArrayList(Arrays.asList(column, value)));
+        relation.setParenthesis(false);
+
+        selectStatement.setWhere(new ArrayList(Arrays.asList(relation)));
+
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("SelectId", query, new CatalogName("demo"),"sessionTest");
+
+        IParsedQuery parsedQuery = new SelectParsedQuery(baseQuery, selectStatement);
+
+        //Experimentation
+        IValidatedQuery validate = validator.validate(parsedQuery);
+
+        //Expectations
+        Assert.assertNotNull(validate);
+        String expected ="SELECT 'name' FROM demo.users WHERE functionName(demo.users.name, 'name_5')";
+        Assert.assertEquals(validate.toString(), expected);
+    }
 
 }

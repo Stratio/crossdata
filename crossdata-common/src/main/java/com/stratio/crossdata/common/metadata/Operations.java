@@ -1033,6 +1033,11 @@ public enum Operations {
     FILTER_DISJUNCTION("FILTER_DISJUNCTION"),
 
     /**
+     * The engine support Fuctions as Filters.
+     */
+    FILTER_FUNCTION("FILTER_FUNCTION"),
+
+    /**
      * The engine supports {@link com.stratio.crossdata.common.logicalplan.PartialResults} operations
      * to read a list of partial results.
      */
