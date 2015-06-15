@@ -21,6 +21,7 @@ package com.stratio.crossdata.driver
 import java.util.UUID
 
 import akka.actor.{ActorRef, ActorSelection, ActorSystem}
+import akka.contrib.pattern.ClusterClient
 import akka.pattern.ask
 import com.stratio.crossdata.common.ask.{APICommand, Command, Connect, Query}
 import com.stratio.crossdata.common.data.{ConnectorName, DataStoreName, _}
@@ -89,14 +90,7 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
   lazy val system = ActorSystem("CrossdataDriverSystem", BasicDriver.config)
   lazy val initialContacts: Set[ActorSelection] = contactPoints.map(contact => system.actorSelection(contact)).toSet
 
-  //lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
-  lazy val remoteSupervisor = system.actorOf(
-    RemoteSupervisor.props(initialContacts),
-    "remote-supervisor")
-  implicit val timeout = Timeout(5 seconds)
-  val future = remoteSupervisor ? "GiveMeClusterClient"
-  val clusterClientActor: ActorRef = Await.result(future, timeout.duration).asInstanceOf[ActorRef]
-
+  lazy val clusterClientActor = system.actorOf(ClusterClient.props(initialContacts), "remote-client")
   lazy val proxyActor = system.actorOf(ProxyActor.props(clusterClientActor, basicDriverConfig.serverSection.clusterActor, this), "proxy-actor")
 
   lazy val retryPolitics: RetryPolitics = {

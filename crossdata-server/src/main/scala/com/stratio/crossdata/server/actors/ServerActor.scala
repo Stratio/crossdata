@@ -29,7 +29,7 @@ import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.core.engine.Engine
 import com.stratio.crossdata.server.config.ServerConfig
 import org.apache.log4j.Logger
-import akka.actor.SupervisorStrategy.Stop
+import akka.actor.SupervisorStrategy.{Resume, Stop}
 import scala.concurrent.duration._
 
 object ServerActor {
@@ -40,11 +40,10 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
   override lazy val logger = Logger.getLogger(classOf[ServerActor])
   val random=new Random
   val hostname=config.getString("akka.remote.netty.tcp.hostname")
-  val resizer = DefaultResizer(lowerBound = 1, upperBound = 15)
+  val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
 
   val loadWatcherActorRef = context.actorOf(LoadWatcherActor.props(hostname), "loadWatcherActor")
-  val connectorManagerActorRef = context.actorOf( RoundRobinPool(num_connector_manag_actor, Some(resizer))
-     .props(Props(classOf[ConnectorManagerActor], cluster)), "ConnectorManagerActor")
+  val connectorManagerActorRef = context.actorOf(Props(classOf[ConnectorManagerActor], cluster), "ConnectorManagerActor")
 
   val coordinatorActorRef = context.actorOf( RoundRobinPool(num_coordinator_actor, Some(resizer))
      .props(Props(classOf[CoordinatorActor], connectorManagerActorRef, engine.getCoordinator)), "CoordinatorActor")
@@ -63,7 +62,7 @@ class ServerActor(engine: Engine,cluster: Cluster) extends Actor with ServerConf
 
   override val supervisorStrategy =
     OneForOneStrategy(maxNrOfRetries = 10, withinTimeRange = 1 minute) {
-      case _: Any => Stop
+      case _: Any => Resume
     }
 
   def receive : Receive= {

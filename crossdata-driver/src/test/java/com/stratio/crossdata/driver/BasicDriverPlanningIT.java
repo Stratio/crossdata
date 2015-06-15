@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.driver;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import com.stratio.connector.inmemory.InMemoryConnector;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
@@ -55,8 +56,8 @@ public class BasicDriverPlanningIT {
         connectorFake = new ConnectorApp();
         InMemoryConnector inMemoryConnector = new InMemoryConnector(connector);
         InMemoryConnectorFake inMemoryConnectorFake = new InMemoryConnectorFake(connectorFake);
-        ActorSelection actorSelection = connector.startup(inMemoryConnector);
-        ActorSelection actorSelectionFake = connectorFake.startup(inMemoryConnectorFake);
+        ActorRef actorSelection = connector.startup(inMemoryConnector).get();
+        ActorRef actorSelectionFake = connectorFake.startup(inMemoryConnectorFake).get();
         Thread.sleep(4000);
     }
 
@@ -159,10 +160,10 @@ public class BasicDriverPlanningIT {
             LOG.error(((ErrorResult) result).getErrorMessage());
         }
         assertFalse(result.hasError(), "Server returned an error");
-        assertEquals(result.getClass(), ConnectResult.class, "CommandResult was expected");
-        ConnectResult connectResult = (ConnectResult) result;
-        assertNotNull(connectResult.getSessionId(), "Server returned a null session identifier");
-        LOG.info(connectResult.getSessionId());
+        assertEquals(result.getClass(), ConnectToConnectorResult.class, "CommandResult was expected");
+        ConnectToConnectorResult connectResult = (ConnectToConnectorResult) result;
+        assertNotNull(connectResult.getQueryId(), "Server returned a null session identifier");
+        LOG.info(connectResult.getQueryId());
     }
 
     @Test(timeOut = 8000, dependsOnMethods = {"testAttachConnector"})
@@ -271,10 +272,10 @@ public class BasicDriverPlanningIT {
             LOG.error(((ErrorResult) result).getErrorMessage());
         }
         assertFalse(result.hasError(), "Server returned an error");
-        assertEquals(result.getClass(), ConnectResult.class, "CommandResult was expected");
-        ConnectResult connectResult = (ConnectResult) result;
-        assertNotNull(connectResult.getSessionId(), "Server returned a null session identifier");
-        LOG.info(connectResult.getSessionId());
+        assertEquals(result.getClass(), ConnectToConnectorResult.class, "CommandResult was expected");
+        ConnectToConnectorResult connectResult = (ConnectToConnectorResult) result;
+        assertNotNull(connectResult.getQueryId(), "Server returned a null session identifier");
+        LOG.info(connectResult.getQueryId());
     }
 
     /**

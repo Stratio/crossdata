@@ -115,12 +115,12 @@ public class TwitterConnector extends AbstractExtendedConnector {
 
 
     @Override public String getConnectorManifestPath() {
-        return getClass().getResource("TwitterConnector.xml").getPath();
+        return getClass().getResource("/TwitterConnector.xml").getPath();
     }
 
     @Override public String[] getDatastoreManifestPath() {
         String datastore[]=new String[1];
-        datastore[0]= getClass().getResource("TwitterDataStore.xml").getPath();
+        datastore[0]= getClass().getResource("/TwitterDataStore.xml").getPath();
         return datastore;
     }
 
@@ -211,6 +211,11 @@ public class TwitterConnector extends AbstractExtendedConnector {
     @Override
     public void shutdown() throws ExecutionException {
         LOG.info("Shutting down TwitterConnector");
+    }
+
+    @Override
+    public void restart() throws ExecutionException {
+
     }
 
     /**

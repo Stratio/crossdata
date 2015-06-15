@@ -34,6 +34,7 @@ import com.stratio.connector.inmemory.InMemoryConnector;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.CommandResult;
 import com.stratio.crossdata.common.result.ConnectResult;
+import com.stratio.crossdata.common.result.ConnectToConnectorResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.InProgressResult;
 import com.stratio.crossdata.common.result.MetadataResult;
@@ -42,6 +43,7 @@ import com.stratio.crossdata.common.result.StorageResult;
 import com.stratio.crossdata.connectors.ConnectorApp;
 import com.stratio.crossdata.server.CrossdataServer;
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 
 public class BasicDriverIT {
@@ -63,7 +65,7 @@ public class BasicDriverIT {
         Thread.sleep(4000);
         connector = new ConnectorApp();
         InMemoryConnector inMemoryConnector = new InMemoryConnector(connector);
-        ActorSelection actorSelection = connector.startup(inMemoryConnector);
+        ActorRef actorSelection = connector.startup(inMemoryConnector).get();
         Thread.sleep(4000);
     }
 
@@ -166,10 +168,10 @@ public class BasicDriverIT {
             LOG.error(((ErrorResult) result).getErrorMessage());
         }
         assertFalse(result.hasError(), "Server returned an error");
-        assertEquals(result.getClass(), ConnectResult.class, "CommandResult was expected");
-        ConnectResult connectResult = (ConnectResult) result;
-        assertNotNull(connectResult.getSessionId(), "Server returned a null session identifier");
-        LOG.info(connectResult.getSessionId());
+        assertEquals(result.getClass(), ConnectToConnectorResult.class, "CommandResult was expected");
+        ConnectToConnectorResult connectResult = (ConnectToConnectorResult) result;
+        assertNotNull(connectResult.getQueryId(), "Server returned a null session identifier");
+        LOG.info(connectResult.getQueryId());
     }
 
     @Test(timeOut = 8000, dependsOnMethods = {"testAttachConnector"})

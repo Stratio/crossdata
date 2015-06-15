@@ -52,10 +52,10 @@ public class ValidatorHelper {
     /**
      * Class constructor.
      *
-     * @param validadora validator instance to be used in validateInsertTypes method.
+     * @param validator validator instance to be used in validateInsertTypes method.
      */
-    public ValidatorHelper(Validator validador){
-        this.validator = validador;
+    public ValidatorHelper(Validator validator){
+        this.validator = validator;
     }
 
     private static final Logger LOG = Logger.getLogger(Validator.class);

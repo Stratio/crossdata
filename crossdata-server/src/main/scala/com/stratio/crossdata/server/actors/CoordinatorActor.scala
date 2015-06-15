@@ -74,7 +74,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       }
     }
 
-    case connectResult: ConnectResult =>
+    case connectResult: ConnectToConnectorResult =>
       val queryId = connectResult.getQueryId
       log.info("Receiving result from " + sender + " with queryId = " + queryId + " result: " + connectResult)
       if(queryId.contains("#")){
@@ -750,7 +750,6 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
       }
     }
-
 
     case _ => {
       log.error("Non recognized workflow")

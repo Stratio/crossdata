@@ -18,9 +18,7 @@
 
 package com.stratio.crossdata.communication
 
-import com.stratio.crossdata.common.data.Name
 import com.stratio.crossdata.common.metadata.UpdatableMetadata
-import difflib.Patch
 
 //CONNECTOR messages
 case class Start()
@@ -37,4 +35,6 @@ case class UpdateMetadata(metadata: UpdatableMetadata, remove: java.lang.Boolean
 
 case class ConnectorUp(memberAddress: String)
 
+case class GetConnectorStatus()
 
+case class ConnectorStatus(isConnected: Boolean)

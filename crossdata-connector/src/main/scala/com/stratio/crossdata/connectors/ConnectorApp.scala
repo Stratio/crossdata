@@ -18,89 +18,72 @@
 
 package com.stratio.crossdata.connectors
 
+import java.util.concurrent.TimeUnit
+
+import akka.util.Timeout
+
+
 import akka.actor._
-import akka.agent.Agent
 import akka.pattern.ask
-import akka.routing.{DefaultResizer, RoundRobinPool}
+
+
 import com.codahale.metrics._
 import com.stratio.crossdata.common.connector._
 import com.stratio.crossdata.common.data._
-import com.stratio.crossdata.common.metadata.{TableMetadata, UpdatableMetadata}
-import com.stratio.crossdata.common.utils.{Metrics, StringUtils}
-import com.stratio.crossdata.communication.{GetTableMetadata, Shutdown}
+import com.stratio.crossdata.common.manifest.{ConnectorType, CrossdataManifest}
+import com.stratio.crossdata.common.metadata.TableMetadata
+import com.stratio.crossdata.common.utils.Metrics
+
 import com.stratio.crossdata.connectors.config.ConnectConfig
+import com.stratio.crossdata.utils.ManifestUtils
 import org.apache.log4j.Logger
 
-import scala.collection.JavaConversions._
-import scala.collection.mutable.{ListMap, Set}
 import scala.concurrent.Await
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.FiniteDuration
 import scala.util.Try
+import com.stratio.crossdata.communication.{GetConnectorStatus, GetTableMetadata}
 
-
-object ConnectorApp extends App {
-  args.length == 2
+object ConnectorApp {
+  val GetStatusTimeout = 5
 }
 
 class ConnectorApp extends ConnectConfig with IConnectorApp {
 
-  lazy val system = ActorSystem(clusterName, config)
   override lazy val logger = Logger.getLogger(classOf[ConnectorApp])
 
-  var connectorRef: Option[ActorRef] = None
+  var system: Option[ActorSystem] = null
+  var connectorActor: Option[ActorRef] = None
 
-  var metricName: String = "connector"
+  var connectorManifest: Option[CrossdataManifest] = None
+  var datastoreManifest: Option[Array[CrossdataManifest]] = None
 
-  val connectedServersAgent: Agent[Set[String]] = Agent(Set.empty[String])(system.dispatcher)
-  val metadataMapAgent = Agent(new ObservableMap[Name, UpdatableMetadata])(system.dispatcher)
-  val runningJobsAgent = Agent(new ListMap[String, ActorRef]())(system.dispatcher)
+  def startup(connector: IConnector): Option[ActorRef] = {
 
-  logger.info("Connector Name: " + connectorName)
+    logger.info("Connector started: " + connector.getClass().getName)
 
-  if ((connectorName.isEmpty) || (connectorName.equalsIgnoreCase("XconnectorX"))) {
-    logger.error("##########################################################################################");
-    logger.error("# ERROR ##################################################################################");
-    logger.error("##########################################################################################");
-    logger.error("# USING DEFAULT CONNECTOR NAME: XconnectorX                                              #")
-    logger.error("# CHANGE PARAMETER crossdata-connector.config.connector.name FROM THE CONFIGURATION FILE #")
-    logger.error("##########################################################################################");
-  }
+    connectorManifest = Some(ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_CONNECTOR, connector.getConnectorManifestPath))
+    datastoreManifest = Some(connector.getDatastoreManifestPath.map(ManifestUtils.parseFromXmlToManifest(CrossdataManifest.TYPE_DATASTORE, _)))
 
-
-  def stop():Unit = {
-    connectorRef.get ! Shutdown()
-    system.shutdown()
-    Metrics.getRegistry.getNames.foreach(Metrics.getRegistry.remove(_))
-
-  }
-
-  def startup(connector: IConnector): ActorSelection = {
-
-    val resizer = DefaultResizer(lowerBound = 2, upperBound = 15)
-
-
-    connectorRef = Some(
-      system.actorOf(RoundRobinPool(num_connector_actor, Some(resizer))
-        .props(Props(classOf[ConnectorActor], connector.getConnectorManifestPath, connector.getDatastoreManifestPath, connector, connectedServersAgent, metadataMapAgent, runningJobsAgent)),
-      "ConnectorActor"))
-
+    startSystem(connector)
     connector.init(new IConfiguration {})
+    connectorActor
+  }
 
-    val actorSelection: ActorSelection = system.actorSelection(
-      StringUtils.getAkkaActorRefUri(connectorRef.get.toString(), false))
+  def stop = {
+    logger.info(s"Stopping the connector app")
+    system.foreach(_.shutdown())
+  }
 
-    metricName = MetricRegistry.name(connector.getClass.getSimpleName, "status")
-    Metrics.getRegistry.register(metricName,
-      new Gauge[Boolean] {
-        override def getValue: Boolean = {
-          var status: Boolean = true
-          if (connectedServersAgent.get.isEmpty) {
-            status = false
-          }
-          status
-        }
-      })
-    actorSelection
+  def restart( connector: IConnector): Option[ActorRef] = {
+    stop
+    startSystem(connector)
+    connector.restart()
+    connectorActor
+  }
+
+  private def startSystem(connector: IConnector) = {
+    system = Some(ActorSystem(clusterName, config))
+    connectorActor = system.map( _.actorOf(Props(classOf[ConnectorActor], this, connector), "ConnectorActor"))
   }
 
   override def getTableMetadata(clusterName: ClusterName, tableName: TableName, timeout: Int): Option[TableMetadata] = {
@@ -108,17 +91,16 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
       i.e.{{{
         import scala.concurrent.duration._
         val timeout: akka.util.Timeout = 2.seconds
-        val response: Option[TableMetadata] = 
+        val response: Option[TableMetadata] =
           actorClusterNode.map(actor => Await.result((actor ? GetTableMetadata).mapTo[TableMetadata],timeout))
         response.getOrElse(throw new IllegalStateException("Actor cluster node is not initialized"))
       }}}
     */
+    implicit val timeoutR: Timeout = new Timeout(FiniteDuration(timeout, TimeUnit.SECONDS))
+    val future = connectorActor.get ? GetTableMetadata(clusterName,tableName)
 
-    val future = connectorRef.get.?(GetTableMetadata(clusterName, tableName))(timeout)
-    Try(Await.result(future.mapTo[TableMetadata], Duration.fromNanos(timeout * 1000000L))).map {
-      Some(_)
-    }.recover {
-      case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: " + e.getMessage); None
+    Try(Await.result(future.mapTo[TableMetadata],FiniteDuration(timeout, TimeUnit.SECONDS))).map{ Some (_)}.recover{
+      case e: Exception => logger.debug("Error fetching the catalog metadata from the ObservableMap: "+e.getMessage); None
     }.get
 
   }
@@ -150,18 +132,36 @@ class ConnectorApp extends ConnectConfig with IConnectorApp {
   }
  */
 
-  override def getConnectionStatus(): ConnectionStatus = {
-    var status: ConnectionStatus = ConnectionStatus.CONNECTED
-
-    if (connectedServersAgent.get.isEmpty){
-      status = ConnectionStatus.DISCONNECTED
+  def getConnectorName: String = {
+    connectorManifest.get  match {
+        case connMan: ConnectorType => connMan.getConnectorName
+        case _ => throw new ClassCastException
     }
-    status
+  }
+
+  def getConnectorManifest = {
+    connectorManifest.get
+  }
+
+  def getDatastoreManifest = {
+    datastoreManifest.get
+  }
+
+  override def getConnectionStatus: ConnectionStatus = {
+  implicit val stTimeout = Timeout(FiniteDuration(ConnectorApp.GetStatusTimeout,TimeUnit.SECONDS))
+    connectorActor.map[ConnectionStatus]{ cActor =>
+      val future = (cActor ? GetConnectorStatus).mapTo[Boolean]
+      Try(Await.result(future,FiniteDuration.apply(ConnectorApp.GetStatusTimeout, TimeUnit.SECONDS))).map{ isConnected =>
+          if (isConnected) ConnectionStatus.CONNECTED else ConnectionStatus.DISCONNECTED
+      }.recover{
+        case e: Exception => logger.debug("Error asking for the connector status: "+e.getMessage); ConnectionStatus.DISCONNECTED
+      }.get
+    }.getOrElse(ConnectionStatus.DISCONNECTED)
   }
 
 
   override def subscribeToMetadataUpdate(mapListener: IMetadataListener) ={
-    connectorRef.get ! mapListener
+    connectorActor.foreach(_ ! mapListener)
   }
 
   override def registerMetric(name: String, metric: Metric): Metric = {
