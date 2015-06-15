@@ -780,18 +780,6 @@ public class Planner {
                                 }
                                 break;
                                 case FILTER_FUNCTION:
-
-//                                    FunctionFilter functionFilter = (FunctionFilter) current;
-//                                    cols2 = new LinkedHashSet<>();
-//                                    cols2.addAll(functionFilter.getRelation().getFunctionSelectors());
-//                                    if (!checkFunctionsConsistency(connector, sFunctions, cols2, svq, previousInitialProjects)
-//                                            || (!checkFunctionsResultConsistency(connector, cols2))) {
-//                                        toRemove.add(connector);
-//                                        unregisteredFunction = true;
-//                                        unregisteredFunctionMsg= "Connector " + connector.getName() + " can't validate the " +
-//                                                "function: " + cols2.toString();
-//                                        LOG.error(unregisteredFunctionMsg);
-//                                    }
                                     break;
                             default:
                                 throw new PlanningException(currentOperation + " not supported yet.");

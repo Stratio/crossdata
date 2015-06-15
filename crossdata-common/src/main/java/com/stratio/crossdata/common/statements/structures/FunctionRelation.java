@@ -55,7 +55,7 @@ public class FunctionRelation extends AbstractRelation {
     public FunctionRelation(String functionName, List<Selector> functionSelectors) {
         this.functionName = functionName;
         this.functionSelectors = functionSelectors;
-        abstractRelationTables.add(functionSelectors.iterator().next().getTableName());
+        abstractRelationTables.add(functionSelectors.get(0).getTableName());
     }
 
     /**
@@ -126,7 +126,7 @@ public class FunctionRelation extends AbstractRelation {
     }
 
     public String getTableName(){
-        return abstractRelationTables.iterator().next().getQualifiedName();
+        return  functionSelectors.iterator().next().getTableName().getQualifiedName();
     }
 
     @Override
