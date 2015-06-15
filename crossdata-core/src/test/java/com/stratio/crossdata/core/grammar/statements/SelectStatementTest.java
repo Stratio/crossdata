@@ -816,4 +816,19 @@ public class SelectStatementTest extends ParsingTest {
     }
 
 
+
+    @Test
+    public void selectSimpleWithWhereFunction() {
+        String inputText = "SELECT * FROM demo.emp WHERE functionName(columnName, \"value\");";
+        String expectedText = "SELECT * FROM demo.emp WHERE functionName(<unknown_name>.<unknown_name>.columnName, 'value');";
+        testRegularStatement(inputText, expectedText, "selectSimpleWithWhereFunction");
+    }
+
+    @Test
+    public void selectSingleColumnWithWhereFunction() {
+        String inputText = "SELECT field1 FROM demo.emp WHERE functionName(field1, \"value\");";
+        String expectedText = "SELECT <unknown_name>.<unknown_name>.field1 FROM demo.emp WHERE functionName(<unknown_name>.<unknown_name>.field1, 'value');";
+        testRegularStatement(inputText, expectedText, "selectSimpleWithWhereFunction");
+    }
+
 }
