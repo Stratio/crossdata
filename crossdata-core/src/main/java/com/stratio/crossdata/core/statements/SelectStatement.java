@@ -407,6 +407,15 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
     }
 
     /**
+     * Return if the table has properties.
+     *
+     * @return The result check.
+     */
+    private boolean hasProperties() {
+        return ((properties != null) && (!properties.isEmpty()));
+    }
+
+    /**
      * Creates a String representing the Statement with CROSSDATA syntax.
      *
      * @return String
@@ -460,6 +469,10 @@ public class SelectStatement extends CrossdataStatement implements Serializable 
 
         if (limitInc) {
             sb.append(" LIMIT ").append(limit);
+        }
+
+        if (hasProperties()) {
+            sb.append(" WITH ").append(properties);
         }
 
         return sb.toString().replaceAll("  ", " ");

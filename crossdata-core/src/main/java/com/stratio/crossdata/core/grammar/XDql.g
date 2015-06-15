@@ -658,6 +658,7 @@ selectStatement returns [SelectStatement slctst]
     (T_HAVING {havingInc = true;} havingClause=getConditions[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
+    (T_WITH j=getJson)?
     {
         if(windowInc){
             $slctst.setWindow(window);
@@ -683,6 +684,7 @@ selectStatement returns [SelectStatement slctst]
         if(implicitJoin){
             $slctst.addJoin(new Join(implicitTables, new ArrayList<AbstractRelation>()));
         }
+        $slctst.setProperties(j);
     }
 ;
 
