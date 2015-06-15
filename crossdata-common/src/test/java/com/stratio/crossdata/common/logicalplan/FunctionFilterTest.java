@@ -18,8 +18,41 @@
 
 package com.stratio.crossdata.common.logicalplan;
 
+
+import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.statements.structures.FunctionRelation;
+import com.stratio.crossdata.common.statements.structures.Selector;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 /**
- * Created by lcisneros on 12/06/15.
+ * Filter the results retrieved through a Project operation.
  */
 public class FunctionFilterTest {
+
+
+
+    @Test
+    private void testConstructor(){
+        Set<Operations> operations = new HashSet<>();
+        operations.add(Operations.FILTER_FUNCTION);
+
+        List<Selector> selectors = new ArrayList<>();
+
+        FunctionRelation functionRelation = new FunctionRelation("FunctionName", selectors);
+
+        //Experimentation
+        FunctionFilter filter = new FunctionFilter(operations, functionRelation);
+
+
+        //Expectations
+        Assert.assertEquals(filter.getRelation(), functionRelation);
+        Assert.assertEquals(filter.getOperations(), operations);
+
+    }
 }
