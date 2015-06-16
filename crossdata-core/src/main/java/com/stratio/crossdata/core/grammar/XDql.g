@@ -887,7 +887,7 @@ getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
     }:
     (firstRel=getAbstractRelation[workaroundTable] { clauses.addAll(firstRel); }
             (T_AND relN=getAbstractRelation[workaroundTable] { clauses.addAll(relN); })*) 
-            |  (functionRel=getFunctionRelation[workaroundTable] {clauses.add(functionRel);})
+            
 ;
 
 getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
@@ -911,7 +911,8 @@ getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     (T_START_PARENTHESIS firstTerm=getConditions[workaroundTable] T_END_PARENTHESIS
         { withParenthesis = true;
         if((!firstTerm.isEmpty()) && (firstTerm.size()==1)) firstTerm.get(0).setParenthesis(true); }
-    | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } )
+    | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } 
+    |  (functionRel=getFunctionRelation[workaroundTable] {firstTerm.add(functionRel);}))
     { rd.getTerms().add(new RelationTerm(firstTerm, withParenthesis)); }
     (T_OR { simpleRelation = false; }
         (T_START_PARENTHESIS anotherTerm=getConditions[workaroundTable] T_END_PARENTHESIS
