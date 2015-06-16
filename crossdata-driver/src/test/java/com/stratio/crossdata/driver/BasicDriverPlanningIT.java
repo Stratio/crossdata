@@ -300,6 +300,10 @@ public class BasicDriverPlanningIT {
     @AfterClass
     public void tearDown() throws Exception {
         connector.stop();
+        connectorFake.stop();
+        driver.executeQuery("DROP CONNECTOR " + connector.getConnectorName() + ";", "testSession");
+        driver.executeQuery("DROP CONNECTOR " + connectorFake.getConnectorName() + ";", "testSession");
+        driver.close();
         server.stop();
         server.destroy();
     }

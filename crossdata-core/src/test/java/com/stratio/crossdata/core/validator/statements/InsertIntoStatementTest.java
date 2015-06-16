@@ -359,9 +359,39 @@ public class InsertIntoStatementTest extends BasicValidatorTest {
         }
     }
 
+    @Test
+    public void validateList() {
+        String query = "INSERT INTO demo.table4(id, animals) VALUES (1, ['cat', 'dog']);";
+        List<ColumnName> columns = new ArrayList<>();
+        List<Selector> values = new ArrayList<>();
 
+        TableName tableName = new TableName("demo", "table4");
 
+        columns.add(new ColumnName(tableName, "id"));
+        columns.add(new ColumnName(tableName, "animals"));
 
+        values.add(new IntegerSelector(1));
+        List<Selector> animalsList = new ArrayList<>();
+        animalsList.add(new StringSelector("cat"));
+        animalsList.add(new StringSelector("dog"));
+        values.add(new ListSelector(tableName, animalsList));
 
+        StorageStatement insertIntoStatement = new InsertIntoStatement(
+                new TableName("demo", "table4"), columns, null, values, false,
+                null, null, InsertIntoStatement.TYPE_VALUES_CLAUSE);
+        Validator validator = new Validator();
+
+        BaseQuery baseQuery = new BaseQuery("insertId", query, new CatalogName("demo"), "sessionTest");
+
+        IParsedQuery parsedQuery = new StorageParsedQuery(baseQuery, insertIntoStatement);
+        try {
+            validator.validate(parsedQuery);
+            Assert.assertTrue(true);
+        } catch (ValidationException e) {
+            Assert.fail(e.getMessage());
+        } catch (IgnoreQueryException e) {
+            Assert.fail(e.getMessage());
+        }
+    }
 
 }
