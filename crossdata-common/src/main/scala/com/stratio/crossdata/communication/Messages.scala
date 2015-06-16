@@ -114,6 +114,9 @@ case class GetTableMetadata(clusterName: ClusterName, tableName: TableName)
 @SerialVersionUID(-665564236789475256L)
 case class GetCatalogMetadata(catalogName: CatalogName)
 
+@SerialVersionUID(-665564236789475255L)
+case class InfoResult(actorRefConnector: String, queryId: String)
+
 
 // ============================================================================
 //                                IStorageEngine
