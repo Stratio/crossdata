@@ -115,6 +115,7 @@ public class Planner {
         //Add the sql direct query to the logical workflow of the last executionWorkflow.
         plannedQuery.getLastLogicalWorkflow().setSqlDirectQuery(query.getStatement().toSQL92String());
         LOG.info("SQL Direct: " + ((QueryWorkflow) plannedQuery.getExecutionWorkflow()).getWorkflow().getSqlDirectQuery());
+        plannedQuery.getLastLogicalWorkflow().setOptions(query.getStatement().getProperties());
         return plannedQuery;
     }
 

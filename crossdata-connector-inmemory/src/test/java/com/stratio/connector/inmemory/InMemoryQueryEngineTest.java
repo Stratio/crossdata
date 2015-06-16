@@ -207,7 +207,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         lastStep.getPreviousSteps().add(firstStep);
 
         int pagination = 10;
-        LogicalWorkflow lw = new LogicalWorkflow(initialSteps, lastStep, pagination);
+        LogicalWorkflow lw = new LogicalWorkflow(initialSteps, lastStep, pagination, new HashMap<Selector, Selector>());
         lw.setSqlDirectQuery("SELECT concat(test_catalog.users.id, test_catalog.users.name) AS concat, test_catalog.users.boss AS manager FROM test_catalog.users");
         QueryResult result = null;
         try {
@@ -294,7 +294,7 @@ public class InMemoryQueryEngineTest extends InMemoryQueryEngineTestParent {
         lastStep.getPreviousSteps().add(firstStep);
 
         int pagination = 10;
-        LogicalWorkflow lw = new LogicalWorkflow(initialSteps, lastStep, pagination);
+        LogicalWorkflow lw = new LogicalWorkflow(initialSteps, lastStep, pagination, new HashMap<Selector, Selector>());
         lw.setSqlDirectQuery("SELECT count(*) AS count FROM test_catalog.users");
         QueryResult result = null;
         try {
