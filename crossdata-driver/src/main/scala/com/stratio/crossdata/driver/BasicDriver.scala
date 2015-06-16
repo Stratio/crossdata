@@ -199,8 +199,10 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       throw new ConnectionException("You must connect to cluster")
     }
     val queryId = UUID.randomUUID()
-    queries.put(queryId.toString, new QueryData(callback, query, sessionId))
-    queriesWebUI.put(queryId.toString, new QueryData(callback, query, sessionId))
+    queries.put(queryId.toString, new QueryData(callback, queryId.toString, query, sessionId,System.currentTimeMillis(),0,
+      "IN PROGRESS"))
+    queriesWebUI.put(queryId.toString, new QueryData(callback, queryId.toString,query, sessionId,
+      System.currentTimeMillis(),0,"IN PROGRESS"))
     sendQuery(new Query(queryId.toString, currentCatalog, query, userId, sessionId))
     InProgressResult.createInProgressResult(queryId.toString)
   }
@@ -243,10 +245,12 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     }
     val queryId = UUID.randomUUID().toString
     val callback = new SyncDriverResultHandler
-    queries.put(queryId, new QueryData(callback, query, sessionId))
-    queriesWebUI.put(queryId, new QueryData(callback, query, sessionId))
+    queries.put(queryId, new QueryData(callback, queryId.toString,query, sessionId,System.currentTimeMillis(),0,"IN PROGRESS"))
+    queriesWebUI.put(queryId, new QueryData(callback, queryId.toString,query, sessionId,System.currentTimeMillis(),0,"IN PROGRESS"))
     sendQuery(new Query(queryId, currentCatalog, query, userId, sessionId))
     val r = callback.waitForResult()
+    queriesWebUI.get(queryId).setStatus("DONE")
+    queriesWebUI.get(queryId).setEndTime(System.currentTimeMillis())
     logger.info("Query " + queryId + " finished. " + queries.get(queryId).getExecutionInfo())
     queries.remove(queryId)
     r
@@ -801,11 +805,9 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
 
     val sb : StringBuilder = new StringBuilder()
     queriesWebUI.foreach(kv => sb.append(System.getProperty("line.separator"))
-        .append("QueryId: ")
-        .append(kv._1)
-        .append("Sended to Connector: ")
-        .append(connectorOfQueries.get(kv._1))
-        .append(kv._2.getExecutionInfo())
+        .append(kv._2.getCompleteExecutionInfo())
+        .append("Sent to Connector: ")
+        .append(if (connectorOfQueries.get(kv._1)==null) "none" else connectorOfQueries.get(kv._1))
         .append(System.getProperty("line.separator"))
     )
 

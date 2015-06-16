@@ -25,6 +25,7 @@ import com.stratio.crossdata.common.ask.{Command, Connect, Query}
 import com.stratio.crossdata.common.result.{ErrorResult, Result}
 import com.stratio.crossdata.communication._
 import com.stratio.crossdata.driver.BasicDriver
+import com.stratio.crossdata.driver.utils.QueryData
 import org.apache.log4j.Logger
 
 import scala.concurrent.duration._
@@ -164,6 +165,8 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
       } else {
         logger.info("Result not expected received for QID: " + result.getQueryId)
       }
+      driver.queriesWebUI.get(result.getQueryId).setStatus("DONE")
+      driver.queriesWebUI.get(result.getQueryId).setEndTime(System.currentTimeMillis())
 
     }
     case "test"=> {
@@ -172,7 +175,6 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
     }
 
     case InfoResult(ref:String, queryId:String) => {
-      logger.info("Query:" + queryId +" sended to " + ref)
       driver.connectorOfQueries.put(queryId,ref)
     }
     case unknown: Any => {
