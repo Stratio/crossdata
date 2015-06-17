@@ -294,8 +294,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       val connectorsMetadata=MetadataManager.MANAGER.getConnectors(Status.ONLINE);
       val connector=connectorsMetadata.filter(connectorMetadata => connectorMetadata.getActorRefs.contains
         (metadataWorkflow.getActorRef))
-      sender ! InfoResult(connector.apply(0).getName.getName, metadataWorkflow.getQueryId)
-
+      if (connector.size>0)
+        sender ! InfoResult(connector.apply(0).getName.getName, metadataWorkflow.getQueryId)
+      else
+        //Special case of first create catalog statement
+        sender ! InfoResult("none", metadataWorkflow.getQueryId)
 
       if (metadataWorkflow.getExecutionType == ExecutionType.DROP_CATALOG) {
 
