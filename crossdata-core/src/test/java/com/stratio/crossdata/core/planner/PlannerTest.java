@@ -103,7 +103,6 @@ public class PlannerTest extends PlannerBaseTest {
     private TableMetadata table1 = null;
     private TableMetadata table2 = null;
     private TableMetadata table3 = null;
-    private TableMetadata table4 = null;
 
     DataStoreName dataStoreName = null;
     Map<ClusterName, Integer> clusterWithDefaultPriority = new LinkedHashMap<>();
@@ -216,16 +215,6 @@ public class PlannerTest extends PlannerBaseTest {
         String[] clusteringKeys3 = { };
         table3 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[2],
                 columnNames3, columnTypes3, partitionKeys3, clusteringKeys3, null);
-
-        String[] columnNames4 = { "id", "animals" };
-        ColumnType ct = new ColumnType(DataType.LIST);
-        ct.setDBCollectionType(new ColumnType(DataType.TEXT));
-        ColumnType[] columnTypes4 = { new ColumnType(DataType.INT), ct };
-        String[] partitionKeys4 = { "id" };
-        String[] clusteringKeys4 = { };
-        table4 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[3],
-                columnNames4, columnTypes4, partitionKeys4, clusteringKeys4, null);
-
     }
 
     @Test
@@ -1014,7 +1003,16 @@ public class PlannerTest extends PlannerBaseTest {
 
         init();
 
-        String inputText = "[demo], INSERT INTO table4(id, animals) "
+        String[] columnNames1 = { "id", "animals" };
+        ColumnType ct = new ColumnType(DataType.LIST);
+        ct.setDBCollectionType(new ColumnType(DataType.TEXT));
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), ct};
+        String[] partitionKeys1 = { "id" };
+        String[] clusteringKeys1 = { };
+        TableMetadata zoo = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "zoo",
+                columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
+
+        String inputText = "[demo], INSERT INTO zoo(id, animals) "
                 + "VALUES(1, ['dog', 'cat']);";
 
         StorageWorkflow storageWorkflow = null;
