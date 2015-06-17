@@ -103,6 +103,7 @@ public class PlannerTest extends PlannerBaseTest {
     private TableMetadata table1 = null;
     private TableMetadata table2 = null;
     private TableMetadata table3 = null;
+    private TableMetadata table4 = null;
 
     DataStoreName dataStoreName = null;
     Map<ClusterName, Integer> clusterWithDefaultPriority = new LinkedHashMap<>();
@@ -191,7 +192,7 @@ public class PlannerTest extends PlannerBaseTest {
     }
 
     public void createTestTables(CatalogName catalogName) {
-        createTestTables(catalogName, "table1", "table2", "table3");
+        createTestTables(catalogName, "table1", "table2", "table3", "table4");
     }
 
     public void createTestTables(CatalogName catalogName, String... tableNames) {
@@ -215,6 +216,16 @@ public class PlannerTest extends PlannerBaseTest {
         String[] clusteringKeys3 = { };
         table3 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[2],
                 columnNames3, columnTypes3, partitionKeys3, clusteringKeys3, null);
+
+        String[] columnNames4 = { "id", "animals" };
+        ColumnType ct = new ColumnType(DataType.LIST);
+        ct.setDBCollectionType(new ColumnType(DataType.TEXT));
+        ColumnType[] columnTypes4 = { new ColumnType(DataType.INT), ct };
+        String[] partitionKeys4 = { "id" };
+        String[] clusteringKeys4 = { };
+        table4 = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, catalogName.getName(), tableNames[3],
+                columnNames4, columnTypes4, partitionKeys4, clusteringKeys4, null);
+
     }
 
     @Test
@@ -996,6 +1007,24 @@ public class PlannerTest extends PlannerBaseTest {
                 join.getType(),
                 JoinType.CROSS,
                 "Join should have been transformed to a Cross Join");
+    }
+
+    @Test
+    public void testInsertWithListType() throws ManifestException {
+
+        init();
+
+        String inputText = "[demo], INSERT INTO table4(id, animals) "
+                + "VALUES(1, ['dog', 'cat']);";
+
+        StorageWorkflow storageWorkflow = null;
+        try {
+            storageWorkflow = (StorageWorkflow) getPlannedStorageQuery(
+                    inputText, "testInsertWithListType", false, false);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Planner failed");
+        }
+        assertNotNull(storageWorkflow, "Planner failed");
     }
 
 }
