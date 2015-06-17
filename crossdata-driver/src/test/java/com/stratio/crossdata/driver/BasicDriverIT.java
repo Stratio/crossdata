@@ -382,6 +382,8 @@ public class BasicDriverIT {
     @AfterClass
     public void tearDown() throws Exception {
         connector.stop();
+        driver.executeApiCall("DROP CONNECTOR " + connector.getConnectorName() + ";", "testSession");
+        driver.close();
         server.stop();
         server.destroy();
     }
