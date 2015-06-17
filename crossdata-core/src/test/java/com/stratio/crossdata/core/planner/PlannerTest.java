@@ -1023,6 +1023,15 @@ public class PlannerTest extends PlannerBaseTest {
             fail("Planner failed");
         }
         assertNotNull(storageWorkflow, "Planner failed");
+        assertEquals(1, storageWorkflow.getRows().size(), "Only one row was expected here");
+        List<String> expectedCellContent = new ArrayList<>();
+        expectedCellContent.add("dog");
+        expectedCellContent.add("cat");
+        assertEquals(
+                expectedCellContent,
+                storageWorkflow.getRows().iterator().next().getCell("animals").getValue(),
+                "Bad conversion of the list");
+
     }
 
 }

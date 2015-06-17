@@ -1955,7 +1955,7 @@ public class Planner {
         Row row = new Row();
 
         List<Selector> values = statement.getCellValues();
-        List<ColumnName> ids = statement.getIds();
+        List<ColumnName> ids = statement.getColumns();
 
         for (int i = 0; i < ids.size(); i++) {
             ColumnName columnName = ids.get(i);
@@ -1964,7 +1964,7 @@ public class Planner {
             Object cellContent;
             if(FunctionSelector.class.isInstance(value)){
                 cellContent = ((FunctionSelector)value).toStringWithoutAlias();
-            }else{
+            } else {
                 cellContent = coreUtils.convertSelectorToObject(value, columnName);
             }
             Cell cell = new Cell(cellContent);
