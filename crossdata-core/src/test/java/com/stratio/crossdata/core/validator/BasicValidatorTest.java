@@ -79,6 +79,7 @@ public class BasicValidatorTest {
         MetadataManager.MANAGER.createTable(createTable("test", "table1"), false);
         MetadataManager.MANAGER.createTable(createTable2("test", "table2"), false);
         MetadataManager.MANAGER.createTable(createTable2("demo", "table3"), false);
+        MetadataManager.MANAGER.createTable(createTable3("demo", "table4"), false);
     }
 
     @AfterClass
@@ -182,6 +183,27 @@ public class BasicValidatorTest {
 
         tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);
 
+        return tableMetadata;
+    }
+
+    private static TableMetadata createTable3(String catalog, String table) {
+        TableMetadata tableMetadata;
+        TableName targetTable = new TableName(catalog, table);
+        Map<Selector, Selector> options = new HashMap<>();
+        LinkedHashMap<ColumnName, ColumnMetadata> columns = new LinkedHashMap<>();
+        ClusterName clusterRef = new ClusterName("cluster");
+        LinkedList<ColumnName> partitionKey = new LinkedList<>();
+        LinkedList<ColumnName> clusterKey = new LinkedList<>();
+        Object[] parameters = null;
+        columns.put(new ColumnName(new TableName(catalog, table), "id"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "id"), parameters,
+                        new ColumnType(DataType.INT)));
+        ColumnType ct = new ColumnType(DataType.LIST);
+        ct.setDBCollectionType(new ColumnType(DataType.TEXT));
+        columns.put(new ColumnName(new TableName(catalog, table), "animals"),
+                new ColumnMetadata(new ColumnName(new TableName(catalog, table), "animals"), parameters, ct));
+        Map<IndexName, IndexMetadata> indexes = new HashMap<>();
+        tableMetadata = new TableMetadata(targetTable, options, columns, indexes, clusterRef, partitionKey, clusterKey);
         return tableMetadata;
     }
 
