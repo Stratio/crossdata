@@ -45,6 +45,9 @@ class Operation(val queryId: String) extends Serializable
 @SerialVersionUID(-855342469894792659L)
 case class CPUUsage(val queryId: Double)
 
+@SerialVersionUID(-665564236789475255L)
+case class InfoResult(actorRefConnector: String, queryId: String)
+
 @SerialVersionUID(-455628367894852859L)
 case class ReroutedQuery(msg:Query)
 

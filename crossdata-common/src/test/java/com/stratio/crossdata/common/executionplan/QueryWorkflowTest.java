@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.executionplan;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -30,6 +31,7 @@ import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.logicalplan.Window;
 import com.stratio.crossdata.common.metadata.Operations;
+import com.stratio.crossdata.common.statements.structures.Selector;
 import com.stratio.crossdata.common.statements.structures.window.WindowType;
 import com.stratio.crossdata.communication.AsyncExecute;
 import com.stratio.crossdata.communication.Execute;
@@ -42,7 +44,7 @@ public class QueryWorkflowTest {
 
         List<LogicalStep> initialSteps=new ArrayList<>();
         LogicalStep lastStep=null;
-        LogicalWorkflow workflow=new LogicalWorkflow(initialSteps,lastStep,10);
+        LogicalWorkflow workflow=new LogicalWorkflow(initialSteps, lastStep, 10, new HashMap<Selector, Selector>());
         QueryWorkflow qw=new QueryWorkflow("queryId","actorRef",ExecutionType.SELECT,ResultType.TRIGGER_EXECUTION,
                 workflow,true);
         Assert.assertFalse(qw.checkStreaming(lastStep), "It is not possible beacause last step is null");
@@ -53,7 +55,7 @@ public class QueryWorkflowTest {
         LogicalStep step=new Window(new HashSet<Operations>(), WindowType.NUM_ROWS);
         List<LogicalStep> initialSteps=new ArrayList<>();
         LogicalStep lastStep=step;
-        LogicalWorkflow workflow=new LogicalWorkflow(initialSteps,lastStep,10);
+        LogicalWorkflow workflow=new LogicalWorkflow(initialSteps, lastStep, 10, new HashMap<Selector, Selector>());
         QueryWorkflow qw=new QueryWorkflow("queryId","actorRef",ExecutionType.SELECT,ResultType.TRIGGER_EXECUTION,
                 workflow,true);
         Assert.assertTrue(qw.checkStreaming(lastStep), "It's has to be a streaming select because last step is Window" +
@@ -65,7 +67,7 @@ public class QueryWorkflowTest {
         LogicalStep step=new Window(new HashSet<Operations>(), WindowType.NUM_ROWS);
         List<LogicalStep> initialSteps=new ArrayList<>();
         LogicalStep lastStep=step;
-        LogicalWorkflow workflow=new LogicalWorkflow(initialSteps,lastStep,10);
+        LogicalWorkflow workflow=new LogicalWorkflow(initialSteps, lastStep, 10, new HashMap<Selector, Selector>());
         QueryWorkflow qw=new QueryWorkflow("queryId","actorRef",ExecutionType.SELECT,ResultType.TRIGGER_EXECUTION,
                 workflow,true);
         Assert.assertTrue(PagedExecute.class.isInstance(qw.getExecuteOperation("queryId")),
@@ -77,7 +79,7 @@ public class QueryWorkflowTest {
         LogicalStep step=new Window(new HashSet<Operations>(), WindowType.NUM_ROWS);
         List<LogicalStep> initialSteps=new ArrayList<>();
         LogicalStep lastStep=step;
-        LogicalWorkflow workflow=new LogicalWorkflow(initialSteps,lastStep,0);
+        LogicalWorkflow workflow=new LogicalWorkflow(initialSteps, lastStep, 0, new HashMap<Selector, Selector>());
         QueryWorkflow qw=new QueryWorkflow("queryId","actorRef",ExecutionType.SELECT,ResultType.TRIGGER_EXECUTION,
                 workflow,true);
         Assert.assertTrue(AsyncExecute.class.isInstance(qw.getExecuteOperation("queryId")),
@@ -89,7 +91,7 @@ public class QueryWorkflowTest {
 
         List<LogicalStep> initialSteps=new ArrayList<>();
         LogicalStep lastStep=null;
-        LogicalWorkflow workflow=new LogicalWorkflow(initialSteps,lastStep,0);
+        LogicalWorkflow workflow=new LogicalWorkflow(initialSteps, lastStep, 0, new HashMap<Selector, Selector>());
         QueryWorkflow qw=new QueryWorkflow("queryId","actorRef",ExecutionType.SELECT,ResultType.RESULTS,
                 workflow,false);
         Assert.assertTrue(Execute.class.isInstance(qw.getExecuteOperation("queryId")),

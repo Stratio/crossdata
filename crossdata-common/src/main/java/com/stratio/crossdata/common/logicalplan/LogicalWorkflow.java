@@ -19,9 +19,13 @@
 package com.stratio.crossdata.common.logicalplan;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+import com.stratio.crossdata.common.statements.structures.Selector;
 
 /**
  * Workflow defining the steps to be executed to retrieve the requested data. Notice that a workflow may contain several
@@ -45,6 +49,8 @@ public class LogicalWorkflow implements Serializable {
 
     private String sqlDirectQuery;
 
+    private Map<Selector, Selector> options;
+
     /**
      * Workflow constructor.
      *
@@ -52,10 +58,11 @@ public class LogicalWorkflow implements Serializable {
      * @param lastStep      The last logical step.
      * @param pagination    The size of the pagination.
      */
-    public LogicalWorkflow(List<LogicalStep> initialSteps, LogicalStep lastStep, int pagination) {
+    public LogicalWorkflow(List<LogicalStep> initialSteps, LogicalStep lastStep, int pagination, Map<Selector, Selector> options) {
         this.initialSteps = initialSteps;
         this.lastStep = lastStep;
         this.pagination = pagination;
+        this.options = options;
     }
 
     /**
@@ -64,16 +71,17 @@ public class LogicalWorkflow implements Serializable {
      * @param initialSteps  The list of initial steps.
      */
     public LogicalWorkflow(List<LogicalStep> initialSteps) {
-        this(initialSteps, null, 0);
+        this(initialSteps, null, 0, new HashMap<Selector, Selector>());
     }
 
     /**
-     * Creates a new LogicalWorflow which is a copy of the argument logicalWorflow.
+     * Creates a new LogicalWorkflow which is a copy of the argument logicalWorkflow.
      *
      * @param logicalWorkflow   The original LogicalWorkflow.
      */
     public LogicalWorkflow(LogicalWorkflow logicalWorkflow) {
-        this(logicalWorkflow.getInitialSteps(), logicalWorkflow.getLastStep(), logicalWorkflow.getPagination());
+        this(logicalWorkflow.getInitialSteps(), logicalWorkflow.getLastStep(),
+                logicalWorkflow.getPagination(), logicalWorkflow.getOptions());
         this.sqlDirectQuery = logicalWorkflow.getSqlDirectQuery();
     }
 
@@ -122,6 +130,30 @@ public class LogicalWorkflow implements Serializable {
         this.pagination = pagination;
     }
 
+    /**
+     * Get the sql query in sql 92 standard.
+     * @return A String with the query.
+     */
+    public String getSqlDirectQuery() {
+        return sqlDirectQuery;
+    }
+
+    /**
+     * Set the sql query in a sql 92  standard format.
+     * @param sqlDirectQuery The query.
+     */
+    public void setSqlDirectQuery(String sqlDirectQuery) {
+        this.sqlDirectQuery = sqlDirectQuery;
+    }
+
+    public Map<Selector, Selector> getOptions() {
+        return options;
+    }
+
+    public void setOptions(Map<Selector, Selector> options) {
+        this.options = options;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("LogicalWorkflow").append(System.lineSeparator());
@@ -160,19 +192,4 @@ public class LogicalWorkflow implements Serializable {
         return sb.toString();
     }
 
-    /**
-     * Get the sql query in sql 92 standard.
-     * @return A String with the query.
-     */
-    public String getSqlDirectQuery() {
-        return sqlDirectQuery;
-    }
-
-    /**
-     * Set the sql query in a sql 92  standard format.
-     * @param sqlDirectQuery The query.
-     */
-    public void setSqlDirectQuery(String sqlDirectQuery) {
-        this.sqlDirectQuery = sqlDirectQuery;
-    }
 }

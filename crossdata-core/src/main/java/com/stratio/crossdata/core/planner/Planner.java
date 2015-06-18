@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.stratio.crossdata.common.metadata.*;
+import com.stratio.crossdata.common.statements.structures.*;
 import com.stratio.crossdata.core.planner.utils.ConnectorPriorityComparator;
 import org.apache.log4j.Logger;
 
@@ -56,22 +57,6 @@ import com.stratio.crossdata.common.exceptions.ValidationException;
 import com.stratio.crossdata.common.executionplan.*;
 import com.stratio.crossdata.common.logicalplan.*;
 import com.stratio.crossdata.common.manifest.FunctionType;
-import com.stratio.crossdata.common.statements.structures.AbstractRelation;
-import com.stratio.crossdata.common.statements.structures.BooleanSelector;
-import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
-import com.stratio.crossdata.common.statements.structures.ColumnSelector;
-import com.stratio.crossdata.common.statements.structures.FloatingPointSelector;
-import com.stratio.crossdata.common.statements.structures.FunctionSelector;
-import com.stratio.crossdata.common.statements.structures.IntegerSelector;
-import com.stratio.crossdata.common.statements.structures.NullSelector;
-import com.stratio.crossdata.common.statements.structures.Operator;
-import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.common.statements.structures.RelationDisjunction;
-import com.stratio.crossdata.common.statements.structures.RelationSelector;
-import com.stratio.crossdata.common.statements.structures.RelationTerm;
-import com.stratio.crossdata.common.statements.structures.SelectSelector;
-import com.stratio.crossdata.common.statements.structures.Selector;
-import com.stratio.crossdata.common.statements.structures.StringSelector;
 import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.common.utils.StringUtils;
 import com.stratio.crossdata.core.metadata.MetadataManager;
@@ -130,6 +115,7 @@ public class Planner {
         //Add the sql direct query to the logical workflow of the last executionWorkflow.
         plannedQuery.getLastLogicalWorkflow().setSqlDirectQuery(query.getStatement().toSQL92String());
         LOG.info("SQL Direct: " + ((QueryWorkflow) plannedQuery.getExecutionWorkflow()).getWorkflow().getSqlDirectQuery());
+        plannedQuery.getLastLogicalWorkflow().setOptions(query.getStatement().getProperties());
         return plannedQuery;
     }
 
@@ -794,6 +780,8 @@ public class Planner {
                                     LOG.error(unregisteredFunctionMsg);
                                 }
                                 break;
+                                case FILTER_FUNCTION:
+                                    break;
                             default:
                                 throw new PlanningException(currentOperation + " not supported yet.");
                             }
@@ -1011,6 +999,7 @@ public class Planner {
 
     private Map<String, LogicalStep> getLogicalStepMap(SelectValidatedQuery query,
             Map<String, TableMetadata> tableMetadataMap, SelectStatement ss) throws PlanningException {
+
         Map<String, LogicalStep> processed = getProjects(query, tableMetadataMap);
         addProjectedColumns(processed, query);
 
@@ -1966,7 +1955,7 @@ public class Planner {
         Row row = new Row();
 
         List<Selector> values = statement.getCellValues();
-        List<ColumnName> ids = statement.getIds();
+        List<ColumnName> ids = statement.getColumns();
 
         for (int i = 0; i < ids.size(); i++) {
             ColumnName columnName = ids.get(i);
@@ -1975,7 +1964,7 @@ public class Planner {
             Object cellContent;
             if(FunctionSelector.class.isInstance(value)){
                 cellContent = ((FunctionSelector)value).toStringWithoutAlias();
-            }else{
+            } else {
                 cellContent = coreUtils.convertSelectorToObject(value, columnName);
             }
             Cell cell = new Cell(cellContent);
@@ -2062,9 +2051,7 @@ public class Planner {
                 Operations op = createOperation(tableMetadataMap, s, r);
                 if (op != null) {
                     convertSelectSelectors(r);
-                    Filter f = new Filter(
-                            Collections.singleton(op),
-                            r);
+                    Filter f = new Filter(Collections.singleton(op), r);
                     LogicalStep previous = lastSteps.get(s.getSelectorTablesAsString());
                     previous.setNextStep(f);
                     f.setPrevious(previous);
@@ -2090,6 +2077,21 @@ public class Planner {
                 previous.setNextStep(d);
                 d.setPrevious(previous);
                 lastSteps.put(rd.getFirstSelectorTablesAsString(), d);
+            } else if (ar instanceof FunctionRelation){
+                FunctionRelation relation = (FunctionRelation) ar;
+                Operations op = Operations.FILTER_FUNCTION;
+                if (op != null) {
+
+                    FunctionFilter filter = new FunctionFilter(Collections.singleton(op), relation);
+                    LogicalStep previous = lastSteps.get(relation.getTableName());
+                    previous.setNextStep(filter);
+                    filter.setPrevious(previous);
+                    lastSteps.put(relation.getTableName(), filter);
+                } else {
+                    LOG.error("Cannot determine Filter for relation " + relation.toString() +
+                            " on table " + relation.getTableName());
+                }
+
             }
         }
         return lastSteps;

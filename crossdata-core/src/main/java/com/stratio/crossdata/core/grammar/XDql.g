@@ -658,6 +658,7 @@ selectStatement returns [SelectStatement slctst]
     (T_HAVING {havingInc = true;} havingClause=getConditions[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
     (T_LIMIT {limitInc = true;} constant=T_CONSTANT)?
+    (T_WITH j=getJson)?
     {
         if(windowInc){
             $slctst.setWindow(window);
@@ -683,6 +684,7 @@ selectStatement returns [SelectStatement slctst]
         if(implicitJoin){
             $slctst.addJoin(new Join(implicitTables, new ArrayList<AbstractRelation>()));
         }
+        $slctst.setProperties(j);
     }
 ;
 
@@ -883,8 +885,9 @@ getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
         clauses = new ArrayList<>();
         workaroundTable = tablename;
     }:
-    firstRel=getAbstractRelation[workaroundTable] { clauses.addAll(firstRel); }
-            (T_AND relN=getAbstractRelation[workaroundTable] { clauses.addAll(relN); })*
+    (firstRel=getAbstractRelation[workaroundTable] { clauses.addAll(firstRel); }
+            (T_AND relN=getAbstractRelation[workaroundTable] { clauses.addAll(relN); })*) 
+            
 ;
 
 getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
@@ -908,7 +911,8 @@ getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     (T_START_PARENTHESIS firstTerm=getConditions[workaroundTable] T_END_PARENTHESIS
         { withParenthesis = true;
         if((!firstTerm.isEmpty()) && (firstTerm.size()==1)) firstTerm.get(0).setParenthesis(true); }
-    | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } )
+    | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } 
+    |  (functionRel=getFunctionRelation[workaroundTable] {firstTerm.add(functionRel);}))
     { rd.getTerms().add(new RelationTerm(firstTerm, withParenthesis)); }
     (T_OR { simpleRelation = false; }
         (T_START_PARENTHESIS anotherTerm=getConditions[workaroundTable] T_END_PARENTHESIS
@@ -922,7 +926,23 @@ getWhereClauses[TableName tablename] returns [ArrayList<Relation> clauses]
         clauses = new ArrayList<>();
         workaroundTable = tablename;
     }:
-    rel1=getRelation[tablename] {clauses.add(rel1);} (T_AND relN=getRelation[workaroundTable] {clauses.add(relN);})*
+    rel1=getRelation[workaroundTable] {clauses.add(rel1);} (T_AND relN=getRelation[workaroundTable] {clauses.add(relN);})*
+;
+
+
+getFunctionRelation[TableName tablename] returns [AbstractRelation relation]
+    @init{
+        LinkedList<Selector> params = new LinkedList<>();    
+    }
+    @after{
+        String functionStr = functionName;
+        relation = new FunctionRelation(functionStr, params);
+    }:
+    functionName=getFunctionName
+    T_START_PARENTHESIS
+        (select1=getSelector[workaroundTable] {params.add(select1);}
+            (T_COMMA selectN=getSelector[workaroundTable] {params.add(selectN);})*)?
+    T_END_PARENTHESIS
 ;
 
 getRelation[TableName tablename] returns [Relation mrel]

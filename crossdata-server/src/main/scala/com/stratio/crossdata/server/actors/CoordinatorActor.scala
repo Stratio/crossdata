@@ -19,6 +19,7 @@
 package com.stratio.crossdata.server.actors
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSelection, Props}
+import akka.routing.RoundRobinPool
 import com.stratio.crossdata.common.connector.ConnectorClusterConfig
 import com.stratio.crossdata.common.data
 import com.stratio.crossdata.common.data.{ClusterName, ConnectorName, Status}
@@ -258,6 +259,16 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       executionInfo.setSender(StringUtils.getAkkaActorRefUri(explicitSender.getOrElse(sender), true))
       executionInfo.setWorkflow(metadataWorkflow)
 
+      //Getting the connector name to tell sender
+      val connectorsMetadata=MetadataManager.MANAGER.getConnectors(Status.ONLINE);
+      val connector=connectorsMetadata.filter(connectorMetadata => connectorMetadata.getActorRefs.contains
+        (metadataWorkflow.getActorRef))
+      if (connector.size>0)
+        sender ! InfoResult(connector.apply(0).getName.getName, metadataWorkflow.getQueryId)
+      else
+        //Special case of first create catalog statement
+        sender ! InfoResult("none", metadataWorkflow.getQueryId)
+
       if (metadataWorkflow.getExecutionType == ExecutionType.DROP_CATALOG) {
 
         executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
@@ -267,6 +278,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
         val result = MetadataResult.createSuccessMetadataResult(MetadataResult.OPERATION_DROP_CATALOG)
         result.setQueryId(queryId)
+
 
         explicitSender.fold{
           sender ! result
@@ -540,6 +552,11 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         executionInfo.setRemoveOnSuccess(true)
         ExecutionManager.MANAGER.createEntry(queryId, executionInfo)
 
+        //Getting the connector name to tell sender
+        val connectorsMetadata=MetadataManager.MANAGER.getConnectors(Status.ONLINE);
+        val connector=connectorsMetadata.filter(connectorMetadata => connectorMetadata.getActorRefs.contains(storageWorkflow.getActorRef))
+        sender ! InfoResult(connector.apply(0).getName.getName, storageWorkflow.getQueryId)
+
         val actorRef = context.actorSelection(storageWorkflow.getActorRef())
         actorRef ! storageWorkflow.getStorageOperation()
 
@@ -677,6 +694,10 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
       log.info("\nCoordinate workflow: " + queryWorkflow.toString)
       executionInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
+      //Getting the connector name to tell sender
+      val connectorsMetadata=MetadataManager.MANAGER.getConnectors(Status.ONLINE);
+      val connector=connectorsMetadata.filter(connectorMetadata => connectorMetadata.getActorRefs.contains(executionInfo.getWorkflow.getActorRef))
+
       if (ResultType.RESULTS.equals(queryWorkflow.getResultType)) {
 
         //TODO AkkaRefURI should be stored. Indeed, it is likely to be stored instead of toString.
@@ -685,6 +706,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         val operation = queryWorkflow.getExecuteOperation(queryId)
         executionInfo.setRemoveOnSuccess(operation.isInstanceOf[Execute])
         ExecutionManager.MANAGER.createEntry(queryId, executionInfo, true)
+
+        //Send to sender in which connector will be executed the query
+        sender ! InfoResult(connector.apply(0).getName.getName , executionInfo.getWorkflow.getQueryId)
 
         actorSelection.asInstanceOf[ActorSelection] ! operation
         log.info("\nMessage sent to " + actorRef.toString())
@@ -707,8 +731,9 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         nextExecutionInfo.setRemoveOnSuccess(!isWindowFound)
         nextExecutionInfo.setTriggeredByStreaming(isWindowFound)
 
+        //Send to sender in which connector will be executed the query
+        sender ! InfoResult(connector.apply(0).getName.getName , executionInfo.getWorkflow.getQueryId)
         firstConnectorActorSelection ! TriggerExecution(queryWorkflow, nextExecutionInfo)
-
         log.info(s"Sending init trigger operation: ${queryId} to $firstConnectorActorSelection")
 
       }

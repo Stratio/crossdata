@@ -42,7 +42,7 @@ class ConnectorCoordinatorActorTest  extends TestKit(ActorSystem("CoordTest")) w
   test("coordinator should send the operation to the worker"){
     val connectorWorkerProbe = TestProbe()
     val conCoordinatorActor = TestActorRef(new ConnectorCoordinatorActor(connectorWorkerProbe.ref))
-    val logicalWorkflow = new LogicalWorkflow(null, null, 5)
+    val logicalWorkflow = new LogicalWorkflow(null, null, 5, null)
     val queryId = "001"
     val queryWorkflow = new QueryWorkflow(queryId, "b", ExecutionType.SELECT, ResultType.RESULTS, logicalWorkflow , false)
     val triggerOperationMessage = TriggerExecution(queryWorkflow, new ExecutionInfo)
@@ -53,7 +53,7 @@ class ConnectorCoordinatorActorTest  extends TestKit(ActorSystem("CoordTest")) w
   test("coordinator should store the job"){
     val connectorWorkerProbe = TestProbe()
     val conCoordinatorActor = TestActorRef(new ConnectorCoordinatorActor(connectorWorkerProbe.ref))
-    val logicalWorkflow = new LogicalWorkflow(null, null, 5)
+    val logicalWorkflow = new LogicalWorkflow(null, null, 5, null)
     val queryId = "002"
     val queryWorkflow = new QueryWorkflow(queryId, "b", ExecutionType.SELECT, ResultType.RESULTS, logicalWorkflow , false)
     val nextExecutionInfo = new ExecutionInfo
@@ -69,7 +69,7 @@ class ConnectorCoordinatorActorTest  extends TestKit(ActorSystem("CoordTest")) w
   test("coordinator should delete the job on error"){
     val connectorWorkerProbe = TestProbe()
     val conCoordinatorActor = TestActorRef(new ConnectorCoordinatorActor(connectorWorkerProbe.ref))
-    val logicalWorkflow = new LogicalWorkflow(null, null, 5)
+    val logicalWorkflow = new LogicalWorkflow(null, null, 5, null)
     val queryId = "002"
     val queryWorkflow = new QueryWorkflow(queryId, "b", ExecutionType.SELECT, ResultType.RESULTS, logicalWorkflow , false)
     val nextExecutionInfo = new ExecutionInfo
@@ -91,7 +91,7 @@ class ConnectorCoordinatorActorTest  extends TestKit(ActorSystem("CoordTest")) w
   test("coordinator should send the next workflow to the next connector actor"){
     val connectorWorkerProbe = TestProbe()
     val conCoordinatorActor = TestActorRef(new ConnectorCoordinatorActor(connectorWorkerProbe.ref))
-    val logicalWorkflow = new LogicalWorkflow(null, null, 5)
+    val logicalWorkflow = new LogicalWorkflow(null, null, 5, null)
     val queryId = "002"
     val queryWorkflow = new QueryWorkflow(queryId, "b", ExecutionType.SELECT, ResultType.RESULTS, logicalWorkflow , false)
     val nextExecutionInfo = new ExecutionInfo

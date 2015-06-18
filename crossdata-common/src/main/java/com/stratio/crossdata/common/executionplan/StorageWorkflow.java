@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.common.executionplan;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -123,6 +124,12 @@ public class StorageWorkflow extends ExecutionWorkflow {
     }
 
     public Collection<Row> getRows() {
+        if(rows == null){
+            rows = new ArrayList<>();
+        }
+        if(rows.isEmpty()){
+            rows.add(row);
+        }
         return rows;
     }
 

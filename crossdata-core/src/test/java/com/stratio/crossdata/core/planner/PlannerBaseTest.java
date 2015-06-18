@@ -154,8 +154,16 @@ public class PlannerBaseTest {
             String statement,
             String methodName,
             boolean shouldFail) throws ValidationException, IgnoreQueryException {
+        return getPlannedStorageQuery(statement, methodName, false, shouldFail);
+    }
 
-        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName);
+    public ExecutionWorkflow getPlannedStorageQuery(
+            String statement,
+            String methodName,
+            boolean checkParser,
+            boolean shouldFail) throws ValidationException, IgnoreQueryException {
+
+        IParsedQuery stmt = helperPT.testRegularStatement(statement, methodName, checkParser);
         StorageParsedQuery spq = StorageParsedQuery.class.cast(stmt);
 
         Validator validator = new Validator();
