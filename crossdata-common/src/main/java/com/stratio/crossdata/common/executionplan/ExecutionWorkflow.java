@@ -38,11 +38,6 @@ public class ExecutionWorkflow implements Serializable {
     protected final String queryId;
 
     /**
-     * Actor reference of the query sender.
-     */
-    private String sender;
-
-    /**
      * Whether the server should save  information or not once the execution succeed.
      */
     private boolean persistOnSuccess = false;
@@ -124,9 +119,6 @@ public class ExecutionWorkflow implements Serializable {
         return triggerStep;
     }
 
-    public String getSender() {
-        return sender;
-    }
 
     /**
      * Returns an equivalent workflow with lower priority if exists.
@@ -138,10 +130,6 @@ public class ExecutionWorkflow implements Serializable {
 
     public boolean isPersistOnSuccess() {
         return persistOnSuccess;
-    }
-
-    public void setSender(String sender) {
-        this.sender = sender;
     }
 
     public void setPersistOnSuccess(boolean persistOnSuccess) {
