@@ -55,9 +55,7 @@
         <operation>SELECT_FUNCTIONS</operation>
         <operation>SELECT_ORDER_BY</operation>
         <operation>SELECT_LIMIT</operation>
-
         <operation>SELECT_INNER_JOIN</operation>
-
         <operation>FILTER_PK_EQ</operation>
         <operation>FILTER_PK_GT</operation>
         <operation>FILTER_PK_LT</operation>
@@ -70,7 +68,6 @@
         <operation>FILTER_NON_INDEXED_LET</operation>
         <operation>IMPORT_METADATA</operation>
         <operation>PAGINATION</operation>
-
         <operation>ASYNC_QUERY</operation>
     </SupportedOperations>
 </Connector>

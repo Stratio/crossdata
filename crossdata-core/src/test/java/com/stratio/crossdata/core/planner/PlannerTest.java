@@ -142,7 +142,7 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.FILTER_PK_EQ);
         operationsC2.add(Operations.SELECT_INNER_JOIN);
-        operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
+        operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIAL_RESULTS);
         operationsC2.add(Operations.SELECT_CROSS_JOIN);
         operationsC2.add(Operations.INSERT);
         operationsC2.add(Operations.FILTER_DISJUNCTION);

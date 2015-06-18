@@ -91,7 +91,7 @@ public class PlannerPriorityTest extends PlannerBaseTest {
         operationsC1.add(Operations.SELECT_OPERATOR);
         operationsC1.add(Operations.FILTER_PK_EQ);
         operationsC1.add(Operations.SELECT_INNER_JOIN);
-        operationsC1.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
+        operationsC1.add(Operations.SELECT_INNER_JOIN_PARTIAL_RESULTS);
         operationsC1.add(Operations.ALTER_TABLE);
 
         //Streaming connector.

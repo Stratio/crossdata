@@ -2328,23 +2328,23 @@ public class Planner {
         com.stratio.crossdata.common.logicalplan.Join join = null;
         switch(type){
             case INNER:
-                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS), "innerJoinPR"): new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_INNER_JOIN), "innerJoin");
+                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_INNER_JOIN_PARTIAL_RESULTS), "innerJoinPR"): new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_INNER_JOIN), "innerJoin");
                 join.setType(JoinType.INNER);
                 break;
             case CROSS:
-                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_CROSS_JOIN_PARTIALS_RESULTS), "crossJoinPR"): new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_CROSS_JOIN), "crossJoin");
+                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_CROSS_JOIN_PARTIAL_RESULTS), "crossJoinPR"): new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_CROSS_JOIN), "crossJoin");
                 join.setType(JoinType.CROSS);
                 break;
             case LEFT_OUTER:
-                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS), "leftJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN), "leftJoin");
+                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN_PARTIAL_RESULTS), "leftJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN), "leftJoin");
                 join.setType(JoinType.LEFT_OUTER);
                 break;
             case FULL_OUTER:
-                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS), "fullOuterJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN), "fullOuterJoin");
+                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN_PARTIAL_RESULTS), "fullOuterJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN), "fullOuterJoin");
                 join.setType(JoinType.FULL_OUTER);
                 break;
             case RIGHT_OUTER:
-                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS), "rightJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN), "rightJoin");
+                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN_PARTIAL_RESULTS), "rightJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN), "rightJoin");
                 join.setType(JoinType.RIGHT_OUTER);
                 break;
         }
