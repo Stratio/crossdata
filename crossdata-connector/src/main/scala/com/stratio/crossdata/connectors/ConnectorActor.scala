@@ -219,9 +219,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
         connectedServers = connectedServers - member.address.toString
         log.info("Member removed -> remaining servers" + connectedServers)
         if(connectedServers.isEmpty) {
-          context.become(restarting)
-          self ! RestartConnector
-          log.info("There is no server in the cluster. The connector must be restarted")
+          if (autoRestartConnector) restartConnector else stopConnector
         }
 
       }
@@ -236,9 +234,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
         connectedServers = connectedServers - member.address.toString
         log.info("Member removed -> remaining servers" + connectedServers)
         if(connectedServers.isEmpty) {
-          context.become(restarting)
-          self ! RestartConnector
-          log.info("There is no server in the cluster. The connector must be restarted")
+          if (autoRestartConnector) restartConnector else stopConnector
         }
       }
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
@@ -270,6 +266,19 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
     }
 
   }
+
+  private def restartConnector {
+    context.become(restarting)
+    self ! RestartConnector
+    log.info("There is no server in the cluster. The connector must be restarted")
+  }
+
+  private def stopConnector {
+    //TODO stop the connector cleanly
+    connector.shutdown()
+    System.exit(0)
+  }
+
 
   def shutdown(): Unit = {
     logger.debug("ConnectorActor is shutting down")

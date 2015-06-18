@@ -41,6 +41,7 @@ import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.result.StorageResult;
 import com.stratio.crossdata.connectors.ConnectorApp;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.server.CrossdataServer;
 
 import akka.actor.ActorRef;
@@ -67,12 +68,6 @@ public class BasicDriverIT {
         InMemoryConnector inMemoryConnector = new InMemoryConnector(connector);
         ActorRef actorSelection = connector.startup(inMemoryConnector).get();
         Thread.sleep(4000);
-    }
-
-    @AfterClass
-    public void clean(){
-        driver.resetServerdata("testSession");
-
     }
 
     @Test(timeOut = 8000)
@@ -381,8 +376,9 @@ public class BasicDriverIT {
 
     @AfterClass
     public void tearDown() throws Exception {
+        driver.resetServerdata("testSession");
         connector.stop();
-        driver.executeApiCall("DROP CONNECTOR " + connector.getConnectorName() + ";", "testSession");
+        MetadataManager.MANAGER.clear();
         driver.close();
         server.stop();
         server.destroy();

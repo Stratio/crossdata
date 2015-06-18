@@ -317,13 +317,9 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
     }else if (command.toLowerCase.startsWith("list queries")) {
       result = listQueries(sessionId)
     } else if (command.toLowerCase.startsWith("drop datastore")) {
-      //result = dropManifest(
-      // CrossdataManifest.TYPE_DATASTORE, command.toLowerCase.replace("drop datastore ", "").replace(";", "").trim)
       result = dropManifest(
         CrossdataManifest.TYPE_DATASTORE, command.substring(15).replace(";", "").trim,sessionId)
     } else if (command.toLowerCase.startsWith("drop connector")) {
-      //result = dropManifest(
-      // CrossdataManifest.TYPE_CONNECTOR, command.toLowerCase.replace("drop connector ", "").replace(";", "").trim)
       result = dropManifest(
         CrossdataManifest.TYPE_CONNECTOR, command.substring(15).replace(";", "").trim,sessionId)
     } else if (command.toLowerCase.startsWith(EXPLAIN_PLAN_TOKEN)) {

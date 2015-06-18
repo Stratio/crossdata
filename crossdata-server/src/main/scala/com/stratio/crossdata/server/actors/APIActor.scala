@@ -68,10 +68,10 @@ class APIActor(apiManager: APIManager, coordinatorActor: ActorRef) extends Actor
               log.debug(forceDetachCommand)
               coordinatorActor forward forceDetachCommand
             }
-            sender ! resetServerData.getResult;
+            sender ! resetServerData.getResult
           }
           case result =>{
-            sender ! result;
+            sender ! result
           }
         }
       }
