@@ -19,7 +19,9 @@
 package com.stratio.crossdata.sh;
 
 import java.io.*;
+import java.sql.Driver;
 import java.text.SimpleDateFormat;
+import java.util.Map;
 
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -35,6 +37,7 @@ import com.stratio.crossdata.common.result.IDriverResultHandler;
 import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.driver.BasicDriver;
+import com.stratio.crossdata.driver.DriverConnection;
 import com.stratio.crossdata.sh.help.HelpContent;
 import com.stratio.crossdata.sh.help.HelpManager;
 import com.stratio.crossdata.sh.help.HelpStatement;
@@ -80,7 +83,12 @@ public class Shell {
     /**
      * Driver that connects to the CROSSDATA servers.
      */
-    private BasicDriver crossdataDriver = null;
+    BasicDriver crossdataDriver = null;
+
+    /**
+     * Connection with Crossdata server.
+     */
+    DriverConnection xdConnection = null;
 
     /**
      * History date format.
@@ -273,7 +281,7 @@ public class Shell {
      * @param queryId The query identifier.
      */
     protected void removeResultsHandler(String queryId) {
-        crossdataDriver.removeResultHandler(queryId);
+        xdConnection.removeResultHandler(queryId);
     }
 
     /**
@@ -293,7 +301,7 @@ public class Shell {
             if (qr.isCatalogChanged()) {
                 String currentCatalog = qr.getCurrentCatalog();
                 if (!currentCatalog.isEmpty()) {
-                    crossdataDriver.setCurrentCatalog(currentCatalog);
+                    xdConnection.setCurrentCatalog(currentCatalog);
                     setPrompt(currentCatalog);
                 }
             }
@@ -309,10 +317,10 @@ public class Shell {
     public boolean connect(String user, String pass) {
         boolean result = true;
         try {
-            Result connectionResult = crossdataDriver.connect(user, pass);
-            sessionId=((ConnectResult)connectionResult).getSessionId();
+            xdConnection = crossdataDriver.connect(user, pass);
+            sessionId= xdConnection.sessionId();
             LOG.info("Driver connections established");
-            LOG.info(ConsoleUtils.stringResult(connectionResult));
+            LOG.info("Connected with SessionId=" + sessionId);
         } catch (ConnectionException ce) {
             result = false;
             LOG.error("Connect exception "+ce.getMessage(),ce);
@@ -413,7 +421,7 @@ public class Shell {
 
     private void executeAsyncRawQuery(String toExecute) {
         try {
-            Result result = crossdataDriver.executeAsyncRawQuery(toExecute, resultHandler,sessionId);
+            Result result = xdConnection.executeAsyncRawQuery(toExecute, resultHandler);
             LOG.info(ConsoleUtils.stringResult(result));
             updatePrompt(result);
         } catch (Exception ex) {
@@ -450,10 +458,10 @@ public class Shell {
                         break;
                     } else {
                         if(useAsync){
-                            result = crossdataDriver.executeAsyncRawQuery(query, resultHandler, sessionId);
+                            result = xdConnection.executeAsyncRawQuery(query, resultHandler);
                             Thread.sleep(WAIT_TIME_FOR_ASYNC);
                         } else {
-                            result = crossdataDriver.executeRawQuery(query,sessionId);
+                            result = xdConnection.executeRawQuery(query);
                         }
                         LOG.info(ConsoleUtils.stringResult(result));
                         updatePrompt(result);

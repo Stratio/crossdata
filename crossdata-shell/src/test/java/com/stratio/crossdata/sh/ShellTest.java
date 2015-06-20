@@ -97,7 +97,8 @@ public class ShellTest {
     public void testUpdatePrompt() {
         boolean ok = true;
         try {
-            Shell shell = new Shell(false);
+            Shell shell = new MockShell(false);
+            shell.connect("", "");
             QueryResult result = QueryResult.createQueryResult(UUID.randomUUID().toString(), new ResultSet(), 0, true);
             result.setCurrentCatalog("catalogTest");
             shell.updatePrompt(result);
