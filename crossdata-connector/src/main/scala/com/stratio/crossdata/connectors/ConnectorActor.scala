@@ -61,9 +61,7 @@ object ConnectorActor {
   val ConnectorRestartTimeout = 8
 }
 
-/**
- * Restart the actor only one time => It could store the metadata to restart the connector succesfully if needed
- */
+
 class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends Actor with ActorLogging with ConnectConfig {
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
