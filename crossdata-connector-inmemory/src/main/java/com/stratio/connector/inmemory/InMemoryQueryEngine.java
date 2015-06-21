@@ -133,7 +133,7 @@ public class InMemoryQueryEngine implements IQueryEngine {
         List<SimpleValue[]> joinResult = datastore.joinResults(tableResults);
 
         List<SimpleValue[]> partialResultsTable = getPartialResultsTable(workflow);
-        if (! partialResultsTable.isEmpty()){
+        if (!partialResultsTable.isEmpty()){
             joinResult = crossJoin(joinResult, partialResultsTable);
         }
 

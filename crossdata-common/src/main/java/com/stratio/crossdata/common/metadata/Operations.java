@@ -1119,4 +1119,8 @@ public enum Operations {
         return operationsStr;
     }
 
+    public static Operations create(String str){
+        return Operations.valueOf(str);
+    }
+
 }

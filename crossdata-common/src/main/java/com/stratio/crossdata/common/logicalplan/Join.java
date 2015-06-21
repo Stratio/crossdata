@@ -35,7 +35,7 @@ public class Join extends UnionStep {
     /**
      * Join identifier.
      */
-    private final String id;
+    private String id;
 
     /**
      *
@@ -61,6 +61,10 @@ public class Join extends UnionStep {
      */
     public Join(Set<Operations> operations, String id) {
         super(operations);
+        this.id = id;
+    }
+
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -152,4 +156,5 @@ public class Join extends UnionStep {
         }
         return sb.toString();
     }
+
 }
