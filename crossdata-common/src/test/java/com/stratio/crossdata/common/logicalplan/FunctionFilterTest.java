@@ -19,6 +19,7 @@
 package com.stratio.crossdata.common.logicalplan;
 
 
+import com.stratio.crossdata.common.data.TableName;
 import com.stratio.crossdata.common.metadata.Operations;
 import com.stratio.crossdata.common.statements.structures.FunctionRelation;
 import com.stratio.crossdata.common.statements.structures.Selector;
@@ -44,7 +45,8 @@ public class FunctionFilterTest {
 
         List<Selector> selectors = new ArrayList<>();
 
-        FunctionRelation functionRelation = new FunctionRelation("FunctionName", selectors);
+        TableName tableName = new TableName("catalog", "table");
+        FunctionRelation functionRelation = new FunctionRelation("FunctionName", selectors, tableName);
 
         //Experimentation
         FunctionFilter filter = new FunctionFilter(operations, functionRelation);

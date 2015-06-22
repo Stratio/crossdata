@@ -606,6 +606,7 @@ selectStatement returns [SelectStatement slctst]
         boolean subqueryInc = false;
         JoinType joinType=JoinType.INNER;
         List<TableName> implicitTables = new ArrayList<>();
+        List<TableName> joinTables = null;
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
@@ -629,7 +630,7 @@ selectStatement returns [SelectStatement slctst]
         //CROSS_JOIN
         (   T_CROSS T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
             identJoin=getAliasedTableID[workaroundTablesAliasesMap]
-            { List<TableName> joinTables = new ArrayList<>();
+            { joinTables = new ArrayList<>();
             joinTables.add(tablename);
             joinTables.add(identJoin);
             $slctst.addJoin(new Join(joinTables));}
@@ -646,14 +647,14 @@ selectStatement returns [SelectStatement slctst]
             identJoin=getAliasedTableID[workaroundTablesAliasesMap]
             T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
             joinRelations=getConditions[null]
-            { List<TableName> joinTables = new ArrayList<>();
+            { joinTables = new ArrayList<>();
             joinTables.add(tablename);
             joinTables.add(identJoin);
             $slctst.addJoin(new Join(joinTables, joinRelations, joinType));}
          )
     )*
-
-    (T_WHERE { whereInc = true;} whereClauses=getConditions[null])?
+	
+    (T_WHERE { whereInc = true;} whereClauses=getConditions[joinTables != null ?null:tablename])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_HAVING {havingInc = true;} havingClause=getConditions[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
@@ -936,7 +937,7 @@ getFunctionRelation[TableName tablename] returns [AbstractRelation relation]
     }
     @after{
         String functionStr = functionName;
-        relation = new FunctionRelation(functionStr, params);
+        relation = new FunctionRelation(functionStr, params, tablename);
     }:
     functionName=getFunctionName
     T_START_PARENTHESIS

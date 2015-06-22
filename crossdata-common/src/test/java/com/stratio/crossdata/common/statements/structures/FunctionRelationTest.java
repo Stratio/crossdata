@@ -44,7 +44,7 @@ public class FunctionRelationTest {
         tableName = new TableName("catalog", "function");
         columnSelector = new ColumnSelector(new ColumnName(tableName, "ColunName"));
         functionSelectors.add(columnSelector);
-        functionRelation = new FunctionRelation(functionName, functionSelectors);
+        functionRelation = new FunctionRelation(functionName, functionSelectors, tableName);
         columnSelector.setAlias("columnAlias");
     }
 
@@ -53,7 +53,7 @@ public class FunctionRelationTest {
     public void testConstructor() {
 
         //Experimentation
-        functionRelation = new FunctionRelation(functionName, functionSelectors);
+        functionRelation = new FunctionRelation(functionName, functionSelectors, tableName);
 
         //Expectations
         assertEquals(functionRelation.getTableName(), tableName.getQualifiedName());

@@ -2031,7 +2031,7 @@ public class SelectStatementTest extends BasicValidatorTest {
 
         Selector column = new ColumnSelector(new ColumnName("demo", "users", "name"));
         Selector value = new StringSelector(tablename, "name_5");
-        AbstractRelation relation = new FunctionRelation("functionName", new ArrayList(Arrays.asList(column, value)));
+        AbstractRelation relation = new FunctionRelation("functionName", new ArrayList(Arrays.asList(column, value)), tablename);
         relation.setParenthesis(false);
 
         selectStatement.setWhere(new ArrayList(Arrays.asList(relation)));
