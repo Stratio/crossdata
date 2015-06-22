@@ -818,8 +818,8 @@ getDataType returns [ColumnType dataType]:
     | ident1=getMapType T_LT ident2=getBasicType T_COMMA ident3=getBasicType T_GT { ident1.setDBMapType(ident2, ident3); }
     ) 
     (T_START_PARENTHESIS  
-    	( ident4=T_IDENT T_COLON ident5=T_IDENT  { ident1.addColumnProperty($ident4.text, $ident5.text); }) 
-    	(T_COMMA ident6=T_IDENT T_COLON ident7=T_IDENT { ident1.addColumnProperty($ident6.text, $ident7.text); } )* 
+    	( ident4=QUOTED_LITERAL T_COLON ident5=QUOTED_LITERAL  { ident1.addColumnProperty($ident4.text, $ident5.text); }) 
+    	(T_COMMA ident6=QUOTED_LITERAL T_COLON ident7=QUOTED_LITERAL { ident1.addColumnProperty($ident6.text, $ident7.text); } )* 
     T_END_PARENTHESIS)? 
     { $dataType = ident1; }    
 ;
