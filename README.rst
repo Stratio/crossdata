@@ -36,7 +36,7 @@ or run it like a service::
 
 
 Running the crossdata-shell
-==========================
+===========================
 
 The com.stratio.crossdata-shell allows users to launch interactive queries against a set of Crossdata servers. 
 Works both in Unix and Windows.
@@ -91,7 +91,7 @@ Grammar specification for this release can be found `here <doc/src/site/sphinx/G
 
 Getting started
 ===============
-In this `link <GettingStarted.rst>`_ you can follow an example of Crossdata with a Cassandra Connector as an access
+In this `link <doc/src/site/sphinx/GettingStarted.rst>`_ you can follow an example of Crossdata with a Cassandra Connector as an access
 to a Cassandra datastore.
 
 
