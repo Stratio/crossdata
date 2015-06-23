@@ -52,10 +52,10 @@ public class FunctionRelation extends AbstractRelation {
      * @param functionName Name of the includes.
      * @param functionSelectors A list of selectors with the columns affected.
      */
-    public FunctionRelation(String functionName, List<Selector> functionSelectors) {
+    public FunctionRelation(String functionName, List<Selector> functionSelectors, TableName tableName) {
         this.functionName = functionName;
         this.functionSelectors = functionSelectors;
-        abstractRelationTables.add(functionSelectors.get(0).getTableName());
+        abstractRelationTables.add(tableName);
     }
 
     /**

@@ -61,9 +61,7 @@ object ConnectorActor {
   val ConnectorRestartTimeout = 8
 }
 
-/**
- * Restart the actor only one time => It could store the metadata to restart the connector succesfully if needed
- */
+
 class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends Actor with ActorLogging with ConnectConfig {
 
   override lazy val logger = Logger.getLogger(classOf[ConnectorActor])
@@ -80,6 +78,8 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
   val connectorWorkerRef = context.system.actorOf(
     RoundRobinPool(num_connector_actor, Some(resizer))
       .props(Props(classOf[ConnectorWorkerActor], connector, metadataMapAgent, runningJobsAgent)), "ConnectorWorker")
+
+  lazy val coordinatorActorRef = context.system.actorOf(ConnectorCoordinatorActor.props(connectorWorkerRef))
 
   var metricName: Option[String] = Some(MetricRegistry.name(connectorApp.getConnectorName, "connection", "status"))
   Metrics.getRegistry.register(metricName.get,
@@ -113,6 +113,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
 
   def normalState: Receive = {
 
+    //ConnectorManagerMessages
     case GetConnectorName() => {
       logger.info(sender + " asked for my name: " + connectorApp.getConnectorName)
       connectedServers += sender.path.address.toString
@@ -165,6 +166,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       }
     }
 
+    //Cluster events
     case MemberUp(member) => {
       logger.info("Member up")
       logger.info("Member is Up: " + member.toString + member.getRoles + "!")
@@ -215,9 +217,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
         connectedServers = connectedServers - member.address.toString
         log.info("Member removed -> remaining servers" + connectedServers)
         if(connectedServers.isEmpty) {
-          context.become(restarting)
-          self ! RestartConnector
-          log.info("There is no server in the cluster. The connector must be restarted")
+          if (autoRestartConnector) restartConnector else stopConnector
         }
 
       }
@@ -232,9 +232,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
         connectedServers = connectedServers - member.address.toString
         log.info("Member removed -> remaining servers" + connectedServers)
         if(connectedServers.isEmpty) {
-          context.become(restarting)
-          self ! RestartConnector
-          log.info("There is no server in the cluster. The connector must be restarted")
+          if (autoRestartConnector) restartConnector else stopConnector
         }
       }
       logger.info("Member is Removed: " + member.address + " after " + previousStatus)
@@ -244,6 +242,7 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       logger.info("MemberEvent received: " + memberEvent.toString)
     }
 
+    //ConnectorApp messages
     case listener: IMetadataListener => {
       logger.info("Adding new metadata listener")
       metadataMapAgent.send(oMap => {
@@ -255,12 +254,29 @@ class ConnectorActor(connectorApp: ConnectorApp, connector: IConnector) extends 
       sender ! ConnectorStatus(!connectedServers.isEmpty)
     }
 
-    //ConnectorWorkerMessages
+    //Coordinator messages
+    case top: TriggerOperation => {
+      coordinatorActorRef forward top
+    }
+
     case otherMsg => {
       connectorWorkerRef forward otherMsg
     }
 
   }
+
+  private def restartConnector {
+    context.become(restarting)
+    self ! RestartConnector
+    log.info("There is no server in the cluster. The connector must be restarted")
+  }
+
+  private def stopConnector {
+    //TODO stop the connector cleanly
+    connector.shutdown()
+    System.exit(0)
+  }
+
 
   def shutdown(): Unit = {
     logger.debug("ConnectorActor is shutting down")

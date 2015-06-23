@@ -606,6 +606,7 @@ selectStatement returns [SelectStatement slctst]
         boolean subqueryInc = false;
         JoinType joinType=JoinType.INNER;
         List<TableName> implicitTables = new ArrayList<>();
+        List<TableName> joinTables = null;
     }
     @after{
         slctst.setFieldsAliases(fieldsAliasesMap);
@@ -629,7 +630,7 @@ selectStatement returns [SelectStatement slctst]
         //CROSS_JOIN
         (   T_CROSS T_JOIN {workaroundTablesAliasesMap = tablesAliasesMap;}
             identJoin=getAliasedTableID[workaroundTablesAliasesMap]
-            { List<TableName> joinTables = new ArrayList<>();
+            { joinTables = new ArrayList<>();
             joinTables.add(tablename);
             joinTables.add(identJoin);
             $slctst.addJoin(new Join(joinTables));}
@@ -646,14 +647,14 @@ selectStatement returns [SelectStatement slctst]
             identJoin=getAliasedTableID[workaroundTablesAliasesMap]
             T_ON { tablesAliasesMap = workaroundTablesAliasesMap; }
             joinRelations=getConditions[null]
-            { List<TableName> joinTables = new ArrayList<>();
+            { joinTables = new ArrayList<>();
             joinTables.add(tablename);
             joinTables.add(identJoin);
             $slctst.addJoin(new Join(joinTables, joinRelations, joinType));}
          )
     )*
-
-    (T_WHERE { whereInc = true;} whereClauses=getConditions[null])?
+	
+    (T_WHERE { whereInc = true;} whereClauses=getConditions[joinTables != null ?null:tablename])?
     (T_GROUP T_BY {groupInc = true;} groupByClause=getGroupBy[null])?
     (T_HAVING {havingInc = true;} havingClause=getConditions[null])?
     (T_ORDER T_BY {orderInc = true;} orderByClauses=getOrdering[null])?
@@ -817,8 +818,8 @@ getDataType returns [ColumnType dataType]:
     | ident1=getMapType T_LT ident2=getBasicType T_COMMA ident3=getBasicType T_GT { ident1.setDBMapType(ident2, ident3); }
     ) 
     (T_START_PARENTHESIS  
-    	( ident4=T_IDENT T_COLON ident5=T_IDENT  { ident1.addColumnProperty($ident4.text, $ident5.text); }) 
-    	(T_COMMA ident6=T_IDENT T_COLON ident7=T_IDENT { ident1.addColumnProperty($ident6.text, $ident7.text); } )* 
+    	( ident4=QUOTED_LITERAL T_COLON ident5=QUOTED_LITERAL  { ident1.addColumnProperty($ident4.text, $ident5.text); }) 
+    	(T_COMMA ident6=QUOTED_LITERAL T_COLON ident7=QUOTED_LITERAL { ident1.addColumnProperty($ident6.text, $ident7.text); } )* 
     T_END_PARENTHESIS)? 
     { $dataType = ident1; }    
 ;
@@ -887,7 +888,7 @@ getConditions[TableName tablename] returns [List<AbstractRelation> clauses]
     }:
     (firstRel=getAbstractRelation[workaroundTable] { clauses.addAll(firstRel); }
             (T_AND relN=getAbstractRelation[workaroundTable] { clauses.addAll(relN); })*) 
-            |  (functionRel=getFunctionRelation[workaroundTable] {clauses.add(functionRel);})
+            
 ;
 
 getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
@@ -911,7 +912,8 @@ getAbstractRelation[TableName tablename] returns [List<AbstractRelation> result]
     (T_START_PARENTHESIS firstTerm=getConditions[workaroundTable] T_END_PARENTHESIS
         { withParenthesis = true;
         if((!firstTerm.isEmpty()) && (firstTerm.size()==1)) firstTerm.get(0).setParenthesis(true); }
-    | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } )
+    | rel1=getRelation[workaroundTable] { firstTerm.add(rel1); } 
+    |  (functionRel=getFunctionRelation[workaroundTable] {firstTerm.add(functionRel);}))
     { rd.getTerms().add(new RelationTerm(firstTerm, withParenthesis)); }
     (T_OR { simpleRelation = false; }
         (T_START_PARENTHESIS anotherTerm=getConditions[workaroundTable] T_END_PARENTHESIS
@@ -935,7 +937,7 @@ getFunctionRelation[TableName tablename] returns [AbstractRelation relation]
     }
     @after{
         String functionStr = functionName;
-        relation = new FunctionRelation(functionStr, params);
+        relation = new FunctionRelation(functionStr, params, tablename);
     }:
     functionName=getFunctionName
     T_START_PARENTHESIS

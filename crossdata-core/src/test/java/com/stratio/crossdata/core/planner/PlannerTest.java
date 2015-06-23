@@ -142,7 +142,7 @@ public class PlannerTest extends PlannerBaseTest {
         operationsC2.add(Operations.SELECT_OPERATOR);
         operationsC2.add(Operations.FILTER_PK_EQ);
         operationsC2.add(Operations.SELECT_INNER_JOIN);
-        operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS);
+        operationsC2.add(Operations.SELECT_INNER_JOIN_PARTIAL_RESULTS);
         operationsC2.add(Operations.SELECT_CROSS_JOIN);
         operationsC2.add(Operations.INSERT);
         operationsC2.add(Operations.FILTER_DISJUNCTION);
@@ -191,7 +191,7 @@ public class PlannerTest extends PlannerBaseTest {
     }
 
     public void createTestTables(CatalogName catalogName) {
-        createTestTables(catalogName, "table1", "table2", "table3");
+        createTestTables(catalogName, "table1", "table2", "table3", "table4");
     }
 
     public void createTestTables(CatalogName catalogName, String... tableNames) {
@@ -996,6 +996,42 @@ public class PlannerTest extends PlannerBaseTest {
                 join.getType(),
                 JoinType.CROSS,
                 "Join should have been transformed to a Cross Join");
+    }
+
+    @Test
+    public void testInsertWithListType() throws ManifestException {
+
+        init();
+
+        String[] columnNames1 = { "id", "animals" };
+        ColumnType ct = new ColumnType(DataType.LIST);
+        ct.setDBCollectionType(new ColumnType(DataType.TEXT));
+        ColumnType[] columnTypes1 = { new ColumnType(DataType.INT), ct};
+        String[] partitionKeys1 = { "id" };
+        String[] clusteringKeys1 = { };
+        TableMetadata zoo = MetadataManagerTestHelper.HELPER.createTestTable(clusterName, "demo", "zoo",
+                columnNames1, columnTypes1, partitionKeys1, clusteringKeys1, null);
+
+        String inputText = "[demo], INSERT INTO zoo(id, animals) "
+                + "VALUES(1, ['dog', 'cat']);";
+
+        StorageWorkflow storageWorkflow = null;
+        try {
+            storageWorkflow = (StorageWorkflow) getPlannedStorageQuery(
+                    inputText, "testInsertWithListType", false, false);
+        } catch (ValidationException | IgnoreQueryException e) {
+            fail("Planner failed");
+        }
+        assertNotNull(storageWorkflow, "Planner failed");
+        assertEquals(1, storageWorkflow.getRows().size(), "Only one row was expected here");
+        List<String> expectedCellContent = new ArrayList<>();
+        expectedCellContent.add("dog");
+        expectedCellContent.add("cat");
+        assertEquals(
+                expectedCellContent,
+                storageWorkflow.getRows().iterator().next().getCell("animals").getValue(),
+                "Bad conversion of the list");
+
     }
 
 }

@@ -24,6 +24,7 @@ import com.stratio.connector.inmemory.InMemoryConnector;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.*;
 import com.stratio.crossdata.connectors.ConnectorApp;
+import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.server.CrossdataServer;
 import org.apache.log4j.Logger;
 import org.testng.annotations.AfterClass;
@@ -300,6 +301,9 @@ public class BasicDriverPlanningIT {
     @AfterClass
     public void tearDown() throws Exception {
         connector.stop();
+        connectorFake.stop();
+        MetadataManager.MANAGER.clear();
+        driver.close();
         server.stop();
         server.destroy();
     }

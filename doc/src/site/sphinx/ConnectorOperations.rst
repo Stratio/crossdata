@@ -162,7 +162,7 @@ Storage operations are those associated with the *IQueryEngine* interface.
 *   **SELECT_WINDOW**: Supports WINDOW clauses for streaming-like queries.
 *   **SELECT_LIMIT**: Limit the number of output rows.
 *   **SELECT_<join_type>_JOIN**: Support for INNER JOIN operations.
-*   **SELECT_<join_type>_JOIN_PARTIALS_RESULTS**: Support for INNER JOIN with one source already defined.
+*   **SELECT_<join_type>_JOIN_PARTIAL_RESULTS**: Support for INNER JOIN with one source already defined.
 *   **SELECT_ORDER_BY**: Support for ORDER BY clauses.
 *   **SELECT_GROUP_BY**: Support for GROUP BY clauses.
 *   **SELECT_CASE_WHEN**: Support for selecting a value with a CASE WHEN structure.

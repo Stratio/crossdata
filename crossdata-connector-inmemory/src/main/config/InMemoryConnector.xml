@@ -28,7 +28,7 @@
     <!-- Connector version -->
     <Version>0.0.1</Version>
 
-    <!-- Wheter the connector is native or not -->
+    <!-- Whether the connector is native or not -->
     <Native>true</Native>
 
     <!-- Define the set of required operations the user will be asked to input
@@ -55,9 +55,10 @@
         <operation>SELECT_FUNCTIONS</operation>
         <operation>SELECT_ORDER_BY</operation>
         <operation>SELECT_LIMIT</operation>
-
         <operation>SELECT_INNER_JOIN</operation>
-
+        <operation>SELECT_CROSS_JOIN</operation>
+        <operation>SELECT_CROSS_JOIN_PARTIAL_RESULTS</operation>
+        <operation>PARTIAL_RESULTS</operation>
         <operation>FILTER_PK_EQ</operation>
         <operation>FILTER_PK_GT</operation>
         <operation>FILTER_PK_LT</operation>
@@ -70,7 +71,6 @@
         <operation>FILTER_NON_INDEXED_LET</operation>
         <operation>IMPORT_METADATA</operation>
         <operation>PAGINATION</operation>
-
         <operation>ASYNC_QUERY</operation>
     </SupportedOperations>
 </Connector>

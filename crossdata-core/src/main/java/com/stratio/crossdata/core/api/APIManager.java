@@ -193,6 +193,9 @@ public class APIManager {
         return result;
     }
 
+
+
+
     private Result processRequestAddManifest(Command cmd){
         Result result;
         LOG.info(PROCESSING + APICommand.ADD_MANIFEST().toString());

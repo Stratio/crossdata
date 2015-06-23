@@ -708,7 +708,7 @@ public enum Operations {
     /**
      * The engine supports inner joins with partial results.
      */
-    SELECT_INNER_JOIN_PARTIALS_RESULTS("SELECT_INNER_JOIN_PARTIALS_RESULTS"),
+    SELECT_INNER_JOIN_PARTIAL_RESULTS("SELECT_INNER_JOIN_PARTIAL_RESULTS"),
 
     /**
      * The engine supports order by clauses.
@@ -1086,22 +1086,22 @@ public enum Operations {
     /**
      * The engine supports left outer joins with partial results.
      */
-    SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS("SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS"),
+    SELECT_LEFT_OUTER_JOIN_PARTIAL_RESULTS("SELECT_LEFT_OUTER_JOIN_PARTIAL_RESULTS"),
 
     /**
      * The engine supports right outer joins with partial results.
      */
-    SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS("SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS"),
+    SELECT_RIGHT_OUTER_JOIN_PARTIAL_RESULTS("SELECT_RIGHT_OUTER_JOIN_PARTIAL_RESULTS"),
 
     /**
      * The engine supports full outer joins with partial results.
      */
-    SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS("SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS"),
+    SELECT_FULL_OUTER_JOIN_PARTIAL_RESULTS("SELECT_FULL_OUTER_JOIN_PARTIAL_RESULTS"),
 
     /**
      * The engine supports cross joins with partial results.
      */
-    SELECT_CROSS_JOIN_PARTIALS_RESULTS("SELECT_CROSS_JOIN_PARTIALS_RESULTS"),
+    SELECT_CROSS_JOIN_PARTIAL_RESULTS("SELECT_CROSS_JOIN_PARTIAL_RESULTS"),
 
     /**
      * The engine supports operations which refer to the result of previous queries by using aliases.
@@ -1117,6 +1117,10 @@ public enum Operations {
 
     public String getOperationsStr() {
         return operationsStr;
+    }
+
+    public static Operations create(String str){
+        return Operations.valueOf(str);
     }
 
 }

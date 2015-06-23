@@ -23,8 +23,10 @@ import static com.codahale.metrics.MetricRegistry.name;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.log4j.Logger;
 
 import com.codahale.metrics.Timer;
@@ -40,15 +42,18 @@ import com.stratio.crossdata.common.connector.IQueryEngine;
 import com.stratio.crossdata.common.connector.IResultHandler;
 import com.stratio.crossdata.common.data.Cell;
 import com.stratio.crossdata.common.data.ColumnName;
+import com.stratio.crossdata.common.data.JoinType;
 import com.stratio.crossdata.common.data.ResultSet;
 import com.stratio.crossdata.common.data.Row;
 import com.stratio.crossdata.common.exceptions.ConnectorException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
+import com.stratio.crossdata.common.logicalplan.Join;
 import com.stratio.crossdata.common.logicalplan.Limit;
 import com.stratio.crossdata.common.logicalplan.LogicalStep;
 import com.stratio.crossdata.common.logicalplan.LogicalWorkflow;
 import com.stratio.crossdata.common.logicalplan.OrderBy;
+import com.stratio.crossdata.common.logicalplan.PartialResults;
 import com.stratio.crossdata.common.logicalplan.Project;
 import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -127,6 +132,11 @@ public class InMemoryQueryEngine implements IQueryEngine {
 
         List<SimpleValue[]> joinResult = datastore.joinResults(tableResults);
 
+        List<SimpleValue[]> partialResultsTable = getPartialResultsTable(workflow);
+        if (!partialResultsTable.isEmpty()){
+            joinResult = crossJoin(joinResult, partialResultsTable);
+        }
+
         joinResult = orderResult(joinResult, workflow);
 
         Select selectStep = (Select) workflow.getLastStep();
@@ -140,6 +150,80 @@ public class InMemoryQueryEngine implements IQueryEngine {
         LOG.info("Query took " + millis + " nanoseconds");
 
         return finalResult;
+    }
+
+    private List<SimpleValue[]> crossJoin(List<SimpleValue[]> joinResult, List<SimpleValue[]> partialResultsTable) {
+        List<SimpleValue[]> joinedResult = new ArrayList<>(joinResult.size()*partialResultsTable.size());
+        for (SimpleValue[] simpleValues : joinResult) {
+            for (SimpleValue[] partialResultsValue : partialResultsTable) {
+                joinedResult.add(ArrayUtils.addAll(simpleValues, partialResultsValue));
+            }
+        }
+        return joinedResult;
+    }
+
+    /**
+     * Gets a table from a partial result.
+     * @param workflow Workflow.
+     * @return the table translated to inMemoryTables.
+     * @throws ExecutionException
+     */
+    private List<SimpleValue[]> getPartialResultsTable(LogicalWorkflow workflow) throws ExecutionException {
+        List<SimpleValue[]> partialResultTable = new ArrayList<>();
+        Join join = extractStep((Project) workflow.getInitialSteps().get(0), Join.class);
+        if (join != null) {
+            Iterator<LogicalStep> logicalStepIterator = join.getPreviousSteps().iterator();
+            boolean partialResultsFound = false;
+            LogicalStep lStep = null;
+            while(logicalStepIterator.hasNext() && !partialResultsFound){
+                lStep = logicalStepIterator.next();
+                partialResultsFound = PartialResults.class.isInstance(lStep);
+            }
+
+            if(partialResultsFound){
+                if(JoinType.CROSS == join.getType()) {
+                    ResultSet resultSet = PartialResults.class.cast(lStep).getResults();
+                    for (Row row : resultSet) {
+                        partialResultTable.add(simpleValueFromRow(resultSet.getColumnMetadata(), row));
+                    }
+                }else {
+                    throw new ExecutionException("Unsupported join type using partial results: "+join.getType());
+                }
+            }
+        }
+        return partialResultTable;
+    }
+
+    private SimpleValue[] simpleValueFromRow(List<ColumnMetadata> columnMetadata, Row row) {
+        SimpleValue[] values = new SimpleValue[columnMetadata.size()];
+        int c = 0;
+        for (Map.Entry<String, Cell> entry : row.getCells().entrySet()) {
+            values[c++]= new SimpleValue(new InMemoryColumnSelector(entry.getKey()), entry.getValue().getValue());
+        }
+        return values;
+    }
+
+    /**
+     * Parse and transform the {@link Project} until a {@link com.stratio.crossdata.common.logicalplan.Join} to a
+     * InMemory Query representation.
+     *
+     * @param project
+     * @throws ExecutionException
+     */
+    private <T extends LogicalStep> T extractStep(Project project, Class<T> stepWanted) throws ExecutionException{
+        try {
+            LogicalStep currentStep = project;
+            while(currentStep != null){
+                if(stepWanted.isInstance(currentStep)){
+                    return stepWanted.cast(currentStep);
+                }
+                currentStep = currentStep.getNextStep();
+            }
+        } catch(ClassCastException e) {
+            throw new ExecutionException("Invalid workflow received", e);
+        }
+
+        return null;
     }
 
     /**

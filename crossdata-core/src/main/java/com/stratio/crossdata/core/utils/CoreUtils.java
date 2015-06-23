@@ -18,6 +18,9 @@
 
 package com.stratio.crossdata.core.utils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.stratio.crossdata.common.data.ColumnName;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.metadata.ColumnMetadata;
@@ -118,18 +121,20 @@ public final class CoreUtils {
     }
 
     private static Object convertSelectorToList(Selector selector) throws PlanningException {
-        String result;
         try {
             if (FunctionSelector.class.isInstance(selector)){
-                result = selector.getStringValue();
-            }else {
+                return selector.getStringValue();
+            } else {
+                List<Object> objectList = new ArrayList<>();
                 ListSelector listSelector = (ListSelector) selector;
-                result = listSelector.toString();
+                for(Selector sel: listSelector.getSelectorsList()){
+                    objectList.add(convertSelectorToObject(sel));
+                }
+                return objectList;
             }
         } catch (ClassCastException cce) {
             throw new PlanningException(selector + "Problem with the list of the selector.", cce);
         }
-        return result;
     }
 
     private static Boolean convertSelectorToBoolean(Selector selector) throws PlanningException {

@@ -322,6 +322,7 @@ public class Planner {
         Map<UnionStep, ExecutionWorkflow> triggerWorkflow = new LinkedHashMap<>();
 
         addPathsAndMergeSteps(unionSteps, mergeSteps, pathsMap);
+        List<UnionStep> toConvertToPartial = new ArrayList<>();
 
         for(UnionStep mergeStep: mergeSteps) {
             Set<ConnectorMetadata> toRemove = new LinkedHashSet<>();
@@ -337,18 +338,11 @@ public class Planner {
             ExecutionPath[] mergePaths = pathsMap.get(mergeStep);
             for (int index = 0; index < mergePaths.length; index++) {
                 toRemove.clear();
-
                 getToRemove(mergeStep, toRemove, mergePaths[index]);
 
                 if (mergePaths[index].getAvailableConnectors().size() == toRemove.size()) {
                     //Add intermediate result node
-                    PartialResults partialResults = new PartialResults(
-                            Collections.singleton(Operations.PARTIAL_RESULTS));
-                    partialResults.setNextStep(mergeStep);
-
-                    mergeStep.addPreviousSteps(partialResults);
-                    mergeStep.removePreviousStep(mergePaths[index].getLast());
-                    mergePaths[index].getLast().setNextStep(null);
+                    PartialResults partialResults = addIntermediateNode(mergeStep, mergePaths[index]);
 
                     //Create a trigger execution workflow with the partial results step.
                     ExecutionWorkflow w = toExecutionWorkflow(queryId, Arrays.asList(mergePaths[index]),
@@ -359,19 +353,10 @@ public class Planner {
                     triggerResults.put(partialResults, w);
 
                     // Add select step for connector
-                    Project project = (Project) mergePaths[index].getInitial();
-                    Select previousSelect = generateSelectFromProject(project);
-                    QueryWorkflow qw = (QueryWorkflow) w;
-                    LogicalStep lastStep = qw.getWorkflow().getLastStep();
-                    lastStep.setNextStep(previousSelect);
-                    previousSelect.setPrevious(lastStep);
-                    qw.getWorkflow().setLastStep(previousSelect);
+                    first = addSelectStep(first, workflows, intermediateResults, mergePaths[index], index, w);
 
-                    workflows.add(w);
-                    intermediateResults[index] = true;
-                    if (first == null) {
-                        first = QueryWorkflow.class.cast(w);
-                    }
+                    //Merge Step that contains a *_JOIN has to be changed to *_JOIN_PARTIAL_RESULTS
+                    toConvertToPartial.add(mergeStep);
                 } else {
                     mergePaths[index].getAvailableConnectors().removeAll(toRemove);
                     //Add to the list of mergeConnectors.
@@ -408,7 +393,60 @@ public class Planner {
                 }
             }
         }
+
+        convertToPartial(toConvertToPartial);
+
         return buildExecutionTree(first, triggerResults, triggerWorkflow);
+    }
+
+    /**
+     * Convert to any type of join to join partial result if it is contained in the list toConvertToPartialResult.
+     * @param toConvertToPartial
+     */
+    private void convertToPartial(List<UnionStep> toConvertToPartial) {
+        for(int i=0; i<toConvertToPartial.size(); i++){
+            com.stratio.crossdata.common.logicalplan.Join partialJoin =
+                    (com.stratio.crossdata.common.logicalplan.Join) toConvertToPartial.get(i);
+            partialJoin.setId(partialJoin.getId()+"PartialResults");
+            Set<Operations> operations = new HashSet<>(partialJoin.getOperations());
+            partialJoin.removeAllOperations();
+            for(Operations operation: operations){
+                String operationString = operation.getOperationsStr();
+                if(operationString.toUpperCase().contains("JOIN")){
+                    operationString = operationString + "_PARTIAL_RESULTS";
+                }
+                partialJoin.addOperation(Operations.valueOf(operationString));
+            }
+        }
+    }
+
+    private QueryWorkflow addSelectStep(QueryWorkflow first, Set<ExecutionWorkflow> workflows,
+            boolean[] intermediateResults, ExecutionPath mergePath, int index, ExecutionWorkflow w) {
+        Project project = (Project) mergePath.getInitial();
+        Select previousSelect = generateSelectFromProject(project);
+        QueryWorkflow qw = (QueryWorkflow) w;
+        LogicalStep lastStep = qw.getWorkflow().getLastStep();
+        lastStep.setNextStep(previousSelect);
+        previousSelect.setPrevious(lastStep);
+        qw.getWorkflow().setLastStep(previousSelect);
+
+        workflows.add(w);
+        intermediateResults[index] = true;
+        if (first == null) {
+            first = QueryWorkflow.class.cast(w);
+        }
+        return first;
+    }
+
+    private PartialResults addIntermediateNode(UnionStep finalMergeStep, ExecutionPath mergePath) {
+        PartialResults partialResults = new PartialResults(
+                Collections.singleton(Operations.PARTIAL_RESULTS));
+        partialResults.setNextStep(finalMergeStep);
+
+        finalMergeStep.addPreviousSteps(partialResults);
+        finalMergeStep.removePreviousStep(mergePath.getLast());
+        mergePath.getLast().setNextStep(null);
+        return partialResults;
     }
 
     private void getToRemove(UnionStep mergeStep, Set<ConnectorMetadata> toRemove, ExecutionPath mergePath) {
@@ -1955,7 +1993,7 @@ public class Planner {
         Row row = new Row();
 
         List<Selector> values = statement.getCellValues();
-        List<ColumnName> ids = statement.getIds();
+        List<ColumnName> ids = statement.getColumns();
 
         for (int i = 0; i < ids.size(); i++) {
             ColumnName columnName = ids.get(i);
@@ -1964,7 +2002,7 @@ public class Planner {
             Object cellContent;
             if(FunctionSelector.class.isInstance(value)){
                 cellContent = ((FunctionSelector)value).toStringWithoutAlias();
-            }else{
+            } else {
                 cellContent = coreUtils.convertSelectorToObject(value, columnName);
             }
             Cell cell = new Cell(cellContent);
@@ -2206,7 +2244,7 @@ public class Planner {
 
                 getCrossJoin(stepMap, queryJoin, join, sb);
 
-            }else {
+            } else {
                 for (AbstractRelation ab : queryJoin.getRelations()) {
                     Relation rel = (Relation) ab;
 
@@ -2328,28 +2366,44 @@ public class Planner {
         com.stratio.crossdata.common.logicalplan.Join join = null;
         switch(type){
             case INNER:
-                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_INNER_JOIN_PARTIALS_RESULTS), "innerJoinPR"): new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_INNER_JOIN), "innerJoin");
+                //join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton
+                //    (Operations.SELECT_INNER_JOIN_PARTIAL_RESULTS), "innerJoinPR"): new com.stratio.crossdata.common
+                //    .logicalplan.Join(Collections.singleton(Operations.SELECT_INNER_JOIN), "innerJoin");
+                join = new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_INNER_JOIN), "innerJoin");
                 join.setType(JoinType.INNER);
                 break;
             case CROSS:
-                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_CROSS_JOIN_PARTIALS_RESULTS), "crossJoinPR"): new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_CROSS_JOIN), "crossJoin");
+                //join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton
+                //    (Operations.SELECT_CROSS_JOIN_PARTIAL_RESULTS), "crossJoinPR"): new com.stratio.crossdata.common
+                //    .logicalplan.Join(Collections.singleton(Operations.SELECT_CROSS_JOIN), "crossJoin");
+                join = new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_CROSS_JOIN), "crossJoin");
                 join.setType(JoinType.CROSS);
                 break;
             case LEFT_OUTER:
-                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN_PARTIALS_RESULTS), "leftJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN), "leftJoin");
+                //join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton
+                //    (Operations.SELECT_LEFT_OUTER_JOIN_PARTIAL_RESULTS), "leftJoinPR"): new com.stratio.crossdata
+                //    .common.logicalplan.Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN), "leftJoin");
+                join = new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_LEFT_OUTER_JOIN), "leftJoin");
                 join.setType(JoinType.LEFT_OUTER);
                 break;
             case FULL_OUTER:
-                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN_PARTIALS_RESULTS), "fullOuterJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN), "fullOuterJoin");
+                //join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton
+                //    (Operations.SELECT_FULL_OUTER_JOIN_PARTIAL_RESULTS), "fullOuterJoinPR"): new com.stratio
+                //    .crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_FULL_OUTER_JOIN),
+                //    "fullOuterJoin");
+                join = new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(
+                        Operations.SELECT_FULL_OUTER_JOIN), "fullOuterJoin");
                 join.setType(JoinType.FULL_OUTER);
                 break;
             case RIGHT_OUTER:
-                join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN_PARTIALS_RESULTS), "rightJoinPR") :new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN), "rightJoin");
+                //join = isWindowInc ? new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton
+                //    (Operations.SELECT_RIGHT_OUTER_JOIN_PARTIAL_RESULTS), "rightJoinPR"): new com.stratio.crossdata
+                //    .common.logicalplan.Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN), "rightJoin");
+                join = new com.stratio.crossdata.common.logicalplan.Join(Collections.singleton(Operations.SELECT_RIGHT_OUTER_JOIN), "rightJoin");
                 join.setType(JoinType.RIGHT_OUTER);
                 break;
         }
         return join;
-
     }
 
 
