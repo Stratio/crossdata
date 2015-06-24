@@ -35,13 +35,10 @@ import org.jfairy.producer.person.Person;
 
 import com.stratio.crossdata.common.exceptions.ConnectionException;
 import com.stratio.crossdata.common.exceptions.ExecutionException;
-import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.UnsupportedException;
 import com.stratio.crossdata.common.exceptions.ValidationException;
-import com.stratio.crossdata.common.manifest.CrossdataManifest;
-import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.driver.BasicDriver;
-import com.stratio.crossdata.driver.utils.ManifestUtils;
+import com.stratio.crossdata.driver.DriverConnection;
 
 public class ClientExample {
     /**
@@ -66,9 +63,7 @@ public class ClientExample {
 
     public static void main(String[] args) {
 
-
-
-        downloadManifest(
+        /*downloadManifest(
                 CASSANDRA_DATASTORE_MANIFEST,
                 CASSANDRA_DATASTORE_FILE);
         downloadManifest(
@@ -77,226 +72,129 @@ public class ClientExample {
         downloadManifest(
                 DEEP_CONNECTOR_MANIFEST,
                 DEEP_CONNECTOR_FILE);
-
-
-
+        */
 
         BasicDriver basicDriver = new BasicDriver();
 
-        Result result = null;
-        try {
-            result = basicDriver.connect(USER_NAME, PASSWORD);
-        } catch (ConnectionException ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
-        LOG.info("Connected to Crossdata Server");
+        DriverConnection xdConnection = null;
 
-        // RESET SERVER DATA
-        result = basicDriver.cleanMetadata("testSession");
-        assert result != null;
-        LOG.info("Server data cleaned");
-
-        // ADD CASSANDRA DATASTORE MANIFEST
-        CrossdataManifest manifest = null;
         try {
+            xdConnection = basicDriver.connect(USER_NAME, PASSWORD);
+            LOG.info("Connected to Crossdata Server");
+
+            // RESET SERVER DATA
+            xdConnection.cleanMetadata();
+            LOG.info("Server data cleaned");
+
+            // ADD CASSANDRA DATASTORE MANIFEST
+            /*CrossdataManifest manifest = ManifestUtils.parseFromXmlToManifest(
+                                CrossdataManifest.TYPE_DATASTORE,
+                                CASSANDRA_DATASTORE_FILE);
+            xdConnection.addManifest(manifest);
+            LOG.info("Datastore manifest added.");
+            */
+
+            // ATTACH CLUSTER
+            xdConnection.executeQuery("ATTACH CLUSTER cassandra_prod ON DATASTORE Cassandra WITH OPTIONS " +
+                                "{'Hosts': '[127.0.0.1]', 'Port': 9042};");
+            LOG.info("Cluster attached.");
+
+            // ADD STRATIO CASSANDRA CONNECTOR MANIFEST
+            /*
             manifest = ManifestUtils.parseFromXmlToManifest(
-                    CrossdataManifest.TYPE_DATASTORE,
-                    CASSANDRA_DATASTORE_FILE);
-        } catch (ManifestException ex) {
-            LOG.error(ex);
-        }
-        assert manifest != null;
+                                CrossdataManifest.TYPE_CONNECTOR,
+                                CASSANDRA_CONNECTOR_FILE);
+            xdConnection.addManifest(manifest);
+            LOG.info("Stratio Cassandra Connector manifest added.");
 
-        result = null;
-        try {
-            result = basicDriver.addManifest(manifest,"testSession");
-        } catch (ManifestException ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
-        LOG.info("Datastore manifest added.");
-
-        // ATTACH CLUSTER
-        result = null;
-        try {
-            result = basicDriver.executeQuery("ATTACH CLUSTER cassandra_prod ON DATASTORE Cassandra WITH OPTIONS " +
-                    "{'Hosts': '[127.0.0.1]', 'Port': 9042};","testSession");
-        } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
-        LOG.info("Cluster attached.");
-
-        // ADD STRATIO CASSANDRA CONNECTOR MANIFEST
-        manifest = null;
-        try {
+            // ADD STRATIO DEEP CONNECTOR MANIFEST
             manifest = ManifestUtils.parseFromXmlToManifest(
-                    CrossdataManifest.TYPE_CONNECTOR,
-                    CASSANDRA_CONNECTOR_FILE);
-        } catch (ManifestException ex) {
-            LOG.error(ex);
-        }
-        assert manifest != null;
+                                CrossdataManifest.TYPE_CONNECTOR,
+                                DEEP_CONNECTOR_FILE);
+            xdConnection.addManifest(manifest);
+            LOG.info("Stratio Deep Connector manifest added.");
+            */
 
-        result = null;
-        try {
-            result = basicDriver.addManifest(manifest,"testSession");
-        } catch (ManifestException ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
-        LOG.info("Stratio Cassandra Connector manifest added.");
 
-        // ADD STRATIO DEEP CONNECTOR MANIFEST
-        manifest = null;
-        try {
-            manifest = ManifestUtils.parseFromXmlToManifest(
-                    CrossdataManifest.TYPE_CONNECTOR,
-                    DEEP_CONNECTOR_FILE);
-        } catch (ManifestException ex) {
-            LOG.error(ex);
-        }
-        assert manifest != null;
-        LOG.info("Stratio Deep Connector manifest added.");
+            // ATTACH STRATIO CASSANDRA CONNECTOR
+            xdConnection.executeQuery("ATTACH CONNECTOR CassandraConnector TO cassandra_prod WITH OPTIONS " +
+                                "{'DefaultLimit': '1000'};");
+            LOG.info("Stratio Cassandra connector attached.");
 
-        result = null;
-        try {
-            result = basicDriver.addManifest(manifest,"testSession");
-        } catch (ManifestException ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
-        LOG.info("Stratio Cassandra Connector manifest added.");
+            // ATTACH STRATIO DEEP CONNECTOR
+            xdConnection.executeQuery("ATTACH CONNECTOR DeepConnector TO cassandra_prod WITH OPTIONS {};");
+            LOG.info("Stratio Deep connector attached.");
 
-        // ATTACH STRATIO CASSANDRA CONNECTOR
-        result = null;
-        try {
-            result = basicDriver.executeQuery("ATTACH CONNECTOR CassandraConnector TO cassandra_prod WITH OPTIONS " +
-                    "{'DefaultLimit': '1000'};","testSession");
-        } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
+            // CREATE CATALOG
+            xdConnection.executeQuery("CREATE CATALOG catalogTest;");
+            LOG.info("Catalog created.");
 
-        LOG.info("Stratio Cassandra connector attached.");
+            // USE
+            xdConnection.setCurrentCatalog("catalogTest");
 
-        // ATTACH STRATIO DEEP CONNECTOR
-        result = null;
-        try {
-            result = basicDriver.executeQuery("ATTACH CONNECTOR DeepConnector TO cassandra_prod WITH OPTIONS {};","testSession");
-        } catch (Exception ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
+            // CREATE TABLE 1
+            xdConnection.executeQuery("CREATE TABLE tableTest ON CLUSTER cassandra_prod " +
+                                "(id int PRIMARY KEY, serial int, name text, rating double, email text);");
+            LOG.info("Table 1 created.");
 
-        LOG.info("Stratio Deep connector attached.");
+            // CREATE TABLE 2
+            xdConnection.executeQuery("CREATE TABLE tableTest2 ON CLUSTER cassandra_prod " +
+                                "(id int PRIMARY KEY, lastname text, age int, company text);");
+            LOG.info("Table 2 created.");
 
-        // CREATE CATALOG
-        result = null;
-        try {
-            result = basicDriver.executeQuery("CREATE CATALOG catalogTest;","testSession");
-        } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
-        LOG.info("Catalog created.");
+            // USE
+            xdConnection.setCurrentCatalog("catalogTest");
 
-        // USE
-        basicDriver.setCurrentCatalog("catalogTest");
+            // INSERT RANDOM DATA
+            Fairy fairy = Fairy.create();
+            BaseProducer baseProducer = fairy.baseProducer();
+            StringBuilder sb;
+            for(int i = 1; i<NUMBER_OF_ROWS+1; i++){
+                Person person = fairy.person();
 
-        // CREATE TABLE 1
-        result = null;
-        try {
-            result = basicDriver.executeQuery("CREATE TABLE tableTest ON CLUSTER cassandra_prod " +
-                    "(id int PRIMARY KEY, serial int, name text, rating double, email text);","testSession");
-        } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
-        LOG.info("Table 1 created.");
+                // INSERT INTO FIRST TABLE
+                sb = new StringBuilder("INSERT INTO tableTest(id, serial, name, rating, email) VALUES (");
+                sb.append(i).append(", ");
+                sb.append(generateSerial(baseProducer)).append(", ");
+                sb.append(generateName(person)).append(", ");
+                sb.append(generateRating(baseProducer)).append(", ");
+                sb.append(generateEmail(person));
+                sb.append(");");
 
-        // CREATE TABLE 2
-        result = null;
-        try {
-            result = basicDriver.executeQuery("CREATE TABLE tableTest2 ON CLUSTER cassandra_prod " +
-                    "(id int PRIMARY KEY, lastname text, age int, company text);","testSession");
-        } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
-        LOG.info("Table 2 created.");
+                xdConnection.executeQuery(sb.toString());
+                LOG.info("Row for first table inserted.");
 
-        // USE
-        basicDriver.setCurrentCatalog("catalogTest");
+                // INSERT INTO SECOND TABLE
+                sb = new StringBuilder("INSERT INTO tableTest2(id, lastname, age, company) VALUES (");
+                sb.append(generateInt(baseProducer, NUMBER_OF_ROWS)).append(", ");
+                sb.append(generateLastName(person)).append(", ");
+                sb.append(generateAge(person)).append(", ");
+                sb.append(generateCompany(person));
+                sb.append(");");
 
-        // INSERT RANDOM DATA
-        Fairy fairy = Fairy.create();
-        BaseProducer baseProducer = fairy.baseProducer();
-        StringBuilder sb;
-        for(int i = 1; i<NUMBER_OF_ROWS+1; i++){
-            Person person = fairy.person();
+                xdConnection.executeQuery(sb.toString());
+                LOG.info("Row for second table inserted.");
 
-            // INSERT INTO FIRST TABLE
-            sb = new StringBuilder("INSERT INTO tableTest(id, serial, name, rating, email) VALUES (");
-            sb.append(i).append(", ");
-            sb.append(generateSerial(baseProducer)).append(", ");
-            sb.append(generateName(person)).append(", ");
-            sb.append(generateRating(baseProducer)).append(", ");
-            sb.append(generateEmail(person));
-            sb.append(");");
-
-            result = null;
-            try {
-                result = basicDriver.executeQuery(sb.toString(),"testSession");
-            } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException ex) {
-                LOG.error(ex);
             }
-            assert result != null;
-            LOG.info("Row for first table inserted.");
+            // CREATE DEFAULT INDEX
+            xdConnection.executeQuery("CREATE INDEX indexTest ON tableTest(name);");
+            LOG.info("Default index created.");
 
-            // INSERT INTO SECOND TABLE
-            sb = new StringBuilder("INSERT INTO tableTest2(id, lastname, age, company) VALUES (");
-            sb.append(generateInt(baseProducer, NUMBER_OF_ROWS)).append(", ");
-            sb.append(generateLastName(person)).append(", ");
-            sb.append(generateAge(person)).append(", ");
-            sb.append(generateCompany(person));
-            sb.append(");");
+            // CREATE FULL TEXT INDEX
+            xdConnection.executeQuery("CREATE FULL_TEXT INDEX myIndex ON tableTest(email);");
+            LOG.info("Full text index created.");
 
-            result = null;
-            try {
-                result = basicDriver.executeQuery(sb.toString(),"testSession");
-            } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException ex) {
-                LOG.error(ex);
-            }
-            assert result != null;
-            LOG.info("Row for second table inserted.");
-
-        }
-        // CREATE DEFAULT INDEX
-        result = null;
-        try {
-            result = basicDriver.executeQuery("CREATE INDEX indexTest ON tableTest(name);","testSession");
-        } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException ex) {
+            // CLOSE CONNECTION
+            basicDriver.disconnect();
+            LOG.info("Connection closed");
+        } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException  ex) {
             LOG.error(ex);
         }
-        assert result != null;
-        LOG.info("Default index created.");
-
-        // CREATE FULL TEXT INDEX
-        result = null;
-        try {
-            result = basicDriver.executeQuery("CREATE FULL_TEXT INDEX myIndex ON tableTest(email);","testSession");
-        } catch (ConnectionException | ValidationException | ExecutionException | UnsupportedException ex) {
-            LOG.error(ex);
-        }
-        assert result != null;
-        LOG.info("Full text index created.");
-
         // CLOSE DRIVER
         basicDriver.close();
-        LOG.info("Connection closed");
     }
+
+
 
     private static void downloadManifest(String url, String output) {
         URL link = null;

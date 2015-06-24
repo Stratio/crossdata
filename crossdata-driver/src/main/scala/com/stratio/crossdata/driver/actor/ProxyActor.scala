@@ -22,9 +22,10 @@ import akka.actor._
 import akka.contrib.pattern.ClusterClient
 import akka.util.Timeout
 import com.stratio.crossdata.common.ask.{Command, Connect, Query}
+import com.stratio.crossdata.common.exceptions.ConnectionException
 import com.stratio.crossdata.common.result.{ErrorResult, Result}
 import com.stratio.crossdata.communication._
-import com.stratio.crossdata.driver.BasicDriver
+import com.stratio.crossdata.driver.{DriverConnection, BasicDriver}
 import com.stratio.crossdata.driver.utils.QueryData
 import org.apache.log4j.Logger
 
@@ -136,7 +137,7 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
 
     /* ACK received */
     case ack: ACK => {
-      val handler = driver.getResultHandler(ack.queryId)
+      val handler = getConnection.getResultHandler(ack.queryId)
       if (handler != null) {
         handler.processAck(ack.queryId, ack.status)
       } else {
@@ -155,7 +156,7 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
 
     case result: Result => {
       logger.debug(s"\nReceiving result ${result}")
-      val handler = driver.getResultHandler(result.getQueryId)
+      val handler = getConnection.getResultHandler(result.getQueryId)
       if (handler != null) {
         if (!result.isInstanceOf[ErrorResult]) {
           handler.processResult(result)
@@ -165,8 +166,8 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
       } else {
         logger.info("Result not expected received for QID: " + result.getQueryId)
       }
-      driver.queriesWebUI.get(result.getQueryId).setStatus("DONE")
-      driver.queriesWebUI.get(result.getQueryId).setEndTime(System.currentTimeMillis())
+      getConnection.queriesWebUI.get(result.getQueryId).setStatus("DONE")
+      getConnection.queriesWebUI.get(result.getQueryId).setEndTime(System.currentTimeMillis())
 
     }
     case "test"=> {
@@ -175,12 +176,21 @@ class ProxyActor(clusterClientActor: ActorRef, remoteActor: String, driver: Basi
     }
 
     case InfoResult(ref:String, queryId:String) => {
-      driver.connectorOfQueries.put(queryId,ref)
+      getConnection.connectorOfQueries.put(queryId,ref)
     }
     case unknown: Any => {
       logger.error("Unknown message: " + unknown)
       sender ! "Message type not supported"
     }
+  }
+
+  /**
+   * TODO getConnection(sessionId) if driver becomes multisession
+   */
+  private def getConnection: DriverConnection = {
+    val connections = driver.getDriverConnections
+    if(connections.isEmpty) throw new ConnectionException("There is no opened session")
+    else  connections.entrySet().iterator().next().getValue
   }
 
 }

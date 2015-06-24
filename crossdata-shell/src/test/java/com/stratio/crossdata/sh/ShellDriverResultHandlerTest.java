@@ -46,7 +46,9 @@ public class ShellDriverResultHandlerTest {
     public void testProcessResult() throws Exception {
         boolean ok=false;
         try {
-            ShellDriverResultHandler handler = new ShellDriverResultHandler(new Shell(false));
+            Shell shell = new MockShell(false);
+            shell.connect("", "");
+            ShellDriverResultHandler handler = new ShellDriverResultHandler(shell);
             QueryResult result = QueryResult.createQueryResult(UUID.randomUUID().toString(), new ResultSet(), 0, true);
             result.setLastResultSet();
             handler.processResult(result);

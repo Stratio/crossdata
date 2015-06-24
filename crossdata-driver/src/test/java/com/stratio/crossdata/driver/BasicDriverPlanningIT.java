@@ -46,6 +46,7 @@ public class BasicDriverPlanningIT {
     private ConnectorApp connector;
     private ConnectorApp connectorFake;
     private BasicDriver driver;
+    private DriverConnection connection;
 
     @BeforeClass
     public void setUp() throws Exception {
@@ -64,7 +65,7 @@ public class BasicDriverPlanningIT {
 
     @AfterClass
     public void clean(){
-        driver.resetServerdata("testSession");
+        connection.resetServerdata();
 
     }
 
@@ -72,22 +73,18 @@ public class BasicDriverPlanningIT {
     public void testConnect() throws Exception {
         driver = new BasicDriver();
         driver.setUserName("ITtest");
-        Result result = driver.connect(driver.getUserName(), driver.getPassword());
+        connection = driver.connect(driver.getUserName(), driver.getPassword());
 
-        if(result instanceof ErrorResult){
-            LOG.error(((ErrorResult) result).getErrorMessage());
-        }
-        assertFalse(result.hasError(), "Server returned an error");
-        assertEquals(result.getClass(), ConnectResult.class, "ConnectResult was expected");
-        ConnectResult connectResult = (ConnectResult) result;
-        assertNotNull(connectResult.getSessionId(), "Server returned a null session identifier");
-        LOG.info(connectResult.getSessionId());
+        assertNotNull(connection, "Driver connection shouldn't be null");
+        assertNotNull(connection.sessionId(), "Server returned a null session identifier");
+        LOG.info(connection.sessionId());
+
     }
 
     @Test(timeOut = 8000, dependsOnMethods = {"testConnect"})
     public void testResetServerdata() throws Exception {
         Thread.sleep(500);
-        Result result = driver.resetServerdata("testSession");
+        Result result = connection.resetServerdata();
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -106,7 +103,7 @@ public class BasicDriverPlanningIT {
         //URL url = Thread.currentThread().getContextClassLoader().getResource("InMemoryDataStore.xml");
         //String path = url.getPath().replace("crossdata-driver", "crossdata-connector-inmemory");
         String path = url.getPath();
-        Result result = driver.addManifest(CrossdataManifest.TYPE_DATASTORE, path, "testSession");
+        Result result = connection.addManifest(CrossdataManifest.TYPE_DATASTORE, path);
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -121,8 +118,8 @@ public class BasicDriverPlanningIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testAddDatastore"})
     public void testAttachCluster() throws Exception {
         Thread.sleep(500);
-        Result result = driver.executeQuery("ATTACH CLUSTER InMemoryCluster ON DATASTORE InMemoryDatastore WITH " +
-                "OPTIONS {'TableRowLimit': 100};","testSession");
+        Result result = connection.executeQuery("ATTACH CLUSTER InMemoryCluster ON DATASTORE InMemoryDatastore WITH " +
+                "OPTIONS {'TableRowLimit': 100};");
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -140,7 +137,7 @@ public class BasicDriverPlanningIT {
         URL url = Thread.currentThread().getContextClassLoader().getResource("InMemoryConnector.xml");
         //String path = url.getPath().replace("crossdata-driver", "crossdata-connector-inmemory");
         String path = url.getPath();
-        Result result = driver.addManifest(CrossdataManifest.TYPE_CONNECTOR, path,"testSession");
+        Result result = connection.addManifest(CrossdataManifest.TYPE_CONNECTOR, path);
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -155,7 +152,7 @@ public class BasicDriverPlanningIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testAddConnector"})
     public void testAttachConnector() throws Exception {
         Thread.sleep(500);
-        Result result = driver.executeQuery("ATTACH CONNECTOR InMemoryConnector TO InMemoryCluster;","testSession");
+        Result result = connection.executeQuery("ATTACH CONNECTOR InMemoryConnector TO InMemoryCluster;");
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -170,7 +167,7 @@ public class BasicDriverPlanningIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testAttachConnector"})
     public void testCreateCatalog() throws Exception {
         Thread.sleep(500);
-        Result result = driver.executeQuery("CREATE CATALOG catalogTest;","testSession");
+        Result result = connection.executeQuery("CREATE CATALOG catalogTest;");
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -181,14 +178,14 @@ public class BasicDriverPlanningIT {
         assertNotNull(metadataResult.getOperation(), "Server returned a null object");
         LOG.info(metadataResult.getOperation());
         Thread.sleep(500);
-        driver.setCurrentCatalog("catalogTest");
+        connection.setCurrentCatalog("catalogTest");
     }
 
     @Test(timeOut = 8000, dependsOnMethods = {"testCreateCatalog"})
     public void testCreateTable() throws Exception {
         Thread.sleep(500);
-        Result result = driver.executeQuery("CREATE TABLE tableTest ON CLUSTER InMemoryCluster" +
-                " (id INT PRIMARY KEY, name TEXT, description TEXT, rating FLOAT);","testSession");
+        Result result = connection.executeQuery("CREATE TABLE tableTest ON CLUSTER InMemoryCluster" +
+                " (id INT PRIMARY KEY, name TEXT, description TEXT, rating FLOAT);");
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -203,7 +200,7 @@ public class BasicDriverPlanningIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testCreateTable"})
     public void testInsert1() throws Exception {
         Thread.sleep(500);
-        Result result = driver.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (1, 'stratio1', 'Big Data', 5.0);","testSession");
+        Result result = connection.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (1, 'stratio1', 'Big Data', 5.0);");
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -217,7 +214,7 @@ public class BasicDriverPlanningIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testInsert1"})
     public void testInsert2() throws Exception {
-        Result result = driver.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (2, 'stratio2', 'Crossdata', 8.5);","testSession");
+        Result result = connection.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (2, 'stratio2', 'Crossdata', 8.5);");
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -234,7 +231,7 @@ public class BasicDriverPlanningIT {
     public void testSyncSelect() throws Exception {
         Thread.sleep(500);
         TestResultHandler testResultHandler = new TestResultHandler(2);
-        Result result = driver.executeQuery("SELECT * FROM tableTest;", "testSession");
+        Result result = connection.executeQuery("SELECT * FROM tableTest;");
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -252,7 +249,7 @@ public class BasicDriverPlanningIT {
         URL url = Thread.currentThread().getContextClassLoader().getResource("InMemoryConnectorFake.xml");
         //String path = url.getPath().replace("crossdata-driver", "crossdata-connector-inmemory");
         String path = url.getPath();
-        Result result = driver.addManifest(CrossdataManifest.TYPE_CONNECTOR, path,"testSession");
+        Result result = connection.addManifest(CrossdataManifest.TYPE_CONNECTOR, path);
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -267,7 +264,7 @@ public class BasicDriverPlanningIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testAddFakeConnector"})
     public void testAttachFakeConnector() throws Exception {
         Thread.sleep(500);
-        Result result = driver.executeQuery("ATTACH CONNECTOR InMemoryConnectorFake TO InMemoryCluster AND PRIORITY = 1;","testSession");
+        Result result = connection.executeQuery("ATTACH CONNECTOR InMemoryConnectorFake TO InMemoryCluster AND PRIORITY = 1;");
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -286,7 +283,7 @@ public class BasicDriverPlanningIT {
     public void testFakeSyncSelect() throws Exception {
         Thread.sleep(500);
         TestResultHandler testResultHandler = new TestResultHandler(2);
-        Result result = driver.executeQuery("SELECT * FROM tableTest;", "testSession");
+        Result result = connection.executeQuery("SELECT * FROM tableTest;");
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
