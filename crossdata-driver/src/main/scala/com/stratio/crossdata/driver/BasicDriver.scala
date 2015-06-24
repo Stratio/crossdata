@@ -174,7 +174,9 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
         throw new ConnectionException(errorResult.getErrorMessage)
       }
       case connectResult: DisconnectResult => {
+        //TODO disconnect session
         userId = ""
+        driverConnections.clear()
       }
     }
   }

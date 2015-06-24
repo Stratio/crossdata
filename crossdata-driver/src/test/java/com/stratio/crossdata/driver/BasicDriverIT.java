@@ -24,9 +24,12 @@ import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.parboiled.common.Tuple2;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -34,19 +37,18 @@ import org.testng.annotations.Test;
 import com.stratio.connector.inmemory.InMemoryConnector;
 import com.stratio.crossdata.common.manifest.CrossdataManifest;
 import com.stratio.crossdata.common.result.CommandResult;
-import com.stratio.crossdata.common.result.ConnectResult;
 import com.stratio.crossdata.common.result.ConnectToConnectorResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.InProgressResult;
 import com.stratio.crossdata.common.result.MetadataResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.result.StorageResult;
+import com.stratio.crossdata.common.utils.Constants;
 import com.stratio.crossdata.connectors.ConnectorApp;
 import com.stratio.crossdata.core.metadata.MetadataManager;
 import com.stratio.crossdata.server.CrossdataServer;
 
 import akka.actor.ActorRef;
-import akka.actor.ActorSelection;
 
 public class BasicDriverIT {
 
@@ -120,8 +122,9 @@ public class BasicDriverIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testAddDatastore"})
     public void testAttachCluster() throws Exception {
         Thread.sleep(500);
-        Result result = xdConnection.executeQuery("ATTACH CLUSTER InMemoryCluster ON DATASTORE InMemoryDatastore WITH " +
-                "OPTIONS {'TableRowLimit': 100};");
+        Map<String, Object> options = new HashMap<>();
+        options.put("TableRowLimit", 100);
+        Result result = xdConnection.attachCluster("InMemoryCluster", "InMemoryDatastore", false,  options);
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -154,7 +157,9 @@ public class BasicDriverIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testAddConnector"})
     public void testAttachConnector() throws Exception {
         Thread.sleep(500);
-        Result result = xdConnection.executeQuery("ATTACH CONNECTOR InMemoryConnector TO InMemoryCluster AND PAGINATION = 5;");
+
+        Result result = xdConnection.attachConnector("InMemoryConnector", "InMemoryCluster",
+                        Collections.<String, Object>emptyMap(), 5, Constants.DEFAULT_PRIORITY);
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -169,7 +174,7 @@ public class BasicDriverIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testAttachConnector"})
     public void testCreateCatalog() throws Exception {
         Thread.sleep(500);
-        Result result = xdConnection.executeQuery("CREATE CATALOG catalogTest;");
+        Result result = xdConnection.createCatalog("catalogTest", false, Collections.<String,Object>emptyMap());
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -186,8 +191,13 @@ public class BasicDriverIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testCreateCatalog"})
     public void testCreateTable() throws Exception {
         Thread.sleep(500);
-        Result result = xdConnection.executeQuery("CREATE TABLE tableTest ON CLUSTER InMemoryCluster" +
-                " (id INT PRIMARY KEY, name TEXT, description TEXT, rating FLOAT);");
+        Map<String, String> colTypes = new HashMap<>();
+        colTypes.put("id", "INT");
+        colTypes.put("name", "TEXT");
+        colTypes.put("description", "TEXT");
+        colTypes.put("rating", "FLOAT");
+
+        Result result = xdConnection.createTable("catalogTest", "tableTest", "InMemoryCluster", colTypes, Arrays.asList("id"),Collections.<String>emptyList(), false, false, Collections.<String, Object>emptyMap());
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -202,7 +212,13 @@ public class BasicDriverIT {
     @Test(timeOut = 8000, dependsOnMethods = {"testCreateTable"})
     public void testInsert1() throws Exception {
         Thread.sleep(500);
-        Result result = xdConnection.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (1, 'stratio1', 'Big Data', 5.0);");
+        Map<String, Object> colValues = new HashMap<>();
+        colValues.put("id", 1);
+        colValues.put("name", "stratio1");
+        colValues.put("description", "Big Data");
+        colValues.put("rating", 5.0f);
+
+        Result result = xdConnection.insert("catalogTest", "tableTest", colValues, false, Collections.<String, Object>emptyMap());
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -216,7 +232,13 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testInsert1"})
     public void testInsert2() throws Exception {
-        Result result = xdConnection.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (2, 'stratio2', 'Crossdata', 8.5);");
+        Map<String, Object> colValues = new HashMap<>();
+        colValues.put("id", 2);
+        colValues.put("name", "stratio2");
+        colValues.put("description", "Crossdata");
+        colValues.put("rating", 8.5f);
+
+        Result result = xdConnection.insert("catalogTest", "tableTest", colValues, false, Collections.<String, Object>emptyMap());
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -230,7 +252,14 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testInsert2"})
     public void testInsert3() throws Exception {
-        Result result = xdConnection.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (3, 'stratio3', 'One framework to rule all the databases', 4.0);");
+
+        Map<String, Object> colValues = new HashMap<>();
+        colValues.put("id", 3);
+        colValues.put("name", "stratio3");
+        colValues.put("description", "One framework to rule all the databases");
+        colValues.put("rating", 4.0f);
+
+        Result result = xdConnection.insert("catalogTest", "tableTest", colValues, false, Collections.<String, Object>emptyMap());
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -244,7 +273,13 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testInsert3"})
     public void testInsert4() throws Exception {
-        Result result = xdConnection.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (4, 'worker', 'Happy', 9.2);");
+        Map<String, Object> colValues = new HashMap<>();
+        colValues.put("id", 4);
+        colValues.put("name", "worker");
+        colValues.put("description", "Happy");
+        colValues.put("rating", 9.2f);
+
+        Result result = xdConnection.insert("catalogTest", "tableTest", colValues, false, Collections.<String, Object>emptyMap());
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -258,7 +293,14 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testInsert4"})
     public void testInsert5() throws Exception {
-        Result result = xdConnection.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (5, 'worker', 'Learning', 6.5);");
+
+        Map<String, Object> colValues = new HashMap<>();
+        colValues.put("id", 4);
+        colValues.put("name", "worker");
+        colValues.put("description", "Learning");
+        colValues.put("rating", 6.5f);
+
+        Result result = xdConnection.insert("catalogTest", "tableTest", colValues, false, Collections.<String, Object>emptyMap());
 
         if(result instanceof ErrorResult){
             LOG.error(((ErrorResult) result).getErrorMessage());
@@ -272,6 +314,7 @@ public class BasicDriverIT {
 
     @Test(timeOut = 8000, dependsOnMethods = {"testInsert5"})
     public void testInsert6() throws Exception {
+
         Result result = xdConnection.executeQuery("INSERT INTO tableTest(id, name, description, rating) VALUES (6, 'employee', 'Working', 7.0);");
 
         if(result instanceof ErrorResult){

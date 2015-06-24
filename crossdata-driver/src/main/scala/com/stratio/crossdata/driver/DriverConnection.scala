@@ -18,6 +18,7 @@
 
 package com.stratio.crossdata.driver
 
+import java.util
 import java.util.UUID
 
 import com.stratio.crossdata.common.ask.{APICommand, Command, Query}
@@ -26,6 +27,7 @@ import com.stratio.crossdata.common.exceptions._
 import com.stratio.crossdata.common.exceptions.validation.{ExistNameException, NotExistNameException}
 import com.stratio.crossdata.common.manifest.CrossdataManifest
 import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.utils.Constants
 import com.stratio.crossdata.driver.BasicDriver._
 import com.stratio.crossdata.driver.result.SyncDriverResultHandler
 import com.stratio.crossdata.driver.utils.{ManifestUtils, QueryData}
@@ -33,6 +35,7 @@ import org.apache.log4j.Logger
 
 import scala.concurrent.duration._
 import scala.collection.JavaConversions._
+import scala.util.parsing.json
 
 object DriverConnection{
   lazy val logger = Logger.getLogger(getClass)
@@ -136,6 +139,124 @@ class DriverConnection(val sessionId: String, userId: String,  basicDriver: Basi
     result
   }
 
+
+
+  def createCatalog(catalogName: String, ifNotExist: Boolean = false, options: Map[String, Any] = Map.empty[String, Any]): Result = {
+    val strBuilder = StringBuilder.newBuilder
+    strBuilder append s"CREATE CATALOG"
+    if (ifNotExist) strBuilder append " IF NOT EXISTS"
+    strBuilder append s" $catalogName"
+    if (options.nonEmpty) strBuilder append " WITH " append json.JSONObject(options)
+    executeQuery(strBuilder append ";" mkString)
+  }
+
+  //JAVA API
+  def createCatalog(catalogName: String, ifNotExist: Boolean, options: util.Map[String, Any]): Result = {
+    createCatalog(catalogName, ifNotExist, options.toMap)
+  }
+
+  def createTable( catalogName: String, tableName: String,  clusterName: String, columnTypeMap: Map[String, String], partitionKey: List[String], clusteringKeys: List[String] = List.empty[String], ifNotExist: Boolean = false, isExternal: Boolean = false, options: Map[String, Any] = Map.empty[String, Any]): Result = {
+    val strBuilder = StringBuilder.newBuilder
+     strBuilder append { if (isExternal) "REGISTER" else "CREATE"}
+    strBuilder append " TABLE"
+    if (ifNotExist) strBuilder append " IF NOT EXISTS"
+    strBuilder append s" $catalogName.$tableName ON CLUSTER $clusterName "
+    require(columnTypeMap.nonEmpty, "The table must have a schema")
+    strBuilder append(columnTypeMap mkString("(" ,", ", ",") replaceAll("->", ""))
+    require(columnTypeMap.nonEmpty, "The table must have a schema")
+    strBuilder append " PRIMARY KEY ("
+    strBuilder.append(partitionKey mkString(" (",", ", ")") replaceAll("->", ""))
+    if (clusteringKeys.nonEmpty) strBuilder.append( clusteringKeys mkString(" , ", ", ", ""))//add csv clustering keys
+    strBuilder append " )" //CLOSE KEYS DEFINITION
+    strBuilder append " )" //CLOSE VALUES
+    if (options.nonEmpty) strBuilder append " WITH " append json.JSONObject(options)
+    executeQuery(strBuilder append ";" mkString)
+  }
+
+  //JAVA API
+  def createTable( catalogName: String, tableName: String,  clusterName: String, columnTypeMap: util.Map[String, String], partitionKey: util.List[String], clusterKey: util.List[String], ifNotExist: Boolean , isExternal: Boolean , options: util.Map[String, Any]): Result = {
+    createTable(catalogName,tableName,clusterName, columnTypeMap.toMap, partitionKey.toList, clusterKey.toList, ifNotExist, isExternal, options.toMap)
+  }
+
+  def insert( catalogName: String, tableName: String,  columnValue: Map[String, Any], ifNotExist: Boolean = false, options: Map[String, Any] = Map.empty[String, Any]): Result = {
+    val strBuilder = StringBuilder.newBuilder
+    strBuilder append s"INSERT INTO $catalogName.$tableName"
+    require(columnValue.nonEmpty)
+    strBuilder append( columnValue.keys mkString(" (", ", ", ")"))
+    strBuilder append " VALUES "
+    strBuilder append(mkStringValues(columnValue.values))
+    if (ifNotExist) strBuilder append " IF NOT EXISTS"
+    if (options.nonEmpty) strBuilder append " WITH " append json.JSONObject(options)
+    executeQuery(strBuilder append ";" mkString)
+  }
+
+  //JAVA API
+  def insert( catalogName: String, tableName: String,  columnValue: util.Map[String, Object], ifNotExist: Boolean, options: util.Map[String, Any]): Result = {
+    insert(catalogName,tableName,columnValue.toMap, ifNotExist, options.toMap)
+  }
+
+
+  def attachCluster(clusterName: String, datastore: String, ifNotExists: Boolean = false, options: Map[String, Any] = Map.empty[String, Any]): Result = {
+    val strBuilder = StringBuilder.newBuilder
+    strBuilder append s"ATTACH CLUSTER"
+    if (ifNotExists) strBuilder append " IF NOT EXISTS"
+    strBuilder append s" $clusterName ON DATASTORE $datastore"
+    if (options.nonEmpty) strBuilder append " WITH OPTIONS " append json.JSONObject(options)
+    executeQuery(strBuilder append ";" mkString)
+  }
+
+  //JAVA API
+  def attachCluster(clusterName: String, datastore: String, ifNotExists: Boolean, options: util.Map[String, Any]): Result = {
+    attachCluster(clusterName, datastore, ifNotExists, options.toMap)
+  }
+
+  def attachConnector(connectorName: String, clusterName: String, options: Map[String, Any] = Map.empty[String, Any], pagination: Int = Constants.DEFAULT_PAGINATION, priority: Int = Constants.DEFAULT_PRIORITY): Result = {
+    val strBuilder = StringBuilder.newBuilder
+    strBuilder append s"ATTACH CONNECTOR $connectorName TO $clusterName"
+    if (options.nonEmpty) strBuilder append " WITH OPTIONS " append json.JSONObject(options)
+    strBuilder append s" AND PRIORITY = $priority AND PAGINATION = $pagination"
+    executeQuery(strBuilder append ";" mkString)
+  }
+
+  //JAVA API
+  def attachConnector(connectorName: String, clusterName: String, options: util.Map[String, Any], pagination: Int, priority: Int): Result = {
+    attachConnector(connectorName, clusterName, options.toMap, pagination, priority)
+  }
+
+  def dropTable( catalogName: String, tableName: String, ifExists: Boolean = false, isExternal: Boolean = false): Result = {
+    val strBuilder = StringBuilder.newBuilder
+    strBuilder append { if (isExternal) "UNREGISTER" else "DROP"} append " TABLE"
+    if (ifExists) strBuilder append " IF EXISTS"
+    strBuilder append s" $catalogName.$tableName"
+    executeQuery(strBuilder append ";" mkString)
+  }
+
+  def dropCatalog( catalogName: String, ifExists: Boolean = false): Result = {
+    val strBuilder = StringBuilder.newBuilder
+    strBuilder append "DROP CATALOG"
+    if (ifExists) strBuilder append " IF EXISTS"
+    strBuilder append s" $catalogName"
+    executeQuery(strBuilder append ";" mkString)
+  }
+
+  private def mkStringValues(values: Iterable[Any]): String = {
+    val stBuilder = StringBuilder.newBuilder
+    stBuilder append "( "
+    values.head match {
+      case str: String => stBuilder append s"'$str'"
+      case other => stBuilder append s"${other.toString}"
+    }
+    values.tail.foldLeft(stBuilder) {
+      case (builder, value) => value match {
+        case str: String => builder append s", '$str'"
+        case _ => builder append s", ${value.toString}"
+      }
+    }
+    stBuilder append ")"
+    stBuilder mkString
+  }
+
+
   @throws(classOf[NotExistNameException])
   def updateCatalog(toExecute: String): Result = {
     //val newCatalog: String = toExecute.toLowerCase.replace("use ", "").replace(";", "").trim
@@ -153,7 +274,7 @@ class DriverConnection(val sessionId: String, userId: String,  basicDriver: Basi
         throw new NotExistNameException(new CatalogName(newCatalog));
       }
     }
-    return CommandResult.createCommandResult(new CatalogName(currentCatalog));
+    CommandResult.createCommandResult(new CatalogName(currentCatalog));
   }
 
   def executeApiCall(command: String): Result = {
@@ -185,7 +306,7 @@ class DriverConnection(val sessionId: String, userId: String,  basicDriver: Basi
     } else if (command.toLowerCase.startsWith(STOP_PROCESS_TOKEN)){
       result = stopProcess(command.substring(STOP_PROCESS_TOKEN.length).replace(";", "").trim);
     }
-    return result
+    result
   }
 
 
@@ -298,7 +419,7 @@ class DriverConnection(val sessionId: String, userId: String,  basicDriver: Basi
     } else {
       result = Result.createErrorResult(new Exception("Unknown command"))
     }
-    return result
+    result
   }
 
   /**

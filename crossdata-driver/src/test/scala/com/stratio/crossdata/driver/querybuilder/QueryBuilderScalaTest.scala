@@ -28,19 +28,19 @@ class QueryBuilderScalaTest extends FunSuite{
 
 
   test("selectFrom") {
-    val expected: String = "SELECT * FROM table"
+    val expected: String = "SELECT * FROM table;"
     val s = QueryBuilder.selectAll.from("table")
     assertEquals(s.toString, expected, "Query does not match")
   }
 
   test("selectFrom2Columns") {
-    val expected: String = "SELECT col1, col2 FROM table"
+    val expected: String = "SELECT col1, col2 FROM table;"
     val s = QueryBuilder.select("col1", "col2").from("table")
     assertEquals(s.toString, expected, "Query does not match")
   }
 
   test("selectFromWhere") {
-    val expected: String = "SELECT * FROM table WHERE id = 42"
+    val expected: String = "SELECT * FROM table WHERE id = 42;"
     val s = QueryBuilder.selectAll.from("table").where("id = 42")
     assertEquals(s.toString, expected, "Query does not match")
   }

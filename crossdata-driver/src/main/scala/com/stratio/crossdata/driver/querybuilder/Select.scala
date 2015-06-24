@@ -203,6 +203,8 @@ class Select extends Query {
       sb.append(" LIMIT ").append(limit.get)
     }
 
-    sb.toString()
+    sb append ";"
+
+    sb mkString
   }
 }
