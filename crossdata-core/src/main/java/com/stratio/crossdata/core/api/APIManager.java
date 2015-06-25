@@ -366,7 +366,7 @@ public class APIManager {
         try {
             connector = MetadataManager.MANAGER.getConnector(name);
         } catch (MetadataManagerException mme) {
-            LOG.info(mme.getMessage(),mme);
+            LOG.info(mme.getMessage());
             result = ErrorResult.createErrorResult(new ApiException(mme.getMessage()));
         }
 
