@@ -55,7 +55,15 @@ public class FunctionRelation extends AbstractRelation {
     public FunctionRelation(String functionName, List<Selector> functionSelectors, TableName tableName) {
         this.functionName = functionName;
         this.functionSelectors = functionSelectors;
-        abstractRelationTables.add(tableName);
+
+        if (tableName != null) {
+            abstractRelationTables.add(tableName);
+        } else {
+
+            for (Selector functionSelector : functionSelectors) {
+                abstractRelationTables.addAll(functionSelector.getSelectorTables());
+            }
+        }
     }
 
     /**
