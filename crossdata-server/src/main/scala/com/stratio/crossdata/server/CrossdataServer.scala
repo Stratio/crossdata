@@ -58,7 +58,7 @@ class CrossdataServer extends Daemon with ServerConfig {
   }
 
   override def init(p1: DaemonContext): Unit = {
-    logger.info("Init Crossdata Server --- v0.3.3")
+    logger.info("Init Crossdata Server --- v0.3.4")
     val serverActor = system.actorOf(ServerActor.props(engine,cluster), actorName)
     ClusterReceptionistExtension(system).registerService(serverActor)
 

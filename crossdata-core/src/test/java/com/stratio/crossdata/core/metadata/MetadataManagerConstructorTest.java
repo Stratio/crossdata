@@ -17,7 +17,7 @@ import com.stratio.crossdata.core.MetadataManagerTestHelper;
 
 public class MetadataManagerConstructorTest {
 
-    private static final String VERSION = "0.3.3";
+    private static final String VERSION = "0.3.4";
 
     @BeforeClass
     public void setUp() throws ManifestException {

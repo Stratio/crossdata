@@ -21,7 +21,7 @@ associated manifest. As an example, consider the following *InMemoryConnector.xm
             <DataStoreName>InMemoryDatastore</DataStoreName>
         </DataStores>
         <!-- Connector version -->
-        <Version>0.3.3</Version>
+        <Version>0.3.4</Version>
 
         <!-- Define the set of required operations the user will be asked to input
         when attaching the connector -->

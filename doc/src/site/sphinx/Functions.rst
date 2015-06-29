@@ -88,7 +88,7 @@ intention and the expected behaviour of the function.
 Use in grammar
 ==============
 
-As for version 0.3.3, you can use nested functions and they can be used as selectors or in where clauses. Therefore,
+As for version 0.3.4, you can use nested functions and they can be used as selectors or in where clauses. Therefore,
 when issuing a crossdata statement,
 we only have to provide the name of the function and the name of the columns (if any) in parenthesis. In that way,
 a generic query with a function will look like::
