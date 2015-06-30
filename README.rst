@@ -91,7 +91,7 @@ Grammar specification for this release can be found `here <doc/src/site/sphinx/G
 
 Getting started
 ===============
-In this `link <doc/src/site/sphinx/GettingStarted.rst>`_ you can follow an example of Crossdata with a Cassandra Connector as an access
+In this `link <GettingStarted.rst>`_ you can follow an example of Crossdata with a Cassandra Connector as an access
 to a Cassandra datastore.
 
 
