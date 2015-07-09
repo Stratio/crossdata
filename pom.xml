@@ -30,7 +30,7 @@
     <groupId>com.stratio.crossdata</groupId>
     <artifactId>crossdata-parent</artifactId>
     <packaging>pom</packaging>
-    <version>0.4.0-SNAPSHOT</version>
+    <version>1.0.0-SNAPSHOT</version>
     <name>Stratio Crossdata</name>
     <description>Stratio Crossdata parent</description>
     <url>http://stratio.github.io/crossdata/</url>
@@ -38,7 +38,7 @@
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0t</url>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
     </licenses>
 
@@ -57,73 +57,37 @@
 
     <developers>
         <developer>
-            <id>aagea</id>
-            <name>Álvaro Agea</name>
-            <email>aagea at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>antonioalcocer</id>
-            <name>Antonio Alcocer</name>
-            <email>aalcocer at stratio dot com</email>
-        </developer>
-        <developer>
             <id>miguel0afd</id>
             <name>Miguel Angel Fernandez</name>
             <email>mafernandez at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>gmunoz</id>
-            <name>Gaspar Muñoz</name>
-            <email>gmunoz at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>roclas</id>
-            <name>Carlos Hernandez</name>
-            <email>chernandez at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>dhiguero</id>
-            <name>Daniel Higuero</name>
-            <email>dhiguero at stratio dot com</email>
-        </developer>
-        <developer>
-            <id>idiaz</id>
-            <name>Ivan Diaz</name>
-            <email>idiaz at stratio dot com</email>
         </developer>
         <developer>
             <id>jjlopez</id>
             <name>Juanjo Lopez</name>
             <email>jjlopez at stratio dot com</email>
         </developer>
+        <developer>
+            <id>darroyo</id>
+            <name>David Arroyo</name>
+            <email>darroyo at stratio dot com</email>
+        </developer>
+        <developer>
+            <id>lcisneros</id>
+            <name>Luis Cisneros</name>
+            <email>lcisneros at stratio dot com</email>
+        </developer>
     </developers>
 
     <modules>
-        <module>crossdata-common</module>
-        <module>crossdata-core</module>
-        <module>crossdata-driver</module>
-        <module>crossdata-server</module>
-        <module>crossdata-shell</module>
-        <module>crossdata-dist</module>
-        <module>crossdata-connector</module>
-        <module>crossdata-connector-maven-plugin</module>
-        <module>crossdata-connector-inmemory</module>
-        <module>crossdata-client-examples</module>
-        <module>crossdata-connector-twitter</module>
+        <module>crossdata-fuse</module>
         <module>doc</module>        
     </modules>
+
     <properties>
-        <scala.version>2.10.4</scala.version>
-        <akka.version>2.3.11</akka.version>
-        <infinispan.version>6.0.2.Final</infinispan.version>
-        <scala.dep.version>2.10.4</scala.dep.version>
+        <scala.version>2.11</scala.version>
+        <spark.version>1.4.0</spark.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
-        <slf4j.version>1.7.7</slf4j.version>
         <config.version>1.2.1</config.version>
-        <testng.version>6.8.8</testng.version>
-        <commons-lang3.version>3.2.1</commons-lang3.version>
-        <mockito.version>1.10.8</mockito.version>
-        <powermock.version>1.5.5</powermock.version>
 	<outputFileName>stratio-crossdata</outputFileName>
     </properties>
 

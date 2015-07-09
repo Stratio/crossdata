@@ -1,7 +1,7 @@
 About
 *****
 
-Crossdata (aka Meta) is a distributed framework and a data layer that unifies the interaction with batch and
+Crossdata is a distributed framework and a data layer that unifies the interaction with batch and
 streaming sources supporting multiple datastore technologies thanks to its generic architecture and a custom SQL-like
  language with support for streaming queries. Supporting multiple architectures imposes two main challenges: how to
  normalize the access to the datastores, and how to cope with datastore limitations. To access multiple technologies

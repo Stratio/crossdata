@@ -1,9 +1,7 @@
-language: java
+language: scala
 
-jdk:
-  - oraclejdk8
-  - oraclejdk7
-  - openjdk7
+scala:
+   - 2.11.2
   
 script:
 
