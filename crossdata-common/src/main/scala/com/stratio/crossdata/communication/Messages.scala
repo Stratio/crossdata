@@ -128,7 +128,7 @@ case class GetCatalogMetadata(catalogName: CatalogName)
 sealed trait TriggerOperation
 
 @SerialVersionUID(-665564236789475256L)
-case class TriggerExecution(triggerWorkflow: QueryWorkflow, triggeredExecution: ExecutionInfo) extends TriggerOperation
+case class TriggerExecution(triggerWorkflow: ExecutionWorkflow, triggeredExecution: ExecutionInfo) extends TriggerOperation
 
 // ============================================================================
 //                                IStorageEngine

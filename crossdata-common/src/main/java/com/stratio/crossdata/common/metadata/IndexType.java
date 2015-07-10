@@ -24,5 +24,6 @@ package com.stratio.crossdata.common.metadata;
 public enum IndexType {
     FULL_TEXT,
     DEFAULT,
+    GLOBAL,
     CUSTOM
 }

@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.gson.Gson;
 import com.stratio.crossdata.common.metadata.*;
 import com.stratio.crossdata.common.statements.structures.*;
 import com.stratio.crossdata.core.planner.utils.ConnectorPriorityComparator;
@@ -67,6 +68,8 @@ import com.stratio.crossdata.core.structures.Join;
 import com.stratio.crossdata.core.utils.CoreUtils;
 import com.stratio.crossdata.core.validator.Validator;
 import org.apache.log4j.Logger;
+import scala.util.parsing.json.JSON;
+import scala.util.parsing.json.JSONObject;
 
 import java.util.*;
 
@@ -1232,6 +1235,9 @@ public class Planner {
     }
 
     private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId) throws PlanningException {
+        return buildMetadataWorkflowCreateTable(metadataStatement, queryId, false);
+    }
+    private MetadataWorkflow buildMetadataWorkflowCreateTable(MetadataStatement metadataStatement, String queryId, boolean isGlobalIndex ) throws PlanningException {
         MetadataWorkflow metadataWorkflow;
         // Create parameters for metadata workflow
         CreateTableStatement createTableStatement = (CreateTableStatement) metadataStatement;
@@ -1268,6 +1274,9 @@ public class Planner {
             } else {
                 executionType = ExecutionType.REGISTER_TABLE;
             }
+            if (isGlobalIndex){
+                executionType = ExecutionType.CREATE_GLOBAL_INDEX;
+            }
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
             //The catalog needs to be associated with the cluster
         } else {
@@ -1296,6 +1305,10 @@ public class Planner {
             //REGISTER TABLE
             } else {
                 executionType = ExecutionType.REGISTER_TABLE_AND_CATALOG;
+            }
+
+            if (isGlobalIndex){
+                executionType = ExecutionType.CREATE_GLOBAL_INDEX;
             }
 
             metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, executionType, type);
@@ -1381,33 +1394,68 @@ public class Planner {
 
     private MetadataWorkflow buildMetadataWorkflowCreateIndex(MetadataStatement metadataStatement, String queryId)
             throws PlanningException {
-        MetadataWorkflow metadataWorkflow;
-        CreateIndexStatement createIndexStatement = (CreateIndexStatement) metadataStatement;
 
+        MetadataWorkflow metadataWorkflow = null;
+        CreateIndexStatement createIndexStatement = (CreateIndexStatement) metadataStatement;
         TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(createIndexStatement.getTableName());
 
-        ClusterName clusterName = tableMetadata.getClusterRef();
-        ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+        if (createIndexStatement.getType().equals(IndexType.GLOBAL)){
+            ClusterName clusterName = new ClusterName(createIndexStatement.getClusterName());
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+            String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
 
-        String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_INDEX);
+            TableName tableIndexName = new TableName(tableMetadata.getName().getCatalogName().getName(), createIndexStatement.getName().getName());
 
-        metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.CREATE_INDEX, ResultType.RESULTS);
+            LinkedHashMap<ColumnName, ColumnType> columns = new LinkedHashMap<>();
+            Map<ColumnName, ColumnMetadata> indexColumn = new HashMap<>();
+            for (ColumnName pkColumn: tableMetadata.getPrimaryKey()){
+                columns.put(pkColumn, MetadataManager.MANAGER.getColumn(pkColumn).getColumnType());
+            }
+            for (ColumnName columnName: createIndexStatement.getTargetColumns()) {
+                ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+                columns.put(columnName, columnMetadata.getColumnType());
+                indexColumn.put(columnName, columnMetadata);
+                if (createIndexStatement.getOptions().containsKey(new StringSelector(columnName.getName()))){
+                    //TODO parse options
+                }
+            }
+            CreateTableStatement createTableStatement = new CreateTableStatement(tableIndexName, clusterName, columns, new LinkedHashSet<>(tableMetadata.getPrimaryKey()), new LinkedHashSet<ColumnName>(), false);
+            metadataWorkflow = this.buildMetadataWorkflowCreateTable(createTableStatement, queryId, true);
 
-        metadataWorkflow.setIndexName(createIndexStatement.getName());
-        metadataWorkflow.setIfNotExists(createIndexStatement.isCreateIfNotExists());
-        metadataWorkflow.setClusterName(clusterMetadata.getName());
-        IndexName name = createIndexStatement.getName();
+            Map<Selector, Selector> options = createIndexStatement.getOptions();
+            IndexType type = createIndexStatement.getType();
+            IndexName name = createIndexStatement.getName();
+            GlobalIndexMetadata indexMetadata = new GlobalIndexMetadata(name, indexColumn, type, options, clusterName, metadataWorkflow.getTableMetadata());
 
-        Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
-        Set<ColumnName> targetColumns = createIndexStatement.getTargetColumns();
-        for (ColumnName columnName: targetColumns) {
-            ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
-            columns.put(columnName, columnMetadata);
+            metadataWorkflow.setIndexMetadata(indexMetadata);
+
+        }else {
+
+            ClusterName clusterName = tableMetadata.getClusterRef();
+            ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
+
+            String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_INDEX);
+
+            metadataWorkflow = new MetadataWorkflow(queryId, actorRefUri, ExecutionType.CREATE_INDEX, ResultType.RESULTS);
+
+            metadataWorkflow.setIndexName(createIndexStatement.getName());
+            metadataWorkflow.setIfNotExists(createIndexStatement.isCreateIfNotExists());
+            metadataWorkflow.setClusterName(clusterMetadata.getName());
+            IndexName name = createIndexStatement.getName();
+
+            Map<ColumnName, ColumnMetadata> columns = new HashMap<>();
+            Set<ColumnName> targetColumns = createIndexStatement.getTargetColumns();
+            for (ColumnName columnName : targetColumns) {
+                ColumnMetadata columnMetadata = MetadataManager.MANAGER.getColumn(columnName);
+                columns.put(columnName, columnMetadata);
+            }
+            IndexType type = createIndexStatement.getType();
+            Map<Selector, Selector> options = createIndexStatement.getOptions();
+            IndexMetadata indexMetadata = new IndexMetadata(name, columns, type, options);
+            metadataWorkflow.setIndexMetadata(indexMetadata);
         }
-        IndexType type = createIndexStatement.getType();
-        Map<Selector, Selector> options = createIndexStatement.getOptions();
-        IndexMetadata indexMetadata = new IndexMetadata(name, columns, type, options);
-        metadataWorkflow.setIndexMetadata(indexMetadata);
+
+
         return metadataWorkflow;
     }
 
@@ -1679,7 +1727,6 @@ public class Planner {
         ClusterMetadata clusterMetadata = getClusterMetadata(tableMetadata.getClusterRef());
 
         String actorRef;
-
         if (insertIntoStatement.isIfNotExists()) {
             actorRef = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.INSERT_IF_NOT_EXISTS);
         } else {
@@ -1752,6 +1799,54 @@ public class Planner {
                     selectExecutionWorkflow, involvedClusters,
                     candidates);
         }
+
+
+        if (tableMetadata.hasIndex(IndexType.GLOBAL)){
+            for (IndexMetadata index : tableMetadata.getIndexes().values()){
+                if (index.getType().equals(IndexType.GLOBAL)){
+                    GlobalIndexMetadata globalIndex = (GlobalIndexMetadata) index;
+                    ClusterMetadata globalIndexClusterMetadata = getClusterMetadata(globalIndex.getClusterRef());
+
+                    String globalIndexActorRef = findAnyActorRef(globalIndexClusterMetadata, Status.ONLINE, Operations.INSERT);
+
+                    StorageWorkflow globalIndexStorageWorkflow = new StorageWorkflow(queryId, globalIndexActorRef, ExecutionType.INSERT, ResultType.RESULTS);
+                    globalIndexStorageWorkflow.setClusterName(globalIndex.getClusterRef());
+
+
+                    globalIndexStorageWorkflow.setTableMetadata(globalIndex.getTableMetadata());
+
+                    globalIndexStorageWorkflow.setIfNotExists(insertIntoStatement.isIfNotExists());
+
+                    Row row = new Row();
+
+                    List<Selector> values = insertIntoStatement.getCellValues();
+                    List<ColumnName> ids = insertIntoStatement.getColumns();
+
+                    for (int i = 0; i < ids.size(); i++) {
+                        ColumnName columnName = ids.get(i);
+                        if (globalIndex.getTableMetadata().getColumns().containsKey(columnName)){
+                            Selector value = values.get(i);
+                            CoreUtils coreUtils = CoreUtils.create();
+                            Object cellContent;
+                            if(FunctionSelector.class.isInstance(value)){
+                                cellContent = ((FunctionSelector)value).toStringWithoutAlias();
+                            } else {
+                                cellContent = coreUtils.convertSelectorToObject(value, columnName);
+                            }
+                            Cell cell = new Cell(cellContent);
+                            row.addCell(columnName.getName(), cell);
+                        }
+                    }
+
+                    globalIndexStorageWorkflow.setRow(row);
+                    storageWorkflow.setResultType(ResultType.TRIGGER_EXECUTION);
+                    globalIndexStorageWorkflow.setPreviousExecutionWorkflow(storageWorkflow);
+                    storageWorkflow = globalIndexStorageWorkflow;
+                }
+            }
+
+        }
+
         return storageWorkflow;
     }
 

@@ -76,7 +76,7 @@ public class MetadataWorkflow extends ExecutionWorkflow {
      * @param type          Type of results.
      */
     public MetadataWorkflow(String queryId, String actorRef, ExecutionType executionType,
-            ResultType type) {
+                            ResultType type) {
         super(queryId, actorRef, executionType, type);
     }
 
@@ -162,55 +162,57 @@ public class MetadataWorkflow extends ExecutionWorkflow {
 
     /**
      * Create a Metadata operation.
+     *
      * @return A {@link com.stratio.crossdata.communication.MetadataOperation} .
      */
     public MetadataOperation createMetadataOperationMessage() {
         MetadataOperation result = null;
         switch (this.executionType) {
-        case CREATE_CATALOG:
-            result = new CreateCatalog(queryId, this.clusterName, this.catalogMetadata);
-            break;
-        case ALTER_CATALOG:
-            result = new AlterCatalog(queryId, this.clusterName, this.catalogMetadata);
-            break;
-        case DROP_CATALOG:
-            result = new DropCatalog(queryId, this.clusterName, this.catalogName);
-            break;
-        case CREATE_TABLE:
-            result = new CreateTable(queryId, this.clusterName, this.tableMetadata);
-            break;
-        case CREATE_TABLE_AND_CATALOG:
-            result = new CreateTableAndCatalog(queryId, this.clusterName, this.catalogMetadata, this.tableMetadata);
-            break;
-        case CREATE_TABLE_REGISTER_CATALOG:
-            result = new CreateTable(queryId, this.clusterName, this.tableMetadata);
-            break;
-        case DROP_TABLE:
-            result = new DropTable(queryId, this.clusterName, this.tableName);
-            break;
-        case ALTER_TABLE:
-            result= new AlterTable(queryId, this.clusterName, this.tableName, this.alterOptions);
-            break;
-        case CREATE_INDEX:
-            result = new CreateIndex(queryId, this.clusterName, this.indexMetadata);
-            break;
-        case DROP_INDEX:
-            result = new DropIndex(queryId, this.clusterName, this.indexMetadata);
-            break;
-        case DISCOVER_METADATA:
-            result = new ProvideMetadata(queryId, this.clusterName);
-            break;
-        case IMPORT_CATALOGS:
-            result = new ProvideCatalogsMetadata(queryId, this.clusterName);
-            break;
-        case IMPORT_CATALOG:
-            result = new ProvideCatalogMetadata(queryId, this.clusterName, this.catalogName);
-            break;
-        case IMPORT_TABLE:
-            result = new ProvideTableMetadata(queryId, this.clusterName, this.tableName);
-            break;
-        default:
-            break;
+            case CREATE_CATALOG:
+                result = new CreateCatalog(queryId, this.clusterName, this.catalogMetadata);
+                break;
+            case ALTER_CATALOG:
+                result = new AlterCatalog(queryId, this.clusterName, this.catalogMetadata);
+                break;
+            case DROP_CATALOG:
+                result = new DropCatalog(queryId, this.clusterName, this.catalogName);
+                break;
+            case CREATE_TABLE:
+            case CREATE_GLOBAL_INDEX:
+                result = new CreateTable(queryId, this.clusterName, this.tableMetadata);
+                break;
+            case CREATE_TABLE_AND_CATALOG:
+                result = new CreateTableAndCatalog(queryId, this.clusterName, this.catalogMetadata, this.tableMetadata);
+                break;
+            case CREATE_TABLE_REGISTER_CATALOG:
+                result = new CreateTable(queryId, this.clusterName, this.tableMetadata);
+                break;
+            case DROP_TABLE:
+                result = new DropTable(queryId, this.clusterName, this.tableName);
+                break;
+            case ALTER_TABLE:
+                result = new AlterTable(queryId, this.clusterName, this.tableName, this.alterOptions);
+                break;
+            case CREATE_INDEX:
+                result = new CreateIndex(queryId, this.clusterName, this.indexMetadata);
+                break;
+            case DROP_INDEX:
+                result = new DropIndex(queryId, this.clusterName, this.indexMetadata);
+                break;
+            case DISCOVER_METADATA:
+                result = new ProvideMetadata(queryId, this.clusterName);
+                break;
+            case IMPORT_CATALOGS:
+                result = new ProvideCatalogsMetadata(queryId, this.clusterName);
+                break;
+            case IMPORT_CATALOG:
+                result = new ProvideCatalogMetadata(queryId, this.clusterName, this.catalogName);
+                break;
+            case IMPORT_TABLE:
+                result = new ProvideTableMetadata(queryId, this.clusterName, this.tableName);
+                break;
+            default:
+                break;
         }
 
         return result;

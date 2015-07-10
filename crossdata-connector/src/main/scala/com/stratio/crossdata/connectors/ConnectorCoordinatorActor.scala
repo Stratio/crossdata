@@ -45,10 +45,19 @@ class ConnectorCoordinatorActor(connectorWorkerActorRef: ActorRef) extends Actor
 
   override def receive: Receive = {
 
-    case TriggerExecution(queryWorkflow, triggeredExecution) => {
-      connectorWorkerActorRef ! queryWorkflow.getExecuteOperation(queryWorkflow.getQueryId)
-      runningJobs = runningJobs.updated(queryWorkflow.getQueryId, (sender,triggeredExecution))
-      logger.debug(s"New trigger execution with queryId: ${queryWorkflow.getQueryId}. Executing ${queryWorkflow.getExecutionType}")
+    case TriggerExecution(exWorkflow, triggeredExecution) => exWorkflow match {
+      case q :QueryWorkflow =>{
+        connectorWorkerActorRef ! q.getExecuteOperation(q.getQueryId)
+        runningJobs = runningJobs.updated(q.getQueryId, (sender,triggeredExecution))
+        logger.debug(s"New trigger execution with queryId: ${q.getQueryId}. Executing ${q.getExecutionType}")
+      }
+      case q :StorageWorkflow =>{
+        connectorWorkerActorRef ! q.getStorageOperation;
+        runningJobs = runningJobs.updated(q.getQueryId, (sender,triggeredExecution))
+        logger.debug(s"New trigger execution with queryId: ${q.getQueryId}. Executing ${q.getExecutionType}")
+      }
+
+
     }
 
     case results: Result => {
@@ -72,7 +81,7 @@ class ConnectorCoordinatorActor(connectorWorkerActorRef: ActorRef) extends Actor
         } {  case (server, exInfo ) =>
 
           logger.debug(s"Received trigger result: $queryId")
-          val partialResults = results.asInstanceOf[QueryResult].getResultSet
+
 
           val nextConnectorActorRef = StringUtils.getAkkaActorRefUri(exInfo.getWorkflow.getActorRef(), false)
           val nextConnectorActorSelection = context.actorSelection(nextConnectorActorRef)
@@ -80,9 +89,13 @@ class ConnectorCoordinatorActor(connectorWorkerActorRef: ActorRef) extends Actor
           var operation: Operation = null
 
           if (ExecutionType.INSERT_BATCH.equals(exInfo.getWorkflow.getExecutionType)) {
+            val partialResults = results.asInstanceOf[QueryResult].getResultSet
             exInfo.getWorkflow.asInstanceOf[StorageWorkflow].setRows(partialResults.getRows)
             operation = exInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
-          } else {
+          } else if (ExecutionType.INSERT.equals(exInfo.getWorkflow.getExecutionType)) {
+            operation = exInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
+           }else {
+            val partialResults = results.asInstanceOf[QueryResult].getResultSet
             exInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
             operation = exInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(queryId)
           }

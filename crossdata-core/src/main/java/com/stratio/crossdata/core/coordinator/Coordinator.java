@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.apache.log4j.Logger;
 import com.stratio.crossdata.common.data.AlterOptions;
 import com.stratio.crossdata.common.data.CatalogName;
@@ -88,49 +89,52 @@ public class Coordinator implements Serializable {
      */
     public void persist(MetadataWorkflow metadataWorkflow, MetadataResult result) {
         switch (metadataWorkflow.getExecutionType()) {
-        case CREATE_CATALOG:
-            persistCreateCatalog(metadataWorkflow.getCatalogMetadata(), metadataWorkflow.isIfNotExists());
-            break;
-        case CREATE_INDEX:
-            persistCreateIndex(metadataWorkflow.getIndexMetadata());
-            break;
-        case CREATE_TABLE_AND_CATALOG:
-        case CREATE_TABLE_REGISTER_CATALOG:
-            persistCreateCatalogInCluster(metadataWorkflow.getCatalogName(), metadataWorkflow.getClusterName());
-            persistCreateTable(metadataWorkflow.getTableMetadata());
-            break;
-        case CREATE_TABLE:
-            persistCreateTable(metadataWorkflow.getTableMetadata());
-            break;
-        case ALTER_CATALOG:
-            persistAlterCatalog(metadataWorkflow.getCatalogMetadata());
-            break;
-        case ALTER_TABLE:
-            persistAlterTable(metadataWorkflow.getTableName(), metadataWorkflow.getAlterOptions());
-            break;
-        case DROP_CATALOG:
-            persistDropCatalog(metadataWorkflow.getCatalogName(), true);
-            break;
-        case DROP_INDEX:
-            persistDropIndex(metadataWorkflow.getIndexMetadata().getName());
-            break;
-        case DROP_TABLE:
-            persistDropTable(metadataWorkflow.getTableName());
-            break;
-        case IMPORT_CATALOGS:
-            persistImportCatalogs(result.getCatalogMetadataList());
-            persistCreateCatalogsInCluster(result.getCatalogMetadataList(), metadataWorkflow.getClusterName());
-            break;
-        case IMPORT_CATALOG:
-            persistImportCatalogs(result.getCatalogMetadataList());
-            persistCreateCatalogsInCluster(result.getCatalogMetadataList(), metadataWorkflow.getClusterName());
-            break;
-        case IMPORT_TABLE:
-            persistTables(result.getTableList(), metadataWorkflow.getClusterName());
-            break;
-        default:
-            LOG.info("unknown statement detected");
-            break;
+            case CREATE_CATALOG:
+                persistCreateCatalog(metadataWorkflow.getCatalogMetadata(), metadataWorkflow.isIfNotExists());
+                break;
+            case CREATE_GLOBAL_INDEX:
+                persistCreateIndex(metadataWorkflow.getIndexMetadata());
+                break;
+            case CREATE_INDEX:
+                persistCreateIndex(metadataWorkflow.getIndexMetadata());
+                break;
+            case CREATE_TABLE_AND_CATALOG:
+            case CREATE_TABLE_REGISTER_CATALOG:
+                persistCreateCatalogInCluster(metadataWorkflow.getCatalogName(), metadataWorkflow.getClusterName());
+                persistCreateTable(metadataWorkflow.getTableMetadata());
+                break;
+            case CREATE_TABLE:
+                persistCreateTable(metadataWorkflow.getTableMetadata());
+                break;
+            case ALTER_CATALOG:
+                persistAlterCatalog(metadataWorkflow.getCatalogMetadata());
+                break;
+            case ALTER_TABLE:
+                persistAlterTable(metadataWorkflow.getTableName(), metadataWorkflow.getAlterOptions());
+                break;
+            case DROP_CATALOG:
+                persistDropCatalog(metadataWorkflow.getCatalogName(), true);
+                break;
+            case DROP_INDEX:
+                persistDropIndex(metadataWorkflow.getIndexMetadata().getName());
+                break;
+            case DROP_TABLE:
+                persistDropTable(metadataWorkflow.getTableName());
+                break;
+            case IMPORT_CATALOGS:
+                persistImportCatalogs(result.getCatalogMetadataList());
+                persistCreateCatalogsInCluster(result.getCatalogMetadataList(), metadataWorkflow.getClusterName());
+                break;
+            case IMPORT_CATALOG:
+                persistImportCatalogs(result.getCatalogMetadataList());
+                persistCreateCatalogsInCluster(result.getCatalogMetadataList(), metadataWorkflow.getClusterName());
+                break;
+            case IMPORT_TABLE:
+                persistTables(result.getTableList(), metadataWorkflow.getClusterName());
+                break;
+            default:
+                LOG.info("unknown statement detected");
+                break;
         }
     }
 
@@ -152,7 +156,7 @@ public class Coordinator implements Serializable {
         } else if (AttachConnector.class.isInstance(workflow)) {
             AttachConnector ac = AttachConnector.class.cast(workflow);
             result = persistAttachConnector(ac.targetCluster(), ac.connectorName(), ac.options(), ac.priority(),
-                            ac.pageSize());
+                    ac.pageSize());
         } else if (ForceDetachConnector.class.isInstance(workflow)) {
             result = CommandResult.createCommandResult("CONNECTOR detached successfully");
         } else if (DetachConnector.class.isInstance(workflow)) {
@@ -177,22 +181,22 @@ public class Coordinator implements Serializable {
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistAttachCluster(ClusterName clusterName, DataStoreName datastoreName,
-                    Map<Selector, Selector> options) throws ManifestException {
+                                       Map<Selector, Selector> options) throws ManifestException {
 
         // Create and persist Cluster metadata
         ClusterMetadata clusterMetadata = new ClusterMetadata(clusterName, datastoreName, options,
-                        new HashMap<ConnectorName, ConnectorAttachedMetadata>());
+                new HashMap<ConnectorName, ConnectorAttachedMetadata>());
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
 
         // Add new attachment to DataStore
         DataStoreMetadata datastoreMetadata =
-                        MetadataManager.MANAGER.getDataStore(datastoreName);
+                MetadataManager.MANAGER.getDataStore(datastoreName);
 
         Map<ClusterName, ClusterAttachedMetadata> clusterAttachedRefs =
-                        datastoreMetadata.getClusterAttachedRefs();
+                datastoreMetadata.getClusterAttachedRefs();
 
         ClusterAttachedMetadata value =
-                        new ClusterAttachedMetadata(clusterName, datastoreName, options);
+                new ClusterAttachedMetadata(clusterName, datastoreName, options);
 
         clusterAttachedRefs.put(clusterName, value);
         datastoreMetadata.setClusterAttachedRefs(clusterAttachedRefs);
@@ -209,7 +213,7 @@ public class Coordinator implements Serializable {
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistAlterCluster(ClusterName clusterName,
-                    Map<Selector, Selector> options) {
+                                      Map<Selector, Selector> options) {
 
         // Create and persist Cluster metadata
         ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
@@ -278,26 +282,26 @@ public class Coordinator implements Serializable {
     private void persistAlterTable(TableName tableName, AlterOptions alterOptions) {
         TableMetadata storedTable = MetadataManager.MANAGER.getTable(tableName);
         switch (alterOptions.getOption()) {
-        case ALTER_COLUMN:
-            ColumnName columnName = alterOptions.getColumnMetadata().getName();
-            ColumnMetadata column = storedTable.getColumns().get(columnName);
-            column.setColumnType(alterOptions.getColumnMetadata().getColumnType());
-            storedTable.getColumns().put(columnName, column);
-            break;
-        case ADD_COLUMN:
-            columnName = alterOptions.getColumnMetadata().getName();
-            storedTable.getColumns().put(columnName, alterOptions.getColumnMetadata());
-            break;
-        case DROP_COLUMN:
-            columnName = alterOptions.getColumnMetadata().getName();
-            storedTable.getColumns().remove(columnName);
-            break;
-        case ALTER_OPTIONS:
-            storedTable.setOptions(alterOptions.getProperties());
-            break;
-        default:
-            LOG.info("unknown statement detected");
-            break;
+            case ALTER_COLUMN:
+                ColumnName columnName = alterOptions.getColumnMetadata().getName();
+                ColumnMetadata column = storedTable.getColumns().get(columnName);
+                column.setColumnType(alterOptions.getColumnMetadata().getColumnType());
+                storedTable.getColumns().put(columnName, column);
+                break;
+            case ADD_COLUMN:
+                columnName = alterOptions.getColumnMetadata().getName();
+                storedTable.getColumns().put(columnName, alterOptions.getColumnMetadata());
+                break;
+            case DROP_COLUMN:
+                columnName = alterOptions.getColumnMetadata().getName();
+                storedTable.getColumns().remove(columnName);
+                break;
+            case ALTER_OPTIONS:
+                storedTable.setOptions(alterOptions.getProperties());
+                break;
+            default:
+                LOG.info("unknown statement detected");
+                break;
         }
         MetadataManager.MANAGER.createTable(storedTable, false);
     }
@@ -388,15 +392,15 @@ public class Coordinator implements Serializable {
      * @return A {@link com.stratio.crossdata.common.result.Result}.
      */
     public Result persistAttachConnector(ClusterName clusterName, ConnectorName connectorName,
-                    Map<Selector, Selector> options, int priority, int pageSize) {
+                                         Map<Selector, Selector> options, int priority, int pageSize) {
 
         // Update information in Cluster
         ClusterMetadata clusterMetadata =
-                        MetadataManager.MANAGER.getCluster(clusterName);
+                MetadataManager.MANAGER.getCluster(clusterName);
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
-                        clusterMetadata.getConnectorAttachedRefs();
+                clusterMetadata.getConnectorAttachedRefs();
         ConnectorAttachedMetadata value =
-                        new ConnectorAttachedMetadata(connectorName, clusterName, options, priority);
+                new ConnectorAttachedMetadata(connectorName, clusterName, options, priority);
         connectorAttachedRefs.put(connectorName, value);
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
         MetadataManager.MANAGER.createCluster(clusterMetadata, false);
@@ -420,10 +424,10 @@ public class Coordinator implements Serializable {
      */
     public Result persistDetachConnector(ClusterName clusterName, ConnectorName connectorName) {
         ClusterMetadata clusterMetadata =
-                        MetadataManager.MANAGER.getCluster(clusterName);
+                MetadataManager.MANAGER.getCluster(clusterName);
 
         Map<ConnectorName, ConnectorAttachedMetadata> connectorAttachedRefs =
-                        clusterMetadata.getConnectorAttachedRefs();
+                clusterMetadata.getConnectorAttachedRefs();
 
         connectorAttachedRefs.remove(connectorName);
         clusterMetadata.setConnectorAttachedRefs(connectorAttachedRefs);
@@ -462,9 +466,9 @@ public class Coordinator implements Serializable {
             CatalogName catalogName = table.getName().getCatalogName();
             if (!MetadataManager.MANAGER.exists(catalogName)) {
                 CatalogMetadata catalogMetadata = new CatalogMetadata(
-                                catalogName,
-                                new HashMap<Selector, Selector>(),
-                                new HashMap<TableName, TableMetadata>());
+                        catalogName,
+                        new HashMap<Selector, Selector>(),
+                        new HashMap<TableName, TableMetadata>());
                 MetadataManager.MANAGER.createCatalog(catalogMetadata);
             }
             table.setClusterRef(clusterName);

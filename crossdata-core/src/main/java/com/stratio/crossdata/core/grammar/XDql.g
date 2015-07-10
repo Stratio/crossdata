@@ -257,6 +257,7 @@ T_DEFAULT: D E F A U L T;
 T_LUCENE: L U C E N E;
 T_CUSTOM: C U S T O M;
 T_FULL_TEXT: F U L L '_' T E X T;
+T_GLOBAL: G L O B A L;
 T_START_BRACKET: '[';
 T_END_BRACKET: ']';
 T_PLUS: '+';
@@ -483,6 +484,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 		}
 	)*
 	T_END_PARENTHESIS
+	(T_USING T_CLUSTER clusterID=T_IDENT {$cis.setClusterName(clusterID.getText());})?
 	(T_WITH j=getJson {$cis.setOptionsJson(j);} )?
 ;
 
@@ -490,6 +492,7 @@ createIndexStatement returns [CreateIndexStatement cis]
 getIndexType returns [String indexType]:
     ( idxType=T_DEFAULT
     | idxType=T_FULL_TEXT
+    | idxType=T_GLOBAL
     | idxType=T_CUSTOM)
     {$indexType=$idxType.text;}
 ;

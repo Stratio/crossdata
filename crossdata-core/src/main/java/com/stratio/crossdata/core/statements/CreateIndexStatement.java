@@ -74,6 +74,12 @@ public class CreateIndexStatement extends IndexStatement {
      */
     private Map<Selector, Selector> options = null;
 
+
+    /**
+     * The clusterName where the Global Index will be generated.
+     */
+    private String clusterName = null;
+
     /**
      * Class constructor.
      */
@@ -119,6 +125,22 @@ public class CreateIndexStatement extends IndexStatement {
      */
     public TableName getTableName() {
         return tableName;
+    }
+
+    /**
+     * Sets the Cluster Name
+     * @param clusterName
+     */
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
+
+    /**
+     * Returns the cluster name.
+     * @return
+     */
+    public String getClusterName() {
+        return clusterName;
     }
 
     /**

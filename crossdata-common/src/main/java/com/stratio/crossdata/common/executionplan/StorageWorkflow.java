@@ -29,12 +29,7 @@ import com.stratio.crossdata.common.exceptions.validation.CoordinationException;
 import com.stratio.crossdata.common.logicalplan.Filter;
 import com.stratio.crossdata.common.metadata.TableMetadata;
 import com.stratio.crossdata.common.statements.structures.Relation;
-import com.stratio.crossdata.communication.DeleteRows;
-import com.stratio.crossdata.communication.Insert;
-import com.stratio.crossdata.communication.InsertBatch;
-import com.stratio.crossdata.communication.StorageOperation;
-import com.stratio.crossdata.communication.Truncate;
-import com.stratio.crossdata.communication.Update;
+import com.stratio.crossdata.communication.*;
 
 /**
  * Storage related operations.
@@ -174,4 +169,5 @@ public class StorageWorkflow extends ExecutionWorkflow {
     public void setPreviousExecutionWorkflow(ExecutionWorkflow previousExecutionWorkflow) {
         this.previousExecutionWorkflow = previousExecutionWorkflow;
     }
+
 }

@@ -353,7 +353,8 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         log.info("ActorRef: " + actorRef.toString())
         actorRef.asInstanceOf[ActorSelection] ! metadataWorkflow.createMetadataOperationMessage()
 
-      } else if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_INDEX) {
+      }else if (metadataWorkflow.getExecutionType == ExecutionType.CREATE_INDEX
+        || metadataWorkflow.getExecutionType == ExecutionType.CREATE_GLOBAL_INDEX) {
 
         if (metadataWorkflow.isIfNotExists && MetadataManager.MANAGER.exists(metadataWorkflow.getIndexName)) {
           val result: MetadataResult = MetadataResult.createSuccessMetadataResult(
@@ -566,10 +567,18 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
 
         val storedExInfo = new ExecutionInfo
         storedExInfo.setSender(StringUtils.getAkkaActorRefUri(explicitSender.getOrElse(sender), false))
-        val previousExecutionWorkflow = storageWorkflow.getPreviousExecutionWorkflow.asInstanceOf[QueryWorkflow]
+
+        val previousExecutionWorkflow = storageWorkflow.getPreviousExecutionWorkflow
         storedExInfo.setWorkflow(previousExecutionWorkflow)
         storedExInfo.setQueryStatus(QueryStatus.IN_PROGRESS)
-        storedExInfo.setRemoveOnSuccess(Execute.getClass.isInstance(previousExecutionWorkflow.getExecuteOperation("")))
+
+        if (previousExecutionWorkflow.isInstanceOf[QueryWorkflow]){
+          //TODO make it beautiful
+          storedExInfo.setRemoveOnSuccess(Execute.getClass.isInstance(previousExecutionWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation("")))
+        }else{
+          storedExInfo.setRemoveOnSuccess(false);
+        }
+
         storedExInfo.setTriggeredByStreaming(true)
         ExecutionManager.MANAGER.createEntry(queryId, storedExInfo)
 
@@ -768,7 +777,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
       updateMetadata(tableMetadata, tableMetadata.getClusterRef, toRemove = false)
     }
 
-    case ExecutionType.CREATE_INDEX | ExecutionType.DROP_INDEX => ()
+    case ExecutionType.CREATE_INDEX | ExecutionType.DROP_INDEX | ExecutionType.CREATE_GLOBAL_INDEX=> ()
 
     case ExecutionType.DROP_TABLE => {
       val tableMetadata = mw.getTableMetadata

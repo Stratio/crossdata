@@ -189,6 +189,15 @@ public class TableMetadata implements Serializable, UpdatableMetadata {
         return false;
     }
 
+    public boolean hasIndex(IndexType indexType){
+        for (IndexMetadata indexMetadata : indexes.values()) {
+            if (indexMetadata.getType().equals(indexType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Add an Index to a table.
      * @param name The name of the index.
