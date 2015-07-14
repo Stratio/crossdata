@@ -29,7 +29,6 @@ import com.stratio.crossdata.communication.Disconnect
 import com.stratio.crossdata.driver.actor.ProxyActor
 import com.stratio.crossdata.driver.config.{BasicDriverConfig, DriverConfig, DriverSectionConfig, ServerSectionConfig}
 import com.stratio.crossdata.driver.utils.RetryPolitics
-import com.stratio.crossdata.driver.result.{PaginationSyncDriverResultHandler, SyncDriverResultHandler}
 import org.apache.log4j.Logger
 
 import scala.concurrent.duration._
@@ -181,7 +180,6 @@ class BasicDriver(basicDriverConfig: BasicDriverConfig) {
       }
     }
   }
-
 
   /**
    * Shutdown actor system.
