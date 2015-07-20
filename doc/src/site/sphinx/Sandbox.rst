@@ -74,11 +74,11 @@ Now you can play with the shell with this example of crossdata use:
 The first steps are to attach the connectors...::
 
     xdsh> ADD DATASTORE /etc/sds/connectors/cassandra/CassandraDataStore.xml;
-    xdsh> ATTACH CLUSTER cassandra_prod ON DATASTORE Cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'Port': 9042};
+    xdsh> ATTACH CLUSTER cassandra_prod ON DATASTORE Cassandra WITH OPTIONS {'Hosts': '[127.0.0.1]', 'Port': 9042, 'rpcPort':9160, 'cluster':'cassandra_prod'};
     xdsh> ADD CONNECTOR /etc/sds/connectors/cassandra/CassandraConnector.xml;
-    xdsh> ADD CONNECTOR /etc/sds/connectors/deep/DeepConnector.xml;
-    xdsh> ATTACH CONNECTOR CassandraConnector TO cassandra_prod WITH OPTIONS {'DefaultLimit': '1000'};
-    xdsh> ATTACH CONNECTOR DeepConnector TO cassandra_prod WITH OPTIONS {};
+    xdsh> ADD CONNECTOR /etc/sds/connectors/sparksql/SparkSQLConnector.xml;
+    xdsh> ATTACH CONNECTOR CassandraConnector TO cassandra_prod WITH OPTIONS {'DefaultLimit': '1000'} AND PRIORITY=1;
+    xdsh> ATTACH CONNECTOR SparkSQLConnector TO cassandra_prod WITH OPTIONS {'DefaultLimit': '1000'};
 
 Now we can operate as usual...::
 
