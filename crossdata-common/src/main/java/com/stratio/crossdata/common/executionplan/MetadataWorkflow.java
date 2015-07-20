@@ -179,7 +179,7 @@ public class MetadataWorkflow extends ExecutionWorkflow {
                 break;
             case CREATE_TABLE:
             case CREATE_GLOBAL_INDEX:
-                result = new CreateTable(queryId, this.clusterName, this.tableMetadata);
+                result = new CreateTableAndCatalog(queryId, this.clusterName, this.catalogMetadata, this.tableMetadata);
                 break;
             case CREATE_TABLE_AND_CATALOG:
                 result = new CreateTableAndCatalog(queryId, this.clusterName, this.catalogMetadata, this.tableMetadata);

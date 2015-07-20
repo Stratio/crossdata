@@ -19,10 +19,12 @@
 package com.stratio.crossdata.connectors
 
 import akka.actor._
+import com.stratio.crossdata.common.data.Row
 import com.stratio.crossdata.common.exceptions.ExecutionException
 import com.stratio.crossdata.common.executionplan._
-import com.stratio.crossdata.common.logicalplan.PartialResults
+import com.stratio.crossdata.common.logicalplan.{Filter, PartialResults}
 import com.stratio.crossdata.common.result._
+import com.stratio.crossdata.common.statements.structures.{StringSelector, ListSelector, Relation}
 import com.stratio.crossdata.common.utils.StringUtils
 import com.stratio.crossdata.communication._
 import com.stratio.crossdata.connectors.config.ConnectConfig
@@ -95,8 +97,23 @@ class ConnectorCoordinatorActor(connectorWorkerActorRef: ActorRef) extends Actor
           } else if (ExecutionType.INSERT.equals(exInfo.getWorkflow.getExecutionType)) {
             operation = exInfo.getWorkflow.asInstanceOf[StorageWorkflow].getStorageOperation
            }else {
-            val partialResults = results.asInstanceOf[QueryResult].getResultSet
-            exInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+
+            if (ResultType.GLOBAL_INDEX_SELECT.equals(exInfo.getWorkflow.getResultType)){
+              val partialResults = results.asInstanceOf[QueryResult].getResultSet
+
+              val relation = exInfo.getWorkflow.getTriggerStep.asInstanceOf[Filter].getRelation
+              val listSelector =  relation.getRightTerm.asInstanceOf[ListSelector]
+              val columnName = relation.getLeftTerm.getColumnName.getName
+              import scala.collection.JavaConversions._
+              partialResults.getRows().foreach{ row =>
+                listSelector.getSelectorsList.add(new StringSelector(row.getCell(columnName).toString))
+              }
+
+            }else{
+              val partialResults = results.asInstanceOf[QueryResult].getResultSet
+              exInfo.getWorkflow.getTriggerStep.asInstanceOf[PartialResults].setResults(partialResults)
+            }
+
             operation = exInfo.getWorkflow.asInstanceOf[QueryWorkflow].getExecuteOperation(queryId)
           }
           log.debug("Sending operation: " + operation + " to: " + nextConnectorActorSelection)

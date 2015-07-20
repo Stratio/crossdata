@@ -29,7 +29,7 @@ import com.stratio.crossdata.common.manifest.CrossdataManifest
 import com.stratio.crossdata.common.result._
 import com.stratio.crossdata.common.utils.Constants
 import com.stratio.crossdata.driver.BasicDriver._
-import com.stratio.crossdata.driver.result.SyncDriverResultHandler
+import com.stratio.crossdata.driver.result.{PaginationSyncDriverResultHandler, SyncDriverResultHandler}
 import com.stratio.crossdata.driver.utils.{ManifestUtils, QueryData}
 import org.apache.log4j.Logger
 
@@ -116,6 +116,38 @@ class DriverConnection(val sessionId: String, userId: String,  basicDriver: Basi
     queries.remove(queryId)
     r
   }
+
+
+  /**
+   * Launch query in Crossdata Server
+   * @param query Launched query
+   * @param buildUpRows Whether a query launched against a connector using pagination collects the whole result or solely returns the first one
+   * @return QueryResult
+   */
+  @throws(classOf[ConnectionException])
+  @throws(classOf[ParsingException])
+  @throws(classOf[ValidationException])
+  @throws(classOf[ExecutionException])
+  @throws(classOf[UnsupportedException])
+  def executeQuery(query: String, buildUpRows: Boolean): Result = {
+    val queryId = UUID.randomUUID().toString
+    val callback = if (buildUpRows)
+      new PaginationSyncDriverResultHandler
+    else
+      new SyncDriverResultHandler
+
+    queries.put(queryId, new QueryData(callback, queryId.toString,query, sessionId,System.currentTimeMillis(),0,"IN PROGRESS"))
+    queriesWebUI.put(queryId, new QueryData(callback, queryId.toString,query, sessionId,System.currentTimeMillis(),0,"IN PROGRESS"))
+    sendQuery(new Query(queryId, currentCatalog, query, userId, sessionId))
+    val r = callback.waitForResult()
+    queriesWebUI.get(queryId).setStatus("DONE")
+    queriesWebUI.get(queryId).setEndTime(System.currentTimeMillis())
+    logger.info("Query " + queryId + " finished. " + queries.get(queryId).getExecutionInfo())
+    queries.remove(queryId)
+    r
+  }
+
+
 
   def executeRawQuery(command: String): Result = {
     executeAsyncRawQuery(command, null)

@@ -71,4 +71,13 @@ public class GlobalIndexMetadata extends IndexMetadata {
     public TableMetadata getTableMetadata() {
         return tableMetadata;
     }
+
+    public boolean hasIndexed(ColumnName columnName) {
+        for (ColumnName indexedColum : getTableMetadata().getColumns().keySet()){
+            if (indexedColum.getName().equals(columnName.getName())){
+                return true;
+            }
+        }
+        return false;
+    }
 }

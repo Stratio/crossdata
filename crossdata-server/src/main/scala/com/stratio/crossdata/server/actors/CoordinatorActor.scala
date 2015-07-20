@@ -722,7 +722,7 @@ class CoordinatorActor(connectorMgr: ActorRef, coordinator: Coordinator) extends
         actorSelection.asInstanceOf[ActorSelection] ! operation
         log.info("\nMessage sent to " + actorRef.toString())
 
-      } else if (ResultType.TRIGGER_EXECUTION.equals(queryWorkflow.getResultType)) {
+      } else if (ResultType.TRIGGER_EXECUTION.equals(queryWorkflow.getResultType) || ResultType.GLOBAL_INDEX_RESULTS.equals(queryWorkflow.getResultType))  {
 
         val actorRef = StringUtils.getAkkaActorRefUri(queryWorkflow.getActorRef, false)
         val firstConnectorActorSelection = context.actorSelection(actorRef)

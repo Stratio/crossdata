@@ -34,18 +34,7 @@ import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
-import com.stratio.crossdata.common.data.CatalogName;
-import com.stratio.crossdata.common.data.ClusterName;
-import com.stratio.crossdata.common.data.ColumnName;
-import com.stratio.crossdata.common.data.ConnectorName;
-import com.stratio.crossdata.common.data.DataStoreName;
-import com.stratio.crossdata.common.data.FirstLevelName;
-import com.stratio.crossdata.common.data.IndexName;
-import com.stratio.crossdata.common.data.Name;
-import com.stratio.crossdata.common.data.NameType;
-import com.stratio.crossdata.common.data.NodeName;
-import com.stratio.crossdata.common.data.Status;
-import com.stratio.crossdata.common.data.TableName;
+import com.stratio.crossdata.common.data.*;
 import com.stratio.crossdata.common.exceptions.ManifestException;
 import com.stratio.crossdata.common.exceptions.PlanningException;
 import com.stratio.crossdata.common.logicalplan.Project;
@@ -53,25 +42,13 @@ import com.stratio.crossdata.common.logicalplan.Select;
 import com.stratio.crossdata.common.manifest.FunctionType;
 import com.stratio.crossdata.common.manifest.FunctionTypeHelper;
 import com.stratio.crossdata.common.manifest.PropertyType;
-import com.stratio.crossdata.common.metadata.CatalogMetadata;
-import com.stratio.crossdata.common.metadata.ClusterAttachedMetadata;
-import com.stratio.crossdata.common.metadata.ClusterMetadata;
-import com.stratio.crossdata.common.metadata.ColumnMetadata;
-import com.stratio.crossdata.common.metadata.ColumnType;
-import com.stratio.crossdata.common.metadata.ConnectorAttachedMetadata;
-import com.stratio.crossdata.common.metadata.ConnectorMetadata;
-import com.stratio.crossdata.common.metadata.DataStoreMetadata;
-import com.stratio.crossdata.common.metadata.DataType;
-import com.stratio.crossdata.common.metadata.IMetadata;
-import com.stratio.crossdata.common.metadata.IndexMetadata;
-import com.stratio.crossdata.common.metadata.NodeMetadata;
-import com.stratio.crossdata.common.metadata.Operations;
-import com.stratio.crossdata.common.metadata.TableMetadata;
+import com.stratio.crossdata.common.metadata.*;
 import com.stratio.crossdata.common.statements.structures.CaseWhenSelector;
 import com.stratio.crossdata.common.statements.structures.ColumnSelector;
 import com.stratio.crossdata.common.statements.structures.FunctionSelector;
 import com.stratio.crossdata.common.statements.structures.SelectSelector;
 import com.stratio.crossdata.common.statements.structures.Selector;
+import com.stratio.crossdata.core.planner.utils.GlobalIndexQueryBuilder;
 import com.stratio.crossdata.core.query.SelectValidatedQuery;
 
 /**
@@ -816,7 +793,17 @@ public enum MetadataManager {
         List<ConnectorMetadata> connectors;
         for (TableName table : tables) {
 
-            ClusterName clusterName = getTable(table).getClusterRef();
+            ClusterName clusterName = null;
+            if (table instanceof GlobalIndexTableName){
+                GlobalIndexTableName tableName = (GlobalIndexTableName) table;
+                IndexName indexName = new IndexName(tableName.getMainTable(), tableName.getName());
+                TableMetadata tableMetadata = getTable(tableName.getMainTable());
+                GlobalIndexMetadata index = (GlobalIndexMetadata) tableMetadata.getIndexes().get(indexName);
+                clusterName = index.getClusterRef();
+            }else{
+                clusterName = getTable(table).getClusterRef();
+            }
+
 
             Set<ConnectorName> connectorNames = getCluster(clusterName)
                     .getConnectorAttachedRefs().keySet();

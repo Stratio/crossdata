@@ -41,6 +41,7 @@ import com.stratio.crossdata.common.result.ConnectToConnectorResult;
 import com.stratio.crossdata.common.result.ErrorResult;
 import com.stratio.crossdata.common.result.InProgressResult;
 import com.stratio.crossdata.common.result.MetadataResult;
+import com.stratio.crossdata.common.result.QueryResult;
 import com.stratio.crossdata.common.result.Result;
 import com.stratio.crossdata.common.result.StorageResult;
 import com.stratio.crossdata.common.utils.Constants;
@@ -295,7 +296,7 @@ public class BasicDriverIT {
     public void testInsert5() throws Exception {
 
         Map<String, Object> colValues = new HashMap<>();
-        colValues.put("id", 4);
+        colValues.put("id", 5);
         colValues.put("name", "worker");
         colValues.put("description", "Learning");
         colValues.put("rating", 6.5f);
@@ -412,6 +413,22 @@ public class BasicDriverIT {
             }
         }
         xdConnection.removeResultHandler(result.getQueryId());
+    }
+
+    @Test(timeOut = 8000, dependsOnMethods = { "testInsert7" })
+    public void testSyncPaginatedSelect() throws Exception {
+        Thread.sleep(500);
+        Result result = xdConnection.executeQuery("SELECT * FROM tableTest;", true);
+
+        if (result instanceof ErrorResult) {
+            LOG.error(((ErrorResult) result).getErrorMessage());
+        }
+        assertFalse(result.hasError(), "Server returned an error");
+        assertTrue(result instanceof QueryResult, "Driver should return a query result");
+        QueryResult queryResult = (QueryResult) result;
+        assertTrue(queryResult.isLastResultSet(), "Result should be the last result");
+        assertEquals(7, queryResult.getResultSet().size(), "The result should contain 7 result");
+
     }
 
     @AfterClass

@@ -23,5 +23,6 @@ package com.stratio.crossdata.common.executionplan;
  */
 public enum ResultType {
     RESULTS,
-    TRIGGER_EXECUTION
+    TRIGGER_EXECUTION,
+    GLOBAL_INDEX_SELECT, GLOBAL_INDEX_RESULTS
 }
