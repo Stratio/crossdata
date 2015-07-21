@@ -19,6 +19,7 @@
 package com.stratio.crossdata.core.planner;
 
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.stratio.crossdata.common.data.*;
 import com.stratio.crossdata.common.metadata.*;
@@ -1442,6 +1444,10 @@ public class Planner {
         TableMetadata tableMetadata = MetadataManager.MANAGER.getTable(createIndexStatement.getTableName());
 
         if (createIndexStatement.getType().equals(IndexType.GLOBAL)) {
+
+            Gson gson = new Gson();
+            Type gsonType = new TypeToken<List<String>>(){}.getType();
+
             ClusterName clusterName = new ClusterName(createIndexStatement.getClusterName());
             ClusterMetadata clusterMetadata = MetadataManager.MANAGER.getCluster(clusterName);
             String actorRefUri = findAnyActorRef(clusterMetadata, Status.ONLINE, Operations.CREATE_TABLE);
@@ -1467,7 +1473,11 @@ public class Planner {
                 columns.put(newColumnMetadata.getName(), newColumnMetadata.getColumnType());
                 indexColumn.put(newColumnMetadata.getName(), newColumnMetadata);
                 if (createIndexStatement.getOptions().containsKey(new StringSelector(columnName.getName()))) {
-                    //TODO parse options
+                    String columnOption= createIndexStatement.getOptions().get(new StringSelector(columnName.getName())).getStringValue();
+                    List<String> analyzers = gson.fromJson(columnOption, gsonType);
+                    for(String analyzer: analyzers){
+                        columnMetadata.getColumnType().addColumnProperty("analyzer", analyzer);
+                    }
                 }
             }
             CreateTableStatement createTableStatement = new CreateTableStatement(tableIndexName, clusterName, columns, primaryKeys, new LinkedHashSet<ColumnName>(), false);
