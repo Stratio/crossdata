@@ -79,7 +79,7 @@
     </developers>
 
     <modules>
-        <module>crossdata-fuse</module>
+        <module>crossdata-ng</module>
         <module>doc</module>        
     </modules>
 

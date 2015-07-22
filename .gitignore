@@ -9,11 +9,11 @@ nb-configuration.xml
 .idea
 *.iml
 *.xml.asc
-crossdata-fuse/src/main/java/com/stratio/crossdata/core/grammar/generated/
+crossdata-ng/src/main/java/com/stratio/crossdata/core/grammar/generated/
 src/main/resources/history.txt
 *.orig
 */.cache
-crossdata-fuse/test-output/*
+crossdata-ng/test-output/*
 sonar-project.properties
 */.sonar
 */test-output
