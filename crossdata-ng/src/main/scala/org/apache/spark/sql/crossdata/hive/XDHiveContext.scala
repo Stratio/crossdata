@@ -16,10 +16,11 @@
  * under the License.
  */
 
-package org.apache.spark.sql
+package org.apache.spark.sql.crossdata.hive
 
-import org.apache.spark.{Logging, SparkContext}
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.hive.HiveContext
 
-class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
+class XDHiveContext(sc: SparkContext) extends HiveContext(sc) {
 
 }

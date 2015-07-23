@@ -88,6 +88,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <scala.version>2.11</scala.version>
         <spark.version>1.4.1</spark.version>
+        <scalatest.version>2.2.5</scalatest.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
         <config.version>1.2.1</config.version>
 	<outputFileName>stratio-crossdata</outputFileName>
