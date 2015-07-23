@@ -20,7 +20,6 @@ import java.lang.reflect.Constructor
 
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.{Logging, SparkContext}
 
 class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
@@ -31,8 +30,10 @@ class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
 
   val constr: Constructor[_] = xdCatalog.getConstructors()(0)
 
-  override protected[sql] lazy val catalog: Catalog =
-    constr.newInstance(super.conf).asInstanceOf[Catalog]
+  override protected[sql] lazy val catalog: XDCatalog =
+    constr.newInstance(super.conf).asInstanceOf[XDCatalog]
+
+  catalog.loadAll
 
 }
 

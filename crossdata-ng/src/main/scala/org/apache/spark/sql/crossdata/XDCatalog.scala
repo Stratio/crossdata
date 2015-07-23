@@ -16,42 +16,10 @@
 
 package org.apache.spark.sql.crossdata
 
-import org.apache.spark.Logging
-import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.analysis.Catalog
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.execution.ClearCacheCommand
 
-class XDCatalog(val conf: CatalystConf) extends Catalog with Logging {
+trait XDCatalog extends Catalog {
 
-  override def tableExists(tableIdentifier: Seq[String]): Boolean = {
-    logInfo("XDCatalog: tableExists")
-    true
-  }
+  def loadAll(): Unit
 
-  override def unregisterAllTables(): Unit = {
-    logInfo("XDCatalog: unregisterAllTables")
-  }
-
-  override def unregisterTable(tableIdentifier: Seq[String]): Unit = {
-    logInfo("XDCatalog: unregisterTable")
-  }
-
-  override def lookupRelation(tableIdentifier: Seq[String], alias: Option[String]): LogicalPlan = {
-    logInfo("XDCatalog: lookupRelation")
-    ClearCacheCommand
-  }
-
-  override def registerTable(tableIdentifier: Seq[String], plan: LogicalPlan): Unit = {
-    logInfo("XDCatalog: registerTable")
-  }
-
-  override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
-    logInfo("XDCatalog: getTables")
-    Seq()
-  }
-
-  override def refreshTable(databaseName: String, tableName: String): Unit = {
-    logInfo("XDCatalog: refreshTable")
-  }
 }
