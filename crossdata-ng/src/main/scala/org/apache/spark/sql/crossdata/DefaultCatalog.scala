@@ -28,7 +28,7 @@ class DefaultCatalog(val conf: CatalystConf) extends XDCatalog with Logging {
 
   lazy val db: DB = DBMaker.newFileDB(new File("catalog")).closeOnJvmShutdown.make
 
-  lazy val map: java.util.Map[String, LogicalPlan] = db.getHashMap("catalog")
+  lazy val tables: java.util.Map[String, LogicalPlan] = db.getHashMap("catalog")
 
   override def loadAll(): Unit = {
     logInfo("XDCatalog: loadAll")
@@ -36,35 +36,38 @@ class DefaultCatalog(val conf: CatalystConf) extends XDCatalog with Logging {
 
   override def tableExists(tableIdentifier: Seq[String]): Boolean = {
     logInfo("XDCatalog: tableExists")
-    map.containsKey(tableIdentifier.head)
+    tables.containsKey(tableIdentifier.mkString("."))
   }
 
   override def unregisterAllTables(): Unit = {
     logInfo("XDCatalog: unregisterAllTables")
-    map.clear
+    tables.clear
     db.commit
   }
 
   override def unregisterTable(tableIdentifier: Seq[String]): Unit = {
     logInfo("XDCatalog: unregisterTable")
-    map.remove(tableIdentifier.head)
+    tables.remove(tableIdentifier.mkString("."))
     db.commit
   }
 
   override def lookupRelation(tableIdentifier: Seq[String], alias: Option[String]): LogicalPlan = {
     logInfo("XDCatalog: lookupRelation")
-    map.get(tableIdentifier.head)
+    tables.get(tableIdentifier.mkString("."))
   }
 
   override def registerTable(tableIdentifier: Seq[String], plan: LogicalPlan): Unit = {
     logInfo("XDCatalog: registerTable")
-    map.put(tableIdentifier.head, plan)
+    tables.put(tableIdentifier.mkString("."), plan)
     db.commit
   }
 
   override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
     logInfo("XDCatalog: getTables")
-    Seq()
+    import collection.JavaConversions._
+    tables.map {
+      case (name, _) => (name, false)
+    }.toSeq
   }
 
   override def refreshTable(databaseName: String, tableName: String): Unit = {
