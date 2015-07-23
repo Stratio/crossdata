@@ -21,6 +21,7 @@ package org.apache.spark.sql
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.catalyst.analysis.Catalog
+
 import org.scalatest.FunSuite
 
 class XDContextSuite extends FunSuite {

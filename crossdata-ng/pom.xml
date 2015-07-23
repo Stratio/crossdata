@@ -26,7 +26,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
     <artifactId>crossdata-ng</artifactId>
-    <name>Stratio Crossdata</name>
+    <name>Stratio Crossdata New Generation</name>
     <description>Stratio Crossdata New Generation</description>
     <url>http://stratio.github.io/crossdata/</url>
 
@@ -78,12 +78,13 @@
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-hive_${scala.version}</artifactId>
+            <artifactId>spark-hive_${scala.group}</artifactId>
             <version>${spark.version}</version>
         </dependency>
+        <!-- Test -->
         <dependency>
             <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_${scala.version}</artifactId>
+            <artifactId>scalatest_${scala.group}</artifactId>
             <version>${scalatest.version}</version>
             <scope>test</scope>
         </dependency>
