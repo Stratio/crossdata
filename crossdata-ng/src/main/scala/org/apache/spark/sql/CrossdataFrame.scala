@@ -16,6 +16,28 @@
 
 package org.apache.spark.sql
 
-class CrossdataFrame {
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 
+
+private[sql] object CrossdataFrame {
+  def apply(sqlContext: SQLContext, logicalPlan: LogicalPlan): DataFrame = {
+    new CrossdataFrame(sqlContext, logicalPlan)
+  }
 }
+
+private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext,
+                                @transient override val queryExecution: SQLContext#QueryExecution) extends DataFrame(sqlContext, queryExecution) {
+
+  def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = {
+    this(sqlContext, {
+      val qe = sqlContext.executePlan(logicalPlan)
+      if (sqlContext.conf.dataFrameEagerAnalysis) {
+        qe.assertAnalyzed() // This should force analysis and throw errors if there are any
+      }
+      qe
+    })
+  }
+}
+
+
+
