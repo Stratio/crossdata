@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *  Licensed under the Apache License, Version 2.0 (the "License")
+ *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
@@ -26,7 +26,8 @@ private[sql] object CrossdataFrame {
 }
 
 private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext,
-                                @transient override val queryExecution: SQLContext#QueryExecution) extends DataFrame(sqlContext, queryExecution) {
+                                  @transient override val queryExecution: SQLContext#QueryExecution)
+  extends DataFrame(sqlContext, queryExecution) {
 
   def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = {
     this(sqlContext, {
