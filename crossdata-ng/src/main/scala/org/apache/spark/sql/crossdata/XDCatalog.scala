@@ -18,10 +18,20 @@ package org.apache.spark.sql.crossdata
 
 import org.apache.spark.sql.catalyst.analysis.Catalog
 
+/**
+ * CrossdataCatalog aims to provide a mechanism to persist the
+ * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
+ */
 trait XDCatalog extends Catalog {
 
+  /**
+   * Performs actions for loading data if necessary.
+   */
   def open(): Unit
 
+  /**
+   * Performs actions before closing the application.
+   */
   def close(): Unit
 
 }

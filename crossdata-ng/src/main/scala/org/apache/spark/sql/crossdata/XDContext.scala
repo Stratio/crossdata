@@ -22,6 +22,12 @@ import com.typesafe.config.ConfigFactory
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{Logging, SparkContext}
 
+/**
+ * CrossdataContext leverages the features of [[org.apache.spark.sql.SQLContext]]
+ * and adds some features of the Crossdata system.
+ *
+ * @param sc A [[org.apache.spark.SparkContext]].
+ */
 class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
 
   val catalogClass: String = ConfigFactory.load.getString("crossdata.catalog")

@@ -25,6 +25,12 @@ import org.mapdb.{DB, DBMaker}
 
 import scala.reflect.io.{Directory, Path}
 
+/**
+ * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
+ * [[http://www.mapdb.org/ MapDB web site]].
+ * @param conf The [[org.apache.spark.sql.catalyst.CatalystConf]].
+ * @param path Path to the file to be used as persistent data.
+ */
 class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
   extends XDCatalog with Logging {
 
@@ -45,38 +51,59 @@ class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
 
   private val tables: java.util.Map[String, LogicalPlan] = db.getHashMap("catalog")
 
+  /**
+   * @inheritdoc
+   */
   override def open(): Unit = {
     logInfo("XDCatalog: open")
   }
 
+  /**
+   * @inheritdoc
+   */
   override def tableExists(tableIdentifier: Seq[String]): Boolean = {
     logInfo("XDCatalog: tableExists")
     tables.containsKey(tableIdentifier.mkString("."))
   }
 
+  /**
+   * @inheritdoc
+   */
   override def unregisterAllTables(): Unit = {
     logInfo("XDCatalog: unregisterAllTables")
     tables.clear
     db.commit
   }
 
+  /**
+   * @inheritdoc
+   */
   override def unregisterTable(tableIdentifier: Seq[String]): Unit = {
     logInfo("XDCatalog: unregisterTable")
     tables.remove(tableIdentifier.mkString("."))
     db.commit
   }
 
+  /**
+   * @inheritdoc
+   */
   override def lookupRelation(tableIdentifier: Seq[String], alias: Option[String]): LogicalPlan = {
     logInfo("XDCatalog: lookupRelation")
     tables.get(tableIdentifier.mkString("."))
   }
 
+  /**
+   * @inheritdoc
+   */
   override def registerTable(tableIdentifier: Seq[String], plan: LogicalPlan): Unit = {
     logInfo("XDCatalog: registerTable")
     tables.put(tableIdentifier.mkString("."), plan)
     db.commit
   }
 
+  /**
+   * @inheritdoc
+   */
   override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
     logInfo("XDCatalog: getTables")
     import collection.JavaConversions._
@@ -85,10 +112,16 @@ class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
     }.toSeq
   }
 
+  /**
+   * @inheritdoc
+   */
   override def refreshTable(databaseName: String, tableName: String): Unit = {
     logInfo("XDCatalog: refreshTable")
   }
 
+  /**
+   * @inheritdoc
+   */
   override def close(): Unit = {
     db.close
   }

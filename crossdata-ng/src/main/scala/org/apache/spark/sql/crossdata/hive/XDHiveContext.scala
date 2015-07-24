@@ -19,6 +19,12 @@ package org.apache.spark.sql.crossdata.hive
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.hive.HiveContext
 
+/**
+ * CrossdataHiveContext leverages the features of [[org.apache.spark.sql.hive.HiveContext]]
+ * and adds the features of the [[org.apache.spark.sql.crossdata.XDContext]].
+ *
+ * @param sc A [[org.apache.spark.SparkContext]].
+ */
 class XDHiveContext(sc: SparkContext) extends HiveContext(sc) {
 
 }
