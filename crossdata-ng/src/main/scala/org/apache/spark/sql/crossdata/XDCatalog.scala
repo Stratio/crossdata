@@ -20,6 +20,8 @@ import org.apache.spark.sql.catalyst.analysis.Catalog
 
 trait XDCatalog extends Catalog {
 
-  def loadAll(): Unit
+  def open(): Unit
+
+  def close(): Unit
 
 }

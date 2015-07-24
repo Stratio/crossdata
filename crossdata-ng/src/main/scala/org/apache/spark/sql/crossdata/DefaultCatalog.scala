@@ -21,17 +21,32 @@ import java.io.File
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.execution.ClearCacheCommand
 import org.mapdb.{DB, DBMaker}
 
-class DefaultCatalog(val conf: CatalystConf) extends XDCatalog with Logging {
+import scala.reflect.io.{Directory, Path}
 
-  lazy val db: DB = DBMaker.newFileDB(new File("catalog")).closeOnJvmShutdown.make
+class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
+  extends XDCatalog with Logging {
 
-  lazy val tables: java.util.Map[String, LogicalPlan] = db.getHashMap("catalog")
+  private lazy val homeDir: String = System.getProperty("user.home")
 
-  override def loadAll(): Unit = {
-    logInfo("XDCatalog: loadAll")
+  private lazy val dir: Directory =
+    Path(homeDir + "/.crossdata").createDirectory(failIfExists = false)
+
+  private val dbLocation = path match {
+    case Some(v) => (v)
+    case None => (dir + "/catalog")
+  }
+
+  val dbFile: File = new File(dbLocation)
+  dbFile.getParentFile.mkdirs
+
+  private val db: DB = DBMaker.newFileDB(dbFile).closeOnJvmShutdown.make
+
+  private val tables: java.util.Map[String, LogicalPlan] = db.getHashMap("catalog")
+
+  override def open(): Unit = {
+    logInfo("XDCatalog: open")
   }
 
   override def tableExists(tableIdentifier: Seq[String]): Boolean = {
@@ -74,4 +89,7 @@ class DefaultCatalog(val conf: CatalystConf) extends XDCatalog with Logging {
     logInfo("XDCatalog: refreshTable")
   }
 
+  override def close(): Unit = {
+    db.close
+  }
 }

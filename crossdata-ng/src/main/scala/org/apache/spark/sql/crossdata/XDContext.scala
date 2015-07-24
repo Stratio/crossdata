@@ -33,7 +33,7 @@ class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
   override protected[sql] lazy val catalog: XDCatalog =
     constr.newInstance(super.conf).asInstanceOf[XDCatalog]
 
-  catalog.loadAll
+  catalog.open
 
 }
 

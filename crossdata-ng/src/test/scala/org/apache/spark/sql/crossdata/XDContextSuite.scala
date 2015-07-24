@@ -14,12 +14,10 @@
  *  limitations under the License.
  */
 
-package org.apache.spark.sql
+package org.apache.spark.sql.crossdata
 
-import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.catalyst.analysis.Catalog
-
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.FunSuite
 
 class XDContextSuite extends FunSuite {
