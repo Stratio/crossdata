@@ -57,8 +57,11 @@ class DefaultCatalog(val conf: CatalystConf,
   private val db: DB = DBMaker.newFileDB(dbFile).closeOnJvmShutdown.make
 
   private val tables: java.util.Map[String, LogicalPlan] = db.getHashMap("catalog")
-  private val attributes: java.util.Map[String, Seq[Attribute]] = db.getHashMap("attributes")
-  private val rdds: java.util.Map[String, RDD[Row]] = db.getHashMap("rdds")
+  // private val attributes: java.util.Map[String, Seq[Attribute]] = db.getHashMap("attributes")
+  // private val rdds: java.util.Map[String, RDD[Row]] = db.getHashMap("rdds")
+
+  private val logicalRDDs: java.util.Map[String, Tuple2[Seq[Attribute], RDD[Row]]] =
+    db.getHashMap("logicalRDDs")
 
   /**
    * @inheritdoc
@@ -73,8 +76,7 @@ class DefaultCatalog(val conf: CatalystConf,
   override def tableExists(tableIdentifier: Seq[String]): Boolean = {
     logInfo("XDCatalog: tableExists")
     val tableName: String = tableIdentifier.mkString(".")
-    (tables.containsKey(tableName)
-      || (attributes.containsKey(tableName) && rdds.containsKey(tableName)))
+    (tables.containsKey(tableName) || logicalRDDs.containsKey(tableName))
   }
 
   /**
@@ -83,8 +85,7 @@ class DefaultCatalog(val conf: CatalystConf,
   override def unregisterAllTables(): Unit = {
     logInfo("XDCatalog: unregisterAllTables")
     tables.clear
-    attributes.clear
-    rdds.clear
+    logicalRDDs.clear
     db.commit
   }
 
@@ -95,8 +96,7 @@ class DefaultCatalog(val conf: CatalystConf,
     logInfo("XDCatalog: unregisterTable")
     val tableName: String = tableIdentifier.mkString(".")
     tables.remove(tableName)
-    attributes.remove(tableName)
-    rdds.remove(tableName)
+    logicalRDDs.remove(tableName)
     db.commit
   }
 
@@ -112,7 +112,7 @@ class DefaultCatalog(val conf: CatalystConf,
     if(tables.containsKey(tableName)){
       tables.get(tableName)
     } else {
-      new LogicalRDD(attributes.get(tableName), rdds.get(tableName))(xdContext.get)
+      new LogicalRDD(logicalRDDs.get(tableName)._1, logicalRDDs.get(tableName)._2)(xdContext.get)
     }
   }
 
@@ -122,8 +122,8 @@ class DefaultCatalog(val conf: CatalystConf,
   override def registerTable(tableIdentifier: Seq[String], plan: LogicalPlan): Unit = {
     logInfo("XDCatalog: registerTable")
     if(plan.isInstanceOf[LogicalRDD]){
-      attributes.put(tableIdentifier.mkString("."), plan.asInstanceOf[LogicalRDD].output)
-      rdds.put(tableIdentifier.mkString("."), plan.asInstanceOf[LogicalRDD].rdd)
+      logicalRDDs.put(tableIdentifier.mkString("."),
+        new Tuple2(plan.asInstanceOf[LogicalRDD].output, plan.asInstanceOf[LogicalRDD].rdd))
     } else {
       tables.put(tableIdentifier.mkString("."), plan)
     }
@@ -139,7 +139,7 @@ class DefaultCatalog(val conf: CatalystConf,
     val allTables: Seq[(String, Boolean)] = tables.map {
       case (name, _) => (name, false)
     }.toSeq
-    allTables.addAll(0, attributes.map {
+    allTables.addAll(0, logicalRDDs.map {
       case (name, _) => (name, false)
     }.toSeq)
     allTables
