@@ -16,19 +16,39 @@
 
 package org.apache.spark.sql.crossdata
 
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.FunSuite
 
 class XDContextSuite extends FunSuite {
 
-  test("Pluggable catalog is instantiated") {
+  test("XDContext: Pluggable catalog is instantiated") {
 
-    val sparkConf = new SparkConf().setAppName("Lighthouse").setMaster("local[4]")
+    val sparkConf = new SparkConf().setAppName("Crossdata").setMaster("local[2]")
     val sc: SparkContext = new SparkContext(sparkConf)
     val ctx: XDContext = new XDContext(sc)
     val xdCatalog: Catalog = ctx.catalog
     assert(xdCatalog.conf.caseSensitiveAnalysis === true)
+    sc.stop
+  }
+
+  test("XDContext: Performs a basic operation") {
+    val sparkConf = new SparkConf().setAppName("Crossdata").setMaster("local[2]")
+    val sc: SparkContext = new SparkContext(sparkConf)
+    val xdc: XDContext = new XDContext(sc)
+
+    import xdc.implicits._
+
+    val df = sc.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
+    // Any RDD containing case classes can be registered as a table.  The schema of the table is
+    // automatically inferred using scala reflection.
+    df.registerTempTable("records")
+
+    // Once tables have been registered, you can run SQL queries over them.
+    val result: Array[Row] = xdc.sql("SELECT * FROM records").collect
+    assert(result.length === 5)
+
     sc.stop
   }
 

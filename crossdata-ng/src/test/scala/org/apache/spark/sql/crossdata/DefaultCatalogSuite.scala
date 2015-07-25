@@ -39,7 +39,7 @@ class DefaultCatalogSuite extends FunSuite {
 
     val dc: DefaultCatalog = new DefaultCatalog(
       new SimpleCatalystConf(true),
-      Some("/tmp/crossdata/catalog"))
+      path = Some("/tmp/crossdata/catalog"))
     val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
     dc.registerTable(tmpTable, new ShowTablesCommand(None))
     assert(dc.tableExists(tmpTable) === true)

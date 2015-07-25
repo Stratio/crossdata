@@ -16,11 +16,17 @@
 
 package org.apache.spark.sql.crossdata
 
-import java.io.File
+import java.io._
 
-import org.apache.spark.Logging
+import com.esotericsoftware.kryo.Kryo
+import com.esotericsoftware.kryo.io.{Input, Output}
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalyst.expressions.Attribute
+import org.apache.spark.{SparkContext, SparkConf, Logging}
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.catalyst.CatalystConf
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.execution.{LogicalRDD, SparkSqlSerializer}
 import org.mapdb.{DB, DBMaker}
 
 import scala.reflect.io.{Directory, Path}
@@ -31,8 +37,9 @@ import scala.reflect.io.{Directory, Path}
  * @param conf The [[org.apache.spark.sql.catalyst.CatalystConf]].
  * @param path Path to the file to be used as persistent data.
  */
-class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
-  extends XDCatalog with Logging {
+class DefaultCatalog(val conf: CatalystConf,
+                     xdContext: Option[XDContext] = None,
+                     path: Option[String] = None) extends XDCatalog with Logging {
 
   private lazy val homeDir: String = System.getProperty("user.home")
 
@@ -50,6 +57,8 @@ class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
   private val db: DB = DBMaker.newFileDB(dbFile).closeOnJvmShutdown.make
 
   private val tables: java.util.Map[String, LogicalPlan] = db.getHashMap("catalog")
+  private val attributes: java.util.Map[String, Seq[Attribute]] = db.getHashMap("attributes")
+  private val rdds: java.util.Map[String, RDD[Row]] = db.getHashMap("rdds")
 
   /**
    * @inheritdoc
@@ -63,7 +72,9 @@ class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
    */
   override def tableExists(tableIdentifier: Seq[String]): Boolean = {
     logInfo("XDCatalog: tableExists")
-    tables.containsKey(tableIdentifier.mkString("."))
+    val tableName: String = tableIdentifier.mkString(".")
+    (tables.containsKey(tableName)
+      || (attributes.containsKey(tableName) && rdds.containsKey(tableName)))
   }
 
   /**
@@ -72,6 +83,8 @@ class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
   override def unregisterAllTables(): Unit = {
     logInfo("XDCatalog: unregisterAllTables")
     tables.clear
+    attributes.clear
+    rdds.clear
     db.commit
   }
 
@@ -80,7 +93,10 @@ class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
    */
   override def unregisterTable(tableIdentifier: Seq[String]): Unit = {
     logInfo("XDCatalog: unregisterTable")
-    tables.remove(tableIdentifier.mkString("."))
+    val tableName: String = tableIdentifier.mkString(".")
+    tables.remove(tableName)
+    attributes.remove(tableName)
+    rdds.remove(tableName)
     db.commit
   }
 
@@ -89,7 +105,15 @@ class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
    */
   override def lookupRelation(tableIdentifier: Seq[String], alias: Option[String]): LogicalPlan = {
     logInfo("XDCatalog: lookupRelation")
-    tables.get(tableIdentifier.mkString("."))
+    val tableName: String = alias match {
+      case Some(a) => a
+      case None => tableIdentifier.mkString(".")
+    }
+    if(tables.containsKey(tableName)){
+      tables.get(tableName)
+    } else {
+      new LogicalRDD(attributes.get(tableName), rdds.get(tableName))(xdContext.get)
+    }
   }
 
   /**
@@ -97,7 +121,12 @@ class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
    */
   override def registerTable(tableIdentifier: Seq[String], plan: LogicalPlan): Unit = {
     logInfo("XDCatalog: registerTable")
-    tables.put(tableIdentifier.mkString("."), plan)
+    if(plan.isInstanceOf[LogicalRDD]){
+      attributes.put(tableIdentifier.mkString("."), plan.asInstanceOf[LogicalRDD].output)
+      rdds.put(tableIdentifier.mkString("."), plan.asInstanceOf[LogicalRDD].rdd)
+    } else {
+      tables.put(tableIdentifier.mkString("."), plan)
+    }
     db.commit
   }
 
@@ -107,9 +136,13 @@ class DefaultCatalog(val conf: CatalystConf, path: Option[String] = None)
   override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
     logInfo("XDCatalog: getTables")
     import collection.JavaConversions._
-    tables.map {
+    val allTables: Seq[(String, Boolean)] = tables.map {
       case (name, _) => (name, false)
     }.toSeq
+    allTables.addAll(0, attributes.map {
+      case (name, _) => (name, false)
+    }.toSeq)
+    allTables
   }
 
   /**
