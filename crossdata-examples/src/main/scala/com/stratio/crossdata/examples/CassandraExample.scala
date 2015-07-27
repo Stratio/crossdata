@@ -17,7 +17,7 @@
 package com.stratio.crossdata.examples
 
 import org.apache.spark.sql.crossdata.XDContext
-import org.apache.spark.{SparkContext, SparkConf}
+import org.apache.spark.{SparkConf, SparkContext}
 
 sealed trait DefaultConstants {
   val Cluster = "Test Cluster"
