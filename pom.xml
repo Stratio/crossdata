@@ -80,6 +80,7 @@
 
     <modules>
         <module>crossdata-ng</module>
+        <module>crossdata-hive</module>
         <module>crossdata-cassandra</module>
         <module>crossdata-examples</module>
         <module>doc</module>        

@@ -25,9 +25,9 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <packaging>jar</packaging>
-    <artifactId>crossdata-ng</artifactId>
-    <name>Stratio Crossdata New Generation</name>
-    <description>Stratio Crossdata New Generation</description>
+    <artifactId>crossdata-hive</artifactId>
+    <name>Stratio Crossdata Hive</name>
+    <description>Stratio Crossdata Hive compatible</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
@@ -75,6 +75,16 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_${scala.group}</artifactId>
             <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-hive_${scala.group}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-ng</artifactId>
+            <version>${parent.version}</version>
         </dependency>
         <dependency>
             <groupId>org.mapdb</groupId>

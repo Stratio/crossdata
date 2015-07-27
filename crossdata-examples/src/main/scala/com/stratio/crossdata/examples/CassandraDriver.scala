@@ -16,8 +16,9 @@
 
 package com.stratio.crossdata.examples
 
+import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkContext, SparkConf}
-import org.apache.spark.sql.{SQLContext, XDContext}
+import org.apache.spark.sql.{SQLContext}
 
 trait DefaultConstants {
   val nIterations = 10000

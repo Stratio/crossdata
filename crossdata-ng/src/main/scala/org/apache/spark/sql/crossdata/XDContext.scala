@@ -19,7 +19,7 @@ package org.apache.spark.sql.crossdata
 import java.lang.reflect.Constructor
 
 import com.typesafe.config.ConfigFactory
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{CrossdataFrame, DataFrame, SQLContext}
 import org.apache.spark.{Logging, SparkContext}
 
 /**
@@ -41,5 +41,8 @@ class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
 
   catalog.open()
 
+  override def sql(sqlText: String): DataFrame = {
+    CrossdataFrame(this, parseSql(sqlText))
+  }
 }
 
