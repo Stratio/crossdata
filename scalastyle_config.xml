@@ -185,7 +185,7 @@
     </check>
     <check level="error" class="org.scalastyle.file.RegexChecker" enabled="true">
         <parameters>
-            <parameter name="regex"><![CDATA[println,print]]></parameter>
+            <parameter name="regex"><![CDATA[println,print,printf]]></parameter>
         </parameters>
     </check>
     <check level="error" class="org.scalastyle.scalariform.NonASCIICharacterChecker" enabled="true"></check>
