@@ -37,7 +37,9 @@ object CassandraDriver extends App with DefaultConstants {
         "(keyspace \"" + Catalog + "\", table \"" + Table + "\", " +
         "cluster \"" + Cluster + "\", pushdown \"true\")".stripMargin)
 
+    // scalastyle:off
     xdContext.sql(s"SELECT * FROM $Table").collect().foreach(print)
+    // scalastyle:on
 
   }
 
