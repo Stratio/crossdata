@@ -19,15 +19,13 @@ package org.apache.spark.sql.crossdata
 import java.io._
 import java.util
 
-import com.esotericsoftware.kryo.Kryo
-import com.esotericsoftware.kryo.io.{Input, Output}
+import org.apache.spark.Logging
 import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.Attribute
-import org.apache.spark.{SparkContext, SparkConf, Logging}
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
-import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.execution.{LogicalRDD, SparkSqlSerializer}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
+import org.apache.spark.sql.execution.LogicalRDD
 import org.mapdb.{DB, DBMaker}
 
 import scala.reflect.io.{Directory, Path}
@@ -35,6 +33,9 @@ import scala.reflect.io.{Directory, Path}
 /**
  * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
  * [[http://www.mapdb.org/ MapDB web site]].
+ * @param xdContext An optional [[XDContext]]].
+ * @param conf An implementation of the [[CatalystConf]].
+ * @param args Possible extra arguments.
  */
 class DefaultCatalog(val xdContext: Option[XDContext] = None,
                      val conf: CatalystConf = new SimpleCatalystConf(true),

@@ -29,7 +29,7 @@ class DefaultCatalogSuite extends FunSuite {
      val dc: DefaultCatalog = new DefaultCatalog
      val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
      dc.registerTable(tmpTable, new ShowTablesCommand(None))
-     assert(dc.tableExists(tmpTable) === true)
+     assert(dc.tableExists(tmpTable))
      dc.unregisterTable(tmpTable)
      dc.close()
 
@@ -41,7 +41,7 @@ class DefaultCatalogSuite extends FunSuite {
       args = util.Arrays.asList("/tmp/crossdata/catalog"))
     val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
     dc.registerTable(tmpTable, new ShowTablesCommand(None))
-    assert(dc.tableExists(tmpTable) === true)
+    assert(dc.tableExists(tmpTable))
     dc.unregisterTable(tmpTable)
     dc.close()
 
