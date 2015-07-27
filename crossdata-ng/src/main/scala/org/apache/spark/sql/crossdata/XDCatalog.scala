@@ -16,22 +16,27 @@
 
 package org.apache.spark.sql.crossdata
 
+import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
 import org.apache.spark.sql.catalyst.analysis.Catalog
 
 /**
  * CrossdataCatalog aims to provide a mechanism to persist the
  * [[org.apache.spark.sql.catalyst.analysis.Catalog]] metadata.
  */
-trait XDCatalog extends Catalog {
+trait XDCatalog extends Catalog with Serializable {
+
+  override val conf: CatalystConf
+  val xdContext: Option[XDContext]
+  val args: java.util.List[String]
 
   /**
    * Performs actions for loading data if necessary.
    */
-  def open(): Unit
+  def open(args: Any*): Unit
 
   /**
    * Performs actions before closing the application.
    */
-  def close(): Unit
+  def close(args: Any*): Unit
 
 }

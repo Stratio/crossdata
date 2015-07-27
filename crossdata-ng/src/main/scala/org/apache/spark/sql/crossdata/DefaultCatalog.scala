@@ -17,6 +17,7 @@
 package org.apache.spark.sql.crossdata
 
 import java.io._
+import java.util
 
 import com.esotericsoftware.kryo.Kryo
 import com.esotericsoftware.kryo.io.{Input, Output}
@@ -24,7 +25,7 @@ import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.catalyst.expressions.Attribute
 import org.apache.spark.{SparkContext, SparkConf, Logging}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
-import org.apache.spark.sql.catalyst.CatalystConf
+import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.{LogicalRDD, SparkSqlSerializer}
 import org.mapdb.{DB, DBMaker}
@@ -34,12 +35,16 @@ import scala.reflect.io.{Directory, Path}
 /**
  * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
  * [[http://www.mapdb.org/ MapDB web site]].
- * @param conf The [[org.apache.spark.sql.catalyst.CatalystConf]].
- * @param path Path to the file to be used as persistent data.
  */
-class DefaultCatalog(val conf: CatalystConf,
-                     xdContext: Option[XDContext] = None,
-                     path: Option[String] = None) extends XDCatalog with Logging {
+class DefaultCatalog(val xdContext: Option[XDContext] = None,
+                     val conf: CatalystConf = new SimpleCatalystConf(true),
+                     val args: java.util.List[String] = new util.ArrayList[String]())
+  extends XDCatalog with Logging {
+
+  private lazy val path: Option[String] = args match {
+    case e if e.isEmpty => None
+    case e => Some(e.get(0))
+  }
 
   private lazy val homeDir: String = System.getProperty("user.home")
 
@@ -57,8 +62,6 @@ class DefaultCatalog(val conf: CatalystConf,
   private val db: DB = DBMaker.newFileDB(dbFile).closeOnJvmShutdown.make
 
   private val tables: java.util.Map[String, LogicalPlan] = db.getHashMap("catalog")
-  // private val attributes: java.util.Map[String, Seq[Attribute]] = db.getHashMap("attributes")
-  // private val rdds: java.util.Map[String, RDD[Row]] = db.getHashMap("rdds")
 
   private val logicalRDDs: java.util.Map[String, Tuple2[Seq[Attribute], RDD[Row]]] =
     db.getHashMap("logicalRDDs")
@@ -66,7 +69,7 @@ class DefaultCatalog(val conf: CatalystConf,
   /**
    * @inheritdoc
    */
-  override def open(): Unit = {
+  override def open(args: Any*): Unit = {
     logInfo("XDCatalog: open")
   }
 
@@ -155,7 +158,7 @@ class DefaultCatalog(val conf: CatalystConf,
   /**
    * @inheritdoc
    */
-  override def close(): Unit = {
+  override def close(args: Any*): Unit = {
     db.close
   }
 }

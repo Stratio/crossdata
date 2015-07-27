@@ -17,8 +17,10 @@
 package org.apache.spark.sql.crossdata
 
 import java.lang.reflect.Constructor
+import java.util
 
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
+import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{Logging, SparkContext}
 
@@ -30,14 +32,27 @@ import org.apache.spark.{Logging, SparkContext}
  */
 class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
 
-  val catalogClass: String = ConfigFactory.load.getString("crossdata.catalog")
+  val xdConfig: Config = ConfigFactory.load
+  val catalogClass: String = xdConfig.getString("crossdata.catalog.class")
+  val caseSensitive: Boolean = xdConfig.getBoolean("crossdata.catalog.caseSensitive")
+
+  import scala.collection.JavaConversions._
+
+  val catalogArgs: util.List[String] =
+    xdConfig.getList("crossdata.catalog.args").map(e => e.toString)
 
   val xdCatalog = Class.forName(catalogClass)
 
-  val constr: Constructor[_] = xdCatalog.getConstructors()(0)
+  val constr: Constructor[_] = xdCatalog.getConstructor(
+    classOf[Option[XDContext]],
+    classOf[CatalystConf],
+    classOf[util.List[String]])
 
   override protected[sql] lazy val catalog: XDCatalog =
-    constr.newInstance(super.conf, Some(this), None).asInstanceOf[XDCatalog]
+    constr.newInstance(
+      Some(this),
+      new SimpleCatalystConf(caseSensitive),
+      catalogArgs).asInstanceOf[XDCatalog]
 
   catalog.open()
 
