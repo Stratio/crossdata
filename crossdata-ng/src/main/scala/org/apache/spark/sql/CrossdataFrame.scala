@@ -16,7 +16,9 @@
 
 package org.apache.spark.sql
 
+import com.stratio.crossdata.sql.sources.NativeScan
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
+import org.apache.spark.sql.sources.LogicalRelation
 
 
 private[sql] object CrossdataFrame {
@@ -38,6 +40,36 @@ private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext
       qe
     })
   }
+
+  override def collect(): Array[Row] = {
+
+    // if cache don't go through native
+    if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
+      super.collect()
+    } else {
+      val nativeRelation = findNativeRelation(queryExecution.optimizedPlan)
+      nativeRelation.flatMap(executeNative).getOrElse(super.collect())
+    }
+  }
+
+  private[this] def findNativeRelation(optimizedLogicalPlan: LogicalPlan): Option[NativeScan] = {
+    // TODO check whether there is multiple baseRelation => avoid executing via NativeScan
+    // TODO very simplistic implementation currently
+    optimizedLogicalPlan match {
+      case LogicalRelation(baseRelation) => baseRelation match {
+        case nativeRelation: NativeScan => Some(nativeRelation)
+        case _ => None
+      }
+      case _ => None
+    }
+  }
+
+
+  def executeNative(provider: NativeScan): Option[Array[Row]] = {
+    provider.buildScan(queryExecution.optimizedPlan)
+    // TODO cache? results
+  }
+
 }
 
 

@@ -14,15 +14,13 @@
  *  limitations under the License.
  */
 
-package org.apache.spark.sql
+package com.stratio.crossdata.sql.sources
 
+import org.apache.spark.annotation.DeveloperApi
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 
-import org.apache.spark.{Logging, SparkContext}
-
-class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
-
-  override def sql(sqlText: String): DataFrame = {
-    CrossdataFrame(this, parseSql(sqlText))
-  }
+@DeveloperApi
+trait NativeScan {
+  def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]]
 }
-
