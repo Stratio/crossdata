@@ -21,39 +21,39 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.apache.spark.sql.{SQLContext}
 
 trait DefaultConstants {
-  val nIterations = 10000
-  val cluster = "Test Cluster"
-  val catalog = "highschool"
-  val table = "students"
+  val Cluster = "Test Cluster"
+  val Catalog = "highschool"
+  val Table = "students"
   val CassandraHost = "127.0.0.1"
+  val SourceProvider = "com.stratio.crossdata.sql.sources.cassandra"
+  // Cassandra provider => org.apache.spark.sql.cassandra
 }
 
-object CassandraDriver extends App with DefaultConstants{
+object CassandraDriver extends App with DefaultConstants {
 
-  val sparkConf = new SparkConf()
-    .setAppName("CassandraExample")
-    .setMaster("local[4]")
-    .set("spark.cassandra.connection.host", CassandraHost)
+  withCrossdataContext { xdContext =>
 
-  val sc = new SparkContext(sparkConf)
-  val xdContext = new XDContext(sc)
-  // Importing the SQL context gives access to all the SQL functions and implicit conversions.
+    xdContext.sql(
+      "CREATE TEMPORARY TABLE " + Table + " USING " + SourceProvider + " OPTIONS " +
+        "(keyspace \"" + Catalog + "\", table \"" + Table + "\", " +
+        "cluster \"" + Cluster + "\", pushdown \"true\")".stripMargin)
 
-/*  xdContext.sql(
-    s"CREATE TEMPORARY TABLE $table USING org.apache.spark.sql.cassandra OPTIONS " +
-      s"(keyspace \"$catalog\", table \"$table\", cluster \"$cluster\", pushdown \"true\")"
-        .stripMargin)*/
-  /*xdContext.sql(
-    "CREATE TEMPORARY TABLE " + table + " USING org.apache.spark.sql.cassandra OPTIONS " +
-      "(keyspace \"" + catalog + "\", table \"" + table + "\", " +
-      "cluster \"" + cluster + "\", pushdown \"true\")".stripMargin)*/
-  xdContext.sql(
-    "CREATE TEMPORARY TABLE " + table + " USING com.stratio.crossdata.sql.sources.cassandra OPTIONS " +
-      "(keyspace \"" + catalog + "\", table \"" + table + "\", " +
-      "cluster \"" + cluster + "\", pushdown \"true\")".stripMargin)
+    xdContext.sql(s"SELECT * FROM $Table").collect().foreach(print)
+  }
 
-  xdContext.sql(s"SELECT * FROM $table").collect().foreach(print)
+  private def withCrossdataContext(commands: XDContext => Unit) = {
 
-  sc.stop()
+    val sparkConf = new SparkConf()
+      .setAppName("CassandraExample")
+      .setMaster("local[4]")
+      .set("spark.cassandra.connection.host", CassandraHost)
+
+    val sc = new SparkContext(sparkConf)
+    val xdContext = new XDContext(sc)
+
+    commands(xdContext)
+
+    sc.stop()
+  }
 
 }

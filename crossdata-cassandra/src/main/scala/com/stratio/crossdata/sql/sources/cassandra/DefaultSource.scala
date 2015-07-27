@@ -1,19 +1,17 @@
 /*
+ * Copyright (C) 2015 Stratio (http://stratio.com)
  *
- *  * Copyright (C) 2015 Stratio (http://stratio.com)
- *  *
- *  *  Licensed under the Apache License, Version 2.0 (the "License");
- *  *  you may not use this file except in compliance with the License.
- *  *  You may obtain a copy of the License at
- *  *
- *  *  http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  *  Unless required by applicable law or agreed to in writing, software
- *  *  distributed under the License is distributed on an "AS IS" BASIS,
- *  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  *  See the License for the specific language governing permissions and
- *  *  limitations under the License.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package com.stratio.crossdata.sql.sources.cassandra
@@ -30,13 +28,13 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 import scala.collection.mutable
 
-class DefaultSource extends CassandraConnectorDS{
+class DefaultSource extends CassandraConnectorDS {
 
   override def createRelation(
                                sqlContext: SQLContext,
                                parameters: Map[String, String]): BaseRelation = {
 
-    val (tableRef, options) = TableRefAndOptions(parameters)
+    val (tableRef, options) = tableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options)
   }
 
@@ -45,7 +43,7 @@ class DefaultSource extends CassandraConnectorDS{
                                parameters: Map[String, String],
                                schema: StructType): BaseRelation = {
 
-    val (tableRef, options) = TableRefAndOptions(parameters)
+    val (tableRef, options) = tableRefAndOptions(parameters)
     CassandraXDSourceRelation(tableRef, sqlContext, options, Option(schema))
   }
 
@@ -55,7 +53,7 @@ class DefaultSource extends CassandraConnectorDS{
                                parameters: Map[String, String],
                                data: DataFrame): BaseRelation = {
 
-    val (tableRef, options) = TableRefAndOptions(parameters)
+    val (tableRef, options) = tableRefAndOptions(parameters)
     val table = CassandraXDSourceRelation(tableRef, sqlContext, options)
 
     mode match {
@@ -88,11 +86,11 @@ object DefaultSource {
 
 
   /** Parse parameters into CassandraDataSourceOptions and TableRef object */
-  def TableRefAndOptions(parameters: Map[String, String]) : (TableRef, CassandraSourceOptions) = {
+  def tableRefAndOptions(parameters: Map[String, String]): (TableRef, CassandraSourceOptions) = {
     val tableName = parameters(CassandraDataSourceTableNameProperty)
     val keyspaceName = parameters(CassandraDataSourceKeyspaceNameProperty)
     val clusterName = parameters.get(CassandraDataSourceClusterNameProperty)
-    val pushdown : Boolean = parameters.getOrElse(CassandraDataSourcePushdownEnableProperty, "true").toBoolean
+    val pushdown: Boolean = parameters.getOrElse(CassandraDataSourcePushdownEnableProperty, "true").toBoolean
     val cassandraConfs = buildConfMap(parameters)
 
     (TableRef(tableName, keyspaceName, clusterName), CassandraSourceOptions(pushdown, cassandraConfs))
@@ -106,12 +104,12 @@ object DefaultSource {
   // Dot is not allowed in Options key for Spark SQL parsers, so convert . to _
   // Map converted property to origin property name
   // TODO check SPARK 1.4 it may be fixed
-  private val propertiesMap : Map[String, String] = {
+  private val propertiesMap: Map[String, String] = {
     confProperties.map(prop => (prop.replace(".", "_"), prop)).toMap
   }
 
   /** Construct a map stores Cassandra Conf settings from options */
-  def buildConfMap(parameters: Map[String, String]) : Map[String, String] = {
+  def buildConfMap(parameters: Map[String, String]): Map[String, String] = {
     val confMap = mutable.Map.empty[String, String]
     for (convertedProp <- propertiesMap.keySet) {
       val setting = parameters.get(convertedProp)
@@ -123,7 +121,7 @@ object DefaultSource {
   }
 
   /** Check whether the provider is Cassandra datasource or not */
-  def cassandraSource(provider: String) : Boolean = {
+  def cassandraSource(provider: String): Boolean = {
     provider == CassandraDataSourceProviderPackageName || provider == CassandraDataSourceProviderClassName
   }
 }

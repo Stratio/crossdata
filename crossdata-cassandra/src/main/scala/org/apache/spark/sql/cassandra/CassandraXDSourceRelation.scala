@@ -107,9 +107,9 @@ object CassandraXDSourceRelation{
                         sqlConf: Map[String, String],
                         tableRef: TableRef,
                         tableConf: Map[String, String]) : SparkConf = {
-    //Default settings
+    // Default settings
     val conf = sparkConf.clone()
-    //Keyspace/Cluster level settings
+    // Keyspace/Cluster level settings
     for (prop <- DefaultSource.confProperties) {
       val cluster = tableRef.cluster.getOrElse(defaultClusterName)
       val clusterLevelValue = sqlConf.get(s"$cluster/$prop")
