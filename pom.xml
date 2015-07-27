@@ -43,10 +43,10 @@
     </licenses>
 
     <scm>
-    	<url>https://github.com/Stratio/crossdata</url>
+        <url>https://github.com/Stratio/crossdata</url>
         <connection>scm:git:git:@github.com:Stratio/crossdata.git</connection>
         <developerConnection>scm:git:git@github.com:Stratio/crossdata.git
-    </developerConnection>
+        </developerConnection>
         <tag>HEAD</tag>
     </scm>
 
@@ -83,7 +83,7 @@
         <module>crossdata-hive</module>
         <module>crossdata-cassandra</module>
         <module>crossdata-examples</module>
-        <module>doc</module>        
+        <module>doc</module>
     </modules>
 
     <properties>
@@ -173,30 +173,30 @@
                     </execution>
                 </executions>
             </plugin>
-             <plugin>
-                    <groupId>org.scalastyle</groupId>
-                    <artifactId>scalastyle-maven-plugin</artifactId>
-                    <version>0.7.0</version>
-                    <configuration>
-                        <verbose>true</verbose>
-                        <failOnViolation>true</failOnViolation>
-                        <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                        <failOnWarning>false</failOnWarning>
-                        <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-                        <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-                        <configLocation>scalastyle_config.xml</configLocation>
-                        <outputFile>${basedir}/target/scalastyle-output.xml</outputFile>
-                        <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
-                        <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
+            <plugin>
+                <groupId>org.scalastyle</groupId>
+                <artifactId>scalastyle-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <configuration>
+                    <verbose>true</verbose>
+                    <failOnViolation>true</failOnViolation>
+                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                    <failOnWarning>false</failOnWarning>
+                    <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+                    <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
+                    <configLocation>scalastyle_config.xml</configLocation>
+                    <outputFile>${basedir}/target/scalastyle-output.xml</outputFile>
+                    <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
+                    <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
