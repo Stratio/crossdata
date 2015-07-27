@@ -18,7 +18,6 @@ package com.stratio.crossdata.examples
 
 import org.apache.spark.sql.crossdata.XDContext
 import org.apache.spark.{SparkContext, SparkConf}
-import org.apache.spark.sql.{SQLContext}
 
 trait DefaultConstants {
   val Cluster = "Test Cluster"
@@ -39,21 +38,27 @@ object CassandraDriver extends App with DefaultConstants {
         "cluster \"" + Cluster + "\", pushdown \"true\")".stripMargin)
 
     xdContext.sql(s"SELECT * FROM $Table").collect().foreach(print)
+
   }
+
 
   private def withCrossdataContext(commands: XDContext => Unit) = {
 
-    val sparkConf = new SparkConf()
-      .setAppName("CassandraExample")
-      .setMaster("local[4]")
-      .set("spark.cassandra.connection.host", CassandraHost)
+    val sparkConf = new SparkConf().
+      setAppName("CassandraExample").
+      setMaster("local[4]").
+      set("spark.cassandra.connection.host", CassandraHost)
 
     val sc = new SparkContext(sparkConf)
-    val xdContext = new XDContext(sc)
 
-    commands(xdContext)
+    try {
+      val xdContext = new XDContext(sc)
+      commands(xdContext)
+    } finally {
+      sc.stop()
+    }
 
-    sc.stop()
   }
 
 }
+
