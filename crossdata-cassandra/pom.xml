@@ -16,23 +16,18 @@
   ~ specific language governing permissions and limitations
   ~ under the License.
   -->
-
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
     <parent>
-        <groupId>com.stratio</groupId>
-        <artifactId>parent</artifactId>
-        <version>0.1.0</version>
+        <groupId>com.stratio.crossdata</groupId>
+        <artifactId>crossdata-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
-
-    <groupId>com.stratio.crossdata</groupId>
-    <artifactId>crossdata-parent</artifactId>
-    <packaging>pom</packaging>
-    <version>1.0.0-SNAPSHOT</version>
-    <name>Stratio Crossdata Parent</name>
-    <description>Stratio Crossdata parent</description>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>jar</packaging>
+    <artifactId>crossdata-cassandra</artifactId>
+    <name>Crossdata Cassandra connector</name>
+    <description>Crossdata Cassandra connector</description>
     <url>http://stratio.github.io/crossdata/</url>
 
     <licenses>
@@ -41,19 +36,6 @@
             <url>http://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
     </licenses>
-
-    <scm>
-        <url>https://github.com/Stratio/crossdata</url>
-        <connection>scm:git:git:@github.com:Stratio/crossdata.git</connection>
-        <developerConnection>scm:git:git@github.com:Stratio/crossdata.git
-        </developerConnection>
-        <tag>HEAD</tag>
-    </scm>
-
-    <issueManagement>
-        <system>Jira</system>
-        <url>https://crossdata.atlassian.net/</url>
-    </issueManagement>
 
     <developers>
         <developer>
@@ -78,47 +60,32 @@
         </developer>
     </developers>
 
-    <modules>
-        <module>crossdata-ng</module>
-        <module>crossdata-hive</module>
-        <module>crossdata-cassandra</module>
-        <module>crossdata-examples</module>
-        <module>doc</module>
-    </modules>
-
     <properties>
-        <scala.group>2.10</scala.group>
-        <scala.version>${scala.group}.4</scala.version>
-        <scalatest.version>2.2.2</scalatest.version>
-        <spark.version>1.4.1</spark.version>
-        <scalatest.version>2.2.5</scalatest.version>
-        <mapdb.version>1.0.8</mapdb.version>
-        <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
-        <config.version>1.2.1</config.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <outputFileName>stratio-crossdata</outputFileName>
+        <antlr.version>3.5.2</antlr.version>
+        <cassandra.connector.version>1.4.0-M1</cassandra.connector.version>
     </properties>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>org.scala-lang</groupId>
-                <artifactId>scala-library</artifactId>
-                <version>${scala.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql_${scala.group}</artifactId>
-                <version>${spark.version}</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <!--TODO exclude hive dependencies-->
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.spark</groupId>
+            <artifactId>spark-sql_${scala.group}</artifactId>
+            <version>${spark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.crossdata</groupId>
+            <artifactId>crossdata-ng</artifactId>
+            <version>${parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.datastax.spark</groupId>
+            <artifactId>spark-cassandra-connector_${scala.group}</artifactId>
+            <version>${cassandra.connector.version}</version>
+        </dependency>
+    </dependencies>
 
     <build>
-        <sourceDirectory>src/main/scala</sourceDirectory>
-        <testSourceDirectory>src/test/scala</testSourceDirectory>
-
         <pluginManagement>
             <plugins>
                 <plugin>
@@ -169,30 +136,6 @@
                         <phase>compile</phase>
                         <goals>
                             <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.scalastyle</groupId>
-                <artifactId>scalastyle-maven-plugin</artifactId>
-                <version>0.7.0</version>
-                <configuration>
-                    <verbose>true</verbose>
-                    <failOnViolation>true</failOnViolation>
-                    <includeTestSourceDirectory>true</includeTestSourceDirectory>
-                    <failOnWarning>false</failOnWarning>
-                    <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
-                    <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
-                    <configLocation>scalastyle_config.xml</configLocation>
-                    <outputFile>${basedir}/target/scalastyle-output.xml</outputFile>
-                    <inputEncoding>${project.build.sourceEncoding}</inputEncoding>
-                    <outputEncoding>${project.reporting.outputEncoding}</outputEncoding>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
                         </goals>
                     </execution>
                 </executions>
