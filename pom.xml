@@ -31,7 +31,7 @@
     <artifactId>crossdata-parent</artifactId>
     <packaging>pom</packaging>
     <version>1.0.0-SNAPSHOT</version>
-    <name>Stratio Crossdata</name>
+    <name>Stratio Crossdata Parent</name>
     <description>Stratio Crossdata parent</description>
     <url>http://stratio.github.io/crossdata/</url>
 
@@ -86,10 +86,12 @@
     </modules>
 
     <properties>
-        <scala.group>2.10</scala.group>
-        <scala.version>2.10.4</scala.version>
+        <scala.group>2.11</scala.group>
+        <scala.version>${scala.group}.6</scala.version>
         <scalatest.version>2.2.2</scalatest.version>
         <spark.version>1.4.1</spark.version>
+        <scalatest.version>2.2.5</scalatest.version>
+        <mapdb.version>1.0.8</mapdb.version>
         <coverage.data.dir>${project.build.outputDirectory}</coverage.data.dir>
         <config.version>1.2.1</config.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -108,13 +110,6 @@
                 <groupId>org.apache.spark</groupId>
                 <artifactId>spark-sql_${scala.group}</artifactId>
                 <version>${spark.version}</version>
-            </dependency>
-            <!-- Test -->
-            <dependency>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest_${scala.group}</artifactId>
-                <version>${scalatest.version}</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
