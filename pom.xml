@@ -229,7 +229,7 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- <plugin>
+           <!--  <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
                 <executions>
@@ -266,7 +266,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>org.scalastyle</groupId>
                 <artifactId>scalastyle-maven-plugin</artifactId>
@@ -290,7 +290,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin> -->
+            </plugin>
         </plugins>
     </build>
 
