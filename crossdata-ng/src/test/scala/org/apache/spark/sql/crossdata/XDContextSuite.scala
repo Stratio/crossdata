@@ -20,7 +20,10 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.FunSuite
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class XDContextSuite extends FunSuite {
 
   test("XDContext: Pluggable catalog is instantiated") {

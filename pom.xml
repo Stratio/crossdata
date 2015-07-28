@@ -218,7 +218,7 @@
                             <useSystemClassLoader>false</useSystemClassLoader>
                             <useManifestOnlyJar>true</useManifestOnlyJar>
                             <includes>
-                                <include>**/integration/**/*IT.*</include>
+                                <include>**/*IT.*</include>
                             </includes>
                             <argLine>
                                 ${jacoco-IT-argline}
@@ -266,14 +266,14 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
             <plugin>
                 <groupId>org.scalastyle</groupId>
                 <artifactId>scalastyle-maven-plugin</artifactId>
                 <version>0.7.0</version>
                 <configuration>
                     <verbose>true</verbose>
-                    <failOnViolation>true</failOnViolation>
+                    <failOnViolation>false</failOnViolation>
                     <includeTestSourceDirectory>false</includeTestSourceDirectory>
                     <failOnWarning>false</failOnWarning>
                     <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
@@ -290,7 +290,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin> -->
+            </plugin>
         </plugins>
     </build>
 
