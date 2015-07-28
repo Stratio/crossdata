@@ -1,5 +1,7 @@
+// scalastyle:off
 /*
- * Copyright (C) 2015 Stratio (http://stratio.com)
+ * Copyright 2014-2015, DataStax, Inc.
+ * Modification and adapations - Copyright (C) 2015 Stratio (http://stratio.com)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,6 +15,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+// scalastyle:on
 
 package com.stratio.crossdata.sql.sources.cassandra
 
@@ -28,8 +31,43 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
 import scala.collection.mutable
 
+
+/**
+ * Cassandra data source extends [[org.apache.spark.sql.sources.RelationProvider]], [[org.apache.spark.sql.sources.SchemaRelationProvider]]
+ * and [[org.apache.spark.sql.sources.CreatableRelationProvider]].
+ *
+ * It's used internally by Spark SQL to create Relation for a table which specifies the Cassandra data source
+ * e.g.
+ *
+ *      CREATE TEMPORARY TABLE tmpTable
+ *      USING org.apache.spark.sql.cassandra
+ *      OPTIONS (
+ *       table "table",
+ *       keyspace "keyspace",
+ *       cluster "test_cluster",
+ *       pushdown "true",
+ *       spark_cassandra_input_page_row_size "10",
+ *       spark_cassandra_output_consistency_level "ONE",
+ *       spark_cassandra_connection_timeout_ms "1000"
+ *      )
+ */
 class DefaultSource extends CassandraConnectorDS {
 
+  /**
+   * Creates a new relation for a cassandra table.
+   * The parameters map stores table level data. User can specify vale for following keys
+   *
+   *    table        -- table name, required
+   *    keyspace       -- keyspace name, required
+   *    cluster        -- cluster name, optional, default name is "default"
+   *    pushdown      -- true/false, optional, default is true
+   *    Cassandra connection settings  -- optional, e.g. spark_cassandra_connection_timeout_ms
+   *    Cassandra Read Settings        -- optional, e.g. spark_cassandra_input_page_row_size
+   *    Cassandra Write settings       -- optional, e.g. spark_cassandra_output_consistency_level
+   *
+   * When push_down is true, some filters are pushed down to CQL.
+   *
+   */
   override def createRelation(
                                sqlContext: SQLContext,
                                parameters: Map[String, String]): BaseRelation = {
@@ -38,6 +76,10 @@ class DefaultSource extends CassandraConnectorDS {
     CassandraXDSourceRelation(tableRef, sqlContext, options)
   }
 
+  /**
+   * Creates a new relation for a cassandra table given table, keyspace, cluster and push_down
+   * as parameters and explicitly pass schema [[StructType]] as a parameter
+   */
   override def createRelation(
                                sqlContext: SQLContext,
                                parameters: Map[String, String],
@@ -47,6 +89,10 @@ class DefaultSource extends CassandraConnectorDS {
     CassandraXDSourceRelation(tableRef, sqlContext, options, Option(schema))
   }
 
+  /**
+   * Creates a new relation for a cassandra table given table, keyspace, cluster, push_down and schema
+   * as parameters. It saves the data to the Cassandra table depends on [[SaveMode]]
+   */
   override def createRelation(
                                sqlContext: SQLContext,
                                mode: SaveMode,
