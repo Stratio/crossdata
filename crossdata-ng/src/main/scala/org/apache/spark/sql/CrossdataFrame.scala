@@ -27,6 +27,14 @@ private[sql] object CrossdataFrame {
   }
 }
 
+
+/**
+ * Extends a [[DataFrame]] to provide native access to datasources when performing RDD actions.
+ *
+ * @inheritdoc
+ *
+ */
+// TODO: Improve documentation.
 private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext,
                                   @transient override val queryExecution: SQLContext#QueryExecution)
   extends DataFrame(sqlContext, queryExecution) {
@@ -41,8 +49,11 @@ private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext
     })
   }
 
+  /**
+   * @inheritdoc
+   */
   override def collect(): Array[Row] = {
-
+    // TODO take
     // if cache don't go through native
     if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
       super.collect()
@@ -65,7 +76,7 @@ private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext
   }
 
 
-  def executeNative(provider: NativeScan): Option[Array[Row]] = {
+  private[this] def executeNative(provider: NativeScan): Option[Array[Row]] = {
     provider.buildScan(queryExecution.optimizedPlan)
     // TODO cache? results
   }

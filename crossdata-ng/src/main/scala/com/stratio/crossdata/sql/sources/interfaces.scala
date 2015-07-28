@@ -20,6 +20,11 @@ import org.apache.spark.annotation.DeveloperApi
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 
+/**
+ * A BaseRelation that can execute the whole logical plan without running the query
+ * on the Spark cluster. If a specific logical plan cannot be resolved by the datasource
+ * a None should be returned and the process will be executed on Spark.
+ */
 @DeveloperApi
 trait NativeScan {
   def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]]

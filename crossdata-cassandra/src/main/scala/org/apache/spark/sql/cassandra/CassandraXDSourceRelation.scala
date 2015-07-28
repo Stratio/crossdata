@@ -1,5 +1,7 @@
+// scalastyle:off
 /*
- * Copyright (C) 2015 Stratio (http://stratio.com)
+ * Copyright 2014-2015, DataStax, Inc.
+ * Modification and adapations - Copyright (C) 2015 Stratio (http://stratio.com)
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,6 +15,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+// scalastyle:on
 
 package org.apache.spark.sql.cassandra
 
@@ -25,6 +28,13 @@ import org.apache.spark.sql.{Row, SQLContext}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.types.StructType
 
+/**
+ * Implements [[org.apache.spark.sql.sources.BaseRelation]]]], [[org.apache.spark.sql.sources.InsertableRelation]]]]
+ * and [[org.apache.spark.sql.sources.PrunedFilteredScan]]]]
+ * It inserts data to and scans Cassandra table. If filterPushdown is true, it pushs down
+ * some filters to CQL
+ *
+ */
 private[cassandra] class CassandraXDSourceRelation(
                                                       tableRef: TableRef,
                                                       userSpecifiedSchema: Option[StructType],
