@@ -72,7 +72,7 @@
     <check level="warning" class="org.scalastyle.file.FileTabChecker" enabled="true"></check>
     <check level="error" class="org.scalastyle.scalariform.EqualsHashCodeChecker" enabled="true"></check>
     <check level="warning" class="org.scalastyle.scalariform.DisallowSpaceAfterTokenChecker" enabled="true"></check>
-    <check level="error" class="org.scalastyle.scalariform.ScalaDocChecker" enabled="true"></check>
+    <check level="error" class="org.scalastyle.scalariform.ScalaDocChecker" enabled="false"></check>
     <check level="warning" class="org.scalastyle.scalariform.EnsureSingleSpaceAfterTokenChecker" enabled="true">
         <parameters>
             <parameter name="tokens">ARROW, EQUALS, COMMA, COLON, IF, ELSE, DO, WHILE, FOR, MATCH, TRY, CATCH, FINALLY, LARROW, RARROW</parameter>
@@ -97,7 +97,7 @@
     <check level="warning" class="org.scalastyle.scalariform.LowercasePatternMatchChecker" enabled="true"></check>
     <check level="warning" class="org.scalastyle.scalariform.BlockImportChecker" enabled="true"></check>
     <check level="warning" class="org.scalastyle.scalariform.DeprecatedJavaChecker" enabled="true"></check>
-    <check level="error" class="org.scalastyle.scalariform.MultipleStringLiteralsChecker" enabled="true">
+    <check level="error" class="org.scalastyle.scalariform.MultipleStringLiteralsChecker" enabled="false">
         <parameters>
             <parameter name="ignoreRegex"><![CDATA[^""$]]></parameter>
             <parameter name="ignoreRegex"><![CDATA[^s""$]]></parameter>

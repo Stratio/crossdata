@@ -33,7 +33,7 @@ import scala.reflect.io.{Directory, Path}
 /**
  * Default implementation of the [[org.apache.spark.sql.crossdata.XDCatalog]] with persistence using
  * [[http://www.mapdb.org/ MapDB web site]].
- * @param xdContext An optional [[XDContext]]].
+ * @param xdContext An optional [[XDContext]].
  * @param conf An implementation of the [[CatalystConf]].
  * @param args Possible extra arguments.
  */
@@ -41,6 +41,8 @@ class DefaultCatalog(val xdContext: Option[XDContext] = None,
                      val conf: CatalystConf = new SimpleCatalystConf(true),
                      val args: java.util.List[String] = new util.ArrayList[String]())
   extends XDCatalog with Logging {
+
+  private val StringSeparator: String = "."
 
   private lazy val path: Option[String] = args match {
     case e if e.isEmpty => None
@@ -57,6 +59,7 @@ class DefaultCatalog(val xdContext: Option[XDContext] = None,
     case None => (dir + "/catalog")
   }
 
+  // File where to persist the data with MapDB.
   val dbFile: File = new File(dbLocation)
   dbFile.getParentFile.mkdirs
 
@@ -79,7 +82,7 @@ class DefaultCatalog(val xdContext: Option[XDContext] = None,
    */
   override def tableExists(tableIdentifier: Seq[String]): Boolean = {
     logInfo("XDCatalog: tableExists")
-    val tableName: String = tableIdentifier.mkString(".")
+    val tableName: String = tableIdentifier.mkString(StringSeparator)
     (tables.containsKey(tableName) || logicalRDDs.containsKey(tableName))
   }
 
@@ -98,7 +101,7 @@ class DefaultCatalog(val xdContext: Option[XDContext] = None,
    */
   override def unregisterTable(tableIdentifier: Seq[String]): Unit = {
     logInfo("XDCatalog: unregisterTable")
-    val tableName: String = tableIdentifier.mkString(".")
+    val tableName: String = tableIdentifier.mkString(StringSeparator)
     tables.remove(tableName)
     logicalRDDs.remove(tableName)
     db.commit
@@ -111,7 +114,7 @@ class DefaultCatalog(val xdContext: Option[XDContext] = None,
     logInfo("XDCatalog: lookupRelation")
     val tableName: String = alias match {
       case Some(a) => a
-      case None => tableIdentifier.mkString(".")
+      case None => tableIdentifier.mkString(StringSeparator)
     }
     if(tables.containsKey(tableName)){
       tables.get(tableName)
@@ -126,17 +129,14 @@ class DefaultCatalog(val xdContext: Option[XDContext] = None,
   override def registerTable(tableIdentifier: Seq[String], plan: LogicalPlan): Unit = {
     logInfo("XDCatalog: registerTable")
     if(plan.isInstanceOf[LogicalRDD]){
-      logicalRDDs.put(tableIdentifier.mkString("."),
+      logicalRDDs.put(tableIdentifier.mkString(StringSeparator),
         new Tuple2(plan.asInstanceOf[LogicalRDD].output, plan.asInstanceOf[LogicalRDD].rdd))
     } else {
-      tables.put(tableIdentifier.mkString("."), plan)
+      tables.put(tableIdentifier.mkString(StringSeparator), plan)
     }
     db.commit
   }
 
-  /**
-   * @inheritdoc
-   */
   override def getTables(databaseName: Option[String]): Seq[(String, Boolean)] = {
     logInfo("XDCatalog: getTables")
     import collection.JavaConversions._
