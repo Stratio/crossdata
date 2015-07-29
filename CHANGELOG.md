@@ -1,6 +1,8 @@
-# CHANGELOG
+# Changelog
 
-## v0.4
+Only listing significant user-visible, not internal code cleanups and minor bug fixes.
+
+## 0.4.0 (July 2015)
 - Bugs fixed
 - Send manifest from connector
 - Multiple inner joins support
