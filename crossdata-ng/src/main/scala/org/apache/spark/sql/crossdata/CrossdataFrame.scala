@@ -14,16 +14,43 @@
  *  limitations under the License.
  */
 
-package org.apache.spark.sql
+package org.apache.spark.sql.crossdata
 
 import com.stratio.crossdata.sql.sources.NativeScan
-import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.sources.LogicalRelation
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.plans.logical.{BinaryNode, UnaryNode, LeafNode, LogicalPlan}
+import org.apache.spark.sql.sources._
+import org.apache.spark.sql._
 
 
 private[sql] object CrossdataFrame {
   def apply(sqlContext: SQLContext, logicalPlan: LogicalPlan): DataFrame = {
     new CrossdataFrame(sqlContext, logicalPlan)
+  }
+
+  def findNativeRelation(optimizedLogicalPlan: LogicalPlan): Option[NativeScan] = {
+    // TODO check whether there is multiple baseRelation => avoid executing via NativeScan
+    // TODO very simplistic implementation currently
+
+    def findTables(logicalPlan:LogicalPlan): List[BaseRelation] = logicalPlan match{
+      case LogicalRelation(baseRelation) =>  List(baseRelation)
+      case _: LeafNode => Nil
+      case unaryNode: UnaryNode => findTables(unaryNode.child)
+      case binaryNode: BinaryNode => findTables(binaryNode.left) ::: findTables(binaryNode.right)
+      case _ => Nil
+    }
+
+    val tablesInLogicalPlan = findTables(optimizedLogicalPlan)
+
+    if (tablesInLogicalPlan.toSet.size ==1){
+      tablesInLogicalPlan.head match {
+        case ns: NativeScan => Some(ns)
+        case _ => None
+      }
+    }else {
+      None
+    }
+
   }
 }
 
@@ -49,6 +76,8 @@ private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext
     })
   }
 
+  import CrossdataFrame._
+
   /**
    * @inheritdoc
    */
@@ -58,20 +87,8 @@ private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext
     if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
       super.collect()
     } else {
-      val nativeRelation = findNativeRelation(queryExecution.optimizedPlan)
+      val nativeRelation: Option[NativeScan] = findNativeRelation(queryExecution.optimizedPlan)
       nativeRelation.flatMap(executeNative).getOrElse(super.collect())
-    }
-  }
-
-  private[this] def findNativeRelation(optimizedLogicalPlan: LogicalPlan): Option[NativeScan] = {
-    // TODO check whether there is multiple baseRelation => avoid executing via NativeScan
-    // TODO very simplistic implementation currently
-    optimizedLogicalPlan match {
-      case LogicalRelation(baseRelation) => baseRelation match {
-        case nativeRelation: NativeScan => Some(nativeRelation)
-        case _ => None
-      }
-      case _ => None
     }
   }
 

@@ -21,7 +21,7 @@ import java.util
 
 import com.typesafe.config.{Config, ConfigFactory}
 import org.apache.spark.sql.catalyst.{CatalystConf, SimpleCatalystConf}
-import org.apache.spark.sql.{CrossdataFrame, DataFrame, SQLContext}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{Logging, SparkContext}
 
 /**
