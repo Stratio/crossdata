@@ -100,7 +100,7 @@
     <check level="error" class="org.scalastyle.scalariform.MultipleStringLiteralsChecker" enabled="false">
         <parameters>
             <parameter name="ignoreRegex"><![CDATA[^""$]]></parameter>
-            <parameter name="allowed"><![CDATA[1]]></parameter>
+            <parameter name="allowed"><![CDATA[2]]></parameter>
         </parameters>
     </check>
     <check level="error" class="org.scalastyle.scalariform.ParameterNumberChecker" enabled="true">

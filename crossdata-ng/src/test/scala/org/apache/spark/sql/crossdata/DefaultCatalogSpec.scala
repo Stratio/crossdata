@@ -19,13 +19,14 @@ package org.apache.spark.sql.crossdata
 import java.util
 import java.util.UUID
 
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.execution.ShowTablesCommand
-import org.apache.spark.sql.sources.{BaseRelation, LogicalRelation}
-import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
 import org.apache.spark.{SparkConf, SparkContext}
+import org.junit.runner.RunWith
 import org.scalatest.FunSuite
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class DefaultCatalogSpec extends FunSuite {
 
    test("Default catalog: Register Table") {
@@ -46,11 +47,9 @@ class DefaultCatalogSpec extends FunSuite {
      assert(xdc.catalog.tableExists(tmpTable))
      xdc.catalog.unregisterTable(tmpTable)
      xdc.catalog.close()
-
    }
 
   test("Default catalog: Specific file") {
-
     val dc: DefaultCatalog = new DefaultCatalog(
       args = util.Arrays.asList("/tmp/crossdata/catalog"))
     val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
@@ -58,7 +57,6 @@ class DefaultCatalogSpec extends FunSuite {
     assert(dc.tableExists(tmpTable))
     dc.unregisterTable(tmpTable)
     dc.close()
-
   }
 
 }

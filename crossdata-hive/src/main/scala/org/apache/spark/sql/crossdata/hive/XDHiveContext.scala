@@ -17,7 +17,8 @@
 package org.apache.spark.sql.crossdata.hive
 
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.{CrossdataFrame, DataFrame}
+import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.crossdata.CrossdataFrame
 import org.apache.spark.sql.hive.HiveContext
 
 /**
