@@ -21,7 +21,7 @@ import org.apache.spark.sql.catalyst.analysis.Catalog
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.FunSuite
 
-class XDContextSuite extends FunSuite {
+class XDContextSpec extends FunSuite {
 
   test("XDContext: Pluggable catalog is instantiated") {
 

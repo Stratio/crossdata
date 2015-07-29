@@ -19,19 +19,33 @@ package org.apache.spark.sql.crossdata
 import java.util
 import java.util.UUID
 
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.sql.execution.ShowTablesCommand
+import org.apache.spark.sql.sources.{BaseRelation, LogicalRelation}
+import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
+import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.FunSuite
 
-class DefaultCatalogSuite extends FunSuite {
+class DefaultCatalogSpec extends FunSuite {
 
    test("Default catalog: Register Table") {
 
-     val dc: DefaultCatalog = new DefaultCatalog
      val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
-     dc.registerTable(tmpTable, new ShowTablesCommand(None))
-     assert(dc.tableExists(tmpTable))
-     dc.unregisterTable(tmpTable)
-     dc.close()
+
+     val sc = new SparkContext(
+       (new SparkConf()).setAppName("Crossdata").setMaster("local[2]"))
+
+     val xdc: XDContext = new XDContext(sc)
+
+     import xdc.implicits._
+
+     val df: DataFrame = sc.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
+
+     xdc.registerDataFrameAsTable(df, tmpTable.mkString("."))
+
+     assert(xdc.catalog.tableExists(tmpTable))
+     xdc.catalog.unregisterTable(tmpTable)
+     xdc.catalog.close()
 
    }
 
