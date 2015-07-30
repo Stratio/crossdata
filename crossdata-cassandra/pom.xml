@@ -70,7 +70,7 @@
     <dependencies>
         <dependency>
             <groupId>org.apache.spark</groupId>
-            <artifactId>spark-sql_${scala.group}</artifactId>
+            <artifactId>spark-sql_${scala.binary.version}</artifactId>
             <version>${spark.version}</version>
         </dependency>
         <dependency>
@@ -80,7 +80,7 @@
         </dependency>
         <dependency>
             <groupId>com.datastax.spark</groupId>
-            <artifactId>spark-cassandra-connector_${scala.group}</artifactId>
+            <artifactId>spark-cassandra-connector_${scala.binary.version}</artifactId>
             <version>${cassandra.connector.version}</version>
         </dependency>
     </dependencies>
