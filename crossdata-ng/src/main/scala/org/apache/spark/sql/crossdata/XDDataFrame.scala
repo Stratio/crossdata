@@ -18,40 +18,48 @@ package org.apache.spark.sql.crossdata
 
 import com.stratio.crossdata.sql.sources.NativeScan
 import org.apache.spark.sql.Row
-import org.apache.spark.sql.catalyst.plans.logical.{BinaryNode, UnaryNode, LeafNode, LogicalPlan}
-import org.apache.spark.sql.sources._
+import org.apache.spark.sql.catalyst.plans.logical.{LeafNode, LogicalPlan}
 import org.apache.spark.sql._
+import org.apache.spark.sql.sources.LogicalRelation
 
 
-private[sql] object CrossdataFrame {
+private[sql] object XDDataframe {
   def apply(sqlContext: SQLContext, logicalPlan: LogicalPlan): DataFrame = {
-    new CrossdataFrame(sqlContext, logicalPlan)
+    new XDDataframe(sqlContext, logicalPlan)
   }
 
-  def findNativeRelation(optimizedLogicalPlan: LogicalPlan): Option[NativeScan] = {
-    // TODO check whether there is multiple baseRelation => avoid executing via NativeScan
-    // TODO very simplistic implementation currently
+  def findNativeQueryExecutor(optimizedLogicalPlan: LogicalPlan): Option[NativeScan] = {
 
-    def findTables(logicalPlan:LogicalPlan): List[BaseRelation] = logicalPlan match{
-      case LogicalRelation(baseRelation) =>  List(baseRelation)
-      case _: LeafNode => Nil
-      case unaryNode: UnaryNode => findTables(unaryNode.child)
-      case binaryNode: BinaryNode => findTables(binaryNode.left) ::: findTables(binaryNode.right)
-      case _ => Nil
-    }
-
-    val tablesInLogicalPlan = findTables(optimizedLogicalPlan)
-
-    if (tablesInLogicalPlan.toSet.size ==1){
-      tablesInLogicalPlan.head match {
-        case ns: NativeScan => Some(ns)
-        case _ => None
+    def allLeafsAreNative(leafs: Seq[LeafNode]): Boolean = {
+      leafs.forall {
+        case LogicalRelation(ns: NativeScan) => true
+        case _ => false
       }
-    }else {
-      None
     }
 
+    val leafs = optimizedLogicalPlan.collect { case leafNode: LeafNode => leafNode}
+    if (!allLeafsAreNative(leafs)) {
+      None
+    } else {
+      val nativeExecutors: Seq[NativeScan] = leafs.map { case LogicalRelation(ns: NativeScan) => ns}
+
+      nativeExecutors match {
+        case Seq(head) => Some(head)
+        case _ => {
+          if (nativeExecutors.sliding(2).forall { tuple =>
+            tuple(0).getClass == tuple(1).getClass
+          }) {
+            nativeExecutors.headOption
+          } else {
+            None
+          }
+        }
+      }
+    }
+
+
   }
+
 }
 
 
@@ -62,8 +70,8 @@ private[sql] object CrossdataFrame {
  *
  */
 // TODO: Improve documentation.
-private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext,
-                                  @transient override val queryExecution: SQLContext#QueryExecution)
+private[sql] class XDDataframe(@transient override val sqlContext: SQLContext,
+                               @transient override val queryExecution: SQLContext#QueryExecution)
   extends DataFrame(sqlContext, queryExecution) {
 
   def this(sqlContext: SQLContext, logicalPlan: LogicalPlan) = {
@@ -76,7 +84,7 @@ private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext
     })
   }
 
-  import CrossdataFrame._
+  import XDDataframe._
 
   /**
    * @inheritdoc
@@ -87,15 +95,15 @@ private[sql] class CrossdataFrame(@transient override val sqlContext: SQLContext
     if (sqlContext.cacheManager.lookupCachedData(this).nonEmpty) {
       super.collect()
     } else {
-      val nativeRelation: Option[NativeScan] = findNativeRelation(queryExecution.optimizedPlan)
-      nativeRelation.flatMap(executeNative).getOrElse(super.collect())
+      val nativeQueryExecutor: Option[NativeScan] = findNativeQueryExecutor(queryExecution.optimizedPlan)
+      nativeQueryExecutor.flatMap(executeNativeQuery).getOrElse(super.collect())
     }
   }
 
 
-  private[this] def executeNative(provider: NativeScan): Option[Array[Row]] = {
+  private[this] def executeNativeQuery(provider: NativeScan): Option[Array[Row]] = {
     provider.buildScan(queryExecution.optimizedPlan)
-    // TODO cache? results
+    // TODO cache?
   }
 
 }

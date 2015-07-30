@@ -56,7 +56,7 @@ class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
   catalog.open()
 
   override def sql(sqlText: String): DataFrame = {
-    CrossdataFrame(this, parseSql(sqlText))
+    XDDataframe(this, parseSql(sqlText))
   }
 }
 
