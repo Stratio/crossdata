@@ -23,13 +23,13 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.execution.ShowTablesCommand
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
-import org.scalatest.FunSuite
+import org.scalatest.FlatSpec
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DefaultCatalogSpec extends FunSuite {
+class DefaultCatalogSpec extends FlatSpec {
 
-   test("Default catalog: Register Table") {
+   "A Defaultcatalog" should "be able to register a table" in {
 
      val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
 
@@ -51,7 +51,7 @@ class DefaultCatalogSpec extends FunSuite {
      xdc.sparkContext.stop
    }
 
-  test("Default catalog: Specific file") {
+  "A Default catalog" should "be able to specificy a file for the persistence" in  {
     val dc: DefaultCatalog = new DefaultCatalog(
       args = util.Arrays.asList("/tmp/crossdata/catalog"))
     val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
