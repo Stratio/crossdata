@@ -336,8 +336,9 @@
             </activation>
             <modules>
                 <module>crossdata-cassandra</module>
+                <module>crossdata-examples</module>
             </modules>
-        </profile>
+         </profile>
     </profiles>
 </project>
 

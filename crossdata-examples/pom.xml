@@ -132,24 +132,6 @@
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <profile>
-            <id>crossdata-cassandra</id>
-            <activation>
-                <property>
-                    <name>crossdata-cassandra</name>
-                </property>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>com.stratio.crossdata</groupId>
-                    <artifactId>crossdata-cassandra</artifactId>
-                    <version>${parent.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
-
 </project>
 
 
