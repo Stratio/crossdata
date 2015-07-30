@@ -80,7 +80,6 @@
 
     <modules>
         <module>crossdata-ng</module>
-        <module>crossdata-examples</module>
         <module>doc</module>
     </modules>
 
