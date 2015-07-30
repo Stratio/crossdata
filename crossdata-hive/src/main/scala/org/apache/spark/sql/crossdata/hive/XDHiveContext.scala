@@ -18,7 +18,7 @@ package org.apache.spark.sql.crossdata.hive
 
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.sql.crossdata.CrossdataFrame
+import org.apache.spark.sql.crossdata.XDDataframe
 import org.apache.spark.sql.hive.HiveContext
 
 /**
@@ -30,7 +30,7 @@ import org.apache.spark.sql.hive.HiveContext
 class XDHiveContext(sc: SparkContext) extends HiveContext(sc) {
 
   override def sql(sqlText: String): DataFrame = {
-    CrossdataFrame(this, parseSql(sqlText))
+    XDDataframe(this, parseSql(sqlText))
   }
 }
 
