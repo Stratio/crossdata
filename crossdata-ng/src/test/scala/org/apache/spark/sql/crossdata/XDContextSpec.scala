@@ -33,7 +33,7 @@ class XDContextSpec extends FunSuite {
     val ctx: XDContext = new XDContext(sc)
     val xdCatalog: Catalog = ctx.catalog
     assert(xdCatalog.conf.caseSensitiveAnalysis === true)
-    sc.stop
+    ctx.sparkContext.stop
   }
 
   test("XDContext: Performs a basic operation") {
@@ -52,7 +52,7 @@ class XDContextSpec extends FunSuite {
     val result: Array[Row] = xdc.sql("SELECT * FROM records").collect
     assert(result.length === 5)
 
-    sc.stop
+    xdc.sparkContext.stop
   }
 
 }

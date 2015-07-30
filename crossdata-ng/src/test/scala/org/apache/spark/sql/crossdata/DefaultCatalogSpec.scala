@@ -47,6 +47,8 @@ class DefaultCatalogSpec extends FunSuite {
      assert(xdc.catalog.tableExists(tmpTable))
      xdc.catalog.unregisterTable(tmpTable)
      xdc.catalog.close()
+
+     xdc.sparkContext.stop
    }
 
   test("Default catalog: Specific file") {
