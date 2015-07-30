@@ -24,7 +24,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class XDContextSuite extends FunSuite {
+class XDContextSpec extends FunSuite {
 
   test("XDContext: Pluggable catalog is instantiated") {
 

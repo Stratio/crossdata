@@ -18,21 +18,35 @@ package org.apache.spark.sql.crossdata
 
 import java.util
 import java.util.UUID
+
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.execution.ShowTablesCommand
-import org.scalatest.FunSuite
+import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
+import org.scalatest.FunSuite
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DefaultCatalogSuite extends FunSuite {
+class DefaultCatalogSpec extends FunSuite {
 
    test("Default catalog: Register Table") {
-     val dc: DefaultCatalog = new DefaultCatalog
+
      val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
-     dc.registerTable(tmpTable, new ShowTablesCommand(None))
-     assert(dc.tableExists(tmpTable))
-     dc.unregisterTable(tmpTable)
-     dc.close()
+
+     val sc = new SparkContext(
+       (new SparkConf()).setAppName("Crossdata").setMaster("local[2]"))
+
+     val xdc: XDContext = new XDContext(sc)
+
+     import xdc.implicits._
+
+     val df: DataFrame = sc.parallelize((1 to 5).map(i => new String(s"val_$i"))).toDF()
+
+     xdc.registerDataFrameAsTable(df, tmpTable.mkString("."))
+
+     assert(xdc.catalog.tableExists(tmpTable))
+     xdc.catalog.unregisterTable(tmpTable)
+     xdc.catalog.close()
    }
 
   test("Default catalog: Specific file") {

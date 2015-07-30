@@ -24,7 +24,7 @@
     <parent>
         <groupId>com.stratio</groupId>
         <artifactId>parent</artifactId>
-        <version>0.3.1</version>
+        <version>0.4.0</version>
     </parent>
 
     <groupId>com.stratio.crossdata</groupId>
@@ -80,15 +80,12 @@
 
     <modules>
         <module>crossdata-ng</module>
-        <module>crossdata-hive</module>
-        <module>crossdata-cassandra</module>
-        <module>crossdata-examples</module>
         <module>doc</module>
     </modules>
 
     <properties>
-        <scala.group>2.10</scala.group>
-        <scala.version>${scala.group}.4</scala.version>
+        <scala.binary.version>2.10</scala.binary.version>
+        <scala.version>${scala.binary.version}.4</scala.version>
         <scalatest.version>2.2.2</scalatest.version>
         <spark.version>1.4.1</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
@@ -109,7 +106,7 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.spark</groupId>
-                <artifactId>spark-sql_${scala.group}</artifactId>
+                <artifactId>spark-sql_${scala.binary.version}</artifactId>
                 <version>${spark.version}</version>
             </dependency>
         </dependencies>
@@ -197,7 +194,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <includes>
-                        <include>**/*Suite.*</include>
+                        <include>**/*Spec.*</include>
                     </includes>
                     <argLine>
                         ${jacoco-UT-argline}
@@ -293,6 +290,54 @@
             </plugin>
         </plugins>
     </build>
-
+    <profiles>
+        <profile>
+            <id>scala-2.10</id>
+            <activation>
+                <property>
+                    <name>!scala-2.11</name>
+                </property>
+            </activation>
+            <properties>
+                <scala.binary.version>2.10</scala.binary.version>
+                <scala.version>${scala.binary.version}.4</scala.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>scala-2.11</id>
+            <activation>
+                <property>
+                    <name>scala-2.11</name>
+                </property>
+            </activation>
+            <properties>
+                <scala.binary.version>2.11</scala.binary.version>
+                <scala.version>${scala.binary.version}.7</scala.version>
+            </properties>
+        </profile>
+        <profile>
+            <id>crossdata-hive</id>
+            <activation>
+                <property>
+                    <name>crossdata-hive</name>
+                </property>
+            </activation>
+            <modules>
+                <module>crossdata-hive</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>crossdata-cassandra</id>
+            <activation>
+                <property>
+                    <name>crossdata-cassandra</name>
+                </property>
+            </activation>
+            <modules>
+                <module>crossdata-cassandra</module>
+                <module>crossdata-examples</module>
+            </modules>
+         </profile>
+    </profiles>
 </project>
 
