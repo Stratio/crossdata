@@ -80,8 +80,6 @@
 
     <modules>
         <module>crossdata-ng</module>
-        <module>crossdata-hive</module>
-        <module>crossdata-cassandra</module>
         <module>crossdata-examples</module>
         <module>doc</module>
     </modules>
@@ -317,6 +315,28 @@
                 <scala.binary.version>2.11</scala.binary.version>
                 <scala.version>${scala.binary.version}.7</scala.version>
             </properties>
+        </profile>
+        <profile>
+            <id>crossdata-hive</id>
+            <activation>
+                <property>
+                    <name>crossdata-hive</name>
+                </property>
+            </activation>
+            <modules>
+                <module>crossdata-hive</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>crossdata-cassandra</id>
+            <activation>
+                <property>
+                    <name>crossdata-cassandra</name>
+                </property>
+            </activation>
+            <modules>
+                <module>crossdata-cassandra</module>
+            </modules>
         </profile>
     </profiles>
 </project>
