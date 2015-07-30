@@ -25,8 +25,6 @@ import org.apache.spark.sql.catalyst.analysis.Catalog
  */
 trait XDCatalog extends Catalog with Serializable {
 
-  override val conf: CatalystConf
-  val xdContext: Option[XDContext]
   val args: java.util.List[String]
 
   /**
@@ -37,6 +35,6 @@ trait XDCatalog extends Catalog with Serializable {
   /**
    * Performs actions before closing the application.
    */
-  def close(args: Any*): Unit
+  def close(): Unit
 
 }

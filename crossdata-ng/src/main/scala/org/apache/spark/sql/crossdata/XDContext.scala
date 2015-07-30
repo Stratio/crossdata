@@ -43,20 +43,18 @@ class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
   val xdCatalog = Class.forName(catalogClass)
 
   val constr: Constructor[_] = xdCatalog.getConstructor(
-    classOf[Option[XDContext]],
     classOf[CatalystConf],
     classOf[util.List[String]])
 
   override protected[sql] lazy val catalog: XDCatalog =
     constr.newInstance(
-      Some(this),
       new SimpleCatalystConf(caseSensitive),
       catalogArgs).asInstanceOf[XDCatalog]
 
   catalog.open()
 
   override def sql(sqlText: String): DataFrame = {
-    CrossdataFrame(this, parseSql(sqlText))
+    XDDataframe(this, parseSql(sqlText))
   }
 }
 
