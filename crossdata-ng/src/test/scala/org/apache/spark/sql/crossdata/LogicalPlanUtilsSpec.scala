@@ -15,11 +15,6 @@ import org.scalatest.junit.JUnitRunner
 @RunWith(classOf[JUnitRunner])
 class LogicalPlanUtilsSpec extends FlatSpec {
 
- class MockBaseRelation extends BaseRelation {
-   override def sqlContext: SQLContext = ???
-   override def schema: StructType = StructType(List(StructField("id", StringType)))
- }
-
  val mockNativeRelation = new MockBaseRelation with NativeScan{
    override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = ???
  }

@@ -20,7 +20,9 @@ import java.util
 import java.util.UUID
 
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.catalyst.plans.logical.{Subquery, LogicalPlan, Project}
 import org.apache.spark.sql.execution.ShowTablesCommand
+import org.apache.spark.sql.sources.LogicalRelation
 import org.apache.spark.{SparkConf, SparkContext}
 import org.junit.runner.RunWith
 import org.scalatest.FlatSpec
@@ -46,7 +48,7 @@ class DefaultCatalogSpec extends FlatSpec {
 
      assert(xdc.catalog.tableExists(tmpTable))
      xdc.catalog.unregisterTable(tmpTable)
-     xdc.catalog.close()
+     xdc.catalog.close
 
      xdc.sparkContext.stop
    }
@@ -54,11 +56,30 @@ class DefaultCatalogSpec extends FlatSpec {
   "A Default catalog" should "be able to specificy a file for the persistence" in  {
     val dc: DefaultCatalog = new DefaultCatalog(
       args = util.Arrays.asList("/tmp/crossdata/catalog"))
+    dc.open()
     val tmpTable: Seq[String] = Seq(UUID.randomUUID.toString)
     dc.registerTable(tmpTable, new ShowTablesCommand(None))
     assert(dc.tableExists(tmpTable))
     dc.unregisterTable(tmpTable)
-    dc.close()
+    dc.close
+  }
+
+  "A Default Catalog" should "persist tables" in {
+    val dc1: DefaultCatalog = new DefaultCatalog
+    dc1.open()
+    val tmpTable: Seq[String] = Seq("TestOfDefaultCatalogPersistence")
+    val sq: Subquery = new Subquery("aliasIsTheTableName", LogicalRelation(new MockBaseRelation))
+    val lp: LogicalPlan = new Project(Seq(), sq)
+    dc1.registerTable(tmpTable, lp)
+    assert(dc1.tableExists(tmpTable))
+    dc1.close
+
+    val dc2: DefaultCatalog = new DefaultCatalog
+    dc2.open()
+    assert(dc2.tableExists(tmpTable))
+    assert(dc2.lookupRelation(tmpTable).isInstanceOf[LogicalPlan])
+    dc2.unregisterTable(tmpTable)
+    dc2.close
   }
 
 }
