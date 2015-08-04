@@ -84,8 +84,8 @@
     </modules>
 
     <properties>
-        <scala.binary.version>2.10</scala.binary.version>
-        <scala.version>${scala.binary.version}.4</scala.version>
+        <!--<scala.binary.version>2.10</scala.binary.version>
+        <scala.version>${scala.binary.version}.4</scala.version> -->
         <scalatest.version>2.2.2</scalatest.version>
         <spark.version>1.4.1</spark.version>
         <scalatest.version>2.2.5</scalatest.version>
@@ -113,12 +113,12 @@
     </dependencyManagement>
     <dependencies>
 
-    <dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-        <version>4.12</version>
-        <scope>test</scope>
-    </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -199,7 +199,7 @@
                     <argLine>
                         ${jacoco-UT-argline}
                         -XX:MaxPermSize=256m
-                     </argLine>
+                    </argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -226,44 +226,44 @@
                     </execution>
                 </executions>
             </plugin>
-           <!--  <plugin>
-                <groupId>org.scala-tools</groupId>
-                <artifactId>maven-scala-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>scala-compile-first</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>add-source</goal>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>scala-test-compile</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                            <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--  <plugin>
+                 <groupId>org.scala-tools</groupId>
+                 <artifactId>maven-scala-plugin</artifactId>
+                 <executions>
+                     <execution>
+                         <id>scala-compile-first</id>
+                         <phase>process-resources</phase>
+                         <goals>
+                             <goal>add-source</goal>
+                             <goal>compile</goal>
+                         </goals>
+                     </execution>
+                     <execution>
+                         <id>scala-test-compile</id>
+                         <phase>process-test-resources</phase>
+                         <goals>
+                             <goal>testCompile</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+             </plugin>
 
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
+             <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-compiler-plugin</artifactId>
+                 <configuration>
+                     <source>1.7</source>
+                     <target>1.7</target>
+                 </configuration>
+                 <executions>
+                     <execution>
+                         <phase>compile</phase>
+                         <goals>
+                             <goal>compile</goal>
+                         </goals>
+                     </execution>
+                 </executions>
+             </plugin>-->
             <plugin>
                 <groupId>org.scalastyle</groupId>
                 <artifactId>scalastyle-maven-plugin</artifactId>
@@ -291,6 +291,28 @@
         </plugins>
     </build>
     <profiles>
+        <profile>
+            <id>crossdata-core</id>
+            <activation>
+                <property>
+                    <name>!crossdata-all</name>
+                </property>
+            </activation>
+        </profile>
+        <profile>
+            <id>crossdata-all</id>
+            <activation>
+                <property>
+                    <name>crossdata-all</name>
+                </property>
+            </activation>
+
+            <modules>
+                <module>crossdata-hive</module>
+                <module>crossdata-cassandra</module>
+                <module>crossdata-examples</module>
+            </modules>
+        </profile>
         <profile>
             <id>scala-2.10</id>
             <activation>
@@ -337,7 +359,6 @@
                 <module>crossdata-cassandra</module>
                 <module>crossdata-examples</module>
             </modules>
-         </profile>
+        </profile>
     </profiles>
 </project>
-
