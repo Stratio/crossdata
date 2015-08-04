@@ -38,7 +38,11 @@ object CassandraExample extends App with DefaultConstants {
         "cluster \"" + Cluster + "\", pushdown \"true\")".stripMargin)
 
     // scalastyle:off
-    xdContext.sql(s"SELECT * FROM $Table").collect().foreach(print)
+    //xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 1 AND id = 5").collect().foreach(print)
+    //xdContext.sql(s"SELECT comment as b FROM $Table WHERE id = 1").collect().foreach(print)
+    //xdContext.sql(s"SELECT *  FROM $Table ").collect().foreach(print)
+    //xdContext.sql(s"SELECT comment as b FROM $Table WHERE comment = 'A'").show(5)
+    xdContext.sql(s"SELECT comment as b FROM $Table WHERE id IN(1,2,3,4,5,6,7,8,9,10) limit 2").show(5)
     // scalastyle:on
 
   }
