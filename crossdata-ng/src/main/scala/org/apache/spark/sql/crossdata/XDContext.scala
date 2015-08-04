@@ -31,7 +31,7 @@ import org.apache.spark.{Logging, SparkContext}
  */
 class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
 
-  val xdConfig: Config = ConfigFactory.load
+  /*val xdConfig: Config = ConfigFactory.load
   val catalogClass: String = xdConfig.getString("crossdata.catalog.class")
   val caseSensitive: Boolean = xdConfig.getBoolean("crossdata.catalog.caseSensitive")
 
@@ -53,6 +53,7 @@ class XDContext(sc: SparkContext) extends SQLContext(sc) with Logging {
 
   catalog.open()
 
+*/
   override def sql(sqlText: String): DataFrame = {
     XDDataframe(this, parseSql(sqlText))
   }

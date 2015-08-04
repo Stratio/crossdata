@@ -16,17 +16,36 @@
  *  limitations under the License.
  */
 // scalastyle:on
-
 package org.apache.spark.sql.cassandra
 
-import com.datastax.spark.connector.cql.{CassandraConnectorConf, CassandraConnector}
-import com.datastax.spark.connector.rdd.ReadConf
-import com.datastax.spark.connector.writer.WriteConf
+import java.io.IOException
+import java.sql.Timestamp
+import java.util.Date
+
+import com.datastax.driver.core.{Metadata, ProtocolVersion}
+import com.datastax.spark.connector.{ColumnRef, AllColumns, GettableData}
+import com.datastax.spark.connector.cql.{Schema, CassandraConnectorConf, CassandraConnector}
+import com.datastax.spark.connector.rdd.{CassandraRDD, ReadConf}
+import com.datastax.spark.connector.util.NameTools
+import com.datastax.spark.connector.util.Quote._
+import com.datastax.spark.connector.writer.{SqlRowWriter, WriteConf}
 import com.stratio.crossdata.sql.sources.NativeScan
+import com.stratio.crossdata.sql.sources.cassandra.CassandraQueryProcessor
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.sources._
 import org.apache.spark.{SparkConf, Logging}
-import org.apache.spark.sql.{Row, SQLContext}
+import org.apache.spark.sql.{sources, DataFrame, Row, SQLContext}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
-import org.apache.spark.sql.types.StructType
+import org.apache.spark.sql.types.{UTF8String, StructType}
+
+import DataTypeConverter._
+
+import com.datastax.spark.connector._
+import com.datastax.spark.connector.cql.{CassandraConnectorConf, CassandraConnector, Schema, ColumnDef}
+import com.datastax.spark.connector.rdd.{CassandraRDD, ReadConf}
+import com.datastax.spark.connector.writer.{WriteConf, SqlRowWriter}
+import com.datastax.spark.connector.util.Quote._
+
 
 /**
  * Implements [[org.apache.spark.sql.sources.BaseRelation]]]], [[org.apache.spark.sql.sources.InsertableRelation]]]]
@@ -35,105 +54,207 @@ import org.apache.spark.sql.types.StructType
  * some filters to CQL
  *
  */
-private[cassandra] class CassandraXDSourceRelation(
-                                                      tableRef: TableRef,
-                                                      userSpecifiedSchema: Option[StructType],
-                                                      filterPushdown: Boolean,
-                                                      tableSizeInBytes: Option[Long],
-                                                      connector: CassandraConnector,
-                                                      readConf: ReadConf,
-                                                      writeConf: WriteConf,
-                                                      override val sqlContext: SQLContext)
-  extends CassandraSourceRelation(
-    tableRef,
-    userSpecifiedSchema,
-    filterPushdown,
-    tableSizeInBytes,
-    connector,
-    readConf,
-    writeConf,
-    sqlContext)
-  with NativeScan with Logging{
+class CassandraXDSourceRelation(
+                                                    tableRef: TableRef,
+                                                    userSpecifiedSchema: Option[StructType],
+                                                    filterPushdown: Boolean,
+                                                    tableSizeInBytes: Option[Long],
+                                                    val connector: CassandraConnector,
+                                                    readConf: ReadConf,
+                                                    writeConf: WriteConf,
+                                                    override val sqlContext: SQLContext)
+  extends BaseRelation
+  with InsertableRelation
+  with PrunedFilteredScan
+  with NativeScan with Logging {
 
   override def buildScan(optimizedLogicalPlan: LogicalPlan): Option[Array[Row]] = {
-    logInfo(s"We should process this plan ${optimizedLogicalPlan.toString}")
-    None
+    logInfo(s"Processing ${optimizedLogicalPlan.toString}")
+    val queryExecutor = CassandraQueryProcessor(this, optimizedLogicalPlan)
+    queryExecutor.execute()
+
   }
-}
 
 
-object CassandraXDSourceRelation{
+   val tableDef = {
+    val tableName = tableRef.table
+    val keyspaceName = tableRef.keyspace
+    Schema.fromCassandra(connector, Some(keyspaceName), Some(tableName)).tables.headOption match {
+      case Some(t) => t
+      case None =>
+        val metadata: Metadata = connector.withClusterDo(_.getMetadata)
+        val suggestions = NameTools.getSuggestions(metadata, keyspaceName, tableName)
+        val errorMessage = NameTools.getErrorString(keyspaceName, tableName, suggestions)
+        throw new IOException(errorMessage)
+    }
+  }
 
-  val tableSizeInBytesProperty = "spark.cassandra.table.size.in.bytes"
+  override def schema: StructType = {
+    userSpecifiedSchema.getOrElse(StructType(tableDef.columns.map(toStructField)))
+  }
 
-  val Properties = Seq(
-    tableSizeInBytesProperty
-  )
-
-  val defaultClusterName = "default"
-
-  def apply(
-             tableRef: TableRef,
-             sqlContext: SQLContext,
-             options: CassandraSourceOptions = CassandraSourceOptions(),
-             schema : Option[StructType] = None) : CassandraSourceRelation = {
-
-    val sparkConf = sqlContext.sparkContext.getConf
-    val sqlConf = sqlContext.getAllConfs
-    val conf =
-      consolidateConfs(sparkConf, sqlConf, tableRef, options.cassandraConfs)
-    val tableSizeInBytesString = conf.getOption(tableSizeInBytesProperty)
-    val tableSizeInBytes = {
-      if (tableSizeInBytesString.nonEmpty) {
-        Option(tableSizeInBytesString.get.toLong)
-      } else {
-        None
+  override def insert(data: DataFrame, overwrite: Boolean): Unit = {
+    if (overwrite) {
+      connector.withSessionDo {
+        val keyspace = quote(tableRef.keyspace)
+        val table = quote(tableRef.table)
+        session => session.execute(s"TRUNCATE $keyspace.$table")
       }
     }
-    val cassandraConnector =
-      new CassandraConnector(CassandraConnectorConf(conf))
-    val readConf = ReadConf.fromSparkConf(conf)
-    val writeConf = WriteConf.fromSparkConf(conf)
 
-    new CassandraXDSourceRelation(
-      tableRef = tableRef,
-      userSpecifiedSchema = schema,
-      filterPushdown = options.pushdown,
-      tableSizeInBytes = tableSizeInBytes,
-      connector = cassandraConnector,
-      readConf = readConf,
-      writeConf = writeConf,
-      sqlContext = sqlContext)
+    implicit val rwf = SqlRowWriter.Factory
+    data.rdd.saveToCassandra(tableRef.keyspace, tableRef.table, AllColumns, writeConf)
   }
 
-  /**
-   * Consolidate Cassandra conf settings in the order of
-   * table level -> keyspace level -> cluster level ->
-   * default. Use the first available setting. Default
-   * settings are stored in SparkConf.
-   */
-  def consolidateConfs(
-                        sparkConf: SparkConf,
-                        sqlConf: Map[String, String],
-                        tableRef: TableRef,
-                        tableConf: Map[String, String]) : SparkConf = {
-    // Default settings
-    val conf = sparkConf.clone()
-    // Keyspace/Cluster level settings
-    for (prop <- DefaultSource.confProperties) {
-      val cluster = tableRef.cluster.getOrElse(defaultClusterName)
-      val clusterLevelValue = sqlConf.get(s"$cluster/$prop")
-      if (clusterLevelValue.nonEmpty)
-        conf.set(prop, clusterLevelValue.get)
-      val keyspaceLevelValue =
-        sqlConf.get(s"$cluster:${tableRef.keyspace}/$prop")
-      if (keyspaceLevelValue.nonEmpty)
-        conf.set(prop, keyspaceLevelValue.get)
-      val tableLevelValue = tableConf.get(prop)
-      if (tableLevelValue.nonEmpty)
-        conf.set(prop, tableLevelValue.get)
+  override def sizeInBytes: Long = {
+    //TODO  Retrieve table size from C* system table from Cassandra 2.1.4
+    // If it's not found, use SQLConf default setting
+    tableSizeInBytes.getOrElse(sqlContext.conf.defaultSizeInBytes)
+  }
+
+  implicit val cassandraConnector = connector
+  implicit val readconf = readConf
+  private[this] val baseRdd =
+    sqlContext.sparkContext.cassandraTable[CassandraSQLRow](tableRef.keyspace, tableRef.table)
+
+  def buildScan() : RDD[Row] = baseRdd.asInstanceOf[RDD[Row]]
+
+  override def buildScan(requiredColumns: Array[String], filters: Array[Filter]): RDD[Row] = {
+    val prunedRdd = maybeSelect(baseRdd, requiredColumns)
+    logInfo(s"filters: ${filters.mkString(", ")}")
+    val prunedFilteredRdd = {
+      if(filterPushdown) {
+        val filterPushdown = new PredicatePushDown(filters.toSet, tableDef)
+        val pushdownFilters = filterPushdown.predicatesToPushDown.toSeq
+        logInfo(s"pushdown filters: ${pushdownFilters.toString()}")
+        val filteredRdd = maybePushdownFilters(prunedRdd, pushdownFilters)
+        filteredRdd.asInstanceOf[RDD[Row]]
+      } else {
+        prunedRdd
+      }
     }
-    conf
+    prunedFilteredRdd.asInstanceOf[RDD[Row]]
+  }
+
+  /** Define a type for CassandraRDD[CassandraSQLRow]. It's used by following methods */
+  private type RDDType = CassandraRDD[CassandraSQLRow]
+
+  /** Transfer selection to limit to columns specified */
+  private def maybeSelect(rdd: RDDType, requiredColumns: Array[String]) : RDDType = {
+    if (requiredColumns.nonEmpty) {
+      rdd.select(requiredColumns.map(column => column: ColumnRef): _*)
+    } else {
+      rdd
+    }
+  }
+
+  /** Push down filters to CQL query */
+  private def maybePushdownFilters(rdd: RDDType, filters: Seq[Filter]) : RDDType = {
+    whereClause(filters) match {
+      case (cql, values) if values.nonEmpty => rdd.where(cql, values: _*)
+      case _ => rdd
+    }
+  }
+
+  /** Construct Cql clause and retrieve the values from filter */
+  private def filterToCqlAndValue(filter: Any): (String, Seq[Any]) = {
+    filter match {
+      case sources.EqualTo(attribute, value)            => (s"${quote(attribute)} = ?", Seq(value))
+      case sources.LessThan(attribute, value)           => (s"${quote(attribute)} < ?", Seq(value))
+      case sources.LessThanOrEqual(attribute, value)    => (s"${quote(attribute)} <= ?", Seq(value))
+      case sources.GreaterThan(attribute, value)        => (s"${quote(attribute)} > ?", Seq(value))
+      case sources.GreaterThanOrEqual(attribute, value) => (s"${quote(attribute)} >= ?", Seq(value))
+      case sources.In(attribute, values)                 =>
+        (quote(attribute) + " IN " + values.map(_ => "?").mkString("(", ", ", ")"), values.toSeq)
+      case _ =>
+        throw new UnsupportedOperationException(
+          s"It's not a valid filter $filter to be pushed down, only >, <, >=, <= and In are allowed.")
+    }
+  }
+
+  /** Construct where clause from pushdown filters */
+  private def whereClause(pushdownFilters: Seq[Any]): (String, Seq[Any]) = {
+    val cqlValue = pushdownFilters.map(filterToCqlAndValue)
+    val cql = cqlValue.map(_._1).mkString(" AND ")
+    val args = cqlValue.flatMap(_._2)
+    (cql, args)
   }
 }
+  //TODO buildScan => CassandraTableScanRDD[CassandraSQLRow] => fetchTokenRange
+
+
+  object CassandraXDSourceRelation {
+
+    val tableSizeInBytesProperty = "spark.cassandra.table.size.in.bytes"
+
+    val Properties = Seq(
+      tableSizeInBytesProperty
+    )
+
+    val defaultClusterName = "default"
+
+    def apply(
+               tableRef: TableRef,
+               sqlContext: SQLContext,
+               options: CassandraSourceOptions = CassandraSourceOptions(),
+               schema: Option[StructType] = None): CassandraXDSourceRelation = {
+
+      val sparkConf = sqlContext.sparkContext.getConf
+      val sqlConf = sqlContext.getAllConfs
+      val conf =
+        consolidateConfs(sparkConf, sqlConf, tableRef, options.cassandraConfs)
+      val tableSizeInBytesString = conf.getOption(tableSizeInBytesProperty)
+      val tableSizeInBytes = {
+        if (tableSizeInBytesString.nonEmpty) {
+          Option(tableSizeInBytesString.get.toLong)
+        } else {
+          None
+        }
+      }
+      val cassandraConnector =
+        new CassandraConnector(CassandraConnectorConf(conf))
+      val readConf = ReadConf.fromSparkConf(conf)
+      val writeConf = WriteConf.fromSparkConf(conf)
+
+      new CassandraXDSourceRelation(
+        tableRef = tableRef,
+        userSpecifiedSchema = schema,
+        filterPushdown = options.pushdown,
+        tableSizeInBytes = tableSizeInBytes,
+        connector = cassandraConnector,
+        readConf = readConf,
+        writeConf = writeConf,
+        sqlContext = sqlContext)
+    }
+
+    /**
+     * Consolidate Cassandra conf settings in the order of
+     * table level -> keyspace level -> cluster level ->
+     * default. Use the first available setting. Default
+     * settings are stored in SparkConf.
+     */
+    def consolidateConfs(
+                          sparkConf: SparkConf,
+                          sqlConf: Map[String, String],
+                          tableRef: TableRef,
+                          tableConf: Map[String, String]): SparkConf = {
+      // Default settings
+      val conf = sparkConf.clone()
+      // Keyspace/Cluster level settings
+      for (prop <- DefaultSource.confProperties) {
+        val cluster = tableRef.cluster.getOrElse(defaultClusterName)
+        val clusterLevelValue = sqlConf.get(s"$cluster/$prop")
+        if (clusterLevelValue.nonEmpty)
+          conf.set(prop, clusterLevelValue.get)
+        val keyspaceLevelValue =
+          sqlConf.get(s"$cluster:${tableRef.keyspace}/$prop")
+        if (keyspaceLevelValue.nonEmpty)
+          conf.set(prop, keyspaceLevelValue.get)
+        val tableLevelValue = tableConf.get(prop)
+        if (tableLevelValue.nonEmpty)
+          conf.set(prop, tableLevelValue.get)
+      }
+      conf
+    }
+  }
 
