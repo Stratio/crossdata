@@ -21,7 +21,7 @@ import java.util
 
 import org.apache.spark.Logging
 import org.apache.spark.sql.catalyst.{SimpleCatalystConf, CatalystConf}
-import org.apache.spark.sql.catalyst.analysis.SimpleCatalog
+import org.apache.spark.sql.catalyst.analysis.{OverrideCatalog, SimpleCatalog}
 import org.apache.spark.sql.catalyst.plans.logical.LogicalPlan
 import org.apache.spark.sql.execution.LogicalRDD
 import org.mapdb.{DB, DBMaker}
@@ -36,7 +36,7 @@ import scala.reflect.io.{Directory, Path}
  */
 class DefaultCatalog(conf: CatalystConf = new SimpleCatalystConf(true),
                      val args: java.util.List[String] = new util.ArrayList[String]())
-  extends SimpleCatalog(conf) with XDCatalog with Logging {
+  extends SimpleCatalog(conf) with OverrideCatalog with XDCatalog with Logging {
 
   private val StringSeparator: String = "."
 
